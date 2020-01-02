@@ -571,4 +571,8 @@
         padding-left: 40px;
     }
 
+    .external-link {
+        text-decoration: underline;
+        cursor: pointer;
+    }
 </style>

@@ -174,7 +174,10 @@ class MailTags
 
     const BANKING_ACCOUNT_X_PRO_ACTIVATION = 'banking_account_x_pro_activation';
 
-    const PARTNER_ON_BOARDED             = 'partner_on_boarded';
+    const PARTNER_ON_BOARDED                            = 'partner_on_boarded';
+    const NEGATIVE_BALANCE_THRESHOLD_ALERT              = 'negative_balance_threshold_alert';
+    const BALANCE_NEGATIVE_ALERT                        = 'balance_negative_alert';
+    const BALANCE_POSITIVE_ALERT                        = 'balance_positve_alert';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

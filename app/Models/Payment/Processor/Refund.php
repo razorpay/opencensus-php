@@ -24,6 +24,7 @@ use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
 use RZP\Models\FundTransfer;
 use RZP\Models\Card\IIN\IIN;
+use RZP\Models\Bank\BankCodes;
 use RZP\Jobs\ScroogeRefundRetry;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
@@ -103,9 +104,10 @@ trait Refund
     public function isInstantRefundSupported(Payment\Entity $payment)
     {
         // This will keep changing as we add more coverage
-        return ((($payment->isUpi() === true) or
-                 ($payment->isCard() === true)) and
-                ($this->isCapturedPaymentAndFeatureEnabled($payment) === true));
+        return (($this->isCapturedPaymentAndFeatureEnabled($payment) === true) and
+                (($payment->isUpi() === true) or
+                 ($payment->isCard() === true) or
+                 ($payment->isNetbanking() === true)));
     }
 
     public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)
@@ -1632,13 +1634,13 @@ trait Refund
         $refundData = $this->prepareScroogeRefundResponse($gatewayResponse, true);
 
         //
+        // TODO: handle for capture queue later
         // refund/reverse on gateway. If capture_queue feature is enabled on a merchant so payment will have txn id
         // even if gateway captured is not set, in that case, reversal request should be sent.
         // If txn id is present and capture queue is not enabled, we will call refund request as that means
         // payment would have been gateway captured.
         //
-        if ((($payment->getTransactionId() !== null) and
-            ($this->merchant->isFeatureEnabled(Feature::CAPTURE_QUEUE) === false)) or
+        if (($payment->getTransactionId() !== null) or
             ($payment->isGatewayCaptured() === true))
         {
             $refundData = $this->refundOnGateway($data, $retry);
@@ -1871,41 +1873,15 @@ trait Refund
             'refund_id'         => $refund->getId(),
         ];
 
-        if (($merchant->getRefundSource() === RefundSource::CREDITS) and
-            ($balance->getRefundCredits() < $refund->getNetAmount()))
+        if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
-                null,
-                $traceData);
+            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getAmount(),
+                                                            Transaction\Type::REFUND);
         }
 
-        if (($merchant->getRefundSource() === RefundSource::BALANCE) and
-            ($balance->getBalance() < $refund->getNetAmount()))
+        if ($merchant->getRefundSource() === RefundSource::BALANCE)
         {
-            if ($type === 'refund')
-            {
-                $this->app['segment']->trackPayment(
-                    $refund->payment,
-                    TraceCode::PAYMENT_REFUND_FAILURE,
-                    $traceData);
-
-                $error = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
-            }
-            else if ($type === 'reversal')
-            {
-                $error = ErrorCode::BAD_REQUEST_TRANSFER_REVERSAL_INSUFFICIENT_BALANCE;
-            }
-            else
-            {
-                throw new Exception\LogicException(
-                    'Invalid type for refund validate balance - ' . $type,
-                    null,
-                    $traceData
-                );
-            }
-
-            throw new Exception\BadRequestException($error, null, $traceData);
+            return $this->checkMerchantBalance($merchant, $refund, $type, $traceData);
         }
     }
 
@@ -1979,6 +1955,18 @@ trait Refund
             if ($this->isPaymentUpiAndCardTransferRefund($refund, $payment, true) === true)
             {
                 $scroogeData['fta_data']['vpa']['address'] = $payment->getVpa();
+
+                return;
+            }
+
+            if ($this->isPaymentNetbankingAndCardTransferRefund($refund, $payment, true) === true)
+            {
+                $bankAccountInput = $this->fetchBankAccountDetailsForInstantRefund($payment);
+
+                if (empty($bankAccountInput) === false)
+                {
+                    $scroogeData['fta_data']['bank_account'] = $bankAccountInput;
+                }
 
                 return;
             }
@@ -2469,8 +2457,12 @@ trait Refund
         return (($refund->isRefundRequestedSpeedInstant() === true) and
                 ($payment->hasBeenCaptured() === true) and
                 (in_array($payment->getGateway(), Payment\Gateway::$scroogeGateways, true) === true) and
-                ((in_array($payment->getMethod(), [Payment\Method::CARD, Payment\Method::UPI], true) === true) and
+                ((in_array($payment->getMethod(), [
+                    Payment\Method::CARD,
+                    Payment\Method::UPI,
+                    Payment\Method::NETBANKING], true) === true) and
                  (($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true) or
+                  ($this->isPaymentNetbankingAndCardTransferRefund($refund, $payment) === true) or
                   ($this->isPaymentUpiAndCardTransferRefund($refund, $payment) === true))));
     }
 
@@ -2563,6 +2555,50 @@ trait Refund
 
         if (($payment->getMethod() === Payment\Method::UPI) and
             (empty($payment->getVpa()) === false) and
+            ($payment->isGatewayCaptured() === true))
+        {
+            if (($ignoreFeatureFlag === false) and
+                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checking if payment is of method netbanking. If card_transfer_refund feature is present for the merchant,
+     * refund will be made on bank account details which may come next day in recon (Gateway specific).
+     * Payment should be gateway captured, if it isn't, it should not be refunded directly via FTA.
+     *
+     * @param RefundEntity $refund
+     * @param Payment\Entity $payment
+     * @param bool $ignoreFeatureFlag
+     * @return bool
+     * @throws \Exception
+     */
+    protected function isPaymentNetbankingAndCardTransferRefund(
+        RefundEntity $refund,
+        Payment\Entity $payment,
+        bool $ignoreFeatureFlag = false): bool
+    {
+        //
+        // Check if any FTA to bank account already exists, not allowing fta to
+        // bank account if any previous bank account fta exists. This is just a sanity check
+        // and should not affect the flow for manual retry via bank account
+        //
+        foreach ($refund->fundTransferAttempts as $fundTransferAttempt)
+        {
+            if (empty($fundTransferAttempt->getBankAccountId()) === false)
+            {
+                return false;
+            }
+        }
+
+        if (($payment->getMethod() === Payment\Method::NETBANKING) and
             ($payment->isGatewayCaptured() === true))
         {
             if (($ignoreFeatureFlag === false) and
@@ -2750,14 +2786,16 @@ trait Refund
     protected function setRefundModeAndSpeed(Payment\Entity $payment, RefundEntity &$refund)
     {
         //
-        // Calling Scrooge to fetch mode for a refund.
-        // Scrooge calculates the mode based on the mode configuration defined by product/merchant in consultation
-        // with support for modes from FTA/FTS
+        // Calling Scrooge for speed decisioning and mode selection
+        // Scrooge calculates the mode based on the mode configuration defined by
+        // product/merchant in consultation with support for modes from FTA/FTS
         //
 
         $queryParams = [
-            RefundConstants::METHOD => $payment->getMethod(),
-            RefundConstants::AMOUNT => $payment->getAmount()
+            RefundEntity::GATEWAY        => $payment->getGateway(),
+            RefundConstants::METHOD      => $payment->getMethod(),
+            RefundConstants::AMOUNT      => $payment->getAmount(),
+            RefundConstants::MERCHANT_ID => $payment->getMerchantId(),
         ];
 
         if ($payment->getMethod() === Payment\Method::CARD)
@@ -2781,10 +2819,83 @@ trait Refund
             }
         }
 
-        $mode = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
+        $response = $this->app['scrooge']->instantRefundsDecisioningHelper($queryParams);
 
-        // If the status is false or if the mode is empty we are decisioning the speed to normal
-        (empty($mode) === false) ? $refund->setModeRequested($mode) :
+        // If the mode is empty we are decisioning the speed to normal
+        (empty($response[RefundConstants::MODE]) === false) ?
+            $refund->setModeRequested($response[RefundConstants::MODE]) :
             $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
+    }
+
+    public function fetchBankAccountDetailsForInstantRefund(Payment\Entity $payment) : array
+    {
+        $netbankingEntity = $payment->netbanking;
+
+        if (empty($netbankingEntity) === true)
+        {
+            return [];
+        }
+
+        $accountNo = $netbankingEntity->getAccountNumber();
+        $trimmedAccountNo = trim($accountNo);
+
+        $ifscCode  = BankCodes::getIfscForBankCode($payment->getBank());
+
+        if ((empty($trimmedAccountNo) === true) or (empty($ifscCode) === true))
+        {
+            return [];
+        }
+
+        // Todo: Confirm source of customer_name if it is same as bene name and send to scrooge. Needed for NEFT
+        return [
+            BankAccount\Entity::IFSC_CODE => $ifscCode,
+            BankAccount\Entity::ACCOUNT_NUMBER => $trimmedAccountNo,
+        ];
+    }
+
+    private function checkMerchantBalance(Merchant\Entity $merchant,
+                                          RefundEntity $refund,
+                                          string $type,
+                                          array $traceData)
+    {
+        try
+        {
+            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getAmount(),
+                                                        Transaction\Type::REFUND);
+        }
+        catch (\Exception $e)
+        {
+            if ($type === 'refund')
+            {
+                if ($e->getCode() === ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED)
+                {
+                    $error = ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED;
+                }
+                else
+                {
+                    $error = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
+                }
+
+                $this->app['segment']->trackPayment(
+                    $refund->payment,
+                    TraceCode::PAYMENT_REFUND_FAILURE,
+                    $traceData);
+            }
+            else if ($type === 'reversal')
+            {
+                $error = ErrorCode::BAD_REQUEST_TRANSFER_REVERSAL_INSUFFICIENT_BALANCE;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Invalid type for refund validate balance - ' . $type,
+                    null,
+                    $traceData
+                );
+            }
+            throw new Exception\BadRequestException($error, null, $traceData);
+        }
+
+        return;
     }
 }

@@ -439,6 +439,7 @@ class TerminalAuthenticationTest extends TestCase
 
     public function testAuthenticationGatewayPaysecure()
     {
+        $this->markTestSkipped();
         TerminalOptions::setTestChance(1000);
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');

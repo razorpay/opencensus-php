@@ -32,8 +32,10 @@ use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\FeeModel;
+use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Transaction\Processor as TransactionProcessor;
 
 class Core extends Base\Core
@@ -651,7 +653,7 @@ class Core extends Base\Core
         //
         $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
 
-        $transfer->getValidator()->validateMerchantBalanceForTransfer($merchantBalance);
+        $transfer->getValidator()->validateMerchantBalanceForTransfer($merchant, $merchantBalance);
 
         //
         // For transfers from a payment, if the source payment is not
@@ -905,11 +907,36 @@ class Core extends Base\Core
 
         $txn->accountBalance()->associate($merchantBalance);
 
-        $merchantBalance->updateBalance($txn);
+        $mode = $this->mode ?? 'live';
+
+        $oldBalance = $merchantBalance->getBalance();
+
+        $response = $this->app->razorx->getTreatment($txn->getMerchantId(),
+                                                     BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE,
+                                                     $mode);
+
+        $merchantBalance->updateBalance($txn, $response === 'on');
+
+        $newBalance = $merchantBalance->getBalance();
 
         $this->repo->balance->updateBalance($merchantBalance);
 
-        $txn->setBalance($merchantBalance->getBalance());
+        $txn->setBalance($merchantBalance->getBalance(), $response === 'on');
+
+        if ($response === 'on')
+        {
+            if ($newBalance < 0)
+            {
+                $dimensions = (new Balance\Metric)->getBalanceNegativeDimensions($this->merchant, $merchantBalance,
+                                                                                  $txn->getType());
+
+                $this->trace->count(Balance\Metric::BALANCE_NEGATIVE, $dimensions);
+            }
+
+            (new Balance\Core)->sendNegativeBalanceMailIfApplicable($this->merchant, $oldBalance, $newBalance,
+                                                        $merchantBalance->getType(), 'merchant balance',
+                                                        $txn->getType());
+        }
 
         return $txn;
     }
@@ -1493,11 +1520,16 @@ class Core extends Base\Core
 
         $processor->setMerchantBalanceLockForUpdate();
 
-        $processor->updateCredits();
+        $mode = $this->mode ?? 'live';
+
+        $response = $this->app->razorx->getTreatment($payment->merchant->getId(),
+                                                    BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE, $mode);
+
+        $processor->updateCredits($response === 'on');
 
         $processor->updateBalances();
 
-        $txn->setBalance(null);
+        $txn->setBalance(null, $response === 'on');
 
         $txn->setBalanceUpdated(true);
 

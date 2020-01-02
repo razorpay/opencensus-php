@@ -45,7 +45,10 @@ use RZP\Models\Payment\Refund\Speed as RefundSpeed;
  * @property Methods\Entity     $methods
  * @property BankAccount\Entity $bankAccount
  * @property Balance\Entity     $bankingBalance
+ * @property Balance\Entity     $sharedBankingBalance
  * @property Balance\Entity     $primaryBalance
+ * @property Balance\Entity     $reservePrimaryBalance
+ * @property Balance\Entity     $reserveBankingBalance
  * @property Base\Collection    $activeBankingAccounts
  * @property Balance\Entity     $commissionBalance
  */
@@ -711,6 +714,14 @@ class Entity extends Base\PublicEntity
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
+    public function isInsuranceCategory()
+    {
+        $insuranceCategories = Constants::INSURANCE_CATEGORIES;
+
+        return in_array($this->getAttribute(self::CATEGORY), $insuranceCategories);
+    }
+
+
     public function isFeatureEnabled(string $featureName): bool
     {
         $assignedFeatures = $this->getEnabledFeatures();
@@ -981,6 +992,18 @@ class Entity extends Base\PublicEntity
                     ->where(Balance\Entity::TYPE, Balance\Type::COMMISSION);
     }
 
+    public function reservePrimaryBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+            ->where(Balance\Entity::TYPE, Balance\Type::RESERVE_PRIMARY);
+    }
+    
+    public function reserveBankingBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+            ->where(Balance\Entity::TYPE, Balance\Type::RESERVE_BANKING);
+    }
+
     public function getBalanceByType(string $type)
     {
         switch ($type)
@@ -993,6 +1016,12 @@ class Entity extends Base\PublicEntity
 
             case Balance\Type::COMMISSION:
                 return $this->commissionBalance;
+
+            case Balance\Type::RESERVE_PRIMARY:
+                return $this->reservePrimaryBalance;
+
+            case Balance\Type::RESERVE_BANKING:
+                return $this->reserveBankingBalance;
 
             default:
                 throw new LogicException(
@@ -1137,6 +1166,11 @@ class Entity extends Base\PublicEntity
     public function setMaxPaymentAmount(int $maxAmount)
     {
         $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
+    }
+
+    public function merchantInheritanceMap()
+    {
+        return $this->hasOne('RZP\Models\Merchant\InheritanceMap\Entity');
     }
 
     public function setBrandColor($brandColor)
@@ -2135,6 +2169,16 @@ class Entity extends Base\PublicEntity
     public function isPhoneOptional()
     {
         return $this->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
+    }
+
+    public function isSaveVpaEnabled()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::SAVE_VPA);
+    }
+
+    public function shouldSaveVpa()
+    {
+        return (($this->isSaveVpaEnabled() === true) and ($this->methods->isUpiEnabled() === true));
     }
 
     public static function hascustomerTransactionHistoryEnabled($merchantId)

@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Settlement;
 use Mail;
 use Carbon\Carbon;
 use RZP\Models\Merchant;
+use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 
 use Razorpay\OAuth\Application;
@@ -729,6 +730,12 @@ class SettlementTest extends TestCase
 
         $this->assertEquals($settledAt1->getTimestamp(), $fta0['initiate_at']);
         $this->assertEquals($settledAt2->getTimestamp(), $fta1['initiate_at']);
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $bta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->validationSettlementDestination($setl['id'], Entity::FUND_TRANSFER_ATTEMPT, $bta['id']);
     }
 
     /**
@@ -1990,6 +1997,8 @@ class SettlementTest extends TestCase
         $this->assertTestResponse($bta, 'matchSettlementAttempt');
         $this->assertEquals($setl['id'], $bta['source']);
         $this->assertEquals($channel, $bta[Attempt\Entity::CHANNEL]);
+
+        $this->validationSettlementDestination($setl['id'], Entity::FUND_TRANSFER_ATTEMPT, $bta['id']);
     }
 
     protected function startTest($testDataToReplace = array())
@@ -2289,6 +2298,12 @@ class SettlementTest extends TestCase
         $this->assertNotNull($setlResponse[$channel]);
         $this->assertEquals(1, $setlResponse[$channel]['count']);
         $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $bta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->validationSettlementDestination($setl['id'], Entity::FUND_TRANSFER_ATTEMPT, $bta['id']);
     }
 
 
@@ -2363,5 +2378,24 @@ class SettlementTest extends TestCase
         $this->assertNotNull($setlResponse[$channel]);
         $this->assertEquals(1, $setlResponse[$channel]['count']);
         $this->assertEquals(2, $setlResponse[$channel]['txnCount']);
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $bta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->validationSettlementDestination($setl['id'], Entity::FUND_TRANSFER_ATTEMPT, $bta['id']);
+    }
+
+    protected function validationSettlementDestination(string $settlementId, string $destinationType, string $destinationId)
+    {
+        $destinationPrefix = ($destinationType === Entity::FUND_TRANSFER_ATTEMPT) ? 'fta_' : 'stf_';
+
+        $content = $this->getLastEntity('settlement_destination', true);
+
+        $this->assertEquals($settlementId, 'setl_' . $content['settlement_id']);
+
+        $this->assertEquals($destinationType, $content['destination_type']);
+
+        $this->assertEquals($destinationId, $destinationPrefix . $content['destination_id']);
     }
 }

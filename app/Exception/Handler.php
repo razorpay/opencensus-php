@@ -6,6 +6,7 @@ use App;
 use Response;
 use Exception;
 use ApiResponse;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
@@ -262,6 +263,13 @@ class Handler extends ExceptionHandler
 
         $this->traceException($exception, $level, $code);
 
+        $data = $exception->getData();
+
+        if (Payment\Gateway::isNachNbResponseFlow($data) === true)
+        {
+            return $this->recoverableNachNbErrorResponse($this->isDebug(), $exception);
+        }
+
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 
@@ -383,6 +391,18 @@ class Handler extends ExceptionHandler
 
         return ApiResponse::generateErrorResponse($error, $debug);
     }
+
+    protected function recoverableNachNbErrorResponse($debug, $exception = null)
+    {
+        $this->ifTestingThenRethrowException($exception);
+
+        $error = $exception->getError();
+
+        $data = $exception->getData();
+
+        return ApiResponse::generateNachNbErrorResponse($error, $data, $debug);
+    }
+
 
     protected function getExceptionData($exception)
     {

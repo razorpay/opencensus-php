@@ -241,7 +241,7 @@ class Core extends Base\Core
 
         $this->pushEventsForOCRVerification($merchant,
                                             $ocrDetails,
-                                            $document->getDocumentType(),
+                                            $document,
                                             $ocrMatchingPercentage,
                                             $promoterPanName);
     }
@@ -276,12 +276,13 @@ class Core extends Base\Core
         );
 
         $input = [
-            DetailConstant::SIGNED_URL => $signedUrl
+            DetailConstant::SIGNED_URL => $signedUrl,
+            Entity::DOCUMENT_TYPE      => $document->getDocumentType(),
         ];
 
         try
         {
-            $verifier = FactoryVerifier::getPoaVerifier($input);
+            $verifier = FactoryVerifier::getPoaVerifier($input, $this->merchant);
 
             return $verifier->verifyDetails();
         }
@@ -330,13 +331,14 @@ class Core extends Base\Core
 
     protected function pushEventsForOCRVerification(Merchant\Entity $merchant,
                                                     array $ocrDetails,
-                                                    $documentType,
+                                                    Entity $document,
                                                     $ocrMatchingPercentage = 0,
                                                     $promoterPanName = null)
     {
         $eventProperties = [
-            Entity::DOCUMENT_TYPE              => $documentType,
-            Constants::VERIFIED                => $ocrDetails[Constants::SUCCESS] ?? false,
+            Entity::DOCUMENT_TYPE              => $document->getDocumentType(),
+            Constants::API_CALL_SUCCESSFUL     => $ocrDetails[Constants::SUCCESS] ?? false,
+            Constants::VERIFIED                => ($document->getOcrVerify() === OcrVerificationStatus::VERIFIED),
             Constants::OCR_MATCHING_PERCENTAGE => $ocrMatchingPercentage,
             Constants::OCR_MATCHING_THRESHOLD  => OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD,
             Constants::OCR_NAME                => $ocrDetails[Constants::NAME] ?? null,

@@ -6,6 +6,7 @@ use Mail;
 use Redis;
 
 use Carbon\Carbon;
+use RZP\Constants\Entity;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
@@ -585,6 +586,12 @@ class AttemptReconcileTest extends TestCase
         Carbon::setTestNow($now);
 
         $this->reinitiateSettlementAndAssertSuccessForChannel(Channel::ICICI);
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $bta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->validationSettlementDestination($setl['id'], Entity::FUND_TRANSFER_ATTEMPT, $bta['id']);
     }
 
     /**

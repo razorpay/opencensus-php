@@ -498,14 +498,15 @@ class Core extends Base\Core
         }
 
         $input = [
-            DEConstants::PAN_NUMBER => $merchantDetails->getPromoterPan(),
+            DEConstants::PAN_NUMBER        => $merchantDetails->getPromoterPan(),
+            Document\Entity::DOCUMENT_TYPE => DEConstants::PROMOTER_PAN,
         ];
 
         $response = null;
 
         try
         {
-            $verifier = FactoryVerifier::getPoiVerifier($input);
+            $verifier = FactoryVerifier::getPoiVerifier($input, $merchant);
 
             $response = $verifier->verifyDetails();
 
@@ -679,7 +680,7 @@ class Core extends Base\Core
         $requiredDocuments = $this->getRequireActivationDocuments($merchantDetails);
 
         $params = [];
-        
+
         foreach ($requiredDocuments as $requiredDocument)
         {
             $params[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
