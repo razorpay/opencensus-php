@@ -14,8 +14,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Base\InfoCode;
+use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
-use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 
 class Service extends Base\Service
@@ -33,11 +33,6 @@ class Service extends Base\Service
      */
     const BATCH_SUMMARY_SKIP_GATEWAYS = [
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
-    ];
-
-    const CPS_PARAMS = [
-        Reconciliate::GATEWAY_TRANSACTION_ID,
-        Reconciliate::AUTH_CODE,
     ];
 
     /**
@@ -199,7 +194,7 @@ class Service extends Base\Service
 
         if (empty($response[$paymentId]) === false)
         {
-            foreach (self::CPS_PARAMS as $field)
+            foreach (Constants::CPS_PARAMS as $field)
             {
                 if (empty($misParams[$field]) === true)
                 {
