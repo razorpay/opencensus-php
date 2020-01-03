@@ -128,7 +128,7 @@ class PaymentLinkDefaultOption implements DefaultOption
                         array (
                             'issued_to'     => "1"
                         ),
-                    "enable_embedded_checkout" => "0"
+                    'enable_embedded_checkout' => "0"
                 )
         );
     }
