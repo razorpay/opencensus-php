@@ -2,6 +2,7 @@ import {
   OFFER_TYPE_MAP,
   PAYMENT_NETWORK_MAP,
 } from 'merchant/views/Offers/Entity';
+import { emiDurationString } from '../Entity';
 
 const TERMS_CONDITIONS_STRING =
   'I understand that the discount/cashback given in this offer will be borne by me and not razorpay';
@@ -121,6 +122,7 @@ const summarizePaymentMethodsData = (
     case 'paylater':
       return `Paylater`;
   }
+  return wordWithSpace(BANK_MAP[issuer]);
 };
 
 export default ({
@@ -140,10 +142,22 @@ export default ({
     max_cashback,
     creation_terms_accepted,
     type,
+    emi_durations,
   },
   currencySymbol,
   getFormOnChangeHandler,
 }) => {
+  const discountString = () => {
+    if (discount_type === 'flat') {
+      return `Flat discount of ${currencySymbol} ${flat_cashback} on a minimum purchase of ${currencySymbol} ${min_amount}`;
+    }
+    if (discount_type === 'percent') {
+      return `${percent_rate}% discount upto ${currencySymbol} ${max_cashback} on a minimum purchase of ${currencySymbol} ${min_amount}`;
+    }
+    if (discount_type === 'no_cost_emi') {
+      return `${emiDurationString(emi_durations)}.`;
+    }
+  };
   return (
     <div class="Subscription--New-review">
       <div class="Payments">
@@ -161,10 +175,8 @@ export default ({
               <strong>Discount Type:</strong>
             </p>
             {getDualColumnTable(
-              discount_type + ' discount',
-              discount_type == 'flat'
-                ? `Flat discount of ${currencySymbol} ${flat_cashback} on a minimum purchase of ${currencySymbol} ${min_amount}`
-                : `${percent_rate}% discount upto ${currencySymbol} ${max_cashback} on a minimum purchase of ${currencySymbol} ${min_amount}`
+              discount_type.split('_').join(' ') + ' discount',
+              discountString()
             )}
           </div>,
           <div>

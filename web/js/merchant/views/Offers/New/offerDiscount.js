@@ -7,6 +7,7 @@ export default ({
   discountType,
   getFormElementValidations,
   minAmount,
+  maxAmount,
   currency,
   getFormOnChangeHandler,
 }) => {
@@ -26,6 +27,7 @@ export default ({
             { label: 'Select Type', name: '' },
             { label: 'Flat', name: 'flat' },
             { label: 'Percentage', name: 'percent' },
+            { label: 'No Cost EMI', name: 'no_cost_emi' },
           ]}
           onChange={getFormOnChangeHandler('stateResetter')([
             'flat_cashback',
@@ -36,7 +38,7 @@ export default ({
         />
         {discountType && (
           <Input
-            label="Min Order amount"
+            label="Minimum Order amount"
             placeholder="0.00"
             name="min_amount"
             defaultValue={minAmount}
@@ -47,6 +49,21 @@ export default ({
             onChange={getFormOnChangeHandler()}
           />
         )}
+        {discountType &&
+          discountType === 'no_cost_emi' && (
+            <Input
+              label="Maximum Order amount"
+              placeholder="0.00"
+              name="max_order_amount"
+              defaultValue={maxAmount}
+              class="Input--half"
+              addonBefore={<span>{window.currencyList[currency].symbol}</span>}
+              validator={getFormElementValidations('max_order_amount')}
+              required={discountType === 'flat'}
+              onChange={getFormOnChangeHandler()}
+            />
+          )}
+
         {discountType &&
           discountType === 'flat' && (
             <Input

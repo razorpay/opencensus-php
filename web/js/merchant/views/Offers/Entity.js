@@ -26,6 +26,43 @@ export const OFFER_TYPE_MAP = {
   already_discounted: 'Already Discounted',
 };
 
+export const ISSUERS = {
+  HDFC: 'HDFC Bank',
+  HSBC: 'HSBC Bank',
+  ICIC: 'ICICI Bank',
+  INDB: 'INDUSIND Bank',
+  KKBK: 'Kotak Mahindra Bank',
+  RATN: 'Ratnakar Bank Bank',
+  SCBL: 'Standard Chartered Bank',
+  UTIB: 'Axis Bank',
+  YESB: 'Yes Bank',
+  CITI: 'Citi Bank',
+  SBIN: 'State Bank of India',
+  BARB: 'Bank of Baroda Bank',
+  paytm: 'Paytm',
+  payzapp: 'PAYZAPP',
+  mobikwik: 'MOBIKWIK',
+  payumoney: 'PayU Money',
+  olamoney: 'OLA Money',
+  airtelmoney: 'Airtel Money',
+  amazonpay: 'Amazon Pay',
+  freecharge: 'Freecharge',
+  jiomoney: 'JIO Money',
+  sbibuddy: 'SBI buddy',
+  openwallet: 'OPEN WALLET',
+  mpesa: 'M PESA',
+  phonepe: 'Phone Pe',
+  paypal: 'Paypal',
+};
+
+export function emiDurationString(durations) {
+  let lastDurationString = ' months';
+  if (durations.length > 1) {
+    lastDurationString = ` and ${durations.pop()}${lastDurationString}`;
+  }
+  return durations.join(', ') + lastDurationString;
+}
+
 const OfferDetails = props => {
   let { user, offer, isLoading, statusMsg } = props;
 
@@ -37,33 +74,15 @@ const OfferDetails = props => {
       <Amount value={offer.flat_cashback} cureency={'INR'} />
     );
 
-  const ISSUERS = {
-    HDFC: 'HDFC Bank',
-    HSBC: 'HSBC Bank',
-    ICIC: 'ICICI Bank',
-    INDB: 'INDUSIND Bank',
-    KKBK: 'Kotak Mahindra Bank',
-    RATN: 'Ratnakar Bank Bank',
-    SCBL: 'Standard Chartered Bank',
-    UTIB: 'Axis Bank',
-    YESB: 'Yes Bank',
-    CITI: 'Citi Bank',
-    SBIN: 'State Bank of India',
-    BARB: 'Bank of Baroda Bank',
-    paytm: 'Paytm',
-    payzapp: 'PAYZAPP',
-    mobikwik: 'MOBIKWIK',
-    payumoney: 'PayU Money',
-    olamoney: 'OLA Money',
-    airtelmoney: 'Airtel Money',
-    amazonpay: 'Amazon Pay',
-    freecharge: 'Freecharge',
-    jiomoney: 'JIO Money',
-    sbibuddy: 'SBI buddy',
-    openwallet: 'OPEN WALLET',
-    mpesa: 'M PESA',
-    phonepe: 'Phone Pe',
-    paypal: 'Paypal',
+  const renderEmiSubventionFields = () => {
+    if (offer.emi_subvention === true) {
+      return (
+        <EntityDetailRow
+          label="Emi Durations"
+          value={emiDurationString(offer.emi_durations)}
+        />
+      );
+    }
   };
 
   const renderPaymentDetails = () => {
@@ -99,6 +118,7 @@ const OfferDetails = props => {
           label="Offer Type"
           value={OFFER_TYPE_MAP[offer.type] || '--'}
         />
+        {renderEmiSubventionFields()}
       </React.Fragment>
     );
   };
