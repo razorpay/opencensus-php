@@ -1152,7 +1152,7 @@ class Core extends Base\Core
         $this->mutex = $app['api.mutex'];
 
         $this->mutex->acquireAndRelease(
-            'reversal_payout_id' . $payout->getId(),
+            'reversal_payout_id_' . $payout->getId(),
             function () use ($payout, $reverseReason)
             {
                 if ($payout->isStatusReversed() === true)
