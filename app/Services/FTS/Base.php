@@ -76,7 +76,7 @@ class Base
         self::TRANSFER_RETRY,
     ];
 
-    const REQUEST_TIMEOUT = 30;
+    const REQUEST_TIMEOUT = 60;
 
     /**
      * FTS Base constructor.
