@@ -127,7 +127,8 @@ class PaymentLinkDefaultOption implements DefaultOption
                     'show_preferences' =>
                         array (
                             'issued_to'     => "1"
-                        )
+                        ),
+                    "enable_embedded_checkout" => "0"
                 )
         );
     }

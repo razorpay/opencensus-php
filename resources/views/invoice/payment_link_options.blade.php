@@ -10,7 +10,7 @@ $invoice_status                 = $invoice_data['status'];
 $customer_details               = $invoice_data['customer_details'];
 $checkout_options               = $data['options']['checkout'];
 $hostedpage_options             = $data['options']['hosted_page'];
-$isHostedCheckout               = true;
+$isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'];
 ?>
 
     <!doctype html>
@@ -740,7 +740,8 @@ $isHostedCheckout               = true;
             var invoiceObj = data.invoice;
             var merchant = data.merchant;
             var $checkout_options = data.options.checkout;
-            var $isHostedCheckout = true;
+            var $hostedpage_options = data.options.hosted_page;
+            var $isHostedCheckout = !!Number($hostedpage_options.enable_embedded_checkout);
 
             // : base options
             var options = {
