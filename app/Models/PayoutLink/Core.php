@@ -39,6 +39,8 @@ class Core extends Base\Core
     const MESSAGE                 = 'message';
     const SUCCESS                 = 'success';
     const MUTEX_TIMEOUT           = 60;
+    const MERCHANT_NAME           = 'merchant_name';
+    const PAYOUT_PURPOSE          = 'payout_purpose';
 
     protected $elfin;
 
@@ -401,7 +403,7 @@ class Core extends Base\Core
             'merchant_logo_url'       => $this->merchant->getLogoUrl(),
             'payout_link_description' => $payoutLink->getDescription(),
             'primary_color'           => $this->merchant->getBrandColor(),
-            'merchant_name'           => $this->merchant->getName(),
+            'merchant_name'           => $this->merchant->getDisplayName(),
             'allow_upi'               => $isUpiEnabled,
             'banking_url'             => $this->config['applications.banking_service_url'],
             'is_production'           => $isProduction
@@ -710,8 +712,9 @@ class Core extends Base\Core
     {
         $payload = [
             self::PARAMS   => [
-                self::CUSTOMER_NAME => $payoutLink->getContactName(),
-                Entity::OTP         => $otp
+                self::MERCHANT_NAME  => $this->merchant->getDisplayName(),
+                Entity::OTP          => $otp,
+                self::PAYOUT_PURPOSE => $payoutLink->getPurpose()
             ],
             self::TEMPLATE => self::SMS_TEMPLATE,
             self::SOURCE   => self::API_PAYOUT_LINK_SRC_STR,
