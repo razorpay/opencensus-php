@@ -403,7 +403,7 @@ class Core extends Base\Core
             'merchant_logo_url'       => $this->merchant->getLogoUrl(),
             'payout_link_description' => $payoutLink->getDescription(),
             'primary_color'           => $this->merchant->getBrandColor(),
-            'merchant_name'           => $this->merchant->getDisplayName(),
+            'merchant_name'           => $this->getDisplayName(),
             'allow_upi'               => $isUpiEnabled,
             'banking_url'             => $this->config['applications.banking_service_url'],
             'is_production'           => $isProduction
@@ -664,7 +664,7 @@ class Core extends Base\Core
         {
             $customerEmailOtp = new CustomerOtp($email,
                                                 $otp,
-                                                $this->merchant->getDisplayName(),
+                                                $this->getDisplayName(),
                                                 $payoutLink->getPurpose(),
                                                 $this->merchant->getLogoUrl(),
                                                 $this->merchant->getBrandColor()
@@ -712,7 +712,7 @@ class Core extends Base\Core
     {
         $payload = [
             self::PARAMS   => [
-                self::MERCHANT_NAME  => $this->merchant->getDisplayName(),
+                self::MERCHANT_NAME  => $this->getDisplayName(),
                 Entity::OTP          => $otp,
                 self::PAYOUT_PURPOSE => $payoutLink->getPurpose()
             ],
@@ -796,5 +796,20 @@ class Core extends Base\Core
         }
 
         $payoutLink->setShortUrl($shortUrl);
+    }
+
+    /**
+     * @return string
+     */
+    protected function getDisplayName(): string
+    {
+        $displayName = $this->merchant->getDisplayName();
+
+        if(empty($displayName) === true)
+        {
+            return $this->merchant->getName();
+        }
+
+        return $displayName;
     }
 }
