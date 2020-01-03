@@ -823,7 +823,7 @@ return [
             'url'     => '',
             'content' => [
                 'token'           => '1234',
-                'fund_account_id' => '100000000003fa'
+                'fund_account_id' => 'fa_100000000003fa'
             ]
         ],
         'response'  => [
