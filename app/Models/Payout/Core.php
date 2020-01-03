@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use App;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -1146,22 +1147,45 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->repo->transaction(
-            function() use ($payout, $reverseReason) {
-                $reversal = (new Reversal\Core)->reverseForPayout($payout);
+        $app = App::getFacadeRoot();
 
-                $payout->setFailureReason($reverseReason);
+        $this->mutex = $app['api.mutex'];
 
-                // To be set after failure_reason for metrics purpose
-                $payout->setStatus(Status::REVERSED);
-
-                $this->repo->saveOrFail($payout);
-
-                if ($payout->isBalanceAccountTypeDirect() === true)
+        $this->mutex->acquireAndRelease(
+            'reversal_payout_id_' . $payout->getId(),
+            function () use ($payout, $reverseReason)
+            {
+                if ($payout->isStatusReversed() === true)
                 {
-                    $this->handleReversalTransactionForDirectBanking($reversal);
+                    $this->trace->info(TraceCode::PAYOUT_ALREADY_REVERSED,
+                        [
+                            'payout_id'      => $payout->getId(),
+                            'status'         => $payout->getStatus(),
+                            'reverse_reason' => $reverseReason,
+                        ]);
+
+                    return;
                 }
-            });
+                $this->repo->transaction(
+                    function() use ($payout, $reverseReason) {
+                        $reversal = (new Reversal\Core)->reverseForPayout($payout);
+
+                        $payout->setFailureReason($reverseReason);
+
+                        // To be set after failure_reason for metrics purpose
+                        $payout->setStatus(Status::REVERSED);
+
+                        $this->repo->saveOrFail($payout);
+
+                        if ($payout->isBalanceAccountTypeDirect() === true)
+                        {
+                            $this->handleReversalTransactionForDirectBanking($reversal);
+                        }
+                    });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
     }
 
     protected function getPublicErrorMessage(
