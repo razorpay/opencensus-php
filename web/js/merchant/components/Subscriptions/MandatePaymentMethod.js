@@ -40,7 +40,7 @@ export default function MandatePaymentMethod({ mandate }) {
   }
 
   if (method === 'card') {
-    return !!card ? (
+    return card ? (
       <Definition>
         <strong>Card</strong>
         <>

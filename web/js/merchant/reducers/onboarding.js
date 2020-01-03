@@ -1,6 +1,5 @@
-import ajax from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set } from 'common/utils/immutable';
-import { merchantFetch } from 'merchant/utils/ajax';
 
 const FEATURE_ONBOARDING_SAVE = 'FEATURE_ONBOARDING_SAVE';
 const QUICK_GUIDE = 'QUICK_GUIDE';

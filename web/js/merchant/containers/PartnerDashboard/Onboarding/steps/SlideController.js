@@ -10,7 +10,7 @@ const SlideController = ({
   nextBtnLabel,
 }) => {
   const { next, prev, active } = sliderProps;
-  let nextLabel = Boolean(nextBtnLabel) ? nextBtnLabel : 'Next';
+  let nextLabel = nextBtnLabel ? nextBtnLabel : 'Next';
   return (
     <div className="slide-controller-wrapper">
       <div className="slide-controller">

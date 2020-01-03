@@ -157,3 +157,13 @@ export function trackPageSave(type, trackData) {
     eventLabel: trackData.join(' | '),
   });
 }
+
+/*
+* Track the click on create embed button
+* */
+export function trackClickOnCreateEmbedButton(eventLabel) {
+  track({
+    eventAction: 'Click - Create Embed Button',
+    eventLabel, // eventLabel would be '' / 'new'
+  });
+}

@@ -7,8 +7,7 @@ import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
-import { titleCase } from 'common/utils/rzp-utils';
-import { daysFromToday } from 'common/utils/rzp-utils';
+import { titleCase, daysFromToday } from 'common/utils/rzp-utils';
 
 export default props => {
   const { dispute, isLoading, error } = props;

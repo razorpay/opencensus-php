@@ -52,7 +52,7 @@ export default function MerchantNavLinks(props) {
         icon="i i-payment-pages text-warm temp-icon-style"
         to={routes.paymentpages}
         additionalCondition={user => user.isAllowedView('payment_pages')}
-        customBadge={user.isPPMLIEnabled ? 'v2.0' : null}
+        customBadge="v2.0"
       />
       <MainNavLink
         label="Route"
@@ -78,6 +78,13 @@ export default function MerchantNavLinks(props) {
         icon="i i-people text-warning"
         to="/customers"
         additionalCondition={user => user.isAllowedView('customers')}
+      />
+
+      <MainNavLink
+        label="Offers"
+        icon="i i-offer text-success"
+        to="/offers"
+        additionalCondition={user => user.isAllowedView('settlements')}
       />
 
       <div class="divider" />
