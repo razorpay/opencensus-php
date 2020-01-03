@@ -227,6 +227,8 @@ export default class SettlementsListContainer extends ListContainer {
     const nextSettlement = this.props.settlement_amount.data
       .next_settlement_time;
 
+    const { no_settlement } = this.props.settlement_amount.data;
+
     const { settlement_ux_revamp } = this.props.config;
 
     return (
@@ -328,7 +330,24 @@ export default class SettlementsListContainer extends ListContainer {
                         </span>
                         <br />
                         {settlement_ux_revamp &&
-                          nextSettlement && (
+                          no_settlement && (
+                            <span style={{ fontSize: '13px' }}>
+                              {no_settlement.caption}
+                              {no_settlement.reason && (
+                                <>
+                                  <i class="i i-info-circle" />
+                                  <Popover theme="dark" align="left">
+                                    <PopoverBody>
+                                      <div>{no_settlement.reason}</div>
+                                    </PopoverBody>
+                                  </Popover>
+                                </>
+                              )}
+                            </span>
+                          )}
+                        {settlement_ux_revamp &&
+                          nextSettlement &&
+                          !no_settlement && (
                             <span style={{ fontSize: '13px' }}>
                               <strong>
                                 <Amount

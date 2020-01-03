@@ -48,6 +48,8 @@ export default class TransactionsContainer extends Component {
     const nextSettlement = !this.props.settlement_amount.data
       .next_settlement_time;
 
+    const { no_settlement } = this.props.settlement_amount.data;
+
     const { settlement_ux_revamp } = this.props.config;
 
     return (
@@ -94,7 +96,24 @@ export default class TransactionsContainer extends Component {
               <ScheduledBanner fromWhere="Transactions" />
             </ShowWhen>
           )}
-          {settlement_ux_revamp && !nextSettlement ? (
+          {settlement_ux_revamp && no_settlement ? (
+            <div class="text-right" style={{ width: '100%' }}>
+              {no_settlement.caption}
+              {no_settlement.reason && (
+                <React.Fragment>
+                  <div style={{ display: 'inline' }}>
+                    <i class="i i-info-circle" />
+                    <Popover theme="dark" align="left">
+                      <PopoverBody>
+                        <div>{no_settlement.reason}</div>
+                      </PopoverBody>
+                    </Popover>
+                  </div>
+                </React.Fragment>
+              )}
+            </div>
+          ) : null}
+          {settlement_ux_revamp && !no_settlement && !nextSettlement ? (
             <div class="text-right" style={{ width: '100%' }}>
               <strong>
                 <Amount
