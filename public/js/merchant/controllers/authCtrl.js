@@ -85,6 +85,7 @@ app
       $scope.forms = {};
 
       $scope.isLoggedIn = false;
+      $scope.hideCompanyName = false;
 
       // Less restrictive url regex
       $scope.websiteRegex = /^((http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))?$/gi;
@@ -395,6 +396,8 @@ app
             user.identity(true).then(function(data) {
               var signinSuccessCb = authCallbacks.getSigninCallback();
 
+              setExperimentsFlags(data.experiments);
+
               if (signinSuccessCb) {
                 signinSuccessCb(data);
               }
@@ -628,16 +631,49 @@ app
         });
       };
 
+      /**
+       * Fire pixels for company-website AB test
+       */
+      function trackCompanyAB(isSignupCompleted = false) {
+        if (!window.ga || !$scope.signup.merchantData.business_type) return;
+        const regOrUnreg =
+            $scope.signup.merchantData.business_type == 11
+              ? 'Unregistered'
+              : 'Registered',
+          gaLabel = isSignupCompleted
+            ? 'Signup Successful'
+            : 'Last screen displayed';
+        gaAction = `${regOrUnreg} and ${
+          $scope.showCompanyName ? '' : 'NOT '
+        }asked for company name`;
+        window.ga &&
+          window.ga('send', 'event', 'Company AB', gaAction, gaLabel);
+      }
+
       function goToVerification() {
         //reset coupons
         $scope.removeCoupon();
 
         if (!$scope.rightLayout) {
           $scope.goToSignupStep(2);
+          trackCompanyAB(true); // fire after all signup steps completed
         } else {
           $scope.goToLoginStep(3);
         }
       }
+
+      /**
+       * Set signup razorX flags for AB tests
+       */
+      var setExperimentsFlags = function(experiments) {
+        if (!experiments) {
+          return;
+        }
+        const hideCompanyAB = experiments['hide_company_name'];
+        if (hideCompanyAB && hideCompanyAB.result) {
+          $scope.showCompanyName = hideCompanyAB.result === 'on' ? false : true;
+        }
+      };
 
       var trackDrip = function(action) {
         if (!action) return;
@@ -977,6 +1013,7 @@ app
             $scope.login.currentStep = 1;
           } else {
             user.identity().then(function(userDetails) {
+              setExperimentsFlags(userDetails.experiments);
               // if pre sign up pending
               $scope.isLoggedIn = true;
               $scope.login.data.email = userDetails.email;
@@ -1075,6 +1112,8 @@ app
               .identity(true)
               .then(function(userDetails) {
                 var signinSuccessCb = authCallbacks.getSigninCallback();
+
+                setExperimentsFlags(userDetails.experiments); // set razorX experiment flags
 
                 if (signinSuccessCb) {
                   signinSuccessCb(userDetails);
@@ -1565,6 +1604,10 @@ app
             $scope.onGotCouponCodeClick();
           }
         }
+      });
+
+      $scope.$watch('signup.merchantData.business_type', function() {
+        trackCompanyAB(false);
       });
 
       // Updating contact properties on hubspot
