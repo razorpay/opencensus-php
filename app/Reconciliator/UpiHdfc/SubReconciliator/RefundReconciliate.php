@@ -205,7 +205,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
 
             $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
+                TraceCode::RECON_MISMATCH,
                 [
                     'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',

@@ -129,15 +129,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
 
             $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
+                TraceCode::RECON_MISMATCH,
                 [
-                    'message'           => 'Npci Reference id is not same as in recon',
-                    'info_code'         => $infoCode,
-                    'payment_id'        => $this->payment->getId(),
-                    'payment_status'    => $this->payment->getStatus(),
-                    'api_reference1'    => $npciRefId,
-                    'recon_reference1'  => $referenceNumber,
-                    'gateway'           => $this->gateway
+                    'message'                   => 'Npci Reference id is not same as in recon',
+                    'info_code'                 => $infoCode,
+                    'payment_id'                => $this->payment->getId(),
+                    'payment_status'            => $this->payment->getStatus(),
+                    'db_reference_number'       => $npciRefId,
+                    'recon_reference_number'    => $referenceNumber,
+                    'gateway'                   => $this->gateway
                 ]);
 
             if ($this->payment->hasBeenAuthorized())
