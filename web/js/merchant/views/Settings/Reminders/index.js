@@ -8,6 +8,9 @@ import {
 
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
+import HeaderAction from 'common/ui/HeaderAction';
+
+import DocsLink from 'merchant/components/DocsLink';
 
 import PaymentLinksSettings from './PaymentLinksSettings';
 
@@ -57,6 +60,12 @@ export default class extends React.Component {
 
     return (
       <div class="content-wrapper content-sm" id="settings-content">
+        <HeaderAction>
+          <div class="btn-toolbar pull-right">
+            <DocsLink url="https://razorpay.com/docs/payment-links/reminders-payment-links/" />
+          </div>
+        </HeaderAction>
+
         {this.state.errors ? (
           <Alert type="error" message={this.state.errors} showDismiss={false} />
         ) : (

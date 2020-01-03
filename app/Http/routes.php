@@ -45,10 +45,11 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/extension/user/logout', 'UserController@getExtensionLogout')
         ->name('extension_user_logout')
         ->middleware(['jwt']);
-    
+
     // Org
+    Route::get('/org', 'AdminController@getOrg');
+
     Route::group(['prefix' => 'admin'], function () {
-        Route::get('/org', 'AdminController@getOrg');
         Route::post('/signin', 'AdminController@postSignin');
         Route::get('/', 'AdminController@getIndex');
     });
@@ -100,7 +101,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all'); // ePOS
         Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoice_create'); // ePOS
 
-        Route::get('/keys/csv', 'MerchantController@getCsv');
+        Route::post('/keys/csv', 'MerchantController@getCsv');
         Route::get('/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
         Route::get('/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
         Route::get('/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');

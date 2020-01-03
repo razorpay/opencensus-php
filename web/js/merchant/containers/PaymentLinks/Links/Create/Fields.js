@@ -9,15 +9,13 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 
-import { trackHelpClick } from '../ga';
+import { trackHelpClick, trackSelectCurrency } from '../ga';
 
 import {
   MIN_AMOUNT_TEXT,
   PopoverBodyText,
   validateMinAmount,
 } from '../../Edit/EditMinimumAmount';
-
-import { trackSelectCurrency } from '../ga';
 
 const CustomInput = props => {
   return (
@@ -130,8 +128,9 @@ export default [
   ],
   {
     name: 'description',
-    label: 'Payment For',
-    placeholder: 'Payment Description',
+    label: form => getPaymentLinkFormLabel('description', form.props.user),
+    placeholder: form =>
+      getPaymentLinkFormPlaceholder('description', form.props.user),
     required: true,
     description: 'This will be visible to the customer',
     _cmp: Input.Textarea,
@@ -194,8 +193,15 @@ export default [
     ],
   },
   {
+    name: 'customer_name',
+    type: 'text',
+    placeholder: 'Customer Name',
+    label: 'Customer Name',
+    _when: form => form.props.user.isPaymentLinkCustomerNameFieldEnabled,
+  },
+  {
     name: 'receipt',
-    label: 'Receipt No.',
+    label: form => getPaymentLinkFormLabel('receipt', form.props.user),
     validator: maxLength(40),
     size: 'half_big',
   },
@@ -366,4 +372,12 @@ export function getCustomNotesOptions() {
     type,
     options: [{ label: 'Select A Value', value: '' }, ...options],
   };
+}
+
+function getPaymentLinkFormLabel(fieldName, user) {
+  return user.getPaymentLinkCustomizedFormFields[fieldName].label;
+}
+
+function getPaymentLinkFormPlaceholder(fieldName, user) {
+  return user.getPaymentLinkCustomizedFormFields[fieldName].placeholder;
 }

@@ -7,7 +7,7 @@ export default function NewSubscriptionLinkLinkDetails({
   internals,
   ...props
 }) {
-  const dateInMoment = !!fields.expire_by
+  const dateInMoment = fields.expire_by
     ? moment(fields.expire_by, 'X')
     : undefined;
 
@@ -63,7 +63,6 @@ export default function NewSubscriptionLinkLinkDetails({
             size="half"
             addonAfter={<i class="i i-date-range" />}
             placement="topLeft"
-            disabled={false}
             name="expire_by"
             onChange={props.onDateChange('expire_by')}
             disabled={internals._isNonExpiringLink}
@@ -73,7 +72,6 @@ export default function NewSubscriptionLinkLinkDetails({
 
           {!!fields.expire_by && (
             <Input.TimePicker
-              name="startAtTime"
               placeholder="HH:MM A"
               addonAfter={<i class="i i-time" />}
               name="expire_by_time"

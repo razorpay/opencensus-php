@@ -397,25 +397,28 @@ export default class User {
     return this.getExpStatus('reminders');
   }
 
+  get getPaymentLinkCustomizedFormFields() {
+    return window.pl_customized_form_fields;
+  }
+
   get getCurrencyList() {
     return window.currencyList;
   }
 
-  get toShowExtraFieldsInPP() {
-    return this.getExpStatus('show_extra_fields_in_pp');
+  get plDefaultExpiryTime() {
+    return window.pl_expiry_in_hrs;
   }
 
   get isEnhancedEPOSEnabled() {
     return this.getExpStatus('sellerapp_plus');
   }
 
-  // Payment pages multiple line items
-  get isPPMLIEnabled() {
-    return this.getExpStatus('paymentpages_mli');
-  }
-
   get isMobileHotjarSurveyEnabled() {
     return this.getExpStatus('mobile_hotjar_survey');
+  }
+
+  get isNPSSurveyBannerEnabled() {
+    return this.getExpStatus('nps_survey_banner');
   }
 
   get isShowCommissionBalanceEnabled() {
@@ -431,6 +434,10 @@ export default class User {
     return this.getExpStatus('hide_registration_link_first_amount');
   }
 
+  get paymentLinkCreationFormExtraFields() {
+    return window.pl_extra_fields;
+  }
+
   get isAllowedTeamManagement() {
     return this.isMerchantRestricted
       ? this.isAllowedView('team')
@@ -441,8 +448,20 @@ export default class User {
     return window.custom_notes && this.getExpStatus('custom_notes');
   }
 
+  get isPaymentLinkCustomerNameFieldEnabled() {
+    return window.is_pl_customer_name_field_enabled;
+  }
+
   get isPaymentLinkBatchEnabledForSellerAppRole() {
     return this.getExpStatus('sellerapp_PL_batch_upload');
+  }
+
+  get isVPAFeatureEnabled() {
+    return this.getExpStatus('vpa_enabled');
+  }
+
+  get isNewPPSuccessModalEnabled() {
+    return this.getExpStatus('new_pp_success_modal');
   }
 
   get isSellerAppRole() {

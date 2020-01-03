@@ -10,6 +10,7 @@ import PowerDropdown from './PowerDropdown';
 import EnumList from './EnumList';
 import CurrencySelect from './CurrencySelect';
 import TextareaAutoResize from './TextareaAutoResize';
+import CurrencyInput from './CurrencyInput';
 
 export function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
@@ -636,18 +637,21 @@ Field.EditablePairsList = EditablePairsList;
 Field.PowerDropdown = PowerDropdown;
 Field.EnumList = EnumList;
 
-const ToCalendar = _ => (
+const ToCalendar = React.forwardRef((props, ref) => (
   <CalendarPicker
     class="disable-past-year"
     postSelectionValue={val => val.endOf('day')}
-    {..._}
+    {...props}
+    ref={ref}
   />
-);
+));
 
 Field.CalendarPicker = CalendarPicker;
 Field.ToCalendar = ToCalendar;
 Field.TimePicker = TimePicker;
 Field.DateTime = DateTime;
 Field.CurrencySelect = CurrencySelect;
+Field.CurrencyInput = CurrencyInput;
+Field.DateTime = DateTime;
 
 Field.TextareaAutoResize = TextareaAutoResize;

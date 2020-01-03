@@ -1,7 +1,6 @@
-import ajax from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set } from 'common/utils/immutable';
 import poll from 'common/utils/poll/longPoll';
-import { merchantFetch } from 'merchant/utils/ajax';
 
 const GENERATE_REPORT = 'GENERATE_REPORT';
 
@@ -124,7 +123,7 @@ export const generateReportV2 = (
           return (
             timeElapsed > timeout ||
             resp.error ||
-            resp.data.status !== 'created'
+            ['processed', 'failed'].includes(resp.data.status)
           );
         },
         getNextCallWaitime: () => {
@@ -164,7 +163,7 @@ export const generateReportV2 = (
 
           const fileId = resp.data.file_id;
 
-          if (!fileId) {
+          if (resp.data.status === 'processed' && !fileId) {
             onProgress && onProgress(resp.data);
             return {
               error: 'No data found for the given dates',
@@ -185,7 +184,13 @@ export const generateReportV2 = (
         })
         .catch(handleError);
     })
-    .catch(handleError);
+    .catch(response => {
+      if (response.errors) {
+        const error = response.errors[0];
+        return { error };
+      }
+      return downloadReportErrorMsg;
+    });
 };
 
 export const emailReportV2 = (

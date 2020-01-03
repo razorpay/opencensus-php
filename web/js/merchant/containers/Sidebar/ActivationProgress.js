@@ -32,6 +32,8 @@ export default RTracking((state, props, args) => {
         trackingIntent = 'dash.accept_payments';
       }
     }
+  } else if (user.isAccepted) {
+    actionCopy = 'Settlements Enabled';
   } else if (user.isSubmitted) {
     actionCopy = 'Form submitted';
   } else if (user.activation_progress == 100) {

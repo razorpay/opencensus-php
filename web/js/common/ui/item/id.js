@@ -73,7 +73,7 @@ export const credit = makeIdLink('credits');
 
 export const batchLink = item => {
   const url = batchBaseUrls[item.type];
-  return !!url ? (
+  return url ? (
     <Link to={`/${url}/batchuploads/${item.id}`}>{idItem(item.id)}</Link>
   ) : (
     idItem(item.id)

@@ -2,7 +2,11 @@ import Input from 'common/new-ui/Input';
 import { states } from 'merchant/helpers/data';
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
-import { isValidGSTIN, getDetailsForIFSC } from 'common/utils/rzp-utils';
+import {
+  isValidGSTIN,
+  getDetailsForIFSC,
+  isPresent,
+} from 'common/utils/rzp-utils';
 import {
   validateCIN,
   validateIFSC,
@@ -26,6 +30,8 @@ import {
   checkValidityFromAPI,
   getPANDescription,
   getBeneficiaryInfo,
+  getBillingLabelInfo,
+  getAccountNumberInfo,
   hasSelectedBlacklistedCategory,
 } from './ActivationUtils';
 
@@ -38,11 +44,11 @@ const LLP = 6; // 'LLP'
 const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
-const NOT_YET_REGISTERED = 11; // 'Unregistered Businesses
+const NOT_REGISTERED = 11; // 'Unregistered Businesses
 const ADDRESS_PROOF_TYPES = {
   aadhar: {
     value: 'aadhar',
-    label: 'Aadhar',
+    label: 'Aadhaar',
     front: true,
     back: true,
     frontView: 'Front',
@@ -121,7 +127,7 @@ const RegisteredBusinessTypeOptions = [
 ];
 
 const UnregisteredBusinessTypeOptions = [
-  { label: 'Not Yet Registered', name: NOT_YET_REGISTERED },
+  { label: 'Not Registered', name: NOT_REGISTERED },
 ];
 
 const DefaultBusinessTypeOptions = [
@@ -174,6 +180,7 @@ const businessModel = [
       label: 'Sub Category',
       name: 'business_subcategory',
       _cmp: Input.Select,
+      _autoRenderImpure: true,
       options: [],
       _optionsFn: function(activation, categories) {
         // For setting options dynamically on basis some condition or other field selection
@@ -239,8 +246,7 @@ const businessModel = [
   {
     label: 'Billing Label',
     name: 'business_dba',
-    info:
-      'The brand name that your customers are familiar with. It should either be similar to your registered business name or website name.',
+    info: getBillingLabelInfo,
   },
   [
     {
@@ -264,6 +270,9 @@ const businessModel = [
           ),
         },
       ],
+      _disabledWhen: activation =>
+        isL1Completed(activation) &&
+        isPresent(activation.props.data.business_website),
     },
     {
       label: '',
@@ -314,8 +323,11 @@ const businessModel = [
           </div>
         </React.Fragment>
       ),
-      info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
+      info: 'Payments will be enabled for the website/App after KYC approval.',
       _when: activation => activation.state.has_url === '0',
+      _disabledWhen: activation =>
+        isL1Completed(activation) &&
+        isPresent(activation.props.data.business_website),
     },
   ],
 ];
@@ -385,7 +397,6 @@ const businessDetails = [
       },
       getLabel: activation =>
         isUnregisteredBusiness(activation) ? 'PAN' : 'Authorised Signatory PAN',
-      className: 'Input--vTop Input--capitalize',
       _disabledWhen: isActivatedUnreg,
       checkValidityFromAPI: activation => {
         const errMsg =
@@ -482,13 +493,13 @@ const bankAccountFields = [
       return getDetailsForIFSC(e.target.value);
     },
     validator: validateIFSC,
+    linkedfields: ['cancelled_cheque'],
   },
   [
     {
       name: 'bank_account_number',
       label: 'Account Number',
-      info:
-        'Should be a current bank account of the company to which your payments will be settled.',
+      info: getAccountNumberInfo,
       autoComplete: 'new-password',
       type: 'password',
       onPaste: function(e) {
@@ -509,6 +520,7 @@ const bankAccountFields = [
           document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
         }
       },
+      linkedfields: ['cancelled_cheque'],
     },
     {
       _name: 'account_no',
@@ -555,6 +567,7 @@ const bankAccountFields = [
       isUnregisteredBusiness(activation)
         ? 'We will deposit a small amount of money in your account to verify the account.'
         : '',
+    linkedfields: ['cancelled_cheque'],
   },
 ];
 
@@ -691,6 +704,7 @@ const uploadFields = [
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
     isDeletable: true,
+    //linkedfields: ['address_proof'],
   },
   {
     label: 'Last Page',
@@ -707,9 +721,26 @@ const uploadFields = [
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
     isDeletable: true,
+    //linkedfields: ['address_proof'],
   },
 ];
-
+export const ndcFields = [
+  {
+    label: 'Cancelled Cheque Copy',
+    name: 'cancelled_cheque',
+    uploadAs: 'cancelled_cheque',
+    _type: 'address_proof_upload_doc',
+    _autoRenderImpure: true,
+    description: 'Please upload a copy of cancelled cheque.',
+    _cmp: Input.File,
+    className: 'AddressProof-upload',
+    destinationUrl: 'merchant/documents/upload',
+    _when: activation => {
+      return activation.isNeedsClarificationMode() && activation.isOnKYCTab(); //Some improvements are possible here regarding placement of this field
+    },
+    isDeletable: false,
+  },
+];
 // Tabs name
 export const mainFormTabs = [
   'Contact Info',
