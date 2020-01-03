@@ -1146,22 +1146,34 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->repo->transaction(
-            function() use ($payout, $reverseReason) {
-                $reversal = (new Reversal\Core)->reverseForPayout($payout);
+        $app = App::getFacadeRoot();
 
-                $payout->setFailureReason($reverseReason);
+        $this->mutex = $app['api.mutex'];
 
-                // To be set after failure_reason for metrics purpose
-                $payout->setStatus(Status::REVERSED);
+        $this->mutex->acquireAndRelease(
+            $payout->getId(),
+            function () use ($payout, $reverseReason)
+            {
+                $this->repo->transaction(
+                    function() use ($payout, $reverseReason) {
+                        $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
-                $this->repo->saveOrFail($payout);
+                        $payout->setFailureReason($reverseReason);
 
-                if ($payout->isBalanceAccountTypeDirect() === true)
-                {
-                    $this->handleReversalTransactionForDirectBanking($reversal);
-                }
-            });
+                        // To be set after failure_reason for metrics purpose
+                        $payout->setStatus(Status::REVERSED);
+
+                        $this->repo->saveOrFail($payout);
+
+                        if ($payout->isBalanceAccountTypeDirect() === true)
+                        {
+                            $this->handleReversalTransactionForDirectBanking($reversal);
+                        }
+                    });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
     }
 
     protected function getPublicErrorMessage(
