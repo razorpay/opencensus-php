@@ -1902,6 +1902,56 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    // Tests Hitachi international payment recon
+    public function testHitachiReconNonInrPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment = $this->getNewPaymentEntity(false,true);
+
+        // Making the payment entity's amount as half (suppose USD to INR rate was 50%)
+        $usdAmount = $payment['amount']/2;
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        // Make it international, convert currency as false
+        $this->fixtures->edit(
+            'payment',
+            $gatewayPayment['payment_id'],
+            [
+                'international'     => true,
+                'convert_currency'  => false,
+                'currency'          => 'USD',
+                'amount'            => $usdAmount,
+            ]);
+
+        $this->assertNull($payment['reference1']);
+
+        $row = $this->overrideHitachiPayment($gatewayPayment, ['auth_id' => $payment['reference2']]);
+
+        $row[HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT] /= 2;
+        $row[HitachiPaymentRecon::COLUMN_CURRENCY_CODE] = '840';
+
+        $entries[] = $row;
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi');
+
+        $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment['reference2']);
+
+        $this->assertTrue($updatedPayment['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testHitachiUnexpectedPaymentCreateViaRecon()
     {
         // Using Live because by default mode is live (when gateway != sharp
