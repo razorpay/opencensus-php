@@ -11,21 +11,10 @@ import SelectFormat from './SelectFormat';
 import EmailReport from './EmailReport';
 
 export default class GenerateReportPanel extends React.PureComponent {
-  state = {
-    values: {},
-  };
+  state = {};
 
-  onChange = ({ target }) => {
-    const { name, value } = target;
-
-    if (toBeStoredFields.includes(name)) {
-      this.setState({
-        values: {
-          ...this.state.values,
-          [name]: value,
-        },
-      });
-    }
+  onConfigChange = selectedConfig => {
+    this.setState({ selectedConfig });
   };
 
   onDateChange = (value, name) => {
@@ -34,11 +23,16 @@ export default class GenerateReportPanel extends React.PureComponent {
   };
 
   onGenerateReport = () => {
+    const { selectedConfig } = this.state;
+    if (selectedConfig.type === 'custom') {
+      return this.generateCustomConfigReport();
+    }
+
     const [startTime, endTime] = this.selectPeriod.getDateRange();
     const emails = this.emailReport.getWrappedInstance().getValue();
 
     const payload = {
-      config_id: this.state.values.selectedConfigId,
+      config_id: selectedConfig.id,
       start_time: startTime,
       end_time: endTime,
       emails: isPresent(emails) ? emails : undefined,
@@ -48,30 +42,52 @@ export default class GenerateReportPanel extends React.PureComponent {
     return this.props.onGenerateReport(payload);
   };
 
+  generateCustomConfigReport = () => {
+    const { mode } = this.props;
+    const selectedConfigId = this.state.selectedConfig.id;
+    const { month, year } = this.selectPeriod.getCustomConfigYear();
+    console.log({ month, year, selectedConfigId, mode });
+
+    window.open(
+      `/${mode}/reports/${selectedConfigId}/?year=${year}&month=${month}`,
+      '_blank'
+    );
+  };
+
   render() {
-    const { configs } = this.props;
-    const { values } = this.state;
+    const { configs, customConfigs } = this.props;
+    const { selectedConfig } = this.state;
+    const allConfigs = [...configs.items, ...customConfigs];
+
+    const isCustomConfig = (selectedConfig || {}).type === 'custom';
+
     return configs.loading ? (
       <p>Loading...</p>
     ) : (
       <Form onChange={this.onChange}>
-        <SelectConfig configs={configs.items} />
+        <SelectConfig
+          configs={allConfigs}
+          onConfigChange={this.onConfigChange}
+        />
 
         <SelectPeriod
-          selectedPeriod={values.selectedPeriod}
           avlblPeriodOptions={defaultPeriodOptions}
           onDateChange={this.onDateChange}
           ref={ref => (this.selectPeriod = ref)}
+          isCustomConfig={isCustomConfig}
         />
 
         <div class="m-t" />
         <Input.Group class="InputGroup--inline">
           <div class="Input-content">
-            <SelectFormat
-              selectedConfigId={values.selectedConfigId}
-              allConfigs={configs.items}
-              ref={ref => (this.selectFormat = ref)}
-            />
+            {/* there is no format option in case of custom configs */}
+            {!isCustomConfig && (
+              <SelectFormat
+                selectedConfigId={(selectedConfig || {}).id}
+                allConfigs={configs.items}
+                ref={ref => (this.selectFormat = ref)}
+              />
+            )}
 
             <EmailReport
               ref={ref => (this.emailReport = ref)}
@@ -84,9 +100,10 @@ export default class GenerateReportPanel extends React.PureComponent {
           pendingState="Requesting..."
           type="submit"
           onClick={this.onGenerateReport}
+          disabled={!selectedConfig}
           class="m-t"
         >
-          Generate Report
+          {isCustomConfig ? 'Download' : 'Generate'} Report
         </AsyncBtn.Primary>
       </Form>
     );
@@ -101,5 +118,3 @@ const defaultPeriodOptions = [
   { label: 'Monthly', name: 'monthly' },
   { label: 'Custom', name: 'dateRange' },
 ];
-
-const toBeStoredFields = ['selectedConfigId', 'selectedFormat'];
