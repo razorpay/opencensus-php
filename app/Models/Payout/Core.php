@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use App;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
