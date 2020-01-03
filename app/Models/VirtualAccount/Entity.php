@@ -276,6 +276,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CLOSED_AT);
     }
 
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
     protected function getReceiversAttribute()
     {
         $receivers = [];

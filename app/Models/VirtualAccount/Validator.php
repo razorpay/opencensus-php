@@ -49,6 +49,16 @@ class Validator extends Base\Validator
         Entity::DESCRIPTOR => 'filled|regex:/^[A-Za-z0-9\.\-]{3,}$/|max:20',
     ];
 
+    protected static $createOfflineQrRules = [
+        'amount'                   => 'filled|integer|min:100',
+        'receipt'                  => 'required|string|max:40',
+        'currency'                 => 'required|string|size:3|in:INR',
+        'notifications'            => 'array',
+        'notifications.device_id'  => 'filled|string|public_id|size:20',
+        Entity::DESCRIPTION        => 'sometimes|nullable|string|max:2048',
+        Entity::NOTES              => 'sometimes|notes',
+    ];
+
     protected static $createValidators = [
         Entity::RECEIVER_TYPES,
     ];
@@ -214,6 +224,4 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException($message);
         }
     }
-
-
 }

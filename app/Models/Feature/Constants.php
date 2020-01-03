@@ -141,6 +141,8 @@ class Constants
 
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
+    const OFFLINE_PAYMENTS                = 'offline_payments';
+
     /**
      * If applied on partner merchant then all sub merchant settlement will be settled to partner
      * this will be further aggregated and settled to partner merchant
@@ -485,6 +487,7 @@ class Constants
         self::SAVE_VPA                        => true,
         self::GENERATE_PARTNER_INVOICE        => true,
         self::AUTOMATED_COMM_PAYOUT           => true,
+        self::OFFLINE_PAYMENTS                => true,
     ];
 
     // Entity type constants
