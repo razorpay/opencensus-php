@@ -36,8 +36,8 @@ const commissionBase = {
 export const idItem = id => <code>{id}</code>;
 
 /* if label not present id will be used as label */
-export const idLink = (id, label) => {
-  var url = baseUrl[id.split('_')[0]];
+export const idLink = (id, label, _baseUrl = baseUrl) => {
+  var url = _baseUrl[id.split('_')[0]];
   var item = label || idItem(id);
   if (url) {
     url += id;
@@ -66,7 +66,11 @@ export const dispute = makeIdLink('dispute');
 export const token = makeIdLink('token');
 
 export const transfer = makeIdLink('transfer');
-export const source = item => idLink(item[sources[item.entity]]);
+export const source = (item, custom_base_url) => {
+  const id = item[sources[item.entity]];
+
+  return idLink(id, idItem(id), custom_base_url);
+};
 export const recipient = item => idItem(item.recipient);
 export const reversal = makeIdLink('reversal');
 export const credit = makeIdLink('credits');
