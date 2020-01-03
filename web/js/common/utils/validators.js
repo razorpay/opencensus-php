@@ -99,6 +99,19 @@ export function validatePANCard(value) {
   }
 }
 
+export function validateCompanyAB(value1 = '', value2 = '', isExpOn = false) {
+  let err = '';
+  if (isExpOn) {
+    err =
+      value1.toLowerCase() === value2.toLowerCase()
+        ? 'Company name cannot be same as Contact Name'
+        : false;
+  } else {
+    err = false;
+  }
+  return err;
+}
+
 export function validatePANCardUnregBiz(value) {
   if (validatePANCard(value)) {
     return validatePANCard(value);

@@ -12,6 +12,7 @@ import {
   validateIFSC,
   validatePANCard,
   validatePANCardUnregBiz,
+  validateCompanyAB,
   isUrlLenient,
 } from 'common/utils/validators';
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
@@ -338,6 +339,22 @@ const businessDetails = [
     name: 'business_name',
     info: 'Example: Acme Infotech Private Limited',
     placeholder: 'Registered name',
+    validator: function(value) {
+      let contactName = '',
+        isExpOn = false;
+      if (
+        this.props.user.experiments &&
+        this.props.user.experiments['hide_company_name']
+      ) {
+        contactName =
+          this.state.dirty['contact_name'] || this.props.data['contact_name'];
+        isExpOn =
+          this.props.user.experiments['hide_company_name'].result === 'on'
+            ? true
+            : false;
+      }
+      return validateCompanyAB(value, contactName, isExpOn);
+    },
     _when: excludeFor_Indiv,
   },
   {

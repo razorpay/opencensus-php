@@ -43,7 +43,10 @@ import {
 import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { validatePANCardUnregBiz } from 'common/utils/validators';
+import {
+  validatePANCardUnregBiz,
+  validateCompanyAB,
+} from 'common/utils/validators';
 
 import {
   L1FormSuccess,
@@ -780,11 +783,30 @@ export default class ActivationWizard extends React.Component {
   get canSubmitL1Form() {
     const promoterPan =
       this.state.dirty['promoter_pan'] || this.props.data['promoter_pan'];
+
+    let businessName = '',
+      contactName = '',
+      expCompanyAB = false;
+    if (
+      this.props.user.experiments &&
+      this.props.user.experiments['hide_company_name']
+    ) {
+      businessName =
+        this.state.dirty['business_name'] || this.props.data['business_name'];
+      contactName =
+        this.state.dirty['contact_name'] || this.props.data['contact_name'];
+      expCompanyAB =
+        this.props.user.experiments['hide_company_name'].result === 'on'
+          ? true
+          : false;
+    }
+
     return (
       !hasSelectedBlacklistedCategory(this) &&
       (this.isUnregBiz
         ? promoterPan && !validatePANCardUnregBiz(promoterPan)
-        : true)
+        : true) &&
+      !validateCompanyAB(businessName, contactName, expCompanyAB)
     );
   }
 
