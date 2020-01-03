@@ -10,6 +10,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import RTracking from 'react-tracking';
+import { deepClone } from '../../../razorx/helpers/utils';
 
 export const PAYMENT_NETWORK_MAP = {
   VISA: 'Visa',
@@ -55,7 +56,8 @@ export const ISSUERS = {
   paypal: 'Paypal',
 };
 
-export function emiDurationString(durations) {
+export function emiDurationString(emiDurations) {
+  let durations = deepClone(emiDurations);
   let lastDurationString = ' months';
   if (durations.length > 1) {
     lastDurationString = ` and ${durations.pop()}${lastDurationString}`;

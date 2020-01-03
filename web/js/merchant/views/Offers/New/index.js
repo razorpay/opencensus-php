@@ -354,7 +354,6 @@ export default class CreateOfferWizard extends React.Component {
   renderWizard() {
     const { currentTab, validTabs } = this.state;
     const isLastTab = currentTab === this.tabsData.length - 1;
-    debugger;
     return (
       <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
         <ModalAsideNav
@@ -407,7 +406,6 @@ export default class CreateOfferWizard extends React.Component {
               Create Offer
             </AsyncBtn.Primary>
           )}
-          <div>{JSON.stringify(this.state)}</div>
         </footer>
       </div>
     );
