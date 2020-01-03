@@ -2,17 +2,60 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
+
 import Time from 'common/ui/Time';
-import { titleCase } from 'common/utils/rzp-utils';
 import DetailRow from 'merchant/components/DetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ProgressBar from 'common/ui/ProgressBar';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 
 import EditWebsiteDetails from 'merchant/containers/EditWebsiteDetails';
+
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { isPresent } from 'common/utils/rzp-utils';
+
+function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
+  let businessWebsite = user.business_website ? (
+    <div>
+      <a href={user.business_website} target="_blank" rel="noopener">
+        {user.business_website}
+      </a>
+    </div>
+  ) : null;
+
+  /* 
+    has_key_access determines if merchant can generate keys
+    Let User enter business_website if has_key_access = false & isWebsiteInWorkflow = false 
+  */
+  if (!user.has_key_access) {
+    if (!user.business_website && !isWebsiteInWorkflow) {
+      businessWebsite = (
+        <span>
+          <a onClick={handleEditWebsite}>Add Website/App URL for Full Access</a>
+        </span>
+      );
+    } else {
+      businessWebsite = (
+        <span class="status-label label label-info">Under Review</span>
+      );
+    }
+  }
+
+  return (
+    <div>
+      {businessWebsite}
+      {isPresent(user.additional_websites) &&
+        user.additional_websites.map(website => (
+          <div>
+            <a href={website} target="_blank" rel="noopener">
+              {website}
+            </a>
+          </div>
+        ))}
+    </div>
+  );
+}
 
 const MerchantDetails = ({
   user,
@@ -20,6 +63,8 @@ const MerchantDetails = ({
   closeModal,
   changeDisplayName,
   tracking,
+  isWebsiteInWorkflow,
+  ...props
 }) => {
   const activationName =
     !user.showInstantActivation || !user.instantActivation.isL1Submitted
@@ -39,7 +84,12 @@ const MerchantDetails = ({
     );
     openModal({
       size: 'small',
-      component: <EditWebsiteDetails onClose={closeModal} />,
+      component: (
+        <EditWebsiteDetails
+          onWebsiteAdd={props.onWebsiteAdd}
+          onClose={closeModal}
+        />
+      ),
     });
   };
 
@@ -180,25 +230,24 @@ const MerchantDetails = ({
             )}
           />
           <DetailRow
-            label="Business Website/App details"
+            label={() => (
+              <div>
+                <span>Business Website/App details</span>
+                <small class="help-content">
+                  <i class="i i-info-outline" />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div>
+                        These are the verified websites on which payments can be
+                        integrated.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </div>
+            )}
             value={() =>
-              !user.has_key_access ? (
-                !user.business_website ? (
-                  <span>
-                    <a onClick={handleEditWebsite}>
-                      Add Website/App URL for Full Access
-                    </a>
-                  </span>
-                ) : (
-                  <span class="status-label label label-info">
-                    Under Review
-                  </span>
-                )
-              ) : (
-                <a href={user.business_website} target="_blank" rel="noopener">
-                  {user.business_website}
-                </a>
-              )
+              renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow)
             }
           />
         </React.Fragment>

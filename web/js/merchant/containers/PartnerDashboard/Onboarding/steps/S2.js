@@ -66,7 +66,7 @@ const s2 = ({ role, onRoleSelect, sliderProps, abort }) => {
           </p>
         </div>
       </div>
-      <SlideContoller sliderProps={sliderProps} disNext={!Boolean(role)} />
+      <SlideContoller sliderProps={sliderProps} disNext={!role} />
     </>
   );
 };

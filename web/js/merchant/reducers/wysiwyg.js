@@ -14,7 +14,7 @@ import { paiseToRupees, arrayMove } from 'common/utils/rzp-utils';
 import { fetchPaymentPageEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
 
 // TODO: Remove dependency from here
-import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF_Fields/preAddedFields';
+import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
 const REFRESH_PAGE_DATA = 'REFRESH_PAGE_DATA';
@@ -54,7 +54,6 @@ export const fetchPaymentPage = (id, isIntentDuplicate) => {
     type: FETCH_ENTITY,
     payload: fetchPaymentPageEntity(id),
     isIntentDuplicate: isIntentDuplicate,
-    isPPMLIEnabled: store.getState().session.user.isPPMLIEnabled,
     id,
   };
 };
@@ -147,66 +146,41 @@ export default function(state = initialState, action) {
 
       const udfSchema = JSON.parse(entityData.settings.udf_schema);
 
-      if (action.isPPMLIEnabled) {
-        entityData.payment_page_items.forEach(pi => {
-          // While creation/editing, all amounts are converted to Paisa (or smaller unit)
+      entityData.payment_page_items.forEach(pi => {
+        // While creation/editing, all amounts are converted to Paisa (or smaller unit)
 
-          if (pi.item.amount) {
-            pi.item.amount = paiseToRupees(pi.item.amount); // Convert in Rupees (or bigger unit)
-          }
-
-          if (pi.min_amount) {
-            pi.min_amount = paiseToRupees(pi.min_amount); // Convert in Rupees (or bigger unit)
-          }
-
-          if (pi.max_amount) {
-            pi.max_amount = paiseToRupees(pi.max_amount); // Convert in Rupees (or bigger unit)
-          }
-        });
-
-        // 1-1. If intention while fetching is to duplicate, then remove id for each of payment page item
-        if (action.isIntentDuplicate) {
-          entityData.payment_page_items.forEach(fi => {
-            // Removing payment_page_id is enough since removing/adding id for items is handled in handleSavePublish. However, this is just for sanity.
-
-            delete fi.id;
-            delete fi.payment_link_id;
-            delete fi.item.id;
-          });
+        if (pi.item.amount) {
+          pi.item.amount = paiseToRupees(pi.item.amount); // Convert in Rupees (or bigger unit)
         }
 
-        formItems = [].concat(udfSchema).concat(entityData.payment_page_items);
-
-        formItems.sort(function(a, b) {
-          const positionA = a.settings.position;
-          const positionB = b.settings.position;
-
-          return Number(positionA) - Number(positionB);
-        });
-      } else {
-        // TRANSFOMER FOR V2 to keep V2 UI intact.
-
-        // NOTE:  Ignoring id for this item. So, only side effect is whenever a page is edited, then new payment page item will be created
-
-        // For V2, mapping new format to old format for FE to handle. Only 1 item must exist in payment_page_items.
-        const amountItem = entityData.payment_page_items[0];
-
-        entityData.amount = amountItem.item.amount
-          ? paiseToRupees(amountItem.item.amount)
-          : null; // Convert in Rupees (or bigger unit)
-
-        entityData.times_paid = amountItem.quantity_sold;
-        entityData.quantity = amountItem.stock;
-
-        // 1-2. If intention while fetching is not to duplicate, then only set id
-        if (!action.isIntentDuplicate) {
-          entityData.paymentPageItemId = amountItem.id;
+        if (pi.min_amount) {
+          pi.min_amount = paiseToRupees(pi.min_amount); // Convert in Rupees (or bigger unit)
         }
 
-        entityData.settings.allow_multiple_units = amountItem.min_purchase == 1;
+        if (pi.max_amount) {
+          pi.max_amount = paiseToRupees(pi.max_amount); // Convert in Rupees (or bigger unit)
+        }
+      });
 
-        formItems = udfSchema;
+      // 1-1. If intention while fetching is to duplicate, then remove id for each of payment page item
+      if (action.isIntentDuplicate) {
+        entityData.payment_page_items.forEach(fi => {
+          // Removing payment_page_id is enough since removing/adding id for items is handled in handleSavePublish. However, this is just for sanity.
+
+          delete fi.id;
+          delete fi.payment_link_id;
+          delete fi.item.id;
+        });
       }
+
+      formItems = [].concat(udfSchema).concat(entityData.payment_page_items);
+
+      formItems.sort(function(a, b) {
+        const positionA = a.settings.position;
+        const positionB = b.settings.position;
+
+        return Number(positionA) - Number(positionB);
+      });
 
       // 2. If intention while fetching is to duplicate, then delete entity id
       if (action.isIntentDuplicate) {

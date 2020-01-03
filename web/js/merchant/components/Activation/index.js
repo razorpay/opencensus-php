@@ -34,6 +34,7 @@ import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
   showPANStatusModal,
+  showKYCStatusModal,
 } from 'merchant/reducers/home';
 import {
   submitL1Form,
@@ -53,6 +54,7 @@ import {
   hasSelectedBlacklistedCategory,
 } from './ActivationUtils';
 import QueryString from 'query-string';
+import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
 
 /*
 *             Main-form        LA-form
@@ -109,11 +111,11 @@ function defaultFieldProps(f) {
   }
 }
 
+let NEEDS_CLARIFICATION_STEP; // To handle specific case for needs clarification screen
 let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
 let BANK_ACCOUNT_TAB; // To handle specific case for bank account step
 const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
 const BUSINESS_DETAILS_STEP = 2;
-
 let FORM_TABS; // Maintains naming of the tabs
 let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
 let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
@@ -134,6 +136,7 @@ const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
     showPANStatusModal,
     submitL1Form,
     submitL1FormSuccess,
+    showKYCStatusModal,
   }
 )
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
@@ -153,8 +156,9 @@ export default class ActivationWizard extends React.Component {
     has_gstin: this.props.data && this.props.data.gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
-    callingL1Api: false,
+    callingApi: false,
     address_proof: 'aadhar',
+    needsClarification: {},
   };
   constructor(props) {
     super(props);
@@ -176,8 +180,19 @@ export default class ActivationWizard extends React.Component {
       props.user.instantActivation.isL1Submitted
         ? 'KYC Form'
         : 'Activation Form';
-  }
 
+    this.formDescription =
+      props.user.showInstantActivation &&
+      props.user.instantActivation.isL1Submitted
+        ? 'Complete and submit the form to enable settlements.'
+        : 'Complete and submit the form to accept payments.';
+  }
+  isNeedsClarificationMode() {
+    return this.props.data.activation_status === 'needs_clarification';
+  }
+  isOnKYCTab() {
+    return this.state.activeTab === NEEDS_CLARIFICATION_STEP;
+  }
   prepareTabs(props) {
     const { tracking } = props;
     if (this.isLinkedAccountForm) {
@@ -188,7 +203,6 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_NAMES = [...accountFormFieldNamesMeta];
       BANK_ACCOUNT_TAB = 1;
       DOCUMENT_UPLOAD_STEP = 2;
-
       // Removing document upload
       if (!props.data.need_kyc) {
         FORM_TABS.splice(DOCUMENT_UPLOAD_STEP, 1);
@@ -203,10 +217,29 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS = mainFormTabs;
       FORM_TABS_CONTENT = mainFormTabsContent;
       FORM_TABS_NAMES = mainFormFieldNamesMeta;
+
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
-
+      if (
+        props.data['activation_status'] === 'needs_clarification' &&
+        props.data['kyc_clarification_reasons']
+      ) {
+        if (FORM_TABS.indexOf('Needs Clarification') === -1) {
+          FORM_TABS.push('Needs Clarification');
+        }
+        const ndcFields =
+          getNeedsClarificationTabsData(
+            mainFormTabsContent,
+            props.data.kyc_clarification_reasons
+          ) || [];
+        FORM_TABS_CONTENT.push(ndcFields);
+        FORM_TABS_NAMES.push(
+          ndcFields.map(f => f.name).filter(f => Boolean(f))
+        );
+        NEEDS_CLARIFICATION_STEP = 5;
+      }
       if (!isL1Completed(this)) {
+        //Code needs some refactoring
         FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_NAMES = FORM_TABS_NAMES.slice(0, BANK_ACCOUNT_TAB);
@@ -229,58 +262,70 @@ export default class ActivationWizard extends React.Component {
       SAVE_BUTTON_DISABLED_STEPS.push(DOCUMENT_UPLOAD_STEP);
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
+    const prepareFileFields = a => {
+      if (a._cmp === undefined || a._cmp === Input.File) {
+        a._cmp = Input.File;
+        a._accept = ['pdf', 'image'];
+        a._showAcceptInfo = false;
+        a._showStagedFileStatus = false;
+
+        if (!a.hasOwnProperty('required')) {
+          a.required = true;
+        }
+
+        a.onChange = (file, progressTracker) => {
+          const filename = a.getName ? a.getName(this) : a.name;
+          tracking.trackEvent(
+            window.rzpQ.onbr().initiated(`kyc.upload_document_${filename}`, {
+              name: filename,
+            })
+          );
+
+          return props
+            .saveFile(
+              filename,
+              file,
+              progressTracker,
+              a.destinationUrl || null,
+              a.uploadAs || null
+            )
+            .then(() => {
+              updateHubSpotContactsProperties({
+                [filename]: true,
+              });
+
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('kyc.upload_document', {
+                  name: filename,
+                })
+              );
+
+              this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+              this.updateFileInDirty(filename);
+            });
+        };
+      }
+    };
     /*
     * All document fields in activation form to have same footprint.
     * Adding onChange listener to all document upload fields.
     * */
+
     DOCUMENT_UPLOAD_STEP &&
-      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(a => {
-        if (a._cmp === undefined || a._cmp === Input.File) {
-          a._cmp = Input.File;
-          a._accept = ['pdf', 'image'];
-          a._showAcceptInfo = false;
-          a._showStagedFileStatus = false;
-
-          if (!a.hasOwnProperty('required')) {
-            a.required = true;
-          }
-
-          a.onChange = (file, progressTracker) => {
-            const filename = a.getName ? a.getName(this) : a.name;
-            tracking.trackEvent(
-              window.rzpQ.onbr().initiated(`kyc.upload_document_${filename}`, {
-                name: filename,
-              })
-            );
-
-            return props
-              .saveFile(
-                filename,
-                file,
-                progressTracker,
-                a.destinationUrl || null
-              )
-              .then(() => {
-                updateHubSpotContactsProperties({
-                  [filename]: true,
-                });
-
-                tracking.trackEvent(
-                  window.rzpQ.onbr().initiated('kyc.upload_document', {
-                    name: filename,
-                  })
-                );
-
-                this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-              });
-          };
-        }
-      });
+      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(prepareFileFields);
+    NEEDS_CLARIFICATION_STEP &&
+      FORM_TABS_CONTENT[NEEDS_CLARIFICATION_STEP].forEach(prepareFileFields);
   }
 
   componentDidUpdate() {
     return this.props.handleUIUpdate && this.props.handleUIUpdate();
   }
+
+  updateFileInDirty = filename => {
+    this.setState(prevState => ({
+      dirty: { ...prevState.dirty, [filename]: 'fakepath' },
+    }));
+  };
 
   componentDidMount() {
     addDropShield('.Activation--wizard');
@@ -704,6 +749,34 @@ export default class ActivationWizard extends React.Component {
     return businessType == 2 || businessType == 11;
   }
 
+  get isFormLocked() {
+    return !!this.props.data.locked || this.isNeedsClarificationMode();
+  }
+
+  get hasFilledClarificationDetails() {
+    if (this.isOnKYCTab()) {
+      const state = this.state;
+      const dynamicFieldName = {
+        address_proof_front: () => {
+          return `${state.address_proof}_front`;
+        },
+        address_proof_back: () => {
+          return `${state.address_proof}_back`;
+        },
+      };
+      const hasFilledEverything = FORM_TABS_NAMES[
+        NEEDS_CLARIFICATION_STEP
+      ].every(field => {
+        if (dynamicFieldName[field]) {
+          field = dynamicFieldName[field]();
+        }
+        return Boolean(state.dirty[field]);
+      });
+
+      return hasFilledEverything;
+    }
+  }
+
   get canSubmitL1Form() {
     const promoterPan =
       this.state.dirty['promoter_pan'] || this.props.data['promoter_pan'];
@@ -818,7 +891,7 @@ export default class ActivationWizard extends React.Component {
 
     this.trackSubmitL1(data);
 
-    this.setState({ callingL1Api: true });
+    this.setState({ callingAPI: true });
 
     try {
       let response = await this.props.submitL1Form({
@@ -860,7 +933,7 @@ export default class ActivationWizard extends React.Component {
       L1FormSuccess(props);
       this.saveCurrentTab();
 
-      this.setState({ callingL1Api: false }, () => {
+      this.setState({ callingAPI: false }, () => {
         if (
           poi_verification_status != 'incorrect_details' &&
           poi_verification_status != 'not_matched'
@@ -870,7 +943,7 @@ export default class ActivationWizard extends React.Component {
       });
       return response;
     } catch (err) {
-      this.setState({ callingL1Api: false });
+      this.setState({ callingAPI: false });
       this.saveCurrentTab();
       if (err.errors && err.errors.length && err.errors[0]) {
         this.props.showNotification({
@@ -1009,6 +1082,54 @@ export default class ActivationWizard extends React.Component {
     });
   };
 
+  submitClarifications = async () => {
+    const needsClarificationFields = FORM_TABS_CONTENT[this.state.activeTab];
+
+    const hasFilledDetails = this.hasFilledClarificationDetails;
+    const reqData = {
+      submit: '1',
+    };
+
+    if (hasFilledDetails) {
+      const fieldNames = needsClarificationFields.map(field => field.name);
+      fieldNames.forEach(fieldName => {
+        if (this.state.dirty[fieldName]) {
+          reqData[fieldName] = this.state.dirty[fieldName];
+        }
+      });
+    }
+
+    // State will contain file fields which have already been uploaded
+    // Delete file field from request data
+    Object.keys(reqData).forEach(key => {
+      if (reqData[key] === 'fakepath') {
+        delete reqData[key];
+      }
+    });
+
+    try {
+      this.setState({ callingAPI: true });
+      const response = await this.props.save(reqData);
+      if (response.success) {
+        this.props.showKYCStatusModal({
+          modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
+        });
+        this.props.history.replace(`/`);
+      }
+      return response;
+    } catch (err) {
+      if (err.errors && err.errors.length && err.errors[0]) {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      }
+      return err;
+    } finally {
+      this.setState({ callingApi: false });
+    }
+  };
+
   /*
   * Fadeout based loader text.
   * Default delay = 7 sec
@@ -1023,7 +1144,6 @@ export default class ActivationWizard extends React.Component {
     let stateName = target.getAttribute('data-name');
     let fieldValue = target.value;
     let fieldName = target.name;
-
     let sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
     const { dirty } = this.state;
     const { data } = this.props;
@@ -1225,7 +1345,7 @@ export default class ActivationWizard extends React.Component {
   };
 
   render() {
-    const isFormLocked = !!this.props.data.locked;
+    const isFormLocked = this.isFormLocked;
     const isFormActivated = !!this.props.data.activated;
     const isFormSubmitted = !!this.props.data.submitted;
 
@@ -1268,7 +1388,6 @@ export default class ActivationWizard extends React.Component {
 
         return ActivationField.call(this, field);
       });
-
     let moreTabs = [];
     if (this.props.user.instantActivation.isL1Submitted && !isFormSubmitted) {
       moreTabs.push(
@@ -1298,9 +1417,7 @@ export default class ActivationWizard extends React.Component {
           title={this.formName}
           description={
             !this.isLinkedAccountForm &&
-            !isFormSubmitted && (
-              <p>Complete and submit the form to start accepting payments.</p>
-            )
+            !isFormSubmitted && <p>{this.formDescription}</p>
           }
           tabs={FORM_TABS}
           moreTabs={moreTabs}
@@ -1367,7 +1484,7 @@ export default class ActivationWizard extends React.Component {
             let secondaryMsg = 'For any clarifications, you can';
             const ticketLink = <Link to="#ticket">write to support</Link>;
 
-            if (showFormDisabledAlert) {
+            if (showFormDisabledAlert && !this.isOnKYCTab()) {
               if (isFormActivated) {
                 // **1. Alert: Account Activated
 
@@ -1378,7 +1495,7 @@ export default class ActivationWizard extends React.Component {
                     For any changes, please {ticketLink}.
                   </React.Fragment>
                 );
-              } else if (data.activation_status === 'needs_clarification') {
+              } else if (this.isNeedsClarificationMode()) {
                 // **2. Alert: Need clarification
                 let clarificationMode = this.props.data.clarification_mode;
                 let subMsg;
@@ -1521,14 +1638,14 @@ export default class ActivationWizard extends React.Component {
                 {isLastTab &&
                   activeTab == BUSINESS_DETAILS_STEP && (
                     <AsyncBtn.Primary
-                      disabled={
-                        !this.canSubmitL1Form || this.state.callingL1Api
-                      }
+                      disabled={!this.canSubmitL1Form || this.state.callingAPI}
                       onClick={this.submitL1}
-                      pendingState={'Verifying'}
+                      pendingState={
+                        this.isUnregBiz ? 'Verifying' : 'Submitting'
+                      }
                       name={'submit-and-verify'}
                     >
-                      Submit and Verify
+                      {this.isUnregBiz ? 'Submit and Verify' : 'Submit'}
                     </AsyncBtn.Primary>
                   )}
 
@@ -1553,12 +1670,30 @@ export default class ActivationWizard extends React.Component {
             )}
           </footer>
         )}
+        {this.isOnKYCTab() && (
+          <footer>
+            <AsyncBtn.Primary
+              disabled={
+                !this.hasFilledClarificationDetails || this.state.callingApi
+              }
+              onClick={this.submitClarifications}
+              pendingState={'Submitting...'}
+              name={'Submit Clarifications'}
+            >
+              Submit Clarifications
+            </AsyncBtn.Primary>
+          </footer>
+        )}
       </div>
     );
   }
 
   // returns validity
   tabValidity(i) {
+    //Special handling for NDC tab
+    if (i === NEEDS_CLARIFICATION_STEP) {
+      return false;
+    }
     return FORM_TABS_CONTENT[i].every(
       c =>
         Array.isArray(c)
@@ -1655,23 +1790,29 @@ function ActivationField(field) {
     /*
     * Dirty data is priority as user can switch tabs fast before api success, so dirty would have latest FE data but props not
     * */
-    defaultValue = this.state.dirty[key] || this.props.data[key];
+    if (this.isOnKYCTab()) {
+      defaultValue = this.state.dirty[key] || null;
+    } else {
+      defaultValue = this.state.dirty[key] || this.props.data[key];
+    }
   } else if (_name) {
     defaultValue = this.state[_name];
     key = _name;
   }
 
-  const isFormLocked = !!this.props.data.locked;
+  const isFormLocked = this.isFormLocked || this.state.callingAPI;
 
   // For LA, form is automatically locked when submitted(activated). For main form, it can be manually controlled.
   let isComponentDisabled = isFormLocked;
-
   // TODO: Ideally, what's disabled cannot be 'required = true'. Currently no such requirement. To handle, support 'required' as a function
   if (_disabledWhen && _disabledWhen(this)) {
     // Overiride the value if it's disabled
     isComponentDisabled = true;
   }
-
+  //Always keep fields on needs clarification unlocked
+  if (this.isOnKYCTab()) {
+    isComponentDisabled = false;
+  }
   // Show bank account number if it's activated/locked
   if (rest.hasOwnProperty('type') && rest.type === 'password' && isFormLocked) {
     rest.type = 'text';
@@ -1694,13 +1835,15 @@ function ActivationField(field) {
     rest.placeholder = rest.getPlaceholder(this);
   }
 
-  if (rest._type == 'address_proof_upload_doc') {
+  if (!this.isOnKYCTab() && rest._type == 'address_proof_upload_doc') {
     const { documents } = this.props.data;
     defaultValue =
       (documents &&
         documents[`${rest.name}`] &&
         documents[`${rest.name}`][0]['id']) ||
       null;
+  } else if (rest._type == 'address_proof_upload_doc') {
+    defaultValue = this.state.dirty[rest.name] || null;
   }
 
   if (rest.isDeletable) {
@@ -1714,17 +1857,30 @@ function ActivationField(field) {
     if (!this.state.dirty[rest.name] && error) rest.propagatedError = error;
     else rest.propagatedError = '';
   }
-
   return (
-    <Component
-      key={key}
-      data-name={_name}
-      defaultValue={defaultValue}
-      disabled={isComponentDisabled}
-      autoRender={_autoRenderImpure}
-      required={typeof required === 'function' ? required(this) : required}
-      {...rest}
-    />
+    <>
+      {this.isOnKYCTab() &&
+        rest.reasons &&
+        rest.reasons.length > 0 && (
+          <div className="ndc-reasons">
+            {rest.reasons.map((r, i) => (
+              <div key={i}>
+                <i class="i i-info-circle" />
+                <div>{r}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      <Component
+        key={key}
+        data-name={_name}
+        defaultValue={defaultValue}
+        disabled={isComponentDisabled}
+        autoRender={_autoRenderImpure}
+        required={typeof required === 'function' ? required(this) : required}
+        {...rest}
+      />
+    </>
   );
 }
 

@@ -19,6 +19,7 @@ import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import Announcement from 'merchant/components/Announcements/Instant';
+import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import Button from 'common/new-ui/Button';
@@ -130,6 +131,10 @@ class AnalyticsDesktop extends Component {
               : ''
           }`}
         >
+          {/* nps banner */}
+          {user.isNPSSurveyBannerEnabled &&
+            user.isAccepted && <NPSAnnouncement user={user} />}
+
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
           )}

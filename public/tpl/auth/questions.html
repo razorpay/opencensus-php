@@ -5,7 +5,7 @@
 </div>
 <div class="signup-detail-form">
   <div class="steps-dots">
-    <div class="step-dot" ng-repeat="key in [0, 1, 2, 3]" ng-class="key == signup.currentSubStep && 'active'"></div>
+    <div class="step-dot" ng-style="{ 'width': (25*(signup.currentSubStep+1)) + '%' }"></div>
     <div class="clearfix"></div>
   </div>
 

@@ -14,6 +14,7 @@ import { titleCase, getEMI } from 'common/utils/rzp-utils';
  * @param {Object} payment
  * @param {Object} card
  * @param {Object} bankTransfer
+ * @param {Object} upiTransfer
  *
  * Description:
  * Given the `payment` parameter exactly the same as
@@ -21,17 +22,22 @@ import { titleCase, getEMI } from 'common/utils/rzp-utils';
  * `bankTransfer` as fetch bank transfer api,
  * the content will be shown according to the Design^
  */
-export default ({ payment, card = {}, bankTransfer = {} }) => {
-  const paymentMethod = payment.method,
-    methodKeyMap = {
-      netbanking: 'bank',
-      wallet: 'wallet',
-      upi: 'vpa',
-      upi: 'upi',
-      emandate: 'emandate',
-      aeps: 'aeps',
-    },
-    cardDetails = card || {};
+export default ({
+  payment,
+  card = {},
+  bankTransfer = {},
+  upiTransfer = {},
+}) => {
+  const paymentMethod = payment.method;
+
+  const methodKeyMap = {
+    netbanking: 'bank',
+    wallet: 'wallet',
+    emandate: 'emandate',
+    aeps: 'aeps',
+  };
+
+  const cardDetails = card || {};
 
   let el = null;
 
@@ -44,12 +50,7 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
         : paymentMethodText;
     el = (
       <Definition>
-        <span>
-          {paymentMethod !== 'upi'
-            ? paymentMethodText + ' ' + titleCase(paymentMethod)
-            : 'UPI'}
-        </span>
-        {paymentMethod === 'upi' && <span>{payment.vpa}</span>}
+        <span>{paymentMethodText + ' ' + titleCase(paymentMethod)}</span>
       </Definition>
     );
   } else if (['card', 'emi'].indexOf(paymentMethod) !== -1) {
@@ -104,6 +105,64 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
         </Definition>
       </ContentToggler>
     );
+  } else if (paymentMethod === 'upi') {
+    const isDetailsLoading = upiTransfer.loading;
+    const isVPADetailsAvailable = Object.keys(upiTransfer.details).length !== 0;
+
+    let content;
+
+    if (isDetailsLoading) {
+      content = (
+        <Definition allowEmptyTitle={true}>
+          <PlaceholderLoader />;
+        </Definition>
+      );
+    } else {
+      upiTransfer = isVPADetailsAvailable ? upiTransfer.details : null;
+
+      content = (
+        <Definition allowEmptyTitle={true}>
+          {upiTransfer &&
+            (upiTransfer.virtual_account &&
+              upiTransfer.virtual_account.description) && (
+              <span>{upiTransfer.virtual_account.description}</span>
+            )}
+
+          {
+            <div>
+              {upiTransfer && (
+                <div class="row m-b">
+                  <div class="col-sm-12">
+                    <Link
+                      to={`/virtualaccounts/${upiTransfer.virtual_account_id}`}
+                    >
+                      <code>{upiTransfer.virtual_account_id}</code>
+                    </Link>
+                  </div>
+                </div>
+              )}
+              <div class="row">
+                <div class="col-sm-12">
+                  <div class="row">
+                    <div class="col-sm-5 col-xs-5">Payer UPI ID:</div>
+                    <div class="col-sm-7 col-xs-7">
+                      {upiTransfer ? upiTransfer.payer_vpa : payment.vpa}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </Definition>
+      );
+    }
+
+    el = (
+      <ContentToggler>
+        <span>UPI</span>
+        {content}
+      </ContentToggler>
+    );
   } else if (paymentMethod === 'bank_transfer') {
     const isDetailsLoading =
       Object.keys(bankTransfer.details).length === 0 || bankTransfer.loading;
@@ -123,8 +182,8 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
             <PlaceholderLoader />
           ) : (
             <div>
-              <div className="row m-b">
-                <div className="col-sm-12">
+              <div class="row m-b">
+                <div class="col-sm-12">
                   <Link
                     to={`/virtualaccounts/${bankTransfer.virtual_account_id}`}
                   >
@@ -133,23 +192,23 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
                 </div>
               </div>
               {!!bankTransfer.payer_bank_account && (
-                <div className="row">
-                  <div className="col-sm-12">
-                    <div className="row">
-                      <div className="col-sm-4 col-xs-5">Payer Name:</div>
-                      <div className="col-sm-8 col-xs-7">
+                <div class="row">
+                  <div class="col-sm-12">
+                    <div class="row">
+                      <div class="col-sm-4 col-xs-5">Payer Name:</div>
+                      <div class="col-sm-8 col-xs-7">
                         {bankTransfer.payer_bank_account.name}
                       </div>
                     </div>
-                    <div className="row">
-                      <div className="col-sm-4 col-xs-5">Payer a/c:</div>
-                      <div className="col-sm-8 col-xs-7">
+                    <div class="row">
+                      <div class="col-sm-4 col-xs-5">Payer a/c:</div>
+                      <div class="col-sm-8 col-xs-7">
                         {bankTransfer.payer_bank_account.account_number}
                       </div>
                     </div>
-                    <div className="row">
-                      <div className="col-sm-4 col-xs-5">Payer IFSC:</div>
-                      <div className="col-sm-8 col-xs-7">
+                    <div class="row">
+                      <div class="col-sm-4 col-xs-5">Payer IFSC:</div>
+                      <div class="col-sm-8 col-xs-7">
                         {bankTransfer.payer_bank_account.ifsc}
                       </div>
                     </div>
