@@ -2007,6 +2007,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PENDING_PAYOUT_CREATED                                = 'PENDING_PAYOUT_CREATED';
     const PAYOUT_REVERSAL_INITIATED                             = 'PAYOUT_REVERSAL_INITIATED';
     const PAYOUT_REVERSAL_CREATED                               = 'PAYOUT_REVERSAL_CREATED';
+    const PAYOUT_ALREADY_REVERSED                               = 'PAYOUT_ALREADY_REVERSED';
 
     const REFUND_REVERSAL_CREATED                               = 'REFUND_REVERSAL_CREATED';
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';

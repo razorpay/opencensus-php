@@ -1151,9 +1151,20 @@ class Core extends Base\Core
         $this->mutex = $app['api.mutex'];
 
         $this->mutex->acquireAndRelease(
-            $payout->getId(),
+            'reversal_payout_id' . $payout->getId(),
             function () use ($payout, $reverseReason)
             {
+                if ($payout->isStatusReversed() === true)
+                {
+                    $this->trace->info(TraceCode::PAYOUT_ALREADY_REVERSED,
+                        [
+                            'payout_id'      => $payout->getId(),
+                            'status'         => $payout->getStatus(),
+                            'reverse_reason' => $reverseReason,
+                        ]);
+
+                    return;
+                }
                 $this->repo->transaction(
                     function() use ($payout, $reverseReason) {
                         $reversal = (new Reversal\Core)->reverseForPayout($payout);
