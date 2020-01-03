@@ -179,11 +179,6 @@ class Core extends Base\Core
             $this->setBankAccountEntity($subscriptionRegistration, $bankAccount);
         }
 
-        if (empty($bankName) === false)
-        {
-            $subscriptionRegistration->setBank($bankName);
-        }
-
         if (empty($paperMandateInput) === false)
         {
             $maxAmount = $subscriptionRegistration->getMaxAmount();
@@ -196,6 +191,11 @@ class Core extends Base\Core
             $paperMandate = (new PaperMandate\Core)->create($paperMandateInput, $customer);
 
             $this->setPaperMandateEntity($subscriptionRegistration, $paperMandate);
+        }
+
+        if (empty($bankName) === false)
+        {
+            $subscriptionRegistration->setBank($bankName);
         }
 
         return $subscriptionRegistration;
