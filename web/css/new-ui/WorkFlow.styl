@@ -1,0 +1,31 @@
+.Workflow-list
+    padding-left: 0px;
+    list-style: none;
+    margin-top: 30px;
+    margin-bottom: 0;
+
+    &--item
+        position: relative;
+        padding: 0 30px 30px; 
+
+    &--item:before
+        content: '';
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        border: 2px solid #9ec0f5;
+        background: #fafafa;
+        position: absolute;
+        z-index: 2; 
+        left:0;
+
+    &--item:after
+        content: '';
+        height: 100%;
+        border-left: 1px solid #9ec0f5;
+        position: absolute;
+        left: 8px;
+        top: 8px;
+
+    &--item:last-child:after
+        content: unset;

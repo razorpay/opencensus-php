@@ -58,7 +58,9 @@ class NavFragment extends Component {
       <React.Fragment>
         <ShowWhen
           additionalCondition={user =>
-            !!showGSTModal && user.isAllowedView('profile_gst')
+            !!showGSTModal &&
+            user.isAllowedView('profile_gst') &&
+            !user.isUnregisteredBusiness
           }
         >
           <li>

@@ -67,7 +67,7 @@ const QuickAdd = ({
       class="quick-create"
       onClick={() => {
         onClick(select);
-        select.close && select.close();
+        select.actions.close && select.actions.close();
       }}
     >
       <i class="i i-plus" />

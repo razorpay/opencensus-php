@@ -4,7 +4,7 @@ export default function PartnerNavLinks() {
   return (
     <>
       <MainNavLink
-        label="Affiliated Accounts"
+        label="Affiliate Accounts"
         icon="i i-account-balance text-success"
         to="/partners/submerchants"
         additionalCondition={user => user.isAllowedView('submerchants')}

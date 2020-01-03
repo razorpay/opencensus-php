@@ -1,6 +1,5 @@
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { getFormattedAmount } from 'common/utils/rzp-utils';
-import { classList } from 'common/utils/rzp-utils';
+import { getFormattedAmount, classList } from 'common/utils/rzp-utils';
 
 const currencies = {
   INR: {

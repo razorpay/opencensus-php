@@ -37,4 +37,7 @@
   <script src="{{$cdnUrl}}/static/extension/app.js" async defer onload="renderApp()"></script>
 
   @include('partials/xhr_overwrite')
+
+  <!-- Hotjar Tracking Code for dashboard.razorpay.com -->
+  @include('partials/hotjar')
 </body>

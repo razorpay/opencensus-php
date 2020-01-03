@@ -1,11 +1,10 @@
-import { addPrefixToObjectKeys } from 'common/utils/rzp-utils';
+import { addPrefixToObjectKeys, isPresent } from 'common/utils/rzp-utils';
 import { BUSINESS_TYPE_OPTIONS } from './AccountActivationFormMap';
 import {
   trackL1FormSuccess,
   trackL1FormError,
 } from 'merchant/containers/Activation/ga_new';
 import BingDataObj from 'common/utils/bingDataObj';
-import { isPresent } from 'common/utils/rzp-utils';
 
 import {
   trackhubsContactUpdate,
@@ -65,7 +64,7 @@ function L1FormError() {
 }
 
 function updateHubSpotContactsProperties(data, extra, prefix) {
-  const keyPrefix = !!prefix ? 'l2_' : prefix;
+  const keyPrefix = prefix ? 'l2_' : prefix;
   const hbsData = addPrefixToObjectKeys(keyPrefix, data);
 
   const trackData = {
@@ -90,7 +89,7 @@ function updateHubSpotContactsProperties(data, extra, prefix) {
   trackhubsContactUpdate(trackData);
 }
 
-const NOT_YET_REGISTERED = 11; // 'Unregistered Businesses
+const NOT_REGISTERED = 11; // 'Unregistered Businesses
 const INDIVIDUAL = 2; // Legacy Type, Now combined under Unregistered Type
 const PROPRIETORSHIP = 1;
 const NGO = 7; // 'NGO'
@@ -108,10 +107,10 @@ function differentAddress(activation) {
 }
 
 function isUnregisteredBusiness(activation) {
-  return (
-    UNREGISTERED_TYPES[Number(activation.state.dirty['business_type'])] ||
-    UNREGISTERED_TYPES[Number(activation.props.data['business_type'])]
-  );
+  const currentBusinessType =
+    activation.state.dirty['business_type'] ||
+    activation.props.data['business_type'];
+  return UNREGISTERED_TYPES[Number(currentBusinessType)];
 }
 
 function excludeFor_Indiv(activation) {
@@ -139,7 +138,7 @@ function excludeFor_CompanyPan(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
   return (
-    [INDIVIDUAL, NOT_YET_REGISTERED, PROPRIETORSHIP].indexOf(
+    [INDIVIDUAL, NOT_REGISTERED, PROPRIETORSHIP].indexOf(
       Number(currentBusinessType)
     ) === -1
   );
@@ -184,7 +183,7 @@ function getBeneficiaryInfo() {
   const currentBusinessType =
     this.state.dirty.business_type || this.props.data.business_type;
   if (isUnregisteredBusiness(this)) {
-    return 'Please ensure that the spelling is the same as your bank account';
+    return 'Please ensure that the spelling is the same as your bank account.';
   } else {
     let text = 'Company';
 
@@ -192,8 +191,32 @@ function getBeneficiaryInfo() {
       text = 'Individual';
     }
 
-    return `The beneficiary name should be same as ${text} name`;
+    return `The beneficiary name should be same as ${text} name.`;
   }
+}
+
+function getBillingLabelInfo() {
+  let text = '';
+  if (isUnregisteredBusiness(this)) {
+    text =
+      'Enter the brand name your customers are familiar with or you want to use in future.';
+  } else {
+    text =
+      'The brand name that your customers are familiar with. It should either be similar to your registered business name or website name.';
+  }
+  return text;
+}
+
+function getAccountNumberInfo() {
+  let text = '';
+  if (isUnregisteredBusiness(this)) {
+    text =
+      'Please ensure the Bank details you are entering are of the same person as the PAN.';
+  } else {
+    text =
+      'Should be a current bank account of the company to which your payments will be settled.';
+  }
+  return text;
 }
 
 function hasSelectedBlacklistedCategory(activation) {
@@ -209,7 +232,12 @@ function hasSelectedBlacklistedCategory(activation) {
         state.dirty.business_subcategory || props.data.business_subcategory;
       return (
         subcategories[selectedSubcategory] &&
-        subcategories[selectedSubcategory]['activation_flow'] === 'blacklist'
+        (isUnregisteredBusiness(activation)
+          ? subcategories[selectedSubcategory][
+              'non_registered_activation_flow'
+            ] === 'blacklist'
+          : subcategories[selectedSubcategory]['activation_flow'] ===
+            'blacklist')
       );
     }
   }
@@ -234,5 +262,7 @@ export {
   checkValidityFromAPI,
   getPANDescription,
   getBeneficiaryInfo,
+  getBillingLabelInfo,
+  getAccountNumberInfo,
   hasSelectedBlacklistedCategory,
 };
