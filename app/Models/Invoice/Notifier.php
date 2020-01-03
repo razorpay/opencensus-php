@@ -763,23 +763,7 @@ class Notifier extends Base\Core
                 ];
 
                 break;
-            case Preferences::MID_BOB_2:
-                $sender = 'BOBFIN';
-                $template = 'sms.custom_invoice.bob_2';
-                $params = [
-                    'invoice_link' => $invoiceLink,
-                ];
 
-                break;
-            case Preferences::MID_BOB_3:
-                $sender = 'BOBFIN';
-                $template = 'sms.custom_invoice.bob_3';
-                $params = [
-                    'receipt'       => $receipt,
-                    'invoice_link' => $invoiceLink,
-                ];
-
-                break;
             case Preferences::MID_BAGIC:
                 $sender = 'BAGICZ';
                 $template = 'sms.custom_invoice.bagic_pl';
