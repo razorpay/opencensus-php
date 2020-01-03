@@ -18,10 +18,15 @@ const mapStateToProps = state => {
     contact_email,
     ...(transaction_report_email ? transaction_report_email.split(',') : []),
   ];
+
+  const customConfigs = getCustomConfigs(sessionUser);
+
   return {
     ...state.merchantReports,
     user: pickProps(sessionUser, ['current']),
     emailReportOptions: uniqueArray(emailReportOptions),
+    mode: state.session.mode,
+    customConfigs,
   };
 };
 
@@ -31,3 +36,51 @@ export default connect(mapStateToProps, {
   createLog,
   loadMore,
 })(Reports);
+
+function getCustomConfigs(sessionUser) {
+  const customConfigs = [];
+
+  if (sessionUser.isOrgAllowedFunctionality('monthlyInvoice')) {
+    customConfigs.push(customConfigMap['monthlyInvoice']);
+  }
+
+  if (sessionUser.findTag('borking_report')) {
+    customConfigs.push(customConfigMap['broking']);
+  }
+
+  if (sessionUser.findTag('rpp_report')) {
+    customConfigs.push(customConfigMap['rpp_report']);
+  }
+
+  if (sessionUser.findTag('dsp_report')) {
+    customConfigs.push(customConfigMap['dsp_report']);
+  }
+
+  return customConfigs;
+}
+
+const customConfigMap = {
+  monthlyInvoice: {
+    name: 'Monthly Invoice',
+    type: 'custom',
+    id: 'invoice',
+  },
+
+  dsp_report: {
+    name: 'DSP Transaction Report',
+    type: 'custom',
+    id: 'dsp_report',
+  },
+
+  broking: {
+    name: 'Broking Report',
+    type: 'custom',
+    id: 'broking',
+  },
+
+  rpp_report: {
+    name: 'e-Mitra Report',
+    type: 'custom',
+    id: 'rpp_report',
+  },
+};
