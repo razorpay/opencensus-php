@@ -5919,16 +5919,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.4.9",
+            "version": "1.4.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "a6611bf6d300ba514a4d430b01a192ce380676b4"
+                "reference": "01a17b0a0f5c528a19b7f2366b5da9b45515756f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/a6611bf6d300ba514a4d430b01a192ce380676b4",
-                "reference": "a6611bf6d300ba514a4d430b01a192ce380676b4",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/01a17b0a0f5c528a19b7f2366b5da9b45515756f",
+                "reference": "01a17b0a0f5c528a19b7f2366b5da9b45515756f",
                 "shasum": ""
             },
             "require": {
@@ -5942,7 +5942,8 @@
                 "guzzlehttp/psr7": "^1.3",
                 "php-http/message": "^1.7",
                 "php-http/mock-client": "^0.3 || ^1.0",
-                "phpunit/phpunit": "^6.0 || ^8.0 || ^7.0"
+                "phpunit/phpunit": "^6.0 || ^8.0 || ^7.0",
+                "symfony/yaml": "^5.0"
             },
             "type": "library",
             "autoload": {
@@ -5961,7 +5962,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2019-11-07T07:33:14+00:00"
+            "time": "2020-01-02T08:49:15+00:00"
         },
         {
             "name": "razorpay/lqext",
@@ -6384,10 +6385,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.3.0",
+                "source": "https://github.com/razorpay/trace/tree/2.4",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2019-08-23T08:33:50+00:00"
+            "time": "2019-11-22T04:28:28+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -8408,6 +8409,7 @@
                 "psr",
                 "psr-7"
             ],
+            "abandoned": "laminas/laminas-diactoros",
             "time": "2018-09-05T19:29:37+00:00"
         }
     ],
