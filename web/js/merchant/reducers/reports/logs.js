@@ -32,7 +32,7 @@ const handleFetchLogsPending = (state, action, initialState) =>
 
 const handleFetchLogsSuccess = (state, action) => {
   const firstFetch = state.items.length < 1;
-  console.log({ firstFetch });
+
   return firstFetch
     ? listFetchSuccessState(state, action)
     : filterSameObjects(state, action);
