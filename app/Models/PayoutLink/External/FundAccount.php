@@ -46,7 +46,7 @@ class FundAccount
             $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $merchant);
 
             // verifying that the fund_account_id sent is same as the one associated with the payout-link
-            // there is a possibility, that after token verification, one changes the fund_account_id just before add
+            // there is a possibility, that after OTP verification, one changes the fund_account_id just before add
             // and that fund_account doesn't belong to the intended contact. In this case we throw an exception
             if ($fundAccount->contact->getId() !== $contact->getId())
             {
