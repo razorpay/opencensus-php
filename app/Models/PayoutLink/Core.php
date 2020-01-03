@@ -416,11 +416,9 @@ class Core extends Base\Core
 
     protected function getDataForHostedPage(Entity $payoutLink): array
     {
-        $contact = $payoutLink->contact;
+        $maskedEmail = $this->getMaskedEmail($payoutLink->getContactEmail());
 
-        $maskedEmail = $this->getMaskedEmail($contact);
-
-        $maskedPhone = $this->getMaskedPhone($contact);
+        $maskedPhone = $this->getMaskedPhone($payoutLink->getContactPhoneNumber());
 
         $settingsAccessor = $this->getSettingsAccessor($this->merchant);
 
@@ -434,7 +432,7 @@ class Core extends Base\Core
             'payout_link_status'      => $payoutLink->getStatus(),
             'amount'                  => $payoutLink->getAmount(),
             'currency'                => $payoutLink->getCurrency(),
-            'user_name'               => $contact->getName(),
+            'user_name'               => $payoutLink->getContactName(),
             'description'             => $payoutLink->getDescription(),
             'user_email'              => $maskedEmail,
             'user_phone'              => $maskedPhone,
@@ -456,13 +454,11 @@ class Core extends Base\Core
      * Input: test_email@gmail.com
      * Output: tes*****l@g****.com
      *
-     * @param ContactEntity $contact
+     * @param string $email
      * @return mixed|string
      */
-    protected function getMaskedEmail(ContactEntity $contact)
+    protected function getMaskedEmail(string $email)
     {
-        $email = $contact->getEmail();
-
         $maskedEmail = $email;
 
         if (empty($email) === true)
@@ -513,10 +509,8 @@ class Core extends Base\Core
         return $maskedEmail;
     }
 
-    public function getMaskedPhone(ContactEntity $contact)
+    public function getMaskedPhone(string $phone)
     {
-        $phone = $contact->getContact();
-
         if (empty($phone) === true)
         {
             return '';
