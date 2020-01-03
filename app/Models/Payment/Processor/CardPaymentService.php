@@ -79,6 +79,8 @@ trait CardPaymentService
 
         $this->updatePaymentFromCpsResponse($payment, $response);
 
+        $this->handleHeadlessResponse($payment, $response);
+
         $this->handleCpsResponse($payment, $response);
 
         // If action is verify we get verify trace data
@@ -99,6 +101,8 @@ trait CardPaymentService
             $response = $this->app['card.payments']->authorizeAcrossTerminals($payment, $data, $this->selectedTerminals);
 
             $this->updatePaymentFromCpsResponse($payment, $response);
+
+            $this->handleHeadlessResponse($payment, $response);
 
             $this->handleCpsResponse($payment, $response);
 
@@ -240,5 +244,15 @@ trait CardPaymentService
         ]);
 
         $gatewayInput['authentication_terminals'] = $authTerminals;
+    }
+
+    // Handle response for headless payments
+    protected function handleHeadlessResponse($payment, $response)
+    {
+        if (isset($response["headless"]["disable_iin"])
+            and $response["headless"]["disable_iin"] === true )
+        {
+            $this->disableIinFlowIfApplicable($payment, TraceCode::HEADLESS_OTP_ELF_FAILURE);
+        }
     }
 }
