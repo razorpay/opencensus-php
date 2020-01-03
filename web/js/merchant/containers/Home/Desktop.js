@@ -115,6 +115,7 @@ class AnalyticsDesktop extends Component {
       showInstantActivation && config.config && !config.config.hasPersonalised;
 
     const nextSettlement = !settlement_amount.data.next_settlement_time;
+    const { no_settlement } = settlement_amount.data;
 
     return (
       <div className="home-analytics-desktop">
@@ -199,7 +200,26 @@ class AnalyticsDesktop extends Component {
                         )}
                       </span>
                       <br />
-                      {!nextSettlement && settlement_ux_revamp ? (
+                      {no_settlement && settlement_ux_revamp ? (
+                        <div class="text-right" style={{ width: '100%' }}>
+                          {no_settlement.caption}
+                          {no_settlement.reason && (
+                            <React.Fragment>
+                              <div style={{ display: 'inline' }}>
+                                <i class="i i-info-circle" />
+                                <Popover theme="dark" align="left">
+                                  <PopoverBody>
+                                    <div>{no_settlement.reason}</div>
+                                  </PopoverBody>
+                                </Popover>
+                              </div>
+                            </React.Fragment>
+                          )}
+                        </div>
+                      ) : null}
+                      {!no_settlement &&
+                      !nextSettlement &&
+                      settlement_ux_revamp ? (
                         <div class="text-right" style={{ width: '100%' }}>
                           <strong>
                             <Amount
