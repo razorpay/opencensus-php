@@ -3153,8 +3153,8 @@ class ReconciliationFileTest extends TestCase
 
         $facade['APPROVE_CODE'] = $gatewayPayment['auth'];
 
-        $facade['VAT_AMT'] = '0.00';
-        $facade['MTS_MSF_FIXFEE'] = '0.00';
+        $facade['VAT_AMT']          = '0.00';
+        $facade['MTS_MSF_FIXFEE']   = '0.00';
         $facade['MTS_TOTL_CSF_AMT'] = '0.00';
 
         return $facade;
