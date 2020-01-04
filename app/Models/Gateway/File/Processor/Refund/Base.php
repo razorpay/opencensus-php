@@ -433,10 +433,10 @@ class Base extends BaseProcessor
     }
 
     /**
-     * @param $refundids
+     * @param $listOfRefunds
      * @throws GatewayFileException
      */
-    protected function populateScroogeRefundsGivenIds($refundids)
+    protected function populateScroogeRefundsGivenIds($listOfRefunds)
     {
         $shouldFetchScroogeRefunds = true;
         $start = 0;
@@ -445,7 +445,7 @@ class Base extends BaseProcessor
 
         while ($shouldFetchScroogeRefunds === true)
         {
-            $refundIds = array_slice($refundids, $start, $fetchLimit);
+            $refundIds = array_slice($listOfRefunds, $start, $fetchLimit);
 
             if (count($refundIds) === 0)
             {
@@ -455,7 +455,7 @@ class Base extends BaseProcessor
             {
                 $this->populateScroogeRefunds($this->gatewayFile->getBegin(), $this->gatewayFile->getEnd(), $refundIds);
 
-                $start += $this->queryLimit;
+                $start += $this->fetchFromScroogeCount-1;
             }
         }
     }
