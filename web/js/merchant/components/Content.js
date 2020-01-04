@@ -19,6 +19,7 @@ import Subscriptions from 'merchant/containers/Subscriptions/Index';
 import Customers from 'merchant/views/Customers/List';
 import Marketplace from 'merchant/containers/Marketplace/Index';
 import Reports from 'merchant/containers/Reports';
+import ReportsAsync from 'merchant/views/ReportsAsync/Home';
 import MyAccount from 'merchant/views/Account';
 import Settings from 'merchant/views/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
@@ -268,6 +269,12 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/reports"
             component={Reports}
+            additionalCondition={user => user.isAllowedView('reports')}
+          />
+
+          <ShowWhenRoute
+            path="/reports-async"
+            component={ReportsAsync}
             additionalCondition={user => user.isAllowedView('reports')}
           />
 
