@@ -5,7 +5,17 @@ import {
   fetchAll,
 } from 'merchant/reducers/collection';
 
-const CONFIGS = 'CONFIGS';
+const PARTNER_CONFIGS = 'PARTNER_CONFIGS';
+const MERCHANT_CONFIGS = 'MERCHANT_CONFIGS';
 
-export const fetchConfigs = params => fetchAll(params, Config, CONFIGS);
-export const configListReducer = makeActionCollectionReducer(CONFIGS);
+export const fetchMerchantConfigs = params =>
+  fetchAll(params, Config, MERCHANT_CONFIGS);
+export const merchantConfigListReducer = makeActionCollectionReducer(
+  MERCHANT_CONFIGS
+);
+
+export const fetchPartnerConfigs = params =>
+  fetchAll(params, Config, PARTNER_CONFIGS);
+export const partnerConfigListReducer = makeActionCollectionReducer(
+  PARTNER_CONFIGS
+);

@@ -16,7 +16,7 @@ export default function LogList(props) {
 
   return (
     <div class="LogList">
-      {loading || configsLoading ? (
+      {loading ? (
         <p>Loading...</p>
       ) : (
         items.map(item => (
@@ -28,6 +28,15 @@ export default function LogList(props) {
           />
         ))
       )}
+      {!loading &&
+        5 <= items.length &&
+        items.length < 10 && (
+          <div class="LoadMore">
+            <button onClick={props.onLoadMoreClick} class="btn btn-link">
+              Load More
+            </button>
+          </div>
+        )}
     </div>
   );
 }

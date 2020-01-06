@@ -21,6 +21,10 @@ export default class ReportHome extends React.PureComponent {
     });
   };
 
+  onLoadMoreLogs = () => {
+    this.props.loadMore({ count: 5, skip: 5 });
+  };
+
   render() {
     const { logs, user, configs, config } = this.props;
     return (
@@ -41,6 +45,7 @@ export default class ReportHome extends React.PureComponent {
                 allConfigs={configs.items}
                 configsLoading={configs.loading}
                 config={config}
+                onLoadMoreClick={this.onLoadMoreLogs}
                 {...logs}
               />
             </div>
