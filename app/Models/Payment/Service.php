@@ -6,7 +6,6 @@ use Mail;
 use Crypt;
 use Config;
 use Carbon\Carbon;
-use RZP\Constants\Environment;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 
