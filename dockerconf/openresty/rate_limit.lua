@@ -67,6 +67,7 @@ local function get_req_ctx(ngx)
             if string.find(ngx.var.uri, rm_lib.routes_meta[i].uri_regex) then
                 req_ctx.route = rm_lib.routes_meta[i].name
                 req_ctx.auth = rm_lib.routes_meta[i].auth
+                break
             end
         end
     end
