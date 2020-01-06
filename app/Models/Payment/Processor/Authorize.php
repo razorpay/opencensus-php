@@ -293,17 +293,7 @@ trait Authorize
         $retry = false;
 
         // Checking razorX flag for feedback loop here per paymentId
-        $razorXForDoppler = false;
-
-        $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-        $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
-
-        if (($isProduction === true) and
-            (strtolower($variant) === 'on'))
-        {
-            $razorXForDoppler = true;
-        }
+        $razorXForDoppler = Doppler::checkRazorXForFeedbackLoop($payment->getId());
 
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.

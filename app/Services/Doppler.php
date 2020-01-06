@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use Requests;
+use RZP\Constants\Environment;
 use RZP\Exception;
 use Carbon\Carbon;
 use Requests_Session;
@@ -286,7 +287,7 @@ class Doppler
         ];
 
         $options = [
-            "connect_timeout" => self::CONNECT_TIMEOUT,
+            'connect_timeout' => self::CONNECT_TIMEOUT,
             'timeout' => self::REQUEST_TIMEOUT,
             'auth'    => $authentication,
         ];
@@ -440,6 +441,24 @@ class Doppler
         }
 
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
+    }
+
+    public function checkRazorXForFeedbackLoop($id)
+    {
+        if (($this->env !== Environment::PRODUCTION) or
+            ($this->mode !== Mode::LIVE))
+        {
+            return false;
+        }
+
+        $variant = $this->app->razorx->getTreatment($id, 'api_hitting_doppler_service', Mode::LIVE);
+
+        if (strtolower($variant) === 'on')
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }

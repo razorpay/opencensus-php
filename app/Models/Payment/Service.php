@@ -25,6 +25,7 @@ use RZP\Models\Card;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Org;
+use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants;
@@ -1392,17 +1393,7 @@ class Service extends Base\Service
         $allMethods = Payment\Method::getAllPaymentMethods();
 
         // checking razorX flag for feedback loop here per cron
-        $this->razorXForDoppler = false;
-
-        $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getId(), 'api_hitting_doppler_service', Mode::LIVE);
-
-        if (($isProduction === true) and
-            (strtolower($variant) === 'on'))
-        {
-            $this->razorXForDoppler = true;
-        }
+        $this->razorXForDoppler = Doppler::checkRazorXForFeedbackLoop($this->app['request']->getId());
 
         foreach ($allMethods as $method)
         {
