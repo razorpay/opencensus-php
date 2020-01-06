@@ -64,10 +64,11 @@ export default class NoCostEmiMethods extends React.Component {
     let planFields = [];
     if (this.state.selectedIssuer !== null) {
       let emiPlans = this.state.emiOptions[this.state.selectedIssuer];
+      let count = 1;
       for (let duration in emiPlans.plans) {
         let text = `${duration} Months  ${emiPlans.plans[duration]}% Off`;
         planFields.push(
-          <div>
+          <div key={this.state.selectedIssuer + count++}>
             <Input.Check
               fieldLabel={text}
               onChange={this.onSelectTenure(duration)}
@@ -92,10 +93,19 @@ export default class NoCostEmiMethods extends React.Component {
     let issuers =
       (this.state.emiOptions && Object.keys(this.state.emiOptions)) || [];
     let networksAndIssuers = { ...PAYMENT_NETWORK_MAP, ...ISSUERS };
-    issuers = issuers.map(issuer => ({
-      name: issuer,
-      label: networksAndIssuers[issuer] || issuer,
-    }));
+    issuers = issuers
+      .filter(issuer => {
+        let issuerData = this.state.emiOptions[issuer];
+        return issuerData.min_amount <= this.props.minAmount * 100;
+      })
+      .map(issuer => ({
+        name: issuer,
+        label: networksAndIssuers[issuer] || issuer,
+      }));
+    issuers.unshift({
+      name: '',
+      label: 'Select Issuer',
+    });
     return this.state.isLoading === false ? (
       <React.Fragment>
         <Input.Select
@@ -108,7 +118,9 @@ export default class NoCostEmiMethods extends React.Component {
         {this.renderDuration()}
       </React.Fragment>
     ) : (
-      <Spinner />
+      <div className="no-cost-emi-loader">
+        <Spinner />
+      </div>
     );
   }
 }

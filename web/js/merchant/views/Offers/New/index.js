@@ -99,6 +99,7 @@ export default class CreateOfferWizard extends React.Component {
           return (
             <NoCostEmiMethods
               getFormOnChangeHandler={this.getFormOnChangeHandler}
+              minAmount={this.state.min_amount || 0}
             />
           );
         }
