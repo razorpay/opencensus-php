@@ -27,7 +27,7 @@ export default ({
       description="Expiry date for offer"
       isInline
       validator={getFormElementValidations('ends_at')}
-      defaultValue={endsAt}
+      defaultValue={endsAt || ''}
       required
     />
     <Input.Select
