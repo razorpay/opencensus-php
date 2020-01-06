@@ -90,20 +90,7 @@ class Status
                                                 string $currentStatus = null,
                                                 string $payoutLinkId = null)
     {
-        $context = [
-            'id'             => $payoutLinkId,
-            'current_status' => $currentStatus,
-            'next_status'    => $nextStatus
-        ];
-
-        if (in_array($nextStatus, self::VALID_STATUSES) === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS,
-                null,
-                $context
-            );
-        }
+        self::validate($nextStatus);
 
         $allowedNextStates = self::STATE_MACHINE[$currentStatus];
 
@@ -112,7 +99,25 @@ class Status
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS_TRANSITION,
                 null,
-                $context
+                [
+                    'id'             => $payoutLinkId,
+                    'current_status' => $currentStatus,
+                    'next_status'    => $nextStatus
+                ]
+            );
+        }
+    }
+
+    public static function validate($status)
+    {
+        if (in_array($status, self::VALID_STATUSES) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS,
+                null,
+                [
+                    'status' => $status
+                ]
             );
         }
     }
