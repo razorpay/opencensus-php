@@ -19,4 +19,6 @@ class ReconciliationFields
     const MTS_MSF_FIXFEE = 'MTS_MSF_FIXFEE';
 
     const MTS_TOTL_CSF_AMT = 'MTS_TOTL_CSF_AMT';
+
+    const CARD_NO = 'CARD_NO';
 }
