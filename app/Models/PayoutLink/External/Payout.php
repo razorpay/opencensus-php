@@ -3,7 +3,6 @@
 namespace RZP\Models\PayoutLink\External;
 
 use App;
-use RZP\Models\Payout\Purpose;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -33,7 +32,7 @@ class Payout
     {
         $input = [
             PayoutEntity::NARRATION            => $payoutLink->getDescription(),
-            PayoutEntity::PURPOSE              => Purpose::PAYOUT,
+            PayoutEntity::PURPOSE              => $payoutLink->getPurpose(),
             PayoutEntity::AMOUNT               => $payoutLink->getAmount(),
             PayoutEntity::CURRENCY             => $payoutLink->getCurrency(),
             PayoutEntity::NOTES                => $payoutLink->getNotes()->toArray(),
