@@ -293,7 +293,7 @@ trait Authorize
         $retry = false;
 
         // Checking razorX flag for feedback loop here per paymentId
-        $razorXForDoppler = Doppler::checkRazorXForFeedbackLoop($payment->getId());
+        $razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($payment->getId());
 
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
