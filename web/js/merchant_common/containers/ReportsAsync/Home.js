@@ -1,13 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { connect } from 'react-redux';
+
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import LogList from './Logs/List';
 import GenerateReportPanel from './GenerateReportPanel';
 
-@connect(state => ({
-  user: state.session.user,
-}))
 export default class ReportHome extends React.PureComponent {
   componentDidMount() {
     this.props.fetchConfigs();
@@ -26,7 +23,7 @@ export default class ReportHome extends React.PureComponent {
   };
 
   render() {
-    const { logs, user, configs, config } = this.props;
+    const { logs, user, configs, customConfigs } = this.props;
     return (
       <div>
         <tabbed-container>
@@ -38,13 +35,15 @@ export default class ReportHome extends React.PureComponent {
             <div class="content-wrapper">
               <GenerateReportPanel
                 configs={configs}
+                customConfigs={customConfigs}
                 onGenerateReport={this.onGenerateReport}
+                emailReportOptions={this.props.emailReportOptions}
+                mode={this.props.mode}
               />
               <LogList
                 currentMerchantId={user.current}
                 allConfigs={configs.items}
                 configsLoading={configs.loading}
-                config={config}
                 onLoadMoreClick={this.onLoadMoreLogs}
                 {...logs}
               />

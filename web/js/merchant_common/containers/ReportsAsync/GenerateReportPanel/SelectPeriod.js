@@ -25,6 +25,7 @@ export default class SelectPeriod extends React.Component {
       selectedDate: DEFAULT_SELECTED_DATE,
       selectedStartAt: DEFAULT_SELECTED_START_AT,
       selectedEndAt: DEFAULT_SELECTED_END_AT,
+      selectedCustomConfigMonth: DEFAULT_SELECTED_MONTH,
     },
   };
 
@@ -97,11 +98,36 @@ export default class SelectPeriod extends React.Component {
     }
   };
 
+  getCustomConfigYear = () => {
+    const { selectedCustomConfigMonth } = this.state.values;
+    const year = selectedCustomConfigMonth.year();
+
+    const month = selectedCustomConfigMonth.month() + 1; // January
+
+    return { year, month };
+  };
+
+  renderSelectPeriodForCustomConfig() {
+    const { selectedCustomConfigMonth } = this.state.values;
+    return (
+      <div className="InputGroup--inline">
+        <div className="Input-content">
+          <SelectMonth
+            onDateChange={this.onDateChange}
+            selectedMonth={selectedCustomConfigMonth}
+            name="selectedCustomConfigMonth"
+            allowToday={false}
+          />
+        </div>
+      </div>
+    );
+  }
+
   render() {
     const { selectedPeriod, withTime, ...defaults } = this.state.values;
 
-    const { avlblPeriodOptions = [] } = this.props;
-    return (
+    const { avlblPeriodOptions = [], isCustomConfig } = this.props;
+    return !isCustomConfig ? (
       <Input.Group class="InputGroup--inline">
         <div class="Input-content">
           <div class="Input">
@@ -137,6 +163,8 @@ export default class SelectPeriod extends React.Component {
           />
         </div>
       </Input.Group>
+    ) : (
+      this.renderSelectPeriodForCustomConfig()
     );
   }
 }
@@ -154,6 +182,7 @@ function SelectInterval({
         <SelectMonth
           onDateChange={onDateChange}
           selectedMonth={defaults.selectedMonth}
+          name="selectedMonth"
         />
       );
     case 'daily':
@@ -176,17 +205,18 @@ function SelectInterval({
   return null;
 }
 
-function SelectMonth({ onDateChange, selectedMonth }) {
+function SelectMonth({ onDateChange, selectedMonth, name, allowToday = true }) {
   return (
     <Input.ToCalendar
       type="month"
-      name="selectedMonth"
+      name={name}
       placement="topLeft"
       addonAfter={<i class="i i-date-range" />}
       defaultValue={selectedMonth}
       label="Select Month"
       class="Input--vTop"
       onChange={onDateChange}
+      allowToday={allowToday}
     />
   );
 }
