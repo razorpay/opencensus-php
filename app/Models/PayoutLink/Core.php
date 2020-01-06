@@ -500,8 +500,7 @@ class Core extends Base\Core
                                          Trace::ERROR,
                                          TraceCode::INVALID_EMAIL_CANNOT_MASK,
                                          [
-                                             'email'      => $email,
-                                             'contact_id' => $contact->getId()
+                                             'email'      => $email
                                          ]
             );
         }
@@ -518,9 +517,9 @@ class Core extends Base\Core
 
         $phoneLen = strlen($phone);
 
-        return substr($phoneLen, 0, 2) .
+        return substr($phone, 0, 2) .
                str_repeat('*', $phoneLen - 4) .
-               substr($phone, $phoneLen - 2, $phoneLen - 1);
+               substr($phone, $phoneLen - 2, 2);
 
     }
 
