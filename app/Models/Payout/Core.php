@@ -330,8 +330,15 @@ class Core extends Base\Core
 
     public function updateWithDetailsBeforeFtaRecon(Entity $payout, array $ftaData = [])
     {
+
+        $this->trace->info(
+            TraceCode::PAYOUT_UPDATE_BEFORE_FTA_RECON,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
+
         // For non-Yesbank, we will not get public_failure_reason
-        $failureReason = $responseData[Attempt\Constants::FAILURE_REASON] ?? null;
+        $failureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
 
         $payout->setUtr($ftaData[Attempt\Constants::UTR]);
 
@@ -574,7 +581,7 @@ class Core extends Base\Core
             $this->dispatchQueuedPayout($payout, $payoutFees, $totalBalance);
 
             $dispatchedCount += 1;
-         }
+        }
 
          return [
              'balance_remaining'        => $totalBalance,
