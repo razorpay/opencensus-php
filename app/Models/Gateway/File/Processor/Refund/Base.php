@@ -441,7 +441,7 @@ class Base extends BaseProcessor
         $shouldFetchScroogeRefunds = true;
         $start = 0;
 
-        $fetchLimit = $this->fetchFromScroogeCount - 1;
+        $fetchLimit = $this->fetchFromScroogeCount;
 
         while ($shouldFetchScroogeRefunds === true)
         {
@@ -455,7 +455,7 @@ class Base extends BaseProcessor
             {
                 $this->populateScroogeRefunds($this->gatewayFile->getBegin(), $this->gatewayFile->getEnd(), $refundIds);
 
-                $start += $this->fetchFromScroogeCount-1;
+                $start += $fetchLimit;
             }
         }
     }
