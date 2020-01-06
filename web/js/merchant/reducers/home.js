@@ -11,6 +11,7 @@ const ENTITY_TOTALS_FETCH = 'ENTITY_TOTALS_FETCH';
 const PAYMENT_BREAKUP_FETCH = 'PAYMENT_BREAKUP_FETCH';
 const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 const SETTLEMENT_AMOUNT_FETCH = 'SETTLEMENT_AMOUNT_FETCH';
+const BALANCE_CONFIG_FETCH = 'BALANCE_CONFIG_FETCH';
 
 // Instant activation actions
 const SHOW_IA_SUCCESS = 'SHOW_IA_SUCCESS';
@@ -48,6 +49,11 @@ let initialState = {
     error: null,
   },
   settlement_amount: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+  merchantBalanceConfigs: {
     loading: true,
     data: {},
     error: null,
@@ -201,6 +207,13 @@ export const fetchSettlementAmount = () => {
   };
 };
 
+export const fetchBalanceConfig = () => {
+  return {
+    type: BALANCE_CONFIG_FETCH,
+    payload: merchantFetch(`balance_configs`),
+  };
+};
+
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${ANALYTICS_FETCH}::PENDING`:
@@ -295,6 +308,22 @@ export default function(state = initialState, action) {
         loading: false,
         error: action.payload.errors,
         data: initialState.settlement_amount.data,
+      });
+
+    case `${BALANCE_CONFIG_FETCH}::SUCCESS`:
+      return merge(state, {
+        merchantBalanceConfigs: {
+          data: action.payload.data,
+          loading: false,
+          error: null,
+        },
+      });
+
+    case `${BALANCE_CONFIG_FETCH}::ERROR`:
+      return set(state, 'merchantBalanceConfigs', {
+        loading: false,
+        error: action.payload.errors,
+        data: initialState.merchantBalanceConfigs.data,
       });
 
     case `SHOW_IA_SUCCESS`:

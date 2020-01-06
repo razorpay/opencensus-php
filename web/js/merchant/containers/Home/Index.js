@@ -112,6 +112,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       user: state.session.user,
       mode: state.session.mode,
       current_balance: state.home.current_balance,
+      merchantBalanceConfigs: state.home.merchantBalanceConfigs,
       showInstantActivationSuccess:
         state.home.instantActivations.showInstantActivationSuccess,
       showKYCDetails: state.home.instantActivations.showKYCDetails,
@@ -508,7 +509,7 @@ export default class HomeContainer extends Component {
 
   componentDidMount() {
     this.props.fetchSettlementAmount();
-
+    this.props.fetchBalanceConfig();
     this.setScrollAmountToStickHeader();
 
     window.addEventListener('resize', this.onResize);
