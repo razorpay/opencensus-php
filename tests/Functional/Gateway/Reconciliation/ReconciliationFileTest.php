@@ -3128,13 +3128,13 @@ class ReconciliationFileTest extends TestCase
 
         $facade['Transaction Amount'] = number_format($gatewayPayment['amount'] / 100, 2);
 
-        $facade['Settlement Amount'] = $facade['Transaction Amount'] / 100;
+        $facade['Settlement Amount']  = $facade['Transaction Amount'] / 100;
 
         $facade['Auth/Approval Code'] = $gatewayPayment['auth'];
 
-        $facade['Merchant Track ID'] = "''". $entityId;
+        $facade['Merchant Track ID']  = "''". $entityId;
 
-        $facade['Transaction Type'] =  $transactionType;
+        $facade['Transaction Type']   =  $transactionType;
 
         return $facade;
     }
@@ -3143,21 +3143,21 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['testFssSbiRecon'];
 
-        $facade['TXN_AMT'] = number_format($gatewayPayment['amount'] / 100, 2);
+        $facade['TXN_AMT']                  = number_format($gatewayPayment['amount'] / 100, 2);
 
-        $facade['TRANSACTION_TYPE'] = $transactionType;
+        $facade['TRANSACTION_TYPE']         = $transactionType;
 
-        $facade['PRCHS_ MERCHANT_TXNNO'] = $entityId;
+        $facade['PRCHS_ MERCHANT_TXNNO']    = $entityId;
 
-        $facade['MERCHANT_TXNNO'] = $entityId;
+        $facade['MERCHANT_TXNNO']           = $entityId;
 
-        $facade['APPROVE_CODE'] = $gatewayPayment['auth'];
+        $facade['APPROVE_CODE']             = $gatewayPayment['auth'];
 
-        $facade['PRCHS_RRN'] = '01231232131';
+        $facade['PRCHS_RRN']                = '01231232131';
 
-        $facade['VAT_AMT']          = '0.00';
-        $facade['MTS_MSF_FIXFEE']   = '0.00';
-        $facade['MTS_TOTL_CSF_AMT'] = '0.00';
+        $facade['VAT_AMT']                  = '0.00';
+        $facade['MTS_MSF_FIXFEE']           = '0.00';
+        $facade['MTS_TOTL_CSF_AMT']         = '0.00';
 
         return $facade;
     }
