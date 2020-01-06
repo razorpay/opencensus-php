@@ -1129,6 +1129,13 @@ class Validator extends Base\Validator
         Entity::VPA                        => 'sometimes|string',
     ];
 
+    protected static $debitEmiTerminalRules = [
+        Entity::GATEWAY             => 'required|in:debit_emi',
+        Entity::GATEWAY_MERCHANT_ID => 'required|string',
+        Entity::EMI                 => 'required|boolean',
+        Entity::EMI_SUBVENTION      => 'sometimes|in:customer,merchant',
+    ];
+
     protected static $matchAttributes = [
         Entity::GATEWAY,
         Entity::GATEWAY_ACQUIRER,
@@ -1318,7 +1325,8 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::GATEWAY] === Gateway::BAJAJ)
+        if (($input[Entity::GATEWAY] === Gateway::BAJAJ) or
+            ($input[Entity::GATEWAY] === Gateway::DEBIT_EMI))
         {
             return;
         }
