@@ -1,4 +1,4 @@
-import { getFormattedDate } from '../utils';
+import { getFormattedDate } from '../../utils';
 
 export default function KindOfReport({ createdAt, scheduleId }) {
   return (

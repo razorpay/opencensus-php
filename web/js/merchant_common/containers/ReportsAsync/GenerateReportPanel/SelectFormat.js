@@ -1,0 +1,76 @@
+import Input from 'common/new-ui/Input';
+
+import { extractExtensionFromTemplate } from '../utils';
+
+const DEFAULT_FILE_FORMAT = 'csv';
+export default class SelectFormat extends React.Component {
+  static getDerivedStateFromProps(nextProps, prevState = {}) {
+    if (
+      !prevState.selectedConfigId ||
+      nextProps.selectedConfigId !== prevState.selectedConfigId
+    ) {
+      const value = getDefaultFileFormatOfConfig(
+        nextProps.selectedConfigId,
+        nextProps.allConfigs
+      );
+      return {
+        selectedConfigId: nextProps.selectedConfigId,
+        value,
+      };
+    }
+    return null;
+  }
+
+  state = {};
+
+  getValue = () => {
+    const { state, props } = this;
+    if (
+      getDefaultFileFormatOfConfig(state.selectedConfigId, props.allConfigs) !==
+      state.value
+    ) {
+      return {
+        template_overrides: {
+          file_meta: {
+            extension: state.value,
+          },
+        },
+      };
+    }
+    return {};
+  };
+
+  onChange = ({ target }) => {
+    const { value } = target;
+    this.setState({ value });
+  };
+
+  render() {
+    return (
+      <Input.Select
+        label="Select Format"
+        class="Input--vTop"
+        name="selectedFormat"
+        value={this.state.value}
+        options={formatOptions}
+        size="half_big"
+        onChange={this.onChange}
+      />
+    );
+  }
+}
+
+function getDefaultFileFormatOfConfig(selectedConfigId, allConfigs) {
+  const selectedConfig =
+    allConfigs.find(({ id }) => id === selectedConfigId) || {};
+
+  return (
+    extractExtensionFromTemplate(selectedConfig.template) || DEFAULT_FILE_FORMAT
+  );
+}
+
+const formatOptions = [
+  { name: 'csv', label: 'CSV' },
+  { name: 'xlsx', label: 'Excel (xlsx)' },
+  { name: 'xls', label: 'Old Excel (xls)' },
+];
