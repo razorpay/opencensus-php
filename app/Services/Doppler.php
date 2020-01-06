@@ -34,6 +34,8 @@ class Doppler
 
     const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
 
+    const CONNECT_TIMEOUT = 1;
+
     const REQUEST_TIMEOUT = 5;
 
     const MAX_RETRY_COUNT = 1;
@@ -284,6 +286,7 @@ class Doppler
         ];
 
         $options = [
+            "connect_timeout" => self::CONNECT_TIMEOUT,
             'timeout' => self::REQUEST_TIMEOUT,
             'auth'    => $authentication,
         ];

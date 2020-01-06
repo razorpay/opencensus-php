@@ -1392,6 +1392,8 @@ class Service extends Base\Service
         $allMethods = Payment\Method::getAllPaymentMethods();
 
         // checking razorX flag for feedback loop here per cron
+        $this->razorXForDoppler = false;
+
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
         $variant = $this->app->razorx->getTreatment($this->app['request']->getId(), 'api_hitting_doppler_service', Mode::LIVE);
