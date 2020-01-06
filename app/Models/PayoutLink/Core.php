@@ -559,7 +559,7 @@ class Core extends Base\Core
                             ->payout_link
                             ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
-        if ($payoutLink->getStatus() !== Status::ISSUED)
+        if (in_array($payoutLink->getStatus(), Status::VALID_INITIAL_STATUSES) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION,
