@@ -10,7 +10,7 @@ import Group, { GroupItem } from 'common/ui/Group';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
-
+import NegativeBalanceBanner from 'merchant/components/Announcement';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
@@ -136,6 +136,33 @@ class AnalyticsDesktop extends Component {
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
           )}
+
+          <NegativeBalanceBanner
+            title="Add Funds"
+            theme="warning"
+            canBeClosed={true}
+          >
+            Your balance went into negative value. Add funds to avoid the
+            transaction failures.{' '}
+            <Link to={'/addfunds'} target="_blank">
+              {' '}
+              Add Funds
+            </Link>
+          </NegativeBalanceBanner>
+
+          <NegativeBalanceBanner
+            title="On Hold!"
+            theme="danger"
+            canBeClosed={true}
+          >
+            Your current balance had reached the maximum negative limit.
+            Transactions will start to fail now. Please add funds to avoid
+            transaction failures.{' '}
+            <Link to={'/addfunds'} target="_blank">
+              {' '}
+              Add Funds
+            </Link>
+          </NegativeBalanceBanner>
 
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && (
