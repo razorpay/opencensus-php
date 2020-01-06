@@ -88,9 +88,9 @@ class WriteRoutesMeta extends Command
 
 function laravelPatternToNonPosixRegex(string $pattern): string
 {
-    $pattern = preg_replace('/{path\?}/', '(?:/(.*))?', $pattern);
-    $pattern = preg_replace('/{[A-Za-z0-9_]+\?}/', '(?:/([^/].+))?', $pattern);
-    $pattern = preg_replace('/{[A-Za-z0-9_]+}/', '([^/].+)', $pattern);
+    $pattern = preg_replace('/{path\?}/', '%/?(.*)', $pattern);
+    $pattern = preg_replace('/{[A-Za-z0-9_]+\?}/', '%/?([^/]*)', $pattern);
+    $pattern = preg_replace('/{[A-Za-z0-9_]+}/', '([^/]+)', $pattern);
     // Because everything is /v1/ is api service.
     // If not so someone please fix it here.
     return '^/v1/'.$pattern.'$';
