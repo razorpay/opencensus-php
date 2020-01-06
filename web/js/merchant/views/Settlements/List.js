@@ -45,6 +45,7 @@ import Time from 'common/ui/Time';
     schedule: state.settlement.schedule,
     settlement_amount: state.home.settlement_amount,
     holidayList: state.settlement.holidayList,
+    config: state.config.config,
     ...state.home,
     ...state.settlements,
   }),
@@ -213,7 +214,7 @@ export default class SettlementsListContainer extends ListContainer {
 
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settlement UI Revamp',
-      eventAction: 'View Settlement Cycle',
+      eventAction: 'View Settlement Cycle - Settlements Page',
     });
   };
 
@@ -224,6 +225,10 @@ export default class SettlementsListContainer extends ListContainer {
 
     const nextSettlement = this.props.settlement_amount.data
       .next_settlement_time;
+
+    const { no_settlement } = this.props.settlement_amount.data;
+
+    const { settlement_ux_revamp } = this.props.config;
 
     return (
       <React.Fragment>
@@ -244,7 +249,7 @@ export default class SettlementsListContainer extends ListContainer {
           ) : (
             <TestModeBanner />
           )}
-          {nextSettlement === null ? (
+          {settlement_ux_revamp && nextSettlement === null ? (
             <OnHoldBanner
               ctaOnClick={() => {
                 this.props.openModal({
@@ -258,7 +263,7 @@ export default class SettlementsListContainer extends ListContainer {
 
                 window.rzpAnalytics({
                   eventCategory: 'Dashboard - Settlement UI Revamp',
-                  eventAction: 'Click Know More(On Hold)',
+                  eventAction: 'Click Know More(On Hold) - Settlements Page',
                 });
               }}
             />
@@ -267,20 +272,22 @@ export default class SettlementsListContainer extends ListContainer {
             <div class="content-wrapper">
               <HeaderAction>
                 <React.Fragment>
-                  <div
-                    class="btn btn-link settlement-doc-btn"
-                    onClick={this.viewSettlementCycle}
-                  >
-                    <span
-                      class="icon i-info-outline"
-                      style={{
-                        marginRight: '5px',
-                        position: 'relative',
-                        top: '2px',
-                      }}
-                    />
-                    View Settlement Cycle
-                  </div>
+                  {settlement_ux_revamp && (
+                    <div
+                      class="btn btn-link settlement-doc-btn"
+                      onClick={this.viewSettlementCycle}
+                    >
+                      <span
+                        class="icon i-info-outline"
+                        style={{
+                          marginRight: '5px',
+                          position: 'relative',
+                          top: '2px',
+                        }}
+                      />
+                      View Settlement Cycle
+                    </div>
+                  )}
                   {this.props.user.isOndemandSettlementEnabled && (
                     <ShowWhen myRole="owner admin finance">
                       <div className="box-left-pad10-inline">
@@ -321,51 +328,86 @@ export default class SettlementsListContainer extends ListContainer {
                           <Amount value={balance} currency={'INR'} />
                         </span>
                         <br />
-                        {nextSettlement && (
-                          <span style={{ fontSize: '13px' }}>
-                            <strong>
-                              <Amount
+                        {settlement_ux_revamp &&
+                          no_settlement && (
+                            <span style={{ fontSize: '13px' }}>
+                              {no_settlement.caption}
+                              {no_settlement.reason && (
+                                <>
+                                  <i class="i i-info-circle" />
+                                  <Popover theme="dark" align="left">
+                                    <PopoverBody>
+                                      <div>{no_settlement.reason}</div>
+                                    </PopoverBody>
+                                  </Popover>
+                                </>
+                              )}
+                            </span>
+                          )}
+                        {settlement_ux_revamp &&
+                          nextSettlement &&
+                          !no_settlement && (
+                            <span style={{ fontSize: '13px' }}>
+                              <strong>
+                                <Amount
+                                  value={
+                                    this.props.settlement_amount.data
+                                      .settlement_amount
+                                  }
+                                  currency={'INR'}
+                                />
+                              </strong>{' '}
+                              will be settled on{' '}
+                              <Time
                                 value={
                                   this.props.settlement_amount.data
-                                    .settlement_amount
+                                    .next_settlement_time
                                 }
-                                currency={'INR'}
+                                format={'DD MMM YYYY, hh:mm:ss a'}
                               />
-                            </strong>{' '}
-                            will be settled by{' '}
-                            <Time
-                              value={
-                                this.props.settlement_amount.data
-                                  .next_settlement_time
-                              }
-                              format={'DD MMM YYYY, hh:mm:ss a'}
-                            />
-                            <span
-                              onClick={() => {
-                                this.props.openModal({
-                                  size: 'regular',
-                                  component: (
-                                    <SettlementDetail
-                                      settlementAmount={
-                                        this.props.settlement_amount.data
-                                      }
-                                    />
-                                  ),
-                                });
+                              {this.props.settlement_amount.data
+                                .reason_for_delay && (
+                                <>
+                                  <i class="i i-info-circle" />
+                                  <Popover theme="dark" align="left">
+                                    <PopoverBody>
+                                      <div>
+                                        {
+                                          this.props.settlement_amount.data
+                                            .reason_for_delay
+                                        }
+                                      </div>
+                                    </PopoverBody>
+                                  </Popover>
+                                </>
+                              )}
+                              <span
+                                onClick={() => {
+                                  this.props.openModal({
+                                    size: 'regular',
+                                    component: (
+                                      <SettlementDetail
+                                        settlementAmount={
+                                          this.props.settlement_amount.data
+                                        }
+                                      />
+                                    ),
+                                  });
 
-                                window.rzpAnalytics({
-                                  eventCategory:
-                                    'Dashboard - Settlement UI Revamp',
-                                  eventAction: 'Click Know More',
-                                });
-                              }}
-                              class="btn-link pointer"
-                              style={{ marginLeft: '5px' }}
-                            >
-                              <b>Know More</b>
+                                  window.rzpAnalytics({
+                                    eventCategory:
+                                      'Dashboard - Settlement UI Revamp',
+                                    eventAction:
+                                      'Click Know More - Settlements Page',
+                                  });
+                                }}
+                                class="btn-link pointer"
+                                style={{ marginLeft: '5px' }}
+                              >
+                                <b>Know More</b>
+                              </span>
                             </span>
-                          </span>
-                        )}
+                          )}
                       </div>
                     </div>
                   </Fragment>

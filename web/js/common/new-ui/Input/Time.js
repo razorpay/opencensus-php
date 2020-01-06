@@ -20,7 +20,7 @@ export default class TimePicker extends React.Component {
   onChange = value => {
     this.setState({ value });
 
-    this.props.onChange && this.props.onChange(value);
+    this.props.onChange && this.props.onChange(value, this.props.name);
   };
 
   render() {

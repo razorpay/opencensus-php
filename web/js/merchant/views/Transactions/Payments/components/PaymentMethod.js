@@ -34,7 +34,6 @@ export default ({
     netbanking: 'bank',
     wallet: 'wallet',
     emandate: 'emandate',
-    upi: 'upi',
     aeps: 'aeps',
   };
 
@@ -51,12 +50,7 @@ export default ({
         : paymentMethodText;
     el = (
       <Definition>
-        <span>
-          {paymentMethod !== 'upi'
-            ? paymentMethodText + ' ' + titleCase(paymentMethod)
-            : 'UPI'}
-        </span>
-        {paymentMethod === 'upi' && <span>{payment.vpa}</span>}
+        <span>{paymentMethodText + ' ' + titleCase(paymentMethod)}</span>
       </Definition>
     );
   } else if (['card', 'emi'].indexOf(paymentMethod) !== -1) {
@@ -111,52 +105,65 @@ export default ({
         </Definition>
       </ContentToggler>
     );
-  } else if (paymentMethod === 'bank_transfer') {
-    /*
-  else if (paymentMethod === 'upi') {
-    const isDetailsLoading =
-      Object.keys(upiTransfer.details).length === 0 || upiTransfer.loading;
+  } else if (paymentMethod === 'upi') {
+    const isDetailsLoading = upiTransfer.loading;
+    const isVPADetailsAvailable = Object.keys(upiTransfer.details).length !== 0;
 
-    upiTransfer = upiTransfer.details;
+    let content;
 
-    el = (
-      <ContentToggler>
-        <span>UPI</span>
+    if (isDetailsLoading) {
+      content = (
         <Definition allowEmptyTitle={true}>
-          {null}
-          {!!(
-            upiTransfer.virtual_account &&
-            upiTransfer.virtual_account.description
-          ) && <span>{upiTransfer.virtual_account.description}</span>}
-          {isDetailsLoading ? (
-            <PlaceholderLoader />
-          ) : (
-            <div>
-              <div class="row m-b">
-                <div class="col-sm-12">
-                  <Link
-                    to={`/virtualaccounts/${upiTransfer.virtual_account_id}`}
-                  >
-                    <code>{upiTransfer.virtual_account_id}</code>
-                  </Link>
-                </div>
-              </div>
+          <PlaceholderLoader />;
+        </Definition>
+      );
+    } else {
+      upiTransfer = isVPADetailsAvailable ? upiTransfer.details : null;
 
+      content = (
+        <Definition allowEmptyTitle={true}>
+          {upiTransfer &&
+            (upiTransfer.virtual_account &&
+              upiTransfer.virtual_account.description) && (
+              <span>{upiTransfer.virtual_account.description}</span>
+            )}
+
+          {
+            <div>
+              {upiTransfer && (
+                <div class="row m-b">
+                  <div class="col-sm-12">
+                    <Link
+                      to={`/virtualaccounts/${upiTransfer.virtual_account_id}`}
+                    >
+                      <code>{upiTransfer.virtual_account_id}</code>
+                    </Link>
+                  </div>
+                </div>
+              )}
               <div class="row">
                 <div class="col-sm-12">
                   <div class="row">
-                    <div class="col-sm-4 col-xs-5">Payer UPI address:</div>
-                    <div class="col-sm-8 col-xs-7">{upiTransfer.payer_vpa}</div>
+                    <div class="col-sm-5 col-xs-5">Payer UPI ID:</div>
+                    <div class="col-sm-7 col-xs-7">
+                      {upiTransfer ? upiTransfer.payer_vpa : payment.vpa}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          )}
+          }
         </Definition>
+      );
+    }
+
+    el = (
+      <ContentToggler>
+        <span>UPI</span>
+        {content}
       </ContentToggler>
     );
-  }
-  */
+  } else if (paymentMethod === 'bank_transfer') {
     const isDetailsLoading =
       Object.keys(bankTransfer.details).length === 0 || bankTransfer.loading;
 

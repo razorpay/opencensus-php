@@ -20,12 +20,14 @@ import Amount from 'common/ui/Amount';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import { openModal } from 'merchant_common/reducers/modals';
 import Time from 'common/ui/Time';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 @connect(
   state => {
     return {
       ...state.session,
       settlement_amount: state.home.settlement_amount,
+      config: state.config.config,
     };
   },
   { fetchSettlementAmount, openModal }
@@ -45,6 +47,10 @@ export default class TransactionsContainer extends Component {
 
     const nextSettlement = !this.props.settlement_amount.data
       .next_settlement_time;
+
+    const { no_settlement } = this.props.settlement_amount.data;
+
+    const { settlement_ux_revamp } = this.props.config;
 
     return (
       <tabbed-container>
@@ -90,19 +96,50 @@ export default class TransactionsContainer extends Component {
               <ScheduledBanner fromWhere="Transactions" />
             </ShowWhen>
           )}
-          {!nextSettlement ? (
-            <div class="text-right" style={{ width: '65%' }}>
+          {settlement_ux_revamp && no_settlement ? (
+            <div class="text-right" style={{ width: '100%' }}>
+              {no_settlement.caption}
+              {no_settlement.reason && (
+                <React.Fragment>
+                  <div style={{ display: 'inline' }}>
+                    <i class="i i-info-circle" />
+                    <Popover theme="dark" align="left">
+                      <PopoverBody>
+                        <div>{no_settlement.reason}</div>
+                      </PopoverBody>
+                    </Popover>
+                  </div>
+                </React.Fragment>
+              )}
+            </div>
+          ) : null}
+          {settlement_ux_revamp && !no_settlement && !nextSettlement ? (
+            <div class="text-right" style={{ width: '100%' }}>
               <strong>
                 <Amount
                   value={this.props.settlement_amount.data.settlement_amount}
                   currency={'INR'}
                 />
               </strong>{' '}
-              will be settled by
+              will be settled on{' '}
               <Time
                 value={this.props.settlement_amount.data.next_settlement_time}
                 format={'DD MMM YYYY, hh:mm:ss a'}
               />{' '}
+              {this.props.settlement_amount.data.reason_for_delay && (
+                <React.Fragment>
+                  <div style={{ display: 'inline' }}>
+                    <i class="i i-info-circle" />
+                    <Popover theme="dark" align="left">
+                      <PopoverBody>
+                        <div>
+                          {this.props.settlement_amount.data.reason_for_delay}
+                        </div>
+                      </PopoverBody>
+                    </Popover>
+                  </div>
+                </React.Fragment>
+              )}
               <span
                 class="btn-link"
                 style={{ marginLeft: '5px' }}
@@ -118,7 +155,7 @@ export default class TransactionsContainer extends Component {
 
                   window.rzpAnalytics({
                     eventCategory: 'Dashboard - Settlement UI Revamp',
-                    eventAction: 'Click Know More',
+                    eventAction: 'Click Know More - Transactions Page',
                   });
                 }}
               >
@@ -132,7 +169,7 @@ export default class TransactionsContainer extends Component {
         ) : (
           <TestModeBanner />
         )}
-        {nextSettlement ? (
+        {settlement_ux_revamp && nextSettlement ? (
           <OnHoldBanner
             ctaOnClick={() => {
               this.props.openModal({
@@ -146,7 +183,7 @@ export default class TransactionsContainer extends Component {
 
               window.rzpAnalytics({
                 eventCategory: 'Dashboard - Settlement UI Revamp',
-                eventAction: 'Click Know More(On Hold)',
+                eventAction: 'Click Know More(On Hold) - Transactions Page',
               });
             }}
           />

@@ -14,6 +14,7 @@ import {
   getKeysSeparatedByPipe,
   classList,
 } from 'common/utils/rzp-utils';
+import { validateVABankAccount } from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/modals';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -100,7 +101,7 @@ export default class CreateVirtualAccount extends Component {
   };
 
   handleSubmit = formData => {
-    const { descriptorVPA, descriptorBankAccount } = formData;
+    const { descriptorVPA, descriptorBankAccount, description } = formData;
     const { notes, close_by, _internals, customer } = this.state;
 
     let transformedNotes = notes;
@@ -119,6 +120,7 @@ export default class CreateVirtualAccount extends Component {
       },
       notes: transformedNotes,
       close_by: close_by ? close_by.unix() : undefined,
+      description,
     };
 
     if (customer) {
@@ -278,26 +280,41 @@ export default class CreateVirtualAccount extends Component {
                       })
                     }
                   />
-                  <Input
-                    name="descriptorBankAccount"
-                    label={() => (
-                      <span style={{ fontWeight: 'normal' }}>
-                        Account Number
-                      </span>
-                    )}
-                    size="half_big"
-                    description={
-                      _internals.hasBankAccount
-                        ? 'If left blank, an account number will be auto generated'
-                        : null
-                    }
-                    disabled={!_internals.hasBankAccount}
-                  />
+                  {!!handle && (
+                    <Input
+                      name="descriptorBankAccount"
+                      label={() => (
+                        <span style={{ fontWeight: 'normal' }}>
+                          Account Descriptor
+                        </span>
+                      )}
+                      size="half_big"
+                      placeholder={`Alphanumberic, upto ${descriptorLimit} characters`}
+                      validator={val => {
+                        if (!validateVABankAccount(val, descriptorLimit)) {
+                          return `Enter only Alphanumberic, upto ${descriptorLimit} characters`;
+                        }
+                      }}
+                      onChange={e => {
+                        let val = e.target.value;
+
+                        if (validateVABankAccount(val, descriptorLimit)) {
+                          e.target.value = val.toUpperCase();
+                        }
+                      }}
+                      description={
+                        _internals.hasBankAccount
+                          ? 'If left blank, an account number will be auto generated'
+                          : null
+                      }
+                      disabled={!_internals.hasBankAccount}
+                    />
+                  )}
                 </div>
 
                 {!!user.isVPAFeatureEnabled && (
                   <>
-                    <br />
+                    {!!handle && <br />}
 
                     <div>
                       <Input.Check

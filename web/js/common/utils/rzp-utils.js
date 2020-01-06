@@ -721,7 +721,7 @@ export const pluralize = (str, length) => {
  * @return {String}
  */
 export const capitalize = input =>
-  !!input ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
+  input ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
 
 const countries = {
   UK: 'united kingdom',

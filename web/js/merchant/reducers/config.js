@@ -1,6 +1,5 @@
-import ajax from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
-import { merchantFetch } from 'merchant/utils/ajax';
 
 const CONFIG_FETCH = 'CONFIG_FETCH';
 const FEATURES_FETCH = 'FEATURES_FETCH';

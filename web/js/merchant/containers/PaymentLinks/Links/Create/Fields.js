@@ -9,15 +9,13 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 
-import { trackHelpClick } from '../ga';
+import { trackHelpClick, trackSelectCurrency } from '../ga';
 
 import {
   MIN_AMOUNT_TEXT,
   PopoverBodyText,
   validateMinAmount,
 } from '../../Edit/EditMinimumAmount';
-
-import { trackSelectCurrency } from '../ga';
 
 const CustomInput = props => {
   return (

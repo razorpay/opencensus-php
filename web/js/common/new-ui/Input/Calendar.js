@@ -24,7 +24,7 @@ class CalendarWrapper extends React.Component {
       return this.props.format;
     }
 
-    var format = this.props.type === 'month' ? 'DD-MM' : 'DD-MM-YYYY';
+    var format = this.props.type === 'month' ? 'YYYY-MM' : 'DD-MM-YYYY';
     return format;
   }
 
@@ -36,7 +36,7 @@ class CalendarWrapper extends React.Component {
     }
 
     // Custom function to execute component specific functionality.
-    this.props.onChange && this.props.onChange(value);
+    this.props.onChange && this.props.onChange(value, this.props.name);
 
     this.setState({
       value,
@@ -99,7 +99,13 @@ class CalendarWrapper extends React.Component {
   render() {
     const state = this.state;
     const allProps = separateDomProps(this.props);
-    const { onFocus, onBlur, className, ...restDOMProps } = allProps.props; // onFocus and onBlur are not to be controllled by <input> here
+    const {
+      onFocus,
+      onBlur,
+      className,
+      innerRef,
+      ...restDOMProps
+    } = allProps.props; // onFocus and onBlur are not to be controllled by <input> here
 
     let calendar;
 
@@ -171,6 +177,7 @@ class CalendarWrapper extends React.Component {
                   'ant-calendar-picker-input ant-input Input-el',
                   this.props.addonAfter && 'Input-el--after'
                 )}
+                ref={innerRef}
               />
               {this.props.addonAfter && (
                 <span class="Input-addons  Input-addons--after">
@@ -185,7 +192,7 @@ class CalendarWrapper extends React.Component {
   }
 }
 
-export default class CalendarPicker extends React.Component {
+class CalendarPicker extends React.Component {
   className = 'Input--Calendar';
   state = {
     mature: this.props.mature,
@@ -216,7 +223,9 @@ export default class CalendarPicker extends React.Component {
     );
   }
 }
-
+export default React.forwardRef((props, ref) => (
+  <CalendarPicker {...props} innerRef={ref} />
+));
 /*
  * Helper fn. to be for onChange for Input.CalendarPicker
  * */

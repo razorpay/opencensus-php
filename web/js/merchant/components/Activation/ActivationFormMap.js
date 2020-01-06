@@ -493,6 +493,7 @@ const bankAccountFields = [
       return getDetailsForIFSC(e.target.value);
     },
     validator: validateIFSC,
+    linkedfields: ['cancelled_cheque'],
   },
   [
     {
@@ -519,6 +520,7 @@ const bankAccountFields = [
           document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
         }
       },
+      linkedfields: ['cancelled_cheque'],
     },
     {
       _name: 'account_no',
@@ -565,6 +567,7 @@ const bankAccountFields = [
       isUnregisteredBusiness(activation)
         ? 'We will deposit a small amount of money in your account to verify the account.'
         : '',
+    linkedfields: ['cancelled_cheque'],
   },
 ];
 
@@ -701,6 +704,7 @@ const uploadFields = [
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
     isDeletable: true,
+    //linkedfields: ['address_proof'],
   },
   {
     label: 'Last Page',
@@ -717,9 +721,26 @@ const uploadFields = [
     _when: _showForIndiv,
     _type: 'address_proof_upload_doc',
     isDeletable: true,
+    //linkedfields: ['address_proof'],
   },
 ];
-
+export const ndcFields = [
+  {
+    label: 'Cancelled Cheque Copy',
+    name: 'cancelled_cheque',
+    uploadAs: 'cancelled_cheque',
+    _type: 'address_proof_upload_doc',
+    _autoRenderImpure: true,
+    description: 'Please upload a copy of cancelled cheque.',
+    _cmp: Input.File,
+    className: 'AddressProof-upload',
+    destinationUrl: 'merchant/documents/upload',
+    _when: activation => {
+      return activation.isNeedsClarificationMode() && activation.isOnKYCTab(); //Some improvements are possible here regarding placement of this field
+    },
+    isDeletable: false,
+  },
+];
 // Tabs name
 export const mainFormTabs = [
   'Contact Info',
