@@ -22,6 +22,8 @@ export default class ActivationContainer extends Component {
   constructor(props) {
     super(props);
 
+    const IS_SUB_MERCHANT_VIEW = props.location.pathname.includes('route');
+
     this.state = {
       data: null,
       categories: null,
@@ -136,10 +138,24 @@ export default class ActivationContainer extends Component {
 
   handleCloseActivationForm = e => {
     this.props.tracking.trackEvent(window.rzpQ.onbr().dropped('act.form_fill'));
+
+    this.sendEventsForSubMerchantView(
+      window.rzpQ
+        .routeActions()
+        .dropped('route.linked_account.activate_account')
+    );
   };
 
   componentWillMount() {
     this.fetchActivationDetails(this.props.accountId);
+  }
+
+  componentDidMount() {
+    this.sendEventsForSubMerchantView(
+      window.rzpQ
+        .routeActions()
+        .initiated('route.linked_account.activate_account.started')
+    );
   }
 
   setOnCloseCb(cb) {
@@ -149,6 +165,12 @@ export default class ActivationContainer extends Component {
   componentWillUnmount() {
     this.handleUnmount && this.handleUnmount();
   }
+
+  sendEventsForSubMerchantView = event => {
+    if (!this.IS_SUB_MERCHANT_VIEW || !event) return;
+
+    this.props.tracking.trackEvent(event);
+  };
 
   get shouldShowL1Modal() {
     const { user, accountId } = this.props;

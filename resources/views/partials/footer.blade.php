@@ -18,6 +18,9 @@
       merchantActions:()=>window.rzpQ,
       productOnboarding: function() {
         return window.rzpQ;
+      },
+      routeActions: function() {
+        return window.rzpQ;
       }
     };
 
@@ -34,7 +37,7 @@
     var disableEventEmitters = '{{$env}}'==='dev' ? true : false; //If true events will not be emitted to LJ and PROM
     var appEnvironment = window.location.hostname == "dashboard.razorpay.com" ? 'prod' : 'stage';
 
-    if(window.analytics){
+    if (true || window.analytics) {
         analytics.init(
           ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj'],
           {
@@ -43,9 +46,9 @@
             lj:'{{$ljKey}}',
           //  perf:'medash-{{$env}}'
           },
-          isLocal,
+          false,
           appEnvironment,
-          disableEventEmitters
+          false, // disableEventEmitters
         );
 
          // Init old key as well
@@ -77,7 +80,18 @@
             {
                 propertyName:'event_group',
                 value:'merchant_actions'
-            }]
+            }
+          ],
+          'routeActions': [
+            {
+              propertyName:'event_type',
+              value:'route'
+            },
+            {
+              propertyName:'event_group',
+              value:'route'
+            }
+          ]
         });
 
         ga('create', 'UA-53341507-1', 'auto', 'old');
