@@ -10,6 +10,7 @@ export default ({
   maxAmount,
   currency,
   getFormOnChangeHandler,
+  type,
 }) => {
   return (
     <React.Fragment>
@@ -23,12 +24,18 @@ export default ({
           placeholder="Discount Type"
           required
           defaultValue={discountType}
-          options={[
-            { label: 'Select Type', name: '' },
-            { label: 'Flat', name: 'flat' },
-            { label: 'Percentage', name: 'percent' },
-            { label: 'No Cost EMI', name: 'no_cost_emi' },
-          ]}
+          options={
+            (type === 'instant' && [
+              { label: 'Select Type', name: '' },
+              { label: 'Flat', name: 'flat' },
+              { label: 'Percentage', name: 'percent' },
+              { label: 'No Cost EMI', name: 'no_cost_emi' },
+            ]) || [
+              { label: 'Select Type', name: '' },
+              { label: 'Flat', name: 'flat' },
+              { label: 'Percentage', name: 'percent' },
+            ]
+          }
           onChange={getFormOnChangeHandler('stateResetter')([
             'flat_cashback',
             'percent_rate',

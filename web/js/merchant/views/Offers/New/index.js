@@ -73,6 +73,7 @@ export default class CreateOfferWizard extends React.Component {
           getFormElementValidations={this.getFormElementValidations}
           minAmount={this.state.min_amount}
           currency={CURRENCY}
+          type={this.state.type}
         />
       ),
       getFieldsToBeValidated: () => {
