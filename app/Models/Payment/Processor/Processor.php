@@ -1682,8 +1682,6 @@ class Processor
     {
         $payment = $this->payment;
 
-        $razorXForDoppler = $this->razorXFlagForDoppler;
-
         $traceCode = TraceCode::PAYMENT_TIMED_OUT;
         $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT;
 
@@ -1696,10 +1694,10 @@ class Processor
 
         $exception = new Exception\BadRequestException($errorCode);
 
-        $this->updatePaymentFailed($exception, $traceCode, $razorXForDoppler);
+        $this->updatePaymentFailed($exception, $traceCode);
     }
 
-    protected function updatePaymentFailed($exception, $traceCode, $razorXForDoppler =  false)
+    protected function updatePaymentFailed($exception, $traceCode)
     {
         $error = $exception->getError();
 
@@ -1710,6 +1708,8 @@ class Processor
         $internalCode = $error->getInternalErrorCode();
 
         $payment = $this->payment;
+
+        $razorXForDoppler = $this->razorXFlagForDoppler;
 
         $status = $payment->getStatus();
 
