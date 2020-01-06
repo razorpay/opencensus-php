@@ -25,6 +25,7 @@ import NoCostEmiMethods from 'merchant/views/Offers/New/NoCostEmiMethods';
 const MAX_INT = 21474836;
 const CURRENCY = 'INR';
 const SUCCESS_NOTIFICATION = 'New offer created';
+const NO_COST_EMI = 'no_cost_emi';
 
 @withRouter
 @connect(state => state.session, {
@@ -95,7 +96,7 @@ export default class CreateOfferWizard extends React.Component {
     {
       name: 'Applicable On',
       renderFunction: () => {
-        if (this.state.discount_type === 'no_cost_emi') {
+        if (this.state.discount_type === NO_COST_EMI) {
           return (
             <NoCostEmiMethods
               getFormOnChangeHandler={this.getFormOnChangeHandler}
