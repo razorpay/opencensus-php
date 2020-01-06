@@ -1676,7 +1676,7 @@ class Processor
         $this->trace->addRecord($level, $traceCode, $data);
     }
 
-    public function timeoutPayment()
+    public function timeoutPayment($razorXForDoppler = false)
     {
         $payment = $this->payment;
 
@@ -1692,10 +1692,10 @@ class Processor
 
         $exception = new Exception\BadRequestException($errorCode);
 
-        $this->updatePaymentFailed($exception, $traceCode);
+        $this->updatePaymentFailed($exception, $traceCode, $razorXForDoppler);
     }
 
-    protected function updatePaymentFailed($exception, $traceCode)
+    protected function updatePaymentFailed($exception, $traceCode, $razorXForDoppler)
     {
         $error = $exception->getError();
 
@@ -1768,12 +1768,7 @@ class Processor
             $offer->lockDecrementCurrentOfferUsage($payment);
         }
 
-        $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-        $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
-
-        if (($isProduction === true) and
-            (strtolower($variant) === 'on'))
+        if ($razorXForDoppler === true)
         {
             //TODO: Remove this later
             try

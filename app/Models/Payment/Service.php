@@ -6,6 +6,7 @@ use Mail;
 use Crypt;
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Environment;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 
@@ -1413,11 +1414,24 @@ class Service extends Base\Service
 
         $total = count($payments);
 
+        // check razorX thing here
+        $razorXForDoppler = false;
+
+        $isProduction = $this->app->environment(Environment::PRODUCTION);
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getId(), 'api_hitting_doppler_service', Mode::LIVE);
+
+        if (($isProduction === true) and
+            (strtolower($variant) === 'on'))
+        {
+            $razorXForDoppler = true;
+        }
+
         foreach ($payments as $payment)
         {
             if ($payment->shouldTimeout($now) === true)
             {
-                $this->repo->transaction(function () use ($payment, & $count, & $error)
+                $this->repo->transaction(function () use ($payment, & $count, & $error, $razorXForDoppler)
                 {
                     $this->repo->payment->lockForUpdateAndReload($payment);
 
@@ -1425,7 +1439,7 @@ class Service extends Base\Service
                     {
                         $this->getNewProcessor($payment->merchant)
                              ->setPayment($payment)
-                             ->timeoutPayment();
+                             ->timeoutPayment($razorXForDoppler);
 
                         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
 
