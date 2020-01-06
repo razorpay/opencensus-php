@@ -279,13 +279,14 @@ class Doppler
         $headers[self::X_RAZORPAY_TASKID_HEADER] = $this->app['request']->getTaskId();
 
         $authentication = [
-            $this->config['key'],
+            //$this->config['key'],
             $this->config['secret'],
         ];
 
+        $headers['Authorization'] = $authentication;
+
         $options = [
             'timeout' => self::REQUEST_TIMEOUT,
-            'auth'    => $authentication,
         ];
 
         $request = [
