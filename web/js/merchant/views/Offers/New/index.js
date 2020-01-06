@@ -72,6 +72,7 @@ export default class CreateOfferWizard extends React.Component {
           discountType={this.state.discount_type}
           getFormElementValidations={this.getFormElementValidations}
           minAmount={this.state.min_amount}
+          maxAmount={this.state.max_order_amount}
           currency={CURRENCY}
           type={this.state.type}
         />

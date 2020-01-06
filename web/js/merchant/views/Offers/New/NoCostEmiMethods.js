@@ -3,6 +3,7 @@ import Input from 'common/new-ui/Input';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { ISSUERS, PAYMENT_NETWORK_MAP } from 'merchant/views/Offers/Entity';
 import { deepClone } from '../../../../common/utils/rzp-utils';
+import Spinner from 'common/ui/Spinner';
 
 export default class NoCostEmiMethods extends React.Component {
   constructor(props) {
@@ -11,6 +12,7 @@ export default class NoCostEmiMethods extends React.Component {
       emiOptions: null,
       selectedIssuer: null,
       tenure: {},
+      isLoading: true,
     };
   }
 
@@ -18,7 +20,10 @@ export default class NoCostEmiMethods extends React.Component {
     let methodsReq = merchantFetch('merchant/methods');
     methodsReq
       .then(res => {
-        this.setState({ emiOptions: (res.data && res.data.emi_plans) || null });
+        this.setState({
+          emiOptions: (res.data && res.data.emi_plans) || null,
+          isLoading: false,
+        });
       })
       .catch(error => {
         //todo show error message in the header
@@ -91,7 +96,7 @@ export default class NoCostEmiMethods extends React.Component {
       name: issuer,
       label: networksAndIssuers[issuer] || issuer,
     }));
-    return (
+    return this.state.isLoading === false ? (
       <React.Fragment>
         <Input.Select
           label="Issuer"
@@ -102,6 +107,8 @@ export default class NoCostEmiMethods extends React.Component {
         />
         {this.renderDuration()}
       </React.Fragment>
+    ) : (
+      <Spinner />
     );
   }
 }
