@@ -2738,7 +2738,7 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToCsvFile($entries, 'IPAYMIS_MID_Date');
 
-        $response = $this->runForFiles([$file], 'CardFssSbi');
+        $this->runForFiles([$file], 'CardFssSbi');
 
         $transactionEntity = $this->getDbLastEntity('transaction');
 
@@ -3152,6 +3152,8 @@ class ReconciliationFileTest extends TestCase
         $facade['MERCHANT_TXNNO'] = $entityId;
 
         $facade['APPROVE_CODE'] = $gatewayPayment['auth'];
+
+        $facade['PRCHS_RRN'] = '01231232131';
 
         $facade['VAT_AMT']          = '0.00';
         $facade['MTS_MSF_FIXFEE']   = '0.00';

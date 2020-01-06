@@ -2,15 +2,15 @@
 
 namespace RZP\Reconciliator\CardFssSbi\SubReconciliator;
 
-use RZP\Trace\TraceCode;
-use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Base\InfoCode;
-use RZP\Reconciliator\CardFssBob;
-use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
+use RZP\Reconciliator\Base\SubReconciliator;
 
-class PaymentReconciliate extends CardFssBob\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 {
     const ONUS_INDICATOR = 'ONUS';
+
+    const BLACKLISTED_COLUMNS = [
+        ReconciliationFields::CARD_NO,
+    ];
 
     public function getPaymentId(array $row)
     {
@@ -21,7 +21,7 @@ class PaymentReconciliate extends CardFssBob\SubReconciliator\PaymentReconciliat
 
     protected function getReconPaymentAmount(array $row)
     {
-        return Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null);
+        return SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null);
     }
 
     protected function getReconCurrency($row)
@@ -76,12 +76,12 @@ class PaymentReconciliate extends CardFssBob\SubReconciliator\PaymentReconciliat
 
         $tax = $gstTax + $csfTax;
 
-        return Helper::getIntegerFormattedAmount($tax);
+        return SubReconciliator\Helper::getIntegerFormattedAmount($tax);
     }
 
     protected function getGatewayFee($row)
     {
-        $msfAmount = Helper::getIntegerFormattedAmount($row[ReconciliationFields::MTS_MSF_FIXFEE]);
+        $msfAmount = SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::MTS_MSF_FIXFEE]);
 
         $tax = $this->getGatewayServiceTax($row);
 
