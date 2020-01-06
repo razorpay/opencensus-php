@@ -330,7 +330,6 @@ class Core extends Base\Core
 
     public function updateWithDetailsBeforeFtaRecon(Entity $payout, array $ftaData = [])
     {
-
         $this->trace->info(
             TraceCode::PAYOUT_UPDATE_BEFORE_FTA_RECON,
             [
