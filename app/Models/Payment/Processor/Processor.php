@@ -228,6 +228,8 @@ class Processor
 
     protected $secureCacheDriver;
 
+    protected $razorXFlagForDoppler;
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -1676,9 +1678,11 @@ class Processor
         $this->trace->addRecord($level, $traceCode, $data);
     }
 
-    public function timeoutPayment($razorXForDoppler = false)
+    public function timeoutPayment()
     {
         $payment = $this->payment;
+
+        $razorXForDoppler = $this->razorXFlagForDoppler;
 
         $traceCode = TraceCode::PAYMENT_TIMED_OUT;
         $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT;
@@ -2609,6 +2613,13 @@ class Processor
     public function setPayment(Payment\Entity $payment): Processor
     {
         $this->payment = $payment;
+
+        return $this;
+    }
+
+    public function setRazorXDopplerProperty(bool $razorXFlag): Processor
+    {
+        $this->razorXFlagForDoppler = $razorXFlag;
 
         return $this;
     }

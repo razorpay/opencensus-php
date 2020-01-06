@@ -1431,7 +1431,8 @@ class Service extends Base\Service
                     {
                         $this->getNewProcessor($payment->merchant)
                              ->setPayment($payment)
-                             ->timeoutPayment($this->razorXForDoppler);
+                             ->setRazorXDopplerProperty($this->razorXForDoppler)
+                             ->timeoutPayment();
 
                         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
 
