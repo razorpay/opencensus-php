@@ -47,7 +47,7 @@ function ReportDuration({ startTime, endTime }) {
   const endDate = getFormattedDate(endTime);
   return (
     <p class="text-muted small">
-      ({startDate} {startDate !== endDate ? <> - {endDate}</> : ''})
+      ({startDate} {startDate !== endDate ? `- ${endDate}` : ''})
     </p>
   );
 }
