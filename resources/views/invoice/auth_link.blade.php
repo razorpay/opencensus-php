@@ -8,6 +8,7 @@
         <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 
         <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
+        <link rel="stylesheet" href="{{env('AWS_CF_CDN_URL')}}/static/subscription/auth_link.css" />
     </head>
 <body>
     <div id="authlink-container">
