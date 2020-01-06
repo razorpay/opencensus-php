@@ -37,7 +37,6 @@ import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBann
 import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import Time from 'common/ui/Time';
-
 @withRouter
 @connect(
   state => ({
@@ -418,7 +417,7 @@ export default class SettlementsListContainer extends ListContainer {
                 onClick={this.paginate}
               />
 
-              <div class="row">
+              <div class="settlement-row">
                 <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
                   <div>
                     The amount that gets settled to your bank account will show
