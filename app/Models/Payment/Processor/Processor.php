@@ -1695,7 +1695,7 @@ class Processor
         $this->updatePaymentFailed($exception, $traceCode, $razorXForDoppler);
     }
 
-    protected function updatePaymentFailed($exception, $traceCode, $razorXForDoppler)
+    protected function updatePaymentFailed($exception, $traceCode, $razorXForDoppler =  false)
     {
         $error = $exception->getError();
 

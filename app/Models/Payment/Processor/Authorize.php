@@ -292,7 +292,7 @@ trait Authorize
 
         $retry = false;
 
-        // Checking razorX flag for paymentId
+        // Checking razorX flag for feedback loop here per paymentId
         $razorXForDoppler = false;
 
         $isProduction = $this->app->environment(Environment::PRODUCTION);

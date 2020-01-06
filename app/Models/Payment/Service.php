@@ -45,6 +45,8 @@ class Service extends Base\Service
 
     protected $mutex;
 
+    protected $razorXForDoppler = false;
+
     public function __construct()
     {
         parent::__construct();
@@ -1389,6 +1391,17 @@ class Service extends Base\Service
 
         $allMethods = Payment\Method::getAllPaymentMethods();
 
+        // checking razorX flag for feedback loop here per cron
+        $isProduction = $this->app->environment(Environment::PRODUCTION);
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getId(), 'api_hitting_doppler_service', Mode::LIVE);
+
+        if (($isProduction === true) and
+            (strtolower($variant) === 'on'))
+        {
+            $this->razorXForDoppler = true;
+        }
+
         foreach ($allMethods as $method)
         {
             $count = $count + $this->timeoutOldPaymentsForMethod($limit, $method);
@@ -1414,24 +1427,11 @@ class Service extends Base\Service
 
         $total = count($payments);
 
-        // check razorX thing here
-        $razorXForDoppler = false;
-
-        $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getId(), 'api_hitting_doppler_service', Mode::LIVE);
-
-        if (($isProduction === true) and
-            (strtolower($variant) === 'on'))
-        {
-            $razorXForDoppler = true;
-        }
-
         foreach ($payments as $payment)
         {
             if ($payment->shouldTimeout($now) === true)
             {
-                $this->repo->transaction(function () use ($payment, & $count, & $error, $razorXForDoppler)
+                $this->repo->transaction(function () use ($payment, & $count, & $error)
                 {
                     $this->repo->payment->lockForUpdateAndReload($payment);
 
@@ -1439,7 +1439,7 @@ class Service extends Base\Service
                     {
                         $this->getNewProcessor($payment->merchant)
                              ->setPayment($payment)
-                             ->timeoutPayment($razorXForDoppler);
+                             ->timeoutPayment($this->razorXForDoppler);
 
                         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
 
