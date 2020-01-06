@@ -110,6 +110,9 @@ local function get_rate_limit_args(redis, req_ctx)
     -- and that too for normal cases and not oauth and route etc.
     local mid
     if req_ctx.auth == "private" then
+        if req_ctx.user == nil then
+            return {skip = 1}, nil
+        end
         -- If request is proxy then user definitely has mid.
         if req_ctx.proxy then
             mid = string.sub(req_ctx.user, 10)
