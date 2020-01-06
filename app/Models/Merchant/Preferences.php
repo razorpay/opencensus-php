@@ -115,6 +115,8 @@ class Preferences
     const MID_RBL_INTERIM_PROCESS   = 'D83Pk7NqU6URGe';
     const MID_MSR_LAW_CLG_VFH       = 'CxqHOiYBc8yG4U';
     const MID_BOB                   = 'CxOgfvYhxGztjJ';
+    const MID_BOB_2                 = 'DyLpdroA9jOWcY';
+    const MID_BOB_3                 = 'DyLsgu8Kh683Ja';
     const MID_BAGIC                 = 'CYseUgx4bt9VFp';
     const MID_IMPACT_SCHOOL_ARCH    = 'D89MU9wL8ptnEM';
     const MID_VEL_TECH_HIGH_TECH    = 'CxrfYIK8mrctAN';
