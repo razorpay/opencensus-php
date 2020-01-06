@@ -72,18 +72,18 @@ return [
         'password'  => env('MOZART_PASSWORD'),
         'username'  => env('MOZART_USERNAME'),
 
-        'test'  =>  [
+        'test' => [
             'mock'      => env('MOZART_TEST_MOCK', false),
             'url'       => env('MOZART_TEST_URL'),
             'password'  => env('MOZART_TEST_PASSWORD'),
             'username'  => env('MOZART_TEST_USERNAME'),
         ],
 
-        'live'  =>  [
-            'mock'      => env('MOZART_LIVE_MOCK', false),
-            'url'       => env('MOZART_LIVE_URL'),
-            'password'  => env('MOZART_LIVE_PASSWORD'),
-            'username'  => env('MOZART_LIVE_USERNAME'),
+        'live' => [
+            'mock'     => env('MOZART_LIVE_MOCK', false),
+            'url'      => env('MOZART_LIVE_URL'),
+            'password' => env('MOZART_LIVE_PASSWORD'),
+            'username' => env('MOZART_LIVE_USERNAME'),
         ]
     ],
 
@@ -137,8 +137,8 @@ return [
             'username'  => env('GOVERNOR_CPS_SERVICE_KEY'),
             'password'  => env('GOVERNOR_CPS_SERVICE_SECRET'),
         ],
-        'adminapi'=> [
-            'username' => env('GOVERNOR_ADMINAPI_SERVICE_KEY' ),
+        'adminapi' => [
+            'username' => env('GOVERNOR_ADMINAPI_SERVICE_KEY'),
             'password' => env('GOVERNOR_ADMINAPI_SERVICE_SECRET'),
         ],
         'url'       => env('GOVERNOR_LIVE_URL'),
@@ -332,6 +332,10 @@ return [
     ],
 
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),
+
+    'payout_links' => [
+            'url' => env('APP_PAYOUT_LINKS_URL', 'https://payoutlinks.razorpay.com')
+        ],
 
     'vajra' => [
         'secret'   => env('APP_VAJRA_SECRET'),
