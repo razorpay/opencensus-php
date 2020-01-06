@@ -326,6 +326,11 @@ class Service extends Base\Service
         {
             $issuer = $plan->getIssuer();
 
+            if ($plan->getType() === Type::DEBIT)
+            {
+                $issuer .= '_DC';
+            }
+
             $duration = $plan->getDuration();
 
             $amount = $plan->getMinAmount();
