@@ -46,7 +46,6 @@ export default class GenerateReportPanel extends React.PureComponent {
     const { mode } = this.props;
     const selectedConfigId = this.state.selectedConfig.id;
     const { month, year } = this.selectPeriod.getCustomConfigYear();
-    console.log({ month, year, selectedConfigId, mode });
 
     window.open(
       `/${mode}/reports/${selectedConfigId}/?year=${year}&month=${month}`,
