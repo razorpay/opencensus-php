@@ -117,6 +117,14 @@ class AnalyticsDesktop extends Component {
     const nextSettlement = !settlement_amount.data.next_settlement_time;
     const { no_settlement } = settlement_amount.data;
 
+    let balance = current_balance.data.balance;
+    let negativeBalanceClassName = '';
+
+    if (balance < 0) {
+      balance = Math.abs(current_balance);
+      negativeBalanceClassName = 'negative-balance';
+    }
+
     return (
       <div className="home-analytics-desktop">
         <div
@@ -221,8 +229,9 @@ class AnalyticsDesktop extends Component {
                         Current Balance:{' '}
                         {!current_balance.loading && (
                           <Amount
-                            value={current_balance.data.balance}
+                            value={balance}
                             currency={'INR'}
+                            className={negativeBalanceClassName}
                           />
                         )}
                       </span>

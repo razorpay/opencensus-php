@@ -222,6 +222,12 @@ export default class SettlementsListContainer extends ListContainer {
     let { loading, items, error, current_balance, user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;
+    let negativeBalanceClassName = '';
+
+    if (balance < 0) {
+      balance = Math.abs(balance);
+      negativeBalanceClassName = 'negative-balance';
+    }
 
     const nextSettlement = this.props.settlement_amount.data
       .next_settlement_time;
@@ -352,7 +358,11 @@ export default class SettlementsListContainer extends ListContainer {
                       <div>
                         <span class="settlement-balance-amount">
                           Current Balance:{' '}
-                          <Amount value={balance} currency={'INR'} />
+                          <Amount
+                            value={balance}
+                            currency={'INR'}
+                            className={negativeBalanceClassName}
+                          />
                         </span>
                         <br />
                         {settlement_ux_revamp &&
