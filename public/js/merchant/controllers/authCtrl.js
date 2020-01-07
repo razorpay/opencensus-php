@@ -85,7 +85,7 @@ app
       $scope.forms = {};
 
       $scope.isLoggedIn = false;
-      $scope.hideCompanyName = false;
+      $scope.showCompanyName = false;
 
       // Less restrictive url regex
       $scope.websiteRegex = /^((http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))?$/gi;
