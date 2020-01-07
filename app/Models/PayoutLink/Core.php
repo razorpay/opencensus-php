@@ -15,6 +15,7 @@ use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Channel;
 use \RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\External\FundAccount;
@@ -422,9 +423,7 @@ class Core extends Base\Core
 
         $maskedPhone = $this->getMaskedPhone($payoutLink->getContactPhoneNumber());
 
-        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
-
-        $isUpiEnabled = boolval($settingsAccessor->get(Entity::UPI));
+        $isUpiEnabled = $this->allowUpi($payoutLink);
 
         $isProduction = $this->app->environment() === Environment::PRODUCTION;
 
@@ -452,6 +451,24 @@ class Core extends Base\Core
         ];
 
         return $data;
+    }
+
+    protected function allowUpi(Entity $payoutLink)
+    {
+        $channelSupportUpi = true;
+
+        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
+
+        $upiEnabledInSettings = boolval($settingsAccessor->get(Entity::UPI));
+
+        $bankingAccount = $this->repo->banking_account->getFromBalanceId($payoutLink->getBalanceId());
+
+        if ($bankingAccount->getChannel() === Channel::RBL)
+        {
+            $channelSupportUpi = false;
+        }
+
+        return $upiEnabledInSettings and $channelSupportUpi;
     }
 
     protected function getMaskedFundAccountDetails(FundAccountEntity $fundAccount = null)
