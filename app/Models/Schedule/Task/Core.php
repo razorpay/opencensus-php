@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
 use RZP\Exception\LogicException;
+use RZP\Constants\Entity as EntityConstant;
 
 class Core extends Base\Core
 {
@@ -409,5 +410,23 @@ class Core extends Base\Core
                 ]);
         }
 
+    }
+
+    /**
+     * This Function returns the settlement schedules associated with the settlement Transfer
+     * The new function is written because existing method returns default schedule if nothing is assigned
+     * But we want T+0, 4pm if nothing is defined
+     *
+     * @param Merchant\Entity $merchant
+     * @return mixed
+     */
+    public function getSettlementTransferScheduleForMerchant(Merchant\Entity $merchant)
+    {
+        $scheduleTasks = $this->repo
+                              ->schedule_task
+                              ->findMerchantSettlementSchedule(
+                                            $merchant,
+                                            EntityConstant::SETTLEMENT_TRANSFER);
+        return $scheduleTasks;
     }
 }

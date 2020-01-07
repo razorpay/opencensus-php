@@ -68,7 +68,7 @@ class Validator extends Base\Validator
         Entity::NOTES                       => 'sometimes',
         Entity::VIRTUAL_UPI_HANDLE          => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_ROOT            => 'required_if:type.upi_transfer,1|string',
-        Entity::VIRTUAL_UPI_MERCHANT_PREFIX => 'required_if:type.upi_transfer,1|string',
+        Entity::VIRTUAL_UPI_MERCHANT_PREFIX => 'sometimes_if:type.upi_transfer,1|string',
     ];
 
     protected static $editTerminalGateways = [
@@ -694,7 +694,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::VIRTUAL_UPI_HANDLE         => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_ROOT           => 'required_if:type.upi_transfer,1|string',
-        Entity::VIRTUAL_UPI_MERCHANT_PREFIX=> 'required_if:type.upi_transfer,1|string',
+        Entity::VIRTUAL_UPI_MERCHANT_PREFIX=> 'sometimes_if:type.upi_transfer,1|string',
     ];
 
     protected static $upiAxisTerminalRules = [

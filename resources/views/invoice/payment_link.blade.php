@@ -46,7 +46,10 @@ $view_preferences               = $data['view_preferences'];
             </script>
         @endif
     @endif
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    @if($invoice_status !== 'paid')
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    @endif
+
     @include('invoice.payment_link_stylesheet')
     @include('invoice.payment_link_analytics')
 

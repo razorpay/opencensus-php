@@ -141,6 +141,14 @@ class Constants
 
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
+    const OFFLINE_PAYMENTS                = 'offline_payments';
+
+    /**
+     * If applied on partner merchant then all sub merchant settlement will be settled to partner
+     * this will be further aggregated and settled to partner merchant
+     */
+    const AGGREGATE_SETTLEMENT            = 'aggregate_settlement';
+
     /**
      * When adding submerchant, whether to set international activation flow to greylist
      * irrespective of merchant category and subcategory
@@ -209,6 +217,18 @@ class Constants
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
     const ORDER_RECEIPT_UNIQUE            = 'order_receipt_unique';
+
+    /**
+     * Commission invoice will be generated only for those partners
+     * having this feature flag
+     */
+    const GENERATE_PARTNER_INVOICE        = 'generate_partner_invoice';
+
+    /**
+     * Feature flag to decide whether commission payout should happen
+     * manually via ops or automatically
+     */
+    const AUTOMATED_COMM_PAYOUT           = 'automated_comm_payout';
 
     // Payment authentication
     const ATM_PIN_AUTH                    = 'atm_pin_auth';
@@ -461,9 +481,13 @@ class Constants
         self::SKIP_WEBSITE_INTERNAT           => true,
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
+        self::AGGREGATE_SETTLEMENT            => true,
         self::BLOCK_OFFER_CREATION            => true,
         self::ENACH_INTERMEDIATE              => true,
         self::SAVE_VPA                        => true,
+        self::GENERATE_PARTNER_INVOICE        => true,
+        self::AUTOMATED_COMM_PAYOUT           => true,
+        self::OFFLINE_PAYMENTS                => true,
     ];
 
     // Entity type constants

@@ -4,7 +4,7 @@ namespace RZP\Services\Mock;
 
 use RZP\Models\Payment;
 use RZP\Exception\BaseException;
-use RZP\Reconciliator\Base\Reconciliate;
+use RZP\Reconciliator\Base\Constants;
 use RZP\Services\CardPaymentService as BaseCardPaymentService;
 
 class CardPaymentService extends BaseCardPaymentService
@@ -43,9 +43,10 @@ class CardPaymentService extends BaseCardPaymentService
         $fields = $input['fields'];
 
         $dummyData = [
-            Reconciliate::GATEWAY_TRANSACTION_ID    => '1234456789',
-            Reconciliate::AUTH_CODE                 => '',
-            'status'                                => 'success'
+            Constants::RRN                       => '123412341234',
+            Constants::STATUS                    => 'success',
+            Constants::AUTH_CODE                 => '',
+            Constants::GATEWAY_TRANSACTION_ID    => '1234456789',
         ];
 
         $response = [];
