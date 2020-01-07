@@ -637,6 +637,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'order'                     => Order\Entity::class,
             'refund'                    => Payment\Refund\Entity::class,
             'settlement'                => Settlement\Entity::class,
+            'settlement_transfer'       => Settlement\Transfer\Entity::class,
             'payout'                    => Payout\Entity::class,
             'transaction'               => Transaction\Entity::class,
             'fund_account_validation'   => FundAccount\Validation\Entity::class,

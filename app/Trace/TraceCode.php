@@ -1965,6 +1965,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_DISPATCHED_FOR_SETTLEMENT                    = 'MERCHANT_DISPATCHED_FOR_SETTLEMENT';
     const MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT           = 'MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT';
     const MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE       = 'MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE';
+    const SETTLEMENT_TRANSFER_CREATE_INITIATED                  = 'SETTLEMENT_TRANSFER_CREATE_INITIATED';
+    const SETTLEMENT_TRANSFER_CREATED                           = 'SETTLEMENT_TRANSFER_CREATED';
 
     // instant async beneficiary registration trace codes
     const ATTEMPTING_BENEFICIARY_REGISTRATION                   = 'ATTEMPTING_BENEFICIARY_REGISTRATION';
@@ -2029,6 +2031,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PENDING_PAYOUT_CREATED                                = 'PENDING_PAYOUT_CREATED';
     const PAYOUT_REVERSAL_INITIATED                             = 'PAYOUT_REVERSAL_INITIATED';
     const PAYOUT_REVERSAL_CREATED                               = 'PAYOUT_REVERSAL_CREATED';
+    const PAYOUT_ALREADY_REVERSED                               = 'PAYOUT_ALREADY_REVERSED';
+    const PAYOUT_UPDATE_BEFORE_FTA_RECON                        = 'PAYOUT_UPDATE_BEFORE_FTA_RECON';
 
     const REFUND_REVERSAL_CREATED                               = 'REFUND_REVERSAL_CREATED';
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';

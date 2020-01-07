@@ -130,6 +130,7 @@ class MailTags
     const NEEDS_CLARIFICATION              = 'needs_clarification';
     const SUB_MERCHANT_ADDED               = 'sub_merchant_added';
     const AFFILIATE_ADDED                  = 'affiliate_added';
+    const ACCOUNT_REJECTED                 = 'account_rejected';
 
     const ICICI_FILES                      = 'icici_files';
     const CBI_FILES                        = 'cbi_files';

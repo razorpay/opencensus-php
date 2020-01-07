@@ -805,6 +805,13 @@ class Core extends Base\Core
         return $txn;
     }
 
+    public function createFromSettlementTransfer(Settlement\Transfer\Entity $transfer)
+    {
+        list($txn, $feeSplit) = $this->createTransactionForSource($transfer);
+
+        return $txn;
+    }
+
     public function createFromPayout(Payout\Entity $payout)
     {
         $txn = new Transaction\Entity;

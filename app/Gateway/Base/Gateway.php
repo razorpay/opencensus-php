@@ -730,8 +730,8 @@ class Gateway
         $riskScore = $input['payment_analytics']['risk_score'];
 
         if (($riskScore > $input['merchant']->getRiskThreshold()) and
-            (($input['card'][Card\Entity::INTERNATIONAL] === true) or
-             ($input['card'][Card\Entity::NETWORK] === Card\Network::AMEX)))
+            (($input['card'][Card\Entity::INTERNATIONAL] === true) and
+             ($input['card'][Card\Entity::NETWORK] !== Card\Network::AMEX)))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY,

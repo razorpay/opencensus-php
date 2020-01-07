@@ -1416,9 +1416,13 @@ final class Route
         'merchant_inheritance_parent_set_bulk'    => ['post',      'merchants/inheritance_parent/bulk',                          'MerchantController@postInheritanceParentBulk'             ],
         'merchant_inheritance_parent_delete'      => ['delete',    'merchants/{id}/inheritance_parent',                          'MerchantController@deleteInheritanceParent'               ],
 
+         //route for sending request to server from device
+        'create_virtual_account_from_order'       => ['post',       'virtual_accounts/offline_qr',                              'VirtualAccountController@createOfflineQr'                 ],
+
         // Route for Success Rate Global Configurations
         'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
         'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
+
     ];
 
     public static $public = [
@@ -1738,6 +1742,7 @@ final class Route
         'merchant_fetch_schedule_tasks',
         'setl_holidays',
         'fb_setl_fetch_transactions',
+        'create_virtual_account_from_order',
     ];
 
     // Only routes defined in internalApps go here
@@ -2711,7 +2716,7 @@ final class Route
         'merchant_inheritance_parent_fetch',
         'merchant_inheritance_parent_set',
         'merchant_inheritance_parent_delete',
-        
+
         'add_merchant_balance_config',
         'edit_merchant_balance_config',
 
@@ -3800,6 +3805,7 @@ final class Route
         'merchant_activation_update_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
         'merchant_activation_status_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
         'enable_es_scheduled'                  => [Feature::ES_ON_DEMAND],
+        'create_virtual_account_from_order'    => [Feature::OFFLINE_PAYMENTS],
     ];
 
     /*
