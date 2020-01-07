@@ -232,14 +232,6 @@ class Gateway extends Base\Gateway
 
         $callbackMerchantId = $callbackData[Fields::CALLBACK_MERCHANT_ID];
 
-        // TODO:: This needs to be fixed once we get confirmation on why the aggregator ids for one particular terminal
-        // are different. For now adding this hack as a fix.
-
-        if ($callbackMerchantId === 'RAZORPPROD0093689')
-        {
-            $callbackMerchantId = 'ADITYAPROD0093708';
-        }
-
         $terminal = [
             'gateway_merchant_id' => $callbackMerchantId
         ];
@@ -283,7 +275,10 @@ class Gateway extends Base\Gateway
             $this->getIntegerFormattedAmount($callbackData[Fields::TRANSACTION_AMOUNT]),
             $this->getIntegerFormattedAmount($amount));
 
-        $this->checkResponseStatus($result, [Status::VERIFY_DEEMED, Status::VERIFY_PENDING, Status::VERIFY_SUCCESS], $content);
+        $this->checkResponseStatus(
+            $result,
+            [Status::VERIFY_DEEMED, Status::VERIFY_PENDING, Status::VERIFY_SUCCESS],
+            $content);
     }
 
     public function authorizePush($input)
@@ -963,8 +958,8 @@ class Gateway extends Base\Gateway
     {
         //
         // Appending (attempt count - 1)  to refund id for verifying previous refund if that was successful.
-        // For scrooge refunds, attempts are sent from scrooge which signifies the attempts which have been done on this.
-        // As attempts in scrooge starts with 0, For eg. if attempts = 5,
+        // For scrooge refunds, attempts are sent from scrooge which signifies the attempts which have been done on
+        // this. As attempts in scrooge starts with 0, For eg. if attempts = 5,
         // that means we will be requesting refund R5 and we need to verify for R4.
         //
         $attempts = $input['refund']['attempts'] - 1;
@@ -1307,11 +1302,11 @@ class Gateway extends Base\Gateway
         if (($terminal[Terminal\Entity::GATEWAY_TERMINAL_ID] !== null) and
             ($terminal[Terminal\Entity::GATEWAY_ACCESS_CODE] !== null))
         {
-            return array($terminal[Terminal\Entity::GATEWAY_TERMINAL_ID], $terminal[Terminal\Entity::GATEWAY_ACCESS_CODE]);
+            return [$terminal[Terminal\Entity::GATEWAY_TERMINAL_ID], $terminal[Terminal\Entity::GATEWAY_ACCESS_CODE]];
         }
         else
         {
-            return array($this->config['live_razorpay_merchant_id'], $this->config['live_razorpay_merchant_channel_id']);
+            return [$this->config['live_razorpay_merchant_id'], $this->config['live_razorpay_merchant_channel_id']];
         }
     }
 
