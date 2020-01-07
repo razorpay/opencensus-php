@@ -341,19 +341,19 @@ const businessDetails = [
     placeholder: 'Registered name',
     validator: function(value) {
       let contactName = '',
-        isExpOn = false;
+        showCompanyName = false;
       if (
         this.props.user.experiments &&
         this.props.user.experiments['hide_company_name']
       ) {
         contactName =
           this.state.dirty['contact_name'] || this.props.data['contact_name'];
-        isExpOn =
+        showCompanyName =
           this.props.user.experiments['hide_company_name'].result === 'on'
             ? true
             : false;
       }
-      return validateCompanyAB(value, contactName, isExpOn);
+      return validateCompanyAB(value, contactName, showCompanyName);
     },
     _when: excludeFor_Indiv,
   },

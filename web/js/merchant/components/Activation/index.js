@@ -786,7 +786,7 @@ export default class ActivationWizard extends React.Component {
 
     let businessName = '',
       contactName = '',
-      expCompanyAB = false;
+      showCompanyName = false;
     if (
       this.props.user.experiments &&
       this.props.user.experiments['hide_company_name']
@@ -795,7 +795,7 @@ export default class ActivationWizard extends React.Component {
         this.state.dirty['business_name'] || this.props.data['business_name'];
       contactName =
         this.state.dirty['contact_name'] || this.props.data['contact_name'];
-      expCompanyAB =
+      showCompanyName =
         this.props.user.experiments['hide_company_name'].result === 'on'
           ? true
           : false;
@@ -806,7 +806,7 @@ export default class ActivationWizard extends React.Component {
       (this.isUnregBiz
         ? promoterPan && !validatePANCardUnregBiz(promoterPan)
         : true) &&
-      !validateCompanyAB(businessName, contactName, expCompanyAB)
+      !validateCompanyAB(businessName, contactName, showCompanyName)
     );
   }
 
