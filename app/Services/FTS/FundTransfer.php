@@ -625,7 +625,7 @@ class FundTransfer extends Base
 
         $ba = $this->fta->bankAccount;
 
-        if ($ba !== null)
+        if (empty($ba) === false)
         {
             $ifsc = $ba->getIfscCode();
 
