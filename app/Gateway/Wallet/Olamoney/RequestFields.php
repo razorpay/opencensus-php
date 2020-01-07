@@ -35,4 +35,12 @@ class RequestFields
     const BALANCE_PREFERENCE        = 'balancePreference';
     const SALT                      = 'SALT';
     const SIGNATURE                 = 'signature';
+    const MOBILE_NUMBER             = 'mobile_number';
+    const FIRST_NAME                = 'first_name';
+    const LAST_NAME                 = 'last_name';
+    const SOURCE                    = 'source';
+    const UNIQUE_ELIGIBILITY_ID     = 'unique_eligibility_id';
+    const USER_INFO                 = 'user_info';
+    const TRANSACTION_DETAILS       = 'transaction_details';
+    const DENOMINATION              = 'denomination';
 }

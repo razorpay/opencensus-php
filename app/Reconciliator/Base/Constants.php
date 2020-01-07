@@ -56,4 +56,16 @@ class Constants
 
         InfoCode::RECON_INSUFFICIENT_DATA_FOR_MANUAL_RECON      => 'Insufficient data given for manual reconciliation of txn.',
     ];
+
+    // Fields being used to fetch CPS authorization data
+    const RRN                    = 'rrn';
+    const STATUS                 = 'status';
+    const AUTH_CODE              = 'auth_code';
+    const GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
+
+    const CPS_PARAMS = [
+        Constants::RRN,
+        Constants::AUTH_CODE,
+        Constants::GATEWAY_TRANSACTION_ID,
+    ];
 }

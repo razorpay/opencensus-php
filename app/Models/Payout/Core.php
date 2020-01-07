@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use App;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -334,8 +335,18 @@ class Core extends Base\Core
 
     public function updateWithDetailsBeforeFtaRecon(Entity $payout, array $ftaData = [])
     {
+        $this->trace->info(
+            TraceCode::PAYOUT_UPDATE_BEFORE_FTA_RECON,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
+
         // For non-Yesbank, we will not get public_failure_reason
-        $failureReason = $responseData[Attempt\Constants::FAILURE_REASON] ?? null;
+        $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
+
+        $ftaBankStatusCode = $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null;
+
+        $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
 
         $payout->setUtr($ftaData[Attempt\Constants::UTR]);
 
@@ -353,7 +364,7 @@ class Core extends Base\Core
             $payout->setMode($ftaData[Attempt\Constants::MODE]);
         }
 
-        $payout->setFailureReason($failureReason);
+        $payout->setFailureReason($ftaFailureReason);
 
         $this->repo->saveOrFail($payout);
     }
@@ -579,7 +590,7 @@ class Core extends Base\Core
 
             $this->dispatchQueuedPayout($payout, $payoutFees, $totalBalance);
 
-            $dispatchedCount++;
+            $dispatchedCount += 1;
         }
 
          return [
@@ -1153,22 +1164,45 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->repo->transaction(
-            function() use ($payout, $reverseReason) {
-                $reversal = (new Reversal\Core)->reverseForPayout($payout);
+        $app = App::getFacadeRoot();
 
-                $payout->setFailureReason($reverseReason);
+        $this->mutex = $app['api.mutex'];
 
-                // To be set after failure_reason for metrics purpose
-                $payout->setStatus(Status::REVERSED);
-
-                $this->repo->saveOrFail($payout);
-
-                if ($payout->isBalanceAccountTypeDirect() === true)
+        $this->mutex->acquireAndRelease(
+            'reversal_payout_id_' . $payout->getId(),
+            function () use ($payout, $reverseReason)
+            {
+                if ($payout->isStatusReversed() === true)
                 {
-                    $this->handleReversalTransactionForDirectBanking($reversal);
+                    $this->trace->info(TraceCode::PAYOUT_ALREADY_REVERSED,
+                        [
+                            'payout_id'      => $payout->getId(),
+                            'status'         => $payout->getStatus(),
+                            'reverse_reason' => $reverseReason,
+                        ]);
+
+                    return;
                 }
-            });
+                $this->repo->transaction(
+                    function() use ($payout, $reverseReason) {
+                        $reversal = (new Reversal\Core)->reverseForPayout($payout);
+
+                        $payout->setFailureReason($reverseReason);
+
+                        // To be set after failure_reason for metrics purpose
+                        $payout->setStatus(Status::REVERSED);
+
+                        $this->repo->saveOrFail($payout);
+
+                        if ($payout->isBalanceAccountTypeDirect() === true)
+                        {
+                            $this->handleReversalTransactionForDirectBanking($reversal);
+                        }
+                    });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
     }
 
     protected function getPublicErrorMessage(

@@ -96,6 +96,39 @@ class FraudDetectionTest extends TestCase
         $this->assertNotNull($riskEntity['risk_score']);
     }
 
+    public function testSkipMaxmindCheckForAmexPayments()
+    {
+        $this->mockRazorx();
+        $this->mockShield();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => "American Express",
+                'type'    => 'debit',
+            ]);
+
+        $payment['card']['number'] = '5149066434045615';
+        $payment['card']['cvv']    = '1234';
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayKeysExist($response, ['razorpay_payment_id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $paymentAnalytics = $this->getLastEntity('payment_analytics', true);
+
+        $this->assertEquals($paymentAnalytics['risk_score'], 35);
+
+        $this->assertEquals($paymentAnalytics['risk_engine'], 'shield');
+    }
+
     public function testFraudNotDetected()
     {
         $this->mockMaxmind();
@@ -264,9 +297,17 @@ class FraudDetectionTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $payment['card']['number'] = '341111111111111';
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => 'Visa',
+                'type'    => 'debit',
+                'country' => 'US',
+                'enabled' => '1'
+            ]);
 
-        $payment['card']['cvv'] = '1234';
+        $payment['card']['number'] = '5149067611060906';
 
         $data = $this->testData['testFraudDetectionFailedByShieldDetectedByMaxMind'];
 

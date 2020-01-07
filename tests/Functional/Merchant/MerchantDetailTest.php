@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use Mail;
 use RZP\Constants;
 use Illuminate\Http\UploadedFile;
+use RZP\Mail\Merchant\Rejection;
 use RZP\Services\HubspotClient;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -258,6 +260,8 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testMerchantActivationStatus()
     {
+        Mail::fake();
+
         $merchantId = '1cXSLlUU8V9sXl';
 
         $website = 'http://abc.com';
@@ -302,6 +306,15 @@ class MerchantDetailTest extends OAuthTestCase
             $testData['response']['content']);
 
         $this->startTest();
+
+        Mail::assertQueued(Rejection::class, function ($mail)
+        {
+            $this->assertEquals('emails.merchant.rejection_notification', $mail->view);
+
+            return true;
+        });
+
+
     }
 
     protected function changeActivationStatusFromUnderReviewToNeedsClarification(& $requestContent, & $responseContent)

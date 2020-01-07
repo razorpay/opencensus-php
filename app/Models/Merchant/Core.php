@@ -1252,6 +1252,8 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchant);
 
+            $this->setDefaultFeatureForPartner($merchant);
+
             $this->createPartnerApp($merchant);
         });
 
@@ -1260,6 +1262,35 @@ class Core extends Base\Core
         $this->trace->count(Metric::PARTNER_MARKED_TOTAL, $dimensions);
 
         return $merchant;
+    }
+
+    protected function setDefaultFeatureForPartner(Entity $partner)
+    {
+        // add feature flags if commissions are not yet created or if commission balance is zero
+        $commissionBalance = $partner->commissionBalance;
+
+        if (($commissionBalance !== null) and ($commissionBalance->getBalance() > 0))
+        {
+            return;
+        }
+
+        $featureCore = new Feature\Core;
+
+        $features = [
+            Feature\Constants::GENERATE_PARTNER_INVOICE,
+            Feature\Constants::AUTOMATED_COMM_PAYOUT,
+        ];
+
+        foreach ($features as $feature)
+        {
+            $featureCore->create(
+                [
+                    Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+                    Feature\Entity::ENTITY_ID       => $partner->getId(),
+                    Feature\Entity::NAME            => $feature,
+                ], $shouldSync = true
+            );
+        }
     }
 
     /**
