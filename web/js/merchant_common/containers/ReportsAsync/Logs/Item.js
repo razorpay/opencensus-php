@@ -1,45 +1,59 @@
 import { classList } from 'common/utils/rzp-utils';
 
-import { getFormattedDate, extractExtensionFromTemplate } from '../utils';
+import {
+  getFormattedDate,
+  extractExtensionFromTemplate,
+  isLogInProgress,
+} from '../utils';
 import KindOfLog from './components/KindOfLog';
 import LogStatus from './components/LogStatus';
 
 const DEFAULT_FILE_FORMAT = 'csv';
 
-export default function LogItem({ config, ...props }) {
-  return (
-    <div class={classList('LogItem', `LogItem--${props.status}`)}>
-      <div className="LogItem__Body">
-        <div>
-          <p>{config.name || '--'}</p>
+export default class LogItem extends React.PureComponent {
+  componentDidMount() {
+    const { status, id } = this.props;
+    if (isLogInProgress(status)) {
+      this.props.pollLog(id);
+    }
+  }
 
-          <ReportDuration
-            startTime={props.start_time}
-            endTime={props.end_time}
+  render() {
+    const { config, ...props } = this.props;
+    return (
+      <div class={classList('LogItem', `LogItem--${props.status}`)}>
+        <div className="LogItem__Body">
+          <div>
+            <p>{config.name || '--'}</p>
+
+            <ReportDuration
+              startTime={props.start_time}
+              endTime={props.end_time}
+            />
+          </div>
+          <div>
+            <FileFormat
+              logTemplate={props.template_overrides}
+              configTemplate={config.template}
+            />
+          </div>
+
+          <KindOfLog
+            scheduleId={props.schedule_id}
+            createdAt={props.created_at}
+          />
+
+          <LogStatus
+            status={props.status}
+            fileId={props.file_id}
+            onDownloadClick={props.onDownloadClick}
+            consumerId={props.consumer}
           />
         </div>
-        <div>
-          <FileFormat
-            logTemplate={props.template_overrides}
-            configTemplate={config.template}
-          />
-        </div>
-
-        <KindOfLog
-          scheduleId={props.schedule_id}
-          createdAt={props.created_at}
-        />
-
-        <LogStatus
-          status={props.status}
-          fileId={props.file_id}
-          onDownloadClick={props.onDownloadClick}
-          consumerId={props.consumer}
-        />
+        <div className="LogItem__InfoBar">{props.info}</div>
       </div>
-      <div className="LogItem__InfoBar">{props.info}</div>
-    </div>
-  );
+    );
+  }
 }
 
 function ReportDuration({ startTime, endTime }) {
