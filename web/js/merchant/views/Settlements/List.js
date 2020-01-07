@@ -243,18 +243,20 @@ export default class SettlementsListContainer extends ListContainer {
           <EarlySettlementsAnnouncement userId={user.current} />
         )}
 
-        <NegativeBalanceBanner
-          title="Add Funds"
-          theme="warning"
-          canBeClosed={true}
-        >
-          Your balance went into negative value. Add funds to avoid the
-          transaction failures.{' '}
-          <Link to={'/addfunds'} target="_blank">
-            {' '}
-            Add Funds
-          </Link>
-        </NegativeBalanceBanner>
+        {balance < 0 && (
+          <NegativeBalanceBanner
+            title="Add Funds"
+            theme="warning"
+            canBeClosed={true}
+          >
+            Your balance went into negative value. Add funds to avoid the
+            transaction failures.{' '}
+            <Link to={'/addfunds'} target="_blank">
+              {' '}
+              Add Funds
+            </Link>
+          </NegativeBalanceBanner>
+        )}
 
         <NegativeBalanceBanner
           title="On Hold!"
