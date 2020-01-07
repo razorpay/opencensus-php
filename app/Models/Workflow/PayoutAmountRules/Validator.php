@@ -30,24 +30,25 @@ class Validator extends Base\Validator
 
         $currentMinAmount = 0;
 
-        for ($index = 0; $index < count($rules); $index++)
+        $index = 0;
+
+        while($index < count($rules) and $currentMinAmount !== null)
         {
             $rule = $rules[$index];
+
+            if($rule[Entity::MAX_AMOUNT] !== null and $rule[Entity::MIN_AMOUNT] > $rule[Entity::MAX_AMOUNT])
+            {
+                break;
+            }
 
             if ($rule[Entity::MIN_AMOUNT] != $currentMinAmount)
             {
                 break;
             }
 
-            if (empty($rule[Entity::MAX_AMOUNT]) === false)
-            {
-                $currentMinAmount = $rule[Entity::MAX_AMOUNT];
-            }
-            else
-            {
-                $index++;
-                break;
-            }
+            $currentMinAmount = $rule[Entity::MAX_AMOUNT];
+
+            $index++;
         }
 
         if ($index !== count($rules))
