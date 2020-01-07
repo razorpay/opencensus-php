@@ -101,7 +101,7 @@ class Service extends Base\Service
 
         // Ensure that workflow_payout_amount_rules rules do not exist already
         // We fail here because editing existing workflow_payout_amount_rules could cause conflicts with the new ones
-        // Alternative is to delete and create new workflow and attach workflow_payout_amount_rules to the new workflow
+        // Right now rules can only be removed directly from DB
         if ($wfPayoutAmountRules->count() > 0)
         {
             throw new Exception\BadRequestException(
