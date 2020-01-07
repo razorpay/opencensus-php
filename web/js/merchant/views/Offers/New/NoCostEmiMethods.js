@@ -4,13 +4,14 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { ISSUERS, PAYMENT_NETWORK_MAP } from 'merchant/views/Offers/Entity';
 import { deepClone } from '../../../../common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
+import Amount from '../../../../common/ui/Amount';
 
 export default class NoCostEmiMethods extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       emiOptions: null,
-      selectedIssuer: null,
+      selectedIssuer: this.props.issuer || null,
       tenure: {},
       isLoading: true,
     };
@@ -74,6 +75,11 @@ export default class NoCostEmiMethods extends React.Component {
             <Input.Check
               fieldLabel={text}
               onChange={this.onSelectTenure(duration)}
+              defaultValue={
+                (Array.isArray(this.props.emiDurations) &&
+                  this.props.emiDurations.indexOf(parseInt(duration)) > -1) ||
+                false
+              }
             />
           </div>
         );
@@ -108,12 +114,27 @@ export default class NoCostEmiMethods extends React.Component {
           name="issuer"
           placeholder="Select network"
           options={issuers}
+          defaultValue={this.props.issuer || ''}
           onChange={this.onChange}
         />
         {this.renderDuration()}
         <div className="no-cost-emi-footnote">
-          In No-Cost-EMI, the interest charged by bank in given as a discount to
-          the customer. To know more how this works click here.
+          <ul>
+            <li>
+              Only banks with minimum EMI order amount of{' '}
+              <Amount value={this.props.minAmount * 100} /> displayed
+            </li>
+            <li>
+              In No-Cost-EMI, the interest charged by bank in given as a
+              discount to the customer. To know more how this works click{' '}
+              <a
+                target="_blank"
+                href={'https://razorpay.com/docs/offers/no-cost-emi/'}
+              >
+                here
+              </a>.
+            </li>
+          </ul>
         </div>
       </React.Fragment>
     ) : (
