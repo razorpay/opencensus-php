@@ -23,7 +23,7 @@ export const PAYMENT_NETWORK_MAP = {
 
 export const OFFER_TYPE_MAP = {
   instant: 'Instant',
-  deferred: 'Deferred',
+  deferred: 'Cashback',
   already_discounted: 'Already Discounted',
 };
 
