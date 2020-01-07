@@ -104,6 +104,7 @@ export default class CreateOfferWizard extends React.Component {
               minAmount={this.state.min_amount || 0}
               emiDurations={this.state.emi_durations}
               issuer={this.state.issuer}
+              getFormElementValidations={this.getFormElementValidations}
             />
           );
         }
@@ -124,8 +125,8 @@ export default class CreateOfferWizard extends React.Component {
         );
       },
       getFieldsToBeValidated: () => {
-        if (this.state.discount_type === 'no_cost_emi') {
-          return [];
+        if (this.state.discount_type === NO_COST_EMI) {
+          return ['issuer', 'emi_durations'];
         }
         return ['payment_method'];
       },
@@ -293,6 +294,19 @@ export default class CreateOfferWizard extends React.Component {
         val = parseFloat(val);
         if (val > MAX_INT) {
           return `Maximum value allowed is ${MAX_INT}`;
+        }
+      },
+      issuer: val => {
+        if (this.state.discount_type === NO_COST_EMI && (!val || val === '')) {
+          return 'Issuer cannot be null for no cost emi';
+        }
+      },
+      emi_durations: val => {
+        if (
+          !Array.isArray(this.state.emi_durations) ||
+          this.state.emi_durations.length < 1
+        ) {
+          return 'Emi durations not selected';
         }
       },
       type: val => {
