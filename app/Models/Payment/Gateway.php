@@ -370,6 +370,7 @@ class Gateway
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
         IFSC::SBIN,
+        IFSC::ORBC,
     ];
 
     // banks supported by enach_npci_netbanking gateway for auth type card
