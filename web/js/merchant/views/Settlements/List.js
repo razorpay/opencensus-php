@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -29,7 +29,7 @@ import {
   fetchHolidayList,
 } from 'merchant/reducers/settlements/details';
 import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
-
+import NegativeBalanceBanner from 'merchant/components/Announcement';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -236,6 +236,33 @@ export default class SettlementsListContainer extends ListContainer {
         {user.isISBannerEnabled && (
           <EarlySettlementsAnnouncement userId={user.current} />
         )}
+
+        <NegativeBalanceBanner
+          title="Add Funds"
+          theme="warning"
+          canBeClosed={true}
+        >
+          Your balance went into negative value. Add funds to avoid the
+          transaction failures.{' '}
+          <Link to={'/addfunds'} target="_blank">
+            {' '}
+            Add Funds
+          </Link>
+        </NegativeBalanceBanner>
+
+        <NegativeBalanceBanner
+          title="On Hold!"
+          theme="danger"
+          canBeClosed={true}
+        >
+          Your current balance had reached the maximum negative limit.
+          Transactions will start to fail now. Please add funds to avoid
+          transaction failures.{' '}
+          <Link to={'/addfunds'} target="_blank">
+            {' '}
+            Add Funds
+          </Link>
+        </NegativeBalanceBanner>
 
         <tabbed-container
           style={{ paddingTop: user.isISBannerEnabled ? '0px' : '20px' }}
