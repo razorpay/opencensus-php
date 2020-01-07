@@ -5,7 +5,7 @@
     <title>Payout Link</title>
     <meta
             name="viewport"
-            content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0"
+            content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"
     />
     <script type="text/javascript">
         _rzpAQ = [];

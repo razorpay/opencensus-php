@@ -264,7 +264,7 @@ class PayoutLinkTest extends TestCase
         $payoutLinkId = $response['id'];
 
         $expectedTargetUrl = sprintf($urlFormat,
-                                     $this->app['config']['url.api.production'],
+                                     $this->app['config']['applications.payout_links.url'],
                                      $payoutLinkId);
 
         // asserting that the short_url is same as the full target url, because elfin failed

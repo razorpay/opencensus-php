@@ -800,16 +800,17 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
 
     // payout links
-    const BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL              = 'Attached contact neither has email or phone number';
-    const BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED                             = 'Error in SMS/EMAIL delivery for OTP';
-    const BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION                         = 'Cannot generate OTP for payoulink in this state';
-    const BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION                       = 'Cannot verify OTP for payoulink in this state';
+    const BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL              = 'Provided contact neither has email nor phone number';
+    const BAD_REQUEST_CUSTOMER_OTP_DELIVERY_FAILED                             = 'Error in SMS/Email delivery for OTP';
+    const BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION                         = 'Cannot generate OTP for Payout Link in this state';
+    const BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION                       = 'Cannot verify OTP for Payout Link in this state';
     const BAD_REQUEST_ONLY_VPA_AND_BANK_ACCOUNT_SUPPORTED                      = 'Only VPA and Bank Accounts supported by Payout Links';
     const BAD_REQUEST_INVALID_OTP_AUTH_TOKEN                                   = 'Token passed is either invalid or expired';
-    const BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED                           = 'Otp generation failed';
-    const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS                               = 'Invalid payout link status passed';
+    const BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED                           = 'OTP generation failed';
+    const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS                               = 'Invalid Payout Link status passed';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS_TRANSITION                    = 'The following state transition is not allowed for this payout link';
-    const BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST           = 'Cannot allow initiate request on payout link at this state';
+    const BAD_REQUEST_PAYOUT_LINK_CANNOT_BE_CANCELLED_IN_THIS_STATE            = 'Payout Link cannot be cancelled in this state';
+    const BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST           = 'Cannot initiate Payout Link in this state';
     const BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS                = 'Request failed because another operation is in progress';
 
     // Merchant Config Inheritance
