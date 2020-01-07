@@ -14,6 +14,7 @@ class Repository extends Base\Repository
     {
         return $this->findByPublicIdAndMerchant($payoutLinkId, $merchant)
                     ->contact
-                    ->fundAccounts->where(FundAccount\Entity::ACTIVE, '=', '1');
+                    ->fundAccounts
+                    ->where(FundAccount\Entity::ACTIVE, '=', '1');
     }
 }

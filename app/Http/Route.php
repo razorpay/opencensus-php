@@ -848,19 +848,19 @@ final class Route
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
 
         // Payout Links
-        'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                          ],
-        'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                           ],
-        'payout_links_create'                      => ['post',      'payout-links/',                                 'PayoutLinkController@create'                                        ],
+        'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
+        'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                          ],
+        'payout_links_create'                      => ['post',      'payout-links',                                  'PayoutLinkController@create'                                       ],
         'payout_links_generate_end_user_otp'       => ['post',      'payout-links/{x_entity_id}'
-                                                                     . '/generate-customer-otp',                      'PayoutLinkController@generateAndSendCustomerOtp'                   ],
+                                                                     . '/generate-customer-otp',                     'PayoutLinkController@generateAndSendCustomerOtp'                   ],
         'payout_links_verify_customer_otp'         => ['post',      'payout-links/{x_entity_id}'
-                                                                     . '/verify-customer-otp',                        'PayoutLinkController@verifyCustomerOtp'                            ],
-        'payout_links_cancel'                      => ['post',      'payout-links/{id}/cancel',                       'PayoutLinkController@cancel'                                       ],
-        'payout_links_customer_hosted_page'        => ['get',       'payout-links/{x_entity_id}/view',                'PayoutLinkController@viewHostedPage'                               ],
-        'payout_links_added_fund_accounts'         => ['get',       'payout-links/{x_entity_id}/fund-accounts',       'PayoutLinkController@getFundAccountsOfContact'                     ],
-        'payout_links_initiate'                    => ['post',      'payout-links/{x_entity_id}/initiate',            'PayoutLinkController@initiate'                                     ],
-        'payout_links_settings_post'               => ['post',      'payout-links/{merchantId}/settings',             'PayoutLinkController@updateSettings'                               ],
-        'payout_links_settings_get'                => ['get',       'payout-links/{merchantId}/settings',             'PayoutLinkController@getSettings'                                  ],
+                                                                     . '/verify-customer-otp',                       'PayoutLinkController@verifyCustomerOtp'                            ],
+        'payout_links_cancel'                      => ['post',      'payout-links/{id}/cancel',                      'PayoutLinkController@cancel'                                       ],
+        'payout_links_customer_hosted_page'        => ['get',       'payout-links/{x_entity_id}/view',               'PayoutLinkController@viewHostedPage'                               ],
+        'payout_links_added_fund_accounts'         => ['get',       'payout-links/{x_entity_id}/fund-accounts',      'PayoutLinkController@getFundAccountsOfContact'                     ],
+        'payout_links_initiate'                    => ['post',      'payout-links/{x_entity_id}/initiate',           'PayoutLinkController@initiate'                                     ],
+        'payout_links_settings_post'               => ['post',      'payout-links/{merchantId}/settings',            'PayoutLinkController@updateSettings'                               ],
+        'payout_links_settings_get'                => ['get',       'payout-links/{merchantId}/settings',            'PayoutLinkController@getSettings'                                  ],
 
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],

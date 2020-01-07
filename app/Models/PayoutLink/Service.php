@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 class Service extends Base\Service
 {
     use Base\Traits\ServiceHasCrudMethods;
+
     const OTP = 'otp';
 
     /**
@@ -55,8 +56,7 @@ class Service extends Base\Service
     public function generateAndSendCustomerOtp(string $payoutLinkId, array $input)
     {
         $this->trace->info(TraceCode::PAYOUT_CUSTOMER_OTP_REQUEST,
-                           $input
-        );
+                           $input);
 
         return $this->core->generateAndSendCustomerOtp($payoutLinkId, $input);
     }

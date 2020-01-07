@@ -59,16 +59,11 @@ class Entity extends Base\PublicEntity
     const EMAIL                = 'email';
     const PHONE_NUMBER         = 'contact';
 
-
     protected $generateIdOnCreate = true;
 
     protected $entity = 'payout_link';
 
     protected static $sign = 'poutlk';
-
-    protected $amounts = [
-      self::AMOUNT
-    ];
 
     protected $fillable = [
         self::AMOUNT,
@@ -120,8 +115,8 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::NOTES,
         self::SHORT_URL,
+        self::CANCELLED_AT,
         self::CREATED_AT,
-        self::CANCELLED_AT
     ];
 
     protected $publicSetters = [
@@ -148,6 +143,10 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DELETED_AT,
         self::CANCELLED_AT
+    ];
+
+    protected $amounts = [
+      self::AMOUNT
     ];
 
     protected $casts = [
@@ -270,13 +269,14 @@ class Entity extends Base\PublicEntity
 
         $attributes[self::STATUS] = $externalStatus;
     }
+
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------
 
     public function setShortUrl(string $shortUrl)
     {
-        $this->setAttribute(ENTITY::SHORT_URL, $shortUrl);
+        $this->setAttribute(self::SHORT_URL, $shortUrl);
     }
 
     public function setStatus($newStatus)
