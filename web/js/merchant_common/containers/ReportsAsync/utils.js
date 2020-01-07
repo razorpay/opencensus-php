@@ -22,3 +22,7 @@ export const getStartAndEndUnixTimeStampsForDaysFrom = (
 
 export const extractExtensionFromTemplate = template =>
   ((template || {}).file_meta || {}).extension;
+
+const logProcessingStatuses = ['created', 'processing'];
+export const isLogInProgress = logStatus =>
+  logProcessingStatuses.includes(logStatus);

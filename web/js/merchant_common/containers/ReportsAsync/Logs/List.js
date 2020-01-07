@@ -3,7 +3,7 @@ import { downloadFromUFH } from 'merchant/utils/downloadFile';
 import LogItem from './Item';
 
 export default function LogList(props) {
-  const { loading, items, allConfigs, configsLoading } = props;
+  const { loading, items, allConfigs } = props;
 
   const onDownloadClick = ({ target }) => {
     const { fileId, consumerId } = target.dataset;
@@ -24,6 +24,7 @@ export default function LogList(props) {
             key={item.id}
             config={allConfigs.find(({ id }) => id === item.config_id) || {}}
             onDownloadClick={onDownloadClick}
+            pollLog={props.pollLog}
             {...item}
           />
         ))

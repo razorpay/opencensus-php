@@ -12,10 +12,16 @@ export default class ReportHome extends React.PureComponent {
   }
 
   onGenerateReport = payload => {
-    return this.props.createLog({
-      ...payload,
-      generated_by: this.props.user.current,
-    });
+    return this.props
+      .createLog({
+        ...payload,
+        generated_by: this.props.user.current,
+      })
+      .then(data => {
+        if (data && data.id) {
+          this.props.pollLog(data.id);
+        }
+      });
   };
 
   onLoadMoreLogs = () => {
@@ -23,7 +29,7 @@ export default class ReportHome extends React.PureComponent {
   };
 
   render() {
-    const { logs, user, configs, customConfigs } = this.props;
+    const { logs, user, configs, customConfigs, ...otherProps } = this.props;
     return (
       <div>
         <tabbed-container>
@@ -37,14 +43,15 @@ export default class ReportHome extends React.PureComponent {
                 configs={configs}
                 customConfigs={customConfigs}
                 onGenerateReport={this.onGenerateReport}
-                emailReportOptions={this.props.emailReportOptions}
-                mode={this.props.mode}
+                emailReportOptions={otherProps.emailReportOptions}
+                mode={otherProps.mode}
               />
               <LogList
                 currentMerchantId={user.current}
                 allConfigs={configs.items}
                 configsLoading={configs.loading}
                 onLoadMoreClick={this.onLoadMoreLogs}
+                pollLog={otherProps.pollLog}
                 {...logs}
               />
             </div>
