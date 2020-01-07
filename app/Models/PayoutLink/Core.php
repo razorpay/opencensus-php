@@ -140,7 +140,7 @@ class Core extends Base\Core
         if ($payoutLink->getStatus() === Status::PROCESSING)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS_TRANSITION,
+                ErrorCode::BAD_REQUEST_PAYOUT_LINK_CANNOT_BE_CANCELLED_IN_THIS_STATE,
                 null,
                 [
                     self::PAYOUT_LINK_ID => $payoutLinkId,
@@ -886,7 +886,7 @@ class Core extends Base\Core
     protected function generateAndSetShortUrl(Entity &$payoutLink)
     {
         $targetUrl = sprintf(self::LONG_URL_FORMAT,
-                             $this->config['url.api.production'],
+                             $this->config['applications.payout_links.url'],
                              $payoutLink->getPublicId());
 
         $params = [
