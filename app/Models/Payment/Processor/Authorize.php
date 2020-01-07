@@ -3453,9 +3453,13 @@ trait Authorize
 
             $tokenMaxAmount = null;
 
+            $tokenExpireBy  = null;
+
             if ($tokenRegistration !== null)
             {
                 $tokenMaxAmount = $tokenRegistration->getMaxAmount();
+
+                $tokenExpireBy  = $tokenRegistration->getExpireAt();
             }
 
             $saveMethodInput[Token\Entity::MAX_AMOUNT] =
@@ -3480,7 +3484,7 @@ trait Authorize
                 $input[Payment\Entity::AADHAAR]['vid'] ?? null;
 
             $saveMethodInput[Token\Entity::EXPIRED_AT] =
-                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
+                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? $tokenExpireBy;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
