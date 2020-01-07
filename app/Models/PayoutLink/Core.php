@@ -15,8 +15,10 @@ use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
+use \RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\External\FundAccount;
+use \RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\PayoutLink\External\Payout as PayoutClient;
 use RZP\Models\PayoutLink\External\Contact as ContactClient;
 use RZP\Models\PayoutLink\External\FundAccount as FundAccountClient;
@@ -426,6 +428,8 @@ class Core extends Base\Core
 
         $isProduction = $this->app->environment() === Environment::PRODUCTION;
 
+        $fundAccountDetails = $this->getMaskedFundAccountDetails($payoutLink->fundAccount);
+
         $data = [
             'api_host'                => $this->config['url.api.production'],
             'payout_link_id'          => $payoutLink->getPublicId(),
@@ -443,10 +447,46 @@ class Core extends Base\Core
             'merchant_name'           => $this->getDisplayName(),
             'allow_upi'               => $isUpiEnabled,
             'banking_url'             => $this->config['applications.banking_service_url'],
-            'is_production'           => $isProduction
+            'is_production'           => $isProduction,
+            'fund_account_details'    => json_encode($fundAccountDetails)
         ];
 
         return $data;
+    }
+
+    protected function getMaskedFundAccountDetails(FundAccountEntity $fundAccount = null)
+    {
+
+        if ($fundAccount === null)
+        {
+            return [];
+        }
+
+        $details = $fundAccount->toArrayPublic();
+
+        $type = $fundAccount->getAccountType();
+
+        switch ($type)
+        {
+            case Type::VPA:
+                $address = $details[Type::VPA][VpaEntity::ADDRESS];
+
+                $handle = explode('@', $address)[1];
+
+                $address = explode('@', $address)[0];
+
+                $maskedAddress = substr($address, 0, 2) .
+                                 str_repeat('*', strlen($address) - 4) .
+                                 substr($address, strlen($address) - 2, 2);
+
+                $maskedHandle = substr($handle, 0, 2) .
+                                str_repeat('*', strlen($handle) - 4) .
+                                substr($handle, strlen($handle) - 2, 2);
+
+                $details[Type::VPA][VpaEntity::ADDRESS] = sprintf('%s@%s', $maskedAddress, $maskedHandle);
+        }
+
+        return $details;
     }
 
     /**
@@ -457,7 +497,7 @@ class Core extends Base\Core
      * @param string $email
      * @return mixed|string
      */
-    protected function getMaskedEmail(string $email)
+    protected function getMaskedEmail(string $email = null)
     {
         $maskedEmail = $email;
 
@@ -508,7 +548,7 @@ class Core extends Base\Core
         return $maskedEmail;
     }
 
-    public function getMaskedPhone(string $phone)
+    public function getMaskedPhone(string $phone = null)
     {
         if (empty($phone) === true)
         {
