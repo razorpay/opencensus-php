@@ -222,6 +222,53 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
+    public function testCreateCardPaymentFailedWithRestrictionUpi()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $order = $this->createOrder(['notes' => ['somekey' => 'some value', 'Pay_Mode' => 'UPI']]);
+
+        $payment['amount'] = 50000;
+
+        $payment['order_id'] = $order['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testCreateUpiPaymentSuccessWithRestrictionUpi()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $order = $this->createOrder(['notes' => ['somekey' => 'some value', 'Pay_Mode' => 'UPI']]);
+
+        $payment['amount'] = 50000;
+
+        $payment['order_id'] = $order['id'];
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->doAuthPayment($payment);
+
+    }
+
+    public function testCreateCardPaymentWithRestrictionNonUpi()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $order = $this->createOrder(['notes' => ['somekey' => 'some value', 'Pay_Mode' => 'NONUPI']]);
+
+        $payment['amount'] = 50000;
+
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+    }
+
     public function testCreatePaymentWithValidOrderIdWithTrace()
     {
         $payment = $this->getDefaultPaymentArray();

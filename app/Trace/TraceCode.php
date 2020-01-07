@@ -1380,6 +1380,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
      * Trace code for critical info
      */
     const PAYMENT_NOTES_INVALID                                 = 'PAYMENT_NOTES_INVALID';
+    const PAYMENT_ORDER_METHOD_VALIDATION_FAILED                = 'PAYMENT_ORDER_METHOD_VALIDATION_FAILED';
     const EXTRA_QUERY_PARAM_IN_GET_ROUTE                        = 'EXTRA_QUERY_PARAM_IN_GET_ROUTE';
 
     // Trace codes for Segment integration
