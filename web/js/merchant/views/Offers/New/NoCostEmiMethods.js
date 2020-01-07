@@ -63,10 +63,12 @@ export default class NoCostEmiMethods extends React.Component {
   renderDuration() {
     let planFields = [];
     if (this.state.selectedIssuer !== null) {
-      let emiPlans = this.state.emiOptions[this.state.selectedIssuer];
+      let emiPlans = this.state.emiOptions[this.state.selectedIssuer] || {
+        plans: [],
+      };
       let count = 1;
       for (let duration in emiPlans.plans) {
-        let text = `${duration} Months  ${emiPlans.plans[duration]}% Off`;
+        let text = `${duration} Months`;
         planFields.push(
           <div key={this.state.selectedIssuer + count++}>
             <Input.Check
@@ -77,16 +79,9 @@ export default class NoCostEmiMethods extends React.Component {
         );
       }
     }
-    return (
-      <Input.Group
-        label={'EMI Tenure'}
-        description={
-          'In No-Cost-EMI, the interest charged by bank in given as a discount to the customer. To know more how this works click here.'
-        }
-      >
-        {planFields}
-      </Input.Group>
-    );
+    if (planFields.length > 0) {
+      return <Input.Group label={'EMI Tenure'}>{planFields}</Input.Group>;
+    }
   }
 
   render() {
@@ -116,6 +111,10 @@ export default class NoCostEmiMethods extends React.Component {
           onChange={this.onChange}
         />
         {this.renderDuration()}
+        <div className="no-cost-emi-footnote">
+          In No-Cost-EMI, the interest charged by bank in given as a discount to
+          the customer. To know more how this works click here.
+        </div>
       </React.Fragment>
     ) : (
       <div className="no-cost-emi-loader">

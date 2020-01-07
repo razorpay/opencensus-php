@@ -85,7 +85,8 @@ export default class CreateOfferWizard extends React.Component {
               return ['flat_cashback'];
             case 'percent':
               return ['max_cashback', 'percent_rate'];
-
+            case 'no_cost_emi':
+              return ['max_order_amount'];
             default:
               return [];
           }
@@ -236,13 +237,19 @@ export default class CreateOfferWizard extends React.Component {
             return 'Minimum payment is less than discount value';
           }
         }
+        if (this.state.max_order_amount && this.state.max_order_amount < val) {
+          return `Minimum order amount should be less than max order amount`;
+        }
       },
-      max_amount: val => {
+      max_order_amount: val => {
         if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
           return 'Please enter number upto 2 decimal points';
         val = parseFloat(val);
         if (val > MAX_INT) {
           return `Maximum value allowed is ${MAX_INT}`;
+        }
+        if (!this.state.min_amount || val < this.state.min_amount) {
+          return `Maximum order amount should be more than minimum order amount`;
         }
       },
       max_cashback: val => {
