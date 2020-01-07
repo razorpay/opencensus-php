@@ -1709,8 +1709,6 @@ class Processor
 
         $payment = $this->payment;
 
-        $razorXForDoppler = $this->razorXFlagForDoppler;
-
         $status = $payment->getStatus();
 
         $segmentCustomProperties = [
@@ -1772,7 +1770,7 @@ class Processor
             $offer->lockDecrementCurrentOfferUsage($payment);
         }
 
-        if ($razorXForDoppler === true)
+        if ($this->razorXFlagForDoppler === true)
         {
             //TODO: Remove this later
             try

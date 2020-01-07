@@ -1429,6 +1429,7 @@ class Service extends Base\Service
 
                     try
                     {
+                        //TODO: Remove setRazorXDopplerProperty function once we are fully live with feedback loop
                         $this->getNewProcessor($payment->merchant)
                              ->setPayment($payment)
                              ->setRazorXDopplerProperty($this->razorXForDoppler)

@@ -3,7 +3,6 @@
 namespace RZP\Services;
 
 use Requests;
-use RZP\Constants\Environment;
 use RZP\Exception;
 use Carbon\Carbon;
 use Requests_Session;
@@ -11,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use Razorpay\Trace\Logger as Trace;
