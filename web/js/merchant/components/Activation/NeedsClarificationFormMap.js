@@ -9,7 +9,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     allFieldsHash[f.name || f._name] = f;
   };
   const addToKYCTab = field => {
-    if (!Boolean(kycFieldsMap[field])) {
+    if (!kycFieldsMap[field]) {
       kycTabContent.push(allFieldsHash[field]);
       kycFieldsMap[field] = true;
     }
@@ -28,7 +28,7 @@ export const getNeedsClarificationTabsData = (allFieldsMap, needsKyc) => {
     let reasons = [];
 
     const origKey = field;
-    if (!Boolean(allFieldsHash[field]) || Boolean(forceMap)) {
+    if (!allFieldsHash[field] || Boolean(forceMap)) {
       field = generateNewField(field, clarificationDetails[origKey], forceMap);
     }
     if (allFieldsHash[field]) {

@@ -6,6 +6,7 @@ export default ({
   getFormElementValidations,
   displayText,
   terms,
+  type,
 }) => {
   return (
     <React.Fragment>
@@ -36,6 +37,19 @@ export default ({
         validator={getFormElementValidations('terms')}
         description={'Enter offer terms and conditions'}
         required
+        onChange={getFormOnChangeHandler()}
+      />
+      <Input.Select
+        name="type"
+        label="Offer Type"
+        required
+        defaultValue={type}
+        options={[
+          { label: 'Please select', name: '' },
+          { label: 'Instant', name: 'instant' },
+          { label: 'Deferred', name: 'deferred' },
+          { label: 'Already Discounted', name: 'already_discounted' },
+        ]}
         onChange={getFormOnChangeHandler()}
       />
     </React.Fragment>

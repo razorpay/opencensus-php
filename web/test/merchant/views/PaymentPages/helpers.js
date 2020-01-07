@@ -12,7 +12,7 @@ import {
   _isSupportedPattern,
   _isSupportedComponent,
   _areBaseKeysPresent,
-} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF_Fields/V2';
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 
 // Ensures pattern is supported and combination with keydown_restrictive does not block user from typing in that field
 function _isPatternSupportedAndNonRestrictive(pattern, isKeydownRestrictive) {
@@ -68,7 +68,7 @@ function _isPatternSupportedAndNonRestrictive(pattern, isKeydownRestrictive) {
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Validity of base keys checker', function() {
+describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base keys checker', function() {
   const validBaseKeys = {
     name: 'test name',
     title: 'test title',
@@ -105,9 +105,10 @@ describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Validity of base keys che
   });
 });
 
-describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Validity of base fields in constructed schema', function() {
+describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base fields in constructed schema', function() {
+  // Total 11 FIELD_TYPES exist in UDF dropdown
   const validFieldSchemas = [
-    constructFieldSchema({ title: 'Test title', field_type: '0 1' }),
+    constructFieldSchema({ title: 'Test title', field_type: '0' }),
     constructFieldSchema({
       title: 'Test title',
       field_type: 1,
@@ -115,20 +116,44 @@ describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Validity of base fields i
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '0 2',
+      field_type: '1',
       required: false,
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '0 3',
+      field_type: '2',
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '0 4',
+      field_type: '3',
     }),
     constructFieldSchema({
       title: 'Test title',
-      field_type: '0 5',
+      field_type: '4',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '5',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '6',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '7',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '8',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '9',
+    }),
+    constructFieldSchema({
+      title: 'Test title',
+      field_type: '10',
     }),
   ];
 
@@ -144,10 +169,8 @@ describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Validity of base fields i
 
   const invalidFieldSchemas = [
     constructFieldSchema({ title: 'Test title' }), // Missing field_type
-    constructFieldSchema({ title: 'Test title', field_type: '01' }), // This technically seems right but we strictly expect '1' / 1 to be a valid field_type instead of '01'.
-    constructFieldSchema({ title: 'Test title', field_type: '11' }), // Field is not present
-    constructFieldSchema({ title: 'Test title', field_type: '0' }), // This will fail because 0th options has multiple options, so 0 is invalid field_type
-    constructFieldSchema({ title: 'Test title', field_type: '2' }), // '2' doesn't exist in FIELD_TYPES
+    constructFieldSchema({ title: 'Test title', field_type: '-1' }), // Bad field_type
+    constructFieldSchema({ title: 'Test title', field_type: '11' }), // '11' is 12th field and total FIELD_TYPES is only 11.
     constructFieldSchema({
       title: 'Test title',
       field_type: '06', // Doens't exist
@@ -178,6 +201,7 @@ describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Validity of base fields i
     next
   ) {
     const result = _areBaseKeysPresent(schema);
+
     expect(result).to.eql(false);
 
     next();
@@ -186,7 +210,7 @@ describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Validity of base fields i
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Supported type in schema', function() {
+describe('containers/PaymentPages/../UDF/helpers Fn: Supported type in schema', function() {
   const validTypeSet = ['string', 'number'];
 
   it.each(validTypeSet, 'all schemas must be invalid.', function(type, next) {
@@ -220,7 +244,7 @@ describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Supported type in schema'
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Safe Pattern in schema', function() {
+describe('containers/PaymentPages/../UDF/helpers Fn: Safe Pattern in schema', function() {
   it.each(
     flattenFIELD_TYPES(),
     'all fields units selectable by user must have safe patterns.',
@@ -278,7 +302,7 @@ describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Safe Pattern in schema', 
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Supported cmp in option keys', function() {
+describe('containers/PaymentPages/../UDF/helpers Fn: Supported cmp in option keys', function() {
   it.each(
     flattenFIELD_TYPES(),
     'all field units must have supported cmp.',
@@ -317,7 +341,7 @@ describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Supported cmp in option k
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Supported keys in Schema', function() {
+describe('containers/PaymentPages/../UDF/helpers Fn: Supported keys in Schema', function() {
   // All user selectable fields units must have valid supported keys
   it.each(flattenFIELD_TYPES(), 'all keys are supported.', function(
     field,
@@ -392,7 +416,7 @@ describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Supported keys in Schema'
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF_Fields/V2 Fn: Validity of Schema', function() {
+describe('containers/PaymentPages/../UDF/helpers Fn: Validity of Schema', function() {
   // This schema contains exhaustive set of fields units
   const validSchemas = [[]]; // Empty schema is also supported
 

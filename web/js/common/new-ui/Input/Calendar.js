@@ -24,7 +24,7 @@ class CalendarWrapper extends React.Component {
       return this.props.format;
     }
 
-    var format = this.props.type === 'month' ? 'DD-MM' : 'DD-MM-YYYY';
+    var format = this.props.type === 'month' ? 'YYYY-MM' : 'DD-MM-YYYY';
     return format;
   }
 
@@ -36,7 +36,7 @@ class CalendarWrapper extends React.Component {
     }
 
     // Custom function to execute component specific functionality.
-    this.props.onChange && this.props.onChange(value);
+    this.props.onChange && this.props.onChange(value, this.props.name);
 
     this.setState({
       value,

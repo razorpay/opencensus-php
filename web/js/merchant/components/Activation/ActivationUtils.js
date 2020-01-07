@@ -1,11 +1,10 @@
-import { addPrefixToObjectKeys } from 'common/utils/rzp-utils';
+import { addPrefixToObjectKeys, isPresent } from 'common/utils/rzp-utils';
 import { BUSINESS_TYPE_OPTIONS } from './AccountActivationFormMap';
 import {
   trackL1FormSuccess,
   trackL1FormError,
 } from 'merchant/containers/Activation/ga_new';
 import BingDataObj from 'common/utils/bingDataObj';
-import { isPresent } from 'common/utils/rzp-utils';
 
 import {
   trackhubsContactUpdate,
@@ -65,7 +64,7 @@ function L1FormError() {
 }
 
 function updateHubSpotContactsProperties(data, extra, prefix) {
-  const keyPrefix = !!prefix ? 'l2_' : prefix;
+  const keyPrefix = prefix ? 'l2_' : prefix;
   const hbsData = addPrefixToObjectKeys(keyPrefix, data);
 
   const trackData = {

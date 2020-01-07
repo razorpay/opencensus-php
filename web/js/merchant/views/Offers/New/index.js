@@ -53,10 +53,11 @@ export default class CreateOfferWizard extends React.Component {
           displayText={this.state.display_text}
           terms={this.state.terms}
           getFormOnChangeHandler={this.getFormOnChangeHandler}
+          type={this.state.type}
         />
       ),
       getFieldsToBeValidated: () => {
-        return ['name', 'display_text', 'terms'];
+        return ['name', 'display_text', 'terms', 'type'];
       },
     },
     {
@@ -259,6 +260,9 @@ export default class CreateOfferWizard extends React.Component {
         if (val > MAX_INT) {
           return `Maximum value allowed is ${MAX_INT}`;
         }
+      },
+      type: val => {
+        if (!val) return 'Please select a value';
       },
     }[elementName];
   };

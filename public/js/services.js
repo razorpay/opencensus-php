@@ -383,7 +383,7 @@ angular
             return deferred.promise;
           }
 
-          $http.get('/admin/org').success(function(data) {
+          $http.get('/org').success(function(data) {
             if (data.success) {
               _org = data.data;
             }
