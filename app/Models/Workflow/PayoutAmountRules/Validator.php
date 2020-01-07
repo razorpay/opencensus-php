@@ -54,7 +54,9 @@ class Validator extends Base\Validator
         if ($index !== count($rules))
         {
             throw new BadRequestValidationFailureException(
-                'Ranges provided are not continuous and complete'
+                'Ranges provided are not continuous and complete',
+                Entity::RULES,
+                $rules
             );
         }
     }
@@ -71,7 +73,9 @@ class Validator extends Base\Validator
         if (count($workflowIds) != count(array_unique($workflowIds)))
         {
             throw new BadRequestValidationFailureException(
-                'Each workflow can have only one amount range'
+                'Each workflow can have only one amount range',
+                Entity::WORKFLOW_ID,
+                $workflowIds
             );
         }
     }
