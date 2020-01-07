@@ -884,6 +884,13 @@ class Gateway
     ];
 
     /**
+     * Every gateway in this list must also be a part of $scroogeGateways [that is onboarded in Scrooge] - since FTAs are initiated via Scrooge.
+     */
+    const UPI_TRANSFER_REFUND_GATEWAYS = [
+       self::UPI_MINDGATE,
+    ];
+
+    /**
      * Card gateways which support auth and capture mechanism for at
      * least one card network.
      *

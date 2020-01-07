@@ -1674,6 +1674,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::PAYMENT_LINK_ID);
     }
 
+    public function hasReceiver()
+    {
+        return ($this->isAttributeNotNull(self::RECEIVER_ID));
+    }
+
     public function hasMetadata($key = null)
     {
         if ($key === null)
