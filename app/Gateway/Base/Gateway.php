@@ -385,6 +385,20 @@ class Gateway
         $this->action = ACTION::VERIFY_TERMINAL;
     }
 
+    public function enableTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = Action::ENABLE_TERMINAL;
+    }
+
+    public function disableTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = Action::DISABLE_TERMINAL;
+    }
+    
     public function debit(array $input)
     {
         $this->input = $input;
