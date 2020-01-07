@@ -29,6 +29,8 @@ class Core extends Base\Core
 
         $rule->setAttribute(Entity::ORG_ID, $ruleOrgId);
 
+        $rule->getValidator()->validateAddPlanRuleAmountRange($input);
+
         $rule->getValidator()->validateRuleDoesNotMatch($plan);
 
         $rule->getValidator()->validateTypeMatch($plan);

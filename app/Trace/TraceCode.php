@@ -2426,6 +2426,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_MTU_UPDATE_FAILURE                           = 'MERCHANT_MTU_UPDATE_FAILURE';
 
     const PRICING_RULE_ALREADY_DEFINED                          = 'PRICING_RULE_ALREADY_DEFINED';
+    const AMOUNT_RANGE_ACTIVE_PARAMETRS_INVALID                 = 'AMOUNT_RANGE_ACTIVE_PARAMETRS_INVALID';
 
     const FTA_PAYOUT_RAMP_INIT                                  = 'FTA_PAYOUT_RAMP_INIT';
     const FTA_PAYOUT_RAMP_COMPLETE                              = 'FTA_PAYOUT_RAMP_COMPLETE';
