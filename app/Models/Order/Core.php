@@ -237,9 +237,9 @@ class Core extends Base\Core
                 $data[Entity::BANK] = $bankCode;
 
                 $data[Entity::BANK_ACCOUNT] = $bankAccount->getDataForCheckout();
-
-                $data[Entity::AUTH_TYPE] = $tokenRegistration->getAuthType();
             }
+
+            $data[Entity::AUTH_TYPE] = $tokenRegistration->getAuthType();
         }
 
         return $data;

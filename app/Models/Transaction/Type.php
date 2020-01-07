@@ -16,8 +16,9 @@ class Type
     const EXTERNAL                = 'external';
     const ADJUSTMENT              = 'adjustment';
     const SETTLEMENT              = 'settlement';
-    const BANK_TRANSFER           = 'bank_transfer';
     const COMMISSION              = 'commission';
+    const BANK_TRANSFER           = 'bank_transfer';
+    const SETTLEMENT_TRANSFER     = 'settlement_transfer';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
 
     //
@@ -49,6 +50,7 @@ class Type
         self::SETTLEMENT,
         self::ADJUSTMENT,
         self::COMMISSION,
+        self::SETTLEMENT_TRANSFER,
     ];
 
     public static function validateType(string $type)

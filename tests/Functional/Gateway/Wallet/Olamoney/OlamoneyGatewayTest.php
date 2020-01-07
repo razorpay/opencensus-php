@@ -571,4 +571,18 @@ class OlamoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
         $this->assertEquals('ek78-s35w-ffm8', $wallet['gateway_payment_id']);
     }
+
+    public function testEligibilityFailure()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $payment['contact'] = '9008129412';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
 }

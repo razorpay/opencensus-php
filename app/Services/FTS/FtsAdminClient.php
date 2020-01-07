@@ -22,7 +22,7 @@ class FtsAdminClient extends Base
 
         parent::__construct($app);
 
-        $this->setDashboardAuthAndAdminHeader();
+        $this->setAdminHeader();
     }
 
     public function fetchMultiple(string $entity, array $input)

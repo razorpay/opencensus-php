@@ -28,6 +28,7 @@ return [
                     ],
                     'bank_account' =>
                     [
+                        'bank_name' => 'HDFC',
                         'account_number' => '1111111111111',
                         'ifsc_code' => 'HDFC0001233',
                         'beneficiary_name' => 'Gaurav Kumar',
