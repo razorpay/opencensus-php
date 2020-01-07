@@ -311,6 +311,13 @@ class Core extends Base\Core
             {
                 $payoutLink->setStatus($nextPayoutLinkStatus);
 
+                if ($nextPayoutLinkStatus === Status::CANCELLED)
+                {
+                    $currentTime = Carbon::now()->getTimestamp();
+
+                    $payoutLink->setCancelledAt($currentTime);
+                }
+
                 $isDirty = $payoutLink->isDirty();
 
                 $this->repo->saveOrFail($payoutLink);
@@ -355,7 +362,7 @@ class Core extends Base\Core
         }
     }
 
-    public function create(array $input): Entity
+    public function create(array $input)
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CREATE_REQUEST,

@@ -126,6 +126,7 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::STATUS,
+        self::ENTITY,
         self::ID,
         self::CONTACT_ID,
         self::FUND_ACCOUNT_ID,
