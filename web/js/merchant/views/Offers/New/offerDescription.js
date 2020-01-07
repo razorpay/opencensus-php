@@ -47,7 +47,7 @@ export default ({
         options={[
           { label: 'Please select', name: '' },
           { label: 'Instant', name: 'instant' },
-          { label: 'Deferred', name: 'deferred' },
+          { label: 'Cashback', name: 'deferred' },
           { label: 'Already Discounted', name: 'already_discounted' },
         ]}
         onChange={getFormOnChangeHandler()}
