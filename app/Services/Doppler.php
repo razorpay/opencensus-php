@@ -445,7 +445,7 @@ class Doppler
 
     public function checkRazorXForFeedbackLoop($id)
     {
-        if (($this->env !== Environment::PRODUCTION) or
+        if (($this->app->environment() !== Environment::PRODUCTION) or
             ($this->mode !== Mode::LIVE))
         {
             return false;
