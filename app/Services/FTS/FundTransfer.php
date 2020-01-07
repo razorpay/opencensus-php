@@ -657,6 +657,8 @@ class FundTransfer extends Base
             $this->fta->setMode($mode);
         }
 
+        $mode = $this->fta->getMode();
+
         $allowedModes = Mode::get24x7FtsTransferModes();
 
         if (in_array($mode, $allowedModes, true) === true)
