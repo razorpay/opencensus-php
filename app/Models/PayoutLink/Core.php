@@ -822,7 +822,7 @@ class Core extends Base\Core
     protected function generateAndSetShortUrl(Entity &$payoutLink)
     {
         $targetUrl = sprintf(self::LONG_URL_FORMAT,
-                             $this->config['url.api.production'],
+                             $this->config['applications.payout_links.url'],
                              $payoutLink->getPublicId());
 
         $params = [
