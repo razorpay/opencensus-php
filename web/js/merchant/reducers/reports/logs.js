@@ -3,6 +3,7 @@ import {
   listFetchSuccessState,
   getActionName as getFetchActionName,
   makeActionCollectionReducer,
+  updateEntityInList,
   fetchAll,
 } from 'merchant/reducers/collection';
 
@@ -10,11 +11,15 @@ const PARTNER_LOGS = 'PARTNER_LOGS';
 const MERCHANT_LOGS = 'MERCHANT_LOGS';
 
 const getLoadMoreActionName = entity => entity + '_LOAD_MORE';
+const getPollLogActionName = entity => entity + '_POLLING';
 
 const partnerLogFetchAction = getFetchActionName(PARTNER_LOGS);
 const merchantLogFetchAction = getFetchActionName(MERCHANT_LOGS);
 
 const merchantLogLoadMoreAction = getLoadMoreActionName(MERCHANT_LOGS);
+
+const merchantReportPollLogAction = getPollLogActionName(MERCHANT_LOGS);
+const partnerReportPollLogAction = getPollLogActionName(PARTNER_LOGS);
 
 const filterSameObjects = (state, action) => {
   const existingIds = state.items.map(({ id }) => id);
@@ -48,6 +53,7 @@ export const fetchPartnerReportLogs = params =>
 export const partnerLogListReducer = makeActionCollectionReducer(PARTNER_LOGS, {
   [`${partnerLogFetchAction}::PENDING`]: handleFetchLogsPending,
   [`${partnerLogFetchAction}::SUCCESS`]: handleFetchLogsSuccess,
+  [`${partnerReportPollLogAction}::SUCCESS`]: updateEntityInList,
 });
 
 export const fetchMerchantReportLogs = params =>
@@ -58,8 +64,11 @@ export const merchantLogListReducer = makeActionCollectionReducer(
     [`${merchantLogFetchAction}::PENDING`]: handleFetchLogsPending,
     [`${merchantLogFetchAction}::SUCCESS`]: handleFetchLogsSuccess,
     [`${merchantLogLoadMoreAction}::SUCCESS`]: handleLoadMoreLogsSuccess,
+    [`${merchantReportPollLogAction}::SUCCESS`]: updateEntityInList,
   }
 );
+
+// Actions
 export const loadMoreMerchantLogs = params => ({
   type: getLoadMoreActionName(MERCHANT_LOGS),
   payload: new Log().fetchAll(params),
@@ -75,3 +84,14 @@ const createLog = reportType => {
 
 export const createPartnerReportLog = createLog('partner');
 export const createMerchantReportLog = createLog('merchant');
+
+const pollLog = reportType => {
+  const actionName = `${reportType.toUpperCase()}_LOGS_POLLING`;
+  return logId => ({
+    type: actionName,
+    payload: new Log({ reportType }).poll(logId),
+  });
+};
+
+export const pollPartnerReportLog = pollLog('partner');
+export const pollMerchantReportLog = pollLog('merchant');

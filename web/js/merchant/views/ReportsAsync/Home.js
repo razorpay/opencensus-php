@@ -6,6 +6,7 @@ import {
   fetchMerchantReportLogs as fetchLogs,
   createMerchantReportLog as createLog,
   loadMoreMerchantLogs as loadMore,
+  pollMerchantReportLog as pollLog,
 } from 'merchant/reducers/reports/logs';
 import { fetchMerchantConfigs as fetchConfigs } from 'merchant/reducers/reports/configs';
 
@@ -35,6 +36,7 @@ export default connect(mapStateToProps, {
   fetchConfigs,
   createLog,
   loadMore,
+  pollLog,
 })(Reports);
 
 function getCustomConfigs(sessionUser) {
