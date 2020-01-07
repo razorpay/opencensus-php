@@ -369,6 +369,7 @@ class Gateway
         IFSC::YESB,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
+        IFSC::SBIN,
     ];
 
     // banks supported by enach_npci_netbanking gateway for auth type card
@@ -389,6 +390,7 @@ class Gateway
         IFSC::UTBI,
         IFSC::YESB,
         Netbanking::PUNB_R,
+        IFSC::SBIN,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [

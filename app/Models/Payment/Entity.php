@@ -3341,8 +3341,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return false;
         }
 
-        return (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true));
+        return (($this->card->isInternational() === true) and
+                ($this->card->isAmex() === false));
     }
 
     public function shouldRunShieldChecks()
