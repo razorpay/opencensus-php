@@ -992,19 +992,7 @@ class Service extends Base\Service
             $this->addDashboardFlags($entity, $payment, $input);
         }
 
-        $this->addMerchantAttributeIfRequired($paymentMerchantId, $entity);
-
         return $entity;
-    }
-
-    protected function addMerchantAttributeIfRequired($paymentMerchantId, array &$entity)
-    {
-        $merchantId = $this->merchant->getId();
-
-        if($merchantId !== $paymentMerchantId)
-        {
-            $entity['merchant_id'] = $paymentMerchantId;
-        }
     }
 
     protected function checkAuthMerchantAccessToEntity(string $entityMerchantId)

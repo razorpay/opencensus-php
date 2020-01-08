@@ -345,6 +345,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
         self::FEE_BEARER,
+        self::MERCHANT_ID,
     ];
 
     protected $public = [
@@ -387,6 +388,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
+        self::MERCHANT_ID
     ];
 
     /**
@@ -451,6 +453,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
+        self::MERCHANT_ID
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -2750,6 +2753,23 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($auth->getMerchant()->isFeatureEnabled(Feature\Constants::EXPOSE_GATEWAY_PROVIDER) === false))
         {
             unset($array[self::GATEWAY_PROVIDER]);
+        }
+    }
+
+    public function setPublicMerchantIdAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        if (($auth->getMerchant() !== null) and
+            ($auth->getMerchant()->getId() !== $this->getMerchantId()))
+        {
+            $array['merchant_id'] = $this->getMerchantId();
+        }
+        else
+        {
+            unset($array[self::MERCHANT_ID]) ;
         }
     }
 
