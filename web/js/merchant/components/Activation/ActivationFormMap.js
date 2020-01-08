@@ -342,8 +342,8 @@ const businessDetails = [
     validator: function(value) {
       let contactName =
           this.state.dirty['contact_name'] || this.props.data['contact_name'],
-        hideCompanyName = this.props.user.isCompanyNameHiddenRazorX;
-      return validateCompanyAB(value, contactName, hideCompanyName);
+        showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
+      return validateCompanyAB(value, contactName, showCompanyName);
     },
     _when: excludeFor_Indiv,
   },
