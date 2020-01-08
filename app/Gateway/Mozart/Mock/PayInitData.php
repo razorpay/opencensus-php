@@ -10,7 +10,7 @@ class PayInitData extends Base\Mock\Server
 
     public function debit_emi($entities)
     {
-        $response = [
+        return [
             'data' =>
                 [
                     'Status'              => 'Success',
@@ -31,7 +31,7 @@ class PayInitData extends Base\Mock\Server
                         ]
                     ],
                     'method' => 'post',
-                    'url' => 'www.test.com',
+                    'url' => $entities['otpSubmitUrl'],
                 ]
             ],
             'error'             => null,
@@ -39,8 +39,6 @@ class PayInitData extends Base\Mock\Server
             'mozart_id'         => '',
             'external_trace_id' => '',
         ];
-
-        return $response;
     }
 
     public function bajajfinserv($entities)
