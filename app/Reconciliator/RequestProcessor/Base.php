@@ -175,9 +175,9 @@ class Base extends Core
         self::PHONEPE                => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
         self::PAYPAL                 => [],
-        self::BAJAJFINSERV           => [],
         self::VAS_AXIS               => [],
         self::GETSIMPL               => [],
+        self::BAJAJFINSERV           => ['remiecftransactions@bizsupportc.com'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
