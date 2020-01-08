@@ -5,7 +5,7 @@ import {
 import { emiDurationString } from '../Entity';
 
 const TERMS_CONDITIONS_STRING =
-  'I understand that the discount/cashback given in this offer will be borne by me and not razorpay';
+  'I understand that the discount/cashback given in this offer will be borne by me and not Razorpay';
 
 const getTermsAndConditionsCheck = (value, onChange) => {
   return (
