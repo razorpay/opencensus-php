@@ -79,9 +79,9 @@ function disableEmptyInputs(form) {
         <td>
             <select name="method">
                 <option value="netbanking">Net Banking</option>
-                <option value="card" selected>Card</option>
+                <option value="card" >Card</option>
                 <option value="wallet">Wallet</option>
-                <option value="emi">Emi</option>
+                <option value="emi" selected>Emi</option>
                 <option value="upi">UPI</option>
                 <option value="emandate">E-Mandate</option>
                 <option value="cardless_emi">Cardless Emi</option>
@@ -245,7 +245,7 @@ function disableEmptyInputs(form) {
         <td>
             <select name="emi_duration">
                 <option value="">Select EMI duration</option>
-                <option value="3">3 Months @12%</option>
+                <option value="3" selected>3 Months @12%</option>
                 <option value="6">6 Months @12%</option>
                 <option value="9">9 Months @14%</option>
                 <option value="12">12 Months @14%</option>
@@ -272,7 +272,7 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan="40"><b>Card No: </b> </td>
-        <td><input type="text" name="card[number]" value="4012001038443335" size="25" autocomplete="cc-number"></td>
+        <td><input type="text" name="card[number]" value="4160211000148214" size="25" autocomplete="cc-number"></td>
     </tr>
     <tr>
         <td colspan="40">CVV:</td>
@@ -284,7 +284,7 @@ function disableEmptyInputs(form) {
         <td><input type="text" name="card[expiry_year]" value="2020" autocomplete="cc-exp-year"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <td><input type="text" name="amount" size="25" value="100"></td>
+            <td><input type="text" name="amount" size="25" value="400000"></td>
             <td>
             <select name="currency">
                 <option value="INR">Indian Rupee</option>
