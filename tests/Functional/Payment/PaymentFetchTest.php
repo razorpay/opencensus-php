@@ -354,11 +354,11 @@ class PaymentFetchTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/payments/' . $paymentId . '?merchant=true';
-
-        $testData['response']['content']['merchant_id'] = $sub->getId();
+        $testData['request']['url'] = '/payments/' . $paymentId;
 
         $resp = $this->startTest($testData);
+
+        $this->assertEquals($sub->getId(), $resp['merchant_id']);
 
         $this->assertEquals($paymentId, $resp["id"]);
     }

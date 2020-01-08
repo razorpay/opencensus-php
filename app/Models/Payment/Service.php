@@ -992,12 +992,12 @@ class Service extends Base\Service
             $this->addDashboardFlags($entity, $payment, $input);
         }
 
-        $this->addMerchantAttributeIfRequired($input, $paymentMerchantId, $entity);
+        $this->addMerchantAttributeIfRequired($paymentMerchantId, $entity);
 
         return $entity;
     }
 
-    protected function addMerchantAttributeIfRequired($paymentMerchantId, &$entity)
+    protected function addMerchantAttributeIfRequired($paymentMerchantId, array &$entity)
     {
         $merchantId = $this->merchant->getId();
 
