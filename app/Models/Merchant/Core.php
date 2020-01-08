@@ -686,6 +686,11 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchant);
         });
 
+        if (array_key_exists($action, Constants::$internationalActionMapping))
+        {
+            (new Detail\Core())->updateInternationalActivationFlow($merchant, Constants::$internationalActionMapping[$action]);
+        }
+
         if($action === Merchant\Action::RELEASE_FUNDS)
         {
             $this->addMerchantToSettlementBucketOnFundsRelease($merchant);

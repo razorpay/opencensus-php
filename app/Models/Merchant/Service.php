@@ -313,6 +313,11 @@ class Service extends Base\Service
 
         $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $input)
         {
+            if (isset($input[Entity::INTERNATIONAL]) === true)
+            {
+                (new Detail\Core())->updateInternationalActivationFlow($merchant, $input[Entity::INTERNATIONAL]);
+            }
+
             $merchant = $this->core()->edit($merchant, $input);
 
             if (isset($input[Entity::FEE_BEARER]) === true)
