@@ -1927,26 +1927,52 @@ class PayoutTest extends TestCase
         $this->assertEquals(1, $fta['is_fts']);
     }
 
-    public function testPublicErrorCodeMappingBeforeFtaRecon()
+    public function testNoFailureReasonBeforeFtaRecon()
     {
         $this->testCreatePayout();
 
-         $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity('payout');
 
-         $payoutId = $payout->getId();
+        //Setting payout failure reason null as it is already set in create payout
+        $payout[Payout\Entity::FAILURE_REASON] = null;
 
-         $utr = $payout->getUtr();
+        $payoutId = $payout->getId();
 
-         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+        $utr = $payout->getUtr();
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
             'fta_status'        => 'failed',
             'failure_reason'    => '',
-            'bank_status_code'  => 'YB_NS_E1028',
             'utr'               => $utr,
             'remarks'           => 'testing failed mapping',
         ]);
 
-         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
-         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
+        $this->assertNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
+    }
+
+    public function testWithFailureReasonBeforeFtaRecon()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payout[Payout\Entity::FAILURE_REASON] = null;
+
+        $payoutId = $payout->getId();
+
+        $utr = $payout->getUtr();
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => 'Beneficiary bank\'s systems are down. Please retry after some time.',
+            'utr'               =>  $utr,
+            'remarks'           => 'testing failed mapping',
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
     }
 }
