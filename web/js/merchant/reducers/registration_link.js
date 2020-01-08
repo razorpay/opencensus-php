@@ -6,12 +6,17 @@ import RegistrationLink from 'merchant/models/RegistrationLink';
 const REGISTRATION_LINK_FETCH = 'REGISTRATION_LINK_FETCH';
 const REGISTRATION_LINK_CREATE = 'REGISTRATION_LINK_CREATE';
 const REGISTRATION_LINK_CANCEL = 'REGISTRATION_LINK_CANCEL';
+const SMS_SEND = 'SMS_SEND';
+const EMAIL_SEND = 'EMAIL_SEND';
 
 export const notifyCustomer = (id, type) => {
-  return merchantFetch({
-    url: `subscription_registration/auth_links/${id}/notify_by/${type}`,
-    method: 'post',
-  });
+  return {
+    type: type === 'sms' ? SMS_SEND : EMAIL_SEND,
+    payload: merchantFetch({
+      url: `subscription_registration/auth_links/${id}/notify_by/${type}`,
+      method: 'post',
+    }),
+  };
 };
 
 export const fetchRegistrationLink = id => ({
@@ -101,6 +106,12 @@ export default function(state = initialState, action) {
         error: action.payload.errors,
         entity: initialState.entity,
       });
+
+    case `${SMS_SEND}::SUCCESS`:
+      return set(state, 'entity.sms_status', 'sent');
+
+    case `${EMAIL_SEND}::SUCCESS`:
+      return set(state, 'entity.email_status', 'sent');
 
     default:
       return state;
