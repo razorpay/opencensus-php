@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccountStatement;
 
 use Mail;
 use File;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -567,6 +568,7 @@ class Core extends Base\Core
 
     public function dispatchAccountNumberForChannel(array $input)
     {
+        //
         // 0. Trace the request here.
         //
         // 1. Fetch accountNumbers to process for that channel
@@ -577,9 +579,9 @@ class Core extends Base\Core
         //
         $channel = array_pull($input, Entity::CHANNEL);
 
-        //TODO: Need to move the limit number into config
-        //Limit will be set on the basis of cron frequency, 2 is set for every 12 mins
-        //to process total 10 accounts per hour
+        // TODO: Need to move the limit number into config
+        // Limit will be set on the basis of cron frequency, 2 is set for every 12 mins
+        // to process total 10 accounts per hour
         $limit = 2;
 
         $accountNumbers = $this->repo->banking_account->fetchAccountNumberByChannel($channel, $limit);
@@ -602,6 +604,8 @@ class Core extends Base\Core
             ]);
 
         BankingAccountStatementJob::dispatch($this->mode,
-            [ 'channel' => $channel, 'accountNumber' => $accountNumber]);
+                                             [ 'channel' => $channel,
+                                               'accountNumber' => $accountNumber
+                                             ]);
     }
 }

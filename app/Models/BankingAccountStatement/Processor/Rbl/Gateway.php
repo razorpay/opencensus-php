@@ -13,10 +13,10 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\BankingAccountStatement\Entity;
 use RZP\Models\BankingAccountStatement\Category;
-use RZP\Models\BankingAccountStatement\Core as BankingAccountStatementCore;
 use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Processor\Base as BaseProcessor;
+use RZP\Models\BankingAccountStatement\Core as BankingAccountStatementCore;
 use RZP\Models\BankingAccountStatement\Processor\Rbl\RequestResponseFields as Fields;
 
 class Gateway extends BaseProcessor
@@ -26,6 +26,11 @@ class Gateway extends BaseProcessor
     const STATEMENT_START_TIME_DATE_FORMAT = 'Y-m-d';
 
     const RBL_NO_NEW_DATA = '8504';
+
+    /**
+     * @var BankingAccountStatementCore
+     */
+    protected $core;
 
     public function __construct(string $channel, string $accountNumber)
     {
@@ -108,8 +113,8 @@ class Gateway extends BaseProcessor
         } while (($this->hasMoreData($bankResponse) === true) and
                  ($attemptCount < 3));
 
-        //TODO: Thinking of moving the logic of dispatching job again in case of more data in job itself
-        //But not sure if this logic is generic for all bank as of now
+        // TODO: Thinking of moving the logic of dispatching job again in case of more data in job itself
+        // But not sure if this logic is generic for all bank as of now
         if (($this->hasMoreData($bankResponse) === true))
         {
             $this->core->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber);
