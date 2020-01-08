@@ -142,7 +142,7 @@ export default class CreateOfferWizard extends React.Component {
           block={this.state.block}
           minAmount={this.state.min_amount}
           maxOfferUsage={this.state.max_offer_usage}
-          checkoutDisplay={this.state.checkout_display}
+          checkoutDisplay={this.state.default_offer}
         />
       ),
       getFieldsToBeValidated: () => {
@@ -466,7 +466,7 @@ export default class CreateOfferWizard extends React.Component {
       'allPaymentMethodsAllowed',
       'creation_terms_accepted',
     ];
-    const checkboxFields = ['checkout_display'];
+    const checkboxFields = ['default_offer'];
 
     checkboxFields.forEach(field => {
       transformed[field] = form[field] === '1' ? 1 : 0;

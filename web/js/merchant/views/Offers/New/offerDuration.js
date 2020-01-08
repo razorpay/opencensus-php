@@ -58,7 +58,8 @@ export default ({
       onChange={getFormOnChangeHandler()}
       className={'Input--vTop'}
       fieldLabel={'Offer available for all users on checkout.'}
-      name="checkout_display"
+      //field has been renamed to allow gradual deprecation towards default_offer
+      name="default_offer"
       defaultValue={checkoutDisplay}
     />
   </React.Fragment>
