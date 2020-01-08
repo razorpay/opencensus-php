@@ -256,11 +256,11 @@ class PaymentCreateTest extends TestCase
 
     }
 
-    public function testCreateCardPaymentWithRestrictionNonUpi()
+    public function testCreateCardPaymentWithRestrictionNoUpi()
     {
         $payment = $this->getDefaultPaymentArray();
 
-        $order = $this->createOrder(['notes' => ['somekey' => 'some value', 'Pay_Mode' => 'NONUPI']]);
+        $order = $this->createOrder(['notes' => ['somekey' => 'some value', 'Pay_Mode' => 'NOUPI']]);
 
         $payment['amount'] = 50000;
 
