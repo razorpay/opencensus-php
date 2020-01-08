@@ -101,6 +101,12 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::INTENT);
         }
 
+        if (($this->getGateway($input) === 'debit_emi') and
+            ($input['payment']['contact'] == Payment\Entity::DUMMY_PHONE))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
+        }
+
         switch ($this->terminal->getGatewayAcquirer())
         {
             case Payment\Gateway::GETSIMPL:

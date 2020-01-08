@@ -1759,6 +1759,10 @@ class Gateway
         Gateway::UPI_CITI,
     ];
 
+    public static $contactMandatoryGateways = [
+        Gateway::DEBIT_EMI,
+    ];
+
     public static function isNonTerminalGateway(string $gateway)
     {
         return in_array($gateway, self::$nonTerminalGateways, true);
