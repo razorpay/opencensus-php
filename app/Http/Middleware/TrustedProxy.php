@@ -13,7 +13,8 @@ class TrustedProxy extends Middleware
      * @var array
      */
     protected $proxies = [
-        '10.0.0.0/8',
+        '10.0.0.0/8', // For remote proxy.
+        '127.0.0.1',  // For local openresty container acting as proxy.
     ];
 
     /**
@@ -26,6 +27,6 @@ class TrustedProxy extends Middleware
         Request::HEADER_CLIENT_PROTO => 'X_FORWARDED_PROTO',
         Request::HEADER_CLIENT_PORT  => 'X_FORWARDED_PORT',
         Request::HEADER_FORWARDED    => null,
-        Request::HEADER_CLIENT_HOST  => null,
+        Request::HEADER_CLIENT_HOST  => 'X_FORWARDED_HOST',
     ];
 }
