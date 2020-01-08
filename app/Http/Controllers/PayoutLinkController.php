@@ -50,7 +50,7 @@ class PayoutLinkController extends Controller
     }
 
     /**
-     * This api call will take the func-account details, and initiate the payout
+     * This api call will take the fund-account details, and initiate the payout
      * @param string $payoutLinkId
      * @return array
      */

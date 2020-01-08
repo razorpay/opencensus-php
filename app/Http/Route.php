@@ -848,11 +848,11 @@ final class Route
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
 
         // Payout Links
-        'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                          ],
-        'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                           ],
-        'payout_links_create'                      => ['post',      'payout-links/',                                 'PayoutLinkController@create'                                        ],
+        'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
+        'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                          ],
+        'payout_links_create'                      => ['post',      'payout-links',                                  'PayoutLinkController@create'                                       ],
         'payout_links_generate_end_user_otp'       => ['post',      'payout-links/{x_entity_id}'
-                                                                     . '/generate-customer-otp',                      'PayoutLinkController@generateAndSendCustomerOtp'                   ],
+                                                                     . '/generate-customer-otp',                     'PayoutLinkController@generateAndSendCustomerOtp'                   ],
         'payout_links_verify_customer_otp'         => ['post',      'payout-links/{x_entity_id}'
                                                                      . '/verify-customer-otp',                        'PayoutLinkController@verifyCustomerOtp'                            ],
         'payout_links_cancel'                      => ['post',      'payout-links/{id}/cancel',                       'PayoutLinkController@cancel'                                       ],

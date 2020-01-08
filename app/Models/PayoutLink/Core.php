@@ -273,7 +273,7 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($payoutLink);
 
-                if($isDirty === true)
+                if ($isDirty === true)
                 {
                     $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[$nextPayoutLinkStatus], [$payoutLink]);
                 }

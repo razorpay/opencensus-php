@@ -89,7 +89,7 @@ class CustomerOtp extends Mailable
             'merchant_display_name' => $this->merchantDisplayName,
             'purpose'               => $this->purpose,
             'logoUrl'               => $this->logoUrl,
-            'primary_color'          => $this->primaryColor,
+            'primary_color'         => $this->primaryColor,
         ];
 
         $this->with($data);

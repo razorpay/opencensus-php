@@ -319,7 +319,7 @@ class Core extends Base\Core
         }
 
         // todo: A temporary push of information to Payout Links App. This should be replaced by a Pub-Sub architecture,
-        // or atleast by a webhook flow, where the source registers the webhook, where update events should be pushed.
+        // or at least by a webhook flow, where the source registers the webhook, where update events should be pushed.
         // Right now, just making a direct function call
         (new SourceUpdater($payout))->update();
     }

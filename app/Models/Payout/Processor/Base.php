@@ -457,11 +457,11 @@ class Base extends BaseCore
         return $payout;
     }
 
-    protected function processPayoutLinkId(&$payout, &$input)
+    protected function processPayoutLinkId(Payout\Entity & $payout, array & $input)
     {
         $payoutLinkId = array_pull($input , Payout\Entity::PAYOUT_LINK_ID);
 
-        if ($payoutLinkId !== null)
+        if (empty($payoutLinkId) === true)
         {
             $payoutLink = $this->repo->payout_link->findByIdAndMerchant($payoutLinkId, $this->merchant);
 
