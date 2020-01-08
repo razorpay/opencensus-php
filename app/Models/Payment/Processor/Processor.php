@@ -2420,6 +2420,13 @@ class Processor
 
         $this->repo->saveOrFail($this->order);
 
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Processor.php:2421"
+            ]
+        );
+
         $payment->order()->associate($this->order);
 
         //
