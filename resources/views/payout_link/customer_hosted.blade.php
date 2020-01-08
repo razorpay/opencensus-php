@@ -7,6 +7,7 @@
             name="viewport"
             content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"
     />
+    @if($is_production)
     <script type="text/javascript">
         _rzpAQ = [];
         function emptyRzpAQ() {
@@ -61,6 +62,7 @@
             }
         };
     </script>
+    @endif
 </head>
 <body>
 <div id="app"></div>
