@@ -1675,10 +1675,8 @@ class Gateway
                 IFSC::ANDB,
                 IFSC::SYNB,
                 IFSC::SURY,
-                IFSC::UCBA,
                 IFSC::ICIC,
                 IFSC::CBIN,
-                IFSC::IDFB,
             ]
         ],
 
