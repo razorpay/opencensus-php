@@ -178,7 +178,7 @@ export default class RegistrationLinkEntityContainer extends React.Component {
 
   render() {
     const { loading: isLoading, entity, error } = this.props,
-      { subscription_registration } = entity;
+      { subscription_registration = {} } = entity;
 
     const isSmsOrEmailSent =
         entity.sms_status === 'sent' || entity.email_status === 'sent',
