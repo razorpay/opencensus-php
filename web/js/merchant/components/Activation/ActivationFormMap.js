@@ -340,20 +340,10 @@ const businessDetails = [
     info: 'Example: Acme Infotech Private Limited',
     placeholder: 'Registered name',
     validator: function(value) {
-      let contactName = '',
-        showCompanyName = false;
-      if (
-        this.props.user.experiments &&
-        this.props.user.experiments['hide_company_name']
-      ) {
-        contactName =
-          this.state.dirty['contact_name'] || this.props.data['contact_name'];
-        showCompanyName =
-          this.props.user.experiments['hide_company_name'].result === 'on'
-            ? true
-            : false;
-      }
-      return validateCompanyAB(value, contactName, showCompanyName);
+      let contactName =
+          this.state.dirty['contact_name'] || this.props.data['contact_name'],
+        hideCompanyName = this.props.user.isCompanyNameHiddenRazorX;
+      return validateCompanyAB(value, contactName, hideCompanyName);
     },
     _when: excludeFor_Indiv,
   },
