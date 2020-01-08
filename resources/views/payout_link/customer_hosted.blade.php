@@ -86,7 +86,7 @@
         apiHost: '{{ $api_host }}' + '/v1/',
         payoutLinkId: '{{ $payout_link_id }}',
         status: '{{ $payout_link_status }}',
-        allowUpi : '{{ $allow_upi }}',
+        allowUpi : !!'{{ $allow_upi }}',
         fundAccountDetails : JSON.parse('{!! $fund_account_details !!}')
     };
 </script>

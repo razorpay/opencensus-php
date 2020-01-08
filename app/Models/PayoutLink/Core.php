@@ -486,7 +486,7 @@ class Core extends Base\Core
             $channelSupportsUpi = false;
         }
 
-        $amountLessThanLac = $payoutLink->getAmount() < self::ONE_LAC ? true : false;
+        $amountLessThanLac = $payoutLink->getAmount() <= self::ONE_LAC ? true : false;
 
         return $upiEnabledInSettings and $channelSupportsUpi and $amountLessThanLac;
     }
@@ -496,7 +496,7 @@ class Core extends Base\Core
 
         if ($fundAccount === null)
         {
-            return [];
+            return null;
         }
 
         $details = $fundAccount->toArrayPublic();
