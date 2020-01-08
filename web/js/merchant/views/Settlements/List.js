@@ -38,6 +38,7 @@ import SettlementSchedule from 'merchant/views/Settlements/components/Settlement
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import Time from 'common/ui/Time';
 import { fetchBalanceConfig } from 'merchant/reducers/home';
+import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(
@@ -262,19 +263,21 @@ export default class SettlementsListContainer extends ListContainer {
           </NegativeBalanceBanner>
         )}
 
-        <NegativeBalanceBanner
-          title="On Hold!"
-          theme="danger"
-          canBeClosed={true}
-        >
-          Your current balance had reached the maximum negative limit.
-          Transactions will start to fail now. Please add funds to avoid
-          transaction failures.{' '}
-          <Link to={'/addfunds'} target="_blank">
-            {' '}
-            Add Funds
-          </Link>
-        </NegativeBalanceBanner>
+        {handleNegativeBalanceLimit(this.props.merchantBalanceConfigs) && (
+          <NegativeBalanceBanner
+            title="On Hold!"
+            theme="danger"
+            canBeClosed={true}
+          >
+            Your current balance had reached the maximum negative limit.
+            Transactions will start to fail now. Please add funds to avoid
+            transaction failures.{' '}
+            <Link to={'/addfunds'} target="_blank">
+              {' '}
+              Add Funds
+            </Link>
+          </NegativeBalanceBanner>
+        )}
 
         <tabbed-container
           style={{ paddingTop: user.isISBannerEnabled ? '0px' : '20px' }}

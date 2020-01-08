@@ -27,7 +27,7 @@ import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/
 import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
-
+import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 import Time from 'common/ui/Time';
 
@@ -161,19 +161,21 @@ class AnalyticsDesktop extends Component {
             </NegativeBalanceBanner>
           )}
 
-          <NegativeBalanceBanner
-            title="On Hold!"
-            theme="danger"
-            canBeClosed={true}
-          >
-            Your current balance had reached the maximum negative limit.
-            Transactions will start to fail now. Please add funds to avoid
-            transaction failures.{' '}
-            <Link to={'/addfunds'} target="_blank">
-              {' '}
-              Add Funds
-            </Link>
-          </NegativeBalanceBanner>
+          {handleNegativeBalanceLimit(merchantBalanceConfigs) && (
+            <NegativeBalanceBanner
+              title="On Hold!"
+              theme="danger"
+              canBeClosed={true}
+            >
+              Your current balance had reached the maximum negative limit.
+              Transactions will start to fail now. Please add funds to avoid
+              transaction failures.{' '}
+              <Link to={'/addfunds'} target="_blank">
+                {' '}
+                Add Funds
+              </Link>
+            </NegativeBalanceBanner>
+          )}
 
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && (
