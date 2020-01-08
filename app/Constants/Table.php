@@ -46,6 +46,7 @@ class Table
     const PAYMENT_PAGE_ITEM     = 'payment_page_items';
     const FUND_ACCOUNT          = 'fund_accounts';
     const ENTITY_ORIGIN         = 'entity_origins';
+    const OFFLINE_DEVICE        = 'offline_devices';
 
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
