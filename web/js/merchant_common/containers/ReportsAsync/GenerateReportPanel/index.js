@@ -63,48 +63,51 @@ export default class GenerateReportPanel extends React.PureComponent {
     return configs.loading ? (
       <p>Loading...</p>
     ) : (
-      <Form onChange={this.onChange}>
-        <SelectConfig
-          configs={allConfigs}
-          onConfigChange={this.onConfigChange}
-        />
+      <div className="GenerateReportPanel">
+        <Form onChange={this.onChange}>
+          <SelectConfig
+            configs={allConfigs}
+            onConfigChange={this.onConfigChange}
+            selectedConfig={selectedConfig}
+          />
 
-        <SelectPeriod
-          avlblPeriodOptions={defaultPeriodOptions}
-          onDateChange={this.onDateChange}
-          ref={ref => (this.selectPeriod = ref)}
-          isCustomConfig={isCustomConfig}
-        />
+          <SelectPeriod
+            avlblPeriodOptions={defaultPeriodOptions}
+            onDateChange={this.onDateChange}
+            ref={ref => (this.selectPeriod = ref)}
+            isCustomConfig={isCustomConfig}
+          />
 
-        <div class="m-t" />
-        <Input.Group class="InputGroup--inline">
-          <div class="Input-content">
-            {/* there is no format option in case of custom configs */}
-            {!isCustomConfig && (
-              <SelectFormat
-                selectedConfigId={(selectedConfig || {}).id}
-                allConfigs={configs.items}
-                ref={ref => (this.selectFormat = ref)}
+          <div class="m-t" />
+          <Input.Group class="InputGroup--inline">
+            <div class="Input-content">
+              {/* there is no format option in case of custom configs */}
+              {!isCustomConfig && (
+                <SelectFormat
+                  selectedConfigId={(selectedConfig || {}).id}
+                  allConfigs={configs.items}
+                  ref={ref => (this.selectFormat = ref)}
+                />
+              )}
+
+              <EmailReport
+                ref={ref => (this.emailReport = ref)}
+                emails={this.props.emailReportOptions}
               />
-            )}
+            </div>
+          </Input.Group>
 
-            <EmailReport
-              ref={ref => (this.emailReport = ref)}
-              emails={this.props.emailReportOptions}
-            />
-          </div>
-        </Input.Group>
-
-        <AsyncBtn.Primary
-          pendingState="Requesting..."
-          type="submit"
-          onClick={this.onGenerateReport}
-          disabled={!selectedConfig}
-          class="m-t"
-        >
-          {isCustomConfig ? 'Download' : 'Generate'} Report
-        </AsyncBtn.Primary>
-      </Form>
+          <AsyncBtn.Primary
+            pendingState="Requesting..."
+            type="submit"
+            onClick={this.onGenerateReport}
+            disabled={!selectedConfig}
+            class="m-t"
+          >
+            {isCustomConfig ? 'Download' : 'Generate'} Report
+          </AsyncBtn.Primary>
+        </Form>
+      </div>
     );
   }
 }
