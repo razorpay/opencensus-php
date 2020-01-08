@@ -2762,12 +2762,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $auth = $app['basicauth'];
 
-        if (($auth->getMerchant() !== null) and
-            ($auth->getMerchant()->getId() !== $this->getMerchantId()))
-        {
-            $array['merchant_id'] = $this->getMerchantId();
-        }
-        else
+        /*
+         *  Set merchantId attribute iff
+         * 1) route is privileged route
+         * 2) we are in non privileged auth and payment merchant id is different from auth merchant id
+         */
+        if ((($auth->getMerchant() === null) or
+             ($auth->getMerchant()->getId() === $this->getMerchantId())) and
+            ($auth->isPrivilegeAuth() === false))
         {
             unset($array[self::MERCHANT_ID]) ;
         }
