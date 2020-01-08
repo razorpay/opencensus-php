@@ -333,8 +333,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $data = [
             'payment_id' => $this->payment->getId(),
             'params'     => [
-                BaseReconciliate::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID],
-                BaseReconciliate::AUTH_CODE              => $rowDetails[BaseReconciliate::AUTH_CODE],
+                Base\Constants::RRN                    => $rowDetails[BaseReconciliate::REFERENCE_NUMBER],
+                Base\Constants::AUTH_CODE              => $rowDetails[BaseReconciliate::AUTH_CODE],
+                Base\Constants::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID],
             ],
             'mode'       => $this->mode,
             'gateway'    => $this->gateway,

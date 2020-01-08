@@ -32,40 +32,147 @@ class PartnerTerminalOnboardingTest extends TestCase
 
     public function testEnableTerminal()
     {
+        $this->app['config']->set('gateway.mock_mozart', true);
+
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
         $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
 
         $terminal = $this->fixtures->create('terminal', [
             'enabled'     => false,
-            'status'      => 'activated',
+            'status'      => 'deactivated',
             'merchant_id' => $subMerchantId,
+            'gateway'     => 'worldline',
             'mc_mpan'     => '1234567890123456',
             'visa_mpan'   => '9876543210123456',
             'rupay_mpan'  => '1234123412341234',
             'notes'       => 'some notes'
         ]);
 
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'deactivated',
+            'verify_bucket'     => 0,
+        ]);
+        
         $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/enable';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        $terminal->reload();
+
+        $this->assertEquals($terminal['enabled'], true);
+
+        $this->assertEquals($terminal['status'], 'activated');
+
+        $this->assertEquals($terminal->terminalOnboardingDetail['status'], 'activated');
+    }
+
+    public function testEnableTerminalFailedOnGateway()
+    {
+        $this->app['config']->set('gateway.mock_mozart', true);
+
+        $this->app['config']->set('worldline_terminal_onboarding_enable.case', "2");
+
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => false,
+            'status'      => 'deactivated',
+            'merchant_id' => $subMerchantId,
+            'gateway'     => 'worldline',
+            'mc_mpan'     => '1234567890123456',
+            'visa_mpan'   => '9876543210123456',
+            'rupay_mpan'  => '1234123412341234',
+            'notes'       => 'some notes'
+        ]);
+
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'deactivated',
+            'verify_bucket'     => 0,
+        ]);
+        
+        $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/enable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal->reload();
+        
+        $this->assertEquals($terminal['enabled'], false);
     }
 
     public function testDisableTerminal()
     {
+        $this->app['config']->set('gateway.mock_mozart', true);
+
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
         $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
 
         $terminal = $this->fixtures->create('terminal', [
             'enabled'     => true,
+            'status'      => 'activated',
             'merchant_id' => $subMerchantId,
+            'gateway'     => 'worldline',
             'mc_mpan'     => '1234567890123456',
             'visa_mpan'   => '9876543210123456',
             'rupay_mpan'  => '1234123412341234',
             'notes'       => 'some notes'
+        ]);
+
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'activated',
+            'verify_bucket'     => 0,
+        ]);
+        
+        $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/disable';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+        
+        $terminal->reload();
+
+        $this->assertEquals($terminal['enabled'], false);   
+
+        $this->assertEquals($terminal['status'], 'deactivated');
+
+        $this->assertEquals($terminal->terminalOnboardingDetail['status'], 'deactivated');
+    }
+
+    public function testDisableTerminalFailedOnGateway()
+    {
+        $this->app['config']->set('gateway.mock_mozart', true);
+
+        $this->app['config']->set('worldline_terminal_onboarding_disable.case', "2");
+
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => true,
+            'status'      => 'activated',
+            'merchant_id' => $subMerchantId,
+            'gateway'     => 'worldline',
+            'mc_mpan'     => '1234567890123456',
+            'visa_mpan'   => '9876543210123456',
+            'rupay_mpan'  => '1234123412341234',
+            'notes'       => 'some notes'
+        ]);
+
+        $terminalOnboardingDetail = $this->fixtures->create('terminal_onboarding_detail', [
+            'terminal_id'       => $terminal->getId(),
+            'status'            => 'activated',
+            'verify_bucket'     => 0,
         ]);
 
         $url = '/terminals/' . $terminal->getSignedId($terminal['id']) . '/disable';
@@ -73,17 +180,24 @@ class PartnerTerminalOnboardingTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        $terminal->reload();
+
+        $this->assertEquals($terminal['enabled'], true);
     }
 
     public function testOnlyActivatedTerminalShouldBeEnabled()
     {
+        $this->app['config']->set('gateway.mock_mozart', true);
+
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
         $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
 
         $terminal = $this->fixtures->create('terminal', [
-            'enabled'     => true,
+            'enabled'     => false,
             'status'      => 'pending',
+            'gateway'     => 'worldline',
             'merchant_id' => $subMerchantId,
             'mc_mpan'     => '1234567890123456',
             'visa_mpan'   => '9876543210123456',
@@ -317,6 +431,7 @@ class PartnerTerminalOnboardingTest extends TestCase
 
         $this->assertEquals($updatedTerminalOnboardingDetail['status'], 'activated');
         $this->assertNull($updatedTerminalOnboardingDetail['verify_at']);
+        $this->assertEquals($terminal['enabled'], true);
     }
 
     // Failure case

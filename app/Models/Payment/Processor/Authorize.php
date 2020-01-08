@@ -63,6 +63,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 
 trait Authorize
 {
@@ -291,6 +292,9 @@ trait Authorize
 
         $retry = false;
 
+        // Checking razorX flag for feedback loop here per paymentId
+        $razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($payment->getId());
+
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -409,12 +413,7 @@ trait Authorize
 
                 $internalErrorCode = $e->getError()->getInternalErrorCode();
 
-                $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-                $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
-
-                if (($isProduction === true) and
-                    (strtolower($variant) === 'on'))
+                if ($razorXForDoppler === true)
                 {
                     //TODO: Remove this later
                     try
@@ -3454,9 +3453,13 @@ trait Authorize
 
             $tokenMaxAmount = null;
 
+            $tokenExpireBy  = null;
+
             if ($tokenRegistration !== null)
             {
                 $tokenMaxAmount = $tokenRegistration->getMaxAmount();
+
+                $tokenExpireBy  = $tokenRegistration->getExpireAt();
             }
 
             $saveMethodInput[Token\Entity::MAX_AMOUNT] =
@@ -3481,7 +3484,7 @@ trait Authorize
                 $input[Payment\Entity::AADHAAR]['vid'] ?? null;
 
             $saveMethodInput[Token\Entity::EXPIRED_AT] =
-                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
+                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? $tokenExpireBy;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -6530,7 +6533,7 @@ trait Authorize
 
         $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail($payment['id'], GatewayAction::AUTHORIZE);
 
-        $returnData['emandate_details'] = Gateway::fetchEmandateDisplayDetails(
+        $returnData['emandate_details'] = enachNpciGateway::fetchEmandateDisplayDetails(
                                                                                $payment,
                                                                                $token,
                                                                                $terminal,

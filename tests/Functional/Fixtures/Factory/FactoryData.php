@@ -39,6 +39,22 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\Settlement\Transfer\Entity::class, [
+            'id'                            => $faker->uniqueid,
+            'currency'                      => 'INR',
+            'amount'                        => 1000,
+            'fee'                           => 10,
+            'tax'                           => 4,
+            'balance_id'                    => 12324222,
+            'transaction_id'                => '12345434565434',
+            'merchant_id'                   => '10000000000000',
+            'settlement_id'                 => '1234er345thyu6',
+            'source_merchant_id'            => '19090928394023',
+            'settlement_transaction_id'     => '123564789uy767',
+            'updated_at'                    => time(),
+            'created_at'                    => time()
+        ]);
+
         $factory(\RZP\Models\Merchant\Document\Entity::class, [
             'id'            => $faker->uniqueid,
             'merchant_id'   => '10000000000000',

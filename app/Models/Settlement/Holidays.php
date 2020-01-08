@@ -475,8 +475,8 @@ class Holidays
         if (empty($weekendList) === false)
         {
             $response .= (count($weekendList) > 2) ?
-                'Saturday and Sunday are weekends' :
-                'Sunday is weekend';
+                'Saturday and Sunday are non-working days' :
+                'Sunday is a non-working day';
         }
 
         $holidayList = self::getListOfHolidaysBetweenDates($currentTimestamp, $settlementTime);

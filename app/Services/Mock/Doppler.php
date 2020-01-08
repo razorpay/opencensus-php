@@ -45,4 +45,10 @@ class Doppler extends BaseDoppler
 
         return [];
     }
+
+    public function checkRazorXForFeedbackLoop($id)
+    {
+        return false;
+    }
+
 }

@@ -786,6 +786,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_CREATE_TERMINAL_RESPONSE                      = 'GATEWAY_CREATE_TERMINAL_RESPONSE';
     const GATEWAY_VERIFY_TERMINAL_REQUEST                       = 'GATEWAY_VERIFY_TERMINAL_REQUEST';
     const GATEWAY_VERIFY_TERMINAL_RESPONSE                      = 'GATEWAY_VERIFY_TERMINAL_RESPONSE';
+    const GATEWAY_DISABLE_TERMINAL_REQUEST                      = 'GATEWAY_DISABLE_TERMINAL_REQUEST';
+    const GATEWAY_DISABLE_TERMINAL_RESPONSE                     = 'GATEWAY_DISABLE_TERMINAL_RESPONSE';
+    const GATEWAY_ENABLE_TERMINAL_REQUEST                       = 'GATEWAY_ENABLE_TERMINAL_REQUEST';
+    const GATEWAY_ENABLE_TERMINAL_RESPONSE                      = 'GATEWAY_ENABLE_TERMINAL_RESPONSE';
     const GATEWAY_PAYMENT_REFUND                                = 'GATEWAY_PAYMENT_REFUND';
     const GATEWAY_EXCHANGE_TOKEN_REQUEST                        = 'GATEWAY_EXCHANGE_TOKEN_REQUEST';
     const GATEWAY_TOKEN_REQUEST                                 = 'GATEWAY_TOKEN_REQUEST';
@@ -1948,6 +1952,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_DISPATCHED_FOR_SETTLEMENT                    = 'MERCHANT_DISPATCHED_FOR_SETTLEMENT';
     const MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT           = 'MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT';
     const MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE       = 'MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE';
+    const SETTLEMENT_TRANSFER_CREATE_INITIATED                  = 'SETTLEMENT_TRANSFER_CREATE_INITIATED';
+    const SETTLEMENT_TRANSFER_CREATED                           = 'SETTLEMENT_TRANSFER_CREATED';
 
     // instant async beneficiary registration trace codes
     const ATTEMPTING_BENEFICIARY_REGISTRATION                   = 'ATTEMPTING_BENEFICIARY_REGISTRATION';
@@ -2008,6 +2014,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PENDING_PAYOUT_CREATED                                = 'PENDING_PAYOUT_CREATED';
     const PAYOUT_REVERSAL_INITIATED                             = 'PAYOUT_REVERSAL_INITIATED';
     const PAYOUT_REVERSAL_CREATED                               = 'PAYOUT_REVERSAL_CREATED';
+    const PAYOUT_ALREADY_REVERSED                               = 'PAYOUT_ALREADY_REVERSED';
+    const PAYOUT_UPDATE_BEFORE_FTA_RECON                        = 'PAYOUT_UPDATE_BEFORE_FTA_RECON';
 
     const REFUND_REVERSAL_CREATED                               = 'REFUND_REVERSAL_CREATED';
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';
@@ -2244,6 +2252,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CAPITAL_INTEGRATION_API_REQUEST                       = 'CAPITAL_INTEGRATION_API_REQUEST';
     const CAPITAL_INTEGRATION_API_RESPONSE                      = 'CAPITAL_INTEGRATION_API_RESPONSE';
 
+    // Salesforce integration
+    const SALESFORCE_ACCESS_TOKEN_ERROR                         = 'SALESFORCE_ACCESS_TOKEN_ERROR';
+    const SALESFORCE_INTEGRATION_ERROR                          = 'SALESFORCE_INTEGRATION_ERROR';
+    const SALESFORCE_INTEGRATION_API_REQUEST                    = 'SALESFORCE_INTEGRATION_API_REQUEST';
+    const SALESFORCE_INTEGRATION_API_RESPONSE                   = 'SALESFORCE_INTEGRATION_API_RESPONSE';
+
+
     // Banking account
     const BANKING_ACCOUNT_EDIT                                  = 'BANKING_ACCOUNT_EDIT';
     const BANKING_ACCOUNT_DETAILS_EDIT                          = 'BANKING_ACCOUNT_DETAILS_EDIT';
@@ -2419,6 +2434,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_MTU_UPDATE_FAILURE                           = 'MERCHANT_MTU_UPDATE_FAILURE';
 
     const PRICING_RULE_ALREADY_DEFINED                          = 'PRICING_RULE_ALREADY_DEFINED';
+    const AMOUNT_RANGE_ACTIVE_PARAMETRS_INVALID                 = 'AMOUNT_RANGE_ACTIVE_PARAMETRS_INVALID';
 
     const FTA_PAYOUT_RAMP_INIT                                  = 'FTA_PAYOUT_RAMP_INIT';
     const FTA_PAYOUT_RAMP_COMPLETE                              = 'FTA_PAYOUT_RAMP_COMPLETE';

@@ -175,6 +175,7 @@ class Base extends Core
         self::PAYPAL                 => [],
         self::BAJAJFINSERV           => [],
         self::VAS_AXIS               => [],
+        self::GETSIMPL               => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
