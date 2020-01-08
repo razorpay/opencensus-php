@@ -704,7 +704,7 @@ final class FactoryData
             'description' => 'This is a test group',
             ]
         );
-
+        
         $factory(\RZP\Models\Admin\Admin\Entity::class, [
             'id'                 => $faker->uniqueid,
             'org_id'             => 'factory:\RZP\Models\Admin\Org\Entity',

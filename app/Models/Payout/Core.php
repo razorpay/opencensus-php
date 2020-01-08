@@ -339,10 +339,6 @@ class Core extends Base\Core
         // For non-Yesbank, we will not get public_failure_reason
         $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
 
-        $ftaBankStatusCode = $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null;
-
-        $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
-
         $payout->setUtr($ftaData[Attempt\Constants::UTR]);
 
         $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
@@ -359,7 +355,18 @@ class Core extends Base\Core
             $payout->setMode($ftaData[Attempt\Constants::MODE]);
         }
 
-        $payout->setFailureReason($ftaFailureReason);
+        //
+        // We do not want to override the failure reason if it's already set.
+        // It could have been set in the `afterRecon` flow. In some cases, it's
+        // possible that `beforeRecon` gets called and then `afterRecon` gets
+        // called and then again `beforeRecon`. In `afterRecon`, if the failure
+        // reason gets set, we don't want to reset it to null in `beforeRecon` if
+        // the failure reason is empty in the 2nd `beforeRecon` call.
+        //
+        if (empty($ftaFailureReason) === false)
+        {
+            $payout->setFailureReason($ftaFailureReason);
+        }
 
         $this->repo->saveOrFail($payout);
     }

@@ -1738,4 +1738,17 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArrayHasKey('order_id', $response);
     }
+
+    public function testCloseVirtualAccountWithVpa()
+    {
+        $virtualAccount = $this->createVirtualAccount([], false, null, null, true, 'virtualVpa');
+
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
+
+        $this->closeVirtualAccount($virtualAccount['id']);
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+
+        $this->assertEquals(Status::CLOSED, $virtualAccount->getStatus());
+    }
 }

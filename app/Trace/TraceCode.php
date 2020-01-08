@@ -1383,6 +1383,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
      * Trace code for critical info
      */
     const PAYMENT_NOTES_INVALID                                 = 'PAYMENT_NOTES_INVALID';
+    const PAYMENT_ORDER_METHOD_VALIDATION_FAILED                = 'PAYMENT_ORDER_METHOD_VALIDATION_FAILED';
     const EXTRA_QUERY_PARAM_IN_GET_ROUTE                        = 'EXTRA_QUERY_PARAM_IN_GET_ROUTE';
 
     // Trace codes for Segment integration
@@ -2454,6 +2455,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
+    const MERCHANT_DEFAULT_GROUP_ATTACH                         = 'MERCHANT_DEFAULT_GROUP_ATTACH';
+
     //Balance Config
     const BALANCE_CONFIG_CREATE_REQUEST                         = 'BALANCE_CONFIG_CREATE_REQUEST';
     const BALANCE_CONFIG_CREATE_SUCCESSFUL                      = 'BALANCE_CONFIG_CREATE_SUCCESSFUL';
@@ -2468,6 +2471,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Reserve Balance Trace Codes
     const RESERVE_BALANCE_CREATE_REQUEST                        = 'RESERVE_BALANCE_CREATE_REQUEST';
     const RESERVE_BALANCE_CREATE_SUCCESSFUL                     = 'RESERVE_BALANCE_CREATE_SUCCESSFUL';
+
+    const TRACE_FOR_INCREASED_RESPONSE_TIMES                    = 'TRACE_FOR_INCREASED_RESPONSE_TIMES';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

@@ -133,7 +133,7 @@ class Entity
     const SUBSCRIPTION               = 'subscription';
     const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
     const COMMISSION_INVOICE         = 'commission_invoice';
-
+    const OFFLINE_DEVICE             = 'offline_device';
 
     const OPTIONS                    = 'options';
 
@@ -317,7 +317,14 @@ class Entity
 
     const COMMISSION = 'commission';
 
+
     const PAYMENTS_NBPLUS_NETBANKING = 'payments_nbplus.netbanking';
+
+    // Service: Payments UPi
+    const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
+    const PAYMENTS_UPI_BANK_ACCOUNT     = 'payments_upi_bank_account';
+    const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'payments_upi_vpa_bank_account';
+
 
     /**
      * Defines a map of entites which are currently
@@ -479,6 +486,7 @@ class Entity
         self::D2C_BUREAU_REPORT         => \RZP\Models\D2cBureauReport::class,
         self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
+        self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,

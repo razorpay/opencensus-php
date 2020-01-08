@@ -6,7 +6,6 @@ use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Models\Order;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Transfer;

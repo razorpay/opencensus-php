@@ -20,6 +20,6 @@ class Acquirer
     public static $validGatewayAcquirers = [
         self::FSS,
         self::BOB,
-        self::SBI
+        self::SBI,
     ];
 }
