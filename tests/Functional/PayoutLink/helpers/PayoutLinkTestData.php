@@ -483,7 +483,7 @@ return [
 
     'testGetFundAccountWithValidTokenReturnsFundAccountArray' => [
         'request'  => [
-            'method'  => 'GET',
+            'method'  => 'POST',
             'url'     => '',
             'content' => ['token' => 'some-random-token']
         ],
@@ -503,7 +503,7 @@ return [
 
     'testGetFundAccountWithInvalidTokenRaisesException' => [
         'request'  => [
-            'method'  => 'GET',
+            'method'  => 'POST',
             'url'     => '',
             'content' => ['token' => 'some-random-token']
         ],
@@ -838,6 +838,39 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_VPA_AND_BANK_ACCOUNT_SUPPORTED,
+        ]
+    ],
+
+    'testInvalidPurposeThrowsException' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'an invalid purpose',
+                'contact'     => [
+                    'name'    => 'Test Contact Name',
+                    'email'   => 'testemail@test.com',
+                    'contact' => '1231231231'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid purpose: an invalid purpose',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 

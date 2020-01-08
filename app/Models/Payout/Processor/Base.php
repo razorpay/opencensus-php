@@ -461,7 +461,7 @@ class Base extends BaseCore
     {
         $payoutLinkId = array_pull($input , Payout\Entity::PAYOUT_LINK_ID);
 
-        if (empty($payoutLinkId) === true)
+        if (empty($payoutLinkId) === false)
         {
             $payoutLink = $this->repo->payout_link->findByIdAndMerchant($payoutLinkId, $this->merchant);
 

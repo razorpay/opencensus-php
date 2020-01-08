@@ -4,6 +4,7 @@ namespace RZP\Models\PayoutLink;
 
 use RZP\Base;
 use RZP\Models\Payout\Mode;
+use RZP\Models\Payout\Purpose;
 
 class Validator extends Base\Validator
 {

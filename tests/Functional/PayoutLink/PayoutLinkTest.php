@@ -1072,6 +1072,16 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvalidPurposeThrowsException()
+    {
+        $this->ba->privateAuth();
+
+        $this->addAccountNumberParameter(__FUNCTION__);
+
+        $this->startTest();
+
+    }
+
     protected function mockInfernoFire(Closure $closure)
     {
         $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();

@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Mode;
 use RZP\Constants\Environment;
+use RZP\Models\Payout\Purpose;
 use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
@@ -371,6 +372,8 @@ class Core extends Base\Core
         $validator = (new Entity())->getValidator();
 
         $validator->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
+
+        (new Purpose())->validatePurpose($this->merchant, $input[Entity::PURPOSE]);
 
         $this->processAccountNumber($input);
 

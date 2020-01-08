@@ -76,6 +76,38 @@ class Purpose
             ['payout_id' => $payout->getId()]);
     }
 
+    public function validatePurpose(Merchant\Entity $merchant, string $purpose)
+    {
+        if(self::isInDefaults($purpose) === true)
+        {
+            return;
+        }
+
+        //
+        // If purpose sent is not one of the defaults defined. We hence fetch and
+        // check against the custom list, if available.
+        //
+        $custom = $this->getCustom($merchant);
+
+        if (isset($custom[$purpose]) === true)
+        {
+            return;
+        }
+
+        //
+        // If not found anywhere, throw an exception. We expect payout purpose to be
+        // defined before being used.
+        //
+        throw new BadRequestValidationFailureException(
+            'Invalid purpose: ' . $purpose,
+            null,
+            [
+                Entity::MERCHANT_ID => $merchant->getPublicId(),
+                Entity::PURPOSE     => $purpose
+
+            ]);
+    }
+
     public function getAll(Merchant\Entity $merchant): array
     {
         $default = self::$defaultPurposeTypeMap;
