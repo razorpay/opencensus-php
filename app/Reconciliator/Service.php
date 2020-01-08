@@ -268,6 +268,87 @@ class Service extends Base\Service
         );
     }
 
+    public function persistGatewayDataAfterNbPlusReconResponse(array $response, array $input, $entity)
+    {
+        $paymentId = $input['payment_id'];
+
+        $misParams = $input['recon_params'];
+
+        $gatewayParams = $input['gateway_params'];
+
+        $dataToUpdate = [];
+
+        $responseData = $response['items'];
+
+        if (empty($responseData[$paymentId]) === false)
+        {
+            foreach ($gatewayParams as $field)
+            {
+                if (empty($misParams[$field]) === true)
+                {
+                    continue;
+                }
+
+                if (empty($responseData[$paymentId][$field]) === true)
+                {
+                    $dataToUpdate[$field] = $misParams[$field];
+                }
+                else if (trim($responseData[$paymentId][$field]) !== $misParams[$field])
+                {
+                    $this->messenger->raiseReconAlert(
+                        [
+                            'trace_code'                => TraceCode::RECON_MISMATCH,
+                            'info_code'                 => InfoCode::NBPLUS_DATA_MISMATCH,
+                            'payment_id'                => $paymentId,
+                            'field'                     => $field,
+                            'db_reference_number'       => $responseData[$paymentId][$field],
+                            'recon_reference_number'    => $misParams[$field],
+                            'gateway'                   => $input['gateway'],
+                            'batch_id'                  => $input['batch_id'],
+                        ]
+                    );
+                }
+            }
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => InfoCode::NBPLUS_DATA_ABSENT,
+                    'payment_id'    => $paymentId,
+                    'gateway'       => $input['gateway'],
+                    'batch_id'      => $input['batch_id'],
+                ]);
+
+            return;
+        }
+
+        if (empty($dataToUpdate) === true)
+        {
+            return;
+        }
+
+        $dataToUpdate['payment_id'] = $paymentId;
+
+        // Final Payload
+        $pushData['entity_name'] = $entity;
+        $pushData['recon_data']  = $dataToUpdate;
+
+        $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
+
+        Queue::pushRaw(json_encode($pushData), $queueName);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code' => InfoCode::RECON_NBPLUS_QUEUE_DISPATCH,
+                'queue'     => $queueName,
+                'payload'   => json_encode($pushData),
+            ]
+        );
+    }
+
     /**
      * @param array $response
      * @return array

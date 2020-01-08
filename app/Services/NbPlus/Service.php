@@ -113,6 +113,11 @@ class Service
         return $driver->action($gateway, $action, $input);
     }
 
+    public function fetchNetbankingData(array $input)
+    {
+        return $this->sendRequest('POST', 'entities/netbanking', $input);
+    }
+
     public function fetchMultiple(string $entityName, array $input)
     {
         $path = self::ADMIN_PATH . $entityName;
@@ -145,9 +150,9 @@ class Service
 
         list($response, $code) = $this->parseResponse($response);
 
-        $this->checkForErrors($response, $code);
+        $this->traceResponse($response);
 
-        $this->traceResponse($response['response']);
+        $this->checkForErrors($response, $code);
 
         return $response[Response::RESPONSE];
     }

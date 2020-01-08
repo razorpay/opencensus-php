@@ -16,6 +16,10 @@ class Netbanking extends Service
     const RETAIL = 'retail';
     const TPV    = 'TPV';
 
+    // gateway entity attributes
+    const GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
+    const BANK_TRANSACTION_ID    = 'bank_transaction_id';
+
     protected $transactionType = self::RETAIL;
 
     public function action(string $gateway, string $action, array $input)
