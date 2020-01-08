@@ -1360,6 +1360,39 @@ return [
             ],
         ],
     ],
+
+    'testGetMerchantDetailsWithBalanceConfigs' => [
+        'request'  => [
+            'url'    => '/merchants/details',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'confirmed' => false,
+                'balance_configs'    => [
+                    'items' => [
+                            '0' => [
+                                'id'                            =>  '100ab000ab00ab',
+                                'balance_id'                    =>  '100abc000abc00',
+                                'type'                          =>  'banking',
+                                'negative_transaction_flows'   =>  ['payout'],
+                                'negative_limit_auto'          =>  5000000,
+                                'negative_limit_manual'        =>  5000000
+                            ],
+                            '1' => [
+                                'id'                            =>  '100yz000yz00yz',
+                                'balance_id'                    =>  '100def000def00',
+                                'type'                          =>  'primary',
+                                'negative_transaction_flows'   =>  ['refund'],
+                                'negative_limit_auto'           =>  5000000,
+                                'negative_limit_manual'         =>  5000000
+                            ],
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testStoreCaseInsensitiveDomain' => [
         'request'  => [
             'method'  => 'POST',
@@ -1375,4 +1408,5 @@ return [
             ],
         ],
     ],
+
 ];

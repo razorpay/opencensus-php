@@ -421,7 +421,7 @@ class Base extends BaseProcessor
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_FETCHING_FROM_SCROOGE,
                 [
-                    'id'        => $this->gatewayFile->getId(),
+                    'id' => $this->gatewayFile->getId(),
                 ]);
         }
 
@@ -433,19 +433,19 @@ class Base extends BaseProcessor
     }
 
     /**
-     * @param $refundids
+     * @param $listOfRefunds
      * @throws GatewayFileException
      */
-    protected function populateScroogeRefundsGivenIds($refundids)
+    protected function populateScroogeRefundsGivenIds($listOfRefunds)
     {
         $shouldFetchScroogeRefunds = true;
         $start = 0;
 
-        $fetchLimit = $this->fetchFromScroogeCount - 1;
+        $fetchLimit = $this->fetchFromScroogeCount;
 
         while ($shouldFetchScroogeRefunds === true)
         {
-            $refundIds = array_slice($refundids, $start, $fetchLimit);
+            $refundIds = array_slice($listOfRefunds, $start, $fetchLimit);
 
             if (count($refundIds) === 0)
             {
@@ -455,7 +455,7 @@ class Base extends BaseProcessor
             {
                 $this->populateScroogeRefunds($this->gatewayFile->getBegin(), $this->gatewayFile->getEnd(), $refundIds);
 
-                $start += $this->queryLimit;
+                $start += $fetchLimit;
             }
         }
     }

@@ -24,7 +24,6 @@ class Service extends Base\Service
 {
     public function getMerchantSettlementAmount($input)
     {
-
         (new Validator)->validateInput('settlement_amount', $input);
 
         $balanceType = $input['balance_type'] ?? Balance\Type::PRIMARY;
@@ -59,7 +58,7 @@ class Service extends Base\Service
         $response = array_merge($response, $settlementDetails);
 
         //
-        // settlement amount should be atleast 1rs
+        // settlement amount should be at least 1rs
         // and settlement amount shouldn't be more than the available balance
         //
         if ($response['settlement_amount'] < 100)
@@ -78,6 +77,14 @@ class Service extends Base\Service
                     'caption' => 'Settlement might get skipped',
                     'reason'  => 'Settlement amount is more than the available live balance',
                 ]
+            ];
+        }
+        else
+        {
+            $nextSettlementTime = Carbon::createFromTimestamp($response['next_settlement_time'], Timezone::IST);
+
+            $response += [
+                'reason_for_delay' => Holidays::constructDetailsMessage($nextSettlementTime),
             ];
         }
 

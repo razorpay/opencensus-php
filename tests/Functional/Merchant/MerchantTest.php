@@ -21,6 +21,7 @@ use RZP\Models\Key;
 use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
@@ -30,10 +31,12 @@ use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
+use RZP\Exception\BadRequestException;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -60,8 +63,8 @@ class MerchantTest extends TestCase
     use HeimdallTrait;
     use MocksDnsTrait;
     use DbEntityFetchTrait;
-    use OAuthTrait;
     use CreatesInvoice;
+    use PartnerTrait;
 
     public function setUp()
     {
@@ -122,6 +125,19 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('card', $methods);
         $this->assertArrayHasKey('disabled_banks', $methods);
         $this->assertArrayHasKey('debit_card', $methods);
+    }
+
+    public function testSetDefaultUnclaimedGroupIdForCreateMerchant()
+    {
+        $this->createMerchant();
+
+        $merchantMap = \DB::connection('test')->table('merchant_map')
+                          ->where('merchant_id', '1X4hRFHFx4UiXt')
+                          ->first();
+
+        $this->assertEquals($merchantMap->entity_id, 'E15BhsdMSofcUJ');
+        $this->assertEquals($merchantMap->entity_type, 'group');
+        $this->assertEquals($merchantMap->merchant_id, '1X4hRFHFx4UiXt');
     }
 
     public function testGetMerchantUsers()
@@ -5322,6 +5338,264 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testSetInheritanceParent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'id'    =>  '10000000000000'
+        ];
+
+        $a = $this->startTest();
+
+        $this->assertEquals($a['merchant_id'], $subMerchantId);
+
+        $this->assertEquals($a['parent_merchant_id'], '10000000000000');
+
+        $merchantInheritanceMap = $this->getLastEntity('merchant_inheritance_map', true);
+
+        $this->assertEquals($merchantInheritanceMap['parent_merchant_id'], '10000000000000');
+
+        $this->assertEquals($merchantInheritanceMap['merchant_id'], $subMerchantId);
+    }
+
+    public function testSetInheritanceParentBatch()
+    {
+        $this->ba->proxyAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        $subMerchantId2 =$this->fixtures->create('merchant')->getId();
+
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            [
+                'idempotency_key'    =>  '12345',
+                'merchant_id'        =>  $subMerchantId,
+                'parent_merchant_id' =>  '10000000000000'
+            ],
+            [
+                'idempotency_key'    => '12346',
+                'merchant_id'        =>  $subMerchantId2,
+                'parent_merchant_id' =>  '10000000000000'
+            ]
+        ];
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['count'], 2);
+
+        $this->assertEquals($response['items'][0]['merchant_id'], $subMerchantId);
+        $this->assertEquals($response['items'][0]['parent_merchant_id'], '10000000000000');
+        $this->assertEquals($response['items'][0]['success'], true);
+
+        $this->assertEquals($response['items'][1]['success'], false);
+        $this->assertEquals($response['items'][1]['error']['code'], ErrorCode::BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT);
+        $this->assertEquals($response['items'][1]['http_status_code'], 400);
+    }
+
+    public function testSetNonPartnerInheritanceParent()
+    {
+        $this->ba->adminAuth();
+
+        $submerchant = $this->fixtures->create('merchant');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $submerchant['id'] . '/inheritance_parent';
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'id'    =>  '10000000000000'
+        ];
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT);
+
+        $this->expectExceptionMessage(
+            'Inheritance parent should be aggregator or fully-managed partner of the submerchant');
+
+        $this->startTest();
+
+    }
+
+    public function testGetInheritanceParent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        // set inheritance parent
+        $request = [
+            'method'  => 'post',
+            'url'     => '/merchants/' . $subMerchantId. '/inheritance_parent',
+            'content' => [
+                'id'  => '10000000000000'
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $res = $this->startTest();
+
+        $this->assertEquals($res['merchant_id'], $subMerchantId);
+
+        $this->assertEquals($res['parent_merchant_id'], '10000000000000');
+    }
+
+    public function testDeleteInheritanceParent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        // set inheritance parent
+        $request = [
+            'method'  => 'post',
+            'url'     => '/merchants/' . $subMerchantId . '/inheritance_parent',
+            'content' => [
+                'id'  => '10000000000000'
+            ]
+        ];
+
+        $createRes = $this->makeRequestAndGetContent($request);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $res = $this->startTest();
+
+        $this->assertEquals($res['id'], $createRes['id']);
+
+        $this->assertEquals($res['deleted'], true);
+
+        $merchantInheritanceMap = $this->getLastEntity('merchant_inheritance_map', true);
+
+        $this->assertNull($merchantInheritanceMap);
+    }
+
+    public function testGetBalances()
+    {
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'                => '100abc000abc00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'banking',
+            'currency'          => 'INR',
+            'name'              => null,
+            'balance'           => 0,
+            'credits'           => 0,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => '2224440041626905',
+            'account_type'      => 'shared',
+            'channel'           => null,
+            'updated_at'        => 1
+        ];
+
+        $balanceData2 = [
+            'id'                => '100def000def00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'primary',
+            'currency'          => null,
+            'name'              => null,
+            'balance'           => 100000,
+            'credits'           => 50000,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => null,
+            'account_type'      => null,
+            'channel'           => 'shared',
+            'updated_at'        => 1
+        ];
+
+        $this->fixtures->create('balance',$balanceData1);
+
+        $this->fixtures->create('balance',$balanceData2);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetBalancesByType()
+    {
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'                => '100abc000abc00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'banking',
+            'currency'          => 'INR',
+            'name'              => null,
+            'balance'           => 0,
+            'credits'           => 0,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => '2224440041626905',
+            'account_type'      => 'shared',
+            'channel'           => null,
+            'updated_at'        => 1
+        ];
+
+        $balanceData2 = [
+            'id'                => '100def000def00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'primary',
+            'currency'          => null,
+            'name'              => null,
+            'balance'           => 100000,
+            'credits'           => 50000,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => null,
+            'account_type'      => null,
+            'channel'           => 'shared',
+            'updated_at'        => 1
+        ];
+
+        $this->fixtures->create('balance',$balanceData1);
+
+        $this->fixtures->create('balance',$balanceData2);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
+    protected function setUpPartnerAndGetSubMerchantId()
+    {
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        return $subMerchantId;
+    }
+
     protected function enableRazorXTreatmentForRazorX()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -5333,5 +5607,76 @@ class MerchantTest extends TestCase
             ->will($this->onConsecutiveCalls('on', 'off'));
 
         $this->app->instance('razorx', $razorxMock);
+    }
+
+    public function testMerchantInternationalDisableAction()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['international' => true]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'international_activation_flow' => 'whitelist']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantInternationalEnableAction()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantInternationalDisableBulkEdit()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(true, 'whitelist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
+
+        $this->assertEquals($merchant['international'], false);
+
+        $this->assertEquals($merchantDetail['international_activation_flow'], 'blacklist');
+    }
+
+    public function testMerchantInternationalEnableBulkEdit()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
+
+        $this->assertEquals($merchant['international'], true);
+
+        $this->assertEquals($merchantDetail['international_activation_flow'], 'whitelist');
+    }
+
+    public function setMerchantMerchantDetailsAndPricing($international, $internationalActivationFlow)
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id' => '1In3Yh5Mluj605',
+            'international'   => $international]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'international_activation_flow' => $internationalActivationFlow,
+            'business_category'             => 'education',
+            'business_subcategory'          => 'college']);
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->fixtures->edit('pricing', '1AXp2Xd3t5aRLX', ['international' => true]);
     }
 }

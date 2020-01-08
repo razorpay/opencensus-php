@@ -534,9 +534,9 @@ class PaymentCreateController extends Controller
             else if (($data['type'] === 'async') or
                      ($data['type'] === 'intent'))
             {
-                $merchantLogoUrl = $this->app['basicauth']->getMerchant()->getLogoUrl();
+                $merchantLogoUrl = $this->app['basicauth']->getMerchant()->getFullLogoUrlWithSize();
 
-                if(isset($merchantLogoUrl))
+                if (isset($merchantLogoUrl) === true)
                 {
                     $data['merchant_logo_url'] = $merchantLogoUrl;
                 }

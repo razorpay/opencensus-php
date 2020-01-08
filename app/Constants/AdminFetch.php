@@ -276,10 +276,36 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
-            Entity::PAYMENTS_CARDS_AUTHORIZATION  => [],
-            Entity::PAYMENTS_CARDS_AUTHENTICATION => [],
-
-
+            Entity::PAYMENTS_CARDS_AUTHORIZATION  => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+                'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
+                'gateway'      => Fetch::FIELD_GATEWAY,
+                'status'       => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'failed',
+                        'authorized',
+                        'captured',
+                    ],
+                ],
+            ],
+            Entity::PAYMENTS_CARDS_AUTHENTICATION => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+                'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
+                'gateway'      => Fetch::FIELD_GATEWAY,
+                'status'       => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'success',
+                        'failed',
+                    ],
+                ],
+            ],
             Entity::SUBSCRIPTIONS_SUBSCRIPTION => [
                 'auth_attempts' => [
                     Fetch::LABEL  => 'Auth Attempts',
@@ -2246,6 +2272,21 @@ class AdminFetch
                     Fetch::LABEL => 'Entity Owner Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
+            ],
+
+            Entity::MERCHANT_INHERITANCE_MAP => [
+                'merchant_id' => [
+                    Fetch::LABEL  => 'Merchant Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ],
+                'parent_merchant_id' => [
+                    Fetch::LABEL => 'Parent Merchant Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'created_at' =>  [
+                    Fetch::LABEL  => 'Created At',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ]
             ],
 
             Entity::PARTNER_CONFIG => [

@@ -64,6 +64,7 @@ class Service extends Base\Service
         foreach ($input as $item)
         {
             $idempotencyKey = $item['idempotency_key'];
+
             try
             {
                 $result = $this->repo->transactionOnLiveAndTest(function () use ($item, $idempotencyKey)
@@ -90,7 +91,8 @@ class Service extends Base\Service
                         $item[Pricing\Entity::PAYMENT_METHOD],
                         $item[Pricing\Entity::PAYMENT_METHOD_TYPE],
                         $item[Pricing\Entity::PAYMENT_NETWORK],
-                        $item[Pricing\Entity::INTERNATIONAL])) === null)
+                        $item[Pricing\Entity::INTERNATIONAL],
+                        0)) === null)
                     {
                         if (($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId)) !== 1)
                         {

@@ -1719,4 +1719,36 @@ class VirtualAccountTest extends TestCase
 
         $this->createVirtualAccount([], false, null, null, true,'virtualVpa');
     }
+
+
+    public function testOfflineQrCloseBy()
+    {
+        Carbon::setTestNow(Carbon::create(2019, 12, 30, 0, 0, 0, 'Asia/Kolkata'));
+
+        $this->startTest();
+    }
+
+    public function testOfflineVACreation()
+    {
+        Carbon::setTestNow(Carbon::create(2019, 12, 30, 0, 0, 0, 'Asia/Kolkata'));
+
+        $this->fixtures->merchant->addFeatures('offline_payments');
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('order_id', $response);
+    }
+
+    public function testCloseVirtualAccountWithVpa()
+    {
+        $virtualAccount = $this->createVirtualAccount([], false, null, null, true, 'virtualVpa');
+
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
+
+        $this->closeVirtualAccount($virtualAccount['id']);
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+
+        $this->assertEquals(Status::CLOSED, $virtualAccount->getStatus());
+    }
 }

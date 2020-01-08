@@ -143,7 +143,7 @@ class Entity extends Base\PublicEntity
 
     public function vpa()
     {
-        return $this->belongsTo('RZP\Models\Vpa\Entity');
+        return $this->belongsTo('RZP\Models\Vpa\Entity')->withTrashed();
     }
 
     public function customer()
@@ -274,6 +274,11 @@ class Entity extends Base\PublicEntity
     public function getClosedAt()
     {
         return $this->getAttribute(self::CLOSED_AT);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
     }
 
     protected function getReceiversAttribute()

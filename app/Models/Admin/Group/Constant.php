@@ -1,0 +1,12 @@
+<?php
+
+namespace RZP\Models\Admin\Group;
+
+class Constant
+{
+    const SALESFORCE_CLAIMED_GROUP_ID   = 'SALESFORCE_CLAIMED_GROUP_ID';
+    const SALESFORCE_UNCLAIMED_GROUP_ID = 'SALESFORCE_UNCLAIMED_GROUP_ID';
+
+    const SF_CLAIMED_SME_GROUP_ID = 'E15FKNaXgALD6Y';
+    const SF_UNCLAIMED_GROUP_ID   = 'E15BhsdMSofcUJ';
+}

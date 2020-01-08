@@ -322,7 +322,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 'RRN'                                 => $gatewayData['DealID'],
                 'Transaction Date'                    => $date,
                 'Disbursement Date'                   => $date,
-                'Amount Financed (Rs) '               => (string)$row['payment']['amount'] / 100,
+                'Amount Financed (Rs) '               => (string)ceil($row['payment']['amount'] / 100) . '.00',
                 'Scheme Desc'                         => '123445',
                 'Interest Subsidy including GST (Rs)' => 2233,
                 'Interest Subsidy (%)+GST'            => '6.00%',

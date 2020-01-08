@@ -14,9 +14,11 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
+use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
@@ -524,6 +526,8 @@ trait Capture
                 return (($ex instanceof Exception\GatewayTimeoutException) === true);
             case Payment\Gateway::HITACHI:
                 return ($payment->card->getNetworkCode() === Card\Network::RUPAY);
+            case Payment\Gateway::PAYSECURE:
+                return true;
         }
 
         return false;
@@ -1038,8 +1042,14 @@ trait Capture
                 return;
             }
 
+            $orderId = $payment->getApiOrderId();
+
+            $this->repo
+                 ->transfer
+                 ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+
             $input = [
-                'order_id'   => $payment->getApiOrderId(),
+                'order_id'   => $orderId,
                 'payment_id' => $payment->getId(),
                 'mode'       => $this->mode,
             ];

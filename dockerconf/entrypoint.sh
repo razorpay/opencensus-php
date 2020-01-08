@@ -58,6 +58,8 @@ configure_dark(){
 run_migration_job(){
     cd /app
     php artisan migrate --database=live_migration --force && php artisan migrate --database=test_migration --force
+    php artisan migrate --database=payments_upi_live --path=database/migrations/payments_upi --force
+    php artisan migrate --database=payments_upi_test --path=database/migrations/payments_upi --force
 }
 
 start_apache(){

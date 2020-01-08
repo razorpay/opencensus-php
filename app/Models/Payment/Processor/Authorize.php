@@ -43,11 +43,13 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Constants\Environment;
+use RZP\Models\Card\Network;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
@@ -61,7 +63,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
-use RZP\Gateway\Enach\Npci\Netbanking\Gateway;
+use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 
 trait Authorize
 {
@@ -231,13 +233,36 @@ trait Authorize
             return null;
         }
 
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:238"
+            ]
+        );
+
         if ($this->canAuthorizeViaCps($payment) === true)
         {
+
             $request =  $this->authorizeViaCps($payment, $input, $gatewayInput);
+
+            $this->trace->info(
+                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+                [
+                    'line'      => "Models/Payment/Processor/Authorize.php:251"
+                ]
+            );
+
         }
         else
         {
             $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+
+            $this->trace->info(
+                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+                [
+                    'line'      => "Models/Payment/Processor/Authorize.php:263"
+                ]
+            );
         }
 
         if (($request !== null) and
@@ -290,6 +315,14 @@ trait Authorize
 
         $retry = false;
 
+        // Checking razorX flag for feedback loop here per paymentId
+        $razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($payment->getId());
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:323"
+            ]
+        );
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -303,6 +336,11 @@ trait Authorize
         {
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
+            // Using Hitachi terminals for paysecure until we create new ones for paysecure.
+            if ($this->shouldCreatePaysecurePayment($payment, $input, $currentTerminal))
+            {
+                $currentTerminal[Terminal\Entity::GATEWAY] = Gateway::PAYSECURE;
+            }
             // Uncomment this to test with Sharp or any other terminal locally.
             // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
             $payment->associateTerminal($currentTerminal);
@@ -403,12 +441,7 @@ trait Authorize
 
                 $internalErrorCode = $e->getError()->getInternalErrorCode();
 
-                $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-                $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
-
-                if (($isProduction === true) and
-                    (strtolower($variant) === 'on'))
+                if ($razorXForDoppler === true)
                 {
                     //TODO: Remove this later
                     try
@@ -880,6 +913,11 @@ trait Authorize
 
         try
         {
+            // this is a temporary fix for irctc case, where a validation has to be done on supported method level,
+            // which will be stored in notes during order creation
+            // Slack Ref - https://razorpay.slack.com/archives/C2ZL6H76U/p1578388168053200
+            $this->validateOrderMethods($payment);
+
             $this->validateCardAndCvv($payment, $input);
 
             $this->validateRecurringIfApplicable($payment, $input);
@@ -1871,6 +1909,14 @@ trait Authorize
         $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
         $this->setPaymentRoutedThroughCpsIfApplicable($payment, $gatewayInput);
+
+
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:1917"
+            ]
+        );
 
         $this->repo->saveOrFail($payment);
 
@@ -3448,9 +3494,13 @@ trait Authorize
 
             $tokenMaxAmount = null;
 
+            $tokenExpireBy  = null;
+
             if ($tokenRegistration !== null)
             {
                 $tokenMaxAmount = $tokenRegistration->getMaxAmount();
+
+                $tokenExpireBy  = $tokenRegistration->getExpireAt();
             }
 
             $saveMethodInput[Token\Entity::MAX_AMOUNT] =
@@ -3475,7 +3525,7 @@ trait Authorize
                 $input[Payment\Entity::AADHAAR]['vid'] ?? null;
 
             $saveMethodInput[Token\Entity::EXPIRED_AT] =
-                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
+                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? $tokenExpireBy;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -5609,6 +5659,57 @@ trait Authorize
         }
     }
 
+    protected function validateOrderMethods(Payment\Entity $payment)
+    {
+        // list of irctc merchant_ids
+        $irctcMerchantIds = ['8byazTDARv4Io0', '90xVmQJTCEJ6GH', '9m4CChGex4ENkR', 'B3AFCVPnT82ehc', 'AEPXwjSlJJhfUl',
+            'AEsxERLbWiBuUG', '8YPFnW5UOM91H7', '8ST00QgEPT14cE'];
+
+        array_push($irctcMerchantIds, '10000000000000'); //for testing
+
+        $merchantId = $payment->getMerchantId();
+
+        if (in_array($merchantId, $irctcMerchantIds) === false)
+        {
+            return;
+        }
+
+        $order = $payment->order;
+
+        if(isset($order) === false)
+        {
+            return;
+        }
+
+        if (isset($order->getNotes()['Pay_Mode']) === false)
+        {
+            return;
+        }
+
+        $paymentMode = $order->getNotes()['Pay_Mode'];
+
+        $method = $payment->getMethod();
+
+        if ((($paymentMode === 'UPI') and ($method !== Payment\Method::UPI)) or
+            ($paymentMode === 'NOUPI') and (($method == Payment\Method::UPI)))
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_ORDER_METHOD_VALIDATION_FAILED,
+                [
+                    'paymentMode' => $paymentMode,
+                    'method'      => $method
+                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_FOR_ORDER,
+                null,
+                [
+                    'paymentMode' => $paymentMode,
+                    'method'      => $method
+                ]);
+        }
+    }
+
     protected function validateUpiPspIsAllowed(Payment\Entity $payment)
     {
         $disallowedPspJson = $this->cache->get(Upi\Core::EXCLUDED_PSPS, '[]');
@@ -6479,6 +6580,14 @@ trait Authorize
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
     }
 
+    protected function shouldCreatePaysecurePayment(Payment\Entity $payment, array $input, $currentTerminal)
+    {
+        return (!is_null($currentTerminal) and
+            ($currentTerminal[Terminal\Entity::GATEWAY] === Gateway::HITACHI) and
+            ($payment->card['network_code'] === Network::RUPAY) and
+            ($this->app->razorx->getTreatment($payment->getId(), 'enable_paysecure_gateway', $this->mode) === 'on'));
+    }
+
     /**
      * Enach through NPCI has mandated that additional information has to be displayed
      * when rendering the response page to the user.
@@ -6516,7 +6625,7 @@ trait Authorize
 
         $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail($payment['id'], GatewayAction::AUTHORIZE);
 
-        $returnData['emandate_details'] = Gateway::fetchEmandateDisplayDetails(
+        $returnData['emandate_details'] = enachNpciGateway::fetchEmandateDisplayDetails(
                                                                                $payment,
                                                                                $token,
                                                                                $terminal,

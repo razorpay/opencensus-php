@@ -339,8 +339,8 @@ return [
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
     ],
     'fts_fund_transfer' => [
-        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
-        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+        'test'       => env('AWS_FTS_TEST_QUEUE'),
+        'live'       => env('AWS_FTS_LIVE_QUEUE'),
     ],
     'carvault_migration' => [
         'test'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),

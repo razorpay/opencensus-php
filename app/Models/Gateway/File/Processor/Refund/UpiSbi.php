@@ -146,7 +146,7 @@ class UpiSbi extends Base
         ];
 
         // In seconds
-        $timelines = [];
+        $timelines = [600, 1800, 3600];
 
         $mailInfo = [
             'fileInfo'  => $fileInfo,

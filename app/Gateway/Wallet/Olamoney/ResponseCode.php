@@ -33,6 +33,14 @@ class ResponseCode
             ErrorCode::GATEWAY_ERROR_OUTSTANDING_LIMIT_BREACHED,
         'invalid_request'                                                                               =>
             ErrorCode::BAD_REQUEST_INVALID_PARAMETERS,
+        'OC_011'                                                                                        =>
+            ErrorCode::BAD_REQUEST_PAYMENT_OLA_MONEY_ACCOUNT_DOES_NOT_EXIST_FOR_NUMBER,
+        'OC_021'                                                                                        =>
+            ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
+    ];
+
+    public static $eligible = [
+        'OC_000', 'OC_010'
     ];
 
     protected static $success = [
