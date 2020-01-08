@@ -35,6 +35,7 @@ class Entity extends Base\Entity
 
     protected $fillable = [
         self::APPROVED,
+        self::COMMENT,
     ];
 
     protected $visible = [

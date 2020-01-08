@@ -11,6 +11,7 @@ class Validator extends Base\Validator
         Entity::ACTION_ID => 'required|string|max:14',
         Entity::STEP_ID   => 'required|string|max:14',
         Entity::APPROVED  => 'required|boolean',
+        Entity::COMMENT   => 'sometimes|string|max:255',
     ];
 
     protected static $createValidators = [

@@ -441,21 +441,21 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
-    public function approvePayout(Entity $payout): Entity
+    public function approvePayout(Entity $payout, array $input): Entity
     {
-        $payout = $this->processWorkflowActionOnPayout($payout, true);
+        $payout = $this->processWorkflowActionOnPayout($payout, true, $input);
 
         return $payout;
     }
 
-    public function rejectPayout(Entity $payout): Entity
+    public function rejectPayout(Entity $payout, array $input): Entity
     {
-        $payout = $this->processWorkflowActionOnPayout($payout, false);
+        $payout = $this->processWorkflowActionOnPayout($payout, false, $input);
 
         return $payout;
     }
 
-    protected function processWorkflowActionOnPayout(Entity $payout, bool $approve): Entity
+    protected function processWorkflowActionOnPayout(Entity $payout, bool $approve, array $input): Entity
     {
         /** @var Workflow\Action\Entity|null $workflowAction */
         $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
@@ -471,12 +471,18 @@ class Core extends Base\Core
         }
 
         $payout = $this->repo->transaction(
-            function() use ($payout, $workflowAction, $approve, $action)
+            function() use ($payout, $workflowAction, $approve, $action, $input)
             {
                 $actionCheckerCreateParams = [
                     Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
                     Workflow\Action\Checker\Entity::APPROVED  => ($approve === true) ? 1 : 0, // 1 = true
                 ];
+
+                if (isset($input[Workflow\Action\Checker\Entity::COMMENT]))
+                {
+                    $actionCheckerCreateParams[Workflow\Action\Checker\Entity::COMMENT] =
+                        $input[Workflow\Action\Checker\Entity::COMMENT];
+                }
 
                 $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
 
