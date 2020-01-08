@@ -886,6 +886,7 @@ class Service extends Base\Service
             'sellerapp_PL_batch_upload',
             'nps_survey_banner',
             'vpa_enabled',
+            'async_reports',
             'new_pp_success_modal',
             'hide_company_name'
         ];
