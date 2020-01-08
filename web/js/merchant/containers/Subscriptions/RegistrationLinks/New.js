@@ -321,7 +321,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         );
       }
 
-      ax_amount = rupeesToPaise(DEFAULT_MAX_AMOUNT);
+      let max_amount = rupeesToPaise(DEFAULT_MAX_AMOUNT);
 
       if (data.mandateMaxAmount) {
         max_amount = rupeesToPaise(data.mandateMaxAmount);
