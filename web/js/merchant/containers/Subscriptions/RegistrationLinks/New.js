@@ -63,6 +63,9 @@ const NACHMandatoryFields = [
 
 const CardMandatoryFields = [{ name: 'amount', validator: checkIfAmount }];
 
+let DEFAULT_MAX_AMOUNT = 99999;
+let DEFAULT_FIRST_CHARGE = 0;
+
 @withRouter
 @connect(state => ({ user: state.session.user }), {
   openModal,
@@ -77,8 +80,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   constructor(props) {
     super(props);
 
-    this.DEFAULT_MAX_AMOUNT = 99999;
-    this.DEFAULT_FIRST_CHARGE = 0;
     this.state = {
       loading: true,
       currentTab: 0,
@@ -122,12 +123,12 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   get isNACHPayment() {
     const isNACH = this.state.formFields.mandateMethod === 'nach';
     if (isNACH) {
-      this.DEFAULT_MAX_AMOUNT = 100000;
+      DEFAULT_MAX_AMOUNT = 100000;
 
       return isNACH;
     }
 
-    this.DEFAULT_MAX_AMOUNT = 99999;
+    DEFAULT_MAX_AMOUNT = 99999;
     return isNACH;
   }
 
@@ -320,7 +321,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         );
       }
 
-      let max_amount = rupeesToPaise(this.DEFAULT_MAX_AMOUNT);
+      ax_amount = rupeesToPaise(DEFAULT_MAX_AMOUNT);
 
       if (data.mandateMaxAmount) {
         max_amount = rupeesToPaise(data.mandateMaxAmount);
@@ -489,8 +490,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             mandateExpireAt={formFields.mandateExpireAt}
             tokenHasNoExpiry={formFields.tokenHasNoExpiry}
             mandateMaxAmount={formFields.mandateMaxAmount}
-            defaultMandateMaxAmount={this.DEFAULT_MAX_AMOUNT}
-            defaultFirstChargeAmount={this.DEFAULT_FIRST_CHARGE}
+            defaultMandateMaxAmount={DEFAULT_MAX_AMOUNT}
+            defaultFirstChargeAmount={DEFAULT_FIRST_CHARGE}
             firstPaymentAmount={formFields.firstPaymentAmount}
             handleDateChange={this.handleDateChange}
           />
