@@ -8,6 +8,8 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 {
     const ONUS_INDICATOR = 'ONUS';
 
+    const COLUMN_PAYMENT_AMOUNT = ReconciliationFields::TRANSACTION_AMOUNT;
+
     const BLACKLISTED_COLUMNS = [
         ReconciliationFields::CARD_NO,
     ];
@@ -17,11 +19,6 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         $paymentId = $row[ReconciliationFields::MERCHANT_TXN_NO] ?? null;
 
         return trim(str_replace("'", '', $paymentId));
-    }
-
-    protected function getReconPaymentAmount(array $row)
-    {
-        return SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null);
     }
 
     protected function getReconCurrency($row)
@@ -70,7 +67,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         }
 
         $csfTax = (isset($row[ReconciliationFields::MTS_TOTL_CSF_AMT]) === true) ?
-            (abs($row[ReconciliationFields::MTS_TOTL_CSF_AMT] ?? 0)) : 0;
+            (abs($row[ReconciliationFields::MTS_TOTL_CSF_AMT])) : 0;
 
         $gstTax = abs($row[ReconciliationFields::GST_AMT]);
 
