@@ -617,9 +617,12 @@ class Core extends Base\Core
             $data[Entity::TRANSACTION_REPORT_EMAIL] = implode(',', $input[Entity::TRANSACTION_REPORT_EMAIL]);
         }
 
-        if (isset($input[Merchant\Entity::WEBSITE]) === true)
+        if ((isset($input[Merchant\Entity::WEBSITE]) === true) and
+            ($merchant->getWebsite() !== $input[Merchant\Entity::WEBSITE]))
         {
             $data[Entity::BUSINESS_WEBSITE] = $input[Merchant\Entity::WEBSITE];
+
+            (new Merchant\Core())->updateWhitelistedDomain($merchant, $input);
         }
 
         if (empty($data) === false)
