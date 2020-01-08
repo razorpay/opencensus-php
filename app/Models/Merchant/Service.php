@@ -578,16 +578,9 @@ class Service extends Base\Service
             return $balanceCollection->toArrayPublic();
         }
 
-        if (array_key_exists('type', $input) === true)
-        {
-            $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, $input['type']);
-
-            return $balance;
-        }
-
         $balance = $this->repo->balance->fetch($input, $merchantId);
 
-        return $balance->toArrayWithItems();
+        return $balance->toArrayPublic();
     }
 
     public function editAmountCredits($merchantId, $input)

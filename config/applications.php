@@ -417,4 +417,13 @@ return [
     'kyc_service' => [
         'mock' => env('KYC_SERVICE_MOCK', false),
     ],
+
+    'salesforce' => [
+        'mock'          => env('SALESFORCE_MOCK', false),
+        'url'           => env('SALESFORCE_URL'),
+        'username'      => env('SALESFORCE_USERNAME'),
+        'password'      => env('SALESFORCE_PASSWORD'),
+        'client_id'     => env('SALESFORCE_CLIENT_ID'),
+        'client_secret' => env('SALESFORCE_CLIENT_SECRET'),
+    ],
 ];

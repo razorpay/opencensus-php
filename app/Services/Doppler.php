@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use Razorpay\Trace\Logger as Trace;
@@ -33,6 +34,8 @@ class Doppler
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
 
     const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
+
+    const CONNECT_TIMEOUT = 1;
 
     const REQUEST_TIMEOUT = 5;
 
@@ -286,6 +289,7 @@ class Doppler
         $headers['Authorization'] = $authentication;
 
         $options = [
+            'connect_timeout' => self::CONNECT_TIMEOUT,
             'timeout' => self::REQUEST_TIMEOUT,
         ];
 
@@ -438,6 +442,24 @@ class Doppler
         }
 
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
+    }
+
+    public function checkRazorXForFeedbackLoop($id)
+    {
+        if (($this->app->environment() !== Environment::PRODUCTION) or
+            ($this->mode !== Mode::LIVE))
+        {
+            return false;
+        }
+
+        $variant = $this->app->razorx->getTreatment($id, 'api_hitting_doppler_service', Mode::LIVE);
+
+        if (strtolower($variant) === 'on')
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }

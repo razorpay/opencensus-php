@@ -317,6 +317,11 @@ class Entity
 
     const COMMISSION = 'commission';
 
+    // Service: Payments UPi
+    const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
+    const PAYMENTS_UPI_BANK_ACCOUNT     = 'payments_upi_bank_account';
+    const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'payments_upi_vpa_bank_account';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes

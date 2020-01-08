@@ -234,6 +234,10 @@ class Table
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
     const P2P_CONCERN           = 'p2p_concerns';
 
+    // Payments UPI Service, Store in different database
+    const PAYMENTS_UPI_VPA              = 'vpas';
+    const PAYMENTS_UPI_BANK_ACCOUNT     = 'bank_accounts';
+    const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'vpas_bank_accounts';
 
     const CREDITNOTE           = 'creditnote';
 
