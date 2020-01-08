@@ -673,6 +673,7 @@ trait Authorize
                 'network'    => $card->getNetworkCode(),
                 'last4'      => $card->getLast4(),
                 'iin'        => $card->getIin(),
+                'gateway'    => $payment->getGateway(),
             ];
 
             $response['metadata'] = $metaData;
