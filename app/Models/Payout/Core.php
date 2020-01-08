@@ -355,6 +355,14 @@ class Core extends Base\Core
             $payout->setMode($ftaData[Attempt\Constants::MODE]);
         }
 
+        //
+        // We do not want to override the failure reason if it's already set.
+        // It could have been set in the `afterRecon` flow. In some cases, it's
+        // possible that `beforeRecon` gets called and then `afterRecon` gets
+        // called and then again `beforeRecon`. In `afterRecon`, if the failure
+        // reason gets set, we don't want to reset it to null in `beforeRecon` if
+        // the failure reason is empty in the 2nd `beforeRecon` call.
+        //
         if (empty($ftaFailureReason) === false)
         {
             $payout->setFailureReason($ftaFailureReason);
