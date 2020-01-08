@@ -127,6 +127,19 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('debit_card', $methods);
     }
 
+    public function testSetDefaultUnclaimedGroupIdForCreateMerchant()
+    {
+        $this->createMerchant();
+
+        $merchantMap = \DB::connection('test')->table('merchant_map')
+                          ->where('merchant_id', '1X4hRFHFx4UiXt')
+                          ->first();
+
+        $this->assertEquals($merchantMap->entity_id, 'E15BhsdMSofcUJ');
+        $this->assertEquals($merchantMap->entity_type, 'group');
+        $this->assertEquals($merchantMap->merchant_id, '1X4hRFHFx4UiXt');
+    }
+
     public function testGetMerchantUsers()
     {
         $merchant = $this->fixtures->create('merchant');
