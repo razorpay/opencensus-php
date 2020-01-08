@@ -295,9 +295,9 @@ class Service extends Base\Service
                 }
                 else if (trim($responseData[$paymentId][$field]) !== $misParams[$field])
                 {
-                    $this->messenger->raiseReconAlert(
+                    $this->trace->info(
+                        TraceCode::RECON_MISMATCH,
                         [
-                            'trace_code'                => TraceCode::RECON_MISMATCH,
                             'info_code'                 => InfoCode::NBPLUS_DATA_MISMATCH,
                             'payment_id'                => $paymentId,
                             'field'                     => $field,
