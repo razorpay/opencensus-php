@@ -276,8 +276,10 @@ class Doppler
     public function setAuth()
     {
         $key = $this->config['key'];
+
         $secret = $this->config['secret'];
-        return md5($key.$secret);
+
+        return md5('signature');
     }
 
     public function sendRequest(string $method, string $path, string $content)
