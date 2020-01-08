@@ -1,6 +1,4 @@
-import { Component } from 'react';
-import { reduxForm } from 'redux-form';
-import { Field } from 'redux-form';
+import { reduxForm, Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
 import ShowWhen from 'merchant/components/ShowWhen';

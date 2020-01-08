@@ -321,6 +321,12 @@ app
               conversionId: '1668332',
             },
           });
+
+          window.rzpAnalytics({
+            eventCategory: 'Partner Onboarding',
+            eventAction: 'Email and Password',
+            eventLabel: 'Partner Onboarding | Click Create Account',
+          });
         }
 
         if (!$valid) {
@@ -835,6 +841,12 @@ app
             value: {
               conversionId: '1668316',
             },
+          });
+
+          window.rzpAnalytics({
+            eventCategory: 'Partner Onboarding',
+            eventAction: 'Contact Details',
+            eventLabel: 'Partner Onboarding | Fill & Finish',
           });
         }
       };

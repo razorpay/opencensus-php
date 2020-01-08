@@ -1,12 +1,7 @@
 import { connect } from 'react-redux';
 
-import {
-  transferId,
-  source,
-  recipient,
-  amount,
-  createdAt,
-} from 'common/ui/item/pair';
+import { transferId, recipient, amount, createdAt } from 'common/ui/item/pair';
+import { source as sourceId } from 'common/ui/item/id';
 import { RZPFeatures } from 'merchant/helpers/data';
 
 import DataTable from 'common/ui/Table/DataTable';
@@ -19,6 +14,17 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import TransfersListFilter from 'merchant/components/Marketplace/TransfersListFilter';
 
 import ListContainer from 'merchant/containers/ListContainer';
+
+const baseUrl = {
+  pay: '/payments/',
+  order: '/orders/',
+  acc: '/route/accounts/',
+};
+
+const source = {
+  title: 'Source',
+  value: item => sourceId(item, baseUrl),
+};
 
 @connect(state => state.transfers, { fetchAll })
 export default class TransfersListContainer extends ListContainer {

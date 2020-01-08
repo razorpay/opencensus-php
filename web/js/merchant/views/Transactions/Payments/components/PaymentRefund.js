@@ -13,8 +13,7 @@ import {
   refundMode,
   refundStatus,
 } from 'common/ui/item/pair';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 
 /*
  * Design:

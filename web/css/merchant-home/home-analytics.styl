@@ -3,55 +3,46 @@ $background-color = #FFF;
 $actionItemsHeight = 40px;
 
 traffic-responsive() {
-
   width: 100%;
 
   &.traffic-container {
-
     padding-right: 0;
   }
 
   &.activity-container {
-
     padding-left: 0;
 
     p.content-title {
-
       left: 0;
     }
   }
 }
 
 .dashboard-home {
-
   .card {
-
     border-radius: 2px;
-    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.1);
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.1);
   }
 
   .rzp-sticky.sticky > .sticky-content {
-
     z-index: 2;
   }
 
   div.panel-footer {
-
-    span.early-stl-label{
+    span.early-stl-label {
       padding: 0 10px 0 10px;
     }
 
-    i.i-early-settlement{
+    i.i-early-settlement {
       color: #39C7EC;
     }
   }
 
-  .settle-btn-act{
+  .settle-btn-act {
     padding: 5px 15px 5px 15px;
   }
 
   .v2-tour-banner {
-
     width: 100%;
     display: table;
     background: linear-gradient(223.96deg, #5D89E5 0%, #3059C0 100%);
@@ -59,17 +50,14 @@ traffic-responsive() {
     transition: margin 0.5s ease-in;
 
     &.dismiss {
-
       margin-top: -62px; // height of banner
     }
 
     > div {
-
       display: table-cell;
       vertical-align: middle;
 
       &.banner-icon {
-
         width: 1%;
         padding: 0 16px;
         font-size: 24px;
@@ -78,40 +66,34 @@ traffic-responsive() {
       }
 
       .rzp-banner {
-
         background-color: transparent;
         border: none;
         margin-bottom: 0;
         color: inherit;
 
         .rzp-banner-cta button.btn {
-
           background-color: #ffffff;
           color: $primary-color;
           border: none;
-          box-shadow: 0 1px 3px 0 rgba(0,0,0,0.14);
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.14);
 
           &:hover {
-
-            box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.24);
+            box-shadow: inset 0 1px 3px 0 rgba(0, 0, 0, 0.24);
           }
         }
       }
 
       &.banner-close {
-
         width: 1px;
         padding-right: 16px;
         font-size: 12px;
 
         > a {
-
           color: #fff;
           opacity: 0.8;
           font-size: 20px;
 
           &:hover {
-
             opacity: 1;
           }
         }
@@ -121,56 +103,49 @@ traffic-responsive() {
 
   .diwali-promotion-banner {
     .banner-content {
-      text-align: center
-      .btn-link a {
-        color: #fff
-      }
-      .badge {
-        border-radius: 2px
-        padding: 7px 7px
-        background-color: rgb(86, 129, 228)
+      text-align: center;
 
+      .btn-link a {
+        color: #fff;
+      }
+
+      .badge {
+        border-radius: 2px;
+        padding: 7px 7px;
+        background-color: rgb(86, 129, 228);
       }
     }
   }
 
   > .rzp-sticky {
-
     &.sticky > .sticky-content {
-
       position: fixed;
     }
 
     > .sticky-content {
-
       z-index: 2;
       position: relative;
     }
   }
 
   .header {
-
     background-color: $background-color;
     padding: 16px 24px;
 
     .rzp-group {
-
       margin-top: 10px;
 
       > .rzp-group-item {
-
         border-width: 0;
         padding-top: 0;
         padding-bottom: 0;
 
         .balance-amount {
-
           font-weight: bold;
           letter-spacing: 0.5px;
         }
 
         &:last-child {
-
           border-left-width: 1px;
         }
       }
@@ -184,77 +159,60 @@ traffic-responsive() {
   }
 
   .section-title {
-
     font-size: 18px;
     padding-top: 40px;
     padding-bottom: 16px;
     margin-bottom: 0;
 
     &.keymetrics-title {
-
       padding-top: 0;
     }
 
     &.payment-insights-title {
-
       i.i {
-
         color: $faded-text-color;
 
         &:hover {
-
           color: $primary-color;
         }
       }
 
       .popover-highlight {
-
         color: $text-color;
       }
     }
   }
 
   .secondary-announcement-banner {
-
     padding: 20px;
 
     .Announcement_Banner {
-
       padding: 12px 24px;
       height: auto;
     }
   }
 
-  .extra-content{
-
+  .extra-content {
     &.has-ob-banner {
-
       .secondary-announcement-banner {
-
         padding-top: 0;
       }
     }
 
     &.has-ob-banner, &.has-secondary-banner {
-
       .announcement-banner-container {
-
         padding-bottom: 0;
       }
     }
   }
 
   .home-analytics-mobile {
-
     .extra-content {
-
       .section-title {
-
         margin-left: 16px;
       }
 
       .panel.card {
-
         margin-bottom: 0;
       }
 
@@ -262,56 +220,44 @@ traffic-responsive() {
     }
 
     .section-title {
-
       padding-top: 24px;
     }
 
     .header, .card {
-
       padding: 16px;
     }
 
     div.panel {
-
       div.panel-topbar {
-
         div.grouping-dropdown {
-
           width: 100%;
           margin: 0 auto;
         }
       }
 
       div.panel-body {
-
         display: table;
         width: 100%;
       }
 
       &.recent-activity-cont {
-
         padding-top: 56px;
         padding-left: 0;
         padding-right: 0;
 
         div.panel-body {
-
           height: 260px;
         }
       }
     }
 
-    @media(max-width: 424px) {
-
+    @media (max-width: 424px) {
       .date-range-container {
-
         .icon-container {
-
           padding-right: 9px;
         }
 
         .presets-container {
-
           display: none;
         }
       }
@@ -319,73 +265,60 @@ traffic-responsive() {
   }
 
   .Modal-container--welcome-modal {
-
     width: 90%;
     max-width: 850px;
-    background-image: url(assets/welcome-illustration.png);
+    background-image: url('assets/welcome-illustration.png');
     background-position: top right;
     background-repeat: no-repeat;
     background-size: contain;
 
     .welcome-modal-content {
-
       padding: 56px 50% 56px 56px;
       position: relative;
 
       .welcome-title {
-
         margin: 0;
         font-size: 24px;
         font-weight: 600;
 
         &.welcome-subtitle {
-
           margin-top: 8px;
         }
       }
 
       p:nth-of-type(1), .welcome-modal-actions {
-
         margin-top: 40px;
       }
 
       .welcome-modal-actions .btn-link {
-
         margin-left: 28px;
 
         @media (max-width: 604px) {
-
           margin-left: 10px;
         }
       }
 
-      @media(max-width: 812px) {
-
+      @media (max-width: 812px) {
         background-color: rgba(255, 255, 255, 0.8);
         padding-right: 30%;
       }
 
-      @media(max-width: 580px) {
-
+      @media (max-width: 580px) {
         padding: 40px !important;
       }
 
-      @media(max-width: 425px) {
-
+      @media (max-width: 425px) {
         padding: 20px !important;
       }
     }
 
-    @media(max-width: 386px) {
-
+    @media (max-width: 386px) {
       background-image: none;
 
       .welcome-modal-content {
-
         text-align: center;
 
         .welcome-modal-actions span.btn-link {
-
           display: block;
           margin-top: 16px;
           margin-left: 0;
@@ -394,11 +327,9 @@ traffic-responsive() {
     }
 
     .Modal-close {
-
       color: white;
 
-      @media(max-width: 812px) {
-
+      @media (max-width: 812px) {
         color: currentColor;
       }
     }
@@ -406,51 +337,41 @@ traffic-responsive() {
 }
 
 .dashboard {
-
   padding: 24px;
-  background-color: transparent;;
+  background-color: transparent;
 
-  @media(max-width: $screen-md-min) {
-
+  @media (max-width: $screen-md-min) {
     padding: 16px;
   }
 
   .panel.dasboard-home-panel {
-
     margin-bottom: 0;
 
     &.no-legends {
-
       .panel-body {
-
         height: 272px;
       }
     }
   }
 
   .grouping-dropdown {
-
     width: 230px;
   }
 
   div.traffic-activity-row {
-
     display: block;
 
     &> div {
-
       width: 50%;
       display: block;
       position: relative;
       float: left;
 
       &.activity-container > p.content-title {
-
         left: 12px;
       }
 
       p.content-title {
-
         margin-bottom: 0;
         position: absolute;
         top: 0;
@@ -459,56 +380,45 @@ traffic-responsive() {
       }
 
       div.content {
-
         position: relative;
         width: 100%;
         height: 100%;
         padding-top: 80px;
 
         div.panel {
-
           height: 360px; // aligns with 5 items in recent activity
 
           div.panel-body {
-
             min-height: auto;
           }
         }
       }
 
       &.traffic-container {
-
         padding-right: 12px;
       }
 
       &.activity-container {
-
         padding-left: 12px;
 
         div.panel {
-
           overflow: hidden;
         }
       }
 
       div.panel {
-
         margin-bottom: 0;
       }
     }
 
     &.traffic-hidden {
-
       > div {
-
         traffic-responsive();
       }
     }
 
-    @media(max-width: 1185px) {
-
+    @media (max-width: 1185px) {
       > div {
-
         traffic-responsive();
       }
     }
@@ -516,34 +426,28 @@ traffic-responsive() {
 }
 
 .react-normal-select {
-
   display: table;
   border: none;
   background-color: transparent;
   border-radius: none;
 
   .PowerSelect__Trigger {
-
     /* excluding 1px border */
     height: $actionItemsHeight - 2px;
 
     .PowerSelect__TriggerLabel {
-
       padding-left: 10px;
     }
 
     .PowerSelect__TriggerStatus {
-
       padding-right: 10px;
     }
 
     .PowerSelect__Clear {
-
       display: none;
     }
 
     .PowerSelect__TriggerLabel {
-
       /* excluding 1px border */
       height: $actionItemsHeight - 2px;
     }
@@ -551,33 +455,25 @@ traffic-responsive() {
 }
 
 body.analytics-v2-active {
-
   .tether-element {
-
     &:not(.ps-in-modal__Tether) {
       z-index: 2;
     }
 
     .react-normal-select__Menu {
-
       .PowerSelect__Options {
-
         .PowerSelect__Option {
-
           padding: 0 10px;
 
           &:hover {
-
-            background-color:#FAFBFC;
+            background-color: #FAFBFC;
           }
 
           > span {
-
             line-height: $actionItemsHeight;
           }
 
           &.PowerSelect__Option--highlighted {
-
             background-color: #9eb1c7;
             color: #FFFFFF;
           }
@@ -588,6 +484,9 @@ body.analytics-v2-active {
 }
 
 .tour-active #_hj_poll_container {
-
   display: none;
+}
+
+.primary {
+  color: #528ff0;
 }

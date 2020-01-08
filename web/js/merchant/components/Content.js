@@ -19,11 +19,12 @@ import Subscriptions from 'merchant/containers/Subscriptions/Index';
 import Customers from 'merchant/views/Customers/List';
 import Marketplace from 'merchant/containers/Marketplace/Index';
 import Reports from 'merchant/containers/Reports';
+import ReportsAsync from 'merchant/views/ReportsAsync/Home';
 import MyAccount from 'merchant/views/Account';
 import Settings from 'merchant/views/Settings';
 import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
-import OffersHome from '../containers/Offers';
+import OffersHome from '../views/Offers';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import {
@@ -196,9 +197,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
             component={PaymentPagesDetails}
-            additionalCondition={user =>
-              user.isAllowedView('payment_pages') && user.isPPMLIEnabled
-            }
+            additionalCondition={user => user.isAllowedView('payment_pages')}
           />
 
           <ShowWhenRoute
@@ -269,7 +268,13 @@ export default class Content extends Component {
 
           <ShowWhenRoute
             path="/reports"
-            component={Reports}
+            component={user.isAsyncReportsEnabled ? ReportsAsync : Reports}
+            additionalCondition={user => user.isAllowedView('reports')}
+          />
+
+          <ShowWhenRoute
+            path="/reports-async"
+            component={ReportsAsync}
             additionalCondition={user => user.isAllowedView('reports')}
           />
 

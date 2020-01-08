@@ -30,8 +30,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
-import { validateUISchema as validateUISchemaV2 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF_Fields/V2';
-import { validateUISchema as validateUISchemaV3 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF_Fields/V3';
+import { validateUISchema } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import {
@@ -354,7 +353,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   )
   handleSavePublish = () => {
     const isEditExistingId = !!this.props.id;
-    const isPPMLIEnabled = this.props.user.isPPMLIEnabled;
     const { paymentPageEntity, FORM_ITEMS } = this.props;
     // console.log('Handle Create..', paymentPageEntity);
 
@@ -381,7 +379,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     FORM_ITEMS.forEach((fi, ix) => {
       fi.settings = fi.settings || {};
-      fi.settings.position = isPPMLIEnabled ? ix : ix + 1; // Updating the position of each item (both udf and amount fields)
+      fi.settings.position = ix; // Updating the position of each item (both udf and amount fields)
 
       if (isFormItemOfTypeAmount(fi)) {
         // Prepare payload for amount field (as extra fields aren't required to be sent)
@@ -436,20 +434,16 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     });
 
-    if (isPPMLIEnabled) {
-      if (!paymentPageItems.length) {
-        this.props.showNotification({
-          type: 'error',
-          message: 'Add at least 1 Price field',
-        });
+    if (!paymentPageItems.length) {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Add at least 1 Price field',
+      });
 
-        return;
-      }
+      return;
     }
 
-    const isValidSchema = isPPMLIEnabled
-      ? validateUISchemaV3(udf_schema)
-      : validateUISchemaV2(udf_schema);
+    const isValidSchema = validateUISchema(udf_schema);
 
     // console.log('udf_schema......', udf_schema);
 
@@ -481,41 +475,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       reqPayload.template_type = template_type;
     }
 
-    if (isPPMLIEnabled) {
-      reqPayload.settings.checkout_options = {
-        ...settings.checkout_options,
-      };
+    reqPayload.settings.checkout_options = {
+      ...settings.checkout_options,
+    };
 
-      reqPayload.settings.payment_button_label = settings.payment_button_label;
-
-      // Should exist only when props.user.isPPMLIEnabled = true
-      if (paymentPageItems.length) {
-        reqPayload.payment_page_items = paymentPageItems;
-      }
-    } else {
-      // Preparing the V2 request payload in V3 format
-      const amountField = {
-        item: {
-          name: 'Amount',
-          description: '',
-          amount: amount ? rupeesToPaise(amount) : null,
-        },
-        settings: {
-          position: '0', // Always 0 for V2. Also, for udf fields in V2, position is already starting from 1 (via ix + 1 on top)
-        },
-        mandatory: true, // Item is always mandatory
-        stock: quantity,
-        min_purchase: settings.allow_multiple_units ? 1 : null, // 1 => Treating this amount item as Counter. Can't be 0, cuz this is mandatory field.
-      };
-
-      if (isEditExistingId) {
-        amountField.id = paymentPageEntity.payment_page_items[0].id;
-      } else {
-        amountField.item.currency = currency;
-      }
-
-      reqPayload.payment_page_items = [amountField];
-    }
+    reqPayload.settings.payment_button_label = settings.payment_button_label;
+    reqPayload.payment_page_items = paymentPageItems;
 
     // console.log('REQ PAYLOAD...', reqPayload);
 
@@ -631,12 +596,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     if (paymentPageEntity) {
       isAllowedToSubmit = paymentPageEntity && paymentPageEntity.title;
-
-      // For PPV3, notification error will be thrown.
-      if (!user.isPPMLIEnabled) {
-        isAllowedToSubmit =
-          isAllowedToSubmit && paymentPageEntity.hasOwnProperty('amount');
-      }
 
       actionBtns = (
         <React.Fragment>

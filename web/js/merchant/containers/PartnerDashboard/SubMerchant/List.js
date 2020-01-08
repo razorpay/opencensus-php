@@ -377,10 +377,7 @@ export default class SubMerchantsList extends ListContainer {
                               media
                             </p>
 
-                            <div
-                              class="social-share-btn-grp"
-                              style={{ paddingTop: '20px' }}
-                            >
+                            <div class="social-share-btn-grp">
                               <CustomClipboard value={this.state.referralUrl}>
                                 <button
                                   class="btn btn-primary pull-right m-l"
@@ -390,15 +387,15 @@ export default class SubMerchantsList extends ListContainer {
                                 </button>
                               </CustomClipboard>
                               <img
-                                src="/dist/css/assets/onboarding/facebook.png"
+                                src="/img/social-media/fb.png"
                                 onClick={() => this.shareReferralOn('fb')}
                               />
                               <img
-                                src="/dist/css/assets/onboarding/twitter.png"
+                                src="/img/social-media/twitter.png"
                                 onClick={() => this.shareReferralOn('twitter')}
                               />
                               <img
-                                src="/dist/css/assets/onboarding/whatsapp.png"
+                                src="/img/social-media/whatsapp.png"
                                 onClick={() => this.shareReferralOn('whatsapp')}
                               />
                             </div>
@@ -437,11 +434,10 @@ const ReferalBox = ({ closeModal, referralUrl, shareReferralOn }) => (
     </div>
     <div style={{ padding: '14px' }}>
       <p>
-        Share the following link to your merchants and{' '}
-        <strong>earn 0.1% commission on every payment</strong> received by your
-        merchants.
+        You <strong>get 0.1% commission for every transaction</strong> done by
+        merchant who signs up with this link.
       </p>
-      <div class="input-group">
+      <div class="input-group" style={{ marginTop: '20px' }}>
         <CustomClipboard value={referralUrl}>
           <input
             class="form-control input"
@@ -459,26 +455,24 @@ const ReferalBox = ({ closeModal, referralUrl, shareReferralOn }) => (
           </button>
         </CustomClipboard>
       </div>
-      <div
-        class="social-share-btn-grp"
-        style={{
-          paddingTop: '40px',
-          display: 'flex',
-          justifyContent: 'space-around',
-        }}
-      >
-        <strong>
-          <p>Or Share Via</p>
-        </strong>
-        <a href="#" onClick={() => shareReferralOn('fb')}>
-          <img src="/dist/css/assets/onboarding/facebook.png" />
-        </a>
-        <a href="#" onClick={() => shareReferralOn('twitter')}>
-          <img src="/dist/css/assets/onboarding/twitter.png" />
-        </a>
-        <a href="#" onClick={() => shareReferralOn('whatsapp')}>
-          <img src="/dist/css/assets/onboarding/whatsapp.png" />
-        </a>
+      <div class="social-share-btn-grp">
+        <div>
+          <strong>
+            <p>Or Share Via</p>
+          </strong>
+        </div>
+        <img
+          src="/img/social-media/fb.png"
+          onClick={() => shareReferralOn('fb')}
+        />
+        <img
+          src="/img/social-media/twitter.png"
+          onClick={() => this.shareReferralOn('twitter')}
+        />
+        <img
+          src="/img/social-media/whatsapp.png"
+          onClick={() => this.shareReferralOn('whatsapp')}
+        />
       </div>
     </div>
   </div>

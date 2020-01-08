@@ -397,6 +397,10 @@ export default class User {
     return this.getExpStatus('reminders');
   }
 
+  get isAsyncReportsEnabled() {
+    return this.getExpStatus('async_reports');
+  }
+
   get getPaymentLinkCustomizedFormFields() {
     return window.pl_customized_form_fields;
   }
@@ -411,11 +415,6 @@ export default class User {
 
   get isEnhancedEPOSEnabled() {
     return this.getExpStatus('sellerapp_plus');
-  }
-
-  // Payment pages multiple line items
-  get isPPMLIEnabled() {
-    return this.getExpStatus('paymentpages_mli');
   }
 
   get isMobileHotjarSurveyEnabled() {

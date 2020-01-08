@@ -12,6 +12,7 @@ import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
+import { track } from './ga.js';
 
 @withRouter
 @connect(
@@ -67,6 +68,10 @@ export default class BaseScreen extends React.Component {
       fbData: 'partner_activation_complete',
       liData: 1668324,
     });
+    track({
+      eventAction: 'T&C Page',
+      eventLabel: 'Partner Onboarding | Accept T&C',
+    });
     this.closeTransaction('merchant/partner_type', {
       partner_type: this.state.role,
     });
@@ -85,6 +90,10 @@ export default class BaseScreen extends React.Component {
     fireAnalyticsEvents({
       fbData: 'partner_activation_started',
       liData: 1668340,
+    });
+    track({
+      eventAction: 'New User 1st Screen',
+      eventLabel: 'Partner Onboarding | Next',
     });
   };
 
