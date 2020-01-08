@@ -339,10 +339,6 @@ class Core extends Base\Core
         // For non-Yesbank, we will not get public_failure_reason
         $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
 
-        $ftaBankStatusCode = $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null;
-
-        $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
-
         $payout->setUtr($ftaData[Attempt\Constants::UTR]);
 
         $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
@@ -359,7 +355,10 @@ class Core extends Base\Core
             $payout->setMode($ftaData[Attempt\Constants::MODE]);
         }
 
-        $payout->setFailureReason($ftaFailureReason);
+        if (empty($ftaFailureReason) === false)
+        {
+            $payout->setFailureReason($ftaFailureReason);
+        }
 
         $this->repo->saveOrFail($payout);
     }

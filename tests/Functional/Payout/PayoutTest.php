@@ -1926,4 +1926,27 @@ class PayoutTest extends TestCase
 
         $this->assertEquals(1, $fta['is_fts']);
     }
+
+    public function testPublicErrorCodeMappingBeforeFtaRecon()
+    {
+        $this->testCreatePayout();
+
+         $payout = $this->getDbLastEntity('payout');
+
+         $payoutId = $payout->getId();
+
+         $utr = $payout->getUtr();
+
+         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => '',
+            'bank_status_code'  => 'YB_NS_E1028',
+            'utr'               => $utr,
+            'remarks'           => 'testing failed mapping',
+        ]);
+
+         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
+    }
 }
