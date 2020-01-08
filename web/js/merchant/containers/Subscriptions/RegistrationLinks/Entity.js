@@ -177,13 +177,18 @@ export default class RegistrationLinkEntityContainer extends React.Component {
   };
 
   render() {
-    const { loading: isLoading, entity, error } = this.props;
+    const { loading: isLoading, entity, error } = this.props,
+      { subscription_registration } = entity;
 
     const isSmsOrEmailSent =
         entity.sms_status === 'sent' || entity.email_status === 'sent',
       isIssued = entity.status === 'issued',
+      isSubscriptionRegistrationCreated =
+        subscription_registration.status === 'created',
       isTotalAmountPaid = entity.amount === entity.amount_paid,
       isIssuedAndTotalAmountNotPaid = isIssued && !isTotalAmountPaid;
+
+    const isResendAllowed = isSubscriptionRegistrationCreated && isIssued;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -195,7 +200,7 @@ export default class RegistrationLinkEntityContainer extends React.Component {
           <div class="panel panel-default SliderPanel RegistrationLinks--Details">
             <div class="panel-heading">
               {entity.id}
-              {isIssuedAndTotalAmountNotPaid && (
+              {isResendAllowed && (
                 <div class="btn-toolbar pull-right">
                   <button
                     onClick={this.openResendLinkModal}
