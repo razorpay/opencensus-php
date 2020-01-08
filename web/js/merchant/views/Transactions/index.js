@@ -91,11 +91,10 @@ export default class TransactionsContainer extends Component {
             <NavLink to="/orders">Orders</NavLink>
           </ShowWhen>
           <NavLink to="/disputes">Disputes</NavLink>
-          {this.props.user.isOndemandSettlementEnabled && (
-            <ShowWhen myRole="owner admin finance">
+          {this.props.user.isOndemandSettlementEnabled &&
+            (() => this.props.user.isAllowedView('early_settlement')) && (
               <ScheduledBanner fromWhere="Transactions" />
-            </ShowWhen>
-          )}
+            )}
           {settlement_ux_revamp && no_settlement ? (
             <div class="text-right" style={{ width: '100%' }}>
               {no_settlement.caption}

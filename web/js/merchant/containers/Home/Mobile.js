@@ -137,19 +137,18 @@ class AnalyticsMobile extends Component {
               </b>
             </div>
             <div className="pull-right">
-              {this.props.user.isOndemandSettlementEnabled ? (
-                <ShowWhen myRole="owner admin finance">
-                  <Button.Secondary
-                    class="settle-btn"
-                    onClick={this.showOndemandSettlementForm}
-                    disabled={
-                      current_balance.loading ||
-                      current_balance.data.balance < 100
-                    }
-                  >
-                    Settle Now
-                  </Button.Secondary>
-                </ShowWhen>
+              {this.props.user.isOndemandSettlementEnabled &&
+              (() => this.props.user.isAllowedView('early_settlement')) ? (
+                <Button.Secondary
+                  class="settle-btn"
+                  onClick={this.showOndemandSettlementForm}
+                  disabled={
+                    current_balance.loading ||
+                    current_balance.data.balance < 100
+                  }
+                >
+                  Settle Now
+                </Button.Secondary>
               ) : (
                 <Link className="pull-right" to="/settlements">
                   <span
