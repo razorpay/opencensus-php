@@ -37,6 +37,8 @@ import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBann
 import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import Time from 'common/ui/Time';
+import { fetchBalanceConfig } from 'merchant/reducers/home';
+
 @withRouter
 @connect(
   state => ({
@@ -57,6 +59,7 @@ import Time from 'common/ui/Time';
     fetchSchedule,
     fetchSettlementAmount,
     fetchHolidayList,
+    fetchBalanceConfig,
   }
 )
 export default class SettlementsListContainer extends ListContainer {
@@ -110,6 +113,7 @@ export default class SettlementsListContainer extends ListContainer {
 
     this.props.fetchCurrentBalance();
     this.props.fetchSchedule();
+    this.props.fetchBalanceConfig();
 
     if (this.props.location.hash === '#requestearlyaccess') {
       this.showRequestEarySettlementForm();

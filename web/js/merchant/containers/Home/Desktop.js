@@ -107,6 +107,7 @@ class AnalyticsDesktop extends Component {
       paymentInsightsTitle,
       recentActivityTitle,
       trafficSectionTitle,
+      merchantBalanceConfigs,
     } = this.props;
 
     const { settlement_ux_revamp } = config.config;

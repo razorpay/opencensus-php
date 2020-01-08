@@ -656,6 +656,7 @@ export default class HomeContainer extends Component {
       showKYCStatus,
       kycStatusModalType,
       settlement_amount,
+      merchantBalanceConfigs,
     } = this.props;
 
     const { activation_flow } = user;
@@ -719,6 +720,7 @@ export default class HomeContainer extends Component {
       recentActivityTitle,
       trafficSectionTitle,
       settlement_amount,
+      merchantBalanceConfigs,
     };
 
     const { dismissDiwaliPromotion, hideDiwaliPromotion } = this.state;
