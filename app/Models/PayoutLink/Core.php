@@ -41,6 +41,7 @@ class Core extends Base\Core
     const OK                      = 'OK';
     const PAYOUT_LINK_ID          = 'payout_link_id';
     const TWO_LACS                =  20000000;
+    const ONE_LAC                 =  10000000;
     const MESSAGE                 = 'message';
     const SUCCESS                 = 'success';
     const MUTEX_TIMEOUT           = 60;
@@ -463,9 +464,16 @@ class Core extends Base\Core
         return $data;
     }
 
+    /**
+     * 1. Setting is enabled
+     * 2. Is not RBL
+     * 3. Amount less than 1 lac
+     * @param Entity $payoutLink
+     * @return bool
+     */
     protected function allowUpi(Entity $payoutLink)
     {
-        $channelSupportUpi = true;
+        $channelSupportsUpi = true;
 
         $settingsAccessor = $this->getSettingsAccessor($this->merchant);
 
@@ -475,10 +483,12 @@ class Core extends Base\Core
 
         if ($bankingAccount->getChannel() === Channel::RBL)
         {
-            $channelSupportUpi = false;
+            $channelSupportsUpi = false;
         }
 
-        return $upiEnabledInSettings and $channelSupportUpi;
+        $amountLessThanLac = $payoutLink->getAmount() < self::ONE_LAC ? true : false;
+
+        return $upiEnabledInSettings and $channelSupportsUpi and $amountLessThanLac;
     }
 
     protected function getMaskedFundAccountDetails(FundAccountEntity $fundAccount = null)
