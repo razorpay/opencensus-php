@@ -14,7 +14,6 @@ use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
-use RZP\Models\Vpa\Core;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\Type;
 use RZP\Models\Settlement;
@@ -30,7 +29,6 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\Payment\Refund\Validator;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
@@ -1930,13 +1928,6 @@ trait Refund
     protected function loadFTADataForScroogeRefund(
         array &$scroogeData, Payment\Refund\Entity $refund, Payment\Entity $payment, array $input)
     {
-        if (isset($input['vpa']) === true)
-        {
-            $scroogeData['fta_data']['vpa'] = $input['vpa'];
-
-            return;
-        }
-
         // Shouldn't enter this flow once instant refund fails and load fta data from input
         if (($refund->isRefundSpeedInstant() === true) and ($refund->getSpeedProcessed() !== RefundSpeed::NORMAL))
         {
@@ -1977,6 +1968,15 @@ trait Refund
         if (empty($bankAccountInput) === false)
         {
             $scroogeData['fta_data']['bank_account'] = $bankAccountInput;
+
+            return;
+        }
+
+        $vpaInput = $this->getVpaInput($payment, $input);
+
+        if (empty($vpaInput) === false)
+        {
+            $scroogeData['fta_data']['vpa'] = $vpaInput;
         }
     }
 
@@ -2448,6 +2448,25 @@ trait Refund
 
     /**
      * @param Payment\Entity $payment
+     * @return bool
+     */
+    protected function isPaymentUpiTransferAndUpiTransferRefund(Payment\Entity $payment): bool
+    {
+        if (($payment->isUpiTransfer() === true) and
+            (empty($payment->hasReceiver()) === false) and
+            (empty($payment->upiTransfer) === false) and
+            ($this->merchant->isFeatureEnabled(Feature::VIRTUAL_ACCOUNTS) === true) and
+            (Payment\Gateway::isValidUpiTransferGateway($payment->getGateway())) and
+            (in_array($payment->getGateway(), Payment\Gateway::UPI_TRANSFER_REFUND_GATEWAYS, true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Payment\Entity $payment
      * @param RefundEntity $refund
      * @return bool
      * @throws \Exception
@@ -2693,6 +2712,24 @@ trait Refund
         return $input;
     }
 
+    protected function getVpaInput(Payment\Entity $payment, array $data = [])
+    {
+        $input = null;
+
+        if (isset($data['vpa']) === true)
+        {
+            $input = $data['vpa'];
+        }
+        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
+        {
+            $input = [
+                VPA\Entity::ADDRESS => $payment->getVpa(),
+            ];
+        }
+
+        return $input;
+    }
+
     protected function getFundTransferAttemptInput(Payment\Entity $payment, $data = []): array
     {
         $input = [
@@ -2795,7 +2832,6 @@ trait Refund
             RefundEntity::GATEWAY        => $payment->getGateway(),
             RefundConstants::METHOD      => $payment->getMethod(),
             RefundConstants::AMOUNT      => $payment->getAmount(),
-            RefundConstants::MERCHANT_ID => $payment->getMerchantId(),
         ];
 
         if ($payment->getMethod() === Payment\Method::CARD)
@@ -2819,7 +2855,7 @@ trait Refund
             }
         }
 
-        $response = $this->app['scrooge']->instantRefundsDecisioningHelper($queryParams);
+        $response = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
 
         // If the mode is empty we are decisioning the speed to normal
         (empty($response[RefundConstants::MODE]) === false) ?

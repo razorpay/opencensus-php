@@ -46,6 +46,7 @@ class Table
     const PAYMENT_PAGE_ITEM     = 'payment_page_items';
     const FUND_ACCOUNT          = 'fund_accounts';
     const ENTITY_ORIGIN         = 'entity_origins';
+    const OFFLINE_DEVICE        = 'offline_devices';
 
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
@@ -74,6 +75,7 @@ class Table
     const APP_TOKEN                 = 'customer_apps';
     const BANK_ACCOUNT              = 'bank_accounts';
     const SETTLEMENT_BUCKET         = 'settlement_bucket';
+    const SETTLEMENT_TRANSFER       = 'settlement_transfer';
     const SETTLEMENT_DESTINATION    = 'settlement_destination';
 
     // Subscriptions Tables
@@ -118,6 +120,7 @@ class Table
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
     const REFERRALS                  = 'referrals';
     const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
+    const COMMISSION_INVOICE         = 'commission_invoice';
 
     const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';
@@ -232,6 +235,10 @@ class Table
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
     const P2P_CONCERN           = 'p2p_concerns';
 
+    // Payments UPI Service, Store in different database
+    const PAYMENTS_UPI_VPA              = 'vpas';
+    const PAYMENTS_UPI_BANK_ACCOUNT     = 'bank_accounts';
+    const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'vpas_bank_accounts';
 
     const CREDITNOTE           = 'creditnote';
 

@@ -26,6 +26,8 @@ class PaymentLinkDefaultOption implements DefaultOption
                     'first_payment_min_amount' => 'Minimum Amount Due',
                     'prefill' =>
                         array (
+                                      'select_partial' => "0",
+                                      'select_full' => "0",
 //                                    'method' => 'Use if sent',
 //                                    'amount' => 'Use if sent',
 //                                    'wallet' => 'Use if sent',
@@ -92,8 +94,9 @@ class PaymentLinkDefaultOption implements DefaultOption
                     'partial_payment' =>
                         array (
                             'min_amount_label' => 'Minimum first amount',
-                            'total_amount_label' => 'Make payment in parts',
-                            'total_amount_description' => 'Pay some now and remaining later'
+                            'partial_amount_label' => 'Make payment in parts',
+                            'partial_amount_description' => 'Pay some now and the remaining later',
+                            'full_amount_label' => 'Pay in full'
                         ),
                 ),
             'order' =>
@@ -127,7 +130,8 @@ class PaymentLinkDefaultOption implements DefaultOption
                     'show_preferences' =>
                         array (
                             'issued_to'     => "1"
-                        )
+                        ),
+                    'enable_embedded_checkout' => "0"
                 )
         );
     }

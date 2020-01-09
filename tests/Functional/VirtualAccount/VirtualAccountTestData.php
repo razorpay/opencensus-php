@@ -156,6 +156,24 @@ return [
         ],
     ],
 
+    'testVaOfflineQRGeneration' => [
+        'request' => [
+            'url'     => '/virtual_accounts/offline_qr',
+            'method'  => 'POST',
+            'content' => [
+                'currency'      => 'INR',
+                'amount'        => 100,
+                'receipt'       => 'test_data',
+                'description'   => 'description',
+                'notifications' => [
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testFetchOrderWithVirtualAccountNoExpand' => [
         'request' => [
             'method'  => 'GET',
@@ -889,4 +907,47 @@ return [
         ],
     ],
 
+    'testOfflineQrCloseBy' => [
+        'request' => [
+            'url' =>'/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'description' => 'VA for tests',
+                'close_by' => '1577644500',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'close_by should be at least 15 minutes after current time',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOfflineVACreation' => [
+        'request' => [
+            'url' =>'/virtual_accounts/offline_qr',
+            'method' => 'post',
+            'content' => [
+                'description' => 'VA for tests',
+                'amount'      => 100,
+                'receipt'     => 'OfflineQrVa',
+                'currency'    => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'status' => 'active',
+                'closed_at' => null
+            ],
+        ]
+    ],
 ];

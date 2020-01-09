@@ -56,7 +56,14 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $paymentAmount = ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
 
-        if ($paymentAmount !== $this->getReconPaymentAmount($row))
+        // Ceil the amount
+        // BFL sends us the amount in Rs always.
+        // Ex: If amount is Rs 12002.04, BFL sends us Rs 12003
+        $paymentAmount = (int)(ceil($paymentAmount / 100) * 100);
+
+        $reconAmount = $this->getReconPaymentAmount($row);
+
+        if ($paymentAmount !== $reconAmount)
         {
             $this->messenger->raiseReconAlert(
                 [
@@ -64,7 +71,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
                     'payment_id'        => $this->payment->getId(),
                     'expected_amount'   => $paymentAmount,
-                    'recon_amount'      => $this->getReconPaymentAmount($row),
+                    'recon_amount'      => $reconAmount,
+                    'expected_amount_type'   => gettype($paymentAmount),
+                    'recon_amount_type'      => gettype($reconAmount),
                     'currency'          => $this->payment->getCurrency(),
                     'gateway'           => $this->gateway
                 ]);

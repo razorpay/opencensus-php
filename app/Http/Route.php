@@ -20,6 +20,7 @@ final class Route
         'account'                                  => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                 => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                          => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
+        'checkout_public_canary'                   => ['get',      'checkout/public/canary',                         'MerchantController@getCheckoutPublic'                              ],
 
         // callback_url case handler for automatic checkout
         'checkout_onyx'                            => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
@@ -1403,9 +1404,23 @@ final class Route
         'merchant_inheritance_parent_set_bulk'    => ['post',      'merchants/inheritance_parent/bulk',                          'MerchantController@postInheritanceParentBulk'             ],
         'merchant_inheritance_parent_delete'      => ['delete',    'merchants/{id}/inheritance_parent',                          'MerchantController@deleteInheritanceParent'               ],
 
+         //route for sending request to server from device
+        'create_virtual_account_from_order'       => ['post',       'virtual_accounts/offline_qr',                              'VirtualAccountController@createOfflineQr'                 ],
+
         // Route for Success Rate Global Configurations
         'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
         'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
+
+        // Offline
+        'fetch_offline_device_multiple'           => ['get',       'offlines/devices',                                          'OfflineController@fetchMultiple'                              ],
+        'register_offline_device'                 => ['post',      'offlines/devices/register',                                 'OfflineController@registerDevice'                             ],
+        'link_offline_device'                     => ['post',      'offlines/devices/link',                                     'OfflineController@linkDevice'                                 ],
+
+        'activate_test_offline_device'            => ['post',      't/offlines/devices/activate/initiate',                         'OfflineController@initiateDeviceActivationTest'            ],
+        'activate_live_offline_device'            => ['post',      'l/offlines/devices/activate/initiate',                         'OfflineController@initiateDeviceActivationLive'            ],
+        'offline_qr_poll_test_order_status'       => ['get',       't/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusTest'                  ],
+        'offline_qr_poll_live_order_status'       => ['get',       'l/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusLive'                  ],
+
     ];
 
     public static $public = [
@@ -1716,6 +1731,11 @@ final class Route
         'merchant_fetch_schedule_tasks',
         'setl_holidays',
         'fb_setl_fetch_transactions',
+        'create_virtual_account_from_order',
+
+        // Offline QR
+        'link_offline_device',
+        'fetch_offline_device_multiple',
     ];
 
     // Only routes defined in internalApps go here
@@ -2690,13 +2710,16 @@ final class Route
         'merchant_inheritance_parent_fetch',
         'merchant_inheritance_parent_set',
         'merchant_inheritance_parent_delete',
-        
+
         'add_merchant_balance_config',
         'edit_merchant_balance_config',
 
         // SuccessRate Config Routes
         'update_sr_level_global_config',
         'get_all_sr_level_global_config',
+
+        // Offline QR
+        'register_offline_device',
     ];
 
     public static $routePermission = [
@@ -3261,6 +3284,8 @@ final class Route
         'update_sr_level_global_config'             => '*',
         //'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
         'get_all_sr_level_global_config'            => '*',
+
+        'register_offline_device'                   => '*',
     ];
 
     public static $direct = [
@@ -3290,6 +3315,7 @@ final class Route
         'subscription_fetch_hosted_live',
         'sms_callback',
         'checkout_public',
+        'checkout_public_canary',
         'mock_hdfc_3dsecure',
         'mock_ebs_payment',
         'transparent_redirect_get',
@@ -3334,6 +3360,12 @@ final class Route
         'gateway_payment_callback_upi_airtel',
         'payment_page_create_order',
         'payment_page_create_order_option',
+
+        // Offline QR
+        'activate_test_offline_device',
+        'activate_live_offline_device',
+        'offline_qr_poll_test_order_status',
+        'offline_qr_poll_live_order_status',
     ];
 
     /**
@@ -3655,6 +3687,7 @@ final class Route
             'partner_submerchant_map',
             'iin_batch_process_record',
             'pricing_add_plan_rule_bulk',
+            'subscription_registration_create_links',
             'virtual_account_create',
             'oauth_token_create',
             'merchant_inheritance_parent_set_bulk',
@@ -3780,6 +3813,7 @@ final class Route
         'merchant_activation_update_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
         'merchant_activation_status_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
         'enable_es_scheduled'                  => [Feature::ES_ON_DEMAND],
+        'create_virtual_account_from_order'    => [Feature::OFFLINE_PAYMENTS],
     ];
 
     /*

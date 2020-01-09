@@ -7,138 +7,181 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Olamoney;
 use RZP\Gateway\Wallet\Olamoney\Command;
+use RZP\Gateway\Wallet\Olamoney\ResponseCode;
 use RZP\Gateway\Wallet\Olamoney\RequestFields;
 use RZP\Gateway\Wallet\Olamoney\ResponseFields;
 use RZP\Gateway\Wallet\Olamoney\Status;
 use RZP\Models\Payment;
 use phpseclib\Crypt\RSA;
 use phpseclib\Crypt\AES;
+use RZP\Trace\TraceCode;
 
 class Server extends Base\Mock\Server
 {
-    public function authorize($input)
+    public function eligibility($input)
     {
-        if (isset($input['signature']))
+        $content = json_decode($input, true);
+
+        if ($content[RequestFields::USER_INFO][RequestFields::MOBILE_NUMBER] === '9008129412')
         {
-            return $this->authorizeV2($input);
+            $responseContent[ResponseFields::ELIGIBILITY] = [ResponseFields::STATUS_CODE => 'OC_011'];
+        }
+        elseif ($content[RequestFields::USER_INFO][RequestFields::MOBILE_NUMBER] === '9011219027')
+        {
+            $responseContent[ResponseFields::ELIGIBILITY] = [ResponseFields::STATUS_CODE => 'OC_010'];
+        }
+        else
+        {
+            $responseContent[ResponseFields::ELIGIBILITY] = [ResponseFields::STATUS_CODE => 'OC_000'];
         }
 
-        parent::authorize($input);
+        return $this->makeResponse($responseContent);
+    }
 
-        $bill = RequestFields::BILL;
+    public function authorize($input)
+    {
+        if (gettype($input) === 'string')
+        {
+            return $this->eligibility($input);
+        }
+        else
+        {
+            if (isset($input['signature']))
+            {
+                return $this->authorizeV2($input);
+            }
 
-        $input[$bill] = json_decode(base64_decode(urldecode($input[$bill])), true);
+            parent::authorize($input);
+
+            $bill = RequestFields::BILL;
+
+            $input[$bill] = json_decode(base64_decode(urldecode($input[$bill])), true);
 
 
-        $this->validateActionInput($input, $input[$bill][RequestFields::COMMAND]);
+            $this->validateActionInput($input, $input[$bill][RequestFields::COMMAND]);
 
-        $bill = $input['bill'];
+            $bill = $input['bill'];
 
-        $content = [
-            ResponseFields::TYPE              => 'credit',
-            ResponseFields::STATUS            => Status::SUCCESS,
-            ResponseFields::MERCHANT_BILL_ID  => $bill[RequestFields::MERCHANT_REFERENCE_ID],
-            ResponseFields::TRANSACTION_ID    => 'ola_txn_id',
-            ResponseFields::AMOUNT            => $bill[RequestFields::AMOUNT],
-            ResponseFields::COMMENTS          => $bill[RequestFields::COMMENTS],
-            ResponseFields::UDF               => $bill[RequestFields::UDF],
-            ResponseFields::TIMESTAMP         => time(),
-        ];
+            $content = [
+                ResponseFields::TYPE              => 'credit',
+                ResponseFields::STATUS            => Status::SUCCESS,
+                ResponseFields::MERCHANT_BILL_ID  => $bill[RequestFields::MERCHANT_REFERENCE_ID],
+                ResponseFields::TRANSACTION_ID    => 'ola_txn_id',
+                ResponseFields::AMOUNT            => $bill[RequestFields::AMOUNT],
+                ResponseFields::COMMENTS          => $bill[RequestFields::COMMENTS],
+                ResponseFields::UDF               => $bill[RequestFields::UDF],
+                ResponseFields::TIMESTAMP         => time(),
+            ];
 
-        $content[ResponseFields::HASH] = $this->generateHash($content);
+            $content[ResponseFields::HASH] = $this->generateHash($content);
 
-        $paymentId = $input['paymentId'];
+            $paymentId = $input['paymentId'];
 
-        $publicId = $this->getSignedPaymentId($paymentId);
+            $publicId = $this->getSignedPaymentId($paymentId);
 
-        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
+            $url = $this->route->getPublicCallbackUrlWithHash($publicId);
 
-        $url .= '?' . http_build_query($content);
+            $url .= '?' . http_build_query($content);
 
-        return \Redirect::to($url);
+            return \Redirect::to($url);
+        }
     }
 
     public function authorizeV2($input)
     {
-        parent::authorize($input);
-
-        $content = [
-            ResponseFields::TYPE              => 'debit',
-            ResponseFields::STATUS            => Status::SUCCESS,
-            ResponseFields::MERCHANT_BILL_ID  => $input[RequestFields::UNIQUE_ID],
-            ResponseFields::TRANSACTION_ID    => 'dqtf-j717-qlfb',
-            ResponseFields::AMOUNT            => $input[RequestFields::AMOUNT],
-            ResponseFields::COMMENTS          => $input[RequestFields::COMMENTS],
-            ResponseFields::UDF               => $input[RequestFields::UDF],
-            ResponseFields::IS_CASHBACK_ATTEMPTED =>"false",
-            ResponseFields::IS_CASHBACK_SUCCESSFUL =>"false",
-            ResponseFields::TIMESTAMP         => time(),
-            ResponseFields::SALT              => 'merchant_salt'
-
-        ];
-
-        $this->content($content);
-
-        $content[ResponseFields::HASH] = $this->generateHash($content);
-
-        $uuid = 'dummyuuid';
-        $encryptedXTtenantKey = $this->encryptXTenantKey($uuid.':'.time());
-
-        if ($content[ResponseFields::TRANSACTION_ID] == 'invalid_body')
+        if (gettype($input) === 'string')
         {
-            $output[ResponseFields::BODY] = 'Invalid Body';
+            return $this->eligibility($input);
         }
+        else
+        {
+            parent::authorize($input);
 
-        $output = [
-            ResponseFields::X_TENANT     => 'Ola',
-            ResponseFields::X_TENANT_KEY => $encryptedXTtenantKey,
-            ResponseFields::X_AUTH_KEY   => $this->signTenantKey($encryptedXTtenantKey),
-            ResponseFields::BODY         => $this->encryptBody($content, $uuid)
-        ];
+            $content = [
+                ResponseFields::TYPE              => 'debit',
+                ResponseFields::STATUS            => Status::SUCCESS,
+                ResponseFields::MERCHANT_BILL_ID  => $input[RequestFields::UNIQUE_ID],
+                ResponseFields::TRANSACTION_ID    => 'dqtf-j717-qlfb',
+                ResponseFields::AMOUNT            => $input[RequestFields::AMOUNT],
+                ResponseFields::COMMENTS          => $input[RequestFields::COMMENTS],
+                ResponseFields::UDF               => $input[RequestFields::UDF],
+                ResponseFields::IS_CASHBACK_ATTEMPTED =>"false",
+                ResponseFields::IS_CASHBACK_SUCCESSFUL =>"false",
+                ResponseFields::TIMESTAMP         => time(),
+                ResponseFields::SALT              => 'merchant_salt'
 
-        $paymentId = $input['paymentId'];
+            ];
 
-        $publicId = $this->getSignedPaymentId($paymentId);
+            $this->content($content);
 
-        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
+            $content[ResponseFields::HASH] = $this->generateHash($content);
 
-        $url .= '?' . http_build_query($output);
+            $uuid = 'dummyuuid';
+            $encryptedXTtenantKey = $this->encryptXTenantKey($uuid.':'.time());
 
-        return \Redirect::to($url);
+            if ($content[ResponseFields::TRANSACTION_ID] == 'invalid_body')
+            {
+                $output[ResponseFields::BODY] = 'Invalid Body';
+            }
+
+            $output = [
+                ResponseFields::X_TENANT     => 'Ola',
+                ResponseFields::X_TENANT_KEY => $encryptedXTtenantKey,
+                ResponseFields::X_AUTH_KEY   => $this->signTenantKey($encryptedXTtenantKey),
+                ResponseFields::BODY         => $this->encryptBody($content, $uuid)
+            ];
+
+            $paymentId = $input['paymentId'];
+
+            $publicId = $this->getSignedPaymentId($paymentId);
+
+            $url = $this->route->getPublicCallbackUrlWithHash($publicId);
+
+            $url .= '?' . http_build_query($output);
+
+            return \Redirect::to($url);
+        }
     }
 
     public function otpGenerate($input)
     {
-        $this->validateActionInput($input, 'otpGenerate');
-
-        if (in_array($input['phone'], ['9008119029', '9022219029']))
+        if (gettype($input) === 'string')
         {
-            $responseContent = [ResponseFields::STATUS => Status::ERROR];
-        }
-        elseif ($input['phone'] === '9022219027')
-        {
-            $responseContent = [
-                ResponseFields::STATUS  => Status::FAILED,
-                ResponseFields::MESSAGE =>
-                    'The email ID provided is already registered with us. Please try with a different email ID.',
-            ];
+            return $this->eligibility($input);
         }
         else
         {
-            $responseContent = [
-                ResponseFields::STATUS    => Status::SUCCESS,
-                ResponseFields::MESSAGE   => '',
-            ];
+            $this->validateActionInput($input, 'otpGenerate');
+
+            if (in_array($input['phone'], ['9008119029', '9022219029']))
+            {
+                $responseContent = [ResponseFields::STATUS => Status::ERROR];
+            }
+            elseif ($input['phone'] === '9022219027')
+            {
+                $responseContent = [
+                    ResponseFields::STATUS  => Status::FAILED,
+                    ResponseFields::MESSAGE =>
+                        'The email ID provided is already registered with us. Please try with a different email ID.',
+                ];
+            }
+            else
+            {
+                $responseContent = [
+                    ResponseFields::STATUS    => Status::SUCCESS,
+                    ResponseFields::MESSAGE   => '',
+                ];
+            }
+
+            $response = $this->makeResponse($responseContent);
+
+            if ($input['phone'] === '9022219029')
+            {
+                $response->setStatusCode(429);
+            }
+
+            return $response;
         }
-
-        $response = $this->makeResponse($responseContent);
-
-        if ($input['phone'] === '9022219029')
-        {
-            $response->setStatusCode(429);
-        }
-
-        return $response;
     }
 
     public function otpSubmit($input)

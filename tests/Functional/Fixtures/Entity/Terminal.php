@@ -428,7 +428,7 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedFssTerminal(array $attributes = [])
+    public function createSharedFssTerminal(array $attributes = [], $acquirer = 'barb')
     {
         $termId = \RZP\Models\Terminal\Shared::FSS_RAZORPAY_TERMINAL;
 
@@ -441,7 +441,7 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'FssBobDebit123',
             'gateway_terminal_password' => 'password',
             'gateway_secure_secret'     => '12345678',
-            'gateway_acquirer'          => 'barb',
+            'gateway_acquirer'          => $acquirer ?? 'barb',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

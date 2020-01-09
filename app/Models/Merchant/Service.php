@@ -313,6 +313,11 @@ class Service extends Base\Service
 
         $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $input)
         {
+            if (isset($input[Entity::INTERNATIONAL]) === true)
+            {
+                (new Detail\Core())->updateInternationalActivationFlow($merchant, $input[Entity::INTERNATIONAL]);
+            }
+
             $merchant = $this->core()->edit($merchant, $input);
 
             if (isset($input[Entity::FEE_BEARER]) === true)
@@ -578,16 +583,9 @@ class Service extends Base\Service
             return $balanceCollection->toArrayPublic();
         }
 
-        if (array_key_exists('type', $input) === true)
-        {
-            $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, $input['type']);
-
-            return $balance;
-        }
-
         $balance = $this->repo->balance->fetch($input, $merchantId);
 
-        return $balance->toArrayWithItems();
+        return $balance->toArrayPublic();
     }
 
     public function editAmountCredits($merchantId, $input)

@@ -80,6 +80,15 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('initiated', $token['recurring_status']);
     }
 
+    public function testPaymentWithDisplayFeature()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ENACH_INTERMEDIATE]);
+
+        $this->testPayment();
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::ENACH_INTERMEDIATE]);
+    }
+
     public function testPaymentAuthCard()
     {
         $payment                 = $this->getEmandatePaymentArray('YESB', 'debitcard', 0);

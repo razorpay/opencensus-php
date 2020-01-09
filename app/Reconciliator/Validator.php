@@ -91,7 +91,8 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_ALLAHABAD => ["/Recon file for [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
         RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY => ["/^Flexmoney Recon and Refund files/"],
         RequestProcessor\Base::PHONEPE            => [".*/Settlement Report/"],
-        RequestProcessor\Base::NETBANKING_KVB     => ["/Recon file [0-9]{2}.[0-9]{2}.20[0-9]{2}/"]
+        RequestProcessor\Base::NETBANKING_KVB     => ["/Recon file [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
+        RequestProcessor\Base::BAJAJFINSERV       => ["/Payment MIS RAZORPAY SOFTWARE PRIVATE LIMITED_ [0-9]{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) 20[0-9]{2}/"],
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -582,6 +583,15 @@ class Validator extends Base\Core
             RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY);
 
         return ($validSubject and $validBody);
+    }
+
+    public function validateBajajfinservEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::BAJAJFINSERV);
+
+        return ($validSubject);
     }
 
     /**

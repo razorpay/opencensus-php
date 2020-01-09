@@ -8,9 +8,11 @@ class Constants
     const WORLDLINE_ACTIVATION_NEXT_RETRY_MINS   =   20; // mins
 
     // Actions
-    const MERCHANT_ONBOARD = 'merchantOnboard';
-    const CREATE_TERMINAL = 'create_terminal';
-    const VERIFY_TERMINAL = 'verify_terminal';
+    const MERCHANT_ONBOARD      = 'merchantOnboard';
+    const CREATE_TERMINAL       = 'create_terminal';
+    const VERIFY_TERMINAL       = 'verify_terminal';
+    const DISABLE_TERMINAL      = 'disable_terminal';
+    const ENABLE_TERMINAL       = 'enable_terminal';
 
 
     // Request
@@ -44,6 +46,8 @@ class Constants
 
     const TERMINAL_ACTIVATION_SUCCESSFULL         =   'terminal_activation_successful';
     const TERMINAL_ACTIVATION_FAILED              =   'terminal_activation_failed';
+    const TERMINAL_DEACTIVATION_SUCCESSFUL        =   'terminal_deactivation_successful';
+    const TERMINAL_REACTIVATION_SUCCESSFUL        =   'terminal_reactivation_successful';
 
     // cron Response
     const ACTIVATED_TERMINALS                     =   'activated_terminals';

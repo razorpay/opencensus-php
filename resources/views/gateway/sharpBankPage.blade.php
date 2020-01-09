@@ -58,8 +58,11 @@
     </form>
     <script>
       document.forms[0].onclick = function(e) {
-        if (e.target.nodeName === 'BUTTON') {
-          var value = e.target.getAttribute('data-val');
+        var event = e || window.event;
+        var target = event.target || event.srcElement;
+
+        if (target.nodeName === 'BUTTON') {
+          var value = target.getAttribute('data-val');
           var em = document.querySelector('[name=emandate_success]');
           var success = document.querySelector('[name=success]');
           if (em) {

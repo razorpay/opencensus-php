@@ -493,4 +493,12 @@ return [
             ],
         ],
     ],
+
+    E::BALANCE => [
+        Type::PROXY_AUTH => [
+            [
+                'type' => 'banking'
+            ],
+        ],
+    ],
 ];
