@@ -214,14 +214,14 @@ export default class SettlementSchedule extends Component {
               <div style={{ marginTop: '15px' }}>
                 <button
                   onClick={this.viewHolidayList}
-                  style={{ width: '48%' }}
+                  style={{ width: '48%', margin: '0 1%' }}
                   class="btn btn-outline"
                 >
                   List of Bank Holidays
                 </button>
                 <a href="http://razorpay.com/settlement" target="_blank">
                   <button
-                    style={{ width: '48%', marginLeft: '5px' }}
+                    style={{ width: '48%', margin: '0 1%' }}
                     class="btn btn-primary"
                   >
                     Settlement Guide

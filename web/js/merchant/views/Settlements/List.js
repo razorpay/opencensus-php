@@ -348,6 +348,7 @@ export default class SettlementsListContainer extends ListContainer {
                           nextSettlement &&
                           !no_settlement && (
                             <span style={{ fontSize: '13px' }}>
+                              <span>&nbsp;</span>
                               <strong>
                                 <Amount
                                   value={

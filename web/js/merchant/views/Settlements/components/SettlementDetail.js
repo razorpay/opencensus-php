@@ -91,16 +91,52 @@ export default class SettlementDetail extends Component {
                 paddingTop: '20px',
               }}
             >
-              {isOnHold && (
-                <a href="https://razorpay.com/support/" target="_blank">
-                  <button class="btn btn-default">Contact Support</button>
-                </a>
-              )}
-              <a href="http://razorpay.com/settlement" target="_blank">
-                <button class="btn btn-primary">
+              <a
+                href="http://razorpay.com/settlement"
+                target="_blank"
+                style={{ width: '50%' }}
+              >
+                <button
+                  style={{
+                    marginTop: '15px',
+                    width: '96%',
+                    marginLeft: '1%',
+                    marginRight: '1%',
+                  }}
+                  class="btn btn-primary"
+                >
                   Settlement Guide <i class="i i-arrow-right" />
                 </button>
               </a>
+              {isOnHold && (
+                <>
+                  <div
+                    style={{
+                      margin: '17px 10px',
+                    }}
+                  >
+                    <b>OR</b>
+                  </div>
+                  <a
+                    href="https://razorpay.com/support/"
+                    target="_blank"
+                    style={{ width: '50%' }}
+                  >
+                    <button
+                      class="btn btn-primary"
+                      style={{
+                        marginTop: '15px',
+                        border: '0px',
+                        width: '96%',
+                        marginLeft: '1%',
+                        marginRight: '1%',
+                      }}
+                    >
+                      Contact Support
+                    </button>
+                  </a>
+                </>
+              )}
             </div>
           </Fragment>
         </div>
