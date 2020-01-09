@@ -64,6 +64,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_RECON_QUEUE_CPS_REQUEST                       = 'PAYMENT_RECON_QUEUE_CPS_REQUEST';
     const PAYMENT_RECON_QUEUE_CPS_SUCCESS                       = 'PAYMENT_RECON_QUEUE_CPS_SUCCESS';
     const PAYMENT_RECON_CPS_QUEUE_DELETE                        = 'PAYMENT_RECON_CPS_QUEUE_DELETE';
+    const PAYMENT_RECON_QUEUE_NBPLUS_REQUEST                    = 'PAYMENT_RECON_QUEUE_NBPLUS_REQUEST';
+    const PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS                    = 'PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS';
+    const PAYMENT_RECON_NBPLUS_QUEUE_DELETE                     = 'PAYMENT_RECON_NBPLUS_QUEUE_DELETE';
 
     const REFUND_QUEUE_SCROOGE_SUCCESS                          = 'REFUND_QUEUE_SCROOGE_SUCCESS';
     const REFUND_RECON_QUEUE_SCROOGE_SUCCESS                    = 'REFUND_RECON_QUEUE_SCROOGE_SUCCESS';
@@ -2211,6 +2214,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_PAYMENT_SERVICE_RETRY                            = 'CARD_PAYMENT_SERVICE_RETRY';
     const CARD_PAYMENT_SERVICE_DISABLING                        = 'CARD_PAYMENT_SERVICE_DISABLING';
     const CARD_PAYMENT_SERVICE_ERROR                            = 'CARD_PAYMENT_SERVICE_ERROR';
+
+    // Nb Plus Service
+    const NBPLUS_PAYMENT_SERVICE_REQUEST                        = 'NBPLUS_PAYMENT_SERVICE_REQUEST';
+    const NBPLUS_PAYMENT_SERVICE_RESPONSE                       = 'NBPLUS_PAYMENT_SERVICE_RESPONSE';
+    const NBPLUS_PAYMENT_SERVICE_ERROR                          = 'NBPLUS_PAYMENT_SERVICE_ERROR';
 
     // Batch Micro Service
     const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';
