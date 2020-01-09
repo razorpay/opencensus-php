@@ -268,6 +268,9 @@ export default class CreateOfferWizard extends React.Component {
         if (this.state.starts_at >= val) {
           return 'End date cannot be less that start date.';
         }
+        if (moment() > val) {
+          return 'End date cannot be in past.';
+        }
       },
       starts_at: val => {
         if (this.state.starts_at === null) return;
