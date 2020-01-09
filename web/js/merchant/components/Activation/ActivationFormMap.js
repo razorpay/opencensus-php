@@ -343,7 +343,9 @@ const businessDetails = [
       let contactName =
           this.state.dirty['contact_name'] || this.props.data['contact_name'],
         showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
-      return validateCompanyAB(value, contactName, showCompanyName);
+      return isUnregisteredBusiness(this)
+        ? false
+        : validateCompanyAB(value, contactName, showCompanyName);
     },
     _when: excludeFor_Indiv,
   },

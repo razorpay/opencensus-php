@@ -794,7 +794,9 @@ export default class ActivationWizard extends React.Component {
       (this.isUnregBiz
         ? promoterPan && !validatePANCardUnregBiz(promoterPan)
         : true) &&
-      !validateCompanyAB(businessName, contactName, showCompanyName)
+      (this.isUnregBiz
+        ? !validateCompanyAB(businessName, contactName, showCompanyName)
+        : true)
     );
   }
 
