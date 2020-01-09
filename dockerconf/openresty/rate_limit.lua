@@ -259,7 +259,7 @@ function M.rate_limit_ngx(ngx)
         ngx.log(ngx.ERR, "failed to release redis conn: ", err)
     end
 
-    if not rate_limit_res.allowed then
+    if rate_limit_res.allowed ~= 1 then
         if rate_limit_args.mock == 1 then
             -- Todo: Log warn with contextual information.
             return
