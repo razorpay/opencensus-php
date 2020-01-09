@@ -20,6 +20,7 @@ final class Route
         'account'                                  => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                 => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                          => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
+        'checkout_public_canary'                   => ['get',      'checkout/public/canary',                         'MerchantController@getCheckoutPublic'                              ],
 
         // callback_url case handler for automatic checkout
         'checkout_onyx'                            => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
@@ -3305,6 +3306,7 @@ final class Route
         'subscription_fetch_hosted_live',
         'sms_callback',
         'checkout_public',
+        'checkout_public_canary',
         'mock_hdfc_3dsecure',
         'mock_ebs_payment',
         'transparent_redirect_get',
