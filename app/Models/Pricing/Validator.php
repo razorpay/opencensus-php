@@ -432,11 +432,10 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateAddPlanRuleAmountRange($input)
+    protected function validateAddPlanRuleAmountRange($input)
     {
         if ((isset($input[Entity::AMOUNT_RANGE_ACTIVE]) === false) or
-            ($input[Entity::AMOUNT_RANGE_ACTIVE] === '0') or
-            ($input[Entity::AMOUNT_RANGE_ACTIVE] === false))
+            ($input[Entity::AMOUNT_RANGE_ACTIVE] === '0'))
         {
             return;
         }
@@ -624,25 +623,8 @@ class Validator extends Base\Validator
                 ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
                 ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
-                ($rule[Entity::AMOUNT_RANGE_ACTIVE] !== $newRule[Entity::AMOUNT_RANGE_ACTIVE] ))
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        PublicErrorDescription::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
-                }
-
-            if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
-                ($rule[Entity::PROCURER] === $newRule[Entity::PROCURER]) and
-                ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
-                ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
-                ($rule[Entity::PAYMENT_METHOD_SUBTYPE] === $newRule[Entity::PAYMENT_METHOD_SUBTYPE]) and
-                ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
-                ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
-                ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]) and
-                ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
-                ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
-                ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
-                ($newRule[Entity::AMOUNT_RANGE_ACTIVE] === true) and
-                ($rule[Entity::AMOUNT_RANGE_ACTIVE] === true))
+                (isset($newRule[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
+                (isset($rule[Entity::AMOUNT_RANGE_ACTIVE]) === true))
             {
                 $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
             }

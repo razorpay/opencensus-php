@@ -1407,6 +1407,16 @@ final class Route
         'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
         'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
 
+        // Offline
+        'fetch_offline_device_multiple'           => ['get',       'offlines/devices',                                          'OfflineController@fetchMultiple'                              ],
+        'register_offline_device'                 => ['post',      'offlines/devices/register',                                 'OfflineController@registerDevice'                             ],
+        'link_offline_device'                     => ['post',      'offlines/devices/link',                                     'OfflineController@linkDevice'                                 ],
+
+        'activate_test_offline_device'            => ['post',      't/offlines/devices/activate/initiate',                         'OfflineController@initiateDeviceActivationTest'            ],
+        'activate_live_offline_device'            => ['post',      'l/offlines/devices/activate/initiate',                         'OfflineController@initiateDeviceActivationLive'            ],
+        'offline_qr_poll_test_order_status'       => ['get',       't/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusTest'                  ],
+        'offline_qr_poll_live_order_status'       => ['get',       'l/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusLive'                  ],
+
     ];
 
     public static $public = [
@@ -1718,6 +1728,10 @@ final class Route
         'setl_holidays',
         'fb_setl_fetch_transactions',
         'create_virtual_account_from_order',
+
+        // Offline QR
+        'link_offline_device',
+        'fetch_offline_device_multiple',
     ];
 
     // Only routes defined in internalApps go here
@@ -2696,6 +2710,9 @@ final class Route
         // SuccessRate Config Routes
         'update_sr_level_global_config',
         'get_all_sr_level_global_config',
+
+        // Offline QR
+        'register_offline_device',
     ];
 
     public static $routePermission = [
@@ -3257,6 +3274,8 @@ final class Route
         'update_sr_level_global_config'             => '*',
         //'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
         'get_all_sr_level_global_config'            => '*',
+
+        'register_offline_device'                   => '*',
     ];
 
     public static $direct = [
@@ -3330,6 +3349,12 @@ final class Route
         'gateway_payment_callback_upi_airtel',
         'payment_page_create_order',
         'payment_page_create_order_option',
+
+        // Offline QR
+        'activate_test_offline_device',
+        'activate_live_offline_device',
+        'offline_qr_poll_test_order_status',
+        'offline_qr_poll_live_order_status',
     ];
 
     /**
@@ -3651,6 +3676,7 @@ final class Route
             'partner_submerchant_map',
             'iin_batch_process_record',
             'pricing_add_plan_rule_bulk',
+            'subscription_registration_create_links',
             'virtual_account_create',
             'oauth_token_create',
             'merchant_inheritance_parent_set_bulk',
