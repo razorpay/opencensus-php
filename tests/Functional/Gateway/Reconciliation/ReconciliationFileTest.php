@@ -613,6 +613,54 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus();
     }
 
+    public function testCardFssHdfcReconCpsPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_type']);
+
+        $gatewayPayment = $this->getLastEntity('card_fss', true);
+
+        $entries[] = $this->overrideCardFssPayment($gatewayPayment);
+
+        $this->fixtures->payment->edit($paymentEntity['id'], ['cps_route' => 2]);
+
+        $file = $this->writeToExcelFile($entries, 'AllTransaction', 'files/settlement', 'payment');
+
+        $this->runForFiles([$file], 'CardFssHdfc');
+
+        $updatedPayment = $this->getDbEntityById('payment', $response['id']);
+
+        $this->assertEquals($entries[0]['RRN'], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0]['Auth/Approval Code'], $updatedPayment['reference2']);
+
+        $updatedTransaction = $this->getLastEntity('transaction', true);
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
+        $this->assertNotNull($updatedTransaction['gateway_settled_at']);
+        $this->assertNotNull($updatedTransaction['gateway_fee']);
+        $this->assertNotNull($updatedTransaction['gateway_service_tax']);
+
+        $updatedGatewayPayment = $this->getLastEntity('card_fss', true);
+
+        $this->assertEquals($entries[0]['payment gateway transaction id'], $updatedGatewayPayment['tranid']);
+
+        $this->assertBatchStatus();
+    }
+
     public function testCardFssReconRefundFile()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1439,7 +1487,7 @@ class ReconciliationFileTest extends TestCase
             $paymentEntity = $this->getDbLastPayment();
         }
 
-        return $paymentEntity->toArrayAdmin();
+        return $this->getEntityById('payment', $paymentEntity->getId(), true);
     }
 
     private function getNewRefundEntity($captured = false)
@@ -1850,6 +1898,56 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
 
         $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    // Tests Hitachi international payment recon
+    public function testHitachiReconNonInrPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment = $this->getNewPaymentEntity(false,true);
+
+        // Making the payment entity's amount as half (suppose USD to INR rate was 50%)
+        $usdAmount = $payment['amount']/2;
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        // Make it international, convert currency as false
+        $this->fixtures->edit(
+            'payment',
+            $gatewayPayment['payment_id'],
+            [
+                'international'     => true,
+                'convert_currency'  => false,
+                'currency'          => 'USD',
+                'amount'            => $usdAmount,
+            ]);
+
+        $this->assertNull($payment['reference1']);
+
+        $row = $this->overrideHitachiPayment($gatewayPayment, ['auth_id' => $payment['reference2']]);
+
+        $row[HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT] /= 2;
+        $row[HitachiPaymentRecon::COLUMN_CURRENCY_CODE] = '840';
+
+        $entries[] = $row;
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi');
+
+        $updatedPayment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment['reference2']);
+
+        $this->assertTrue($updatedPayment['gateway_captured']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -2567,7 +2665,9 @@ class ReconciliationFileTest extends TestCase
 
     public function testFssBobPaymentReconFile()
     {
-        $this->fixtures->create('terminal:shared_fss_terminal');
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -2620,9 +2720,54 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testFssSbiPaymentReconFile()
+    {
+        $this->fixtures->terminal->createSharedFssTerminal([], 'sbin');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getNewPaymentEntity(false, true);
+
+        $this->assertNull($payment['reference1']);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('card_fss');
+
+        $this->fixtures->edit('card_fss', $gatewayPayment1['id'], ['ref' => null]);
+
+        $entries[] = $this->overrideFssSbiRecon($gatewayPayment1, $gatewayPayment1['payment_id']);
+
+        $file = $this->writeToCsvFile($entries, 'IPAYMIS_MID_Date');
+
+        $this->runForFiles([$file], 'CardFssSbi');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+        $this->assertNotNull($transactionEntity['settled_at']);
+        $this->assertNotNull($transactionEntity['gateway_fee']);
+        $this->assertNotNull($transactionEntity['gateway_service_tax']);
+
+        //Test We update payment reference2 from recon
+        $paymentEnity = $this->getDbLastEntity('payment');
+        $this->assertNotNull($paymentEnity['reference2']);
+
+        $gatewayFee = Helper::getIntegerFormattedAmount(abs($entries[0]['MTS_MSF_FIXFEE']));
+        $gst = Helper::getIntegerFormattedAmount(abs($entries[0]['VAT_AMT']));
+
+        // Test that the gateway fee and tax sum is as expected
+        $this->assertEquals( $gatewayFee + $gst, $transactionEntity->getGatewayFee());
+
+        $this->assertEquals($gst, $transactionEntity->getGatewayServiceTax());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testFssBobNewFormatPaymentReconFile()
     {
-        $this->fixtures->create('terminal:shared_fss_terminal');
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -2675,6 +2820,60 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    //
+    // Tests recon and gateway data update for cardfssbob payment
+    // which is being routed through Cards Payment Service (CPS).
+    //
+    public function testCardFssBobCpsReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getNewPaymentEntity(false, true);
+
+        $this->assertNull($payment['reference1']);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('card_fss');
+
+        $this->fixtures->edit('card_fss', $gatewayPayment['id'], ['ref' => null]);
+
+        // Make cps route = 2
+        $this->fixtures->payment->edit($payment['id'], ['cps_route' => 2]);
+
+        $headers[] = ['Merchant Setttlment' => '  '];
+
+        $headers[] = ['From Settlement' => ' To Settlement', '31-08-2018' => '31-08-2018'];
+
+        $file = $this->writeToCsvFile($headers, 'MerchantSettlementTransactionListing');
+
+        $entries[] = $this->overrideFssBobRecon($gatewayPayment, $gatewayPayment['payment_id']);
+
+        $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing', $file);
+
+        $this->runForFiles([$file], 'CardFssBob');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
+
+        $this->assertNotNull($transactionEntity['settled_at']);
+        $this->assertNotNull($transactionEntity['gateway_fee']);
+        $this->assertNotNull($transactionEntity['gateway_service_tax']);
+
+        //Test We update payment reference2 from recon
+        $paymentEnity = $this->getDbLastEntity('payment');
+        $this->assertNotNull($paymentEnity['reference2']);
+        $this->assertNotNull($paymentEnity['reference1']);
+
+        $reconRrn = trim(str_replace("'", '', $entries[0]['Retrieval Reference Number'] ?? null));
+
+        $this->assertEquals($reconRrn, $paymentEnity['reference1']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testHdfcIsgBharatQrReconRefund()
     {
         $this->fixtures->create('terminal:bharat_qr_isg_terminal');
@@ -2718,7 +2917,9 @@ class ReconciliationFileTest extends TestCase
 
     public function testFssBobRefundRecon()
     {
-        $this->fixtures->create('terminal:shared_fss_terminal');
+        $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -2927,13 +3128,36 @@ class ReconciliationFileTest extends TestCase
 
         $facade['Transaction Amount'] = number_format($gatewayPayment['amount'] / 100, 2);
 
-        $facade['Settlement Amount'] = $facade['Transaction Amount'] / 100;
+        $facade['Settlement Amount']  = $facade['Transaction Amount'] / 100;
 
         $facade['Auth/Approval Code'] = $gatewayPayment['auth'];
 
-        $facade['Merchant Track ID'] = "''". $entityId;
+        $facade['Merchant Track ID']  = "''". $entityId;
 
-        $facade['Transaction Type'] =  $transactionType;
+        $facade['Transaction Type']   =  $transactionType;
+
+        return $facade;
+    }
+
+    private function overrideFssSbiRecon(array $gatewayPayment, string $entityId, $transactionType = 'Purchase')
+    {
+        $facade = $this->testData['facades']['testFssSbiRecon'];
+
+        $facade['TXN_AMT']                  = number_format($gatewayPayment['amount'] / 100, 2);
+
+        $facade['TRANSACTION_TYPE']         = $transactionType;
+
+        $facade['PRCHS_ MERCHANT_TXNNO']    = $entityId;
+
+        $facade['MERCHANT_TXNNO']           = $entityId;
+
+        $facade['APPROVE_CODE']             = $gatewayPayment['auth'];
+
+        $facade['PRCHS_RRN']                = '01231232131';
+
+        $facade['VAT_AMT']                  = '0.00';
+        $facade['MTS_MSF_FIXFEE']           = '0.00';
+        $facade['MTS_TOTL_CSF_AMT']         = '0.00';
 
         return $facade;
     }

@@ -27,6 +27,7 @@ use RZP\Models\User\Role;
 use RZP\Constants\Product;
 use RZP\Jobs\MerchantSync;
 use RZP\Models\BankAccount;
+use RZP\Models\Admin\Group;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Action;
@@ -117,12 +118,35 @@ class Core extends Base\Core
 
         $this->upsertLegalEntity($merchant, []);
 
+        $this->addToDefaultUnclaimedGroup($merchant);
+
         // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::CREATED, $merchant->toArrayEvent());
 
         return $merchant;
+    }
+
+    /**
+     * Any merchant created will be assign to Default Unclaimed Group for SalesForce.
+     *
+     * @param Entity $merchant
+     */
+    public function addToDefaultUnClaimedGroup(Entity $merchant)
+    {
+        $group = (new Group\Entity())->getSalesForceGroupId();
+
+        $unClaimedGroupId = $group[Group\Constant::SALESFORCE_UNCLAIMED_GROUP_ID];
+
+        $this->trace->info(TraceCode::MERCHANT_DEFAULT_GROUP_ATTACH,
+                           [
+                               'action'   => 'attach_in_merchant_map',
+                               'merchant' => $merchant->getId(),
+                               'groupId'  => $unClaimedGroupId,
+                           ]);
+
+        $this->repo->sync($merchant, 'groups', [$unClaimedGroupId], false);
     }
 
     public function upsertLegalEntity(Entity $merchant, array $input)
@@ -661,6 +685,11 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchant);
         });
+
+        if (array_key_exists($action, Constants::$internationalActionMapping))
+        {
+            (new Detail\Core())->updateInternationalActivationFlow($merchant, Constants::$internationalActionMapping[$action]);
+        }
 
         if($action === Merchant\Action::RELEASE_FUNDS)
         {
@@ -1252,6 +1281,8 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchant);
 
+            $this->setDefaultFeatureForPartner($merchant);
+
             $this->createPartnerApp($merchant);
         });
 
@@ -1260,6 +1291,35 @@ class Core extends Base\Core
         $this->trace->count(Metric::PARTNER_MARKED_TOTAL, $dimensions);
 
         return $merchant;
+    }
+
+    protected function setDefaultFeatureForPartner(Entity $partner)
+    {
+        // add feature flags if commissions are not yet created or if commission balance is zero
+        $commissionBalance = $partner->commissionBalance;
+
+        if (($commissionBalance !== null) and ($commissionBalance->getBalance() > 0))
+        {
+            return;
+        }
+
+        $featureCore = new Feature\Core;
+
+        $features = [
+            Feature\Constants::GENERATE_PARTNER_INVOICE,
+            Feature\Constants::AUTOMATED_COMM_PAYOUT,
+        ];
+
+        foreach ($features as $feature)
+        {
+            $featureCore->create(
+                [
+                    Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+                    Feature\Entity::ENTITY_ID       => $partner->getId(),
+                    Feature\Entity::NAME            => $feature,
+                ], $shouldSync = true
+            );
+        }
     }
 
     /**

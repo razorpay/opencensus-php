@@ -334,4 +334,20 @@ return [
             'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
         ],
     ],
+
+    'testEligibilityFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OLA_MONEY_ACCOUNT_DOES_NOT_EXIST_FOR_NUMBER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OLA_MONEY_ACCOUNT_DOES_NOT_EXIST_FOR_NUMBER,
+        ],
+    ],
 ];

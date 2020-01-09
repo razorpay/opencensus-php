@@ -34,6 +34,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const SUCCESS = 'Success';
 
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     const BLACKLISTED_COLUMNS = [
         self::ACCOUNT_CUST_NAME,
         self::VPA,
@@ -73,21 +75,42 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
         {
+            return $this->getPaymentIdForUnexpectedPayment($row);
+        }
+
+        return $paymentId;
+    }
+
+    /**
+     * Sometimes we don't get payment id in the expected column.
+     * So, this function utilises the rrn received in the MIS,
+     * and fetches the payment id from the upi repo.
+     *
+     * @param $row
+     * @return null|string
+     */
+    protected function getPaymentIdForUnexpectedPayment($row)
+    {
+        $paymentId = null;
+
+        $referenceNumber = $this->getReferenceNumber($row);
+
+        $upiEntity = $this->repo->upi->fetchByNpciReferenceId($referenceNumber);
+
+        if (empty($upiEntity) === true)
+        {
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'info_code'  => Base\InfoCode::UNEXPECTED_PAYMENT,
-                    'payment_id' => $paymentId,
-                    'gateway'    => $this->gateway
+                    'info_code'            => Base\InfoCode::UNEXPECTED_PAYMENT,
+                    'payment_reference_id' => $referenceNumber,
+                    'gateway'              => $this->gateway,
+                    'batch_id'             => $this->batch->getId(),
                 ]);
-
-            //
-            // Setting this unprocessed row as success as we receive such direct settlements daily.
-            // And as these payments are expected, not counting them as failure.
-            //
-            $this->setFailUnprocessedRow(false);
-
-            return null;
+        }
+        else
+        {
+            $paymentId = $upiEntity->getPaymentId();
         }
 
         return $paymentId;
@@ -175,16 +198,18 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
 
-            $this->trace->info(TraceCode::RECON_INFO_ALERT, [
-                'message'           => 'Npci Reference id is not same as in recon',
-                'info_code'         => $infoCode,
-                'payment_id'        => $this->payment->getId(),
-                'amount'            => $this->payment->getBaseAmount(),
-                'payment_status'    => $this->payment->getStatus(),
-                'api_reference1'    => $npciRefId,
-                'recon_reference1'  => $referenceNumber,
-                'gateway'           => $this->gateway
-            ]);
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'message'                   => 'Npci Reference id is not same as in recon',
+                    'info_code'                 => $infoCode,
+                    'payment_id'                => $this->payment->getId(),
+                    'amount'                    => $this->payment->getBaseAmount(),
+                    'payment_status'            => $this->payment->getStatus(),
+                    'db_reference_number'       => $npciRefId,
+                    'recon_reference_number'    => $referenceNumber,
+                    'gateway'                   => $this->gateway
+                ]);
 
             return;
         }

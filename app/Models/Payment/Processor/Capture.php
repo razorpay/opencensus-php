@@ -14,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
+use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
@@ -1041,8 +1042,14 @@ trait Capture
                 return;
             }
 
+            $orderId = $payment->getApiOrderId();
+
+            $this->repo
+                 ->transfer
+                 ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+
             $input = [
-                'order_id'   => $payment->getApiOrderId(),
+                'order_id'   => $orderId,
                 'payment_id' => $payment->getId(),
                 'mode'       => $this->mode,
             ];

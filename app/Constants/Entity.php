@@ -112,8 +112,9 @@ class Entity
     const INVOICE_REMINDER           = 'invoice_reminder';
     const NODAL_BENEFICIARY          = 'nodal_beneficiary';
     const PAYMENT_ANALYTICS          = 'payment_analytics';
-    const SETTLEMENT_BUCKET         = 'settlement_bucket';
+    const SETTLEMENT_BUCKET          = 'settlement_bucket';
     const SETTLEMENT_DETAILS         = 'settlement_details';
+    const SETTLEMENT_TRANSFER        = 'settlement_transfer';
     const MERCHANT_PROMOTION         = 'merchant_promotion';
     const CREDIT_TRANSACTION         = 'credit_transaction';
     const MERCHANT_EMI_PLANS         = 'merchant_emi_plans';
@@ -131,7 +132,8 @@ class Entity
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
     const SUBSCRIPTION               = 'subscription';
     const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
-
+    const COMMISSION_INVOICE         = 'commission_invoice';
+    const OFFLINE_DEVICE             = 'offline_device';
 
     const OPTIONS                    = 'options';
 
@@ -315,6 +317,11 @@ class Entity
 
     const COMMISSION = 'commission';
 
+    // Service: Payments UPi
+    const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
+    const PAYMENTS_UPI_BANK_ACCOUNT     = 'payments_upi_bank_account';
+    const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'payments_upi_vpa_bank_account';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -455,6 +462,7 @@ class Entity
         self::SETTLEMENT_DETAILS        => \RZP\Models\Settlement\Details::class,
         self::SETTLEMENT_BUCKET         => \RZP\Models\Settlement\Bucket::class,
         self::SETTLEMENT_DESTINATION    => \RZP\Models\Settlement\Destination::class,
+        self::SETTLEMENT_TRANSFER       => \RZP\Models\Settlement\Transfer::class,
         self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,
         self::MERCHANT_INHERITANCE_MAP  => \RZP\Models\Merchant\InheritanceMap::class,
@@ -474,6 +482,7 @@ class Entity
         self::D2C_BUREAU_REPORT         => \RZP\Models\D2cBureauReport::class,
         self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
+        self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
@@ -603,6 +612,7 @@ class Entity
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
+        self::COMMISSION_INVOICE    => \RZP\Models\Partner\Commission\Invoice::class,
 
         self::OPTIONS               => \RZP\Models\Options::class,
     ];

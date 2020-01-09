@@ -189,6 +189,46 @@ class GatewayProcessor extends BaseGatewayProcessor
         return $gatewayRequestArray;
     }
 
+    public function getGatewayRequestArrayForEnableOrDisable($terminal)
+    {
+        $uniqueRrn = $terminal->getId() . Carbon::now()->timestamp;
+        
+        $gatewayRequestArray = [
+            'req_rrn'               =>  $uniqueRrn,
+            'gateway'               =>  $terminal->gateway,
+            'mid'                   =>  $terminal->getGatewayMerchantId(),
+            'tid'                   =>  $terminal->getGatewayTerminalId(),
+            'mc_mpan'               =>  $terminal->getMCMpan(),
+            'visa_mpan'             =>  $terminal->getVisaMpan(),
+            'rupay_mpan'            =>  $terminal->getRupayMpan(),
+        ];
+
+        return $gatewayRequestArray;
+    }
+
+    public function raiseExceptionIfEnableOrDisableFails($response, $action)
+    {
+        switch($action)
+        {
+            case Constants::ENABLE_TERMINAL:
+                if ((isset($response[Constants::DATA][Constants::STATUS]) === false) or 
+                    ($response[Constants::DATA][Constants::STATUS] !== Constants::TERMINAL_REACTIVATION_SUCCESSFUL))
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::GATEWAY_ERROR_TERMINAL_ENABLE_FAILED, null, $response);
+                    }
+                break;
+            case Constants::DISABLE_TERMINAL:
+                if ((isset($response[Constants::DATA][Constants::STATUS]) === false) or 
+                    ($response[Constants::DATA][Constants::STATUS] !== Constants::TERMINAL_DEACTIVATION_SUCCESSFUL))
+                    {
+                        throw new Exception\BadRequestException(
+                            ErrorCode::GATEWAY_ERROR_TERMINAL_DISABLE_FAILED, null, $response);
+                    }
+                break;
+        }
+    }
+
     /**
      * There are some validations on Worldline, to avoid them, we need to format the request
      * 1. Partner Merchant name should be upper case without space
@@ -317,6 +357,8 @@ class GatewayProcessor extends BaseGatewayProcessor
     protected function updateTerminalDetailsOnVerifyCallbackSuccesful($terminal, $terminalOnboardingDetail)
     {
         $terminal->setStatus(Terminal\Status::ACTIVATED);
+
+        $terminal->setEnabled(true);
 
         $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATED);
 
