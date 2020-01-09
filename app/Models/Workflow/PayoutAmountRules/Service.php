@@ -19,57 +19,44 @@ class Service extends Base\Service
      * @param string $merchantId
      * @return array
      */
-    public function getWorkflowRules($merchantId = null): array
+    public function getWorkflowPayoutAmountRules(): array
     {
-        // If merchant id is passed through proxyAuth and not url
-        if ($merchantId === null)
-        {
-            $merchantId = $this->merchant->getId();
-        }
+        $merchantId = $this->merchant->getId();
 
         $relations = [];
 
         // If adminAuth is used retrieve additional information such as steps and roles in the workflow
-        if ($this->app['basicauth']->isAdminAuth())
+        if ($this->app['basicauth']->isAdminAuth() === true)
         {
             $relations = ['steps','steps.role'];
         }
 
+        // TODO: explore fetch() with expands
         $amountRules =  $this->repo
                              ->workflow_payout_amount_rules
                              ->fetchWorkflowRulesForMerchant($merchantId, $relations);
 
-        if ($this->app['basicauth']->isAdminAuth() === true)
-        {
-            // Returns in a format including containing more fields like id in database useful for admin
-            return $amountRules->toArrayWithItems();
-
-        }
-
-        // An existing api returns in this format for proxyAuth which is maintained
         return $amountRules->toArrayPublic();
     }
 
     /**
      * Gets merchant ids which have a workflow with create_payout (or any other specified) permission
      *
-     * @param string $merchantId
+     * @param $input
      * @return array
      */
-    public function getMerchantIdsForCreatePayoutWorkflowPermission($input)
+    public function getMerchantIdsForCreatePayoutWorkflowPermission(array $input)
     {
         $orgId = $this->auth->getOrgId();
 
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $validator = new Validator();
-
-        $validator->validateInput('fetch_merchant_id', $input);
+        (new Validator())->validateInput('fetch_merchant_id', $input);
 
         $results = $this->repo->workflow_payout_amount_rules->getMerchantIdsForCreatePayoutWorkflowPermission($orgId,
                                                                                                               $input);
 
-        return $results->toArrayWithItems();
+        return $results->toArrayPublic();
     }
 
     /**
@@ -80,13 +67,11 @@ class Service extends Base\Service
      */
     public function createWorkflowPayoutAmountRules($input): array
     {
-        $rules = $input[Entity::RULES];
+        $this->trace->info(TraceCode::WORKFLOW_PAYOUT_RULES_ATTACHMENT, $input);
 
-        $validator = new Validator();
+        (new Validator())->validateInput('create_rules_multiple', $input);
 
-        $validator->checkForValidAmountRanges($rules);
-
-        $validator->ensureDistinctWorkflowIds($rules);
+        $rules = $input[Entity::RULES] ?? [];
 
         $merchantId = $this->merchant->getId();
 
@@ -94,7 +79,6 @@ class Service extends Base\Service
 
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
-        $this->trace->info(TraceCode::WORKFLOW_PAYOUT_RULES_ATTACHMENT, $input);
 
         /** @var Entity $wfPayoutAmountRules */
         $wfPayoutAmountRules = $this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId);
@@ -113,17 +97,15 @@ class Service extends Base\Service
                 ]);
         }
 
-        $workflowIdsFromInput = array_column($rules, Entity::WORKFLOW_ID);
+        $workflowIdsFromInput = array_filter(array_column($rules, Entity::WORKFLOW_ID));
 
         // Fetch workflows with create_payout permission
         $workflows = $this->repo->workflow->getWorkflowsForPermissionNameAndCategory(Name::CREATE_PAYOUT,
-                                                                           $orgId,
-                                                                           $merchantId,
-                                                                           Category::PAYOUTS );
+                                                                     Category::PAYOUTS,
+                                                                                      $orgId,
+                                                                                      $merchantId);
 
         $workflowIds = $workflows->pluck(Entity::ID)->toArray();
-
-        $workflowIdsFromInput = array_filter($workflowIdsFromInput);
 
         Workflow\Entity::verifyIdAndSilentlyStripSignMultiple($workflowIdsFromInput);
 
@@ -140,8 +122,8 @@ class Service extends Base\Service
                     ]);
         }
 
-        $result = $this->core()->create($rules, $this->merchant);
+        $payoutAmountRules = $this->core()->create($rules, $this->merchant);
 
-        return $result->toArrayWithItems();
+        return $payoutAmountRules->toArrayPublic();
     }
 }

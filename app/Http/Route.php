@@ -801,8 +801,8 @@ final class Route
         'action_request_execute'                   => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
+        'workflow_payout_amount_rules_get_admin'   => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
         'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
-        'workflow_payout_amount_rules_get'         => ['get',      'workflows/rules/payout_amount/merchant/{id}',    'WorkflowController@getWorkflowRulesForMerchant'                    ],
         'workflow_merchants_create_payout_get'     => ['get',      'workflows/permissions/create_payout/merchants',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
 
         // UPI
@@ -2265,7 +2265,7 @@ final class Route
         'workflow_get_multiple',
         'workflow_update',
         'workflow_delete',
-        'workflow_payout_amount_rules_get',
+        'workflow_payout_amount_rules_get_admin',
         'workflow_merchants_create_payout_get',
         'workflow_payout_amount_rules_create',
         'action_checker_create',
@@ -2690,7 +2690,7 @@ final class Route
         'merchant_inheritance_parent_fetch',
         'merchant_inheritance_parent_set',
         'merchant_inheritance_parent_delete',
-        
+
         'add_merchant_balance_config',
         'edit_merchant_balance_config',
 

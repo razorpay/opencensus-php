@@ -61,36 +61,37 @@ class Core extends Base\Core
     /**
      * @param array $rules
      * @param Merchant\Entity $merchant
+     *
      * @return Base\PublicCollection
      */
     public function create(array $rules, Merchant\Entity $merchant)
     {
         // Insert all rules together into database
-        $insertedPayoutAmountRules = $this->repo->transaction( function() use ($rules, $merchant)
+        $payoutAmountRules = $this->repo->transaction(function() use ($rules, $merchant)
         {
-            $insertedPayoutAmountRules = new Base\PublicCollection();
+            $payoutAmountRules = new Base\PublicCollection();
 
             foreach ($rules as $rule)
             {
-                if(empty($rule[Entity::WORKFLOW_ID]) === false)
+                if (empty($rule[Entity::WORKFLOW_ID]) === false)
                 {
                     Workflow\Entity::verifyIdAndStripSign($rule[Entity::WORKFLOW_ID]);
                 }
 
                 $rule[Entity::MERCHANT_ID] = $merchant->getId();
 
-                $payoutAmountRules = new Entity();
+                $payoutAmountRule = new Entity();
 
-                $payoutAmountRules->build($rule);
+                $payoutAmountRule->build($rule);
 
-                $insertedPayoutAmountRules->push($payoutAmountRules);
+                $payoutAmountRules->push($payoutAmountRule);
 
-                $this->repo->saveOrFail($payoutAmountRules);
+                $this->repo->saveOrFail($payoutAmountRule);
             }
 
-            return $insertedPayoutAmountRules;
+            return $payoutAmountRules;
         });
 
-        return $insertedPayoutAmountRules;
+        return $payoutAmountRules;
     }
 }

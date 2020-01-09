@@ -63,6 +63,9 @@ class Entity extends Base\Entity
         self::MIN_AMOUNT,
         self::MAX_AMOUNT,
         self::WORKFLOW_ID,
+        self::MERCHANT_ID,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $dates = [

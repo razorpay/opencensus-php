@@ -11,7 +11,7 @@ return [
             'method'  => 'POST',
             'url'     => '/workflows/rules/payout_amount',
             'content' => [
-                    'rules' => [
+                'rules' => [
                     [
                         'min_amount'	=>	0,
                         'max_amount'	=>	100000
@@ -24,7 +24,7 @@ return [
                         'min_amount'	=>	1000000,
                         'max_amount'	=>	null
                     ]
-                    ]
+                ]
             ],
         ],
         'response' => [
