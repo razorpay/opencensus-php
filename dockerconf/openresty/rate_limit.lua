@@ -10,6 +10,7 @@ local rm_lib = require 'routes_meta'
 local redis_script_sha
 local redis_global_settings_key = "throttle:t"
 local redis_key_prefix = "throttle:t:"
+local leaky_bucket_script = require("leaky_bucket")()
 -- The environment variables below are made available via nginx's env
 -- directive in http block.
 local redis_conf = {
@@ -186,13 +187,14 @@ end
 
 -- rate_limit method rocks!
 local function rate_limit(redis, rate_limit_args, now)
-    local redis_script_sha, err = get_redis_script_sha(redis)
-    if err then
-        return nil, err
-    end
+    -- LOAD SCRIPT will not work in cluster mode.
+    -- local redis_script_sha, err = get_redis_script_sha(redis)
+    -- if err then
+    --     return nil, err
+    -- end
 
-    local res, err = redis:evalsha(
-        redis_script_sha,
+    local res, err = redis:eval(
+        leaky_bucket_script,
         1,
         redis_key_prefix .. rate_limit_args.identifier,
         rate_limit_args.mbs,
