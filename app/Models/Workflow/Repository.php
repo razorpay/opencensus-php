@@ -7,6 +7,8 @@ use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Base\PublicCollection;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Workflow\PayoutAmountRules\Entity as ParEntity;
 
 class Repository extends Base\Repository
 {
@@ -113,30 +115,35 @@ class Repository extends Base\Repository
                     ->pluck(Entity::ID);
     }
 
-    public function getWorkflowsForPermissionNameAndCategory($permissionName, $orgId, $merchantId, $permissionCategory)
+    public function getWorkflowsForPermissionNameAndCategory($permissionName, $permissionCategory, $orgId, $merchantId)
     {
-        $pidColumnName = $this->repo->permission->dbColumn(Admin\Permission\Entity::ID);
+        $permissionIdColumnName = $this->repo->permission->dbColumn(Admin\Permission\Entity::ID);
 
         $permissionMapTable = Table::PERMISSION_MAP;
 
         $permissionId =  $this->repo->permission->newQuery()
-            ->join($permissionMapTable, $pidColumnName, '=', $permissionMapTable . '.permission_id')
-            ->where($permissionMapTable . '.entity_id', '=', $orgId)
-            ->where($permissionMapTable . '.entity_type', '=', 'org')
-            ->where(Admin\Permission\Entity::NAME, $permissionName)
-            ->where(Admin\Permission\Entity::CATEGORY, $permissionCategory)
-            ->pluck('id')
-            ->first();
+                                                ->join($permissionMapTable,
+                                                       $permissionIdColumnName,
+                                                       '=',
+                                                       $permissionMapTable . '.'. Entity::PERMISSION_ID)
+                                                ->where($permissionMapTable . '.' . ParEntity::ENTITY_ID, '=', $orgId)
+                                                ->where($permissionMapTable . '.' . ParEntity::ENTITY_TYPE,
+                                                        '=',
+                                                        EntityConstants::ORG)
+                                                ->where(Admin\Permission\Entity::NAME, $permissionName)
+                                                ->where(Admin\Permission\Entity::CATEGORY, $permissionCategory)
+                                                ->pluck(Entity::ID)
+                                                ->first();
 
-        $permissionId = $permissionId ?? '';
+        if (empty($permissionId) === true)
+        {
+            return new PublicCollection();
+        }
 
         // Implicit check for workflow in the organisation against permission ids.
-        $workflows = $this->repo
-            ->workflow
-            ->fetchWorkflowsByPermissionsOrgAndMerchant(
-                $permissionId,
-                $orgId,
-                $merchantId);
+        $workflows = $this->repo->workflow->fetchWorkflowsByPermissionsOrgAndMerchant($permissionId,
+                                                                                      $orgId,
+                                                                                      $merchantId);
 
         return $workflows;
     }

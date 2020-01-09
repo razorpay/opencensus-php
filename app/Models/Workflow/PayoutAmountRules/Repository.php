@@ -21,6 +21,7 @@ class Repository extends Base\Repository
      * Gets payout amount rules for a single merchant
      *
      * @param string $merchantId
+     * @param array $relations
      * @return array
      */
     public function fetchWorkflowRulesForMerchant(string $merchantId, array $relations = [])
@@ -39,7 +40,7 @@ class Repository extends Base\Repository
      * @param array $params
      * @return Collection
      */
-    public function getMerchantIdsForCreatePayoutWorkflowPermission($orgId, $params)
+    public function getMerchantIdsForCreatePayoutWorkflowPermission(string $orgId, array $params)
     {
         // Taking count and skip params here instead of using inbuilt fetch() because fetch() returns collection
         // which cannot be filtered further according to permission which is required here.
@@ -47,6 +48,7 @@ class Repository extends Base\Repository
 
         $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
 
+        // TODO: cehck if this is required. remove otherwise. Prefer removing this
         $merchantId = $params[Entity::MERCHANT_ID] ?? null;
 
         $query = $this->repo->permission->newQuery()
@@ -59,7 +61,7 @@ class Repository extends Base\Repository
 
         $query = $this->repo->workflow->newQuery()
                                       ->whereIn(Entity::ID,
-                                                function ($query) use ($createPayoutPermissionId)
+                                                function($query) use ($createPayoutPermissionId)
                                                 {
                                                     $query->select(Entity::WORKFLOW_ID)
                                                           ->from(Table::WORKFLOW_PERMISSION)

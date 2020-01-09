@@ -16,49 +16,46 @@ class Validator extends Base\Validator
         Entity::MAX_AMOUNT      => 'sometimes|integer|nullable',
     ];
 
+    protected static $createRulesMultipleRules = [
+        Entity::RULES                               => 'required|array|custom',
+        Entity::RULES . '.*.' . Entity::WORKFLOW_ID => 'present|string|nullable',
+        Entity::RULES . '.*.' . Entity::MIN_AMOUNT  => 'required|integer|min:0',
+        Entity::RULES . '.*.' . Entity::MAX_AMOUNT  => 'present|integer|nullable',
+    ];
+
     protected static $fetchMerchantIdRules = [
         'count'                 => 'sometimes|integer|min:0',
         'skip'                  => 'sometimes|integer|min:0',
         Entity::MERCHANT_ID     => 'sometimes|string|size:14',
     ];
 
-    public function checkForValidAmountRanges($rules)
+    public function validateRules($attribute, $rules)
     {
-        usort($rules, function($a, $b) {
+        usort($rules, function($a, $b)
+        {
             return $a[Entity::MIN_AMOUNT] <=> $b[Entity::MIN_AMOUNT];
         });
 
-        $currentMinAmount = 0;
+        $lastMaxAmount = 0;
 
-        $index = 0;
-
-        while($index < count($rules) and $currentMinAmount !== null)
+        foreach ($rules as $rule)
         {
-            $rule = $rules[$index];
-
-            if($rule[Entity::MAX_AMOUNT] !== null and $rule[Entity::MIN_AMOUNT] > $rule[Entity::MAX_AMOUNT])
+            // A rule is invalid is there are gaps in the ranges eg: [0-100] and [200-300]
+            // Also if the min_amount >= max_amount
+            if (($rule[Entity::MIN_AMOUNT] !== $lastMaxAmount) or
+                (($rule[Entity::MAX_AMOUNT] !== null) and
+                 ($rule[Entity::MIN_AMOUNT] >= $rule[Entity::MAX_AMOUNT])))
             {
-                break;
+                throw new BadRequestValidationFailureException(
+                    'Ranges provided are not continuous and complete',
+                    Entity::RULES,
+                    $rules);
             }
 
-            if ($rule[Entity::MIN_AMOUNT] != $currentMinAmount)
-            {
-                break;
-            }
-
-            $currentMinAmount = $rule[Entity::MAX_AMOUNT];
-
-            $index++;
+            $lastMaxAmount = $rule[Entity::MAX_AMOUNT];
         }
 
-        if ($index !== count($rules))
-        {
-            throw new BadRequestValidationFailureException(
-                'Ranges provided are not continuous and complete',
-                Entity::RULES,
-                $rules
-            );
-        }
+        $this->ensureDistinctWorkflowIds($rules);
     }
 
     /**
@@ -66,7 +63,7 @@ class Validator extends Base\Validator
      *
      * @param $rules
      */
-    public function ensureDistinctWorkflowIds($rules)
+    protected function ensureDistinctWorkflowIds(array $rules)
     {
         $workflowIds = array_filter(array_column($rules, Entity::WORKFLOW_ID));
 
