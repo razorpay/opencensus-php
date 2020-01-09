@@ -46,12 +46,12 @@ class Core extends Base\Core
         //
         try
         {
-            $virtualAccount = $this->mutex->acquireAndRelease(
-                self::VA_BANK_ACCOUNT_GENERATION,
-                function() use ($input, $merchant, $customer, $order, $balance)
-                {
-                    $virtualAccount = $this->createEntityAndAssociate($merchant);
+            $virtualAccount = $this->createEntityAndAssociate($merchant);
 
+            $virtualAccount = $this->mutex->acquireAndRelease(
+                self::VA_BANK_ACCOUNT_GENERATION . $virtualAccount->getId(),
+                function() use ($input, $merchant, $customer, $order, $balance, $virtualAccount)
+                {
                     return $this->buildVirtualAccountAndReceivers(
                         $virtualAccount, $input, $customer, $order, $balance);
                 },
@@ -343,8 +343,6 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount->toArray());
         }
 
-        /*
-         @todo:: Uncomment this once deleted_at added to vpas table
         $vpa = $virtualAccount->vpa;
 
         if ($vpa !== null)
@@ -352,7 +350,7 @@ class Core extends Base\Core
             $this->repo->deleteOrFail($vpa);
 
             $this->trace->info(TraceCode::VPA_DELETED, $vpa->toArray());
-        }*/
+        }
 
         $virtualAccount->setStatus(Status::CLOSED);
 

@@ -276,10 +276,36 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
-            Entity::PAYMENTS_CARDS_AUTHORIZATION  => [],
-            Entity::PAYMENTS_CARDS_AUTHENTICATION => [],
-
-
+            Entity::PAYMENTS_CARDS_AUTHORIZATION  => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+                'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
+                'gateway'      => Fetch::FIELD_GATEWAY,
+                'status'       => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'failed',
+                        'authorized',
+                        'captured',
+                    ],
+                ],
+            ],
+            Entity::PAYMENTS_CARDS_AUTHENTICATION => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+                'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
+                'gateway'      => Fetch::FIELD_GATEWAY,
+                'status'       => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'success',
+                        'failed',
+                    ],
+                ],
+            ],
             Entity::SUBSCRIPTIONS_SUBSCRIPTION => [
                 'auth_attempts' => [
                     Fetch::LABEL  => 'Auth Attempts',
@@ -2248,6 +2274,21 @@ class AdminFetch
                 ],
             ],
 
+            Entity::MERCHANT_INHERITANCE_MAP => [
+                'merchant_id' => [
+                    Fetch::LABEL  => 'Merchant Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ],
+                'parent_merchant_id' => [
+                    Fetch::LABEL => 'Parent Merchant Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'created_at' =>  [
+                    Fetch::LABEL  => 'Created At',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ]
+            ],
+
             Entity::PARTNER_CONFIG => [
                 Config\Entity::ENTITY_TYPE => [
                     Fetch::LABEL  => 'Entity Type',
@@ -2356,6 +2397,26 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ]
             ],
+
+            Entity::UPI_TRANSFER => [
+                'payment_id'            => Fetch::FIELD_PAYMENT_ID,
+                'virtual_account_id'    => [
+                    Fetch::LABEL => 'Virtual Account ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'payer_vpa'             => [
+                    Fetch::LABEL => 'Payer VPA',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'payee_vpa'             => [
+                    Fetch::LABEL => 'Payee VPA',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'npci_reference_id'     => [
+                    Fetch::LABEL => 'NPCI Reference Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ]
         ];
 
         //

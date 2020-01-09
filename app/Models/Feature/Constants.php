@@ -135,8 +135,19 @@ class Constants
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
-  
+
+    const ENACH_INTERMEDIATE              = 'enach_intermediate';
+    const SAVE_VPA                        = 'save_vpa';
+
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
+
+    const OFFLINE_PAYMENTS                = 'offline_payments';
+
+    /**
+     * If applied on partner merchant then all sub merchant settlement will be settled to partner
+     * this will be further aggregated and settled to partner merchant
+     */
+    const AGGREGATE_SETTLEMENT            = 'aggregate_settlement';
 
     /**
      * When adding submerchant, whether to set international activation flow to greylist
@@ -207,6 +218,18 @@ class Constants
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
     const ORDER_RECEIPT_UNIQUE            = 'order_receipt_unique';
 
+    /**
+     * Commission invoice will be generated only for those partners
+     * having this feature flag
+     */
+    const GENERATE_PARTNER_INVOICE        = 'generate_partner_invoice';
+
+    /**
+     * Feature flag to decide whether commission payout should happen
+     * manually via ops or automatically
+     */
+    const AUTOMATED_COMM_PAYOUT           = 'automated_comm_payout';
+
     // Payment authentication
     const ATM_PIN_AUTH                    = 'atm_pin_auth';
     const IVR                             = 'ivr';
@@ -262,6 +285,8 @@ class Constants
 
     const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
 
+    const BLOCK_OFFER_CREATION     = 'block_offer_creation';
+
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
@@ -285,6 +310,7 @@ class Constants
         self::IRCTC_METHODS,
         self::GOOGLE_PAY_OMNICHANNEL,
         self::PHONEPE_INTENT,
+        self::SAVE_VPA,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -455,6 +481,13 @@ class Constants
         self::SKIP_WEBSITE_INTERNAT           => true,
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
+        self::AGGREGATE_SETTLEMENT            => true,
+        self::BLOCK_OFFER_CREATION            => true,
+        self::ENACH_INTERMEDIATE              => true,
+        self::SAVE_VPA                        => true,
+        self::GENERATE_PARTNER_INVOICE        => true,
+        self::AUTOMATED_COMM_PAYOUT           => true,
+        self::OFFLINE_PAYMENTS                => true,
     ];
 
     // Entity type constants

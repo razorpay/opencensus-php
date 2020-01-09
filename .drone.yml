@@ -42,7 +42,7 @@ steps:
           - tag
           - pull_request
 
-  - name: validate_php_7_2_syntax
+  - name: validate_php_syntax
     pull: default
     image: php:7.2-cli-alpine
     commands:
@@ -229,6 +229,49 @@ steps:
       ES_AUDIT_HOST: elasticsearch
       ES_ENTITY_INDEX_PREFIX: testing_features_4_
       ES_ENTITY_TYPE_PREFIX: testing_features_4_
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis5
+      REDIS_LABS_HOST: redis5
+      RZP_API:
+        from_secret: rzp_api
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: feature_6_test_suite
+    pull: always
+    image: razorpay/onggi:php-7.2
+    depends_on:
+      - prepare_test
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Feature-6 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_feature_6
+      DB_AUTH_HOST: mysql4
+      DB_LIVE_DATABASE: api_live_feature_6
+      DB_LIVE_HOST: mysql4
+      DB_TEST_DATABASE: api_test_feature_6
+      DB_TEST_HOST: mysql4
+      DB_UPI_PAYMENTS_MOCKED: false
+      DB_UPI_PAYMENTS_LIVE_HOST: mysql4
+      DB_UPI_PAYMENTS_TEST_HOST: mysql4
+      SLAVE_DB_UPI_PAYMENTS_LIVE_HOST: mysql4
+      SLAVE_DB_UPI_PAYMENTS_TEST_HOST: mysql4
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_ENTITY_INDEX_PREFIX: testing_feature_6_
+      ES_ENTITY_TYPE_PREFIX: testing_feature_6_
       ES_HOST: elasticsearch
       GIT_TOKEN:
         from_secret: git_token
@@ -439,7 +482,7 @@ steps:
       SLACK_WEBHOOK:
         from_secret: slack_webhook
     depends_on:
-      - validate_php_7_2_syntax
+      - validate_php_syntax
       - application_test_suite
       - features_test_suite
       - feature_2_test_suite
@@ -511,6 +554,22 @@ services:
       - /var/lib/mysql
     environment:
       MYSQL_DATABASE: api
+      MYSQL_ROOT_PASSWORD: root
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: mysql4
+    pull: default
+    image: mysql:5.7
+    tmpfs:
+      - /var/lib/mysql
+    environment:
+      MYSQL_DATABASE: payments_upi
       MYSQL_ROOT_PASSWORD: root
     when:
       event:

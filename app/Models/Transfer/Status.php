@@ -5,6 +5,7 @@ namespace RZP\Models\Transfer;
 class Status
 {
     const CREATED                   = 'created';
+    const PENDING                   = 'pending';
     const PROCESSED                 = 'processed';
     const FAILED                    = 'failed';
     const REVERSED                  = 'reversed';

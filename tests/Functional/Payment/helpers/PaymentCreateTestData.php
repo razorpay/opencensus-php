@@ -101,6 +101,22 @@ return [
         ],
     ],
 
+    'testCreateCardPaymentFailedWithRestrictionUpi' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment method is not among the list of valid methods for order',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_FOR_ORDER
+        ],
+    ],
+
     'testCreatePaymentWithDisabledMethod' => [
         'response' => [
             'content' => [

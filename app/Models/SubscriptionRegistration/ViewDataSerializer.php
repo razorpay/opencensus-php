@@ -65,16 +65,20 @@ class ViewDataSerializer extends Base\Core
 
         $order = $this->invoice->order;
 
-        if ($order->getMethod() === Method::NACH)
+        if ($this->invoice->getEntityType() === Constants\Entity::SUBSCRIPTION_REGISTRATION)
         {
             $subscriptionRegistration = $this->invoice->entity;
 
-            if ($subscriptionRegistration !== null)
+            if ($order->getMethod() === Method::NACH)
             {
                 $paperMandate = $subscriptionRegistration->paperMandate;
 
-                $invoiceData['is_nach_form_uploaded'] = empty($paperMandate->getUploadedFormUrl()) === false;
+                // for dashboard indicates whether form has been uploaded or not
+                // if form is already uploaded uploaded id will be populated or else it will be null
+                $invoiceData['is_nach_form_uploaded'] = empty($paperMandate->getUploadedFileID()) === false;
             }
+
+            $invoiceData[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::STATUS] = $subscriptionRegistration->getStatus();
         }
 
         return $invoiceData;

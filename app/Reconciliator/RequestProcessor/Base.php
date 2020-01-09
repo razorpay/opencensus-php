@@ -97,6 +97,7 @@ class Base extends Core
     const HITACHI                = 'Hitachi';
     const CARD_FSS_HDFC          = 'CardFssHdfc';
     const CARD_FSS_BOB           = 'CardFssBob';
+    const CARD_FSS_SBI           = 'CardFssSbi';
     const ATOM                   = 'Atom';
     const ISG                    = 'isg';
     const UPI_HDFC               = 'UpiHdfc';
@@ -108,6 +109,7 @@ class Base extends Core
     const PAYPAL                 = 'Paypal';
     const BAJAJFINSERV           = 'BajajFinserv';
     const GETSIMPL               = 'Getsimpl';
+    const VAS_AXIS               = 'VasAxis';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -164,6 +166,7 @@ class Base extends Core
         self::CARD_FSS_HDFC          => ['merchantops@fss.co.in'],
         self::ATOM                   => [],
         self::CARD_FSS_BOB           => [],
+        self::CARD_FSS_SBI           => [],
         self::UPI_AXIS               => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
         self::UPI_HULK               => [],
@@ -172,7 +175,9 @@ class Base extends Core
         self::PHONEPE                => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
         self::PAYPAL                 => [],
-        self::BAJAJFINSERV           => [],
+        self::VAS_AXIS               => [],
+        self::GETSIMPL               => [],
+        self::BAJAJFINSERV           => ['remiecftransactions@bizsupportc.com'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -256,7 +261,8 @@ class Base extends Core
 
         Gateway::CARD_FSS               => [
             Gateway::ACQUIRER_BARB   => self::CARD_FSS_BOB,
-            Gateway::ACQUIRER_HDFC   => self::CARD_FSS_HDFC
+            Gateway::ACQUIRER_HDFC   => self::CARD_FSS_HDFC,
+            Gateway::ACQUIRER_SBIN   => self::CARD_FSS_SBI,
         ],
 
         Gateway::WALLET_AIRTELMONEY     => self::AIRTEL,

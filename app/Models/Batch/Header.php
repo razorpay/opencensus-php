@@ -130,6 +130,12 @@ class Header
     const MPAN_RUPAY_PAN               =   'RPAN';
 
     //
+    // Parent config inheritance headers
+    //
+    const MERCHANT_CONFIG_INHERITANCE_PARENT_MERCHANT_ID = 'Parent Merchant Id';
+    const MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID        = 'Merchant Id';
+
+    //
     // Virtual Account Bulk Creation Headers
     //
     const VA_CUSTOMER_ID         = 'customer_id';
@@ -2413,6 +2419,17 @@ class Header
             ]
         ],
 
+        Type::MERCHANT_CONFIG_INHERITANCE => [
+            self::INPUT => [
+                self::MERCHANT_CONFIG_INHERITANCE_PARENT_MERCHANT_ID,
+                self::MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID,
+            ],
+            /*
+             * Input key is needed for header validation.
+             * Not adding output key here
+             * Reason is this batch is entirely migrated to batch micro service.
+             */
+        ],
     ];
 
     /**

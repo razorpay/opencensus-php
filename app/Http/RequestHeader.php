@@ -54,4 +54,8 @@ class RequestHeader
     const X_IDEMPOTENT_KEY              = 'X-Idempotent-Key';
 
     const X_TASK_ID                     = 'X-Task-ID';
+
+    const AUTHORIZATION                 = 'AUTHORIZATION';
+
+    const BEARER                        = 'Bearer';
 }

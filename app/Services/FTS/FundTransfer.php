@@ -51,13 +51,6 @@ class FundTransfer extends Base
         Constants::FUND_ACCOUNT_VALIDATION,
     ];
 
-    const CHANNEL_WISE_IFSC_IDENTIFIER = [
-        Channel::RBL     => IFSC::RATN,
-        Channel::CITI    => IFSC::CITI,
-        Channel::ICICI   =>IFSC::ICIC,
-        Channel::YESBANK => IFSC::YESB,
-    ];
-
     public function __construct($app)
     {
         parent::__construct($app);
@@ -128,10 +121,24 @@ class FundTransfer extends Base
             $product = Constants::PENNY_TESTING;
         }
 
-        if (($sourceType === Constants::PAYOUT) and
-            ($this->fta->isRefund() === true))
+        if ($sourceType === Constants::PAYOUT)
         {
-            $product = Constants::PAYOUT_REFUND;
+            // Note: Yesbank NEFT/RTGS and UPI integration both uses same source account in FTS.
+            // Now, if Mode is UPI then beneficiary registration is not required.
+            // As a result, transfers via mode UPI will not have a entry in beneficiary status entity.
+            // So, adding a temporary fix for this now to enable yesbank UPI.
+            // TODO: Need to have a better way of handling such situations.
+            // Thread: https://razorpay.slack.com/archives/CNXASR0H3/p1576752834010000
+            // JIRA: https://razorpay.atlassian.net/browse/RX-1112
+            if (($this->fta->getChannel() === Channel::YESBANK) and ($this->fta->getMode() === Mode::UPI))
+            {
+                $product = Constants::PAYOUT_REFUND;
+            }
+
+            if ($this->fta->isRefund() === true)
+            {
+                $product = Constants::PAYOUT_REFUND;
+            }
         }
 
         $request = [
@@ -552,11 +559,20 @@ class FundTransfer extends Base
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
-        $ifscIdentifier = self::CHANNEL_WISE_IFSC_IDENTIFIER[$channel];
+        $ifscIdentifier = IFSC::YESB;
 
-        if (starts_with($ifscFirstFour, $ifscIdentifier) === true)
+        if ((starts_with($ifscFirstFour, $ifscIdentifier) === true) and ($channel === Channel::YESBANK))
         {
-            return Mode::IFT;
+            $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+            if (is_numeric($ifscLastDigits) === true)
+            {
+                return Mode::IFT;
+            }
+            else
+            {
+                return Mode::NEFT;
+            }
         }
 
         if ($this->amount <= Constants::IMPS_CUTOFF_AMOUNT)
@@ -593,7 +609,7 @@ class FundTransfer extends Base
 
     public function bulkUpdateFtsAttempts(array $input)
     {
-        $this->setDashboardAuthAndAdminHeader();
+        $this->setAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_UPDATE_URI,
@@ -601,14 +617,50 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function modifyModeIfRequired()
+    {
+        // Assumption is that the validation would have happened already before this
+        // step and hence we can assume that the bank account exists and is valid.
+        $channel = $this->fta->getChannel();
+
+        $ba = $this->fta->bankAccount;
+
+        if (empty($ba) === false)
+        {
+            $ifsc = $ba->getIfscCode();
+
+            $ifscFirstFour = substr($ifsc, 0, 4);
+
+            $ifscIdentifier = IFSC::YESB;
+
+            if ((starts_with($ifscFirstFour, $ifscIdentifier) === true) and ($channel === Channel::YESBANK))
+            {
+                $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+                if (is_numeric($ifscLastDigits) === true)
+                {
+                    $this->fta->setMode(Mode::IFT);
+                }
+                else
+                {
+                    $this->fta->setMode(Mode::NEFT);
+                }
+            }
+        }
+    }
+
     public function shouldAllowTransfersViaFts()
     {
         list($mode, $shouldUpdateMode) = $this->getFTSFundTransferMode();
+
+        $this->modifyModeIfRequired();
 
         if ($shouldUpdateMode === true)
         {
             $this->fta->setMode($mode);
         }
+
+        $mode = $this->fta->getMode();
 
         $allowedModes = Mode::get24x7FtsTransferModes();
 
@@ -726,7 +778,7 @@ class FundTransfer extends Base
 
     public function getBulkTransferStatus(array $input)
     {
-        $this->setDashboardAuthAndAdminHeader();
+        $this->setAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_FETCH_STATUS,
@@ -736,7 +788,7 @@ class FundTransfer extends Base
 
     public function checkTransferStatus(array $input)
     {
-        $this->setDashboardAuthAndAdminHeader();
+        $this->setAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_CHECK_STATUS,
@@ -746,7 +798,7 @@ class FundTransfer extends Base
 
     public function getRawBankStatus(array $input)
     {
-        $this->setDashboardAuthAndAdminHeader();
+        $this->setAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS,

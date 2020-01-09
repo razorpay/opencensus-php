@@ -228,6 +228,8 @@ class Processor
 
     protected $secureCacheDriver;
 
+    protected $razorXFlagForDoppler;
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -1156,7 +1158,7 @@ class Processor
             $featureFlag .= '_' .$payment->getAuthenticationGateway();
         }
 
-        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $featureFlag, $this->mode);
+        $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
 
         $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
             'payment_id'             => $payment->getId(),
@@ -1204,7 +1206,7 @@ class Processor
         $this->setOfferForPaymentFromOrderOrInput($payment, $input);
 
         if (($this->offer !== null) and
-            ($order->isDiscountApplicable() === true))
+            ($this->offer->getOfferType() === Offer\Constants::INSTANT_OFFER))
         {
             $orderAmount = $order->getAmount();
 
@@ -1768,12 +1770,7 @@ class Processor
             $offer->lockDecrementCurrentOfferUsage($payment);
         }
 
-        $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-        $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
-
-        if (($isProduction === true) and
-            (strtolower($variant) === 'on'))
+        if ($this->razorXFlagForDoppler === true)
         {
             //TODO: Remove this later
             try
@@ -2423,6 +2420,13 @@ class Processor
 
         $this->repo->saveOrFail($this->order);
 
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Processor.php:2421"
+            ]
+        );
+
         $payment->order()->associate($this->order);
 
         //
@@ -2614,6 +2618,13 @@ class Processor
     public function setPayment(Payment\Entity $payment): Processor
     {
         $this->payment = $payment;
+
+        return $this;
+    }
+
+    public function setRazorXDopplerProperty(bool $razorXFlag): Processor
+    {
+        $this->razorXFlagForDoppler = $razorXFlag;
 
         return $this;
     }

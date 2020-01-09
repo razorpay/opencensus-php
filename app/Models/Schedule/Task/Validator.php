@@ -3,11 +3,12 @@
 namespace RZP\Models\Schedule\Task;
 
 use RZP\Base;
-use RZP\Models\Schedule\Task\Entity as ScheduleTask;
-use RZP\Models\Payment\Method;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Method;
 use RZP\Models\Schedule\Task\Type;
+use RZP\Constants\Entity as EntityConstant;
+use RZP\Models\Schedule\Task\Entity as ScheduleTask;
 
 class Validator extends Base\Validator
 {
@@ -34,7 +35,8 @@ class Validator extends Base\Validator
 
     protected function validateMethod($attribute, $method)
     {
-        if (Method::isValid($method) === false)
+        if ((Method::isValid($method) === false) and
+            ($method !== EntityConstant::SETTLEMENT_TRANSFER))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $method);

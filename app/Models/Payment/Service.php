@@ -24,6 +24,7 @@ use RZP\Models\Card;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Org;
+use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants;
@@ -43,6 +44,8 @@ class Service extends Base\Service
     protected $slack;
 
     protected $mutex;
+
+    protected $razorXForDoppler = false;
 
     public function __construct()
     {
@@ -319,7 +322,7 @@ class Service extends Base\Service
 
     protected function getResponseDataFromCache($payment)
     {
-        if ($payment->getAuthenticationGateway() !== Gateway::PAYSECURE)
+        if ($payment->getGateway() !== Gateway::PAYSECURE)
         {
             return;
         }
@@ -340,7 +343,7 @@ class Service extends Base\Service
 
     protected function cacheResponseData($payment, $data)
     {
-        if ($payment->getAuthenticationGateway() !== Gateway::PAYSECURE)
+        if ($payment->getGateway() !== Gateway::PAYSECURE)
         {
             return;
         }
@@ -938,6 +941,7 @@ class Service extends Base\Service
         $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
+            'input'         => $input,
             'data'          => $data,
             'gateway'       => $gateway,
             'reference_id'  => $referenceId,
@@ -963,28 +967,7 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->fetch($input, $merchantId, true);
 
-        $this->getOfferIdsForPayments($payments);
-
         return $payments->toArrayPublic();
-    }
-
-    protected function getOfferIdsForPayments($payments)
-    {
-        $paymentIds = $payments->pluck('id');
-
-        $entityOffer = $this->repo
-                            ->entity_offer
-                            ->getOfferIdLinkedWithPayment($paymentIds);
-
-        $plucked = $entityOffer->pluck('offer_id', 'entity_id');
-
-        foreach($payments as $payment)
-        {
-            if($plucked->has($payment->getId()))
-            {
-                $payment->setOfferId($plucked->get($payment->getId()));
-            }
-        }
     }
 
     public function fetch(string $id, array $input = []): array
@@ -1003,18 +986,6 @@ class Service extends Base\Service
             // if payment merchant is not same as context merchant, other valid possibility is that fetch is called by
             // the partner merchant of that submerchant
             $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
-        }
-
-        $paymentIds = explode(', ', $payment->getId());
-
-        $entityOffer = $this->repo
-                            ->entity_offer
-                            ->getOfferIdLinkedWithPayment($paymentIds)
-                            ->first();
-
-        if($entityOffer !== null)
-        {
-            $payment->setOfferId($entityOffer->getOfferId());
         }
 
         $entity = $payment->toArrayPublicWithExpand();
@@ -1421,6 +1392,9 @@ class Service extends Base\Service
 
         $allMethods = Payment\Method::getAllPaymentMethods();
 
+        // checking razorX flag for feedback loop here per cron
+        $this->razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($this->app['request']->getId());
+
         foreach ($allMethods as $method)
         {
             $count = $count + $this->timeoutOldPaymentsForMethod($limit, $method);
@@ -1456,8 +1430,10 @@ class Service extends Base\Service
 
                     try
                     {
+                        //TODO: Remove setRazorXDopplerProperty function once we are fully live with feedback loop
                         $this->getNewProcessor($payment->merchant)
                              ->setPayment($payment)
+                             ->setRazorXDopplerProperty($this->razorXForDoppler)
                              ->timeoutPayment();
 
                         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);

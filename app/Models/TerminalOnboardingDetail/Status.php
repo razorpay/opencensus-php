@@ -12,6 +12,8 @@ class Status
 
     const ACTIVATED         = 'activated';
 
+    const DEACTIVATED       = 'deactivated';
+
     const FAILED            = 'failed';
 
     const ACTIVATION_FAILED = 'activation_failed';

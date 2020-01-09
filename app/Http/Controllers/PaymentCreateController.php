@@ -252,7 +252,6 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-
         /*
          * A possible value of $input['view'] is 'html'. This is  used by createFeeBearerCustomerPayment()
          *  to send the response in html. However *this* route is json only.
@@ -535,9 +534,9 @@ class PaymentCreateController extends Controller
             else if (($data['type'] === 'async') or
                      ($data['type'] === 'intent'))
             {
-                $merchantLogoUrl = $this->app['basicauth']->getMerchant()->getLogoUrl();
+                $merchantLogoUrl = $this->app['basicauth']->getMerchant()->getFullLogoUrlWithSize();
 
-                if(isset($merchantLogoUrl))
+                if (isset($merchantLogoUrl) === true)
                 {
                     $data['merchant_logo_url'] = $merchantLogoUrl;
                 }
@@ -769,6 +768,11 @@ class PaymentCreateController extends Controller
      */
     protected function returnCheckoutCallbackView($data)
     {
+        if (Payment\Gateway::isNachNbResponseFlow($data) === true)
+        {
+            return $this->returnNachNbCallbackView($data);
+        }
+
         return View::make('gateway.callback')->with('data', $data);
     }
 
@@ -777,7 +781,22 @@ class PaymentCreateController extends Controller
      */
     protected function returnMerchantFullRedirectView($data)
     {
+        if (Payment\Gateway::isNachNbResponseFlow($data) === true)
+        {
+            return $this->returnNachNbRedirectView($data);
+        }
+
         return View::make('gateway.callbackReturnUrl')->with('data', $data);
+    }
+
+    protected function returnNachNbCallbackView($data)
+    {
+        return View::make('gateway.callbackNachNb')->with('data', $data);
+    }
+
+    protected function returnNachNbRedirectView($data)
+    {
+        return View::make('gateway.callbackNachNb')->with('data', $data);
     }
 
     protected function returnConvenienceFeesView($input, $data, $url)

@@ -10,6 +10,8 @@ class Status
 
     const ACTIVATED         = 'activated';
 
+    const DEACTIVATED       = 'deactivated';
+
     const FAILED            = 'failed';
 
     public static function exists(string $status): bool

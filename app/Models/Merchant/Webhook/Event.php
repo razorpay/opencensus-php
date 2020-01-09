@@ -53,6 +53,7 @@ class Event
     const PAYMENT_DOWNTIME_RESOLVED         = 'payment.downtime.resolved';
     const PAYOUT_QUEUED                     = 'payout.queued';
     const PAYOUT_INITIATED                  = 'payout.initiated';
+    const PAYOUT_UPDATED                    = 'payout.updated';
     const REFUND_SPEED_CHANGED              = 'refund.speed_changed';
     const REFUND_PROCESSED                  = 'refund.processed';
     const REFUND_FAILED                     = 'refund.failed';
@@ -113,6 +114,7 @@ class Event
         self::PAYMENT_DOWNTIME_RESOLVED,
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
+        self::PAYOUT_UPDATED,
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
@@ -179,6 +181,7 @@ class Event
         self::PAYMENT_DOWNTIME_RESOLVED,
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
+        self::PAYOUT_UPDATED,
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
@@ -261,6 +264,7 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED          => 57,
         self::ACCOUNT_PAYMENTS_DISABLED         => 58,
         self::TRANSACTION_UPDATED               => 59,
+        self::PAYOUT_UPDATED                    => 60,
     ];
 
     /**
@@ -324,6 +328,7 @@ class Event
         self::ACCOUNT_REJECTED                  => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_ENABLED          => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_DISABLED         => [Product::PRIMARY],
+        self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
     ];
 
     /**
@@ -387,6 +392,7 @@ class Event
         self::ACCOUNT_REJECTED                  => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_ENABLED          => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_DISABLED         => Entity::MERCHANT,
+        self::PAYOUT_UPDATED                    => Entity::PAYOUT,
     ];
 
     public static $eventsToFeatureMap = [
@@ -418,6 +424,7 @@ class Event
         self::TRANSFER_PROCESSED                => Feature\Constants::MARKETPLACE,
         self::TERMINAL_ACTIVATED                => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_FAILED                   => Feature\Constants::TERMINAL_ONBOARDING,
+        self::PAYOUT_UPDATED                    => Feature\Constants::PAYOUT,
     ];
 
     /**

@@ -372,7 +372,7 @@ class Core extends Base\Core
 
     public function getBankingAccountEntity(string $id)
     {
-        return $this->repo->banking_account->findOrFailPublic($id);
+        return $this->repo->banking_account->find($id);
     }
 
     public function addServiceablePincodes(array $pincodes, string $channel)
