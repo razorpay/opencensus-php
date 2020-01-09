@@ -43,6 +43,7 @@ import {
     fetchRegistrationLink,
     cancelRegistrationLink,
     showNotification,
+    notifyCustomer,
     openModal,
     closeModal,
   }
@@ -92,10 +93,10 @@ export default class RegistrationLinkEntityContainer extends React.Component {
     let promises = [];
 
     if (notifyProps.email) {
-      promises.push(notifyCustomer(this.props.id, 'email'));
+      promises.push(this.props.notifyCustomer(this.props.id, 'email'));
     }
     if (notifyProps.sms) {
-      promises.push(notifyCustomer(this.props.id, 'sms'));
+      promises.push(this.props.notifyCustomer(this.props.id, 'sms'));
     }
 
     return Promise.all(promises)
