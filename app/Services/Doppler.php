@@ -279,7 +279,9 @@ class Doppler
 
         $secret = $this->config['secret'];
 
-        return md5('signature');
+        $apiKey = base64_encode($key.":".$secret);
+
+        return "basic ".$apiKey;
     }
 
     public function sendRequest(string $method, string $path, string $content)
