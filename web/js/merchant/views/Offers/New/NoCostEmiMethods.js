@@ -29,6 +29,13 @@ export default class NoCostEmiMethods extends React.Component {
       .catch(error => {
         //todo show error message in the header
       });
+    this.setState({
+      emiDurations: this.props.emiDurations || null,
+      tenure: (this.props.emiDurations || []).reduce((pV, cV) => {
+        pV[cV] = true;
+        return pV;
+      }, {}),
+    });
   }
 
   onChange = event => {
@@ -133,7 +140,8 @@ export default class NoCostEmiMethods extends React.Component {
                 href={'https://razorpay.com/docs/offers/no-cost-emi/'}
               >
                 here
-              </a>.
+              </a>
+              .
             </li>
           </ul>
         </div>
