@@ -185,6 +185,10 @@ const OfferDetails = props => {
                   value={offer.block ? 'Block Payment' : 'Allow Payment'}
                 />
                 <EntityDetailRow
+                  label="Checkout Visibility"
+                  value={offer.default_offer ? 'Yes' : 'No'}
+                />
+                <EntityDetailRow
                   label="Min Payment"
                   children={
                     <Amount value={offer.min_amount} currency={'INR'} /> || '--'
