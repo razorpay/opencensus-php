@@ -1088,6 +1088,15 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPayoutAmountAboveLimitFailsCreation()
+    {
+        $this->ba->privateAuth();
+
+        $this->addAccountNumberParameter(__FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function testInvalidPurposeThrowsException()
     {
         $this->ba->privateAuth();

@@ -15,7 +15,7 @@ class Status
     const PROCESSED  = 'processed';
     const CANCELLED  = 'cancelled';
 
-    const VALID_INITIAL_STATUSES = [
+    const VALID_PROCESSING_START_STATUSES = [
         self::ISSUED,
         self::ATTEMPTED
     ];

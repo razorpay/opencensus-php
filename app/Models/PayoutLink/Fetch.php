@@ -3,7 +3,6 @@
 namespace RZP\Models\PayoutLink;
 
 use RZP\Base\Fetch as BaseFetch;
-use RZP\Http\BasicAuth\Type as AuthType;
 
 class Fetch extends BaseFetch
 {

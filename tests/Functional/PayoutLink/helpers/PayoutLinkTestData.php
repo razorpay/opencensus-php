@@ -292,6 +292,41 @@ return [
         ]
     ],
 
+
+    'testPayoutAmountAboveLimitFailsCreation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/',
+            'content' => [
+                'amount'      => 1000003928379,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => '1231231231'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount may not be greater than 10000000000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'field'               => 'amount'
+        ]
+    ],
+
     'testGenerateOtpForOnlyEmailContact' => [
         'request'  => [
             'method'  => 'POST',

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\PayoutLink;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
@@ -64,6 +65,8 @@ class Entity extends Base\PublicEntity
     const NAME                 = 'name';
     const EMAIL                = 'email';
     const PHONE_NUMBER         = 'contact';
+
+    const MAX_PAYOUT_LIMIT     = Payout\Entity::MAX_PAYOUT_LIMIT;
 
     protected $generateIdOnCreate = true;
 
@@ -274,11 +277,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SHORT_URL, $shortUrl);
     }
 
-    public function setCancelledAt(string $timestamp)
-    {
-        $this->setAttribute(ENTITY::CANCELLED_AT, $timestamp);
-    }
-
     public function setStatus($newStatus)
     {
         $currentStatus = $this->getStatus();
@@ -291,6 +289,13 @@ class Entity extends Base\PublicEntity
         Status::validateStatusUpdate($newStatus, $currentStatus, $this->getId());
 
         $this->setAttribute(self::STATUS, $newStatus);
+
+        if ($newStatus === Status::CANCELLED)
+        {
+            $currentTime = Carbon::now()->getTimestamp();
+
+            $this->setAttribute(self::CANCELLED_AT, $currentTime);
+        }
     }
 
     // -------------------------------------- End Setters -----------------------------

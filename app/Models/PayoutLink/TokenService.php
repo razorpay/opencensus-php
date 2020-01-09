@@ -63,7 +63,7 @@ class TokenService
                 ErrorCode::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
                 null,
                 [
-                    Entity::TOKEN => $token
+                    Entity::CONTEXT => $context
                 ]
             );
         }
@@ -74,7 +74,7 @@ class TokenService
                 ErrorCode::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
                 null,
                 [
-                    Entity::TOKEN => $token
+                    Entity::CONTEXT => $context
                 ]
             );
         }

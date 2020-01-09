@@ -4,7 +4,6 @@ namespace RZP\Models\PayoutLink;
 
 use View;
 use Mail;
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
@@ -17,12 +16,12 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Channel;
-use \RZP\Models\Vpa\Entity as VpaEntity;
+use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\External\FundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
-use \RZP\Models\FundAccount\Entity as FundAccountEntity;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\PayoutLink\External\Payout as PayoutClient;
 use RZP\Models\PayoutLink\External\Contact as ContactClient;
 use RZP\Models\PayoutLink\External\FundAccount as FundAccountClient;
@@ -157,10 +156,6 @@ class Core extends Base\Core
             function () use ($payoutLink)
             {
                 $payoutLink->setStatus(Status::CANCELLED);
-
-                $currentTime = Carbon::now()->getTimestamp();
-
-                $payoutLink->setCancelledAt($currentTime);
 
                 $this->repo->saveOrFail($payoutLink);
 
@@ -312,13 +307,6 @@ class Core extends Base\Core
             function () use ($payoutLink, $payoutStatus, $nextPayoutLinkStatus)
             {
                 $payoutLink->setStatus($nextPayoutLinkStatus);
-
-                if ($nextPayoutLinkStatus === Status::CANCELLED)
-                {
-                    $currentTime = Carbon::now()->getTimestamp();
-
-                    $payoutLink->setCancelledAt($currentTime);
-                }
 
                 $isDirty = $payoutLink->isDirty();
 
@@ -623,7 +611,7 @@ class Core extends Base\Core
         // force generation of a new OTP
         $context = array_pull($input, Entity::CONTEXT);
 
-        if (in_array($payoutLink->getStatus(), Status::VALID_INITIAL_STATUSES) === false)
+        if (in_array($payoutLink->getStatus(), Status::VALID_PROCESSING_START_STATUSES) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION,
@@ -646,8 +634,7 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput(Validator::VERIFY_OTP, $input);
 
-
-        if (in_array($payoutLink->getStatus(), Status::VALID_INITIAL_STATUSES) === false)
+        if (in_array($payoutLink->getStatus(), Status::VALID_PROCESSING_START_STATUSES) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION,
