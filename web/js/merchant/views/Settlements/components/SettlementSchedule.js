@@ -91,7 +91,7 @@ export default class SettlementSchedule extends Component {
         />
         <div class="modal-body">
           <Fragment>
-            <div style={{ textAlign: 'center', fontSize: '17px' }}>
+            <div style={{ textAlign: 'left', paddingBottom: '10px' }}>
               Your payments get settled to your account in
             </div>
             <div class="emphzd">
