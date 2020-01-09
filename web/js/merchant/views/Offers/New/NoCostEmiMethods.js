@@ -33,9 +33,10 @@ export default class NoCostEmiMethods extends React.Component {
 
   onChange = event => {
     event.persist();
-    this.setState({ selectedIssuer: event.target.value }, () =>
-      this.props.getFormOnChangeHandler()(event)
+    this.props.getFormOnChangeHandler('stateResetter')(['emi_durations'])(
+      event
     );
+    this.setState({ selectedIssuer: event.target.value });
   };
 
   onSelectTenure = tenure => event => {
