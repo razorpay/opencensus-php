@@ -140,7 +140,7 @@ local function get_rate_limit_args(redis, req_ctx)
     -- Loads global and mid specific settings.
     redis:init_pipeline()
     redis:hgetall(redis_global_settings_key)
-    redis:hgetall(redis_key_prefix .. mid)
+    redis:hgetall(redis_key_prefix .. "i:" .. mid)
     local raw_res, err = redis:commit_pipeline()
     if err then
         return nil, "failed to get settings from redis: " .. err
