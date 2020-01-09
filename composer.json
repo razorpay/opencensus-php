@@ -59,7 +59,8 @@
         "rmccue/requests": "v1.7.0",
         "sentry/sentry-laravel": "0.11.0",
         "myclabs/deep-copy": "^1.6.1",
-        "razorpay/lqext": "^1.0"
+        "razorpay/lqext": "^1.0",
+        "brozot/laravel-fcm": "^1.3"
     },
     "repositories": [
         {

@@ -339,6 +339,8 @@ class Core extends Base\Core
         // For non-Yesbank, we will not get public_failure_reason
         $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
 
+        $initialUtr = $payout->getUtr();
+
         $payout->setUtr($ftaData[Attempt\Constants::UTR]);
 
         $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
@@ -369,6 +371,12 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($payout);
+
+        if (($initialUtr === null) and
+            ($payout->getUtr() !== null))
+        {
+            $this->app->events->fire('api.payout.updated', [$payout]);
+        }
     }
 
     public function processDispatchForQueuedPayouts(Base\PublicCollection $queuedPayouts)

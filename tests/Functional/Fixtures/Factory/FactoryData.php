@@ -1335,5 +1335,12 @@ final class FactoryData
         $factory(\RZP\Models\Invoice\Reminder\Entity::class, [
             ]
         );
+
+        $factory(\RZP\Models\Offline\Device\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'type'               => 'android',
+            'status'             => 'created',
+            'activation_token'   => $faker->sha256,
+        ]);
     }
 }

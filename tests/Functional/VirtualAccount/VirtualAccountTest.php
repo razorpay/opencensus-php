@@ -135,6 +135,16 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testVaOfflineQRGeneration()
+    {
+        $this->fixtures->merchant->addFeatures(['offline_payments']);
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('id', $response);
+        $this->assertArrayHasKey('receivers', $response);
+    }
+
     public function testPayVirtualAccountWithPastCloseBy()
     {
         $closeTimeStamp = Carbon::now()->timestamp + 1000;
