@@ -6,6 +6,7 @@ use App;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
 use RZP\Models\Gateway\Downtime;
@@ -99,7 +100,23 @@ class DopplerProcessor implements ProcessorInterface
 
     public function validate(array $input)
     {
-        //
+        $token = $this->app['request']->header('Authorization');
+
+        list($key, $secret) = $this->fetchdopplerCredentials();
+
+        $hash = base64_encode($key.":".$secret);
+
+        $apiKey = "basic ".$hash;
+
+        if (hash_equals($apiKey, $token) === false)
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TOKEN,
+                ['token' => $input['token'], 'computed' => md5($apiKey)]);
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Doppler token validation failure.');
+        }
     }
 
     public function process(array $input)
@@ -302,6 +319,15 @@ class DopplerProcessor implements ProcessorInterface
         }
 
         return false;
+    }
+
+    protected function fetchdopplerCredentials()
+    {
+        $key = $this->app['config']->get('applications.doppler.key');
+
+        $secret = $this->app['config']->get('applications.doppler.secret');
+
+        return [$key, $secret];
     }
 
 }
