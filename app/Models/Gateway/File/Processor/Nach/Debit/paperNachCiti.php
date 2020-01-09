@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Nach\Debit;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
@@ -13,6 +14,7 @@ use RZP\Models\Gateway\File\Status;
 use RZP\Exception\GatewayFileException;
 use RZP\Gateway\Enach\Citi\FieldsLength;
 use RZP\Gateway\Enach\Citi\HeadingsLength;
+use RZP\Mail\Gateway\Nach\Base as NachMail;
 use RZP\Gateway\Enach\Citi\Fields as Fields;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
@@ -30,6 +32,7 @@ class PaperNachCiti extends Debit\Base
     const SUMMARY_EXTENSION = FileStore\Format::XLS;
     const STEP              = 'debit';
     const REFERENCE_PREFIX  = 'CTTATAAIAA';
+    const GATEWAY           = Payment\Gateway::NACH_CITI;
     const FILE_METADATA     = [
         'gid'   => '10000',
         'uid'   => '10006',
@@ -37,8 +40,6 @@ class PaperNachCiti extends Debit\Base
     ];
 
     protected $fileStore;
-
-    protected $gateway  = Payment\Gateway::NACH_CITI;
 
     public function __construct()
     {
@@ -200,6 +201,13 @@ class PaperNachCiti extends Debit\Base
 
             $fileInfo[] = $fullFileName;
         }
+
+        $mailData = $this->formatDataForMail($files);
+
+        $type = static::GATEWAY . '_' . static::STEP;
+        $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
+
+        Mail::queue($mailable);
 
         $data = [
             BeamService::BEAM_PUSH_FILES   => $fileInfo,
