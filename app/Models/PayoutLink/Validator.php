@@ -83,16 +83,17 @@ class Validator extends Base\Validator
      */
     protected function validateContact(array $input)
     {
-        if (isset($input[Entity::CONTACT][Entity::ID]) === true)
+        if (empty($input[Entity::CONTACT][Entity::ID]) === true)
         {
-            if ((isset($input[Entity::CONTACT][Entity::EMAIL]) === true) or
-                (isset($input[Entity::CONTACT][Entity::PHONE_NUMBER]) === true)
-            )
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_EITHER_CONTACT_ID_OR_INFORMATION_TO_BE_SENT,
-                                              null,
-                                              $input);
-            }
+            return;
+        }
+
+        if ((isset($input[Entity::CONTACT][Entity::EMAIL]) === true) or
+            (isset($input[Entity::CONTACT][Entity::PHONE_NUMBER]) === true))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_EITHER_CONTACT_ID_OR_INFORMATION_TO_BE_SENT,
+                                          null,
+                                          $input);
         }
     }
 }

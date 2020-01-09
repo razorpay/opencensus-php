@@ -73,7 +73,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Updates settings for payoutlinks on merchant level
+     * Updates settings for payout-links on merchant level
      * @param MerchantEntity $merchant
      * @param $input
      * @return array
@@ -97,11 +97,6 @@ class Core extends Base\Core
         return [self::SUCCESS => self::OK];
     }
 
-    protected function getSettingsAccessor($merchant)
-    {
-        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
-    }
-
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
     {
         (new Validator)->validateInput(Validator::GET_FUND_ACCOUNT_BY_CONTACT_RULE, $input);
@@ -113,7 +108,6 @@ class Core extends Base\Core
                              ->getActiveFundAccountsByPayoutLinkIdAndMerchant($payoutLinkId, $this->merchant);
 
         return $fundAccounts;
-
     }
 
     public function cancel(Entity $payoutLink): Entity
@@ -125,7 +119,7 @@ class Core extends Base\Core
             ]
         );
 
-        //   If already cancelled, then return the entity without any change. Makes this call idempotent.
+        // If already cancelled, then return the entity without any change. Makes this call idempotent.
         if ($payoutLink->getStatus() === Status::CANCELLED)
         {
             return $payoutLink;
@@ -159,7 +153,7 @@ class Core extends Base\Core
             TraceCode::PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD,
             $input);
 
-        // Adding Mutex, because we want only one initiate call at a time on the same payoutlink
+        // Adding Mutex, because we want only one initiate call at a time on the same payout-link
         // So by flow, if two calls to add a fund-account-id + initiate payout come in, and the first one is successful,
         // then the next call waiting for the mutex should fail in token verification itself.
         // If we do move the token auth outside the mutex, then its possible for two fund-accounts to be added,
@@ -189,7 +183,7 @@ class Core extends Base\Core
                                 ]);
                         }
 
-                        // Code to create/fetch fund account and associate it with the payoutlink
+                        // Code to create/fetch fund account and associate it with the payout-link
                         $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
                                                                                           $this->merchant,
                                                                                           $payoutLink->contact);
@@ -226,7 +220,7 @@ class Core extends Base\Core
     }
 
     /**
-     * This function will listen to payout updates, and update the corresponding payoutlink
+     * This function will listen to payout updates, and update the corresponding payout-link
      * This will be inside a mutex. Transaction is not required, because its just a status update
      *
      * @param Entity $payoutLink
@@ -369,41 +363,6 @@ class Core extends Base\Core
         return View::make('payout_link.customer_hosted', $hostedPageData);
     }
 
-    protected function getDataForHostedPage(Entity $payoutLink): array
-    {
-        $maskedEmail = $this->getMaskedEmail($payoutLink->getContactEmail());
-
-        $maskedPhone = $this->getMaskedPhone($payoutLink->getContactPhoneNumber());
-
-        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
-
-        $isUpiEnabled = boolval($settingsAccessor->get(Entity::UPI));
-
-        $isProduction = $this->app->environment() === Environment::PRODUCTION;
-
-        $data = [
-            'api_host'                => $this->config['url.api.production'],
-            'payout_link_id'          => $payoutLink->getPublicId(),
-            'payout_link_status'      => $payoutLink->getStatus(),
-            'amount'                  => $payoutLink->getAmount(),
-            'currency'                => $payoutLink->getCurrency(),
-            'user_name'               => $payoutLink->getContactName(),
-            'description'             => $payoutLink->getDescription(),
-            'user_email'              => $maskedEmail,
-            'user_phone'              => $maskedPhone,
-            'receipt'                 => $payoutLink->getReceipt(),
-            'merchant_logo_url'       => $this->merchant->getLogoUrl(),
-            'payout_link_description' => $payoutLink->getDescription(),
-            'primary_color'           => $this->merchant->getBrandColor(),
-            'merchant_name'           => $this->getDisplayName(),
-            'allow_upi'               => $isUpiEnabled,
-            'banking_url'             => $this->config['applications.banking_service_url'],
-            'is_production'           => $isProduction
-        ];
-
-        return $data;
-    }
-
     /**
      * Masks the customer email as follows
      * Input: test_email@gmail.com
@@ -463,7 +422,7 @@ class Core extends Base\Core
         return $maskedEmail;
     }
 
-    public function getMaskedPhone(string $phone)
+    protected function getMaskedPhone(string $phone)
     {
         if (empty($phone) === true)
         {
@@ -476,22 +435,6 @@ class Core extends Base\Core
                str_repeat('*', $phoneLen - 4) .
                substr($phone, $phoneLen - 2, 2);
 
-    }
-
-    protected function getBalance(array $input)
-    {
-        $balanceId = array_pull($input, Entity::BALANCE_ID);
-
-        if (empty($balanceId) === true)
-        {
-            $balance = $this->merchant->primaryBalance;
-        }
-        else
-        {
-            $balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
-        }
-
-        return $balance;
     }
 
     public function generateAndSendCustomerOtp(Entity $payoutLink, array $input): array
@@ -547,6 +490,62 @@ class Core extends Base\Core
         return [
             'token' => $token
         ];
+    }
+
+    protected function getDataForHostedPage(Entity $payoutLink): array
+    {
+        $maskedEmail = $this->getMaskedEmail($payoutLink->getContactEmail());
+
+        $maskedPhone = $this->getMaskedPhone($payoutLink->getContactPhoneNumber());
+
+        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
+
+        $isUpiEnabled = boolval($settingsAccessor->get(Entity::UPI));
+
+        $isProduction = $this->app->environment() === Environment::PRODUCTION;
+
+        $data = [
+            'api_host'                => $this->config['url.api.production'],
+            'payout_link_id'          => $payoutLink->getPublicId(),
+            'payout_link_status'      => $payoutLink->getStatus(),
+            'amount'                  => $payoutLink->getAmount(),
+            'currency'                => $payoutLink->getCurrency(),
+            'user_name'               => $payoutLink->getContactName(),
+            'description'             => $payoutLink->getDescription(),
+            'user_email'              => $maskedEmail,
+            'user_phone'              => $maskedPhone,
+            'receipt'                 => $payoutLink->getReceipt(),
+            'merchant_logo_url'       => $this->merchant->getLogoUrl(),
+            'payout_link_description' => $payoutLink->getDescription(),
+            'primary_color'           => $this->merchant->getBrandColor(),
+            'merchant_name'           => $this->getDisplayName(),
+            'allow_upi'               => $isUpiEnabled,
+            'banking_url'             => $this->config['applications.banking_service_url'],
+            'is_production'           => $isProduction
+        ];
+
+        return $data;
+    }
+
+    protected function getBalance(array $input)
+    {
+        $balanceId = array_pull($input, Entity::BALANCE_ID);
+
+        if (empty($balanceId) === true)
+        {
+            $balance = $this->merchant->primaryBalance;
+        }
+        else
+        {
+            $balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
+        }
+
+        return $balance;
+    }
+
+    protected function getSettingsAccessor($merchant)
+    {
+        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
     }
 
     protected function processContext(string $payoutLinkId, string $context = null): string

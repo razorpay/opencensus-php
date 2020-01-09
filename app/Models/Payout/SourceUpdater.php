@@ -22,11 +22,14 @@ class SourceUpdater
      * In case the transaction fails, then the current and previous status of payout will be the same,
      * and the SourceUpdater will reject the push to source
      */
-    const DELAY = '5';
+    const DELAY = 5;
 
     public static function dispatch(string $mode, Entity $payout, string $previousStatus = null)
     {
-        PayoutSourceUpdaterJob::dispatch($mode, $payout->getPublicId(), $previousStatus)->delay(self::DELAY);
+        PayoutSourceUpdaterJob::dispatch($mode,
+                                         $payout->getPublicId(),
+                                         $previousStatus)
+                              ->delay(self::DELAY);
     }
 
     /**
@@ -40,9 +43,9 @@ class SourceUpdater
     public static function update(Entity $payout, string $previousPayoutStatus)
     {
         $payoutLink = $payout->payoutLink;
+
         if (($payoutLink !== null) and
-            ($payout->getStatus() !== $previousPayoutStatus)
-        )
+            ($payout->getStatus() !== $previousPayoutStatus))
         {
             (new PayoutLinkCore())->payoutUpdateListener($payoutLink, $payout);
         }

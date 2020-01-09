@@ -706,7 +706,7 @@ class PayoutLinkTest extends TestCase
                                                 'email'   => 'test2@rzp.com',
                                                 'contact' => '9876543210'
                                             ]);
-        // create the payoutlink that is associated with the first contact
+        // create the payout-link that is associated with the first contact
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'contact_id'           => $contact1->getId(),
