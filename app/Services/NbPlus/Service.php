@@ -289,7 +289,7 @@ class Service
             $this->handleInternalServerErrors(ErrorCode::SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_FAILURE);
         }
 
-        $errorCode = $error[Error::CAUSE];
+        $errorCode = $error[Error::CAUSE][Error::MOZART_ERROR_CODE];
 
         $class = $this->getErrorClassFromErrorCode($errorCode);
 

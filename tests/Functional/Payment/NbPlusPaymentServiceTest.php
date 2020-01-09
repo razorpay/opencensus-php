@@ -142,7 +142,9 @@ class NbPlusPaymentServiceTest extends TestCase
                     NbPlusPaymentService\Response::RESPONSE  => null,
                     NbPlusPaymentService\Response::ERROR     => [
                         NbPlusPaymentService\Error::CODE  => 'GATEWAY',
-                        NbPlusPaymentService\Error::CAUSE => 'BAD_REQUEST_PAYMENT_FAILED'
+                        NbPlusPaymentService\Error::CAUSE => [
+                            NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_FAILED'
+                        ]
                     ],
                 ];
             }
@@ -183,7 +185,10 @@ class NbPlusPaymentServiceTest extends TestCase
                     NbPlusPaymentService\Response::RESPONSE  => null,
                     NbPlusPaymentService\Response::ERROR => [
                         NbPlusPaymentService\Error::CODE  => 'GATEWAY',
-                        NbPlusPaymentService\Error::CAUSE => 'BAD_REQUEST_PAYMENT_FAILED'
+                        NbPlusPaymentService\Error::CAUSE => [
+                            NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_FAILED'
+                        ]
+
                     ],
                 ];
             }
@@ -227,7 +232,9 @@ class NbPlusPaymentServiceTest extends TestCase
                 NbPlusPaymentService\Response::RESPONSE  => null,
                 NbPlusPaymentService\Response::ERROR     => [
                     NbPlusPaymentService\Error::CODE  => 'GATEWAY',
-                    NbPlusPaymentService\Error::CAUSE => 'BAD_REQUEST_PAYMENT_FAILED'
+                    NbPlusPaymentService\Error::CAUSE => [
+                        NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_FAILED'
+                    ]
                 ],
             ];
         });
@@ -260,7 +267,9 @@ class NbPlusPaymentServiceTest extends TestCase
                 NbPlusPaymentService\Response::RESPONSE => null,
                 NbPlusPaymentService\Response::ERROR    => [
                     NbPlusPaymentService\Error::CODE  => 'GATEWAY',
-                    NbPlusPaymentService\Error::CAUSE => 'SERVER_ERROR'
+                    NbPlusPaymentService\Error::CAUSE => [
+                        NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'SERVER_ERROR'
+                    ]
                 ],
             ];
         });
@@ -295,7 +304,9 @@ class NbPlusPaymentServiceTest extends TestCase
                 NbPlusPaymentService\Response::RESPONSE => null,
                 NbPlusPaymentService\Response::ERROR => [
                     NbPlusPaymentService\Error::CODE  => 'GATEWAY',
-                    NbPlusPaymentService\Error::CAUSE => 'GATEWAY_ERROR_UNKNOWN_ERROR'
+                    NbPlusPaymentService\Error::CAUSE => [
+                        NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'GATEWAY_ERROR_UNKNOWN_ERROR'
+                    ]
                 ],
             ];
         });
