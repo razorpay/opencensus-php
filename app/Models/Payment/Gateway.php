@@ -369,6 +369,8 @@ class Gateway
         IFSC::YESB,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
+        IFSC::SBIN,
+        IFSC::ORBC,
     ];
 
     // banks supported by enach_npci_netbanking gateway for auth type card
@@ -389,6 +391,7 @@ class Gateway
         IFSC::UTBI,
         IFSC::YESB,
         Netbanking::PUNB_R,
+        IFSC::SBIN,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -667,6 +670,7 @@ class Gateway
         Payment\Gateway::UPI_SBI,
         Payment\Gateway::NETBANKING_HDFC,
         Payment\Gateway::PAYSECURE,
+        Payment\Gateway::NETBANKING_KOTAK,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -692,6 +696,7 @@ class Gateway
         Payment\Gateway::NETBANKING_IBK         => 1576578600,
         Payment\Gateway::UPI_SBI                => 1576578600,
         Payment\Gateway::NETBANKING_HDFC        => 1577097000,
+        Payment\Gateway::NETBANKING_KOTAK       => 1578479400,
     ];
 
     public static $channels = [
@@ -879,6 +884,13 @@ class Gateway
         self::NETBANKING_AXIS,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_SBI,
+    ];
+
+    /**
+     * Every gateway in this list must also be a part of $scroogeGateways [that is onboarded in Scrooge] - since FTAs are initiated via Scrooge.
+     */
+    const UPI_TRANSFER_REFUND_GATEWAYS = [
+       self::UPI_MINDGATE,
     ];
 
     /**
@@ -1663,10 +1675,8 @@ class Gateway
                 IFSC::ANDB,
                 IFSC::SYNB,
                 IFSC::SURY,
-                IFSC::UCBA,
                 IFSC::ICIC,
                 IFSC::CBIN,
-                IFSC::IDFB,
             ]
         ],
 

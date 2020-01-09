@@ -704,7 +704,7 @@ final class FactoryData
             'description' => 'This is a test group',
             ]
         );
-
+        
         $factory(\RZP\Models\Admin\Admin\Entity::class, [
             'id'                 => $faker->uniqueid,
             'org_id'             => 'factory:\RZP\Models\Admin\Org\Entity',
@@ -1335,5 +1335,12 @@ final class FactoryData
         $factory(\RZP\Models\Invoice\Reminder\Entity::class, [
             ]
         );
+
+        $factory(\RZP\Models\Offline\Device\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'type'               => 'android',
+            'status'             => 'created',
+            'activation_token'   => $faker->sha256,
+        ]);
     }
 }

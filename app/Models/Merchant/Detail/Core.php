@@ -1877,4 +1877,24 @@ class Core extends Base\Core
 
         Mail::queue($rejectionMail);
     }
+
+    public function updateInternationalActivationFlow(Merchant\Entity $merchant, $international)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $internationalActivationFlow = ActivationFlow::BLACKLIST;
+
+        if ($international === 1)
+        {
+            $internationalActivationFlow = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
+                BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
+                $merchantDetail->getBusinessCategory(),
+                $merchantDetail->getBusinessSubcategory(),
+                ActivationFlow::BLACKLIST);
+        }
+
+        $merchantDetail->setInternationalActivationFlow($internationalActivationFlow);
+
+        $this->repo->saveOrFail($merchantDetail);
+    }
 }

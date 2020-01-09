@@ -211,10 +211,10 @@ class Service extends Base\Service
                 else if (trim($response[$paymentId][$field]) !== $misParams[$field])
                 {
                     // CPS data and MIS data both are non empty and we have mismatch.
-                    // Raise alert and don't save this MIS value.
-                    $this->messenger->raiseReconAlert(
+                    // Trace alert and don't save this MIS value.
+                    $this->trace->info(
+                        TraceCode::RECON_MISMATCH,
                         [
-                            'trace_code'                => TraceCode::RECON_MISMATCH,
                             'info_code'                 => InfoCode::CPS_PAYMENT_AUTH_DATA_MISMATCH,
                             'payment_id'                => $paymentId,
                             'field'                     => $field,

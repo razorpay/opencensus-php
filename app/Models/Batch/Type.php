@@ -249,6 +249,7 @@ class Type
         self::FUND_ACCOUNT,
         self::SUBMERCHANT_ASSIGN,
         self::PRICING_RULE,
+        self::AUTH_LINK,
         self::VIRTUAL_BANK_ACCOUNT,
         self::PARTNER_SUBMERCHANTS,
         self::OAUTH_MIGRATION_TOKEN,

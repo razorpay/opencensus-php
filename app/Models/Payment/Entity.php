@@ -1679,6 +1679,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::PAYMENT_LINK_ID);
     }
 
+    public function hasReceiver()
+    {
+        return ($this->isAttributeNotNull(self::RECEIVER_ID));
+    }
+
     public function hasMetadata($key = null)
     {
         if ($key === null)
@@ -3371,8 +3376,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return false;
         }
 
-        return (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true));
+        return (($this->card->isInternational() === true) and
+                ($this->card->isAmex() === false));
     }
 
     public function shouldRunShieldChecks()

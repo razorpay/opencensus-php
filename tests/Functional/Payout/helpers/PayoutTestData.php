@@ -2246,4 +2246,20 @@ return [
             ],
         ],
     ],
+
+    'testFiringOfWebhookOnUpdationOfUtrEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payout.updated',
+        'contains' => [
+            'payout',
+        ],
+        'payload' => [
+            'payout' => [
+                'entity' => [
+                    'entity'     => 'payout',
+                    'utr'        => '933815233814',
+                ],
+            ],
+        ],
+    ],
 ];

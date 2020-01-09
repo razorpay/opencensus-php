@@ -214,6 +214,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new DiagClient($app);
         });
 
+        $this->app->singleton('salesforce', function($app)
+        {
+            $salesForceMock = $app['config']->get('applications.salesforce.mock');
+
+            if ($salesForceMock === true)
+            {
+                return new Mock\SalesForceClient($app);
+            }
+
+            return new SalesForceClient($app);
+        });
+
         $this->app->singleton('gateway_downtime_metric', function($app)
         {
             return new DowntimeMetric();
@@ -376,6 +388,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'diag',
             'mozart',
             'hubspot',
+            'salesforce',
         ];
     }
 

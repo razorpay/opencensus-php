@@ -166,6 +166,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setMerchantIdInOutput($this->payment->getMerchantId());
 
+        $this->calculateAndSetNetAmountInOutputFile($row, $rowDetails);
+
         try
         {
             //
@@ -203,6 +205,26 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             throw $ex;
         }
+    }
+
+    /**
+     * Calculates Net amount from the MIS row and
+     * sets it in the output file
+     *
+     * @param array $row
+     * @param array $rowDetails
+     */
+    protected function calculateAndSetNetAmountInOutputFile(array $row, array $rowDetails)
+    {
+        $grossAmt = intval($this->getReconPaymentAmount($row));
+
+        $gatewayFee = intval($rowDetails[Base\Reconciliate::GATEWAY_FEE]);
+
+        $gst = intval($rowDetails[Base\Reconciliate::GATEWAY_SERVICE_TAX]);
+
+        $netAmount = ($grossAmt - ($gatewayFee + $gst)) / 100;
+
+        $this->setReconNetAmountInOutput($netAmount);
     }
 
     /**

@@ -156,6 +156,24 @@ return [
         ],
     ],
 
+    'testVaOfflineQRGeneration' => [
+        'request' => [
+            'url'     => '/virtual_accounts/offline_qr',
+            'method'  => 'POST',
+            'content' => [
+                'currency'      => 'INR',
+                'amount'        => 100,
+                'receipt'       => 'test_data',
+                'description'   => 'description',
+                'notifications' => [
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testFetchOrderWithVirtualAccountNoExpand' => [
         'request' => [
             'method'  => 'GET',

@@ -149,17 +149,9 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->where(Token\Entity::MERCHANT_ID, '=', $merchantId)
-                      ->where(function($query)
-                      {
-                          $query->where(Token\Entity::RECURRING, '=', "1")
-                                ->orWhere(function($query)
-                                {
-                                    $query->where(Token\Entity::RECURRING, '=', "0")
-                                          ->whereIn(
-                                              Token\Entity::RECURRING_STATUS,
-                                              [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED, RecurringStatus::INITIATED]);
-                                });
-                      })
+                      ->whereIn(
+                          Token\Entity::RECURRING_STATUS,
+                          [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED, RecurringStatus::INITIATED])
                       ->with('customer');
 
         $query = $this->buildFetchQuery($query, $input);

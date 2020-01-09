@@ -233,13 +233,36 @@ trait Authorize
             return null;
         }
 
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:238"
+            ]
+        );
+
         if ($this->canAuthorizeViaCps($payment) === true)
         {
+
             $request =  $this->authorizeViaCps($payment, $input, $gatewayInput);
+
+            $this->trace->info(
+                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+                [
+                    'line'      => "Models/Payment/Processor/Authorize.php:251"
+                ]
+            );
+
         }
         else
         {
             $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+
+            $this->trace->info(
+                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+                [
+                    'line'      => "Models/Payment/Processor/Authorize.php:263"
+                ]
+            );
         }
 
         if (($request !== null) and
@@ -292,6 +315,14 @@ trait Authorize
 
         $retry = false;
 
+        // Checking razorX flag for feedback loop here per paymentId
+        $razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($payment->getId());
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:323"
+            ]
+        );
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -410,12 +441,7 @@ trait Authorize
 
                 $internalErrorCode = $e->getError()->getInternalErrorCode();
 
-                $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-                $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
-
-                if (($isProduction === true) and
-                    (strtolower($variant) === 'on'))
+                if ($razorXForDoppler === true)
                 {
                     //TODO: Remove this later
                     try
@@ -887,6 +913,11 @@ trait Authorize
 
         try
         {
+            // this is a temporary fix for irctc case, where a validation has to be done on supported method level,
+            // which will be stored in notes during order creation
+            // Slack Ref - https://razorpay.slack.com/archives/C2ZL6H76U/p1578388168053200
+            $this->validateOrderMethods($payment);
+
             $this->validateCardAndCvv($payment, $input);
 
             $this->validateRecurringIfApplicable($payment, $input);
@@ -1878,6 +1909,14 @@ trait Authorize
         $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
         $this->setPaymentRoutedThroughCpsIfApplicable($payment, $gatewayInput);
+
+
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:1917"
+            ]
+        );
 
         $this->repo->saveOrFail($payment);
 
@@ -3455,9 +3494,13 @@ trait Authorize
 
             $tokenMaxAmount = null;
 
+            $tokenExpireBy  = null;
+
             if ($tokenRegistration !== null)
             {
                 $tokenMaxAmount = $tokenRegistration->getMaxAmount();
+
+                $tokenExpireBy  = $tokenRegistration->getExpireAt();
             }
 
             $saveMethodInput[Token\Entity::MAX_AMOUNT] =
@@ -3482,7 +3525,7 @@ trait Authorize
                 $input[Payment\Entity::AADHAAR]['vid'] ?? null;
 
             $saveMethodInput[Token\Entity::EXPIRED_AT] =
-                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
+                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? $tokenExpireBy;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -5613,6 +5656,57 @@ trait Authorize
             ($payment->getTokenId() !== null))
         {
             $payment->getValidator()->validateCardAndCvv($input);
+        }
+    }
+
+    protected function validateOrderMethods(Payment\Entity $payment)
+    {
+        // list of irctc merchant_ids
+        $irctcMerchantIds = ['8byazTDARv4Io0', '90xVmQJTCEJ6GH', '9m4CChGex4ENkR', 'B3AFCVPnT82ehc', 'AEPXwjSlJJhfUl',
+            'AEsxERLbWiBuUG', '8YPFnW5UOM91H7', '8ST00QgEPT14cE'];
+
+        array_push($irctcMerchantIds, '10000000000000'); //for testing
+
+        $merchantId = $payment->getMerchantId();
+
+        if (in_array($merchantId, $irctcMerchantIds) === false)
+        {
+            return;
+        }
+
+        $order = $payment->order;
+
+        if(isset($order) === false)
+        {
+            return;
+        }
+
+        if (isset($order->getNotes()['Pay_Mode']) === false)
+        {
+            return;
+        }
+
+        $paymentMode = $order->getNotes()['Pay_Mode'];
+
+        $method = $payment->getMethod();
+
+        if ((($paymentMode === 'UPI') and ($method !== Payment\Method::UPI)) or
+            ($paymentMode === 'NOUPI') and (($method == Payment\Method::UPI)))
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_ORDER_METHOD_VALIDATION_FAILED,
+                [
+                    'paymentMode' => $paymentMode,
+                    'method'      => $method
+                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_FOR_ORDER,
+                null,
+                [
+                    'paymentMode' => $paymentMode,
+                    'method'      => $method
+                ]);
         }
     }
 
