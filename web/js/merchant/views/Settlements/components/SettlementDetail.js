@@ -64,17 +64,19 @@ export default class SettlementDetail extends Component {
               {isOnHold ? (
                 <p class="grey">
                   {onHoldReason && onHoldReason.reason ? (
-                    <>{onHoldReason.reason}</>
+                    <p class="grey" style={{ opacity: '.7' }}>
+                      {onHoldReason.reason}
+                    </p>
                   ) : (
-                    <>
+                    <p class="grey" style={{ opacity: '.7' }}>
                       Because of some risk issues with your payments or with
                       your razorpay account, Your settlements have been put on
                       hold.
-                    </>
+                    </p>
                   )}
                 </p>
               ) : (
-                <p class="grey">
+                <p class="grey" style={{ opacity: '.7' }}>
                   This is an estimate of the settlement amount and the actual
                   settled amount may vary based on the latest transactions in
                   your account.
@@ -86,6 +88,7 @@ export default class SettlementDetail extends Component {
                 display: 'flex',
                 justifyContent: 'space-evenly',
                 flexDirection: 'row',
+                paddingTop: '20px',
               }}
             >
               <a
