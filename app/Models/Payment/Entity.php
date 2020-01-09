@@ -390,7 +390,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
-        self::ACCOUNT_ID
+        self::ACCOUNT_ID,
     ];
 
     /**
@@ -455,7 +455,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
-        self::ACCOUNT_ID
+        self::ACCOUNT_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -2780,7 +2780,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return;
         }
 
-        $array['account_id'] = Account\Entity::getSignedId($array[self::MERCHANT_ID]);
+        $array[self::ACCOUNT_ID] = Account\Entity::getSignedId($array[self::MERCHANT_ID]);
     }
 
     public function associateTerminal($terminal)
