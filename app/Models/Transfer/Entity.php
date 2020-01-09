@@ -604,7 +604,7 @@ class Entity extends Base\PublicEntity
 
     public function toArrayPublic()
     {
-        if ($this->isCreated())
+        if ($this->isCreated() === true)
         {
             $this->public = [
                 self::RECIPIENT,
