@@ -18,8 +18,10 @@ use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Channel;
 use \RZP\Models\Vpa\Entity as VpaEntity;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\External\FundAccount;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use \RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\PayoutLink\External\Payout as PayoutClient;
 use RZP\Models\PayoutLink\External\Contact as ContactClient;
@@ -69,10 +71,8 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function getSettings($merchantId)
+    public function getSettings(MerchantEntity $merchant)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
         $settingsAccessor = $this->getSettingsAccessor($merchant);
 
         return $settingsAccessor->all()->toArray();
@@ -80,22 +80,21 @@ class Core extends Base\Core
 
     /**
      * Updates settings for payoutlinks on merchant level
+     * @param MerchantEntity $merchant
      * @param $input
      * @return array
      */
-    public function updateSettings($merchantId, $input)
+    public function updateSettings(MerchantEntity $merchant, array $input)
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_SETTINGS_UPDATE,
             [
-                'merchant_id' => $merchantId,
+                'merchant_id' => $merchant->getPublicId(),
                 'input'       => $input
             ]
         );
 
         (new Validator())->validateInput(Validator::SETTINGS_RULE, $input);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $settingsAccessor = $this->getSettingsAccessor($merchant);
 
@@ -123,18 +122,14 @@ class Core extends Base\Core
 
     }
 
-    public function cancel(string $payoutLinkId): Entity
+    public function cancel(Entity $payoutLink): Entity
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CANCEL_REQUEST,
             [
-                'id' => $payoutLinkId
+                'id' => $payoutLink->getPublicId()
             ]
         );
-
-        $payoutLink = $this->repo
-                            ->payout_link
-                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
         // on code level, we are not going to allow cancel operation when payout-link is in processing
         // not adding this check in Status.php, because payoutlink can move from
@@ -145,7 +140,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_CANNOT_BE_CANCELLED_IN_THIS_STATE,
                 null,
                 [
-                    self::PAYOUT_LINK_ID => $payoutLinkId,
+                    self::PAYOUT_LINK_ID => $payoutLink->getPublicId(),
                     'current_status'     => $payoutLink->getStatus(),
                     'next_status'        => Status::CANCELLED
                 ]);
@@ -179,11 +174,11 @@ class Core extends Base\Core
     }
 
     /**
-     * @param string $payoutLinkId
+     * @param Entity $payoutLink
      * @param array $input
-     * @return array
+     * @return Entity
      */
-    public function initiate(string $payoutLinkId, array $input): Entity
+    public function initiate(Entity $payoutLink, array $input): Entity
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD,
@@ -197,21 +192,17 @@ class Core extends Base\Core
         // will be added and a payout created.
         // Also the whole thing will be a transaction, as we do not want to add new fund-account if any step fails
         return $this->mutex->acquireAndRelease(
-            $payoutLinkId,
-            function() use ($payoutLinkId, $input)
+            $payoutLink,
+            function() use ($payoutLink, $input)
             {
                 return $this->repo->transaction(
-                    function() use ($payoutLinkId, $input)
+                    function() use ($payoutLink, $input)
                     {
                         (new Validator())->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
 
                         $token = array_pull($input, Entity::TOKEN);
 
-                        $this->tokenService->verify($token, $payoutLinkId);
-
-                        $payoutLink = $this->repo
-                                           ->payout_link
-                                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+                        $this->tokenService->verify($token, $payoutLink->getPublicId());
 
                         if (in_array($payoutLink->getStatus(), Status::VALID_STARTING_STATUSES) === false)
                         {
@@ -219,8 +210,8 @@ class Core extends Base\Core
                                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
                                 null,
                                 [
-                                    self::PAYOUT_LINK_ID => $payoutLinkId,
-                                    'status'             => $payoutLink->getStatus()
+                                    self::PAYOUT_LINK_ID => $payoutLink->getPublicId(),
+                                    Entity::STATUS       => $payoutLink->getStatus()
                                 ]);
                         }
 
@@ -265,7 +256,7 @@ class Core extends Base\Core
 
                         $this->trace->info(TraceCode::PAYOUT_LINK_INVALIDATING_REDIS_TOKEN,
                                            [
-                                               'payout_link_id'     => $payoutLinkId,
+                                               'payout_link_id'     => $payoutLink->getPublicId(),
                                                'payout_link_status' => $payoutLink->getStatus()
                                            ]);
 
@@ -282,17 +273,20 @@ class Core extends Base\Core
      * This function will listen to payout updates, and update the corresponding payoutlink
      * This will be inside a mutex. Transaction is not required, because its just a status update
      *
-     * @param string $payoutLinkId
-     * @param string $payoutStatus
+     * @param Entity $payoutLink
+     * @param PayoutEntity $payout
      */
-    public function payoutUpdateListener(Entity $payoutLink, string $payoutStatus)
+    public function payoutUpdateListener(Entity $payoutLink, PayoutEntity $payout)
     {
+        $payoutStatus = $payout->getStatus();
+
         if (isset(Status::PAYOUT_TO_PAYOUT_LINK_STATUSES[$payoutStatus]) === false)
         {
             $this->trace->warning(TraceCode::PAYOUT_LINK_UN_HANDLED_PAYOUT_STATUS,
                                   [
                                       'payout_link_id' => $payoutLink->getPublicId(),
                                       'payout_status'  => $payoutStatus,
+                                      'payout_id'      => $payout->getPublicId()
                                   ]);
             return;
         }
@@ -307,6 +301,12 @@ class Core extends Base\Core
                 'next_payout_link_status' => $nextPayoutLinkStatus
             ]);
 
+        //
+        // Its possible that the mutex on the same payoutLinksId be acquired twice in the same request.
+        // But instead of failing on lock-acquire, because the requestId is the same,
+        // this is handled in the Mutex Service,
+        // and access is given to the successive locks belonging to the same requestId
+        //
         $this->mutex->acquireAndRelease(
             $payoutLink->getPublicId(),
             function () use ($payoutLink, $payoutStatus, $nextPayoutLinkStatus)
@@ -370,9 +370,7 @@ class Core extends Base\Core
             TraceCode::PAYOUT_LINK_CREATE_REQUEST,
             $input);
 
-        $validator = (new Entity())->getValidator();
-
-        $validator->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
+        (new Validator())->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
 
         (new Purpose())->validatePurpose($this->merchant, $input[Entity::PURPOSE]);
 
@@ -417,12 +415,8 @@ class Core extends Base\Core
         return $payoutLink;
     }
 
-    public function viewHostedPage($payoutLinkId)
+    public function viewHostedPage(Entity $payoutLink)
     {
-        $payoutLink = $this->repo
-                           ->payout_link
-                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
-
         $hostedPageData = $this->getDataForHostedPage($payoutLink);
 
         return View::make('payout_link.customer_hosted', $hostedPageData);
@@ -616,25 +610,18 @@ class Core extends Base\Core
         return $balance;
     }
 
-    public function generateAndSendCustomerOtp(string $payoutLinkId, array $input): array
+    public function generateAndSendCustomerOtp(Entity $payoutLink, array $input): array
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE,
             [
-                self::PAYOUT_LINK_ID => $payoutLinkId
+                self::PAYOUT_LINK_ID => $payoutLink->getPublicId()
             ]
         );
-
-        (new Entity())->getValidator()
-                      ->validateInput(Validator::GENERATE_OTP, $input);
 
         // extra context param, that the F.E. can pass, in case they want to
         // force generation of a new OTP
         $context = array_pull($input, Entity::CONTEXT);
-
-        $payoutLink = $this->repo
-                            ->payout_link
-                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
         if (in_array($payoutLink->getStatus(), Status::VALID_INITIAL_STATUSES) === false)
         {
@@ -642,7 +629,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION,
                 null,
                 [
-                    Entity::ID     => $payoutLinkId,
+                    Entity::ID     => $payoutLink->getPublicId(),
                     Entity::STATUS => $payoutLink->getStatus()
                 ]
             );
@@ -655,13 +642,10 @@ class Core extends Base\Core
         return [self::SUCCESS => self::OK];
     }
 
-    public function verifyCustomerOtp($payoutLinkId, $input): array
+    public function verifyCustomerOtp(Entity $payoutLink, $input): array
     {
         (new Validator)->validateInput(Validator::VERIFY_OTP, $input);
 
-        $payoutLink = $this->repo
-                           ->payout_link
-                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
         if (in_array($payoutLink->getStatus(), Status::VALID_INITIAL_STATUSES) === false)
         {
@@ -669,7 +653,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION,
                 null,
                 [
-                    Entity::ID     => $payoutLinkId,
+                    Entity::ID     => $payoutLink->getPublicId(),
                     Entity::STATUS => $payoutLink->getStatus()
                 ]
             );
@@ -679,7 +663,7 @@ class Core extends Base\Core
 
         $receiver = $this->getReceiver($payoutLink);
 
-        $requestContext = $this->processContext($payoutLinkId, $context);
+        $requestContext = $this->processContext($payoutLink->getPublicId(), $context);
 
         $payload = [
             self::RECEIVER  => $receiver,
@@ -699,7 +683,7 @@ class Core extends Base\Core
 
         $this->raven->verifyOtp($payload);
 
-        $token = $this->tokenService->generate($payoutLinkId);
+        $token = $this->tokenService->generate($payoutLink->getPublicId());
 
         return [
             'token' => $token
@@ -796,14 +780,9 @@ class Core extends Base\Core
 
         if (empty($email) === false)
         {
-            $customerEmailOtp = new CustomerOtp($email,
-                                                $otp,
-                                                $this->getDisplayName(),
-                                                $payoutLink->getPurpose(),
-                                                $this->merchant->getLogoUrl(),
-                                                $this->merchant->getBrandColor()
-
-            );
+            $customerEmailOtp = new CustomerOtp($payoutLink->getId(),
+                                                $this->merchant->getId(),
+                                                $otp);
 
             try
             {
@@ -913,6 +892,12 @@ class Core extends Base\Core
         try
         {
             $shortUrl = $this->elfin->shorten($targetUrl, $params, false);
+
+            $this->trace->info(TraceCode::PAYOUT_LINK_SHORT_URL_CREATED,
+                [
+                    Entity::ID        => $payoutLink->getPublicId(),
+                    Entity::SHORT_URL => $shortUrl
+                ]);
         }
         catch (\Exception $e)
         {
@@ -926,6 +911,7 @@ class Core extends Base\Core
                 [
                     self::MESSAGE        => $e->getMessage(),
                     self::PAYOUT_LINK_ID => $payoutLink->getId(),
+                    'target_url'         => $targetUrl
                 ]
             );
         }

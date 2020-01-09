@@ -3,8 +3,9 @@
 namespace RZP\Models\PayoutLink;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Mode;
-use RZP\Models\Payout\Purpose;
+use RZP\Exception\BadRequestException;
 
 class Validator extends Base\Validator
 {
@@ -68,4 +69,28 @@ class Validator extends Base\Validator
         Entity::OTP     => 'required|string|min:4|max:6',
         Entity::CONTEXT => 'sometimes|string|min:5|max:15'
     ];
+
+    protected static $compositeCreateValidators = [
+        Entity::CONTACT
+    ];
+
+    /**
+     * Check that if contact_id is present and along with it other information is present then fail the api
+     * @param array $input
+     * @throws BadRequestException
+     */
+    protected function validateContact(array $input)
+    {
+        if (isset($input[Entity::CONTACT][Entity::ID]) === true)
+        {
+            if ((isset($input[Entity::CONTACT][Entity::EMAIL]) === true) or
+                (isset($input[Entity::CONTACT][Entity::PHONE_NUMBER]) === true)
+            )
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_EITHER_CONTACT_ID_OR_INFORMATION_TO_BE_SENT,
+                                              null,
+                                              $input);
+            }
+        }
+    }
 }
