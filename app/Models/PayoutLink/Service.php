@@ -33,17 +33,25 @@ class Service extends Base\Service
 
     public function updateSettings(string $merchantId, array $input)
     {
-        return $this->core->updateSettings($merchantId, $input);
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        return $this->core->updateSettings($merchant, $input);
     }
 
     public function getSettings(string $merchantId)
     {
-        return $this->core->getSettings($merchantId);
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        return $this->core->getSettings($merchant);
     }
 
     public function initiate(string $payoutLinkId, array $input)
     {
-        return $this->core->initiate($payoutLinkId, $input)->toArrayPublic();
+        $payoutLink = $this->repo
+                           ->payout_link
+                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        return $this->core->initiate($payoutLink, $input)->toArrayPublic();
     }
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
@@ -58,21 +66,39 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::PAYOUT_CUSTOMER_OTP_REQUEST,
                            $input);
 
-        return $this->core->generateAndSendCustomerOtp($payoutLinkId, $input);
+        (new Validator())->validateInput(Validator::GENERATE_OTP, $input);
+
+        $payoutLink = $this->repo
+                           ->payout_link
+                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        return $this->core->generateAndSendCustomerOtp($payoutLink, $input);
     }
 
     public function cancel(string $payoutLinkId): array
     {
-        return $this->core->cancel($payoutLinkId)->toArrayPublic();
+        $payoutLink = $this->repo
+                           ->payout_link
+                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        return $this->core->cancel($payoutLink)->toArrayPublic();
     }
 
     public function viewHostedPage($payoutLinkId)
     {
+        $payoutLink = $this->repo
+                           ->payout_link
+                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
         return $this->core->viewHostedPage($payoutLinkId);
     }
 
     public function verifyCustomerOtp(string $payoutLinkId, array $input): array
     {
-        return $this->core->verifyCustomerOtp($payoutLinkId, $input);
+        $payoutLink = $this->repo
+                           ->payout_link
+                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        return $this->core->verifyCustomerOtp($payoutLink, $input);
     }
 }

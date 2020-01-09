@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
 
     protected $table = Table::PAYOUT_LINK;
 
+    // Payout Link Columns
     const ID                   = 'id';
     const CONTACT_ID           = 'contact_id';
     const CONTACT_NAME         = 'contact_name';
@@ -37,13 +38,18 @@ class Entity extends Base\PublicEntity
     const STATUS               = 'status';
     const AMOUNT               = 'amount';
     const NOTES                = 'notes';
+    // This purpose will be used in creating payouts. So validation will be same as that on Payout Purpose
     const PURPOSE              = 'purpose';
+    // This description is text that the merchant wants to add while creating payoutlink id.
+    // This will be shown to the customer while entering bank account details
     const DESCRIPTION          = 'description';
     const RECEIPT              = 'receipt';
     const CURRENCY             = 'currency';
     const CANCELLED_AT         = 'cancelled_at';
     const CREATED_AT           = 'created_at';
     const UPDATED_AT           = 'updated_at';
+
+    // Strings used in Core / Validators
     const CONTEXT              = 'context';
     const OTP                  = 'otp';
     const TOKEN                = 'token';
@@ -154,15 +160,12 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::CONTACT_ID           => null,
-        self::CONTACT_NAME         => '',
-        self::CONTACT_EMAIL        => '',
-        self::CONTACT_PHONE_NUMBER => '',
+        self::CONTACT_NAME         => null,
+        self::CONTACT_EMAIL        => null,
+        self::CONTACT_PHONE_NUMBER => null,
         self::FUND_ACCOUNT_ID      => null,
         self::SHORT_URL            => null,
-        self::MERCHANT_ID          => null,
         self::USER_ID              => null,
-        self::AMOUNT               => null,
         self::CURRENCY             => Currency::INR,
         self::DESCRIPTION          => null,
         self::RECEIPT              => null,
@@ -261,15 +264,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT_EMAIL);
     }
 
-    public function setPublicStatusAttribute(array & $attributes)
-    {
-        $internalStatus = $this->getAttribute(self::STATUS);
-
-        $externalStatus = Status::getPublicStatusFromInternalStatus($internalStatus);
-
-        $attributes[self::STATUS] = $externalStatus;
-    }
-
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------
@@ -293,6 +287,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $newStatus);
     }
 
+    // -------------------------------------- End Setters -----------------------------
+
+    // ----------------------------------------- Mutators ------------------------------
+
+    public function setPublicStatusAttribute(array & $attributes)
+    {
+        $internalStatus = $this->getAttribute(self::STATUS);
+
+        $externalStatus = Status::getPublicStatusFromInternalStatus($internalStatus);
+
+        $attributes[self::STATUS] = $externalStatus;
+    }
+
     public function setPublicContactIdAttribute(array & $attributes)
     {
         $attributes[self::CONTACT_ID] = Contact\Entity::getSignedIdOrNull($attributes[self::CONTACT_ID]);
@@ -311,6 +318,6 @@ class Entity extends Base\PublicEntity
             self::PHONE_NUMBER => $this->getContactPhoneNumber(),
         ];
     }
+    // -------------------------------------- End Mutators -----------------------------
 
-    // -------------------------------------- End Setters -----------------------------
 }

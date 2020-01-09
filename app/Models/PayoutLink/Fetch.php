@@ -9,30 +9,26 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS         => [
-            Entity::ID => 'sometimes|public_id|size:19',
-        ],
-        AuthType::PRIVATE_AUTH => [
             Entity::ID         => 'sometimes|public_id|size:19',
             Entity::CONTACT_ID => 'sometimes|public_id|size:19'
+        ],
+        AuthType::PROXY_AUTH => [
+            Entity::FUND_ACCOUNT_ID => 'filled|string|public_id'
         ]
     ];
 
     const ACCESSES = [
-        AuthType::PRIVATE_AUTH => [
+        self::DEFAULTS => [
             Entity::ID,
             Entity::CONTACT_ID
+        ],
+        AuthType::PROXY_AUTH => [
+            Entity::FUND_ACCOUNT_ID
         ]
     ];
 
     const SIGNED_IDS = [
         Entity::CONTACT_ID,
         Entity::FUND_ACCOUNT_ID,
-    ];
-
-    const ES_FIELDS = [
-    ];
-
-    const COMMON_FIELDS = [
-        Entity::ID,
     ];
 }

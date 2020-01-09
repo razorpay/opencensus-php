@@ -18,6 +18,13 @@ class PayoutLinkController extends Controller
         return ApiResponse::json('Not Supported');
     }
 
+    /**
+     * This is a POST request because,
+     * 1. It takes a TOKEN which should be sent in the Body and not URL Param
+     * 2. Browsers cannot send Body in a GET request
+     * @param string $payoutLinkId
+     * @return mixed
+     */
     public function getFundAccountsOfContact(string $payoutLinkId)
     {
         $response = $this->service()->getFundAccountsOfContact($payoutLinkId, $this->input);

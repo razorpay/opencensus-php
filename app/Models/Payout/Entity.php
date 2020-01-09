@@ -3,13 +3,13 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
-
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Batch;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -25,7 +25,6 @@ use RZP\Models\BankingAccount;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -858,6 +857,11 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::STATUS, $status);
+
+        // pushing a message in the queue to update the source for payout
+        $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+
+        SourceUpdater::dispatch($mode, $this, $currentStatus);
     }
 
     protected function setStatusAttribute($status)

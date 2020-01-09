@@ -2,9 +2,10 @@
 
 namespace RZP\Mail\PayoutLink;
 
+use App;
 use RZP\Mail\Base\Mailable;
-use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
+use RZP\Models\Merchant\Entity;
 
 class CustomerOtp extends Mailable
 {
@@ -14,41 +15,28 @@ class CustomerOtp extends Mailable
 
     protected $otp;
 
-    protected $purpose;
+    protected $payoutLinkId;
 
-    protected $merchantDisplayName;
+    protected $merchantId;
 
-    protected $customerEmail;
+    protected $payoutLink = null;
 
-    protected $logoUrl;
-
-    protected $primaryColor;
-
-    public function __construct(string $customerEmail,
-                                string $otp,
-                                string $merchantDisplayName = null,
-                                string $purpose = null,
-                                string $logoUrl = null,
-                                string $primaryColor = null)
+    public function __construct(string $payoutLinkId, string $merchantId, string $otp)
     {
         parent::__construct();
 
-        $this->customerEmail = $customerEmail;
-
         $this->otp = $otp;
 
-        $this->purpose = $purpose;
+        $this->payoutLinkId = $payoutLinkId;
 
-        $this->merchantDisplayName = $merchantDisplayName;
-
-        $this->primaryColor = $primaryColor;
-
-        $this->logoUrl = $logoUrl;
+        $this->merchantId = $merchantId;
     }
 
     protected function addRecipients()
     {
-        $this->to($this->customerEmail);
+        $payoutLink = $this->getPayoutLink();
+
+        $this->to($payoutLink->getContactEmail());
 
         return $this;
     }
@@ -60,12 +48,27 @@ class CustomerOtp extends Mailable
         return $this;
     }
 
+    protected function getPayoutLink() :\RZP\Models\PayoutLink\Entity
+    {
+        if ($this->payoutLink === null)
+        {
+            $repo = App::getFacadeRoot()['repo'];
+
+            $this->payoutLink = $repo->payout_link->findByIdAndMerchantId($this->payoutLinkId, $this->merchantId);
+        }
+
+        return $this->payoutLink;
+    }
+
+    protected function getMerchant(): Entity
+    {
+        return $this->getPayoutLink()->merchant;
+    }
+
     protected function addSender()
     {
-        return $this->from(
-            Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
-            Constants::HEADERS[Constants::NOREPLY]
-        );
+        return $this->from(Constants::MAIL_ADDRESSES[Constants::X_SUPPORT],
+                           Constants::HEADERS[Constants::NOREPLY]);
     }
 
     protected function addHtmlView()
@@ -84,12 +87,18 @@ class CustomerOtp extends Mailable
 
     protected function addMailData()
     {
+        $merchant = $this->getMerchant();
+
+        $payoutLink = $this->getPayoutLink();
+
+        $displayName = $merchant->getDisplayName() ? $merchant->getDisplayName() : $merchant->getName();
+
         $data = [
             'otp'                   => $this->otp,
-            'merchant_display_name' => $this->merchantDisplayName,
-            'purpose'               => $this->purpose,
-            'logoUrl'               => $this->logoUrl,
-            'primary_color'         => $this->primaryColor,
+            'merchant_display_name' => $displayName,
+            'purpose'               => $payoutLink->getPurpose(),
+            'logoUrl'               => $merchant->getLogoUrl(),
+            'primary_color'         => $merchant->getBrandColorElseDefault(),
         ];
 
         $this->with($data);

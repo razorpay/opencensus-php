@@ -15,7 +15,7 @@ class Kernel extends HttpKernel
     protected $middleware = [
         Middleware\InspectorAccess::class,
         Middleware\TrustedProxy::class,
-        Middleware\VerifyHttps::class,
+//        Middleware\VerifyHttps::class,
     ];
 
     /**

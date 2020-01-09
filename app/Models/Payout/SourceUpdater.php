@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Models\PayoutLink\Core as PayoutLinkCore;
 
 /**
@@ -14,11 +15,18 @@ use RZP\Models\PayoutLink\Core as PayoutLinkCore;
 
 class SourceUpdater
 {
-    protected $payout;
+    /**
+     * Value in Seconds.
+     * We need to delay dispatching payout status update to its source, so that we can ensure
+     * that the transaction is completed.
+     * In case the transaction fails, then the current and previous status of payout will be the same,
+     * and the SourceUpdater will reject the push to source
+     */
+    const DELAY = '5';
 
-    public function __construct(Entity $payout)
+    public static function dispatch(string $mode, Entity $payout, string $previousStatus = null)
     {
-        $this->payout = $payout;
+        PayoutSourceUpdaterJob::dispatch($mode, $payout->getPublicId(), $previousStatus)->delay(self::DELAY);
     }
 
     /**
@@ -26,14 +34,17 @@ class SourceUpdater
      * and so this will be a direct function call to its core.
      * Later there will be multiple sources, and only this code will need changes.
      * Ex: calling a webhook URL based on the source
+     * @param Entity $payout
+     * @param string $previousPayoutStatus
      */
-    public function update()
+    public static function update(Entity $payout, string $previousPayoutStatus)
     {
-        $payoutLink = $this->payout->payoutLink;
-
-        if ($payoutLink !== null)
+        $payoutLink = $payout->payoutLink;
+        if (($payoutLink !== null) and
+            ($payout->getStatus() !== $previousPayoutStatus)
+        )
         {
-            (new PayoutLinkCore())->payoutUpdateListener($payoutLink, $this->payout->getStatus());
+            (new PayoutLinkCore())->payoutUpdateListener($payoutLink, $payout);
         }
     }
 }
