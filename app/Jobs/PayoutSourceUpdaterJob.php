@@ -8,6 +8,8 @@ use RZP\Models\Payout\SourceUpdater;
 class PayoutSourceUpdaterJob extends Job
 {
 
+    protected $queueConfigKey = 'fund_transfer_recon_update';
+
     protected $payoutPublicId;
 
     protected $previousPayoutStatus;
