@@ -92,7 +92,7 @@ export default class TransactionsContainer extends Component {
           </ShowWhen>
           <NavLink to="/disputes">Disputes</NavLink>
           {this.props.user.isOndemandSettlementEnabled &&
-            (() => this.props.user.isAllowedView('early_settlement')) && (
+            this.props.user.isAllowedView('early_settlement') && (
               <ScheduledBanner fromWhere="Transactions" />
             )}
           {settlement_ux_revamp && no_settlement ? (

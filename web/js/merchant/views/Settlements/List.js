@@ -427,7 +427,7 @@ export default class SettlementsListContainer extends ListContainer {
                 )}
 
                 {this.props.user.isOndemandSettlementEnabled &&
-                  (() => this.props.user.isAllowedView('early_settlement')) && (
+                  this.props.user.isAllowedView('early_settlement') && (
                     <div className="box-left-pad10-inline">
                       <Button.Primary
                         class="settle-btn"

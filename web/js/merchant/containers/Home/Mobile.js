@@ -138,7 +138,7 @@ class AnalyticsMobile extends Component {
             </div>
             <div className="pull-right">
               {this.props.user.isOndemandSettlementEnabled &&
-              (() => this.props.user.isAllowedView('early_settlement')) ? (
+              this.props.user.isAllowedView('early_settlement') ? (
                 <Button.Secondary
                   class="settle-btn"
                   onClick={this.showOndemandSettlementForm}

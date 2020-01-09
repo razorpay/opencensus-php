@@ -275,7 +275,7 @@ class AnalyticsDesktop extends Component {
                 )}
                 <GroupItem>
                   {this.props.user.isOndemandSettlementEnabled &&
-                  (() => this.props.user.isAllowedView('early_settlement')) ? (
+                  this.props.user.isAllowedView('early_settlement') ? (
                     <Button.Secondary
                       class="settle-btn btn-outline"
                       onClick={this.showOndemandSettlementForm}
