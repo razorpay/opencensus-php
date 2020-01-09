@@ -1045,6 +1045,29 @@ return [
         ],
     ],
 
+    'testAddPricingPlanNachRegistrationRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_issuer'      => 'initial',
+                'fixed_rate'          => 1000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_network'     => null,
+                'payment_issuer'      => 'initial',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000
+            ],
+        ],
+    ],
+
     'testAddPricingPlanEmandateDebitAadhaarRule' => [
         'request' => [
             'content' => [
@@ -1068,6 +1091,29 @@ return [
         ],
     ],
 
+    'testAddPricingPlanNachDebitRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_issuer'      => 'auto',
+                'fixed_rate'          => 2000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_network'     => null,
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 2000
+            ],
+        ],
+    ],
+
     'testAddPricingPlanEmandatePercentageRateRule' => [
         'request' => [
             'content' => [
@@ -1082,7 +1128,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Percentage rate pricing is not allowed for E-mandate',
+                    'description' => 'Percentage rate pricing is not allowed for emandate',
                 ],
             ],
             'status_code' => 400,
