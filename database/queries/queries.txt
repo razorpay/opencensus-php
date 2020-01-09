@@ -2411,7 +2411,8 @@ UPDATE hdfc
 
 UPDATE hdfc
     SET gateway_payment_id = gateway_transaction_id
-    WHERE gateway_payment_id IS NULL AND created_at <= 1502841600 AND action IN ('1', '4');
+    WHERE gateway_payment_id IS NULL AND created_at 
+    = 1502841600 AND action IN ('1', '4');
 
 # Adding index on payments.updated_at, payments.captured_at
 # Useful for analytics queries
@@ -5545,5 +5546,31 @@ ALTER TABLE external
 ALTER TABLE partner_configs
     ADD COLUMN `default_payment_methods` JSON NULL AFTER `commissions_enabled`;
 
+ALTER TABLE gateway_downtimes
+    Add COLUMN psp VARCHAR(255) DEFAULT NULL AFTER method;
+
 ALTER TABLE merchant_details
 	ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
+
+ALTER TABLE `transfers`
+    ADD INDEX `transfers_source_id_index` (`source_id`),
+    ADD INDEX `transfers_source_type_status_index` (`source_type`, `status`);
+
+// Already ran on production.
+ALTER TABLE `terminals`
+    CHANGE `gateway_secure_secret` `gateway_secure_secret` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL,
+    CHANGE `gateway_secure_secret2` `gateway_secure_secret2` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL;
+
+ALTER TABLE worldline
+	ADD COLUMN gateway_utr VARCHAR(255) DEFAULT NULL AFTER ref_no;
+
+ALTER TABLE `vpas`
+    ADD COLUMN `deleted_at` INTEGER DEFAULT NULL AFTER `updated_at`;
+
+ALTER TABLE offers
+    ADD COLUMN default_offer bool DEFAULT 0,
+    ADD COLUMN max_order_amount int(11) DEFAULT NULL,
+    MODIFY type VARCHAR(20);
+
+ALTER TABLE `merchant_documents`
+    ADD COLUMN `source` enum('API', 'UFH') NOT NULL DEFAULT 'API' ;

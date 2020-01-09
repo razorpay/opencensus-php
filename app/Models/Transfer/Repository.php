@@ -105,7 +105,7 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select(Entity::SOURCE_ID)
                     ->where(Entity::SOURCE_TYPE, E::ORDER)
-                    ->whereIn(Entity::STATUS, [Status::FAILED, Status::CREATED])
+                    ->whereIn(Entity::STATUS, [Status::PENDING, Status::FAILED])
                     ->where(function($query) {
                         $to = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
@@ -117,5 +117,16 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::SOURCE_ID)
                     ->toArray();
+    }
+
+    //
+    // Query: UPDATE `transfers` SET `status` = $status WHERE `source_type` = $sourceType AND `source_id` = $sourceId
+    //
+    public function updateTransferStatusBySourceTypeAndId(string $sourceType, string $sourceId, string $status)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_TYPE, $sourceType)
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->update([Entity::STATUS => $status]);
     }
 }

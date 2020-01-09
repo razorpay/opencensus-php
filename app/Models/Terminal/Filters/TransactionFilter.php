@@ -48,7 +48,6 @@ class TransactionFilter extends Terminal\Filter
         'fee_bearer',
         'shared_terminal',
         'mcc',
-        'upi_transfer',
     ];
 
     public function methodFilter($terminal)
@@ -347,15 +346,21 @@ class TransactionFilter extends Terminal\Filter
 
         if ($payment->isUpi() === true)
         {
+            if ($payment->isUpiTransfer() !== $terminal->isUpiTransfer())
+            {
+                return false;
+            }
+
             $flow = $payment->getMetadata('flow', 'collect');
 
-            if ($payment->isBharatQr() === true)
+            if (($payment->isBharatQr() === true) and ($payment->isFlowIntent() === false))
             {
                 if (empty($terminal->getVpa()) === true)
                 {
                     return false;
                 }
             }
+            // Flow is intent for UPI QR on VA and direct payments
             else if ($flow === 'intent')
             {
                 $gateway = $terminal->getGateway();
@@ -369,6 +374,13 @@ class TransactionFilter extends Terminal\Filter
                     // corresponsing omnichannel terminal exist otherwise it's normal intent flow and we return true.
                     if (empty($upiProvider))
                     {
+                        // For UPI QR Terminal has to be intent enabled, yet we are putting
+                        // extra check only to make sure implementation is there for gateway
+                        if ($payment->isUpiQr())
+                        {
+                            return in_array($gateway, Gateway::$upiQrGateways, true);
+                        }
+
                         return true;
                     }
 
@@ -824,6 +836,11 @@ class TransactionFilter extends Terminal\Filter
 
     public function bharatQrFilter($terminal)
     {
+        if (($this->input['payment']->isFlowIntent()) === true)
+        {
+            // We have already verified that terminal is intent enabled in UPI Filter
+            return true;
+        }
         if ($this->input['payment']->isBharatQr() === true)
         {
             return ($terminal->isBharatQr() === true);
@@ -832,26 +849,6 @@ class TransactionFilter extends Terminal\Filter
         {
             return ($terminal->isBharatQr() === false);
         }
-    }
-
-    protected function upiTransferFilter($terminal)
-    {
-        if ($this->input['payment']->isUpiTransfer() === true)
-        {
-            if ((empty($terminal->getVirtualUpiHandle()) === true) or
-                (empty($terminal->getVirtualUpiRoot()) === true) or
-                (empty($terminal->getVirtualUpiMerchantPrefix()) === true))
-            {
-                return false;
-            }
-
-            if ($terminal->isUpiTransfer() === false)
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public function directSettlementFilter($terminal, $applicableTerminals)

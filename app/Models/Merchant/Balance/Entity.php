@@ -77,6 +77,22 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
+    protected $public = [
+        self::ID,
+        self::MERCHANT_ID,
+        self::TYPE,
+        self::CURRENCY,
+        self::NAME,
+        self::BALANCE,
+        self::AMOUNT_CREDITS,
+        self::FEE_CREDITS,
+        self::REFUND_CREDITS,
+        self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
+        self::CHANNEL,
+        self::UPDATED_AT,
+    ];
+
     protected $entity = 'balance';
 
     protected $generateIdOnCreate = true;
@@ -218,27 +234,30 @@ class Entity extends Base\PublicEntity
      * We need to check for balance going negative
      * whenever we update balance
      *
-     * @param  \RZP\Models\Transaction\Entity $txn
+     * @param \RZP\Models\Transaction\Entity $txn
      * @throws Exception\LogicException
      */
-    public function updateBalance($txn)
+    public function updateBalance($txn, $negativeBalanceEnabled = false)
     {
         $amount = $txn->getNetAmount();
 
         $this->addAmount($amount);
 
-        if ($this->getBalance() < 0)
+        if ($negativeBalanceEnabled === false)
         {
-            $data = [
-                'balance' => $this->toArray(),
-                'transaction' => $txn->toArray(),
-                'amount' => $amount
-            ];
+            if ($this->getBalance() < 0)
+            {
+                $data = [
+                    'balance'     => $this->toArray(),
+                    'transaction' => $txn->toArray(),
+                    'amount'      => $amount
+                ];
 
-            throw new Exception\LogicException(
-                'Something very wrong is happening! Balance is going negative',
-                null,
-                $data);
+                throw new Exception\LogicException(
+                    'Something very wrong is happening! Balance is going negative',
+                    null,
+                    $data);
+            }
         }
     }
 
@@ -270,13 +289,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
-    public function subtractRefundCredits($amount)
+    public function subtractRefundCredits($amount, $negativeBalanceEnabled = false)
     {
         $credits = $this->getRefundCredits();
 
         $credits -= $amount;
 
-        assertTrue ($credits >= 0);
+        if ($negativeBalanceEnabled === false)
+        {
+            assertTrue($credits >= 0);
+        }
 
         $this->setAttribute(self::REFUND_CREDITS, $credits);
     }
@@ -319,20 +341,7 @@ class Entity extends Base\PublicEntity
 
     public function save(array $options = array())
     {
-        $this->validateBalance();
-
         return parent::save($options);
-    }
-
-    protected function validateBalance()
-    {
-        if ($this->getBalance() < 0)
-        {
-            throw new Exception\LogicException(
-                'Something very wrong is happening! Balance is going negative',
-                null,
-                $this->toArray());
-        }
     }
 
     /**
@@ -346,5 +355,10 @@ class Entity extends Base\PublicEntity
     {
         $query->where($this->dbColumn(Entity::MERCHANT_ID), $merchantId)
               ->where($this->dbColumn(Entity::TYPE), $type);
+    }
+
+    public function balanceConfigs()
+    {
+        return $this->hasMany(BalanceConfig\Entity::class);
     }
 }

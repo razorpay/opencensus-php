@@ -228,6 +228,8 @@ class Processor
 
     protected $secureCacheDriver;
 
+    protected $razorXFlagForDoppler;
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -508,6 +510,18 @@ class Processor
             return $payment;
         });
 
+        switch ($input['provider'])
+        {
+            case CardlessEmi::ZESTMONEY:
+                $input['contact'] = $payment['contact'];
+                break;
+            case CardlessEmi::FLEXMONEY:
+                $input['contact'] = $payment['contact'];
+                break;
+            default;
+                break;
+        }
+
         $input['payment_id'] = $payment->getPublicId();
 
         if ((empty($input['emi_duration']) === false) and
@@ -630,7 +644,28 @@ class Processor
 
         $merchant = $payment->merchant;
 
-        $gateway = Payment\Gateway::PAYLATER;
+        switch ($input['provider'])
+        {
+            case Payment\Gateway::GETSIMPL:
+
+                $gateway = Payment\Gateway::GETSIMPL;
+
+                $payment = $this->repo->transaction(function() use ($input, $payment)
+                                            {
+                                                $payment = $this->createPaymentEntity($input, $payment);
+                                                $payment->setBaseAmount($payment->getAmount());
+                                                return $payment;
+                                            });
+
+                $input['payment'] = $payment->toArray();
+
+                $input['contact'] = $payment['contact'];
+                break;
+
+            default:
+                $gateway = Payment\Gateway::PAYLATER;
+                break;
+        }
 
         if (($payment->merchant->isPhoneOptional() === true) and
             ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
@@ -660,30 +695,9 @@ class Processor
                                                           $merchant[Merchant\Entity::ID],
                                                           Payment\Method::PAYLATER);
 
-        $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+        $response = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
 
-        $data = (new Customer\Raven)->sendOtp($input, $merchant);
-
-        $coproto = [
-            'type' => 'respawn',
-            'method' => 'paylater',
-            'request' => [
-                'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                    'method'   => 'paylater',
-                    'provider' => $input['provider']
-                ]),
-                'method'  => 'POST',
-                'content' => $input,
-            ],
-            'image'      => $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE),
-            'theme'      => $payment->merchant->getBrandColorElseDefault(),
-            'merchant'   => $merchant->getDbaName(),
-            'gateway'    => $this->getEncryptedGatewayText($gateway),
-            'resend_url' => $this->route->getUrlWithPublicAuth('otp_post'),
-            'key_id'     => $this->ba->getPublicKey(),
-            'version'    => '1',
-            'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
-        ];
+        $coproto  = $this->preProcesspaylaterResponseHandler($response, $payment, $input, $merchant);
 
         return $coproto;
     }
@@ -1144,7 +1158,7 @@ class Processor
             $featureFlag .= '_' .$payment->getAuthenticationGateway();
         }
 
-        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $featureFlag, $this->mode);
+        $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
 
         $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
             'payment_id'             => $payment->getId(),
@@ -1192,7 +1206,7 @@ class Processor
         $this->setOfferForPaymentFromOrderOrInput($payment, $input);
 
         if (($this->offer !== null) and
-            ($order->isDiscountApplicable() === true))
+            ($this->offer->getOfferType() === Offer\Constants::INSTANT_OFFER))
         {
             $orderAmount = $order->getAmount();
 
@@ -1756,12 +1770,7 @@ class Processor
             $offer->lockDecrementCurrentOfferUsage($payment);
         }
 
-        $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-        $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
-
-        if (($isProduction === true) and
-            (strtolower($variant) === 'on'))
+        if ($this->razorXFlagForDoppler === true)
         {
             //TODO: Remove this later
             try
@@ -1919,6 +1928,11 @@ class Processor
         }
 
         $gateway = $this->payment->getGateway();
+
+        if(($gateway === Payment\Gateway::PAYLATER) and ($this->payment->getWallet() === Payment\Gateway::GETSIMPL))
+        {
+            $gateway = Payment\Gateway::GETSIMPL;
+        }
 
         $gatewayData['terminal'] = $terminal;
 
@@ -2283,6 +2297,14 @@ class Processor
 
     protected function buildPaymentEntity(array $input): Payment\Entity
     {
+        //
+        //For simpl provider if $input['payment'] is not empty than we return the same payment
+        //
+        if ((empty($input['payment']) === false) and ($input['provider'] === Payment\Gateway::GETSIMPL))
+        {
+            return $input['payment'];
+        }
+
         $payment = new Payment\Entity;
 
         $payment->generateId();
@@ -2378,6 +2400,11 @@ class Processor
 
         $this->order = $this->fetchOrderFromInput($input);
 
+        if ($payment->isNach() === true)
+        {
+            $payment->setBank($this->order->getBankForNachMethod());
+        }
+
         $this->order->getValidator()->validatePaymentCreation($payment);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
@@ -2393,12 +2420,14 @@ class Processor
 
         $this->repo->saveOrFail($this->order);
 
-        $payment->order()->associate($this->order);
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Processor.php:2421"
+            ]
+        );
 
-        if ($payment->isNach() === true)
-        {
-            $payment->setBank($this->order->getBankForNachMethod());
-        }
+        $payment->order()->associate($this->order);
 
         //
         // FIXME: Hack for reliance AMC, moving order receipt to payment
@@ -2593,6 +2622,13 @@ class Processor
         return $this;
     }
 
+    public function setRazorXDopplerProperty(bool $razorXFlag): Processor
+    {
+        $this->razorXFlagForDoppler = $razorXFlag;
+
+        return $this;
+    }
+
     protected function tracePaymentNewRequest(array $input)
     {
         $this->unsetSensitiveCardDetails($input);
@@ -2669,9 +2705,14 @@ class Processor
         // the flow and in handling capture failures etc which is all done in specific method(easy to move out to a
         // service) triggered from postPaymentAuthorizeProcessing() method.
         //
+
+        // we are not auto capturing the payment page payment if the feature flag is enabled.
         if ($payment->hasPaymentLink() === true)
         {
-            return false;
+            if ($payment->merchant->isFeatureEnabled(Feature::PAYMENT_PAGES_NO_CAPTURE) === true)
+            {
+                return false;
+            }
         }
 
         //
@@ -3439,4 +3480,89 @@ class Processor
 
         return false;
     }
+
+    protected function preProcesspaylaterResponseHandler($response, $payment, $input, $merchant)
+    {
+        switch ($input['provider'])
+        {
+            case Payment\Gateway::GETSIMPL:
+                //
+                // Ajax flow for simpl will be supported in future
+                //
+                $coproto = $this->preProcessGetSimplCoproto($response, $input, $payment, $merchant);
+                break;
+
+            default:
+                (new Customer\Raven)->sendOtp($input, $merchant);
+                $coproto = $this->preProcessPaylaterCoproto($payment, $input, $merchant);
+                break;
+        }
+
+        return $coproto;
+    }
+
+    protected function preProcessPaylaterCoproto($payment, $input, $merchant)
+    {
+        $coproto = [
+            'type'      => 'respawn',
+            'method'    => 'paylater',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
+                    'method'   => 'paylater',
+                    'provider' => $input['provider']
+                ]),
+                'method'  => 'POST',
+                'content' => $input,
+            ],
+            'image'      => $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE),
+            'theme'      => $payment->merchant->getBrandColorElseDefault(),
+            'merchant'   => $merchant->getDbaName(),
+            'gateway'    => $this->getEncryptedGatewayText(Payment\Gateway::PAYLATER),
+            'resend_url' => $this->route->getUrlWithPublicAuth('otp_post'),
+            'key_id'     => $this->ba->getPublicKey(),
+            'version'    => '1',
+            'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
+        ];
+
+        return $coproto;
+    }
+
+    protected function preProcessGetSimplCoproto($response, $input, $payment, $merchant)
+    {
+        if (empty($response['next']['redirect']['url']) === false )
+        {
+            $this->repo->saveOrFail($payment);
+
+            $url = $response['next']['redirect']['url'];
+
+            $coproto = [
+                'type'      => 'first',
+                'version'   => 1,
+                'payment_id'=> $payment->getPublicId(),
+                'method'    => 'paylater',
+                'gateway'   => 'getsimpl',
+                'amount'    => $payment->getFormattedAmount(),
+                'request' => [
+                    'url'     => $url,
+                    'method'  => 'redirect',
+                    'content' => $input,
+                ],
+            ];
+
+            return $coproto;
+        }
+
+        else
+        {
+            unset($input['payment']);
+
+            (new Customer\Raven)->sendOtp($input, $merchant);
+
+            $coproto = $this->preProcessPaylaterCoproto($payment, $input, $payment->merchant);
+
+            return $coproto;
+        }
+    }
+
+
 }

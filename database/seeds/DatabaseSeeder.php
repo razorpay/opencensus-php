@@ -950,6 +950,23 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+                'id'                    => '1n25f6u1Zgsmpl',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::PAYLATER,
+                'gateway_acquirer'      => 'getsimpl',
+                'card'                  => '0',
+                'gateway_merchant_id'   => '813074bab6c38ed91fe6ff65e4cd585b',
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                'type'                  => 0,
+                'paylater'              => 1,
+                'mode'                  => 2,
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
                 'id'                    => '1n25f6uN5S1Z7c',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::HDFC,
@@ -2095,8 +2112,8 @@ class DatabaseSeeder extends Seeder
             'gateway_terminal_id'         => '1234',
             'gateway_terminal_password'   => Crypt::encrypt('shared_account_upi_mindgate_terminal_pass'),
             'type'                        => '65537',
-            'virtual_upi_root'            => 'rzp.',
-            'virtual_upi_merchant_prefix' => 'pay.',
+            'virtual_upi_root'            => 'rzpy.',
+            'virtual_upi_merchant_prefix' => 'payto00000',
             'virtual_upi_handle'          => 'hdfcbank',
             'created_at'                  => time(),
             'updated_at'                  => time(),

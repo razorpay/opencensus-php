@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\BankTransfer;
+use RZP\Models\Customer\Entity;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Webhook;
@@ -132,6 +133,16 @@ class VirtualAccountTest extends TestCase
     public function testCreateVirtualAccountWithInvalidCloseBy()
     {
         $this->startTest();
+    }
+
+    public function testVaOfflineQRGeneration()
+    {
+        $this->fixtures->merchant->addFeatures(['offline_payments']);
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('id', $response);
+        $this->assertArrayHasKey('receivers', $response);
     }
 
     public function testPayVirtualAccountWithPastCloseBy()
@@ -1586,6 +1597,43 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($this->testData[__FUNCTION__], $this->fetchVirtualAccounts());
     }
 
+    public function testCreateVirtualAccountWithoutCustomerIdWithCustomerDetails()
+    {
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['customer_id']);
+    }
+
+    public function testCreateVirtualAccountWithoutCustomerIdWithoutCustomerDetails()
+    {
+        $response = $this->startTest();
+
+        $this->assertNull($response['customer_id']);
+    }
+
+    public function testCreateVirtualAccountWithCustomerIdWithCustomerDetails()
+    {
+        $customer = $this->fixtures->create(
+            'customer',
+            [
+                'id'          => '100022customer',
+                'contact'     => null,
+                'email'       => null,
+                'merchant_id' => '10000000000000',
+            ]);
+        $response = $this->startTest();
+
+        $customerId = Entity::stripDefaultSign($response['customer_id']);
+
+        $this->assertEquals($customer['id'], $customerId);
+    }
+
+    public function testCreateVirtualAccountInvalidCustomerEmail()
+    {
+        $response = $this->startTest();
+    }
+
     protected function mockInfernoFire(Closure $closure)
     {
         $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
@@ -1627,7 +1675,7 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithVpa()
     {
-        $response = $this->createVirtualAccount([], false, null, null, true,'testvpa');
+        $response = $this->createVirtualAccount([], false, null, null, true,'virtualVpa');
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
@@ -1638,7 +1686,7 @@ class VirtualAccountTest extends TestCase
     {
         $virtualAccount = $this->createVirtualAccount();
 
-        $response = $this->addReceiverToVirtualAccount($virtualAccount['id'], 'vpa', ['descriptor' => 'testVpa']);
+        $response = $this->addReceiverToVirtualAccount($virtualAccount['id'], 'vpa', ['descriptor' => 'virtualVpa']);
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
@@ -1651,9 +1699,9 @@ class VirtualAccountTest extends TestCase
 
         $this->runRequestResponseFlow($expectedResponse, function() {
 
-            $virtualAccount = $this->createVirtualAccount([], false, null, null, true, 'testvpa');
+            $virtualAccount = $this->createVirtualAccount([], false, null, null, true, 'virtualVpa');
 
-            $this->addReceiverToVirtualAccount($virtualAccount['id'], 'vpa', ['descriptor' => 'testVpa']);
+            $this->addReceiverToVirtualAccount($virtualAccount['id'], 'vpa', ['descriptor' => 'virtualVpa']);
         });
     }
 
@@ -1679,6 +1727,38 @@ class VirtualAccountTest extends TestCase
             return true;
         });
 
-        $this->createVirtualAccount([], false, null, null, true,'testvpa');
+        $this->createVirtualAccount([], false, null, null, true,'virtualVpa');
+    }
+
+
+    public function testOfflineQrCloseBy()
+    {
+        Carbon::setTestNow(Carbon::create(2019, 12, 30, 0, 0, 0, 'Asia/Kolkata'));
+
+        $this->startTest();
+    }
+
+    public function testOfflineVACreation()
+    {
+        Carbon::setTestNow(Carbon::create(2019, 12, 30, 0, 0, 0, 'Asia/Kolkata'));
+
+        $this->fixtures->merchant->addFeatures('offline_payments');
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('order_id', $response);
+    }
+
+    public function testCloseVirtualAccountWithVpa()
+    {
+        $virtualAccount = $this->createVirtualAccount([], false, null, null, true, 'virtualVpa');
+
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
+
+        $this->closeVirtualAccount($virtualAccount['id']);
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+
+        $this->assertEquals(Status::CLOSED, $virtualAccount->getStatus());
     }
 }

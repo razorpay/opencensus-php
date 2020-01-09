@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "326f18e32e92175471e33fa1472042ed",
+    "content-hash": "8b87b1c7b3dcd80ced24861a550b6a1c",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -349,6 +349,72 @@
                 "xlsx"
             ],
             "time": "2017-03-28T13:07:48+00:00"
+        },
+        {
+            "name": "brozot/laravel-fcm",
+            "version": "1.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/brozot/Laravel-FCM.git",
+                "reference": "1b5c64c5ea829f46c7e5f274971c587a8c3f0668"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/brozot/Laravel-FCM/zipball/1b5c64c5ea829f46c7e5f274971c587a8c3f0668",
+                "reference": "1b5c64c5ea829f46c7e5f274971c587a8c3f0668",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "~6.0",
+                "illuminate/support": "5.*|^6",
+                "monolog/monolog": "^1.12|^2.0",
+                "php": ">=5.5.9"
+            },
+            "require-dev": {
+                "laravel/laravel": "5.2.*",
+                "mockery/mockery": "0.9.*",
+                "phpunit/phpunit": "4.7.*",
+                "satooshi/php-coveralls": "dev-master"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "LaravelFCM\\FCMServiceProvider"
+                    ],
+                    "aliases": {
+                        "FCM": "LaravelFCM\\Facades\\FCM",
+                        "FCMGroup": "LaravelFCM\\Facades\\FCMGroup"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "LaravelFCM\\": "src/",
+                    "LaravelFCM\\Mocks\\": "tests/mocks"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Brosy",
+                    "email": "nicolas.brosy@gmail.com"
+                }
+            ],
+            "description": "Laravel / Lumen package for Firebase Cloud Messaging ",
+            "keywords": [
+                "FCM",
+                "Firebase Cloud Messaging",
+                "firebase",
+                "laravel",
+                "lumen",
+                "notification",
+                "push"
+            ],
+            "time": "2019-11-26T16:14:39+00:00"
         },
         {
             "name": "cebe/markdown",
@@ -5919,16 +5985,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.4.9",
+            "version": "1.4.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "a6611bf6d300ba514a4d430b01a192ce380676b4"
+                "reference": "01a17b0a0f5c528a19b7f2366b5da9b45515756f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/a6611bf6d300ba514a4d430b01a192ce380676b4",
-                "reference": "a6611bf6d300ba514a4d430b01a192ce380676b4",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/01a17b0a0f5c528a19b7f2366b5da9b45515756f",
+                "reference": "01a17b0a0f5c528a19b7f2366b5da9b45515756f",
                 "shasum": ""
             },
             "require": {
@@ -5942,7 +6008,8 @@
                 "guzzlehttp/psr7": "^1.3",
                 "php-http/message": "^1.7",
                 "php-http/mock-client": "^0.3 || ^1.0",
-                "phpunit/phpunit": "^6.0 || ^8.0 || ^7.0"
+                "phpunit/phpunit": "^6.0 || ^8.0 || ^7.0",
+                "symfony/yaml": "^5.0"
             },
             "type": "library",
             "autoload": {
@@ -5961,7 +6028,57 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2019-11-07T07:33:14+00:00"
+            "time": "2020-01-02T08:49:15+00:00"
+        },
+        {
+            "name": "razorpay/lqext",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/razorpay/lqext.git",
+                "reference": "0b20f566dc77fc22d781b4d28b88a81d3b2aebff"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/lqext/zipball/0b20f566dc77fc22d781b4d28b88a81d3b2aebff",
+                "reference": "0b20f566dc77fc22d781b4d28b88a81d3b2aebff",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/bus": "5.5.* || 5.6.* || 5.7.*",
+                "illuminate/contracts": "5.5.* || 5.6.* || 5.7.*",
+                "illuminate/database": "5.5.* || 5.6.* || 5.7.*",
+                "illuminate/events": "5.5.* || 5.6.* || 5.7.*",
+                "illuminate/mail": "5.5.* || 5.6.* || 5.7.*",
+                "illuminate/support": "5.5.* || 5.6.* || 5.7.*",
+                "php": "^7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.5",
+                "squizlabs/php_codesniffer": "^3.3"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Jitendra\\Lqext\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Jitendra\\Lqext\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "jitendra-1217",
+                    "email": "jitendraojha1217@gmail.com"
+                }
+            ],
+            "description": "Laravel queue enhancements, failure handling & retries.",
+            "time": "2019-12-16T05:40:19+00:00"
         },
         {
             "name": "razorpay/metrics-php",
@@ -7256,16 +7373,16 @@
         },
         {
             "name": "symfony/http-foundation",
-            "version": "v3.4.32",
+            "version": "v3.4.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-foundation.git",
-                "reference": "233f40cbebd595ffd91ddf291355f8a930a13777"
+                "reference": "d2d0cfe8e319d9df44c4cca570710fcf221d4593"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/233f40cbebd595ffd91ddf291355f8a930a13777",
-                "reference": "233f40cbebd595ffd91ddf291355f8a930a13777",
+                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/d2d0cfe8e319d9df44c4cca570710fcf221d4593",
+                "reference": "d2d0cfe8e319d9df44c4cca570710fcf221d4593",
                 "shasum": ""
             },
             "require": {
@@ -7306,7 +7423,7 @@
             ],
             "description": "Symfony HttpFoundation Component",
             "homepage": "https://symfony.com",
-            "time": "2019-10-02T16:15:21+00:00"
+            "time": "2019-11-28T12:52:59+00:00"
         },
         {
             "name": "symfony/http-kernel",
@@ -7507,16 +7624,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.12.0",
+            "version": "v1.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "b42a2f66e8f1b15ccf25652c3424265923eb4f17"
+                "reference": "7b4aab9743c30be783b73de055d24a39cf4b954f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/b42a2f66e8f1b15ccf25652c3424265923eb4f17",
-                "reference": "b42a2f66e8f1b15ccf25652c3424265923eb4f17",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/7b4aab9743c30be783b73de055d24a39cf4b954f",
+                "reference": "7b4aab9743c30be783b73de055d24a39cf4b954f",
                 "shasum": ""
             },
             "require": {
@@ -7528,7 +7645,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.12-dev"
+                    "dev-master": "1.13-dev"
                 }
             },
             "autoload": {
@@ -7562,7 +7679,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2019-08-06T08:03:45+00:00"
+            "time": "2019-11-27T14:18:11+00:00"
         },
         {
             "name": "symfony/polyfill-php56",
@@ -7622,16 +7739,16 @@
         },
         {
             "name": "symfony/polyfill-php70",
-            "version": "v1.12.0",
+            "version": "v1.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php70.git",
-                "reference": "54b4c428a0054e254223797d2713c31e08610831"
+                "reference": "af23c7bb26a73b850840823662dda371484926c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php70/zipball/54b4c428a0054e254223797d2713c31e08610831",
-                "reference": "54b4c428a0054e254223797d2713c31e08610831",
+                "url": "https://api.github.com/repos/symfony/polyfill-php70/zipball/af23c7bb26a73b850840823662dda371484926c4",
+                "reference": "af23c7bb26a73b850840823662dda371484926c4",
                 "shasum": ""
             },
             "require": {
@@ -7641,7 +7758,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.12-dev"
+                    "dev-master": "1.13-dev"
                 }
             },
             "autoload": {
@@ -7677,7 +7794,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2019-08-06T08:03:45+00:00"
+            "time": "2019-11-27T13:56:44+00:00"
         },
         {
             "name": "symfony/polyfill-util",
@@ -8358,6 +8475,7 @@
                 "psr",
                 "psr-7"
             ],
+            "abandoned": "laminas/laminas-diactoros",
             "time": "2018-09-05T19:29:37+00:00"
         }
     ],

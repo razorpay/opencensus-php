@@ -266,6 +266,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::METHOD,
         self::AMOUNT,
         self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
         self::BASE_AMOUNT_REFUNDED,
@@ -343,7 +344,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CREATED_AT,
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
-        self::OFFER_ID,
         self::FEE_BEARER,
     ];
 
@@ -352,6 +352,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
+        self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
@@ -385,7 +387,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
-        self::OFFER_ID,
     ];
 
     /**
@@ -439,6 +440,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::ORDER_ID,
         self::INVOICE_ID,
         self::CARD_ID,
@@ -448,7 +451,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
-        self::OFFER_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -1304,13 +1306,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
     }
 
-
-    public function setOfferId(string $offerId)
-    {
-        $this->setAttribute(self::OFFER_ID, $offerId);
-
-    }
-
     public function setFeeBearer($feeBearer)
     {
         $this->setAttribute(self::FEE_BEARER, $feeBearer);
@@ -1679,6 +1674,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::PAYMENT_LINK_ID);
     }
 
+    public function hasReceiver()
+    {
+        return ($this->isAttributeNotNull(self::RECEIVER_ID));
+    }
+
     public function hasMetadata($key = null)
     {
         if ($key === null)
@@ -1830,6 +1830,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
     }
 
+    public function isFlowIntent(): bool
+    {
+        return ($this->getMetadata('flow') === Flow::INTENT);
+    }
+
+    public function isUpiQr(): bool
+    {
+        // By definition if receiver type is qr_code and flow is intent, its upi qr payment
+        // Not relying on isBharatQr method as its implementation may change over time.
+        return (($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE) and $this->isFlowIntent());
+    }
+
     /**
      * UPI transfer is the case of smart collect where payment method is UPI and
      * receiver type will be VPA and is different from normal UPI transactions.
@@ -1974,22 +1986,22 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->hiddenInReport;
     }
 
-    public function getPspFromVpa()
+    public function getVpaHandleFromVpa()
     {
         $vpa = $this->getAttribute(self::VPA);
 
         $vpaParts = explode('@', $vpa);
 
-        $psp = end($vpaParts);
+        $vpaHandle = end($vpaParts);
 
-        return $psp;
+        return $vpaHandle;
     }
 
     public function getBankCodeFromVpa()
     {
-        $psp = $this->getPspFromVpa();
+        $vpaHandle = $this->getVpaHandleFromVpa();
 
-        return ProviderCode::getBankCode($psp);
+        return ProviderCode::getBankCode($vpaHandle);
     }
 
     public function getTransferId()
@@ -2399,7 +2411,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
         else if ($this->isUpi() === true)
         {
-            $issuer = $this->getPspFromVpa();
+            $issuer = $this->getVpaHandleFromVpa();
         }
         else if ($this->isPayLater() === true)
         {
@@ -2595,6 +2607,41 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $reference;
     }
 
+    /**
+     * @param array $array
+     *
+     * Base amount should be set in public array iff
+     * 1) route is privileged route
+     * 2) the payment is non-inr payment
+     */
+    public function setPublicBaseAmountAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        if (($this->getCurrency() !== Currency\Currency::INR) or
+            ($app['basicauth']->isProxyOrPrivilegeAuth() === true))
+        {
+            return;
+        }
+
+        unset($array[self::BASE_AMOUNT]);
+    }
+    /**
+     * @param array $array
+     *
+     * Base currency should be set in public array iff
+     * 1) the payment is non-inr payment
+     */
+    public function setPublicBaseCurrencyAttribute(array & $array)
+    {
+        if ($this->getCurrency() === Currency\Currency::INR)
+        {
+            return;
+        }
+
+        $array[self::BASE_CURRENCY] = Currency\Currency::INR;
+    }
+
     public function setPublicOrderIdAttribute(array & $array)
     {
         if (isset($array[self::ORDER_ID]))
@@ -2625,15 +2672,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $array[self::CARD_ID] =
                 Card\Entity::getIdPrefix() . $this->getAttribute(self::CARD_ID);
-        }
-    }
-
-    public function setPublicOfferIdAttribute(array & $array)
-    {
-        if (isset($array[self::OFFER_ID]))
-        {
-            $array[self::OFFER_ID] =
-                Offer\Entity::getIdPrefix() . $this->getAttribute(self::OFFER_ID);
         }
     }
 
@@ -2783,20 +2821,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $cardData = $card->getAttributes();
 
         $data['card'] = $cardData;
-
-        return $data;
-    }
-
-    public function toArrayPublicWithExpand()
-    {
-        $data =  parent::toArrayPublicWithExpand();
-
-        if ($this->getCurrency() !== Currency\Currency::INR)
-        {
-            $data[self::BASE_AMOUNT] = $this->getBaseAmount();
-
-            $data[self::BASE_CURRENCY] = Currency\Currency::INR;
-        }
 
         return $data;
     }
@@ -3071,7 +3095,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function dissociateOffer(Offer\Entity $offer)
     {
-        $this->offers()->detach($offer);
+        $this->offers()->detach($offer->getId());
     }
 
     /**
@@ -3080,8 +3104,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function getOffer()
     {
-        return $this->offers->first();
+        return $this->offers()->first();
     }
+
 
 // --------------- Relation to other entity section ends -----------------------
 
@@ -3321,8 +3346,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return false;
         }
 
-        return (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true));
+        return (($this->card->isInternational() === true) and
+                ($this->card->isAmex() === false));
     }
 
     public function shouldRunShieldChecks()
@@ -3386,7 +3411,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 break;
 
             case Method::UPI:
-                $paymentArray[self::VPA] = self::DUMMY_VPA;
+                if (array_get($paymentArray, '_.flow') !== 'intent')
+                {
+                    $paymentArray[self::VPA] = self::DUMMY_VPA;
+                }
                 break;
 
             case Method::NACH:

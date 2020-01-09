@@ -48,21 +48,21 @@ class Base
 
     const SOURCE_ACCOUNT_DELETE_URI = '/source_account';
 
-    const FUND_ACCOUNT_FETCH_URI  = '/admin/account';
+    const FUND_ACCOUNT_FETCH_URI  = '/account';
 
-    const FUND_TRANSFER_FETCH_URI = '/admin/transfer';
+    const FUND_TRANSFER_FETCH_URI = '/transfer';
 
-    const FUND_ACCOUNT_STATUS_FETCH_URI  = '/admin/account/status';
+    const FUND_ACCOUNT_STATUS_FETCH_URI  = '/account/status';
 
-    const FUND_TRANSFER_STATUS_FETCH_URI = '/admin/transfer/status';
+    const FUND_TRANSFER_STATUS_FETCH_URI = '/transfer/status';
 
-    const FUND_TRANSFER_ATTEMPTS_UPDATE_URI = '/admin/attempts/update';
+    const FUND_TRANSFER_ATTEMPTS_UPDATE_URI = '/attempts/update';
 
-    const FUND_TRANSFER_ATTEMPTS_FETCH_STATUS = '/admin/transfers/status';
+    const FUND_TRANSFER_ATTEMPTS_FETCH_STATUS = '/transfers/status';
 
-    const FUND_TRANSFER_ATTEMPTS_CHECK_STATUS = '/admin/transfers/check';
+    const FUND_TRANSFER_ATTEMPTS_CHECK_STATUS = '/transfers/check';
 
-    const FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS = '/admin/attempts/verify';
+    const FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS = '/attempts/verify';
 
     // Headers
     const ACCEPT        = 'Accept';
@@ -76,7 +76,7 @@ class Base
         self::TRANSFER_RETRY,
     ];
 
-    const REQUEST_TIMEOUT = 30;
+    const REQUEST_TIMEOUT = 60;
 
     /**
      * FTS Base constructor.
@@ -323,18 +323,9 @@ class Base
         return $response;
     }
 
-    protected function setDashboardAuthAndAdminHeader()
-    {
-        $this->key     = $this->config[$this->mode]['fts_dashboard_key'];
-
-        $this->secret  = $this->config[$this->mode]['fts_dashboard_secret'];
-
-        $this->setAdminHeader();
-    }
-
     protected function setAdminHeader()
     {
-        $this->headers[RequestHeader::X_DASHBOARD_ADMIN_EMAIL] = $this->getAdminEmail();
+        $this->headers[RequestHeader::X_USER_EMAIL] = $this->getAdminEmail();
     }
 
     protected function getAdminEmail(): string

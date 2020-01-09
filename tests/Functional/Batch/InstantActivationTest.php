@@ -8,7 +8,6 @@ use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 
 /**
  * @group dns-sensitive
@@ -63,20 +62,11 @@ class InstantActivationTest extends TestCase
 
         $this->startTest();
 
-        $documents = $this->getDbEntities('merchant_document', ['merchant_id'=>$merchantId], 'live');
+        $merchant = $this->getDbEntity('merchant', ['id' => $merchantId], 'live');
 
-        $this->assertCount(2,$documents);
+        $whitelistedDomain = $merchant[Entity::WHITELISTED_DOMAINS] ?? [];
 
-        $documentTypes = [];
-
-        foreach ($documents as $document)
-        {
-            $documentTypes[] = $document['document_type'];
-        }
-
-        $this->assertContains('business_proof_url',$documentTypes);
-
-        $this->assertContains('address_proof_url',$documentTypes);
+        $this->assertEquals(['example.com','abc.com','webhook.com'], $whitelistedDomain);
     }
 
     /**
@@ -108,13 +98,18 @@ class InstantActivationTest extends TestCase
      */
     protected function createMerchantDetailFixture(): string
     {
+        $mid = '10000000000000';
+
         // merchant detail internally creates merchant entity
-        $merchantDetail = $this->fixtures->create('merchant_detail', [
-            DetailEntity::BUSINESS_PROOF_URL => 'DJaibu63Y8clYA',
-            DetailEntity::ADDRESS_PROOF_URL  => 'DJaibu63Y8clYD',
+        $this->fixtures->edit('merchant',$mid,[Entity::WEBSITE => 'example.com']);
+
+        $this->fixtures->create('merchant_detail', [
+            DetailEntity::MERCHANT_ID => $mid,
+            DetailEntity::BUSINESS_WEBSITE => 'http://example.com',
+            DetailEntity::ADDITIONAL_WEBSITES  => ['http://abc.com','http://webhook.com'],
         ]);
 
-        return $merchantDetail->getMerchantId();
+        return $mid;
     }
 
     /**

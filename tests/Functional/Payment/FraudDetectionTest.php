@@ -96,6 +96,39 @@ class FraudDetectionTest extends TestCase
         $this->assertNotNull($riskEntity['risk_score']);
     }
 
+    public function testSkipMaxmindCheckForAmexPayments()
+    {
+        $this->mockRazorx();
+        $this->mockShield();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => "American Express",
+                'type'    => 'debit',
+            ]);
+
+        $payment['card']['number'] = '5149066434045615';
+        $payment['card']['cvv']    = '1234';
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayKeysExist($response, ['razorpay_payment_id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $paymentAnalytics = $this->getLastEntity('payment_analytics', true);
+
+        $this->assertEquals($paymentAnalytics['risk_score'], 35);
+
+        $this->assertEquals($paymentAnalytics['risk_engine'], 'shield');
+    }
+
     public function testFraudNotDetected()
     {
         $this->mockMaxmind();
@@ -200,6 +233,46 @@ class FraudDetectionTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $response);
     }
 
+    public function testAllowByShieldWithHighRiskScore()
+    {
+        $this->mockShield();
+
+        $this->mockRazorx();
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => 'Visa',
+                'type'    => 'debit',
+                'country' => 'US',
+                'enabled' => '1'
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '5149067611060906';
+
+
+        $data = $this->testData['testFraudDetected'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals(
+            Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD,
+            $riskEntity['reason']
+        );
+    }
+
     /*
      * In this test case, we simulate a failure to detect fraud on Shield(validateFraudDetectionV2).
      * In this case, we still want a fraud check to happen via Maxmind(validateFraudDetection)
@@ -224,9 +297,17 @@ class FraudDetectionTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $payment['card']['number'] = '341111111111111';
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => 'Visa',
+                'type'    => 'debit',
+                'country' => 'US',
+                'enabled' => '1'
+            ]);
 
-        $payment['card']['cvv'] = '1234';
+        $payment['card']['number'] = '5149067611060906';
 
         $data = $this->testData['testFraudDetectionFailedByShieldDetectedByMaxMind'];
 
@@ -378,5 +459,64 @@ class FraudDetectionTest extends TestCase
     public function testFraudDetectionWithPlatformRandom()
     {
         $this->runPlatformTest('xyz', 'others');
+    }
+
+    protected function runPayloadTest($payment, $comparatorFunc)
+    {
+        $this->mockRazorx();
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing($comparatorFunc);
+
+        $this->app->instance('shield', $shieldClient);
+
+        $this->doAuthPayment($payment);
+
+    }
+
+    public function testFraudDetectionForUpiFlowIntent()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+
+        $payment['_'] = ['flow' => 'intent'];
+
+        $comparatorFunc = function ($payload) {
+            return [
+                "action" => (($payload['input']['upi_type'] === 'intent') ? 'allow': 'block'),
+                "max_rule_weight" => 0,
+                "maxmind_score" => null,
+                "triggered_rule_weight" => 0,
+            ];
+        };
+
+        $this->runPayloadTest($payment, $comparatorFunc);
+    }
+
+    public function testFraudDetectionForUpiFlowCollect()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $comparatorFunc = function ($payload) {
+            return [
+                "action" => (($payload['input']['upi_type'] === 'collect') ? 'allow': 'block'),
+                "max_rule_weight" => 0,
+                "maxmind_score" => null,
+                "triggered_rule_weight" => 0,
+            ];
+        };
+
+        $this->runPayloadTest($payment, $comparatorFunc);
     }
 }

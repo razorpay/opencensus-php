@@ -1110,6 +1110,8 @@ class HitachiGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $this->assertNotEmpty($payment['reference2']);
+
         $this->assertEquals($motoTerminal['id'], $payment['terminal_id']);
 
         $this->assertEquals('authorized', $payment['status']);

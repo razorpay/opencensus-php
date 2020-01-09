@@ -34,6 +34,9 @@ class PublicErrorDescription
     const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                = 'Duplicate Refund Request';
     const GATEWAY_ERROR_ONBOARDING_FAILED                                       = 'Merchant boarding on gateway failed.';
 
+    const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                 = 'Terminal disable failed on gateway';
+    const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                  = 'Terminal enable failed on gateway';
+
     const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
@@ -158,12 +161,14 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT                     = 'This bank is either not valid or is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT               = 'Netbanking not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_INVALID_MOBILE                                    = 'Payment failed because of invalid mobile number';
+    const BAD_REQUEST_PAYMENT_OLA_MONEY_ACCOUNT_DOES_NOT_EXIST_FOR_NUMBER       = 'Ola Money account does not exist for this number';
     const BAD_REQUEST_PAYMENT_INVALID_EMAIL                                     = 'Payment failed because of invalid email';
     const BAD_REQUEST_PAYMENT_WALLET_PER_DAY_LIMIT_EXCEEDED                     = 'Payment failed because daily limit of the wallet has exceeded';
     const BAD_REQUEST_PAYMENT_WALLET_PER_WEEK_LIMIT_EXCEEDED                    = 'Payment failed because weekly limit of the wallet has exceeded';
     const BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED                   = 'Payment failed because monthly limit of the wallet has been exceeded';
     const BAD_REQUEST_PAYMENT_WALLET_PER_PAYMENT_AMOUNT_CROSSED                 = 'Payment amount for wallet is above the limit';
     const BAD_REQUEST_PAYMENT_WALLET_BLOCKED_CARD                               = 'Card has been blocked by the wallet';
+    const BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_FOR_ORDER                      = 'Payment method is not among the list of valid methods for order';
     const BAD_REQUEST_PAYMENT_WALLET_BLOCKED_MOBILE_NUMBER                      = 'Mobile number has been blocked by the wallet';
     const BAD_REQUEST_PAYMENT_WALLET_BLOCKED_IP_ADDRESS                         = 'Customer IP address has been blocked by the wallet';
     const BAD_REQUEST_PAYMENT_WALLET_BLOCKED_CUSTOMER                           = 'Customer has been blocked by wallet';
@@ -323,6 +328,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED                  = 'The merchant keys cannot be created since account is not activated yet.';
     const BAD_REQUEST_MERCHANT_NO_KEY_ACCESS                                    = 'You are not allowed to perform this operation';
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND                            = 'The merchant has not yet provided his bank account details';
+    const BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND                             = 'The Partner has not yet provided his bank account details';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED                    = 'The merchant already has provided a bank account';
     const BAD_REQUEST_CANNOT_ADD_SUBMERCHANT                                    = 'The merchant cannot add a sub-merchant';
     const BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED                     = 'The merchant cannot add a sub-merchant without providing email';
@@ -338,6 +344,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
     const BAD_REQUEST_MERCHANT_EMAIL_DOES_NOT_EXIST                             = 'Merchant email type does not Exist';
     const BAD_REQUEST_MERCHANT_REFERRAL_DOES_NOT_EXIST                          = 'Merchant referral does not Exist';
+    const BAD_REQUEST_NOT_SUPPORTED_FEATURE                                     = 'Server error while performing operation';
 
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
@@ -360,7 +367,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK                     = 'Payment processing declined by card issuing bank. Please contact issuing bank to determine reason.';
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER                      = 'Payment processing via netbanking cancelled by user by clicking cancel on bank transfer page';
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = 'Payment processing failed due to 3dsecure or OTP authentication failure';
-    const BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED                         = 'Payment processing failed due to 3dsecure or OTP authentication failure';
+    const BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED                         = 'The card is not enrolled for American Express SafeKey program. Please try another card.';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK                      = 'Payment processing failed by bank due to risk';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY_DUE_TO_RISK                   = 'Payment processing failed by gateway due to risk';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD              = 'Payment processing failed because cardholder\'s card was blocked';
@@ -537,6 +544,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE                              = 'This dispute is already closed and cannot be updated';
 
     const BAD_REQUEST_REPORTING_INTEGRATION                                     = 'Issue with Reporting Integration';
+    const BAD_REQUEST_UFH_INTEGRATION                                           = 'Issue with UFH Integration';
 
     // batch processor related error codes
     const BAD_REQUEST_BATCH_FILE_INVALID_TYPE                                   = 'Incorrect type is used for the uploaded file';
@@ -792,9 +800,14 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                       = 'Payout mode is invalid';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
 
+    // Merchant Config Inheritance
+    const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';
+
     // Terminal Onboarding
     const BAD_REQUEST_TERMINAL_ONBOARDING_DISABLED                              = 'Terminal onboarding feature is disabled';
-    const BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED                   = 'Only terminals in activated state can be enabled';
+    const BAD_REQUEST_ONLY_DEACTIVATED_TERMINALS_CAN_BE_ENABLED                 = 'Only deactivated terminals can be enabled';
+    const BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_DISABLED                  = 'Only activated terminals can be disabled';
+
 
     // Scrooge
     const GATEWAY_VERIFY_REFUND_ABSENT                                          = 'Refund is not present at gateway';
@@ -922,8 +935,20 @@ class PublicErrorDescription
 
 
     //Offer
-    const MAX_CARD_USAGE_LIMIT_EXCEEDED                                             = 'Offer Maximum Card Usage limit exceeded';
-    const MAX_OFFER_LIMIT_EXCEEDED                                                  = 'Offer Maximum Usage limit exceeded';
+    const OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED                                       = 'Offer Maximum Card Usage limit exceeded';
+    const OFFER_MAX_OFFER_LIMIT_EXCEEDED                                            = 'Offer Maximum Usage limit exceeded';
+    const OFFER_PAYMENT_METHOD_NOT_AVAILABLE                                        = 'Payment Method is not available for this Offer';
+    const OFFER_CARD_TYPE_DOES_NOT_MATCH                                            = 'Card type entered does not match the Offers parameters';
+    const OFFER_PAYMENT_NETWORK_NOT_AVAILABLE                                       = 'Offer Payment Method Network is not same as Selected Payment Method Network';
+    const OFFER_EMI_DURATION_NOT_SAME                                               = 'Offer Emi duration is not same as Selected Emi duration';
+    const OFFER_CARD_INTERNATIONAL                                                  = 'Selected Card is not international but offer applied requires international card';
+    const OFFER_IINS_DOES_NOT_MATCH                                                 = 'Selected card does not belong to offer iins';
+    const OFFER_WALLET_NOT_SAME                                                     = 'Offer Wallet does not match with payment wallet';
+    const OFFER_PERIOD_NOT_ACTIVE                                                   = 'Offer Applied is not active for this time period';
+    const OFFER_ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT                                  = 'Order Amount is less than Offer Minimum amount';
+    const OFFER_ORDER_AMOUNT_GREATER_OFFER_MAX_AMOUNT                               = 'Order Amount is greater than Offer Maximum amount';
+    const OFFER_NOT_ACTIVE                                                          = 'Offer is inactive';
+    const OFFER_NOT_APPLICABLE_ON_ISSUER                                            = 'Offer not applicable on selected issuer';
 
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'Access denied.';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_NO_RECORDS_FOUND                            = 'Sorry, we could not find a match for the given details. Please try again later with correct details. Please note that your phone number should be correct and name & date of birth should be as given in your PAN.';

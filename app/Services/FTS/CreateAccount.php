@@ -46,6 +46,10 @@ class CreateAccount extends Base
 
     protected $nodalBeneficiaryCore;
 
+    protected $channel;
+
+    protected $sourceAccountType;
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -77,6 +81,8 @@ class CreateAccount extends Base
         $this->accountType = $type;
 
         $this->status      = $status;
+
+        $this->channel     = null;
 
         if ($status !== null)
         {
@@ -197,9 +203,16 @@ class CreateAccount extends Base
      */
     public function getAccountDetails(BankAccount\Entity $ba):array
     {
+        $type = Constants::SAVING;
+
+        if (empty($this->sourceAccountType) === false)
+        {
+            $type = $this->sourceAccountType;
+        }
+
         return [
             Constants::IFSC_CODE                  => $ba->getIfscCode(),
-            Constants::ACCOUNT_TYPE               => $ba->getAccountType() ?? Constants::SAVING,
+            Constants::ACCOUNT_TYPE               => $ba->getAccountType() ?? $type,
             Constants::ACCOUNT_NUMBER             => $ba->getAccountNumber(),
             Constants::BENEFICIARY_NAME           => $ba->getBeneficiaryName(),
             Constants::BENEFICIARY_CITY           => $ba->getBeneficiaryCity(),
@@ -309,6 +322,11 @@ class CreateAccount extends Base
                 $request[Constants::DEFAULT_CHANNEL] = Channel::RBL;
                 break;
 
+            case Constants::CARD:
+                $request[Constants::CARD] = $this->getCardDetails($this->account);
+
+                break;
+
             default:
                 throw new LogicException('Account Type is not supported ' . $this->accountType);
         }
@@ -347,6 +365,11 @@ class CreateAccount extends Base
 
                 break;
 
+            case Constants::CARD:
+                $this->account = $this->cardCore->getCardEntity($this->accountId);
+
+                break;
+
             default:
                 throw new LogicException('Account Type is not supported ' . $this->accountType);
         }
@@ -354,7 +377,8 @@ class CreateAccount extends Base
 
     public function isAccountCreatedInFts()
     {
-        if (empty($this->account->getFtsFundAccountId()) === false)
+        if ((method_exists($this->account, "getFtsFundAccountId") === true) &&
+            (empty($this->account->getFtsFundAccountId()) === false))
         {
             return false;
         }
@@ -364,6 +388,11 @@ class CreateAccount extends Base
 
     protected function getDefaultChannelByProductAndAccountType()
     {
+        if(empty($this->channel) === false)
+        {
+            return $this->channel;
+        }
+
         if ($this->product === Product::PAYOUT)
         {
             if ($this->accountType === Constants::BANKING_ACCOUNT)
@@ -446,6 +475,12 @@ class CreateAccount extends Base
         return $iin->getIssuer();
     }
 
+    /**
+     * Used to create source Account Via dashboard
+     *
+     * @param array $input
+     * @return array
+     */
     public function createAccountMappingForFts(array $input)
     {
         (new Validator)->validateInput('create_source_account', $input);
@@ -455,6 +490,10 @@ class CreateAccount extends Base
         try
         {
             $this->initialize($input['id'], $input['type'], $input['product']);
+
+            $this->channel = $input['channel'];
+
+            $this->sourceAccountType = $input['sourceAccountType'];
 
             $response = $this->createFundAccount();
 
@@ -508,5 +547,10 @@ class CreateAccount extends Base
             parent::SOURCE_ACCOUNT_DELETE_URI,
             Requests::DELETE,
             $input);
+    }
+
+    public function getAccount()
+    {
+        return $this->account;
     }
 }

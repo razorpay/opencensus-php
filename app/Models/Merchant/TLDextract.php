@@ -7,9 +7,21 @@ use RZP\Constants\TLD;
 class TLDExtract
 {
 
+    /**
+     * @param string $url
+     *
+     * @return string|null
+     */
     public function getEffectiveTLDPlusOne(string $url)
     {
+        if (empty($url) === true)
+        {
+            return null;
+        }
+
         $host = parse_url($url, PHP_URL_HOST);
+
+        $host = strtolower($host);
 
         list($registeredDomain, $tld) = $this->extract($host);
 
@@ -18,6 +30,7 @@ class TLDExtract
         $domain = $lastDot !== false ? substr($registeredDomain, $lastDot + 1) : $registeredDomain;
 
         return $domain . '.' . $tld;
+
     }
 
     public function extract($host)

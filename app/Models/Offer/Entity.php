@@ -87,6 +87,10 @@ class Entity extends Base\PublicEntity
 
     const CURRENT_OFFER_USAGE = 'current_offer_usage';
 
+    const DEFAULT_OFFER       = 'default_offer';
+
+    const MAX_ORDER_AMOUNT    = 'max_order_amount';
+
     /**
      * Attributes on the basis of which we determine an offer satisfies the same
      * payment criteria as another offer
@@ -131,6 +135,8 @@ class Entity extends Base\PublicEntity
         self::ERROR_MESSAGE,
         self::TERMS,
         self::MAX_OFFER_USAGE,
+        self::DEFAULT_OFFER,
+        self::MAX_ORDER_AMOUNT,
     ];
 
     protected $public = [
@@ -164,6 +170,8 @@ class Entity extends Base\PublicEntity
         self::MAX_OFFER_USAGE,
         self::CURRENT_OFFER_USAGE,
         self::CREATED_AT,
+        self::DEFAULT_OFFER,
+        self::MAX_ORDER_AMOUNT,
     ];
 
     protected $visible = [
@@ -198,16 +206,19 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::MAX_OFFER_USAGE,
         self::CURRENT_OFFER_USAGE,
+        self::DEFAULT_OFFER,
+        self::MAX_ORDER_AMOUNT,
     ];
 
     protected $defaults = [
         self::ACTIVE           => 1,
         self::BLOCK            => 1,
         self::CHECKOUT_DISPLAY => 0,
-        self::TYPE             => self::DEFERRED,
+        self::TYPE             => self::INSTANT,
         self::ERROR_MESSAGE    => self::DEFAULT_ERROR_MESSAGE,
         self::EMI_SUBVENTION   => null,
         self::EMI_DURATIONS    => null,
+        self::DEFAULT_OFFER    => 0,
     ];
 
     protected $publicSetters = [
@@ -241,6 +252,8 @@ class Entity extends Base\PublicEntity
         self::MAX_OFFER_USAGE    => 'int',
         self::CURRENT_OFFER_USAGE => 'int',
         self::CREATED_AT          => 'int',
+        self::DEFAULT_OFFER       => 'boolean',
+        self::MAX_ORDER_AMOUNT    => 'int',
     ];
 
     public function build(array $input = [], string $operation = 'create')
@@ -276,6 +289,11 @@ class Entity extends Base\PublicEntity
     public function isActive()
     {
         return $this->getAttribute(self::ACTIVE);
+    }
+
+    public function isDefaultOffer()
+    {
+        return $this->getAttribute(self::DEFAULT_OFFER);
     }
 
     public function isPeriodActive()
@@ -404,6 +422,16 @@ class Entity extends Base\PublicEntity
     public function getCurrentOfferUsage()
     {
         return $this->getAttribute(self::CURRENT_OFFER_USAGE);
+    }
+
+    public function getOfferType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function getMaxOrderAmount()
+    {
+        return $this->getAttribute(self::MAX_ORDER_AMOUNT);
     }
 
 // --------------------- Calculator --------------------------------------------
@@ -556,7 +584,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MIN_AMOUNT, $minAmount);
     }
 
-    public function toArrayCheckout(bool $discount = false, int $amount = null)
+    public function toArrayCheckout(int $amount = null)
     {
         $data = [
             self::ID              => $this->getPublicId(),
@@ -566,6 +594,7 @@ class Entity extends Base\PublicEntity
             self::ISSUER          => $this->getAttribute(self::ISSUER),
             self::DISPLAY_TEXT    => $this->getAttribute(self::DISPLAY_TEXT),
             self::EMI_SUBVENTION  => $this->getAttribute(self::EMI_SUBVENTION),
+            self::TYPE            => $this->getAttribute(self::TYPE),
         ];
 
         //
@@ -574,7 +603,7 @@ class Entity extends Base\PublicEntity
         // because one offer of emi subvention can corresponds to multiple
         // plans which means multiple discounts are applicable.
         //
-        if (($discount === true) and
+        if (($this->getAttribute(self::TYPE) === Constants::INSTANT_OFFER) and
             ($this->getAttribute(self::EMI_SUBVENTION) !== true))
         {
             $data['original_amount'] = $amount;

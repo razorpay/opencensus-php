@@ -209,17 +209,6 @@ class Selector extends Base\Core
                 {
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
 
-                    // temporary - needs to be removed once parity analysis is complete
-                    $this->trace->info(
-                        TraceCode::SMART_ROUTING_TERMINALS_COUNT_IS_ZERO,
-                        [
-                            'terminals_from_smart_routing'  => $newSelectedTerminals,
-                            'is_error_timeout'              => $terminalSetReceivedFromSmartRouting != null ? false : true,
-                            'payment_id'                    => $payment->getId(),
-
-                        ]);
-
-
                     if (empty($sortedTerminals) === false)
                     {
                         $this->trace->error(
@@ -228,6 +217,7 @@ class Selector extends Base\Core
                                 'terminals_from_api'            => $sortedTerminals,
                                 'terminals_from_smart_routing'  => $newSelectedTerminals,
                                 'payment_id'                    => $payment->getId(),
+                                'method'                        => $payment->getMethod(),
 
                             ]);
                     }
@@ -326,10 +316,23 @@ class Selector extends Base\Core
 
     protected function getTerminals()
     {
-        // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
-        $merchantTerminals = $this->repo
-                                  ->terminal
-                                  ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
+        $response = $this->app->razorx->getTreatment($this->input['merchant']->getId(), 'payments_fetch_config_parent_terminal',
+                    $this->mode);
+
+        if ($response === 'on')
+        {
+            // Fetch all terminals (enabled/disabled) for both the current merchant, parent merchant and the shared Merchant
+            $merchantTerminals = $this->repo
+                                      ->terminal
+                                      ->getTerminalForMerchantParentMerchantAndSharedMerchant($this->input['merchant']);
+        }
+        else
+        {
+            // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
+            $merchantTerminals = $this->repo
+                                      ->terminal
+                                      ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
+        }
 
         $payment = $this->input['payment'];
 
@@ -607,6 +610,7 @@ class Selector extends Base\Core
                     'filtered_terminals'  => $data['filtered_terminals'],
                     'gateway_downtime'    => $data['gateway_downtime'],
                     'failed_terminals'    => $data['failed_terminals'],
+                    'execution_type'      => $executionType,
                 ]);
 
             if ($executionType === self::EXECUTION_TYPE_SYNC)

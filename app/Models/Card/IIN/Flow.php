@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Card\IIN;
 
+use RZP\Models\Feature\Constants as Feature;
+
 class Flow
 {
     const _3DS         = '3ds';
@@ -20,6 +22,14 @@ class Flow
         self::MAGIC        => 16,
         self::HEADLESS_OTP => 32,
         self::IVR          => 64,
+    ];
+
+    public static $featureToFlowMappings = [
+        Flow::OTP => [
+            Feature::IVR               => Flow::IVR,
+            Feature::AXIS_EXPRESS_PAY  => Flow::OTP,
+            Feature::HEADLESS_DISABLE  => Flow::HEADLESS_OTP,
+        ],
     ];
 
     /**

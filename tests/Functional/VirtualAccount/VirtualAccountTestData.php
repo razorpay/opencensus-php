@@ -156,6 +156,24 @@ return [
         ],
     ],
 
+    'testVaOfflineQRGeneration' => [
+        'request' => [
+            'url'     => '/virtual_accounts/offline_qr',
+            'method'  => 'POST',
+            'content' => [
+                'currency'      => 'INR',
+                'amount'        => 100,
+                'receipt'       => 'test_data',
+                'description'   => 'description',
+                'notifications' => [
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testFetchOrderWithVirtualAccountNoExpand' => [
         'request' => [
             'method'  => 'GET',
@@ -680,9 +698,9 @@ return [
         'receivers'   => [
             [
                 "entity"   => "vpa",
-                "username" => "rzp.test.testvpa",
+                "username" => "rzpy.test000000virtualvpa",
                 "handle"   => "hdfcbank",
-                "address"  => "rzp.test.testvpa@hdfcbank"
+                "address"  => "rzpy.test000000virtualvpa@hdfcbank"
             ],
         ],
     ],
@@ -700,9 +718,9 @@ return [
             ],
             [
                 "entity"   => "vpa",
-                "username" => "rzp.test.testvpa",
+                "username" => "rzpy.test000000virtualvpa",
                 "handle"   => "hdfcbank",
-                "address"  => "rzp.test.testvpa@hdfcbank"
+                "address"  => "rzpy.test000000virtualvpa@hdfcbank"
             ],
         ],
     ],
@@ -728,9 +746,9 @@ return [
                         'receivers'   => [
                             [
                                 "entity"   => "vpa",
-                                "username" => "rzp.test.testvpa",
+                                "username" => "rzpy.test000000virtualvpa",
                                 "handle"   => "hdfcbank",
-                                "address"  => "rzp.test.testvpa@hdfcbank"
+                                "address"  => "rzpy.test000000virtualvpa@hdfcbank"
                             ],
                         ],
                         "close_by"    => null,
@@ -755,5 +773,181 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_RECEIVER_ALREADY_PRESENT,
         ],
+    ],
+
+    'testCreateVirtualAccountWithoutCustomerIdWithCustomerDetails' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'customer' =>[
+                    'name' => 'test',
+                    'contact' => '1234567890',
+                    'email' => 'abc@abc.com'
+                ],
+                'description' => 'VA for tests',
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'description' => 'VA for tests',
+                'status' => 'active',
+                'receivers' => [
+                    [
+                        'entity' => 'bank_account',
+                        'ifsc' => 'RAZR0000001',
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateVirtualAccountWithoutCustomerIdWithoutCustomerDetails' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'customer' =>[],
+                'description' => 'VA for tests',
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'description' => 'VA for tests',
+                'status' => 'active',
+                'receivers' => [
+                    [
+                        'entity' => 'bank_account',
+                        'ifsc' => 'RAZR0000001',
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateVirtualAccountWithCustomerIdWithCustomerDetails' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'customer_id' => 'cust_100022customer',
+                'customer' =>[
+                    'name' => 'test',
+                    'contact' => '1234567890',
+                    'email' => 'abc@abc.com'
+                ],
+                'description' => 'VA for tests',
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'description' => 'VA for tests',
+                'status' => 'active',
+                'receivers' => [
+                    [
+                        'entity' => 'bank_account',
+                        'ifsc' => 'RAZR0000001',
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateVirtualAccountInvalidCustomerEmail' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'customer' =>[
+                    'name' => 'test',
+                    'contact' => '1234567890',
+                    'email' => 'abc'
+                ],
+                'description' => 'VA for tests',
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email must be a valid email address.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOfflineQrCloseBy' => [
+        'request' => [
+            'url' =>'/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'description' => 'VA for tests',
+                'close_by' => '1577644500',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'close_by should be at least 15 minutes after current time',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOfflineVACreation' => [
+        'request' => [
+            'url' =>'/virtual_accounts/offline_qr',
+            'method' => 'post',
+            'content' => [
+                'description' => 'VA for tests',
+                'amount'      => 100,
+                'receipt'     => 'OfflineQrVa',
+                'currency'    => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'status' => 'active',
+                'closed_at' => null
+            ],
+        ]
     ],
 ];

@@ -673,14 +673,14 @@ class Checkout
 
             if ($checker->checkValidityOnOrder($order) === true)
             {
-                $data['offers'][] = $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount);
+                $data['offers'][] = $offer->toArrayCheckout($orderAmount);
             }
         }
     }
 
     protected function checkAndFillNonOrderOffers(Merchant\Entity $merchant, array & $data)
     {
-        $nonOrderOffers = (new Offer\Core)->fetchMerchantOffersForCheckout($merchant);
+        $nonOrderOffers = (new Offer\Core)->fetchSharedAccOffersForCheckout($merchant);
 
         foreach ($nonOrderOffers as $offer)
         {

@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Vpa;
 
 use RZP\Exception;
+use RZP\Events\P2p;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\BankAccount;
@@ -91,6 +92,8 @@ class Processor extends Base\Processor
 
             return $vpa;
         });
+
+        $this->app['events']->fire(new P2p\VpaCreated($this->context(), $vpa));
 
         return $vpa->toArrayPublic();
     }

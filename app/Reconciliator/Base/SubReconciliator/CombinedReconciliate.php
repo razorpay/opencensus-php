@@ -129,6 +129,8 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
         {
             foreach ($fileContents as $row)
             {
+                $this->modifyRowIfNeeded($row);
+
                 $entityType = $this->getReconciliationTypeForRow($row);
 
                 try

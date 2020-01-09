@@ -2,80 +2,79 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Models\Merchant;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
-use RZP\Models\Merchant\Entity as Merchant;
-use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-use RZP\Models\Merchant\Document\Entity as DocumentEntity;
+use RZP\Models\Merchant\TLDExtract;
 
 class InstantActivation extends Base
 {
+    protected $TLDExtract;
+
+    protected $merchantCore;
+
+
     public function __construct(Entity $batch)
     {
         parent::__construct($batch);
+
+        $this->TLDExtract = new TLDExtract();
+
+        $this->merchantCore = new Merchant\Core();
     }
 
     protected function processEntry(array & $entry)
     {
-        $this->repo->transactionOnLiveAndTest(function() use (& $entry) {
+        if (empty($entry[Merchant\Entity::MERCHANT_ID]) === false)
+        {
+            $this->repo->transactionOnLiveAndTest(function() use (& $entry) {
 
-            $merchantDetails = $this->repo->merchant_detail->getByMerchantId(trim($entry[Merchant::MERCHANT_ID]));
+                $merchantDetails = $this->repo->merchant_detail->getByMerchantId(trim($entry[Merchant\Entity::MERCHANT_ID]));
 
-            $documents = $this->getDocumentFieldsInMerchantDetail($merchantDetails);
+                $merchant = $this->repo->merchant->findOrFail(trim($entry[Merchant\Entity::MERCHANT_ID]));
 
-            foreach ($documents as $documentType => $fileStoreId)
+                $this->updateWhitelistedDomains($merchantDetails, $merchant);
+
+                $this->repo->merchant->saveOrFail($merchant);
+            });
+
+            $entry[Header::STATUS] = Status::SUCCESS;
+        }
+    }
+
+    protected function updateWhitelistedDomains($merchantDetails, $merchant)
+    {
+        $businessWebsite = $merchantDetails->getWebsite() ?? '';
+
+        $additionalWebsites = $merchantDetails->getAdditionalWebsites() ?? [];
+
+        $this->removeDotFromWhitelistedDomain($merchant);
+
+        $websites = array_merge([$businessWebsite],$additionalWebsites);
+
+        foreach ($websites as $website)
+        {
+            $domain = $this->TLDExtract->getEffectiveTLDPlusOne($website);
+
+            $this->merchantCore->addDomainInWhitelistedDomain($merchant, $domain);
+        }
+    }
+
+    protected function removeDotFromWhitelistedDomain(Merchant\Entity $merchant)
+    {
+        $whitelistedDomains = $merchant->getWhitelistedDomains() ?? [];
+
+        $updatedWhitelistedDomains = [];
+
+        foreach ($whitelistedDomains as $whitelistedDomain)
+        {
+            if ($whitelistedDomain !== '.')
             {
-                if ((isset($fileStoreId) === true) and ($this->isEntryAlreadyExistInMerchantDocument($fileStoreId) === false))
-                {
-                    $documentEntries = [
-                        DocumentEntity::MERCHANT_ID   => $merchantDetails->getMerchantId(),
-                        DocumentEntity::DOCUMENT_TYPE => $documentType,
-                        DocumentEntity::FILE_STORE_ID => $fileStoreId,
-                        DocumentEntity::ENTITY_TYPE   => 'merchant',
-                    ];
-
-                    $document = (new DocumentEntity())->generateId()->fill($documentEntries);
-
-                    $this->repo->merchant_document->saveOrFail($document);
-                }
+                $updatedWhitelistedDomains[] = $whitelistedDomain;
             }
-        });
+        }
 
-        $entry[Header::STATUS] = Status::SUCCESS;
-    }
-
-    public function isEntryAlreadyExistInMerchantDocument($fileStoreId)
-    {
-        $document = $this->repo->merchant_document->findDocumentByFileStoreId($fileStoreId);
-
-        return isset($document);
-    }
-
-    /**
-     * @param DetailEntity $merchantDetails
-     *
-     * @return array
-     */
-    private function getDocumentFieldsInMerchantDetail(DetailEntity $merchantDetails): array
-    {
-        $entityInputKeys = [
-            DetailEntity::BUSINESS_PROOF_URL,
-            DetailEntity::BUSINESS_OPERATION_PROOF_URL,
-            DetailEntity::BUSINESS_PAN_URL,
-            DetailEntity::ADDRESS_PROOF_URL,
-            DetailEntity::PROMOTER_PROOF_URL,
-            DetailEntity::PROMOTER_PAN_URL,
-            DetailEntity::PROMOTER_ADDRESS_URL,
-            DetailEntity::FORM_12A_URL,
-            DetailEntity::FORM_80G_URL,
-        ];
-
-        $entityInput = array_only($merchantDetails->getAttributes(), $entityInputKeys);
-
-        // remove null values from input array
-        return array_filter($entityInput, function($var) {
-            return (is_null($var) === false);
-        });
+        $merchant->edit([Merchant\Entity::WHITELISTED_DOMAINS => $updatedWhitelistedDomains]);
     }
 }

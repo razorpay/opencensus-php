@@ -12,6 +12,13 @@ trait PaymentPaysecureTrait
 
         if ($mock)
         {
+            if ($this->isOtpCallbackUrl($url) === true)
+            {
+                $this->callbackUrl = $url;
+                $this->otpFlow = true;
+                return $this->makeOtpCallback($url);
+            }
+
             $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
         }
         else

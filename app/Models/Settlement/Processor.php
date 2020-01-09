@@ -281,7 +281,12 @@ class Processor extends Base\Core
         {
             $channel = $setl->getChannel();
 
-            $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo, $merchantSettleToPartner);
+            $destinationMerchantId = $this->settlementToPartner($setl->merchant->getId());
+
+            $isAggregateSettlement = (bool) $destinationMerchantId;
+
+            $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo,
+                false,  $merchantSettleToPartner, $isAggregateSettlement);
 
             list($setl, $bankTransferAtpt) = $this->repo->transaction(
                 function() use ($merchantSettler, $setl, $merchantSettleToPartner)

@@ -27,6 +27,7 @@ use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
+use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 
 class Core extends Base\Core
 {
@@ -420,9 +421,16 @@ class Core extends Base\Core
                             ->fund_transfer_attempt
                             ->getFTSAttemptBySourceId(
                                 $input[Entity::SOURCE_ID],
-                                $input[Entity::SOURCE_TYPE]);
+                                $input[Entity::SOURCE_TYPE],
+                                true);
 
                 $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
+            }
+
+            if (AttemptStatus::isValidStateTransition($fta->getStatus(), $input[Entity::STATUS]) === false) {
+                return [
+                    'message' => 'webhook update skipped due to invalid state transition',
+                ];
             }
 
             $fta = $this->updateFtaWithInput($input, $fta);

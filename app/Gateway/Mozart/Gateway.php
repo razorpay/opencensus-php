@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
@@ -16,6 +17,7 @@ use RZP\Gateway\Upi\Mindgate\Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -25,9 +27,70 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'mozart';
 
+    const CACHE_KEY    = 'gateway:cache_key_%s';
+
     protected $map = [
         'data'      => Entity::RAW,
     ];
+
+    public function checkAccount(array $input)
+    {
+        $this->action($input, Action::CHECKACCOUNT);
+
+        $provider = strtoupper($input['provider']);
+
+        $input['terminal'] = $this->terminal;
+
+        switch ($input['method'])
+        {
+            case Payment\Gateway::PAYLATER:
+                $input['payment']['gateway'] = $input['provider'];
+                break;
+        }
+
+        $request = $this->getMozartRequestArray($input);
+
+        $this->trace->info(
+            TraceCode::CHECK_ACCOUNT_REQUEST,
+            [
+                'url'      => $request['url'],
+                'gateway'  => $this->gateway,
+                'provider' => $provider,
+                'contact'  => $input['contact'],
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->trace->info(
+            TraceCode::CHECK_ACCOUNT_RESPONSE,
+            [
+                'response' => $traceRes,
+            ]);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::CHECKACCOUNT);
+
+        switch ($input['provider'])
+        {
+            case Payment\Gateway::GETSIMPL:
+                $token = $response['data']['simpltoken'];
+                break;
+            default:
+                $token = null;
+        }
+
+        if ($this->shouldCacheToken($token, $input) == true)
+        {
+            $this->cacheValue($token, $input);
+        }
+
+        return $response;
+    }
 
     public function authorize(array $input)
     {
@@ -36,6 +99,19 @@ class Gateway extends Base\Gateway
         if (($this->getGateway($input) === 'wallet_phonepe') and ($input['wallet']['flow'] == 'intent'))
         {
             parent::action($input, Action::INTENT);
+        }
+
+        switch ($this->terminal->getGatewayAcquirer())
+        {
+            case Payment\Gateway::GETSIMPL:
+
+                if(empty($input['simpltoken']) === true)
+                {
+                    $input['simpltoken'] = $this->fetchCacheData($input);
+                }
+
+                $input['payment']['gateway'] = $input['payment']['wallet'];
+                break;
         }
 
         $request = $this->getMozartRequestArray($input);
@@ -66,6 +142,23 @@ class Gateway extends Base\Gateway
             ];
 
             return ['data' => $data];
+        }
+
+        $intentGatewaysWithPayInit = [
+            Payment\Gateway::UPI_JUSPAY,
+        ];
+
+        if (($this->action === Action::PAY_INIT) and
+            (in_array($this->getGateway($input), $intentGatewaysWithPayInit, true)))
+        {
+            if($this->isUpiIntent($input) === true)
+            {
+                $data = [
+                    'intent_url' => $response['next']['redirect']['url'],
+                ];
+
+                return ['data' => $data ];
+            }
         }
 
         if ($input['payment']['method'] === 'upi')
@@ -340,7 +433,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getTerminalOnboardingMozartRequestArray($input);
 
-        $this->traceGatewayTerminalOnboarding($request, 'request', $input, TraceCode::GATEWAY_CREATE_TERMINAL_REQUEST);
+        $traceReq = [
+            'method'    => $request['method'],
+            'url'       => $request['url'],
+            'content'   => $request['content'],
+        ];
+
+        $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_CREATE_TERMINAL_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -356,7 +455,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getTerminalOnboardingMozartRequestArray($input);
 
-        $this->traceGatewayTerminalOnboarding($request, 'request', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_REQUEST);
+        $traceReq = [
+            'method'    => $request['method'],
+            'url'       => $request['url'],
+            'content'   => $request['content'],
+        ];
+
+        $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_VERIFY_TERMINAL_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -364,6 +469,49 @@ class Gateway extends Base\Gateway
 
         return $response;
     }
+
+    public function disableTerminal(array $input)
+    {
+        parent::disableTerminal($input);
+
+        $request = $this->getTerminalOnboardingMozartRequestArray($input);
+
+        $traceReq = [
+            'method'    => $request['method'],
+            'url'       => $request['url'],
+            'content'   => $request['content'],
+        ];
+        
+        $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_DISABLE_TERMINAL_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_DISABLE_TERMINAL_RESPONSE);
+
+        return $response;
+    }
+
+    public function enableTerminal(array $input)
+    {
+        parent::enableTerminal($input);
+
+        $request = $this->getTerminalOnboardingMozartRequestArray($input);
+
+        $traceReq = [
+            'method'    => $request['method'],
+            'url'       => $request['url'],
+            'content'   => $request['content'],
+        ];
+        
+        $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_ENABLE_TERMINAL_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_ENABLE_TERMINAL_RESPONSE);
+
+        return $response;
+    }
+
 
     public function immediateVerifyApplicable($input)
     {
@@ -469,6 +617,13 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION);
         }
 
+        switch ($this->terminal->getGatewayAcquirer())
+        {
+            case Payment\Gateway::GETSIMPL:
+                $input['payment']['gateway'] = $input['payment']['wallet'];
+                break;
+        }
+
         $request = $this->getMozartRequestArray($input);
 
         $traceReq = [
@@ -522,6 +677,13 @@ class Gateway extends Base\Gateway
         $this->input = $input;
         $this->action = Action::VERIFY_REFUND;
 
+        switch ($this->terminal->getGatewayAcquirer())
+        {
+            case Payment\Gateway::GETSIMPL:
+                $input['payment']['gateway'] = $input['payment']['wallet'];
+                break;
+        }
+
         $request = $this->getMozartRequestArray($input);
 
         $traceReq = [
@@ -563,6 +725,13 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
+
+        switch ($this->terminal->getGatewayAcquirer())
+        {
+            case Payment\Gateway::GETSIMPL:
+                $input['payment']['gateway'] = $input['payment']['wallet'];
+                break;
+        }
 
         $verify = new Verify($this->gateway, $input);
 
@@ -644,6 +813,10 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentEntityWithAction($verify->payment, $content, true, Action::AUTHORIZE);
 
+        $gatewayName = $this->getGateway($input);
+
+        $this->restrictPaymentVerifyGatewayIfApplicable($gatewayName, $verify);
+
         return $verify->status;
     }
 
@@ -678,7 +851,8 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalOnboardingMozartRequestArray($input)
     {
-        if (($input['terminal'] instanceof TerminalEntity) === true)
+        if ( (isset($input['terminal']) === true) and 
+             (($input['terminal'] instanceof TerminalEntity) === true) )
         {
             $input['terminal'] = $input['terminal']->toArrayWithPassword();
         }
@@ -823,6 +997,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT      => null,
                 Action::PAY_VERIFY    => null,
                 Action::VERIFY        => Action::PAY_VERIFY,
+                Action::REFUND        => Action::PAY_VERIFY,
             ],
             Payment\Gateway::UPI_CITI => [
                 Action::PAY_INIT => null,
@@ -854,6 +1029,13 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY  =>  null,
                 Action::VERIFY      =>  Action::PAY_VERIFY,
             ],
+            Payment\Gateway::GETSIMPL   =>  [
+                Action::CHECKACCOUNT    =>  null,
+                Action::PAY_INIT        =>  null,
+                Action::REFUND          =>  Action::PAY_INIT,
+                Action::VERIFY          =>  Action::PAY_INIT,
+                Action::VERIFY_REFUND   =>  Action::REFUND,
+            ]
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -908,6 +1090,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
                 Action::VERIFY => Action::AUTHORIZE,
+                Action::REFUND => Action::AUTHORIZE,
             ],
             Payment\Gateway::NETBANKING_SIB => [
                 Action::PAY_INIT   => null,
@@ -959,6 +1142,14 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY  =>  null,
                 Action::VERIFY      =>  Action::AUTHORIZE,
             ],
+
+            Payment\Gateway::GETSIMPL   =>  [
+                Action::CHECKACCOUNT    =>  null,
+                Action::PAY_INIT        =>  null,
+                Action::REFUND          =>  Action::AUTHORIZE,
+                Action::VERIFY          =>  Action::AUTHORIZE,
+                Action::VERIFY_REFUND   =>  Action::REFUND,
+            ]
         ];
 
         return $previousActionForData[$gateway][$this->action];
@@ -1256,6 +1447,26 @@ class Gateway extends Base\Gateway
         return in_array($gateway, $formattedAmountGateways, true);
     }
 
+    protected function restrictPaymentVerifyGatewayIfApplicable($gateway, $verify)
+    {
+        $verifyRestrictedGateways = [
+            Payment\Gateway::NETBANKING_KVB,
+        ];
+
+        if (in_array($gateway, $verifyRestrictedGateways, true) === true)
+        {
+            if (($verify->match === true) and
+                ($this->app['basicauth']->isCron() === true))
+            {
+                throw new Exception\PaymentVerificationException(
+                    $verify->getDataToTrace(),
+                    null,
+                    VerifyAction::FINISH
+                );
+            }
+        }
+    }
+
     protected function getResponseData($input, $mozartResponse, $gatewayPayment)
     {
         if ((isset($input['gateway']['redirect']['mandateDtls']) === true) and
@@ -1338,8 +1549,10 @@ class Gateway extends Base\Gateway
 
     protected function getGateway($input)
     {
+        $nonPaymentActions = [Action::CREATE_TERMINAL, ACTION::VERIFY_TERMINAL, Action::DISABLE_TERMINAL, Action::ENABLE_TERMINAL];
+
         if (
-            (in_array($this->action, [Action::CREATE_TERMINAL, ACTION::VERIFY_TERMINAL])) or
+            (in_array($this->action, $nonPaymentActions)) or
             ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY))
             )
         {
@@ -1347,6 +1560,11 @@ class Gateway extends Base\Gateway
         }
 
         return $input['payment']['gateway'];
+    }
+
+    protected function isUpiIntent($input): bool
+    {
+        return (isset($input['upi']['flow']) and ($input['upi']['flow'] === 'intent'));
     }
 
     protected function isGooglePayGateway($input)
@@ -1451,6 +1669,49 @@ class Gateway extends Base\Gateway
                 Payment\Entity::REFERENCE1 => $data['bank_payment_id'] ?? null
             ]
         ];
+    }
+
+    protected function shouldCacheToken($token, $input)
+    {
+        if ((empty($token) === false) and ($input['provider'] === Payment\Gateway::GETSIMPL))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    protected function cacheValue($token, $input)
+    {
+        $contact = $input['contact'];
+
+        $merchantId = $this->terminal[Terminal\Entity::MERCHANT_ID];
+
+        $cacheKey = strtolower($input['provider']) . '_' . $contact . '_' . $merchantId;
+
+        $key = sprintf(self::CACHE_KEY, $cacheKey);
+
+        $this->createCacheData($key, $token);
+    }
+
+    protected function createCacheData($key, $value, $ttl = self::CARD_CACHE_TTL)
+    {
+        $this->app['cache']->put($key, $value, $ttl);
+    }
+
+    protected function fetchCacheData($input)
+    {
+        $contact = $input['payment']['contact'];
+
+        $merchantId = $this->terminal[Terminal\Entity::MERCHANT_ID];
+
+        $cacheKey = $input['payment']['wallet'] . '_' . $contact . '_' . $merchantId;
+
+        $key = sprintf(self::CACHE_KEY, $cacheKey);
+
+        return $this->app['cache']->get($key);
     }
 
     protected function extractPaymentsProperties($gatewayPayment)

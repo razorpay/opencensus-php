@@ -14,9 +14,7 @@ use RZP\Models\VirtualAccount\Provider;
 
 class Generator extends Base\Core
 {
-    const VPA_LENGTH = 40;
-
-    const DESCRIPTOR_LENGTH = 8;
+    const DYNAMIC_VPA_LENGTH = 20;
 
     const DESCRIPTOR = 'descriptor';
 
@@ -144,24 +142,31 @@ class Generator extends Base\Core
         return $vpa;
     }
 
-    protected function validateDescriptor(string $prefix)
+    protected function validateDescriptor(Terminal\Entity $terminal)
     {
-        $descriptor = $this->options[Generator::DESCRIPTOR];
+        $descriptor = $this->options[self::DESCRIPTOR];
 
-        $totalLength = self::VPA_LENGTH;
-
-        $availableLength = $totalLength - strlen($prefix);
-
-        if (strlen($descriptor) > $availableLength)
+        if (strlen($terminal->getVirtualUpiMerchantPrefix() . $descriptor) !== self::DYNAMIC_VPA_LENGTH)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
                 'descriptor',
                 [
-                    'descriptor' => $descriptor,
+                    'merchant_prefix' => $terminal->getVirtualUpiMerchantPrefix(),
+                    'descriptor'      => $descriptor,
                 ]);
         }
-        //TODO: Check if terminal shared account validation is required.
+
+        if ($terminal->isShared() === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Descriptor cannot be used with your account.',
+                null,
+                [
+                    'options'       => $this->options,
+                    'merchant_id'   => $this->merchant->getId(),
+                ]);
+        }
     }
 
     protected function buildVpaEntity(VirtualAccount\Entity $virtualAccount): Entity
@@ -212,10 +217,10 @@ class Generator extends Base\Core
 
         if ($this->options[Generator::DESCRIPTOR] !== null)
         {
-            $this->validateDescriptor($prefix);
+            $this->validateDescriptor($terminal);
         }
 
-        $descriptor = $this->getDescriptor($prefix, $handle);
+        $descriptor = $this->getDescriptor($merchantIdentifier);
 
         $vpa = strtolower($prefix . $descriptor . Entity::AROBASE . $handle);
 
@@ -231,21 +236,21 @@ class Generator extends Base\Core
             ]
         );
 
-        if (strlen($vpa) > (self::VPA_LENGTH + strlen($handle) + 1))
+        if (strlen($vpa) > (self::DYNAMIC_VPA_LENGTH + strlen($prefix) + strlen($handle) + 1))
         {
             throw new Exception\LogicException(
                 'Error in VPA generation.',
                 null,
                 [
                     'VPA'        => $vpa,
-                    'max_length' => self::VPA_LENGTH,
+                    'max_length' => self::DYNAMIC_VPA_LENGTH,
                 ]);
         }
 
         return $vpa;
     }
 
-    protected function getDescriptor(string $prefix, string $handle): string
+    protected function getDescriptor(string $merchantIdentifier = null): string
     {
         $descriptor = $this->options[Generator::DESCRIPTOR];
 
@@ -254,11 +259,11 @@ class Generator extends Base\Core
             return $descriptor;
         }
 
-        $totalLength = self::VPA_LENGTH;
+        $totalLength = self::DYNAMIC_VPA_LENGTH;
 
-        $availableLength = $totalLength - strlen($prefix);
+        $availableLength = $totalLength - strlen($merchantIdentifier);
 
-        $descriptor = $this->generateDescriptor(min($availableLength, self::DESCRIPTOR_LENGTH));
+        $descriptor = $this->generateDescriptor($availableLength);
 
         return $descriptor;
     }

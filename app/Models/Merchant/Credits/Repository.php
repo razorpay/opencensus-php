@@ -107,18 +107,35 @@ class Repository extends Base\Repository
 
     public function getMerchantCreditsOfType(string $merchantId, string $type): int
     {
-        $query = $this->newQuery()
-                      ->selectRaw('SUM(value - used) as sum')
-                      ->merchantId($merchantId)
-                      ->where(Entity::VALUE, '>', 0)
-                      ->where(function ($query)
-                            {
-                                $query->where(Entity::EXPIRED_AT, '>', time())
-                                      ->orWhereNull(Entity::EXPIRED_AT);
-                            }
-                        )
-                      ->where(Entity::TYPE, '=', $type)
-                      ->first();
+        if ($type === Type::REFUND)
+        {
+            $query = $this->newQuery()
+                ->selectRaw('SUM(value - used) as sum')
+                ->merchantId($merchantId)
+                ->where(function ($query)
+                {
+                    $query->where(Entity::EXPIRED_AT, '>', time())
+                        ->orWhereNull(Entity::EXPIRED_AT);
+                }
+                )
+                ->where(Entity::TYPE, '=', $type)
+                ->first();
+        }
+        else
+        {
+            $query = $this->newQuery()
+                ->selectRaw('SUM(value - used) as sum')
+                ->merchantId($merchantId)
+                ->where(Entity::VALUE, '>', 0)
+                ->where(function ($query)
+                {
+                    $query->where(Entity::EXPIRED_AT, '>', time())
+                        ->orWhereNull(Entity::EXPIRED_AT);
+                }
+                )
+                ->where(Entity::TYPE, '=', $type)
+                ->first();
+        }
 
         return $query->getAttribute('sum');
     }

@@ -51,6 +51,12 @@ trait MocksDnsTrait
                     'ip'    => '169.254.169.254',
                 ]
             ],
+            'EXAMPLE.CoM' => [
+                [
+                    'type' => 'A',
+                    'ip'   => '10.0.0.1',
+                ],
+            ],
         ]);
     }
 }

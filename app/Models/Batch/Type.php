@@ -52,6 +52,8 @@ class Type
 
     const PRICING_RULE              = 'pricing_rule';
 
+    const MERCHANT_CONFIG_INHERITANCE = 'merchant_config_inheritance';
+
     // Batch Terminal Creation
     const TERMINAL                  = 'terminal';
 
@@ -85,6 +87,8 @@ class Type
 
     const MPAN                  = 'mpan';
 
+    const ADMIN_BATCH           = 'admin_batch';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -111,6 +115,8 @@ class Type
         self::IIN_MC_MASTERCARD,
         self::MPAN,
         self::PRICING_RULE,
+        self::ADMIN_BATCH,
+        self::MERCHANT_CONFIG_INHERITANCE,
     ];
 
     /**
@@ -175,6 +181,7 @@ class Type
         self::IIN_MC_MASTERCARD,
         self::MPAN,
         self::PRICING_RULE,
+        self::ADMIN_BATCH,
     ];
 
     /**
@@ -242,6 +249,11 @@ class Type
         self::FUND_ACCOUNT,
         self::SUBMERCHANT_ASSIGN,
         self::PRICING_RULE,
+        self::AUTH_LINK,
+        self::VIRTUAL_BANK_ACCOUNT,
+        self::PARTNER_SUBMERCHANTS,
+        self::OAUTH_MIGRATION_TOKEN,
+        self::LINKED_ACCOUNT_REVERSAL,
     ];
 
     /**
@@ -254,6 +266,7 @@ class Type
         self::PAYOUT,
         self::FUND_ACCOUNT,
         self::PRICING_RULE,
+        self::MERCHANT_CONFIG_INHERITANCE,
     ];
 
     public static function exists(string $type)

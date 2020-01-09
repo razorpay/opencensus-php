@@ -473,7 +473,7 @@ class Entity extends Base\PublicEntity
 
     public function getBankForNachMethod()
     {
-        $this->validator->validateOrderForNachMethod();
+        $this->getValidator()->validateOrderForNachMethod();
 
         $tokenRegistration = $this->getTokenRegistration();
 

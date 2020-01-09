@@ -219,7 +219,11 @@ class Gateway extends Base\Gateway
     {
         if ($exception !== null)
         {
-            throw $exception;
+            if ($exception instanceof \Exception)
+            {
+                throw $exception;
+            }
+            throw new \Exception('Not valid bharat qr');
         }
 
         //
@@ -247,6 +251,11 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($token);
 
         return true;
+    }
+
+    public function getIntentUrl($input)
+    {
+        return $this->getIntentRequest($input);
     }
 
     protected function getIntentRequest($input)
@@ -665,6 +674,24 @@ class Gateway extends Base\Gateway
             case ($amount === 3456):
                 $response['result']         = 'Request Timeout. Please try again.';
                 $response['status_code']    = ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS;
+                break;
+
+            // Hard failure + FTA retry
+            case ($amount === 1357):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::BAD_REQUEST_FORBIDDEN;
+                break;
+
+            // Hard failure
+            case ($amount === 2468):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::SERVER_ERROR_LOGICAL_ERROR;
+                break;
+
+            // Soft failure
+            case ($amount === 7531):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_FATAL_ERROR;
                 break;
 
             default:

@@ -38,6 +38,8 @@ class Checker extends Base\Core
         Entity::PAYMENT_METHOD_TYPE,
         Entity::EMI_DURATIONS,
         self::CARD_USAGE,
+        Entity::MIN_AMOUNT,
+        Entity::MAX_ORDER_AMOUNT
     ];
 
     public function __construct(Entity $offer, bool $verbose = false)
@@ -63,20 +65,51 @@ class Checker extends Base\Core
 
     public function checkValidityOnOrder(Order\Entity $order): bool
     {
-        $validOrderAmount = (($this->offer->getMinAmount() === null) or
-                             ($order->getAmount() >= $this->offer->getMinAmount()));
+        $this->order = $order;
 
-        return (($validOrderAmount === true) and
-                ($this->checkApplicabilityOnOrder($order) === true));
+        $validMinOrderAmount = $this->checkMinAmount();
+
+        if($validMinOrderAmount === false)
+        {
+            return false;
+        }
+
+        $validMaxOrderAmount = $this->checkMaxOrderAmount();
+
+        if($validMaxOrderAmount === false)
+        {
+            return false;
+        }
+
+        $isMaxOfferUsageExceeded = true;
+
+        if($this->offer->getMaxOfferUsage() !== null)
+        {
+            $isMaxOfferUsageExceeded = $this->offer->getCurrentOfferUsage() < $this->offer->getMaxOfferUsage();
+        }
+
+        if($isMaxOfferUsageExceeded === false)
+        {
+            return false;
+        }
+
+        if($this->checkApplicabilityOnOrder($order) === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 
-    public function checkApplicabilityForPayment(Payment\Entity $payment): bool
+    public function checkApplicabilityForPayment(Payment\Entity $payment, Order\Entity $order): bool
     {
         $this->payment = $payment;
 
+        $this->order = $order;
+
         $isCurrentOfferUsageAvailable = $this->checkMaxOfferUsage();
 
-        $offerActive = $this->offer->isActive();
+        $offerActive = $this->checkOfferActive();
 
         $validOfferPeriod = $this->checkOfferPeriod();
 
@@ -100,18 +133,37 @@ class Checker extends Base\Core
                 ($checkResult === true));
     }
 
+    protected function checkOfferActive(): bool
+    {
+        $offerActive = $this->offer->isActive();
+
+        if($offerActive === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_NOT_ACTIVE);
+        }
+
+        return $offerActive;
+    }
+
     protected function checkPaymentMethod(): bool
     {
         $paymentMethod = $this->payment->getMethod();
 
         $offerPaymentMethod = $this->offer->getPaymentMethod();
 
-        if ($offerPaymentMethod !== null)
+        if($offerPaymentMethod === null)
         {
-            return ($offerPaymentMethod === $paymentMethod);
+            return true;
         }
 
-        return true;
+        $result = ($offerPaymentMethod === $paymentMethod);
+
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_PAYMENT_METHOD_NOT_AVAILABLE);
+        }
+
+        return $result;
     }
 
     protected function checkPaymentMethodType(): bool
@@ -135,6 +187,11 @@ class Checker extends Base\Core
             'offer_card_type'   => $offerPaymentMethodType,
             'payment_card_type' => $card->getType()
         ]);
+
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_CARD_TYPE_DOES_NOT_MATCH);
+        }
 
         return $result;
     }
@@ -160,6 +217,11 @@ class Checker extends Base\Core
             'payment_card_network' => $card->getNetworkCode()
         ]);
 
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_PAYMENT_NETWORK_NOT_AVAILABLE);
+        }
+
         return $result;
     }
 
@@ -174,27 +236,48 @@ class Checker extends Base\Core
 
         $paymentMethod = $this->payment->getMethod();
 
+        $result = false;
+
         switch ($paymentMethod)
         {
             case Payment\Method::CARD:
             case Payment\Method::EMI:
                 $card = $this->payment->card;
 
-                return ($offerIssuer === $card->getIssuer());
+                $result = ($offerIssuer === $card->getIssuer());
+
+                break;
 
             case Payment\Method::NETBANKING:
                 $bank = $this->payment->getBank();
 
-                return ($offerIssuer === $bank);
+                $result = ($offerIssuer === $bank);
+
+                break;
 
             case Payment\Method::WALLET:
                 $wallet = $this->payment->getWallet();
 
-                return ($offerIssuer === $wallet);
+                $result = ($offerIssuer === $wallet);
+
+                break;
 
             default:
-                return false;
+                $result;
+                $this->traceCheckResult(
+                    TraceCode::OFFER_CARD_ISSUER_CHECK,
+                    [
+                        'result'                   => $result,
+                        'offer_issuer'             => $offerIssuer,
+                        'payment_method'           => $paymentMethod,
+                    ]);
         }
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_NOT_APPLICABLE_ON_ISSUER);
+        }
+
+        return $result;
     }
 
     protected function checkEmiDurations()
@@ -208,7 +291,14 @@ class Checker extends Base\Core
 
         $emiDuration = $this->payment->emiPlan->getDuration();
 
-        return (in_array($emiDuration, $emiDurations, true) === true);
+        $result = (in_array($emiDuration, $emiDurations, true) === true);
+
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_EMI_DURATION_NOT_SAME);
+        }
+
+        return $result;
     }
 
     protected function checkInternational(): bool
@@ -230,6 +320,11 @@ class Checker extends Base\Core
             'card_iin'          => $card->getIin(),
             'international'     => $card->isInternational(),
         ]);
+
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_CARD_INTERNATIONAL);
+        }
 
         return $result;
     }
@@ -263,6 +358,11 @@ class Checker extends Base\Core
             'card_iin'   => $card->getIin()
         ]);
 
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_IINS_DOES_NOT_MATCH);
+        }
+
         return $result;
     }
 
@@ -285,6 +385,11 @@ class Checker extends Base\Core
             'payment_wallet' => $this->payment->getWallet()
         ]);
 
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_WALLET_NOT_SAME);
+        }
+
         return $result;
     }
 
@@ -297,6 +402,11 @@ class Checker extends Base\Core
             [
                 'result' => $result,
             ]);
+
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_PERIOD_NOT_ACTIVE);
+        }
 
         return $result;
     }
@@ -365,10 +475,11 @@ class Checker extends Base\Core
                     // We are using < operator as paymentCount tracks the number of times payment
                     // has been made against the offer before current payment
                     $result = $paymentCount < $maxPaymentCount;
-                    if(!$result)
+
+                    if($result === false)
                     {
                         $this->offer
-                             ->setErrorMessage(PublicErrorDescription::MAX_CARD_USAGE_LIMIT_EXCEEDED);
+                             ->setErrorMessage(PublicErrorDescription::OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED);
                     }
 
                     return $result;
@@ -384,17 +495,18 @@ class Checker extends Base\Core
     //not exceed the max offer usage count
     protected function checkMaxOfferUsage(): bool
     {
-        $result = true;
-
-        if($this->offer->getMaxOfferUsage() !== NULL)
+        if($this->offer->getMaxOfferUsage() === NULL)
         {
-            $core = new \RZP\Models\Offer\Core();
+            return true;
+        }
 
-            $updatedOffer = $core->lockIncrementCurrentOfferUsage($this->offer);
+        $core = new Core();
 
-            $result = $updatedOffer->getCurrentOfferUsage() <= $this->offer->getMaxOfferUsage();
+        $updatedOffer = $core->lockIncrementCurrentOfferUsage($this->offer);
 
-            $this->traceCheckResult(
+        $result = $updatedOffer->getCurrentOfferUsage() <= $this->offer->getMaxOfferUsage();
+
+        $this->traceCheckResult(
                 TraceCode::OFFER_USAGE_CHECK,
                 [
                     'result' => $result,
@@ -402,10 +514,9 @@ class Checker extends Base\Core
                     'current_offer_usage' => $this->offer->getCurrentOfferUsage(),
                 ]);
 
-            if(!$result)
-            {
-                $this->offer->setErrorMessage(PublicErrorDescription::MAX_OFFER_LIMIT_EXCEEDED);
-            }
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_MAX_OFFER_LIMIT_EXCEEDED);
         }
 
         return $result;
@@ -428,5 +539,39 @@ class Checker extends Base\Core
         {
             $this->trace->debug($traceCode, $data);
         }
+    }
+
+    protected function checkMinAmount(): bool
+    {
+        if($this->offer->getMinAmount() === null)
+        {
+            return true;
+        }
+
+        $result = $this->order->getAmount() >= $this->offer->getMinAmount();
+
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_ORDER_AMOUNT_LESS_OFFER_MIN_AMOUNT);
+        }
+
+        return $result;
+    }
+
+    protected function checkMaxOrderAmount(): bool
+    {
+        if($this->offer->getMaxOrderAmount()=== null)
+        {
+            return true;
+        }
+
+        $result = $this->order->getAmount() <= $this->offer->getMaxOrderAmount();
+
+        if($result === false)
+        {
+            $this->offer->setErrorMessage(PublicErrorDescription::OFFER_ORDER_AMOUNT_GREATER_OFFER_MAX_AMOUNT);
+        }
+
+        return $result;
     }
 }

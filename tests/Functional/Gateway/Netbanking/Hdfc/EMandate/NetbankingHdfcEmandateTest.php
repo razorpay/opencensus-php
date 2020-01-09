@@ -627,7 +627,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $this->capturePayment($debitPayment['id'], $debitPayment['amount']);
 
-        $this->refundPayment($debitPayment['id']);
+        $refund = $this->refundPayment($debitPayment['id'], $debitPayment['amount'], ['is_fta' => true]);
 
         $debitPayment = $this->getLastEntity('payment', true);
 
@@ -637,7 +637,7 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertEquals($debitPayment['amount_refunded'], $refund['amount']);
         $this->assertEquals($debitPayment['amount'], $refund['amount']);
 
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('processed', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 

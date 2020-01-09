@@ -4,7 +4,9 @@ namespace RZP\Services;
 
 use Requests;
 use Requests_Hooks;
+
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\Validator;
@@ -167,6 +169,15 @@ class CardVault
 
     public function sendRequest($url, $method, $data = null)
     {
+        // temporary code to debug
+        if (($url === 'tokenize') or
+            ($url === 'detokenize'))
+        {
+            $trackId = Base\UniqueIdEntity::generateUniqueId();
+
+            $url = $url . '/track/' . $trackId;
+        }
+
         $url = $this->baseUrl . $url;
 
         if ($data === null)
@@ -184,20 +195,8 @@ class CardVault
                 $this->key,
                 $this->secret
             ],
-            'hooks' => new Requests_Hooks(),
+            'hooks' => $this->getRequestHooks(),
         ];
-
-        $variant = $this->app->razorx->getTreatment('10000000000000', self::TRACE_REQUEST_FEATURE, $this->mode);
-
-        $this->trace->info(TraceCode::CARD_VAULT_FEATURE_VARIANT,[
-            'feature' => self::TRACE_REQUEST_FEATURE,
-            'variant' => $variant,
-        ]);
-
-        if ($variant === 'on')
-        {
-            $options['hooks']->register('curl.after_request', [$this, 'traceCurlInfo']);
-        }
 
         $request = [
             'url' => $url,
@@ -207,7 +206,9 @@ class CardVault
             'content' => $data
         ];
 
-        $this->trace->info(TraceCode::CARD_VAULT_REQUEST,[]);
+        $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
+            'url' => $url,
+        ]);
 
         $response = $this->sendCardVaultRequest($request);
 
@@ -227,6 +228,32 @@ class CardVault
             'starttransfer_time' => $info['starttransfer_time'],
             'primary_ip'         => $info['primary_ip'] ?? 'nil',
         ]);
+    }
+
+    protected function getRequestHooks()
+    {
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
+
+        $variant = $this->app->razorx->getTreatment('10000000000000', self::TRACE_REQUEST_FEATURE, $this->mode);
+
+        $this->trace->info(TraceCode::CARD_VAULT_FEATURE_VARIANT,[
+            'feature' => self::TRACE_REQUEST_FEATURE,
+            'variant' => $variant,
+        ]);
+
+        if ($variant === 'on')
+        {
+            $hooks->register('curl.after_request', [$this, 'traceCurlInfo']);
+        }
+
+        return $hooks;
+    }
+
+    public function setCurlOptions($curl)
+    {
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
     }
 
     protected function sendCardVaultRequest($request)

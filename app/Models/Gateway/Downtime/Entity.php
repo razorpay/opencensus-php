@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const CARD_TYPE     = 'card_type';
     const NETWORK       = 'network';
     const METHOD        = 'method';
+    const PSP           = 'psp';
     const BEGIN         = 'begin';
     const END           = 'end';
     const TERMINAL_ID   = 'terminal_id';
@@ -52,6 +53,7 @@ class Entity extends Base\PublicEntity
         self::CARD_TYPE,
         self::NETWORK,
         self::METHOD,
+        self::PSP,
         self::SOURCE
     ];
 
@@ -63,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::CARD_TYPE,
         self::NETWORK,
         self::METHOD,
+        self::PSP,
         self::SOURCE,
         self::BEGIN,
         self::END,
@@ -79,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::GATEWAY,
         self::METHOD,
+        self::PSP,
         self::ISSUER,
         self::ACQUIRER,
         self::NETWORK,
@@ -107,6 +111,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER      => self::UNKNOWN,
         self::TERMINAL_ID   => null,
         self::CARD_TYPE     => self::UNKNOWN,
+        self::PSP           => null,
         self::NETWORK       => self::UNKNOWN,
         self::END           => null,
         self::COMMENT       => null,
@@ -385,6 +390,11 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getId()
+    {
+        return $this->getAttribute(self::ID);
     }
 
     public function setEnd()

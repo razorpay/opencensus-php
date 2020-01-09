@@ -6,6 +6,7 @@ use App;
 use RZP\Base;
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -13,7 +14,9 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     // close by while creating a va should be atleast 15 mins ahead of current time
-    const MIN_CLOSE_BY_DIFF = 900;
+    const MIN_CLOSE_BY_DIFF = 120;
+
+    const DEFAULT_CLOSE_BY_DIFF = 900;
 
     protected static $createRules = [
         Entity::NAME                            => 'filled|string|max:40',
@@ -25,6 +28,7 @@ class Validator extends Base\Validator
         Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array',
         Entity::NOTES                           => 'sometimes|notes',
         Entity::CLOSE_BY                        => 'filled|epoch|custom',
+        Entity::CUSTOMER                        => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -42,7 +46,21 @@ class Validator extends Base\Validator
     ];
 
     protected static $vpaReceiverOptionRules = [
-        Entity::DESCRIPTOR => 'filled|regex:/^[A-Za-z0-9\.\-]{3,}$/|max:30',
+        Entity::DESCRIPTOR => 'filled|regex:/^[A-Za-z0-9\.\-]{3,}$/|max:20',
+    ];
+
+    protected static $createOfflineQrRules = [
+        'amount'                   => 'filled|integer|min:100',
+        'receipt'                  => 'required|string|max:40',
+        'currency'                 => 'required|string|size:3|in:INR',
+        'notifications'            => 'array',
+        'notifications.device_id'  => 'filled|string|public_id|size:20',
+        Entity::DESCRIPTION        => 'sometimes|nullable|string|max:2048',
+        Entity::NOTES              => 'sometimes|notes',
+    ];
+
+    protected static $createValidators = [
+        Entity::RECEIVER_TYPES,
     ];
 
     protected function validateReceivers(string $key, array $value, array $data)
@@ -55,6 +73,70 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
                 'receiver_type',
                 $data);
+        }
+    }
+
+    /**
+     * Currently only validating the the receivers.qr_code
+     *
+     * @param array $input
+     * @throws Exception\BadRequestException
+     */
+    protected function validateReceiverTypes(array $input)
+    {
+        if (isset($input[Entity::RECEIVERS][Receiver::QR_CODE][Payment\Entity::METHOD]) === false)
+        {
+            // This case is already validated separately
+            return;
+        }
+
+        if ((isset($input[Entity::RECEIVERS][Receiver::QR_CODE][Payment\Entity::METHOD]) === true) and
+            (isset($input[Entity::RECEIVERS][Entity::TYPES])) and
+            (is_array($input[Entity::RECEIVERS][Entity::TYPES])))
+        {
+            // QR code should not be passed if receiver types has bank account
+            if (in_array(Receiver::QR_CODE, $input[Entity::RECEIVERS][Entity::TYPES], true) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
+                    'receiver_type',
+                    $input);
+            }
+        }
+
+        // All we want to make sure if receivers.qr_code.method is passes
+        $method = $input[Entity::RECEIVERS][Receiver::QR_CODE][Payment\Entity::METHOD];
+
+        if (is_array($method) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
+                'receiver_qr_code_method',
+                $method);
+        }
+
+        $upi  = filter_var(array_get($method, Payment\Method::UPI), FILTER_VALIDATE_BOOLEAN);
+        $card = filter_var(array_get($method, Payment\Method::CARD), FILTER_VALIDATE_BOOLEAN);
+
+        $onlyUpi = (($upi === true) and ($card === false));
+
+        // Currently no other combination is allowed
+        if ($onlyUpi === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
+                'receiver_method',
+                $method);
+        }
+
+        // Order support is not provided for Only UPI QR
+        if (($onlyUpi === true) and
+            (isset($input[Entity::ORDER_ID]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER,
+                'receiver_qr_code_method',
+                $method);
         }
     }
 
@@ -113,6 +195,27 @@ class Validator extends Base\Validator
         $now = Carbon::now(Timezone::IST);
 
         $minCloseBy = $now->copy()->addSeconds(self::MIN_CLOSE_BY_DIFF);
+
+        if ($closeBy < $minCloseBy->getTimestamp())
+        {
+            $message = 'close_by should be at least ' . $minCloseBy->diffForHumans($now) . ' current time';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    public function validateDefaultCloseBy($input)
+    {
+        if (isset($input[Entity::CLOSE_BY]) === false)
+        {
+            return;
+        }
+
+        $closeBy = $input[Entity::CLOSE_BY];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $minCloseBy = $now->copy()->addSeconds(self::DEFAULT_CLOSE_BY_DIFF);
 
         if ($closeBy < $minCloseBy->getTimestamp())
         {

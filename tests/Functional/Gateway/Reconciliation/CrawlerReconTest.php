@@ -83,6 +83,31 @@ class CrawlerReconTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testGetSimplCrawlerReconciliation()
+    {
+        $this->gateway = 'mozart';
+
+        $payment = $this->createPayment('getsimpl', ['id'=>'DXSg7YJuXEQs5Q', 'amount'=>100, 'method'=>'paylater']);
+
+        $this->createPaylater($payment['id'], 100,'getsimpl', 'capture', 1234567);
+
+        $this->createRefund('Getsimpl', $payment, ['id'=>'DXSh0fhShgw6np', 'status'=> \RZP\Models\Payment\Refund\Status::PROCESSED, 'amount' => 100]);
+
+        $response = $this->reconcile('Getsimpl');
+
+        $gatewayEntityPayment = $this->getDbLastEntity('mozart');
+
+        $dataPayment = json_decode($gatewayEntityPayment['raw'], true);
+
+        $this->assertEquals($dataPayment['transaction']['id'], '4478925e-5139-4c34-84a7-24858d51fc2c');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testCubCrawlerReconciliation()
     {
         $this->gateway = 'netbanking_cub';
@@ -149,6 +174,42 @@ class CrawlerReconTest extends TestCase
         try
         {
             $this->reconcile('Paypal', ['currency_missmatch' => true]);
+        }
+        catch (ReconciliationException $e)
+        {
+            $reconException = true;
+        }
+
+        $this->assertTrue($reconException);
+    }
+
+    public function testGetsimplCrawlerReconciliationGatewayFailure()
+    {
+        $this->gateway = 'mozart';
+
+        $reconException  = false;
+
+        try
+        {
+            $this->reconcile('Getsimpl', ['gateway_failure' => true]);
+        }
+        catch (ReconciliationException $e)
+        {
+            $reconException = true;
+        }
+
+        $this->assertTrue($reconException);
+    }
+
+    public function testGetsimplCrawlerReconciliationCurrencyMissmatch()
+    {
+        $this->gateway = 'mozart';
+
+        $reconException  = false;
+
+        try
+        {
+            $this->reconcile('Getsimpl', ['currency_missmatch' => true]);
         }
         catch (ReconciliationException $e)
         {
@@ -233,6 +294,34 @@ class CrawlerReconTest extends TestCase
         elseif ($action === 'refund')
         {
             $raw = json_encode(['payment_id' => $paymentId,'id' => '4E238155FF697490G','currency'   => $currency]);
+        }
+
+        $mozartAttributes = [
+            'id'         => $id,
+            'payment_id' => $paymentId,
+            'gateway'    => $gateway,
+            'amount'     => $amount,
+            'raw'        => $raw,
+            'action'     => $action,
+            'refund_id'  => $rfndId,
+        ];
+
+        $wallet = $this->fixtures->create('mozart', $mozartAttributes);
+
+        return $wallet;
+    }
+
+    protected function createPaylater($paymentId, $amount, $gateway, $action, $id, $rfndId = null)
+    {
+        $raw = null;
+
+        if ($action === 'capture')
+        {
+            $raw = json_encode(['payment_id' => $paymentId,'transaction' => ['id' => '4478925e-5139-4c34-84a7-24858d51fc2c']]);
+        }
+        elseif ($action === 'refund')
+        {
+            $raw = json_encode(['payment_id' => $paymentId,'transaction_id' => 'e7f87958-abea-4f94-b8d5-b4ccf677e9e2']);
         }
 
         $mozartAttributes = [

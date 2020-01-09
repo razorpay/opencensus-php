@@ -113,15 +113,7 @@ class Base extends BaseProcessor
             // Regular flow - fetching refunds from API DB
             //
 
-            $refunds = $this->repo->refund->fetchRefundsForGatewaysBetweenTimestamps(
-                static::PAYMENT_TYPE_ATTRIBUTE,
-                static::GATEWAY_CODE,
-                $begin,
-                $end,
-                static::GATEWAY
-            );
-
-            return $refunds;
+            return $this->fetchRefundsFromAPI($begin, $end);
         }
     }
 
@@ -152,7 +144,7 @@ class Base extends BaseProcessor
         {
             foreach ($this->scroogeRefunds as $refund)
             {
-                $payment = $entities->where('id', '=', $refund['payment_id'])->first();
+                $payment = $entities->where(Payment\Entity::ID, '=', $refund[RefundConstants::PAYMENT_ID])->first();
 
                 $col = $this->collectPaymentData($payment);
 
@@ -165,16 +157,54 @@ class Base extends BaseProcessor
         }
         else
         {
+            $scroogeRefundIds = [];
+
+            // Is file based refund gateway for which refunds data need to be fetched from Scrooge
+            $fileBasedRefundGateway = in_array(
+                static::GATEWAY,
+                array_keys(Payment\Gateway::$scroogeFileBasedRefundGatewaysWithTimestamps), true
+            );
+
+            if ($fileBasedRefundGateway === true)
+            {
+                $scroogeRefundIds = $entities->where(Payment\Refund\Entity::IS_SCROOGE, '=', 1)->getIds();
+
+                if (count($scroogeRefundIds) > 0)
+                {
+                    $this->populateScroogeRefundsGivenIds($scroogeRefundIds);
+                }
+
+                $scroogeRefundIds = array_unique(array_column($this->scroogeRefunds, RefundConstants::SCROOGE_ID));
+            }
+
             // regular API flow
             foreach ($entities as $refund)
             {
-                $payment = $refund->payment;
+                //
+                // The following checks are being made to ensure these conditions
+                // If a refund belongs to scrooge - Scrooge is the single source of truth -
+                // whether the refund is to be sent in the file or not, there are various flows in which Scrooge
+                // could process these refunds - Instant Refunds, FTAs, TPV, etc.
+                // Hence, if a refund belongs to scrooge and it is of a file based gateway -
+                // whose refunds data is fetched from Scrooge - we need to ensure that the refund must be present
+                // in the response from Scrooge.
+                //
+                // Therefore, the only case where the following conditions don't evaluate to true is the following:
+                // The refund was processed on scrooge, belonging to a file based refunds gateway via Scrooge,
+                // by tpv or instant refunds so it should not be included in the file
+                //
+                if (($refund->isScrooge() === false) or
+                    ($fileBasedRefundGateway === false) or
+                    (in_array($refund->getId(), $scroogeRefundIds, true) === true))
+                {
+                    $payment = $refund->payment;
 
-                $col = $this->collectPaymentData($payment);
+                    $col = $this->collectPaymentData($payment);
 
-                $col['refund'] = $refund->toArray();
+                    $col['refund'] = $refund->toArray();
 
-                $data[] = $col;
+                    $data[] = $col;
+                }
             }
 
             $data = $this->addGatewayEntitiesToData($data, $entities);
@@ -364,24 +394,9 @@ class Base extends BaseProcessor
      * @param $to
      * @throws GatewayFileException
      */
-    protected function populateScroogeRefunds(int $from, int $to)
+    protected function populateScroogeRefunds(int $from, int $to, $refundIds = [])
     {
-        $input = [
-            RefundConstants::SCROOGE_QUERY => [
-                RefundConstants::SCROOGE_REFUNDS => [
-                    RefundConstants::SCROOGE_GATEWAY    => static::GATEWAY,
-                    RefundConstants::SCROOGE_BANK       => static::GATEWAY_CODE,
-                    RefundConstants::SCROOGE_CREATED_AT => [
-                        RefundConstants::SCROOGE_GTE => $from,
-                        RefundConstants::SCROOGE_LTE => $to,
-                    ],
-                    RefundConstants::SCROOGE_BASE_AMOUNT => [
-                        RefundConstants::SCROOGE_GT => 0,
-                    ],
-                ],
-            ],
-            RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
-        ];
+        $input = $this->getScroogeQuery($from, $to, $refundIds);
 
         $refunds = [];
         $fetchSuccess = false;
@@ -406,11 +421,43 @@ class Base extends BaseProcessor
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_FETCHING_FROM_SCROOGE,
                 [
-                    'id'        => $this->gatewayFile->getId(),
+                    'id' => $this->gatewayFile->getId(),
                 ]);
         }
 
-        $this->scroogeRefunds = $refunds;
+        $this->scroogeRefunds = array_merge($this->scroogeRefunds, $refunds);
+
+        $this->scroogeRefunds = array_sort($this->scroogeRefunds, function ($refund1, $refund2) {
+            return $refund1['created_at'] <=> $refund2['created_at'];
+        });
+    }
+
+    /**
+     * @param $listOfRefunds
+     * @throws GatewayFileException
+     */
+    protected function populateScroogeRefundsGivenIds($listOfRefunds)
+    {
+        $shouldFetchScroogeRefunds = true;
+        $start = 0;
+
+        $fetchLimit = $this->fetchFromScroogeCount;
+
+        while ($shouldFetchScroogeRefunds === true)
+        {
+            $refundIds = array_slice($listOfRefunds, $start, $fetchLimit);
+
+            if (count($refundIds) === 0)
+            {
+                $shouldFetchScroogeRefunds = false;
+            }
+            else
+            {
+                $this->populateScroogeRefunds($this->gatewayFile->getBegin(), $this->gatewayFile->getEnd(), $refundIds);
+
+                $start += $fetchLimit;
+            }
+        }
     }
 
     // Returns data, success - if scrooge calls fail - success is false
@@ -502,5 +549,60 @@ class Base extends BaseProcessor
         }
 
         return $col;
+    }
+
+    /**
+     * @param int $from
+     * @param int $to
+     * @param array $refundIds
+     * @return array
+     */
+    protected function getScroogeQuery(int $from, int $to, $refundIds = []): array
+    {
+        $input = [
+            RefundConstants::SCROOGE_QUERY => [
+                RefundConstants::SCROOGE_REFUNDS => [
+                    RefundConstants::SCROOGE_GATEWAY    => static::GATEWAY,
+                    RefundConstants::SCROOGE_BANK       => static::GATEWAY_CODE,
+                    RefundConstants::SCROOGE_CREATED_AT => [
+                        RefundConstants::SCROOGE_GTE => $from,
+                        RefundConstants::SCROOGE_LTE => $to,
+                    ],
+                    RefundConstants::SCROOGE_BASE_AMOUNT => [
+                        RefundConstants::SCROOGE_GT => 0,
+                    ],
+                ],
+            ],
+            RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
+        ];
+
+        if (empty($refundIds) === false)
+        {
+            $input[RefundConstants::SCROOGE_QUERY][RefundConstants::SCROOGE_REFUNDS][RefundConstants::SCROOGE_ID] = $refundIds;
+        }
+
+        return $input;
+    }
+
+    /**
+     * @param int $begin
+     * @param int $end
+     * @return PublicCollection
+     */
+    protected function fetchRefundsFromAPI(int $begin, int $end): PublicCollection
+    {
+        //
+        // Regular flow - fetching refunds from API DB
+        //
+
+        $refunds = $this->repo->refund->fetchRefundsForGatewaysBetweenTimestamps(
+            static::PAYMENT_TYPE_ATTRIBUTE,
+            static::GATEWAY_CODE,
+            $begin,
+            $end,
+            static::GATEWAY
+        );
+
+        return $refunds;
     }
 }

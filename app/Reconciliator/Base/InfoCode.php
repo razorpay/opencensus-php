@@ -30,7 +30,9 @@ class InfoCode
 
     const REFUND_ID_NOT_FOUND                           = 'REFUND_ID_NOT_FOUND';
 
-    const REFUND_ID_NOT_AS_EXPECTED                     = 'REFUND_ID_NULL';
+    const REFUND_ID_NOT_AS_EXPECTED                     = 'REFUND_ID_NOT_AS_EXPECTED';
+
+    const PAYMENT_ID_NOT_AS_EXPECTED                    = 'PAYMENT_ID_NOT_AS_EXPECTED';
 
     const REFUND_ABSENT                                 = 'REFUND_ABSENT';
 
@@ -55,6 +57,8 @@ class InfoCode
     const DUPLICATE_ROW                                 = 'DUPLICATE_ROW';
 
     const UNEXPECTED_PAYMENT                            = 'UNEXPECTED_PAYMENT';
+
+    const UNEXPECTED_REFUND                             = 'UNEXPECTED_REFUND';
 
     const VPA_MISMATCH                                  = 'VPA_MISMATCH';
 

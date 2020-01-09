@@ -262,6 +262,10 @@ return [
             'username' => 'api',
             'password' => env('UFH_PASSWORD'),
         ],
+        'admin_auth' => [
+            'username' => 'api',
+            'password' => env('UFH_ADMIN_PASSWORD'),
+        ],
     ],
 
     'pincodesearch' => [
@@ -369,7 +373,10 @@ return [
 
     'doppler' => [
         'mock'      => env('DOPPLER_MOCK'),
-        'topic'     => env('DOPPLER_SNS_TOPIC')
+        'topic'     => env('DOPPLER_SNS_TOPIC'),
+        'url'       => env('DOPPLER_LIVE_URL'),
+        'key'       => env('DOPPLER_KEY'),
+        'secret'    => env('DOPPLER_API_SECRET')
     ],
 
     'non_blocking_http' => [
@@ -409,5 +416,14 @@ return [
 
     'kyc_service' => [
         'mock' => env('KYC_SERVICE_MOCK', false),
+    ],
+
+    'salesforce' => [
+        'mock'          => env('SALESFORCE_MOCK', false),
+        'url'           => env('SALESFORCE_URL'),
+        'username'      => env('SALESFORCE_USERNAME'),
+        'password'      => env('SALESFORCE_PASSWORD'),
+        'client_id'     => env('SALESFORCE_CLIENT_ID'),
+        'client_secret' => env('SALESFORCE_CLIENT_SECRET'),
     ],
 ];
