@@ -41,6 +41,20 @@ export default ({
       />
     </Input.Group>
 
+    <Input
+      name="mandateMaxAmount"
+      placeholder={defaultMandateMaxAmount}
+      label="Token Max Amount"
+      addonBefore={
+        <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
+      }
+      size="half_big"
+      validator={checkIfAmount}
+      description="Max Amount for Mandate"
+      class="Input--Amount"
+      value={mandateMaxAmount}
+    />
+
     {!isFirstAmountHidden && (
       <Input
         name="firstPaymentAmount"
@@ -57,20 +71,6 @@ export default ({
         }
       />
     )}
-
-    <Input
-      name="mandateMaxAmount"
-      placeholder={defaultMandateMaxAmount}
-      label="Token Max Amount"
-      addonBefore={
-        <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
-      }
-      size="half_big"
-      validator={checkIfAmount}
-      description="Max Amount for Mandate"
-      class="Input--Amount"
-      value={mandateMaxAmount}
-    />
   </React.Fragment>
 );
 
