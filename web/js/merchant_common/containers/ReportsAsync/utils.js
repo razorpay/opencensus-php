@@ -26,3 +26,13 @@ export const extractExtensionFromTemplate = template =>
 const logProcessingStatuses = ['created', 'processing'];
 export const isLogInProgress = logStatus =>
   logProcessingStatuses.includes(logStatus);
+
+export const getActualLogStatus = ({ status, fileId }) => {
+  if (status === 'created') return status;
+
+  if (status === 'processed' && !fileId) return 'no-data';
+
+  if (status === 'processed') return 'ready-for-download';
+
+  if (status === 'failed') return 'error';
+};

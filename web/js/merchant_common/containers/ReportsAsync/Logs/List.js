@@ -19,15 +19,20 @@ export default function LogList(props) {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        items.map(item => (
-          <LogItem
-            key={item.id}
-            config={allConfigs.find(({ id }) => id === item.config_id) || {}}
-            onDownloadClick={onDownloadClick}
-            pollLog={props.pollLog}
-            {...item}
-          />
-        ))
+        <>
+          <div>
+            <strong>Recent Reports</strong>
+          </div>
+          {items.map(item => (
+            <LogItem
+              key={item.id}
+              config={allConfigs.find(({ id }) => id === item.config_id) || {}}
+              onDownloadClick={onDownloadClick}
+              pollLog={props.pollLog}
+              {...item}
+            />
+          ))}
+        </>
       )}
       {!loading &&
         5 <= items.length &&

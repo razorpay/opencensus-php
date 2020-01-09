@@ -38,7 +38,7 @@ export default class ReportHome extends React.PureComponent {
           </header>
           <TestModeBanner />
           <content>
-            <div class="content-wrapper">
+            <div class="content-wrapper Reporting--ContentWrapper">
               <GenerateReportPanel
                 configs={configs}
                 customConfigs={customConfigs}
@@ -46,6 +46,7 @@ export default class ReportHome extends React.PureComponent {
                 emailReportOptions={otherProps.emailReportOptions}
                 mode={otherProps.mode}
               />
+              <div class="m-t" />
               <LogList
                 currentMerchantId={user.current}
                 allConfigs={configs.items}

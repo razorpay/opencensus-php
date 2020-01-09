@@ -64,6 +64,10 @@ export default class GenerateReportPanel extends React.PureComponent {
       <p>Loading...</p>
     ) : (
       <div className="GenerateReportPanel">
+        <div className="text-muted m-b">
+          You can generate new reports or download from the list of recently
+          generated reports
+        </div>
         <Form onChange={this.onChange}>
           <SelectConfig
             configs={allConfigs}
