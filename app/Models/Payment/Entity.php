@@ -2764,17 +2764,23 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $auth = $app['basicauth'];
 
-        if (($auth->getMerchant() !== null) and
-            ($auth->getMerchant()->getId() !== $this->getMerchantId()))
-        {
-            $paymentMerchantId = $this->getMerchantId();
+        /*
+         *  Set accounttId attribute if
+         * 1) we are in non privileged auth and payment merchant id is different from auth merchant id
+         */
 
-            $array['account_id'] = Account\Entity::getSignedId($paymentMerchantId);
-        }
-        else
+        if ($auth->isPrivilegeAuth() === true)
         {
-            unset($array[self::ACCOUNT_ID]);
+            return;
         }
+
+        if (($auth->getMerchant() === null) or
+            ($auth->getMerchant()->getId() === $this->getMerchantId()))
+        {
+            return;
+        }
+
+        $array['account_id'] = Account\Entity::getSignedId($array[self::MERCHANT_ID]);
     }
 
     public function associateTerminal($terminal)
