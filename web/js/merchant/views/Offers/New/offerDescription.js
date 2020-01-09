@@ -50,7 +50,10 @@ export default ({
           { label: 'Cashback', name: 'deferred' },
           { label: 'Already Discounted', name: 'already_discounted' },
         ]}
-        onChange={getFormOnChangeHandler()}
+        onChange={getFormOnChangeHandler('stateResetter')([
+          'discount_type',
+          'min_amount',
+        ])}
       />
     </React.Fragment>
   );

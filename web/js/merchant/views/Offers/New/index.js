@@ -86,7 +86,7 @@ export default class CreateOfferWizard extends React.Component {
             case 'percent':
               return ['max_cashback', 'percent_rate'];
             case 'no_cost_emi':
-              return ['max_order_amount'];
+              return [];
             default:
               return [];
           }

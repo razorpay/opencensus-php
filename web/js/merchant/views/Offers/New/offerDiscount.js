@@ -12,6 +12,9 @@ export default ({
   getFormOnChangeHandler,
   type,
 }) => {
+  const fieldToResetOnMinAmountChange =
+    discountType === 'no_cost_emi' ? ['emi_durations', 'issuer'] : [];
+
   return (
     <React.Fragment>
       <strong>Instant Discount</strong>
@@ -40,6 +43,7 @@ export default ({
             'flat_cashback',
             'percent_rate',
             'max_cashback',
+            'emi_durations',
           ])}
           validator={getFormElementValidations('discount_type')}
         />
@@ -52,8 +56,10 @@ export default ({
             class="Input--half"
             addonBefore={<span>{window.currencyList[currency].symbol}</span>}
             validator={getFormElementValidations('min_amount')}
-            required={discountType === 'flat'}
-            onChange={getFormOnChangeHandler()}
+            required={discountType !== 'percent'}
+            onChange={getFormOnChangeHandler('stateResetter')(
+              fieldToResetOnMinAmountChange
+            )}
           />
         )}
         {discountType &&
