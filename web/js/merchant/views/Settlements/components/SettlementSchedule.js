@@ -86,7 +86,7 @@ export default class SettlementSchedule extends Component {
     return (
       <div>
         <ModalHeader
-          title={`Settlement Schedule`}
+          title={`Settlement Cycle`}
           onCloseClick={() => this.props.closeModal()}
         />
         <div class="modal-body">
@@ -103,11 +103,16 @@ export default class SettlementSchedule extends Component {
                     </div>
                     <div class="w50 text-right">
                       {this.state.defaultDomestic[0]
-                        .is_early_settlement_schedule
-                        ? this.formatTime(this.state.defaultDomestic[0].hour)
-                        : `T+${
-                            this.state.defaultDomestic[0].delay
-                          } working days`}
+                        .is_early_settlement_schedule ? (
+                        this.formatTime(this.state.defaultDomestic[0].hour)
+                      ) : (
+                        <>
+                          <strong>
+                            T+{this.state.defaultDomestic[0].delay}
+                          </strong>{' '}
+                          working days
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -119,13 +124,16 @@ export default class SettlementSchedule extends Component {
                     </div>
                     <div class="w50 text-right">
                       {this.state.defaultInternational[0]
-                        .is_early_settlement_schedule
-                        ? this.formatTime(
-                            this.state.defaultInternational[0].hour
-                          )
-                        : `T+${
-                            this.state.defaultInternational[0].delay
-                          } working days`}
+                        .is_early_settlement_schedule ? (
+                        this.formatTime(this.state.defaultInternational[0].hour)
+                      ) : (
+                        <>
+                          <strong>
+                            T+{this.state.defaultInternational[0].delay}
+                          </strong>{' '}
+                          working days
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -142,9 +150,13 @@ export default class SettlementSchedule extends Component {
                   >
                     <div class="w50 text-left p20">{item.method}</div>
                     <div class="w50 text-right p20">
-                      {item.is_early_settlement_schedule
-                        ? this.formatTime(item.hour)
-                        : `T+${item.delay} working days`}
+                      {item.is_early_settlement_schedule ? (
+                        this.formatTime(item.hour)
+                      ) : (
+                        <>
+                          <strong>T+{item.delay}</strong> working days
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>;
