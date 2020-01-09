@@ -9,11 +9,13 @@ use RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi\GatewayProcessor;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Detail;
+use RZP\Services\RazorXClient;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Terminal\Options;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Terminal\Selector;
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Merchant\Preferences;
@@ -1235,6 +1237,8 @@ class TerminalSelectionTest extends TestCase
 
     public function testMccFilterWithSharedCategoryTerminal()
     {
+        $this->app['rzp.mode'] = Mode::TEST;
+
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:multiple_category_terminals');
@@ -1246,6 +1250,8 @@ class TerminalSelectionTest extends TestCase
 
     public function testMccFilterWithSharedCategoryTerminalAndDirectTerminal()
     {
+        $this->app['rzp.mode'] = Mode::TEST;
+
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->create('terminal:multiple_category_terminals');
@@ -1689,6 +1695,7 @@ class TerminalSelectionTest extends TestCase
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
+        $this->app['rzp.mode'] = Mode::TEST;
 
         $cardArray = [
             'number'        => CardNumber::VALID_ENROLL_NUMBER,
@@ -1735,6 +1742,8 @@ class TerminalSelectionTest extends TestCase
     public function testMswipeTerminalAssigning()
     {
         config(['app.query_cache.mock' => false]);
+
+        $this->app['rzp.mode'] = Mode::TEST;
 
         $this->fixtures->merchant->addFeatures('use_mswipe_terminals');
 
@@ -2000,5 +2009,126 @@ class TerminalSelectionTest extends TestCase
 
             $payment = $this->doAuthPayment($payment);
         }, RuntimeException::class, 'Terminal should not be null');
+    }
+
+    protected function setUpPartnerAndGetSubMerchantId()
+    {
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        return $subMerchantId;
+    }
+
+    public function testFetchInheritedParentTerminal()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        // set inheritance parent
+        $request = [
+            'method'  => 'post',
+            'url'     => '/merchants/' . $subMerchantId . '/inheritance_parent',
+            'content' => [
+                'id'  => '10000000000000'
+            ]
+        ];
+
+        $createRes = $this->makeRequestAndGetContent($request);
+
+        $subMerchantId = $createRes['merchant_id'];
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $cardArray = [
+            'number'        => '4012001036275556',
+            'expiry_month'  => '1',
+            'expiry_year'   => '2035',
+            'cvv'           => '123',
+            'network'       => 'Visa',
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => false,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $merchantDetailArray = [
+            'contact_name'                  => 'rzp',
+            'contact_email'                 => 'test@rzp.com',
+            'merchant_id'                   => $subMerchantId,
+            'business_operation_address'    => 'Koramangala',
+            'business_operation_state'      => 'KARNATAKA',
+            'business_operation_pin'        =>  560047,
+            'business_dba'                  => 'test',
+            'business_name'                 => 'rzp_test',
+            'business_operation_city'       => 'Bangalore',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $parentTerminal = $this->fixtures->create('terminal', ['merchant_id' => '10000000000000']);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find($subMerchantId);
+
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+
+        $selectedTerminals = $selector->select();
+
+        $this->assertEquals(2, sizeof($selectedTerminals));
+
+        $selectedTerminals = array_filter($selectedTerminals, function ($terminal){
+            return $terminal->getGateway() !== 'hitachi';
+        });
+
+        $terminal = $selectedTerminals[0];
+
+        $this->assertEquals('hdfc', $terminal->getGateway());
+        $this->assertEquals('10000000000000', $terminal->getMerchantId());
+        $this->assertEquals($parentTerminal["id"], $terminal->getId());
     }
 }
