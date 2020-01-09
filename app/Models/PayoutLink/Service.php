@@ -90,7 +90,7 @@ class Service extends Base\Service
                            ->payout_link
                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
-        return $this->core->viewHostedPage($payoutLinkId);
+        return $this->core->viewHostedPage($payoutLink);
     }
 
     public function verifyCustomerOtp(string $payoutLinkId, array $input): array
