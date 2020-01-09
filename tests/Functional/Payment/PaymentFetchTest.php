@@ -358,7 +358,9 @@ class PaymentFetchTest extends TestCase
 
         $resp = $this->startTest($testData);
 
-        $this->assertEquals($sub->getId(), $resp['merchant_id']);
+        $signedAccountId = 'acc_' . $sub->getId();
+
+        $this->assertEquals($signedAccountId, $resp['account_id']);
 
         $this->assertEquals($paymentId, $resp["id"]);
     }
