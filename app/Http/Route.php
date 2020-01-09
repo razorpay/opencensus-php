@@ -3651,6 +3651,7 @@ final class Route
             'partner_submerchant_map',
             'iin_batch_process_record',
             'pricing_add_plan_rule_bulk',
+            'subscription_registration_create_links',
             'virtual_account_create',
             'oauth_token_create',
             'merchant_inheritance_parent_set_bulk',
