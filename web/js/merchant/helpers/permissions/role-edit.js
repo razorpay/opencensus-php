@@ -71,6 +71,7 @@ export default {
   profile_gst: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, AGENT],
   credits: [OWNER, ADMIN, MANAGER],
   activation: [OWNER, ADMIN, MANAGER],
+  early_settlement: [OWNER, ADMIN],
   referrals: [OWNER, ADMIN, MANAGER],
   team: [OWNER, RBL_SUPERVISOR],
   webhooks: [OWNER, ADMIN, MANAGER],
