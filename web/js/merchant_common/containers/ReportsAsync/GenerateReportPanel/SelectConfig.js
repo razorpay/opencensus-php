@@ -39,7 +39,7 @@ export default function SelectConfig({ configs, selectedConfig, ...props }) {
             </div>
           </div>
         </div>
-        <div className="SelectConfig--description">
+        <div>
           {(selectedConfig || {}).description && (
             <span className="text-muted text-small">
               {selectedConfig.description}
@@ -78,6 +78,5 @@ function ConfigOption({ option }) {
 }
 
 function ConfigSelected({ option }) {
-  console.log({ option });
   return <strong>{option.name}</strong>;
 }

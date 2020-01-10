@@ -61,17 +61,18 @@ export default class LogItem extends React.PureComponent {
             consumerId={props.consumer}
           />
         </div>
-        <div
-          className={classList(
-            'LogItem__InfoBar',
-            'text-muted',
-            'text-small',
-            `LogItem__InfoBar--${actualStatus}`
-          )}
-        >
-          <i class="i i-info-outline" />{' '}
-          {getLogItemInfoMessage({ actualStatus })}
-        </div>
+        {!!logItemInfoMessages[actualStatus] && (
+          <div
+            className={classList(
+              'LogItem__InfoBar',
+              'text-muted',
+              'text-small',
+              `LogItem__InfoBar--${actualStatus}`
+            )}
+          >
+            <i class="i i-info-outline" /> {logItemInfoMessages[actualStatus]}
+          </div>
+        )}
       </div>
     );
   }
@@ -100,17 +101,11 @@ function FileFormat({ logTemplate, configTemplate }) {
   );
 }
 
-function getLogItemInfoMessage({ actualStatus }) {
-  switch (actualStatus) {
-    case 'created':
-      return 'Report is getting generated. At certain cases it might take a little longer to generate.';
-    case 'no-data':
-      return 'Report could not be generated as there is no data data available.';
-    case 'ready-for-download':
-      return 'Report has been successfully generated';
-    case 'error':
-      return 'Something went wrong, please try again after sometime.';
-    default:
-      return null;
-  }
-}
+const logItemInfoMessages = {
+  created:
+    'Report is getting generated. At certain cases it might take a little longer to generate.',
+  'no-data':
+    'Report could not be generated as there is no data data available.',
+  'ready-for-download': 'Report has been successfully generated',
+  error: 'Something went wrong, please try again after sometime.',
+};

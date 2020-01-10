@@ -28,11 +28,14 @@ export const isLogInProgress = logStatus =>
   logProcessingStatuses.includes(logStatus);
 
 export const getActualLogStatus = ({ status, fileId }) => {
-  if (status === 'created') return status;
-
-  if (status === 'processed' && !fileId) return 'no-data';
-
-  if (status === 'processed') return 'ready-for-download';
-
-  if (status === 'failed') return 'error';
+  switch (status) {
+    case 'created':
+      return status;
+    case 'processed':
+      return fileId ? 'ready-for-download' : 'no-data';
+    case 'failed':
+      return 'error';
+    default:
+      return null;
+  }
 };
