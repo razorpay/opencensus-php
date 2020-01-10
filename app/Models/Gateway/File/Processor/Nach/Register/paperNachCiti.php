@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Gateway\File\Processor\Nach\Register;
 
+use Mail;
+use Storage;
 use ZipArchive;
 use Carbon\Carbon;
-use Storage;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -15,8 +16,9 @@ use RZP\Gateway\Enach\Citi\Fields;
 use RZP\Models\Gateway\File\Status;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\SubscriptionRegistration;
 use RZP\Exception\GatewayFileException;
+use RZP\Models\SubscriptionRegistration;
+use RZP\Mail\Gateway\Nach\Base as NachMail;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -31,10 +33,9 @@ class PaperNachCiti extends Base
     const EXTENSION      = FileStore\Format::XLS;
     const FILE_EXTENSION = FileStore\Format::ZIP;
     const FILE_TYPE      = FileStore\Type::CITI_NACH_REGISTER;
+    const GATEWAY        = Payment\Gateway::NACH_CITI;
 
     const UNTIL_CANCELLED = 'Until cancelled';
-
-    protected $gateway  = Payment\Gateway::NACH_CITI;
 
     protected $fileStore;
 
@@ -46,7 +47,7 @@ class PaperNachCiti extends Base
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
                         ->getTimestamp();
 
-        $tokens = $this->repo->token->fetchPendingNachRegistration($this->gateway, $begin, $end);
+        $tokens = $this->repo->token->fetchPendingNachRegistration(self::GATEWAY, $begin, $end);
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 
@@ -231,9 +232,9 @@ class PaperNachCiti extends Base
         $fileInfo = [];
 
         $files = $this->gatewayFile
-            ->files()
-            ->whereIn(FileStore\Entity::ID, $this->fileStore)
-            ->get();
+                      ->files()
+                      ->whereIn(FileStore\Entity::ID, $this->fileStore)
+                      ->get();
 
         foreach ($files as $file)
         {
@@ -241,6 +242,13 @@ class PaperNachCiti extends Base
 
             $fileInfo[] = $fullFileName;
         }
+
+        $mailData = $this->formatDataForMail($files);
+
+        $type = static::GATEWAY . '_' . static::STEP;
+        $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
+
+        Mail::queue($mailable);
 
         $data = [
             BeamService::BEAM_PUSH_FILES => $fileInfo,

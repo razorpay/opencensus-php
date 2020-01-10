@@ -868,8 +868,8 @@ class Base extends BaseModel\Core
 
     protected function deleteLocalFiles()
     {
-        $this->deleteFile($this->inputFileLocalPath);
-        $this->deleteFile($this->outputFileLocalPath);
+        //$this->deleteFile($this->inputFileLocalPath);
+        //$this->deleteFile($this->outputFileLocalPath);
     }
 
     protected function deleteFile(string $filePath = null)
@@ -1603,7 +1603,7 @@ class Base extends BaseModel\Core
     {
         return 0;
     }
-    
+
     /**
      * In some cases error code and error description are required
      * and These detail should not be reset .

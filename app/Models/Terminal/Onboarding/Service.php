@@ -16,7 +16,7 @@ use RZP\Jobs\TerminalOnboardingCreateJob;
 use RZP\Models\TerminalOnboardingDetail;
 use RZP\Exception\BaseException;
 use RZP\Models\Terminal\Entity as TerminalEntity;
-use RZP\Models\Gateway\Terminal\Service as GatewayOnboardingService;
+use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;
 
 class Service extends Base\Service
 {
@@ -58,7 +58,7 @@ class Service extends Base\Service
 
         $onboardInput['gateway_input'] = $input;
 
-        $onboardedTerminal = (new GatewayOnboardingService)->onboardMerchantAsync($submerchant, $onboardInput);
+        $onboardedTerminal = (new GatewayTerminalService)->onboardMerchantAsync($submerchant, $onboardInput);
 
         return $onboardedTerminal->toArrayPublic();
     }
@@ -81,13 +81,25 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findByIdAndMerchantId($id, $merchantId);
 
-        if ($terminal->getStatus() !== Terminal\Status::ACTIVATED)
+        if ($terminal->getStatus() !== Terminal\Status::DEACTIVATED)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED);
+                ErrorCode::BAD_REQUEST_ONLY_DEACTIVATED_TERMINALS_CAN_BE_ENABLED);
         }
+        
+        (new GatewayTerminalService)->callGatewayForTerminalEnableOrDisable($terminal, 'enable_terminal');
 
         $terminal = (new Terminal\Core)->toggle($terminal, true);
+
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+        $terminal->setStatus(Terminal\Status::ACTIVATED);
+
+        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATED);
+
+        $terminal->save();
+
+        $terminalOnboardingDetail->save();
 
         return $terminal->toArrayPublic();
     }
@@ -110,7 +122,25 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findByIdAndMerchantId($id, $merchantId);
 
+        if ($terminal->getStatus() !== Terminal\Status::ACTIVATED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_DISABLED);
+        }
+
+        (new GatewayTerminalService)->callGatewayForTerminalEnableOrDisable($terminal, 'disable_terminal');
+
         $terminal = (new Terminal\Core)->toggle($terminal, false);
+
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+        $terminal->setStatus(Terminal\Status::DEACTIVATED);
+
+        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::DEACTIVATED);
+
+        $terminal->save();
+
+        $terminalOnboardingDetail->save();
 
         return $terminal->toArrayPublic();
     }
@@ -210,7 +240,7 @@ class Service extends Base\Service
 
         $terminals = $this->repo->terminal->fetchTerminalsForActivation($count);
 
-        $response = (new GatewayOnboardingService)->verifyTerminals($terminals);
+        $response = (new GatewayTerminalService)->verifyTerminals($terminals);
 
         return $response;
     }

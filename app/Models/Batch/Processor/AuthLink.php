@@ -4,6 +4,7 @@ namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settings;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
@@ -13,6 +14,8 @@ use RZP\Models\SubscriptionRegistration;
 
 class AuthLink extends Base
 {
+    const AMOUNT_AS_RUPEE_CONFIG = 'amount_as_rupee';
+
     /**
      * @var SubscriptionRegistration\Core
      */
@@ -98,6 +101,33 @@ class AuthLink extends Base
             $authLinkExpiry = Helpers\AuthLink::fromExcelToEpoch($authLinkExpiry);
 
             $entry[Header::AUTH_LINK_EXPIRE_BY] = date('d/m/Y', $authLinkExpiry);
+        }
+    }
+
+    public function addSettingsIfRequired(& $input)
+    {
+        $batchType = $this->batch->getType();
+
+        $batchSetting = Settings\Accessor::for($this->merchant, Settings\Module::BATCH)
+            ->get($batchType);
+
+        if (empty($batchSetting))
+        {
+            return;
+        }
+
+        if ((isset($batchSetting[self::AMOUNT_AS_RUPEE_CONFIG]) === true) and
+            ($batchSetting[self::AMOUNT_AS_RUPEE_CONFIG] === '1')) {
+
+            $config = [];
+
+            if (isset($input["config"]) === true) {
+                $config = $input["config"];
+            }
+
+            $config[self::AMOUNT_AS_RUPEE_CONFIG] = true;
+
+            $input["config"] = $config;
         }
     }
 }

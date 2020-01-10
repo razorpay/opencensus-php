@@ -27,6 +27,10 @@ class Action
 
     const VERIFY_TERMINAL       = 'verify_terminal';
 
+    const DISABLE_TERMINAL      = 'disable_terminal';
+
+    const ENABLE_TERMINAL       = 'enable_terminal';
+
     const MANDATE_CREATE        = 'mandate_create';
 
     const MANDATE_EXECUTE       = 'mandate_execute';

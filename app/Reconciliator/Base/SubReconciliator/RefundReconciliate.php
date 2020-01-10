@@ -95,6 +95,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setMerchantIdInOutput($this->refund->getMerchantId());
 
+        $this->calculateAndSetNetAmountInOutputFile($row);
+
         try
         {
             $this->reconciled = $this->checkIfAlreadyReconciled($this->refund);
@@ -161,6 +163,21 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         }
 
         return null;
+    }
+
+    /**
+     * Fetches refund amount and sets in the
+     * output file as negative as it is debit.
+     *
+     * @param array $row
+     */
+    protected function calculateAndSetNetAmountInOutputFile(array $row)
+    {
+        $grossAmt = intval($this->getReconRefundAmount($row));
+
+        $netAmount = (-1) * $grossAmt / 100;
+
+        $this->setReconNetAmountInOutput($netAmount);
     }
 
     public function resetRowProcessingAttributes()

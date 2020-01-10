@@ -81,6 +81,7 @@ class Core extends Base\Core
         $this->validateMerchantForTransfer($merchant);
 
         $orderTransfers = [];
+
         if ($payment->hasOrder() === true)
         {
             $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $payment->getApiOrderId(), $this->merchant);
@@ -529,7 +530,7 @@ class Core extends Base\Core
 
         $this->merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
 
-        $transferStatus = [Status::CREATED, Status::FAILED];
+        $transferStatus = [Status::PENDING, Status::FAILED];
 
         $transfers = $this->repo
                           ->transfer

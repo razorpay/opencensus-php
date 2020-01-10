@@ -19,6 +19,8 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
 use Illuminate\Support\Facades\Artisan;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Admin\Permission as AdminPermission;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -35,6 +37,8 @@ class PayoutTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use PayoutTrait;
+    use WebhookTrait;
+    use MocksDnsTrait;
 
     public function setUp()
     {
@@ -1925,5 +1929,176 @@ class PayoutTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt',true);
 
         $this->assertEquals(1, $fta['is_fts']);
+    }
+
+    public function testFiringOfWebhookOnUpdationOfUtr()
+    {
+        $this->setupMockDns();
+
+        $this->mockRazorxTreatment();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->createWebhook(['events' => ['payout.updated' => '1']]);
+
+        $eventTestDataKey = 'testFiringOfWebhookOnUpdationOfUtrEventData';
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => Payout\Status::PROCESSED,
+                'utr'    => null,
+            ]);
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'utr'    => null,
+            ]);
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     =>  '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'SUCCESS',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1236890,
+                'mode'                => 'IMPS',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check the status by calling getStatus API.',
+                'source_id'           => $payoutId,
+                'source_type'         => 'payout',
+                'status'              => 'PROCESSED',
+                'utr'                 => '933815233814'
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getDbEntityById('payout', $payoutId);
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+
+        $this->assertEquals('933815233814', $payout->getUtr());
+        $this->assertEquals('933815233814', $fta->getUtr());
+    }
+
+    public function testNotFiringOfWebhookOnNotUpdationOfUtr()
+    {
+        $this->setupMockDns();
+
+        $this->mockRazorxTreatment();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        $utr = $payout->getUtr();
+
+        $this->createWebhook(['events' => ['payout.updated' => '1']]);
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status' => Payout\Status::PROCESSED,
+            ]);
+
+        $this->setInfernoExpectations([]);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     =>  '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'SUCCESS',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1236890,
+                'mode'                => 'IMPS',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check the status by calling getStatus API.',
+                'source_id'           => $payoutId,
+                'source_type'         => 'payout',
+                'status'              => 'PROCESSED',
+                'utr'                 => $utr
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testNoFailureReasonBeforeFtaRecon()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        //Setting payout failure reason null as it is already set in create payout
+        $payout[Payout\Entity::FAILURE_REASON] = null;
+
+        $payoutId = $payout->getId();
+
+        $utr = $payout->getUtr();
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => '',
+            'utr'               => $utr,
+            'remarks'           => 'testing failed mapping',
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
+    }
+
+    public function testWithFailureReasonBeforeFtaRecon()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payout[Payout\Entity::FAILURE_REASON] = null;
+
+        $payoutId = $payout->getId();
+
+        $utr = $payout->getUtr();
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => 'Beneficiary bank\'s systems are down. Please retry after some time.',
+            'utr'               =>  $utr,
+            'remarks'           => 'testing failed mapping',
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
     }
 }

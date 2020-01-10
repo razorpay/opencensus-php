@@ -23,7 +23,7 @@
       $razorpay_payment_id = $data['razorpay_payment_id'] ?? '';
     }
     if ($razorpay_payment_id) {
-      echo '<div class="result">Reference Number: <strong>' . $data['emandate_details']['reference_number'] . '</strong></div>';
+      echo '<div class="result">Your E-Mandate registration is successfully completed. Your reference ID for E- Mandate registration is <strong>' . $data['emandate_details']['reference_number'] . '</strong></div>';
     } else {
       echo '<div class="result" style="background: #FFD5D5; border-color: #FF8080">' . $error . '</div>';
     }

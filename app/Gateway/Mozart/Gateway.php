@@ -470,6 +470,49 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    public function disableTerminal(array $input)
+    {
+        parent::disableTerminal($input);
+
+        $request = $this->getTerminalOnboardingMozartRequestArray($input);
+
+        $traceReq = [
+            'method'    => $request['method'],
+            'url'       => $request['url'],
+            'content'   => $request['content'],
+        ];
+        
+        $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_DISABLE_TERMINAL_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_DISABLE_TERMINAL_RESPONSE);
+
+        return $response;
+    }
+
+    public function enableTerminal(array $input)
+    {
+        parent::enableTerminal($input);
+
+        $request = $this->getTerminalOnboardingMozartRequestArray($input);
+
+        $traceReq = [
+            'method'    => $request['method'],
+            'url'       => $request['url'],
+            'content'   => $request['content'],
+        ];
+        
+        $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_ENABLE_TERMINAL_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayTerminalOnboarding($response, 'response', $input, TraceCode::GATEWAY_ENABLE_TERMINAL_RESPONSE);
+
+        return $response;
+    }
+
+
     public function immediateVerifyApplicable($input)
     {
         if ( in_array($input['payment'][Payment\Entity::METHOD], [
@@ -808,7 +851,8 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalOnboardingMozartRequestArray($input)
     {
-        if (($input['terminal'] instanceof TerminalEntity) === true)
+        if ( (isset($input['terminal']) === true) and 
+             (($input['terminal'] instanceof TerminalEntity) === true) )
         {
             $input['terminal'] = $input['terminal']->toArrayWithPassword();
         }
@@ -1505,8 +1549,10 @@ class Gateway extends Base\Gateway
 
     protected function getGateway($input)
     {
+        $nonPaymentActions = [Action::CREATE_TERMINAL, ACTION::VERIFY_TERMINAL, Action::DISABLE_TERMINAL, Action::ENABLE_TERMINAL];
+
         if (
-            (in_array($this->action, [Action::CREATE_TERMINAL, ACTION::VERIFY_TERMINAL])) or
+            (in_array($this->action, $nonPaymentActions)) or
             ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY))
             )
         {

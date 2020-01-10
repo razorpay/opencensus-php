@@ -85,6 +85,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_RECON_QUEUE_CPS_REQUEST                       = 'PAYMENT_RECON_QUEUE_CPS_REQUEST';
     const PAYMENT_RECON_QUEUE_CPS_SUCCESS                       = 'PAYMENT_RECON_QUEUE_CPS_SUCCESS';
     const PAYMENT_RECON_CPS_QUEUE_DELETE                        = 'PAYMENT_RECON_CPS_QUEUE_DELETE';
+    const PAYMENT_RECON_QUEUE_NBPLUS_REQUEST                    = 'PAYMENT_RECON_QUEUE_NBPLUS_REQUEST';
+    const PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS                    = 'PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS';
+    const PAYMENT_RECON_NBPLUS_QUEUE_DELETE                     = 'PAYMENT_RECON_NBPLUS_QUEUE_DELETE';
 
     const REFUND_QUEUE_SCROOGE_SUCCESS                          = 'REFUND_QUEUE_SCROOGE_SUCCESS';
     const REFUND_RECON_QUEUE_SCROOGE_SUCCESS                    = 'REFUND_RECON_QUEUE_SCROOGE_SUCCESS';
@@ -805,6 +808,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_CREATE_TERMINAL_RESPONSE                      = 'GATEWAY_CREATE_TERMINAL_RESPONSE';
     const GATEWAY_VERIFY_TERMINAL_REQUEST                       = 'GATEWAY_VERIFY_TERMINAL_REQUEST';
     const GATEWAY_VERIFY_TERMINAL_RESPONSE                      = 'GATEWAY_VERIFY_TERMINAL_RESPONSE';
+    const GATEWAY_DISABLE_TERMINAL_REQUEST                      = 'GATEWAY_DISABLE_TERMINAL_REQUEST';
+    const GATEWAY_DISABLE_TERMINAL_RESPONSE                     = 'GATEWAY_DISABLE_TERMINAL_RESPONSE';
+    const GATEWAY_ENABLE_TERMINAL_REQUEST                       = 'GATEWAY_ENABLE_TERMINAL_REQUEST';
+    const GATEWAY_ENABLE_TERMINAL_RESPONSE                      = 'GATEWAY_ENABLE_TERMINAL_RESPONSE';
     const GATEWAY_PAYMENT_REFUND                                = 'GATEWAY_PAYMENT_REFUND';
     const GATEWAY_EXCHANGE_TOKEN_REQUEST                        = 'GATEWAY_EXCHANGE_TOKEN_REQUEST';
     const GATEWAY_TOKEN_REQUEST                                 = 'GATEWAY_TOKEN_REQUEST';
@@ -1398,6 +1405,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
      * Trace code for critical info
      */
     const PAYMENT_NOTES_INVALID                                 = 'PAYMENT_NOTES_INVALID';
+    const PAYMENT_ORDER_METHOD_VALIDATION_FAILED                = 'PAYMENT_ORDER_METHOD_VALIDATION_FAILED';
     const EXTRA_QUERY_PARAM_IN_GET_ROUTE                        = 'EXTRA_QUERY_PARAM_IN_GET_ROUTE';
 
     // Trace codes for Segment integration
@@ -1481,12 +1489,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REVERSAL_REFUND_AVAILABLE                             = 'REVERSAL_REFUND_AVAILABLE';
     const ORDER_TRANSFER_REQUEST                                = 'ORDER_TRANSFER_REQUEST';
     const ORDER_TRANSFER_SUCCESS                                = 'ORDER_TRANSFER_SUCCESS';
+    const PENDING_ORDER_TRANSFER_PROCESS                        = 'PENDING_ORDER_TRANSFER_PROCESS';
+    const FAILED_ORDER_TRANSFER_PROCESS                         = 'FAILED_ORDER_TRANSFER_PROCESS';
+    const ORDER_TRANSFER_PROCESS_RETRY                          = 'ORDER_TRANSFER_PROCESS_RETRY';
     const ORDER_TRANSFER_PROCESS_INITIATED                      = 'ORDER_TRANSFER_PROCESS_INITIATED';
     const ORDER_TRANSFER_PROCESS_PAYMENT_NOT_CAPTURED           = 'ORDER_TRANSFER_PROCESS_PAYMENT_NOT_CAPTURED';
     const ORDER_TRANSFER_PROCESS_ORDER_NOT_PAID                 = 'ORDER_TRANSFER_PROCESS_ORDER_NOT_PAID';
-    const ORDER_TRANSFER_PROCESS_RETRY_STARTED                  = 'ORDER_TRANSFER_PROCESS_RETRY_STARTED';
     const ORDER_TRANSFER_PROCESS_RETRY_DONE                     = 'ORDER_TRANSFER_PROCESS_RETRY_DONE';
-    const ORDER_TRANSFER_PROCESS_RETRY                          = 'ORDER_TRANSFER_PROCESS_RETRY';
     const ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT                  = 'ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT';
     const ORDER_TRANSFER_PROCESS_SQS_PUSH_FAILED                = 'ORDER_TRANSFER_PROCESS_SQS_PUSH_FAILED';
     const ORDER_TRANSFER_PROCESS_REQUEST                        = 'ORDER_TRANSFER_PROCESS_REQUEST';
@@ -2233,6 +2242,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_PAYMENT_SERVICE_DISABLING                        = 'CARD_PAYMENT_SERVICE_DISABLING';
     const CARD_PAYMENT_SERVICE_ERROR                            = 'CARD_PAYMENT_SERVICE_ERROR';
 
+    // Nb Plus Service
+    const NBPLUS_PAYMENT_SERVICE_REQUEST                        = 'NBPLUS_PAYMENT_SERVICE_REQUEST';
+    const NBPLUS_PAYMENT_SERVICE_RESPONSE                       = 'NBPLUS_PAYMENT_SERVICE_RESPONSE';
+    const NBPLUS_PAYMENT_SERVICE_ERROR                          = 'NBPLUS_PAYMENT_SERVICE_ERROR';
+
     // Batch Micro Service
     const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';
     const GET_BATCHES_IGNORE_COUNT_SKIP                         = 'GET_BATCHES_IGNORE_COUNT_SKIP';
@@ -2265,6 +2279,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CAPITAL_INTEGRATION_ERROR                             = 'CAPITAL_INTEGRATION_ERROR';
     const CAPITAL_INTEGRATION_API_REQUEST                       = 'CAPITAL_INTEGRATION_API_REQUEST';
     const CAPITAL_INTEGRATION_API_RESPONSE                      = 'CAPITAL_INTEGRATION_API_RESPONSE';
+
+    // Salesforce integration
+    const SALESFORCE_ACCESS_TOKEN_ERROR                         = 'SALESFORCE_ACCESS_TOKEN_ERROR';
+    const SALESFORCE_INTEGRATION_ERROR                          = 'SALESFORCE_INTEGRATION_ERROR';
+    const SALESFORCE_INTEGRATION_API_REQUEST                    = 'SALESFORCE_INTEGRATION_API_REQUEST';
+    const SALESFORCE_INTEGRATION_API_RESPONSE                   = 'SALESFORCE_INTEGRATION_API_RESPONSE';
+
 
     // Banking account
     const BANKING_ACCOUNT_EDIT                                  = 'BANKING_ACCOUNT_EDIT';
@@ -2460,6 +2481,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
+    const MERCHANT_DEFAULT_GROUP_ATTACH                         = 'MERCHANT_DEFAULT_GROUP_ATTACH';
+
     //Balance Config
     const BALANCE_CONFIG_CREATE_REQUEST                         = 'BALANCE_CONFIG_CREATE_REQUEST';
     const BALANCE_CONFIG_CREATE_SUCCESSFUL                      = 'BALANCE_CONFIG_CREATE_SUCCESSFUL';
@@ -2474,6 +2497,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Reserve Balance Trace Codes
     const RESERVE_BALANCE_CREATE_REQUEST                        = 'RESERVE_BALANCE_CREATE_REQUEST';
     const RESERVE_BALANCE_CREATE_SUCCESSFUL                     = 'RESERVE_BALANCE_CREATE_SUCCESSFUL';
+
+    const TRACE_FOR_INCREASED_RESPONSE_TIMES                    = 'TRACE_FOR_INCREASED_RESPONSE_TIMES';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

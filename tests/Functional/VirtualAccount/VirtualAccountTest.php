@@ -135,6 +135,16 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testVaOfflineQRGeneration()
+    {
+        $this->fixtures->merchant->addFeatures(['offline_payments']);
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('id', $response);
+        $this->assertArrayHasKey('receivers', $response);
+    }
+
     public function testPayVirtualAccountWithPastCloseBy()
     {
         $closeTimeStamp = Carbon::now()->timestamp + 1000;
@@ -1737,5 +1747,18 @@ class VirtualAccountTest extends TestCase
         $response = $this->startTest();
 
         $this->assertArrayHasKey('order_id', $response);
+    }
+
+    public function testCloseVirtualAccountWithVpa()
+    {
+        $virtualAccount = $this->createVirtualAccount([], false, null, null, true, 'virtualVpa');
+
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
+
+        $this->closeVirtualAccount($virtualAccount['id']);
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+
+        $this->assertEquals(Status::CLOSED, $virtualAccount->getStatus());
     }
 }
