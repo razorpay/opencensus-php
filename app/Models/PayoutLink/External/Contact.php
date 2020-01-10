@@ -41,9 +41,9 @@ class Contact
      */
     public function processContact(array $contactDetails, MerchantEntity $merchant): ContactEntity
     {
-        $contactId = array_pull($contactDetails, 'id');
+        $contactId = array_pull($contactDetails, ContactEntity::ID);
 
-        if ($contactId !== null)
+        if (empty($contactId) === false)
         {
             $contact = $this->repo->contact->findByPublicIdAndMerchant($contactId, $merchant);
 
@@ -54,23 +54,20 @@ class Contact
                                               null,
                                               [
                                                   'merchant_id' => $merchant->getPublicId(),
-                                                  'contact_id'     => $contact->getPublicId()
+                                                  'contact_id'  => $contact->getPublicId()
                                               ]);
             }
         }
         else
         {
-            $this->trace->info(TraceCode::PAYOUT_LINK_PROCESS_CONTACT_REQUEST,
-                               $contactDetails);
-
-            if ((empty($contactDetails['email']) === true) and
-                (empty($contactDetails['contact']) === true))
+            if ((empty($contactDetails[ContactEntity::EMAIL]) === true) and
+                (empty($contactDetails[ContactEntity::CONTACT]) === true))
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
                                               null,
                                               [
-                                                  'merchant_id' => $merchant->getPublicId(),
-                                                  'contact_details'     => $contactDetails
+                                                  'merchant_id'     => $merchant->getPublicId(),
+                                                  'contact_details' => $contactDetails
                                               ]);
             }
 

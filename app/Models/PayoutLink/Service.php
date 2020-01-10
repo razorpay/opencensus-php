@@ -51,7 +51,9 @@ class Service extends Base\Service
                            ->payout_link
                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
-        return $this->core->initiate($payoutLink, $input)->toArrayPublic();
+        $payoutLink = $this->core->initiate($payoutLink, $input);
+
+        return $payoutLink->toArrayPublic();
     }
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
@@ -81,7 +83,9 @@ class Service extends Base\Service
                            ->payout_link
                            ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
-        return $this->core->cancel($payoutLink)->toArrayPublic();
+        $payoutLink = $this->core->cancel($payoutLink);
+
+        return $payoutLink->toArrayPublic();
     }
 
     public function viewHostedPage($payoutLinkId)

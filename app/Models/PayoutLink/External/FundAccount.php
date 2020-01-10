@@ -30,6 +30,7 @@ class FundAccount
     public function __construct()
     {
         $app = App::getFacadeRoot();
+
         $this->trace = $app['trace'];
 
         $this->repo = $app['repo'];
@@ -39,7 +40,7 @@ class FundAccount
                                             MerchantEntity $merchant,
                                             ContactEntity $contact): FundAccountEntity
     {
-        if (array_key_exists(Entity::FUND_ACCOUNT_ID, $input))
+        if (array_key_exists(Entity::FUND_ACCOUNT_ID, $input) === true)
         {
             $fundAccountId = $input[Entity::FUND_ACCOUNT_ID];
 
