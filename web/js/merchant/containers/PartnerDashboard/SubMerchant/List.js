@@ -467,11 +467,11 @@ const ReferalBox = ({ closeModal, referralUrl, shareReferralOn }) => (
         />
         <img
           src="/img/social-media/twitter.png"
-          onClick={() => this.shareReferralOn('twitter')}
+          onClick={() => shareReferralOn('twitter')}
         />
         <img
           src="/img/social-media/whatsapp.png"
-          onClick={() => this.shareReferralOn('whatsapp')}
+          onClick={() => shareReferralOn('whatsapp')}
         />
       </div>
     </div>
