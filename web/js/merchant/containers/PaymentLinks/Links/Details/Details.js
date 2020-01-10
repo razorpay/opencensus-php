@@ -364,7 +364,7 @@ export default props => {
                   />
                 )}
                 {user.isOndemandSettlementEnabled &&
-                  this.props.user.isAllowedView('early_settlement') && (
+                  user.isAllowedView('early_settlement') && (
                     <ScheduledBanner fromWhere="Payment Pages" />
                   )}
               </div>
