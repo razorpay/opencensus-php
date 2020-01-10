@@ -418,7 +418,7 @@ class Core extends Base\Core
         $fundAccountDetails = $this->getMaskedFundAccountDetails($payoutLink->fundAccount);
 
         $data = [
-            'api_host'                => $this->config['url.api.production'],
+            'api_host'                => $this->config['applications.payout_links.url'],
             'payout_link_id'          => $payoutLink->getPublicId(),
             'payout_link_status'      => $payoutLink->getStatus(),
             'amount'                  => $payoutLink->getAmount(),
