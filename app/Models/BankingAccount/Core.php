@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Admin;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Detail;
@@ -380,7 +381,7 @@ class Core extends Base\Core
         $processor->deleteServiceablePincodes($pincodes);
     }
 
-    public function activate(Entity $bankingAccount, array $input)
+    public function activate(Entity $bankingAccount, array $input, Admin\Entity $admin)
     {
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount);
 
@@ -388,7 +389,7 @@ class Core extends Base\Core
         // This is in a transaction because, BankingAccount entity update
         // and Balance entity creation, both should succeed or fail
         //
-        $bankingAccount = $this->repo->transaction(function () use ($bankingAccount, $input)
+        $bankingAccount = $this->repo->transaction(function () use ($bankingAccount, $input, $admin)
         {
             $channel = $bankingAccount->getChannel();
 
@@ -421,7 +422,7 @@ class Core extends Base\Core
                     'input' => $content,
                 ]);
 
-            $stateCore->createForMakerAndEntity($content, $bankingAccount->merchant, $bankingAccount);
+            $stateCore->createForMakerAndEntity($content, $admin, $bankingAccount);
 
             return $bankingAccount;
         });

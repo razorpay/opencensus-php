@@ -99,7 +99,9 @@ class Service extends Base\Service
 
         $this->checkIfAccountAlreadyActivated($bankingAccount);
 
-        $bankingAccount = $this->core->activate($bankingAccount, $input);
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $bankingAccount = $this->core->activate($bankingAccount, $input, $admin);
 
         return $bankingAccount->toArrayPublic();
     }
