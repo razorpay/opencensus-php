@@ -24,12 +24,22 @@ class ContactsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     public function testFetchContacts()
     {
         $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
         $this->fixtures->create('contact', ['id' => '1000002contact', 'name' => 'Contact Y']);
+
+        $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -46,6 +56,11 @@ class ContactsTest extends TestCase
 
     public function testCreateContact()
     {
+        $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
+
         $this->startTest();
     }
 
@@ -131,11 +146,21 @@ class ContactsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
 
         $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     public function testDeleteContact()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }

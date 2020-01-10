@@ -69,6 +69,15 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(CreateAccount::class);
     }
 
+    public function testCreateFundAccountBankAccountPublic()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
+    }
+
     public function testCreateFundAccountBankAccountBeneficiaryVerified()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
