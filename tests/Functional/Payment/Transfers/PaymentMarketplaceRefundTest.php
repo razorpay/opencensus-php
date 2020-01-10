@@ -330,30 +330,8 @@ class PaymentMarketplaceRefundTest extends TestCase
         }
     }
 
-    protected function enableRazorXTreatmentForRazorX()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function ($mid, $feature, $mode) {
-                                  if ($feature === 'transfers_via_order')
-                                  {
-                                      return 'on';
-                                  }
-                                  return 'off';
-                              }));
-    }
-
     public function testReverseAllOrderTransfers()
     {
-        $this->enableRazorXTreatmentForRazorX();
-
         $data = $this->testData['createOrderTransfers'];
 
         $this->ba->privateAuth();

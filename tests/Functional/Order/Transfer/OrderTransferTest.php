@@ -38,8 +38,6 @@ class OrderTransferTest extends TestCase
 
     public function testCreateOrderTransfers()
     {
-        $this->enableRazorXTreatmentForRazorX();
-
         $order = $this->startTest();
 
         return $order;
@@ -207,23 +205,4 @@ class OrderTransferTest extends TestCase
         $this->app->instance('webhook.inferno', $inferno);
     }
 
-    protected function enableRazorXTreatmentForRazorX()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function ($mid, $feature, $mode) {
-                                  if ($feature === 'transfers_via_order')
-                                  {
-                                      return 'on';
-                                  }
-                                  return 'off';
-                              }));
-    }
 }

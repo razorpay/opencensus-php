@@ -43,8 +43,6 @@ final class RazorxTreatment
 
     const SELLER_APP_PL_BATCH_UPLOAD_EXPERIMENT = 'sellerapp_PL_batch_upload';
 
-    const TRANSFERS_VIA_ORDER = 'transfers_via_order';
-
     const RENDERING_PREFERENCES_PAYMENT_LINKS = 'rendering_preferences_payment_links';
 
     // Decides if fund account and contact creation should have duplicate checks
