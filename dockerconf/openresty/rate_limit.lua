@@ -14,7 +14,7 @@ local leaky_bucket_script = require("leaky_bucket")()
 -- The environment variables below are made available via nginx's env
 -- directive in http block.
 local redis_conf = {
-    timeout_ms  = os.getenv("RESTY_REDIS_TIMEOUT_MS") or 1000,
+    timeout_ms  = os.getenv("RESTY_REDIS_TIMEOUT_MS") or 100,
     host        = os.getenv("RESTY_REDIS_HOST") or "127.0.0.1",
     port        = os.getenv("RESTY_REDIS_PORT") or 6379,
     password    = os.getenv("RESTY_REDIS_PASSWORD") or nil,
