@@ -4,6 +4,7 @@ use RZP\Constants\Table;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use RZP\Models\Merchant\Document\Source as Source;
 use RZP\Models\Merchant\Document\Entity as Document;
 
 class CreateMerchantDocumentTable extends Migration
@@ -29,6 +30,9 @@ class CreateMerchantDocumentTable extends Migration
             $table->string(Document::DOCUMENT_TYPE, 255);
 
             $table->string(Document::ENTITY_TYPE, 255);
+
+            $table->enum(Document::SOURCE, [Source::API, Source::UFH])
+                  ->default(Source::API);
 
             $table->string(Document::OCR_VERIFY, 30)
                   ->nullable();

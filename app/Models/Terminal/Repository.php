@@ -201,6 +201,31 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function getTerminalForMerchantParentMerchantAndSharedMerchant(Merchant\Entity $merchant)
+    {
+        $merchantInheritanceMap = $merchant->merchantInheritanceMap;
+
+        if (isset($merchantInheritanceMap) === false)
+        {
+            return $this->getTerminalsForMerchantAndSharedMerchant($merchant);
+        }
+
+        $parentMerchantId = $merchantInheritanceMap->parentMerchant->getId();
+
+        $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT, $parentMerchantId];
+
+        $cacheTags = [Entity::getCacheTag($merchant->getId()), Entity::getCacheTag($parentMerchantId)];
+
+        $query = $this->newQuery();
+
+        $this->addMerchantWhereCondition($query, $merchantIds);
+
+        $query->remember($this->getCacheTtl())
+              ->cachetags($cacheTags);
+
+        return $query->get();
+    }
+
     public function getEmandateTerminalsForMerchantAndSharedMerchant(
         Merchant\Entity $merchant, string $authType): PublicCollection
     {

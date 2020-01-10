@@ -5564,8 +5564,16 @@ ALTER TABLE `terminals`
 ALTER TABLE worldline
 	ADD COLUMN gateway_utr VARCHAR(255) DEFAULT NULL AFTER ref_no;
 
+ALTER TABLE `vpas`
+    ADD COLUMN `deleted_at` INTEGER DEFAULT NULL AFTER `updated_at`;
+
 ALTER TABLE offers
     ADD COLUMN default_offer bool DEFAULT 0,
     ADD COLUMN max_order_amount int(11) DEFAULT NULL,
     MODIFY type VARCHAR(20);
 
+ALTER TABLE `merchant_documents`
+    ADD COLUMN `source` enum('API', 'UFH') NOT NULL DEFAULT 'API' ;
+
+ALTER TABLE pricing
+     MODIFY COLUMN amount_range_min BIGINT(20) unsigned DEFAULT NULL;

@@ -5495,4 +5495,88 @@ return [
             ],
         ],
     ],
+
+    'testMerchantInternationalDisableAction' => [
+        'request'  => [
+            'content' => [
+                'action' => 'disable_international'
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'merchant',
+                'international'   => false,
+                'merchant_detail' => [
+                    'international_activation_flow' => 'blacklist',
+                ]
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalEnableAction' => [
+        'request'  => [
+            'content' => [
+                'action' => 'enable_international'
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'merchant',
+                'international'   => true,
+                'merchant_detail' => [
+                    'international_activation_flow' => 'whitelist',
+                ]
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalDisableBulkEdit' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids' => [
+                    '10000000000000',
+                ],
+                'attributes'   => [
+                    'international'    => 0,
+                    'convert_currency' => 0,
+                ],
+            ],
+            'url'     => '/merchants/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 1,
+                'success' => 1,
+                'failed'  => 0,
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalEnableBulkEdit' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids' => [
+                    '10000000000000',
+                ],
+                'attributes'   => [
+                    'international'    => 1,
+                    'convert_currency' => 1,
+                ],
+            ],
+            'url'     => '/merchants/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 1,
+                'success' => 1,
+                'failed'  => 0,
+            ]
+        ]
+    ],
 ];

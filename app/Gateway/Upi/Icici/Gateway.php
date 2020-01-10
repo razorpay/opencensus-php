@@ -64,6 +64,8 @@ class Gateway extends Base\Gateway
         Fields::PAYER_MOBILE              => Entity::CONTACT,
         Fields::RESPONSE                  => Entity::STATUS_CODE,
         Fields::MERCHANT_TRAN_ID          => Entity::MERCHANT_REFERENCE,
+        // NOTE: The GATEWAY_PAYMENT_ID is resolved into NPCI_REFERENCE_ID for Payments
+        // If trying to change its definition, Kindly find the solution for NPCI_REFERENCE_ID too
         Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
         Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
@@ -522,9 +524,22 @@ class Gateway extends Base\Gateway
         return base64_encode($data);
     }
 
-    protected function updateGatewayPaymentResponse($payment, array $response)
+    protected function updateGatewayPaymentResponse(Entity $payment, array $response)
     {
         $attr = $this->getMappedAttributes($response);
+
+        // For payment's entities, we need NPCI REF ID to generated
+        // Thus if it is null, we need to update it: NO OVERRIDING
+        // Only if attr has GATEWAY_PAYMENT_ID set
+        // For refund entity OriginalBankRRN is set to NPCI_REF_ID
+        if (($payment->getAction() === Action::AUTHORIZE) and
+            (empty($payment->getNpciReferenceId()) === true) and
+            (isset($attr[Entity::GATEWAY_PAYMENT_ID]) === true))
+        {
+            // Now, The Mapper already maps the BANK_RRN to GATEWAY_PAYMENT_ID
+            // Even if it is null, we can update null by null
+            $attr[Entity::NPCI_REFERENCE_ID] = $attr[Entity::GATEWAY_PAYMENT_ID];
+        }
 
         // To mark that we have received a response for this request
         $attr[Entity::RECEIVED] = 1;

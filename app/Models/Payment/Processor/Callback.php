@@ -267,6 +267,12 @@ trait Callback
             $input['s2s'] = true;
         }
 
+        if (empty($input['gateway']) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_GATEWAY_EMPTY_CALLBACK);
+        }
+
         try
         {
             $this->preProcessGatewayCallback($input);
