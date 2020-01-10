@@ -457,6 +457,7 @@ export default class CreateOfferWizard extends React.Component {
       'max_payment_count',
       'iins',
       'max_offer_usage',
+      'max_order_amount',
     ];
     const fieldsTobeDeleted = [
       'discount_type',
@@ -504,6 +505,8 @@ export default class CreateOfferWizard extends React.Component {
       fieldsTobeDeleted.push('payment_network');
       transformed['emi_subvention'] = 1;
       transformed['payment_method'] = 'emi';
+    } else {
+      fieldsTobeDeleted.push('max_order_amount');
     }
     if (!this.isSelectedPaymentMethod('card', 'emi')) {
       fieldsTobeDeleted.push('max_payment_count');

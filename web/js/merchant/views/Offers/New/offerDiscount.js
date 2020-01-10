@@ -44,6 +44,7 @@ export default ({
             'percent_rate',
             'max_cashback',
             'emi_durations',
+            'max_order_amount',
           ])}
           validator={getFormElementValidations('discount_type')}
         />

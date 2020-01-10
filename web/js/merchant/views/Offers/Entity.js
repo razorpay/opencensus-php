@@ -35,6 +35,7 @@ export const ISSUERS = {
   KKBK: 'Kotak Mahindra Bank',
   RATN: 'Ratnakar Bank Bank',
   SCBL: 'Standard Chartered Bank',
+  AMEX: 'American Express',
   UTIB: 'Axis Bank',
   YESB: 'Yes Bank',
   CITI: 'Citi Bank',

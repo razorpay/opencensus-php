@@ -54,6 +54,7 @@ const BANK_MAP = {
   CITI: 'Citi Bank',
   SBIN: 'State Bank of India',
   BARB: 'Bank of Baroda Bank',
+  AMEX: 'American Express',
 };
 
 const WALLET_MAP = {
