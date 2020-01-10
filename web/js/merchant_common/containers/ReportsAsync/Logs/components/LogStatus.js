@@ -1,3 +1,5 @@
+import { AsyncBtn } from 'common/new-ui/Button';
+
 export default function LogStatus(props) {
   return (
     <div class="LogStatus">
@@ -23,14 +25,16 @@ function renderActionBasedOnStatus({ actualStatus, ...props }) {
 
 function DownloadButton(props) {
   return (
-    <button
-      class="btn btn-link"
+    <AsyncBtn.Transparent
+      onClick={props.onDownloadClick}
+      pendingState="Downloading"
+      type="button"
+      class="Btn--link"
       data-file-id={props.fileId}
       data-consumer-id={props.consumerId}
-      onClick={props.onDownloadClick}
     >
       Download
-    </button>
+    </AsyncBtn.Transparent>
   );
 }
 

@@ -60,13 +60,13 @@ function getConfigOptions(configs = []) {
 function ConfigOption({ option }) {
   const { description, name } = option;
   return (
-    <div class="custom-powerselect-options m-b">
+    <div class="SelectConfig__Dropdown_Option custom-powerselect-options m-b">
       <p>
         <strong>{name}</strong>
       </p>
       <p>
         {description ? (
-          description.substr(0, 50)
+          getShortDescription(description)
         ) : (
           <span className="text-muted">
             <em>No Description</em>
@@ -78,5 +78,13 @@ function ConfigOption({ option }) {
 }
 
 function ConfigSelected({ option }) {
-  return <strong>{option.name}</strong>;
+  return <span>{option.name}</span>;
+}
+
+function getShortDescription(description) {
+  const indexOfFullStop = description.indexOf('.');
+  return description.substring(
+    0,
+    indexOfFullStop > 0 ? indexOfFullStop : description.length
+  );
 }

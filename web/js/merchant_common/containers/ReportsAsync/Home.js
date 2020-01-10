@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
+import Spinner from 'common/ui/Spinner';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -67,22 +68,30 @@ export default class ReportHome extends React.PureComponent {
           <TestModeBanner />
           <content>
             <div class="content-wrapper Reporting--ContentWrapper">
-              <GenerateReportPanel
-                configs={configs}
-                customConfigs={customConfigs}
-                onGenerateReport={this.onGenerateReport}
-                emailReportOptions={otherProps.emailReportOptions}
-                mode={otherProps.mode}
-              />
-              <div class="m-t" />
-              <LogList
-                currentMerchantId={user.current}
-                allConfigs={configs.items}
-                configsLoading={configs.loading}
-                onLoadMoreClick={this.onLoadMoreLogs}
-                pollLog={otherProps.pollLog}
-                {...logs}
-              />
+              {configs.loading && logs.loading ? (
+                <div class="page-spinner-container">
+                  <Spinner />
+                </div>
+              ) : (
+                <>
+                  <GenerateReportPanel
+                    configs={configs}
+                    customConfigs={customConfigs}
+                    onGenerateReport={this.onGenerateReport}
+                    emailReportOptions={otherProps.emailReportOptions}
+                    mode={otherProps.mode}
+                  />
+                  <div class="m-t" />
+                  <LogList
+                    currentMerchantId={user.current}
+                    allConfigs={configs.items}
+                    configsLoading={configs.loading}
+                    onLoadMoreClick={this.onLoadMoreLogs}
+                    pollLog={otherProps.pollLog}
+                    {...logs}
+                  />
+                </>
+              )}
             </div>
           </content>
         </tabbed-container>
