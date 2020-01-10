@@ -79,6 +79,9 @@ $dark-grey = #E1E6E6;
         .LogStatus
           color: $color-pending;
 
+      &--ready-for-download
+        border-color: $primary-color
+
       &--no-data,
       &--error
         .LogStatus
@@ -149,6 +152,9 @@ $dark-grey = #E1E6E6;
       &::placeholder
         opacity: 0.8
         text-transform: initial
+
+.SelectConfig__Dropdown_Option
+  width: 320px
 
 @keyframes animate-log-item
   from
