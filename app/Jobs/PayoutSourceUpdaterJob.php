@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\SourceUpdater;
 
 class PayoutSourceUpdaterJob extends Job
@@ -25,19 +26,38 @@ class PayoutSourceUpdaterJob extends Job
 
     public function handle()
     {
-        parent::handle();
+        try
+        {
+            parent::handle();
 
-        $payout = $this->repoManager->payout->findByPublicId($this->payoutPublicId);
+            $payout = $this->repoManager->payout->findByPublicId($this->payoutPublicId);
 
-        $this->trace->info(
-            TraceCode::PAYOUT_SOURCE_UPDATER_JOB,
-            [
-                'payout_id'      => $this->payoutPublicId,
-                'current_status' => $payout->getStatus(),
-                'previous_statu' => $this->previousPayoutStatus
-            ]
-        );
+            $this->trace->info(
+                TraceCode::PAYOUT_SOURCE_UPDATER_JOB,
+                [
+                    'payout_id'      => $this->payoutPublicId,
+                    'current_status' => $payout->getStatus(),
+                    'previous_status' => $this->previousPayoutStatus
+                ]
+            );
 
-        SourceUpdater::update($payout, $this->previousPayoutStatus);
+            SourceUpdater::handleUpdateFromQueue($payout, $this->previousPayoutStatus);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYOUT_SOURCE_UPDATER_JOB_FAILED,
+                [
+                    'payout_id'       => $this->payoutPublicId,
+                    'previous_status' => $this->previousPayoutStatus
+                ]);
+        }
+        finally
+        {
+            $this->delete();
+        }
+
     }
 }
