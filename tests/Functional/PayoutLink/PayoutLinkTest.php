@@ -135,8 +135,13 @@ class PayoutLinkTest extends TestCase
 
     public function testGetPayoutLinkById()
     {
+        $testData = self::TEST_PAYOUT_LINK_PAYLOAD;
+
+        $testData['balance_id'] = $this->bankingBalance->getId();
+
         $payoutLink = $this->fixtures->create(self::FIXTURE_ENTITY,
-                                              self::TEST_PAYOUT_LINK_PAYLOAD);
+                                              $testData
+                                              );
 
         $this->ba->privateAuth();
 
