@@ -2262,4 +2262,31 @@ return [
             ],
         ],
     ],
+
+    'testGetPayoutMetaWorkflowProxyAuth' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/workflows',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetPayoutMetaWorkflowPrivateAuth' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/workflows',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
 ];
