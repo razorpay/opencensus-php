@@ -5574,3 +5574,6 @@ ALTER TABLE offers
 
 ALTER TABLE `merchant_documents`
     ADD COLUMN `source` enum('API', 'UFH') NOT NULL DEFAULT 'API' ;
+
+ALTER TABLE pricing
+     MODIFY COLUMN amount_range_min BIGINT(20) unsigned DEFAULT NULL;
