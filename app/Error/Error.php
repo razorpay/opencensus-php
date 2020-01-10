@@ -209,7 +209,7 @@ class Error extends Support\Fluent
 
         if($merchantId !== null)
         {
-            $feature = $featureRepository->findByEntityTypeEntityIdAndNameOrFail(Constants::MERCHANT,
+            $feature = $featureRepository->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
                 $merchantId, Constants::ADDITIONAL_FIELDS_ERROR_RESPONSE);
 
             if (!empty($feature))
