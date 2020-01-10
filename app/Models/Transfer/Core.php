@@ -111,6 +111,11 @@ class Core extends Base\Core
     {
         $transfers = new Base\Collection();
 
+        if ($this->isTransfersForOrderEnabled() === false)
+        {
+            return $transfers;
+        }
+
         foreach ($transferInput as $input)
         {
             $input[Entity::STATUS] = Status::CREATED;
@@ -475,6 +480,11 @@ class Core extends Base\Core
 
     public function validateTransfersInput(int $orderAmount, array $transfers)
     {
+        if ($this->isTransfersForOrderEnabled() === false)
+        {
+            return;
+        }
+
         $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $this->merchant);
 
         $this->validateMerchantForTransfer($this->merchant);
@@ -665,5 +675,15 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->fire('api.transfer.processed', $eventPayload);
+    }
+
+    protected function isTransfersForOrderEnabled(): bool
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                    Merchant\RazorxTreatment::TRANSFERS_VIA_ORDER,
+                                                    $this->mode
+        );
+
+        return (strtolower($variant) === 'on');
     }
 }
