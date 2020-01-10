@@ -625,23 +625,26 @@ class FundTransfer extends Base
 
         $ba = $this->fta->bankAccount;
 
-        $ifsc = $ba->getIfscCode();
-
-        $ifscFirstFour = substr($ifsc, 0, 4);
-
-        $ifscIdentifier = IFSC::YESB;
-
-        if ((starts_with($ifscFirstFour, $ifscIdentifier) === true) and ($channel === Channel::YESBANK))
+        if (empty($ba) === false)
         {
-            $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+            $ifsc = $ba->getIfscCode();
 
-            if (is_numeric($ifscLastDigits) === true)
+            $ifscFirstFour = substr($ifsc, 0, 4);
+
+            $ifscIdentifier = IFSC::YESB;
+
+            if ((starts_with($ifscFirstFour, $ifscIdentifier) === true) and ($channel === Channel::YESBANK))
             {
-                $this->fta->setMode(Mode::IFT);
-            }
-            else
-            {
-                $this->fta->setMode(Mode::NEFT);
+                $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+                if (is_numeric($ifscLastDigits) === true)
+                {
+                    $this->fta->setMode(Mode::IFT);
+                }
+                else
+                {
+                    $this->fta->setMode(Mode::NEFT);
+                }
             }
         }
     }

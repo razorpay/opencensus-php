@@ -34,6 +34,12 @@ class Database
         $this->db = $app['db'];
 
         $this->config = $app['config'];
+
+        if ($this->isPaymentUpiMocked() === false)
+        {
+            self::$dbConnections[3] = 'payments_upi_live';
+            self::$dbConnections[4] = 'payments_upi_test';
+        }
     }
 
     public function tearDown()
@@ -148,6 +154,14 @@ class Database
         // Run P2P DB migrations from the P2p Service
         Artisan::call('migrate', ['--database' => 'live', '--path' => 'database/migrations/p2p']);
         Artisan::call('migrate', ['--database' => 'test', '--path' => 'database/migrations/p2p']);
+
+        if ($this->isPaymentUpiMocked() === false)
+        {
+            $path = 'database/migrations/payments_upi';
+
+            Artisan::call('migrate', ['--database' => 'payments_upi_live', '--path' => $path]);
+            Artisan::call('migrate', ['--database' => 'payments_upi_test', '--path' => $path]);
+        }
     }
 
     protected function createDatabases()
@@ -179,6 +193,21 @@ class Database
 
         $authDb = env('DB_AUTH_DATABASE', 'auth');
         $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$authDb}`");
+
+        if ($this->isPaymentUpiMocked() === false)
+        {
+            $pdo = $this->db->connection('mysql_init')->getPdo();
+
+            $puLiveDb = env('DB_UPI_PAYMENTS_LIVE_DATABASE', 'payments_upi_live');
+
+            $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$puLiveDb}`");
+            $pdo->exec("GRANT ALL PRIVILEGES ON `{$puLiveDb}`.* TO 'root'@'%'");
+
+            $puTestDb = env('DB_UPI_PAYMENTS_TEST_DATABASE', 'payments_upi_test');
+
+            $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$puTestDb}`");
+            $pdo->exec("GRANT ALL PRIVILEGES ON `{$puTestDb}`.* TO 'root'@'%'");
+        }
     }
 
     protected function truncateTestingDatabaseIfRequired()
@@ -281,5 +310,10 @@ class Database
     protected function shouldRunFixtures()
     {
         return (env('RUN_FIXTURES', true));
+    }
+
+    protected function isPaymentUpiMocked()
+    {
+        return filter_var(env('DB_UPI_PAYMENTS_MOCKED'), FILTER_VALIDATE_BOOLEAN);
     }
 }

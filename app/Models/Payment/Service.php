@@ -24,6 +24,7 @@ use RZP\Models\Card;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Org;
+use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants;
@@ -43,6 +44,8 @@ class Service extends Base\Service
     protected $slack;
 
     protected $mutex;
+
+    protected $razorXForDoppler = false;
 
     public function __construct()
     {
@@ -938,6 +941,7 @@ class Service extends Base\Service
         $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
+            'input'         => $input,
             'data'          => $data,
             'gateway'       => $gateway,
             'reference_id'  => $referenceId,
@@ -1388,6 +1392,9 @@ class Service extends Base\Service
 
         $allMethods = Payment\Method::getAllPaymentMethods();
 
+        // checking razorX flag for feedback loop here per cron
+        $this->razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($this->app['request']->getId());
+
         foreach ($allMethods as $method)
         {
             $count = $count + $this->timeoutOldPaymentsForMethod($limit, $method);
@@ -1423,8 +1430,10 @@ class Service extends Base\Service
 
                     try
                     {
+                        //TODO: Remove setRazorXDopplerProperty function once we are fully live with feedback loop
                         $this->getNewProcessor($payment->merchant)
                              ->setPayment($payment)
+                             ->setRazorXDopplerProperty($this->razorXForDoppler)
                              ->timeoutPayment();
 
                         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);

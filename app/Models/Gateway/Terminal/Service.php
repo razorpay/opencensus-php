@@ -318,4 +318,17 @@ class Service extends Base\Service
         
         return $terminalOnboardingDetail->getStatus();
     }
+
+    public function callGatewayForTerminalEnableOrDisable($terminal, $action)
+    {
+        $gateway = $terminal->gateway;
+
+        $gatewayProcessor = GatewayFactory::build($gateway);
+
+        $request = $gatewayProcessor->getGatewayRequestArrayForEnableOrDisable($terminal);
+
+        $response = $this->app['gateway']->call($gateway, $action, $request, $this->mode, $terminal);
+        
+        $gatewayProcessor->raiseExceptionIfEnableOrDisableFails($response, $action);           
+    }
 }

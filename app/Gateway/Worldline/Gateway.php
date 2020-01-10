@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Worldline;
 
 use RZP\Gateway\Base;
+use RZP\Gateway\Mozart;
 use RZP\Exception;
 use RZP\Models\BharatQr;
 use RZP\Gateway\Base\Verify;
@@ -649,11 +650,22 @@ class Gateway extends Base\Gateway
 
     public function createTerminal(array $input)
     {
-        return $this->app['gateway']->call(BaseEntity::MOZART, Base\Action::CREATE_TERMINAL, $input, $this->getMode());
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::CREATE_TERMINAL, $input, $this->getMode());
     }
 
     public function verifyTerminal(array $input)
     {
-        return $this->app['gateway']->call(BaseEntity::MOZART, Base\Action::VERIFY_TERMINAL, $input, $this->getMode());
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::VERIFY_TERMINAL, $input, $this->getMode());
     }
+
+    public function disableTerminal(array $input)
+    {
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::DISABLE_TERMINAL, $input, $this->getMode());
+    }
+
+    public function enableTerminal(array $input)
+    {
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::ENABLE_TERMINAL, $input, $this->getMode());
+    }
+
 }

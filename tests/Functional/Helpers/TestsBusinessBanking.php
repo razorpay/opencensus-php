@@ -224,12 +224,15 @@ trait TestsBusinessBanking
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
                           ->willReturn('on');
+
+        $this->app->razorx->method('getCachedTreatment')
+                          ->willReturn('off');
     }
 }
