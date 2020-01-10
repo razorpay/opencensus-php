@@ -67,8 +67,6 @@ class Error extends Support\Fluent
         $this->setAction($code);
 
         $this->setAttribute(self::INTERNAL_ERROR_DESC, $internalDesc);
-
-        $this->setMetadata();
     }
 
     public function appendToField(string $string)
