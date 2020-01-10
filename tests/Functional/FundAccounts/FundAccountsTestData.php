@@ -477,7 +477,7 @@ return [
 
     'testBulkFundAccount' => [
         'request'   => [
-            'url'     => '/contacts/bulk',
+            'url'     => '/fund_accounts/bulk',
             'method'  => 'POST',
             'content' => [
                 [
@@ -596,7 +596,7 @@ return [
 
     'testBulkFundAccountWithInvalidContactId' => [
         'request'   => [
-            'url'     => '/contacts/bulk',
+            'url'     => '/fund_accounts/bulk',
             'method'  => 'POST',
             'content' => [
                 [
@@ -710,7 +710,7 @@ return [
 
     'testBulkFundAccountWithValidContactId' => [
         'request'   => [
-            'url'     => '/contacts/bulk',
+            'url'     => '/fund_accounts/bulk',
             'method'  => 'POST',
             'content' => [
                 [
@@ -830,7 +830,7 @@ return [
 
     'testBulkFundAccountWithSameContact' => [
         'request'   => [
-            'url'     => '/contacts/bulk',
+            'url'     => '/fund_accounts/bulk',
             'method'  => 'POST',
             'content' => [
                 [
@@ -946,7 +946,7 @@ return [
     ],
     'testBulkFundAccountWithSameFundAccount' => [
         'request'   => [
-            'url'     => '/contacts/bulk',
+            'url'     => '/fund_accounts/bulk',
             'method'  => 'POST',
             'content' => [
                 [
@@ -1062,7 +1062,7 @@ return [
     ],
     'testBulkFundAccountWithSameIdempotencyKey' => [
         'request'   => [
-            'url'     => '/contacts/bulk',
+            'url'     => '/fund_accounts/bulk',
             'method'  => 'POST',
             'content' => [
                 [
@@ -1344,7 +1344,7 @@ return [
 
     'testBulkFundAccountForMerchantBehindRazorx' => [
         'request'   => [
-            'url'     => '/contacts/bulk',
+            'url'     => '/fund_accounts/bulk',
             'method'  => 'POST',
             'content' => [
                 [
