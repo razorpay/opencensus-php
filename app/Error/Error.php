@@ -10,7 +10,6 @@ use RZP\Models\Feature\Repository;
 
 class Error extends Support\Fluent
 {
-
      /** Error codes in which data needs to persist in response
      * Data will be persisted in the error response in non-debug also
      */
@@ -98,7 +97,6 @@ class Error extends Support\Fluent
         // {
         //     throw new InvalidArgumentException($key . ' not defined');
         // }
-
         $this->attributes[$key] = $value;
     }
 
@@ -212,8 +210,7 @@ class Error extends Support\Fluent
         if($merchantId !== null)
         {
             $feature = $featureRepository->findByEntityTypeEntityIdAndNameOrFail(Constants::MERCHANT,
-                $this->get(self::MERCHANT_ID),
-                Constants::ADDITIONAL_FIELDS_ERROR_RESPONSE);
+                $merchantId, Constants::ADDITIONAL_FIELDS_ERROR_RESPONSE);
 
             if (!empty($feature))
             {
@@ -246,9 +243,7 @@ class Error extends Support\Fluent
             $metadata['contains'] = $contains;
 
             $this->setAttribute(self::METADATA, $metadata);
-
         }
-
         return $isMetadataFeatureEnabled;
     }
 
