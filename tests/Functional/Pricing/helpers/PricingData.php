@@ -1045,6 +1045,29 @@ return [
         ],
     ],
 
+    'testAddPricingPlanNachRegistrationRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_issuer'      => 'initial',
+                'fixed_rate'          => 1000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_network'     => null,
+                'payment_issuer'      => 'initial',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000
+            ],
+        ],
+    ],
+
     'testAddPricingPlanEmandateDebitAadhaarRule' => [
         'request' => [
             'content' => [
@@ -1068,6 +1091,29 @@ return [
         ],
     ],
 
+    'testAddPricingPlanNachDebitRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_issuer'      => 'auto',
+                'fixed_rate'          => 2000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_network'     => null,
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 2000
+            ],
+        ],
+    ],
+
     'testAddPricingPlanEmandatePercentageRateRule' => [
         'request' => [
             'content' => [
@@ -1082,7 +1128,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Percentage rate pricing is not allowed for E-mandate',
+                    'description' => 'Percentage rate pricing is not allowed for emandate',
                 ],
             ],
             'status_code' => 400,
@@ -1157,6 +1203,40 @@ return [
             ],
         ],
     ],
+
+    'testAddPricingRuleWithFeeBearerMismatch' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'min_fee'             => null,
+                'max_fee'             => null,
+                'fee_bearer'          => 'platform'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error'   => [
+                    'code'  => ErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'fee_bearer'
+                ]
+            ],
+            'status_code'   => 400
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testUpdatePricingPlanRule' => [
         'request' => [
             'content' => [
@@ -1197,6 +1277,28 @@ return [
                 'max_fee'      => 10000,
             ],
         ],
+    ],
+
+    'testUpdatePricingPlanFeeBearerMismatch' => [
+        'request' => [
+            'content' => [
+                'percent_rate'  => 20,
+                'fee_bearer'    => 'platform'
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
     ],
 
     'testUpdatePricingPlanRuleByRZPAdmin' => [
@@ -1523,7 +1625,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 23,
+                        'count' => 25,
                         'rules' => [
                             [],
                         ],
@@ -1665,7 +1767,7 @@ return [
                     [
                         'name'   => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count'  => 23,
+                        'count'  => 25,
                         'rules'  => [
                             [],
                         ],
@@ -1787,7 +1889,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 23,
+                    'rules_count' => 25,
                     'type'        => 'pricing',
                 ],
             ],
@@ -1867,7 +1969,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 23,
+                    'rules_count' => 25,
                     'type'        => 'pricing',
                 ],
             ],
@@ -1914,6 +2016,25 @@ return [
     ],
 
     'testMerchantAssignPricingPlanWithInternational' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testAssignPricingPlanFeeBearerMismatch' => [
         'request' => [
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'
@@ -2613,6 +2734,33 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddPricingPlanRuleWithVpaReceiver' => [
+        'request'  => [
+            'content' => [
+                'payment_method'      => 'upi',
+                'feature'             => 'payment',
+                'percent_rate'        => 100,
+                'receiver_type'       => 'vpa',
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => 5000,
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'      => 'TestPlan1',
+                'payment_method' => 'upi',
+                'feature'        => 'payment',
+                'percent_rate'        => 100,
+                'receiver_type'       => 'vpa',
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
         ],
     ],
 ];

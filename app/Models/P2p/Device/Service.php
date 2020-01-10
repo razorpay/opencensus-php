@@ -46,4 +46,11 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function updateWithAction(array $input): array
+    {
+        $response = $this->processor->updateWithAction($input);
+
+        return $response;
+    }
 }

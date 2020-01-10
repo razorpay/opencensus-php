@@ -45,7 +45,10 @@ use RZP\Models\Payment\Refund\Speed as RefundSpeed;
  * @property Methods\Entity     $methods
  * @property BankAccount\Entity $bankAccount
  * @property Balance\Entity     $bankingBalance
+ * @property Balance\Entity     $sharedBankingBalance
  * @property Balance\Entity     $primaryBalance
+ * @property Balance\Entity     $reservePrimaryBalance
+ * @property Balance\Entity     $reserveBankingBalance
  * @property Base\Collection    $activeBankingAccounts
  * @property Balance\Entity     $commissionBalance
  */
@@ -163,6 +166,11 @@ class Entity extends Base\PublicEntity
     // Default merchant brand color used if not set already
     const DEFAULT_MERCHANT_BRAND_COLOR = '#2371EC';
 
+    const AUTO_WHITELISTED_DOMAINS = [
+        'google.com',
+        'apple.com',
+    ];
+
     /**
      * A query parameter to filter results based on
      * account status which can be one of suspended,
@@ -213,6 +221,8 @@ class Entity extends Base\PublicEntity
     const SKIP_BA_REGISTRATION      = 'skip_ba_registration';
     const AUTO_ENABLE_INTERNATIONAL = 'auto_enable_international';
     const CREATE_SUBMERCHANT        = 'create_submerchant';
+
+    const BANKING_ACTIVATED_AT      = 'banking_activated_at';
 
     protected $entity = 'merchant';
 
@@ -507,9 +517,25 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
+    public function isFeeBearerPlatform()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::PLATFORM;
+    }
+
     public function isFeeBearerCustomer()
     {
         return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
+    }
+
+    public function isFeeBearerDynamic()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::DYNAMIC;
+    }
+
+    public function isFeeBearerCustomerOrDynamic()
+    {
+        return (($this->isFeeBearerDynamic() === true) or
+                ($this->isFeeBearerCustomer() === true));
     }
 
     public function isPrepaid()
@@ -687,6 +713,14 @@ class Entity extends Base\PublicEntity
 
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
+
+    public function isInsuranceCategory()
+    {
+        $insuranceCategories = Constants::INSURANCE_CATEGORIES;
+
+        return in_array($this->getAttribute(self::CATEGORY), $insuranceCategories);
+    }
+
 
     public function isFeatureEnabled(string $featureName): bool
     {
@@ -958,6 +992,18 @@ class Entity extends Base\PublicEntity
                     ->where(Balance\Entity::TYPE, Balance\Type::COMMISSION);
     }
 
+    public function reservePrimaryBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+            ->where(Balance\Entity::TYPE, Balance\Type::RESERVE_PRIMARY);
+    }
+    
+    public function reserveBankingBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+            ->where(Balance\Entity::TYPE, Balance\Type::RESERVE_BANKING);
+    }
+
     public function getBalanceByType(string $type)
     {
         switch ($type)
@@ -970,6 +1016,12 @@ class Entity extends Base\PublicEntity
 
             case Balance\Type::COMMISSION:
                 return $this->commissionBalance;
+
+            case Balance\Type::RESERVE_PRIMARY:
+                return $this->reservePrimaryBalance;
+
+            case Balance\Type::RESERVE_BANKING:
+                return $this->reserveBankingBalance;
 
             default:
                 throw new LogicException(
@@ -1114,6 +1166,11 @@ class Entity extends Base\PublicEntity
     public function setMaxPaymentAmount(int $maxAmount)
     {
         $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
+    }
+
+    public function merchantInheritanceMap()
+    {
+        return $this->hasOne('RZP\Models\Merchant\InheritanceMap\Entity');
     }
 
     public function setBrandColor($brandColor)
@@ -1619,6 +1676,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::FORCE_GREYLIST_INTERNAT) === true);
     }
 
+    public function skipWebsiteForInternational(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::SKIP_WEBSITE_INTERNAT) === true);
+    }
+
     public function createCustomerOnContactEmailNull(): bool
     {
         return (($this->isFeatureEnabled(Feature\Constants::CUST_CONTACT_EMAIL_NULL) === false) and
@@ -1745,6 +1807,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::HOLD_FUNDS);
     }
 
+    public function getHoldFundsReason()
+    {
+        return $this->getAttribute(self::HOLD_FUNDS_REASON);
+    }
+
     public function isFundsOnHold(): bool
     {
         return (bool) $this->getHoldFunds();
@@ -1780,8 +1847,15 @@ class Entity extends Base\PublicEntity
         }
         else
         {
+            $this->setHoldFundsReason();
+
             $this->fireEventWithMerchantPayload('api.account.funds_unhold');
         }
+    }
+
+    public function setHoldFundsReason(string $reason = null)
+    {
+        $this->setAttribute(self::HOLD_FUNDS_REASON, $reason);
     }
 
     public function isReceiptEmailsEnabled()
@@ -1809,17 +1883,6 @@ class Entity extends Base\PublicEntity
         }
 
         return (int) $riskThreshold;
-    }
-
-    public function getSubventionType()
-    {
-        // Move to subvention type if ever.
-        if ($this->isFeeBearerCustomer())
-        {
-            return FeeBearer::CUSTOMER;
-        }
-
-        return FeeBearer::PLATFORM;
     }
 
     public function getRedactedAccountNumber()
@@ -2108,6 +2171,16 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
     }
 
+    public function isSaveVpaEnabled()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::SAVE_VPA);
+    }
+
+    public function shouldSaveVpa()
+    {
+        return (($this->isSaveVpaEnabled() === true) and ($this->methods->isUpiEnabled() === true));
+    }
+
     public static function hascustomerTransactionHistoryEnabled($merchantId)
     {
         return (in_array($merchantId, Merchant\Preferences::CUSTOMER_TRANSACTION_HISTORY_ENABLED_MID, true) === true);
@@ -2204,6 +2277,7 @@ class Entity extends Base\PublicEntity
             self::BILLING_LABEL  => $this->getAttribute(self::BILLING_LABEL),
             self::EMAIL          => $this->getAttribute(self::EMAIL),
             self::ACTIVATED      => $this->getAttribute(self::ACTIVATED),
+            self::ACTIVATED_AT   => $this->getAttribute(self::ACTIVATED_AT),
             self::ARCHIVED_AT    => $this->getAttribute(self::ARCHIVED_AT),
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),

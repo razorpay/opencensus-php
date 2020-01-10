@@ -24,7 +24,6 @@ use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Gateway as PaymentGateway;
 
-
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
@@ -161,11 +160,11 @@ class Gateway extends Base\Gateway
         {
             $this->handleRefundFailure($content);
         }
+
         return [
             PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($content),
             PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($content)
         ];
-
     }
 
     public function alreadyRefunded(array $input)

@@ -21,6 +21,9 @@ class Category
     const COMMERCIAL            = 'Commercial';
     const STANDARD              = 'Standard';
     const VISA                  = 'Visa';
+    const SELECT                = 'Select';
+    const PREMIER               = 'Premier';
+    const CLASSIC               = 'Classic';
 
     public static $supportedCardCategories = [
         Card\NetworkName::VISA                  => [

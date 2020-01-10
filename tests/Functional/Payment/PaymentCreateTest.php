@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Services\RazorXClient;
@@ -217,6 +218,53 @@ class PaymentCreateTest extends TestCase
         $payment['order_id'] = 'order_100000000order';
 
         $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        $this->doAuthPayment($payment);
+    }
+
+    public function testCreateCardPaymentFailedWithRestrictionUpi()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $order = $this->createOrder(['notes' => ['somekey' => 'some value', 'Pay_Mode' => 'UPI']]);
+
+        $payment['amount'] = 50000;
+
+        $payment['order_id'] = $order['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testCreateUpiPaymentSuccessWithRestrictionUpi()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $order = $this->createOrder(['notes' => ['somekey' => 'some value', 'Pay_Mode' => 'UPI']]);
+
+        $payment['amount'] = 50000;
+
+        $payment['order_id'] = $order['id'];
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->doAuthPayment($payment);
+
+    }
+
+    public function testCreateCardPaymentWithRestrictionNoUpi()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $order = $this->createOrder(['notes' => ['somekey' => 'some value', 'Pay_Mode' => 'NOUPI']]);
+
+        $payment['amount'] = 50000;
+
+        $payment['order_id'] = $order['id'];
 
         $this->doAuthPayment($payment);
     }
@@ -1120,6 +1168,8 @@ class PaymentCreateTest extends TestCase
             ]
         );
 
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => 'customer']);
+
         $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -1145,6 +1195,8 @@ class PaymentCreateTest extends TestCase
                 'org_id'      =>  Admin\Org\Entity::HDFC_ORG_ID
             ]
         );
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => 'customer']);
 
         $this->fixtures->create('terminal:direct_settlement_axis_migs_terminal');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1553,6 +1605,8 @@ class PaymentCreateTest extends TestCase
     }
     public function testPaymentFailOnDinersAndDisableMerchant()
     {
+        $this->markTestSkipped();
+
         $this->changeEnvToNonTest();
 
         $this->ba->publicLiveAuth();
@@ -2319,4 +2373,154 @@ class PaymentCreateTest extends TestCase
             $this->assertArrayHasKey('razorpay_payment_id', $content);
         }
     }
+
+
+    // begin tests for fee_bearer attribute of pricing plans and merchant
+
+    public function testPaymentCreateMerchantPlatformBearerPricingPlatformBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::PLATFORM,
+            FeeBearer::PLATFORM);
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(FeeBearer::PLATFORM, $payment['fee_bearer']);
+
+        $this->assertEquals($paymentArray['amount'], $payment['amount']);
+    }
+
+    public function testPaymentCreateMerchantCustomerBearerPricingPlatformBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::CUSTOMER,
+            FeeBearer::PLATFORM);
+
+        $this->expectException(Exception\LogicException::class);
+
+        $this->expectExceptionMessage('Invalid rule count');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testPaymentCreateMerchantDynamicBearerPricingPlatformBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::DYNAMIC,
+            FeeBearer::PLATFORM);
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(FeeBearer::PLATFORM, $payment['fee_bearer']);
+
+        $this->assertEquals($paymentArray['amount'], $payment['amount']);
+    }
+
+    public function testPaymentCreateMerchantPlatformBearerPricingCustomerBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::PLATFORM,
+            FeeBearer::CUSTOMER);
+
+        $this->expectException(Exception\LogicException::class);
+
+        $this->expectExceptionMessage('Invalid rule count');
+
+        $this->doAuthAndCapturePayment($paymentArray);
+    }
+
+    public function testPaymentCreateMerchantCustomerBearerPricingCustomerBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::CUSTOMER,
+            FeeBearer::CUSTOMER);
+
+        $paymentFromResponse = $this->doAuthAndGetPayment($paymentArray);
+
+        $captureAmount = $paymentArray['amount'] - $paymentArray['fee'];
+
+        $this->capturePayment($paymentFromResponse['id'], $captureAmount, 'INR', $paymentArray['amount']);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(FeeBearer::CUSTOMER, $payment['fee_bearer']);
+
+        $this->assertEquals($paymentArray['amount'], $payment['amount']);
+
+        $this->assertEquals($paymentArray['fee'], $payment['fee']);
+    }
+
+    public function testPaymentCreateMerchantDynamicBearerPricingCustomerBearer()
+    {
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(
+            FeeBearer::DYNAMIC,
+            FeeBearer::CUSTOMER);
+
+        $paymentFromResponse = $this->doAuthAndGetPayment($paymentArray);
+
+        $captureAmount = $paymentArray['amount'] - $paymentArray['fee'];
+
+        $this->capturePayment($paymentFromResponse['id'], $captureAmount, 'INR', $paymentArray['amount']);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(FeeBearer::CUSTOMER, $payment['fee_bearer']);
+
+        $this->assertEquals($paymentArray['amount'], $payment['amount']);
+
+        $this->assertEquals($paymentArray['fee'], $payment['fee']);
+    }
+
+    public function testPaymentCreatePlatformBearerNonINRCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(FeeBearer::PLATFORM, FeeBearer::PLATFORM);
+
+        $paymentArray['currency'] = 'USD';
+
+
+        $this->doAuthAndGetPayment($paymentArray, ['currency' => 'USD']);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(FeeBearer::PLATFORM, $payment['fee_bearer']);
+    }
+
+    public function testPaymentCreateCustomerBearerMerchantNonINRCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(FeeBearer::CUSTOMER, FeeBearer::CUSTOMER);
+
+        $paymentArray['currency'] = 'USD';
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage('Currency is not supported');
+
+        $this->doAuthAndGetPayment($paymentArray, ['currency' => 'USD']);
+
+    }
+
+    public function testPaymentCreateDynamicBearerMerchantNonINRCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $paymentArray = $this->setUpAndGetPaymentArrayForFeeBearerPricingTest(FeeBearer::DYNAMIC, FeeBearer::CUSTOMER);
+
+        $paymentArray['currency'] = 'USD';
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage('Currency is not supported');
+
+        $this->doAuthAndGetPayment($paymentArray, ['currency' => 'USD']);
+
+    }
+    // end tests for fee_bearer attribute of pricing plans and merchant
 }

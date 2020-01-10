@@ -17,7 +17,7 @@ class Core extends Base\Core
 
         $vpa->merchant()->associate($merchant);
 
-        $vpa->entity()->associate($source);
+        $vpa->source()->associate($source);
 
         $this->repo->saveOrFail($vpa);
 
@@ -26,7 +26,7 @@ class Core extends Base\Core
 
     public function getVpaEntity($id)
     {
-        return $this->repo->vpa->findOrFailPublic($id);
+        return $this->repo->vpa->find($id);
     }
 
 //    public function updateVpaWithFtsId(Entity $entity, $ftsFundAccountId)

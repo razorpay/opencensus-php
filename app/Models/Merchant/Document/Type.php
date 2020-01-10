@@ -18,6 +18,7 @@ class Type
     const PASSPORT_FRONT                 = 'passport_front';
     const VOTER_ID_FRONT                 = 'voter_id_front';
     const VOTER_ID_BACK                  = 'voter_id_back';
+    const CANCELLED_CHEQUE               = 'cancelled_cheque';
     const BUSINESS_PROOF_URL             = 'business_proof_url';
     const BUSINESS_OPERATION_PROOF_URL   = 'business_operation_proof_url';
     const BUSINESS_PAN_URL               = 'business_pan_url';

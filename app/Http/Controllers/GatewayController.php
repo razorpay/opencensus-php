@@ -2,11 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
+use View;
 use Request;
 use Redirect;
 use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Admin;
+use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -28,7 +30,6 @@ use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra as VajraConstants;
 
 class GatewayController extends Controller
 {
-
     /**
      * This is a health Check API for third party url.
      * It basically hits external services (like payment gateway) through api.
@@ -86,7 +87,7 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-            return (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+            return $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver);
         }
         else
         {
@@ -118,7 +119,7 @@ class GatewayController extends Controller
         {
             if ($mode === null)
             {
-                $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+                $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver);
             }
             else
             {
@@ -126,7 +127,15 @@ class GatewayController extends Controller
 
                 $paymentId = Payment\Entity::getSignedId($paymentId);
 
-                $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+                if ((in_array($gatewayDriver, Payment\Gateway::$s2sMandateCallbackGateways, true) === true) and
+                    ($gateway->isMandateUpdateCallback($input) === true))
+                {
+                    $data = (new Payment\Service)->mandateUpdateCallback($paymentId, $input);
+                }
+                else
+                {
+                    $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+                }
             }
 
             $response = $gateway->postProcessServerCallback($postInput);
@@ -139,6 +148,34 @@ class GatewayController extends Controller
         }
 
         return $response;
+    }
+
+    /**
+     * When callback payment id is not found in payment table, it could be
+     * 1. Present in QrCode entity for VA payments
+     * 2. Unexpected payments made directly to VPA
+     *
+     * @return array|bool
+     */
+    protected function processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver)
+    {
+        // First if mode is not found from payment repo, we will check with QR repo
+        $qrRepo = $this->app['repo']->qr_code;
+
+        $mode = $qrRepo->determineLiveOrTestModeByMerchantReference($paymentId);
+
+        if ($mode !== null)
+        {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $data = (new QrCode\Upi\Service)->processPayment($input, $paymentId, $gatewayDriver);
+        }
+        else
+        {
+            $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+        }
+
+        return $data;
     }
 
     protected function callbackEbs($input)
@@ -208,6 +245,9 @@ class GatewayController extends Controller
             // Only logs the response
             case Gateway::WALLET_OLAMONEY:
                 break;
+            case Gateway::GETSIMPL:
+                $data = $this->processGetSimplCallback($input);
+                return $data;
 
             //Special case because gateway is upi_mindgate
             case 'upi_hdfc':
@@ -222,6 +262,20 @@ class GatewayController extends Controller
 
             case Gateway::UPI_ICICI:
                 $input = Request::getContent();
+
+                $data = $this->processServerCallback($input, $gateway);
+
+                break;
+
+            case Gateway::UPI_JUSPAY:
+
+                $input = [
+                    'headers' => [
+                        'x-merchant-payload-signature' => Request::header('X-Merchant-Payload-Signature')
+                    ],
+                    'raw'     => Request::getContent(),
+                    'body'    => $input,
+                ];
 
                 $data = $this->processServerCallback($input, $gateway);
 
@@ -269,7 +323,7 @@ class GatewayController extends Controller
         {
             case Payment\Method::NETBANKING:
                 $data = $this->staticCallbackNetbanking($input, $gateway,$mode);
-                return  $data;
+                return $data;
         }
 
         return null;
@@ -445,6 +499,58 @@ class GatewayController extends Controller
         $url = $url . '?' . $inputMsg;
 
         return Redirect::to($url);
+    }
+
+    public function processGetSimplCallback($input)
+    {
+        if((isset($input['token']) === false) or ($input['token'] === "null"))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                [
+                    'provider' => Gateway::GETSIMPL,
+                    'input'    => $input,
+                ]);
+        }
+
+        $this->app['trace']->info(
+            TraceCode::PAYLATER_ELLIGIBILITY_CALLBACK,
+            [
+                'gateway'          =>  Payment\Gateway::GETSIMPL,
+                'payment_id'       =>  $input['merchant_payload']
+            ]
+        );
+
+        $paymentId = $input['merchant_payload'];
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $this->app['rzp.mode'] = $mode;
+
+        $payment = $this->app['repo']->payment->findOrFail($paymentId);
+
+        $merchant = $payment->merchant;
+
+        $input = Mozart\GetSimpl\Helper::getPaymentInputParameters($input, $payment);
+
+        $input['simpltoken'] = $input['token'];
+
+        $gatewayinput = $input;
+
+        $input['payment'] = $payment;
+
+        $data = (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
+
+        if ($this->app['rzp.mode'] === 'test')
+        {
+            return $data;
+        }
+        assertTrue ($data !== null);
+
+        return View::make('gateway.callback')->with('data', $data);
     }
 
     public function callbackYesbank()

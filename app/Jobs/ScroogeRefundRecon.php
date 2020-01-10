@@ -4,7 +4,6 @@ namespace RZP\Jobs;
 
 use App;
 
-use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Service;
 use Razorpay\Trace\Logger as Trace;

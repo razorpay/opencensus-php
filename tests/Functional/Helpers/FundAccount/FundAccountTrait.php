@@ -11,7 +11,7 @@ trait FundAccountTrait
         return [
             'account_type' => 'bank_account',
             'contact_id'   => 'cont_1000000contact',
-            'details'      => [
+            'bank_account'      => [
                 'ifsc'           => 'SBIN0007105',
                 'name'           => 'Amit M',
                 'account_number' => '111000111',
@@ -24,6 +24,10 @@ trait FundAccountTrait
         if ($type === Type::VPA)
         {
             $fundAccount = $this->getDefaultFundAccountVPAArray();
+        }
+        elseif ($type === Type::CARD)
+        {
+            $fundAccount = $this->getDefaultFundAccountCardArray();
         }
         else
         {
@@ -73,14 +77,47 @@ trait FundAccountTrait
         return $content;
     }
 
+    protected function createFundAccountCard($key = null)
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $request = $this->buildFundAccountRequest(Type::CARD);
+
+        $this->ba->privateAuth($key);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $expectedFundAccount = $this->getDefaultFundAccountCardArray();
+
+        $expectedFundAccount['card'] = [];
+
+        $this->assertArraySelectiveEquals($expectedFundAccount, $content);
+
+        return $content;
+    }
+
     protected function getDefaultFundAccountVPAArray()
     {
         return [
             'account_type' => 'vpa',
             'contact_id'   => 'cont_1000000contact',
-            'details'      => [
-                "address" => "jayesh@upi"
+            'vpa'      => [
+                "address" => "withname@razorpay"
             ],
+        ];
+    }
+
+    protected function getDefaultFundAccountCardArray()
+    {
+        return [
+            'account_type' => 'card',
+            'contact_id'   => 'cont_1000000contact',
+            'card' => [
+                'name' => 'jp',
+                'number' => '4111111111111111',
+                'expiry_month' => 4,
+                'expiry_year' => 2025
+            ]
         ];
     }
 }

@@ -19,6 +19,7 @@ class Component
     const DISPUTE                 = 'dispute';
     const COMMISSION              = 'commission';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
+    const SETTLEMENT_TRANSFER     = 'settlement_transfer';
 
     public static function validateComponent(string $component)
     {
@@ -45,6 +46,7 @@ class Component
             self::DISPUTE,
             self::COMMISSION,
             self::FUND_ACCOUNT_VALIDATION,
+            self::SETTLEMENT_TRANSFER,
         ];
     }
 }

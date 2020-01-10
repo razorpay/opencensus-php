@@ -2,12 +2,17 @@
 
 namespace RZP\Models\Vpa;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
+use RZP\Models\VirtualAccount;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const ID                   = 'id';
     const ENTITY_ID            = 'entity_id';
     const ENTITY_TYPE          = 'entity_type';
@@ -15,12 +20,15 @@ class Entity extends Base\PublicEntity
     const HANDLE               = 'handle';
     const MERCHANT_ID          = 'merchant_id';
     const FTS_FUND_ACCOUNT_ID  = 'fts_fund_account_id';
+    const DELETED_AT           = 'deleted_at';
 
     const ADDRESS = 'address';
 
     const AROBASE = '@';
 
     protected $generateIdOnCreate = true;
+
+    protected $primaryKey = self::ID;
 
     protected $entity = 'vpa';
 
@@ -31,13 +39,32 @@ class Entity extends Base\PublicEntity
         self::HANDLE,
     ];
 
+    protected $visible = [
+        self::ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::USERNAME,
+        self::HANDLE,
+        self::MERCHANT_ID,
+        self::FTS_FUND_ACCOUNT_ID,
+        self::ADDRESS,
+        self::CREATED_AT,
+    ];
+
     protected $public = [
         self::ID,
+        self::ENTITY,
+        self::USERNAME,
+        self::HANDLE,
         self::ADDRESS,
     ];
 
     protected $appends = [
         self::ADDRESS,
+    ];
+
+    protected $ignoredRelations = [
+        'source',
     ];
 
     protected static $generators = [
@@ -54,6 +81,11 @@ class Entity extends Base\PublicEntity
         $new = (new Entity)->build($input);
 
         return ($this->getAddress() === $new->getAddress());
+    }
+
+    public function virtualAccount()
+    {
+        return $this->hasOne(VirtualAccount\Entity::class);
     }
 
     // ----------------------- Generators ------------------
@@ -110,6 +142,13 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::FTS_FUND_ACCOUNT_ID, $ftsFundAccountId);
     }
 
+    public function setAddress($address)
+    {
+        list($username, $handle) = explode(self::AROBASE, $address);
+        $this->setAttribute(self::USERNAME, $username);
+        $this->setAttribute(self::HANDLE, $handle);
+    }
+
     // ----------------------- Accessor ----------------------
 
     protected function getAddressAttribute()
@@ -124,9 +163,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant\Entity::class);
     }
 
-    public function entity()
+    public function source()
     {
-        return $this->morphTo();
+        return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
     }
 
     public function scopeAddress(BuilderEx $query, string $address)

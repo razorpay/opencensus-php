@@ -13,6 +13,7 @@ use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\LogicException;
 use RZP\Models\Bank\IFSC as IFSC;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Vpa\Core as VPACore;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
@@ -33,6 +34,8 @@ class FundTransfer extends Base
 
     protected $source;
 
+    protected $amount;
+
     protected $accountType;
 
     protected $bankingStartTime;
@@ -46,13 +49,6 @@ class FundTransfer extends Base
         Constants::PAYOUT,
         Constants::SETTLEMENT,
         Constants::FUND_ACCOUNT_VALIDATION,
-    ];
-
-    const CHANNEL_WISE_IFSC_IDENTIFIER = [
-        Channel::RBL     => IFSC::RATN,
-        Channel::CITI    => IFSC::CITI,
-        Channel::ICICI   =>IFSC::ICIC,
-        Channel::YESBANK => IFSC::YESB,
     ];
 
     public function __construct($app)
@@ -71,6 +67,8 @@ class FundTransfer extends Base
     public function requestFundTransfer(): array
     {
         $input = $this->makeRequestUsingType();
+
+        $this->updateFTAWithResponse();
 
         $response = $this->createAndSendRequest(
             parent::FUND_TRANSFER_CREATE_URI,
@@ -123,10 +121,24 @@ class FundTransfer extends Base
             $product = Constants::PENNY_TESTING;
         }
 
-        if (($sourceType === Constants::PAYOUT) and
-            ($this->fta->isRefund() === true))
+        if ($sourceType === Constants::PAYOUT)
         {
-            $product = Constants::PAYOUT_REFUND;
+            // Note: Yesbank NEFT/RTGS and UPI integration both uses same source account in FTS.
+            // Now, if Mode is UPI then beneficiary registration is not required.
+            // As a result, transfers via mode UPI will not have a entry in beneficiary status entity.
+            // So, adding a temporary fix for this now to enable yesbank UPI.
+            // TODO: Need to have a better way of handling such situations.
+            // Thread: https://razorpay.slack.com/archives/CNXASR0H3/p1576752834010000
+            // JIRA: https://razorpay.atlassian.net/browse/RX-1112
+            if (($this->fta->getChannel() === Channel::YESBANK) and ($this->fta->getMode() === Mode::UPI))
+            {
+                $product = Constants::PAYOUT_REFUND;
+            }
+
+            if ($this->fta->isRefund() === true)
+            {
+                $product = Constants::PAYOUT_REFUND;
+            }
         }
 
         $request = [
@@ -314,7 +326,7 @@ class FundTransfer extends Base
      */
     protected function handleResponse(array $responseBody, string $type)
     {
-        $this->updateFTA($responseBody);
+        $this->updateFTAWithResponse($responseBody);
 
 //        $this->updatePaymentInstrumentByType($responseBody, $type);
     }
@@ -322,20 +334,51 @@ class FundTransfer extends Base
     /**
      * @param array $responseBody
      */
-    protected function updateFTA(array $responseBody)
+    protected function updateFTAWithResponse(array $responseBody = [])
     {
-        $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
+        $failureReason = null;
 
-        $responseBody[Constants::STATUS] = strtolower($responseBody[Constants::STATUS]);
+        $ftsTransferId = 0;
 
-        if(strcasecmp($responseBody[Constants::STATUS], Constants::STATUS_CREATED) === 0)
+        $status        = Constants::STATUS_INITIATED;
+
+        if (isset($responseBody[Constants::FUND_TRANSFER_ID]) === true)
         {
-            $responseBody[Constants::STATUS] = Constants::STATUS_INITIATED;
+            $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
         }
 
-        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $responseBody[Constants::STATUS]);
+        if ((isset($responseBody[Constants::INTERNAL_ERROR]) === true) and
+            ((isset($responseBody[Constants::INTERNAL_ERROR][Constants::CODE]) === true) and
+                ($responseBody[Constants::INTERNAL_ERROR][Constants::CODE] === Constants::VALIDATION_ERROR)))
+        {
+            $status = Constants::STATUS_FAILED;
 
-        $this->updateSource($ftsTransferId);
+            if (isset($responseBody[Constants::INTERNAL_ERROR][Constants::MESSAGE]) === true)
+            {
+                $failureReason = $responseBody[Constants::INTERNAL_ERROR][Constants::MESSAGE];
+            }
+        }
+
+        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $status, $failureReason);
+
+        try
+        {
+            $this->updateSource($this->fta);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FTS_FUND_TRANSFER_SOURCE_UPDATE_FAILED,
+                [
+                    'fta_id'            => $this->fta->getId(),
+                    'source'            => $this->source->getId(),
+                    'status'            => $status,
+                    'failure_reason'    => $failureReason,
+                    'fts_transfer_id'   => $ftsTransferId,
+                ]);
+        }
     }
 
 //    /**
@@ -361,15 +404,27 @@ class FundTransfer extends Base
 //    }
 
     /**
-     * @param $ftsTransferId
+     * @param FundTransferAttempt\Entity $fta
      */
-    protected function updateSource($ftsTransferId)
+    protected function updateSource(FundTransferAttempt\Entity $fta)
     {
-        $sourceCoreClass = Entity::getEntityNamespace($this->source->getEntity()) . '\\Core';
+        $source = $fta->source;
+
+        $sourceCoreClass = Entity::getEntityNamespace($source->getEntity()) . '\\Core';
 
         $sourceCore = new $sourceCoreClass();
 
-        $sourceCore->updateEntityWithFtsTransferId($this->source, $ftsTransferId);
+        $sourceCore->updateEntityWithFtsTransferId($source, $fta->getFTSTransferId());
+
+        if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+        {
+            $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
+        }
+
+        if ($fta->getStatus() === FundTransferAttempt\Status::FAILED)
+        {
+            (new FundTransferAttempt\Core)->updateSourceEntityByFta($fta);
+        }
     }
 
     /**
@@ -450,13 +505,11 @@ class FundTransfer extends Base
 
         $issuer         = $iin->getIssuer();
 
-        $amount         = $this->source->getAmount();
-
         $networkCode    = $iin->getNetworkCode();
 
         $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
 
-        if ($amount <= Constants::IMPS_CUTOFF_AMOUNT)
+        if ($this->amount <= Constants::IMPS_CUTOFF_AMOUNT)
         {
             $mode =  Mode::IMPS;
         }
@@ -468,7 +521,7 @@ class FundTransfer extends Base
 
             if ((($now >= $this->bankingStartTime) and
                     ($now <= $this->bankingEndTimeRtgs)) and
-                ($amount >= Constants::IMPS_CUTOFF_AMOUNT))
+                ($this->amount >= Constants::IMPS_CUTOFF_AMOUNT))
             {
                 $mode = Mode::RTGS;
             }
@@ -495,8 +548,6 @@ class FundTransfer extends Base
     {
         $channel = $this->fta->getChannel();
 
-        $amount  = $this->source->getAmount();
-
         if ($channel === Channel::ICICI)
         {
             return Mode::IMPS;
@@ -508,14 +559,23 @@ class FundTransfer extends Base
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
-        $ifscIdentifier = self::CHANNEL_WISE_IFSC_IDENTIFIER[$channel];
+        $ifscIdentifier = IFSC::YESB;
 
-        if (starts_with($ifscFirstFour, $ifscIdentifier) === true)
+        if ((starts_with($ifscFirstFour, $ifscIdentifier) === true) and ($channel === Channel::YESBANK))
         {
-            return Mode::IFT;
+            $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+            if (is_numeric($ifscLastDigits) === true)
+            {
+                return Mode::IFT;
+            }
+            else
+            {
+                return Mode::NEFT;
+            }
         }
 
-        if ($amount <= Constants::IMPS_CUTOFF_AMOUNT)
+        if ($this->amount <= Constants::IMPS_CUTOFF_AMOUNT)
         {
             return Mode::IMPS;
         }
@@ -523,7 +583,7 @@ class FundTransfer extends Base
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         if ((($now >= $this->bankingStartTime) and ($now <= $this->bankingEndTimeRtgs)) and
-            ($amount >= Constants::IMPS_CUTOFF_AMOUNT))
+            ($this->amount >= Constants::IMPS_CUTOFF_AMOUNT))
         {
             return Mode::RTGS;
         }
@@ -549,7 +609,7 @@ class FundTransfer extends Base
 
     public function bulkUpdateFtsAttempts(array $input)
     {
-        $this->setDashboardAuth();
+        $this->setAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_UPDATE_URI,
@@ -557,19 +617,50 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function modifyModeIfRequired()
+    {
+        // Assumption is that the validation would have happened already before this
+        // step and hence we can assume that the bank account exists and is valid.
+        $channel = $this->fta->getChannel();
+
+        $ba = $this->fta->bankAccount;
+
+        if (empty($ba) === false)
+        {
+            $ifsc = $ba->getIfscCode();
+
+            $ifscFirstFour = substr($ifsc, 0, 4);
+
+            $ifscIdentifier = IFSC::YESB;
+
+            if ((starts_with($ifscFirstFour, $ifscIdentifier) === true) and ($channel === Channel::YESBANK))
+            {
+                $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+                if (is_numeric($ifscLastDigits) === true)
+                {
+                    $this->fta->setMode(Mode::IFT);
+                }
+                else
+                {
+                    $this->fta->setMode(Mode::NEFT);
+                }
+            }
+        }
+    }
+
     public function shouldAllowTransfersViaFts()
     {
         list($mode, $shouldUpdateMode) = $this->getFTSFundTransferMode();
+
+        $this->modifyModeIfRequired();
 
         if ($shouldUpdateMode === true)
         {
             $this->fta->setMode($mode);
         }
 
-        if ($mode === Mode::UPI)
-        {
-            return [false, 'Upi not supported'];
-        }
+        $mode = $this->fta->getMode();
 
         $allowedModes = Mode::get24x7FtsTransferModes();
 
@@ -588,11 +679,35 @@ class FundTransfer extends Base
         return $this->isNeftRtgsSupportedTimings($mode);
     }
 
+    public function addInitiateAtIfRequired()
+    {
+        if (($this->fta->getSourceType() === FundTransferAttempt\Type::PAYOUT) and
+            ($this->fta->source->isBalanceTypeBanking() === true))
+        {
+            $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+            if (($currentTime < $this->bankingStartTime) &&
+                (TransferHoliday::isWorkingDay(Carbon::now(Timezone::IST)) === true))
+            {
+                $this->fta->setInitiateAt($this->bankingStartTime);
+            }
+            else
+            {
+                $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
+                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->addMinutes(15)->getTimestamp());
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function initialize(string $ftaId)
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
-        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)
+        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 15, 0, Timezone::IST)
                                         ->getTimestamp();
 
         $this->bankingEndTimeRtgs = Carbon::createFromTime(Constants::RTGS_REVISED_CUTOFF_HOUR_MAX,
@@ -608,6 +723,10 @@ class FundTransfer extends Base
         $sourceType = $this->fta->getSourceType();
 
         $this->setSourceEntityByType($sourceType);
+
+        $this->amount = $this->source->getAmount()/100;
+
+        $this->amount = round($this->amount, 2);
     }
 
     protected function isNeftRtgsSupportedTimings($mode)
@@ -659,10 +778,30 @@ class FundTransfer extends Base
 
     public function getBulkTransferStatus(array $input)
     {
-        $this->setDashboardAuth();
+        $this->setAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_FETCH_STATUS,
+            Requests::POST,
+            $input);
+    }
+
+    public function checkTransferStatus(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_CHECK_STATUS,
+            Requests::POST,
+            $input);
+    }
+
+    public function getRawBankStatus(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS,
             Requests::POST,
             $input);
     }

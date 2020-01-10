@@ -56,6 +56,14 @@ class Setup
         }
     }
 
+    public function editPlans(array $data, array & $output)
+    {
+        foreach ($data as $planId => $planData)
+        {
+            $this->fixtures->pricing->editAllPricingPlanRules($planId, $planData);
+        }
+    }
+
     public function attachSubmerchant(array $data, array & $output)
     {
         $partnerId = $data['partner_id'];

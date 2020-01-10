@@ -12,6 +12,7 @@ use Razorpay\OAuth\Application;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Methods\Entity;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\LinkedAccountUserAccess;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -92,6 +93,8 @@ class MerchantCreateTest extends TestCase
 
         $this->checkBalances();
 
+        $this->checkBalanceConfigs();
+
         $this->checkNetbankingBanks();
 
         $this->checkMethods();
@@ -137,6 +140,16 @@ class MerchantCreateTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData['testBalanceInLiveAfterCreatedMerchant']);
     }
+
+    protected function checkBalanceConfigs()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
+
+        $this->runRequestResponseFlow($this->testData['testBalanceConfigInTestAfterCreatedMerchant']);
+    }
+
 
     protected function checkNetbankingBanks()
     {
@@ -518,6 +531,47 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(1, count($mapping));
 
         $this->verifyAccessMapEntries($app, $submerchant);
+    }
+
+    public function testCreateSubMerchantByAggregatorWithDefaultPaymentMethods()
+    {
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+            PartnerConfig\Entity::DEFAULT_PAYMENT_METHODS => [
+                Entity::CREDIT_CARD => true,
+                Entity::DEBIT_CARD => true,
+                Entity::NETBANKING => true,
+            ]
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+
+        $submerchant = $this->getLastEntity('merchant', true);
+
+        $submerchantMethods = $this->getLastEntity('methods', true);
+
+        $this->verifyAccessMapEntries($app, $submerchant);
+
+        $this->assertEquals(true, $submerchantMethods[Entity::CREDIT_CARD]);
+        $this->assertEquals(true, $submerchantMethods[Entity::DEBIT_CARD]);
+        $this->assertEquals(true, $submerchantMethods[Entity::NETBANKING]);
+
+        $arraySubtract = [Entity::CREDIT_CARD, Entity::DEBIT_CARD, Entity::NETBANKING, Entity::DISABLED_BANKS, Entity::CARD_SUBTYPE];
+
+        $arrayAssertFalse = array_diff(array_keys(Entity::$defaultPaymentMethodsForSubmerchantByPartner), $arraySubtract);
+
+        foreach ($arrayAssertFalse as $item)
+        {
+            $this->assertEquals(false, $submerchantMethods[$item]);
+        }
     }
 
     public function testCreateSubMerchantByAggregatorWithoutEmail()
@@ -1289,7 +1343,7 @@ class MerchantCreateTest extends TestCase
     {
         foreach (['test', 'live'] as $mode)
         {
-            $otpAuthFeature = $this->getDbEntity('feature', [], $mode);
+            $otpAuthFeature = $this->getDbEntity('feature', ['name' => 'otp_auth_default'], $mode);
 
             $this->assertEquals(FeatureConstants::OTP_AUTH_DEFAULT, $otpAuthFeature->getName());
         }

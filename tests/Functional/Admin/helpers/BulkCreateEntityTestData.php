@@ -35,7 +35,8 @@ return [
                         'merchant_id' => '100AtomAccount',
                         'email'       => 'orders@tonguestun.in,william.emmanual@tonguestun.com',
                         'type'        => 'dispute'
-                    ]]
+                    ]
+                ]
             ],
             'url'     => '/admin/bulkcreate',
             'method'  => 'POST'
@@ -62,7 +63,8 @@ return [
                         'merchant_id' => '10000000000000',
                         'email'       => 'abc@gmail.com,omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
                         'type'        => 'dispute'
-                    ]]
+                    ]
+                ]
             ],
             'url'     => '/admin/bulkcreate',
             'method'  => 'POST'
@@ -88,7 +90,8 @@ return [
                         'merchant_id' => '10000000000000dsadas',
                         'email'       => 'abc@gmail.com,omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
                         'type'        => 'dispute'
-                    ]]
+                    ]
+                ]
             ],
             'url'     => '/admin/bulkcreate',
             'method'  => 'POST'
@@ -97,6 +100,54 @@ return [
             'content' => [
                 'success_count' => 1,
                 'failed_count'  => 1,
+            ],
+        ],
+    ],
+
+    'testBulkUpdateTypeCaseMismatch' => [
+        'request'  => [
+            'content' => [
+                'type' => 'merchant_email',
+                'data' => [
+                    [
+                        'merchant_id' => '10000000000000',
+                        'email'       => 'omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
+                        'type'        => 'ReFuNd'
+                    ],
+                    [
+                        'merchant_id' => '10000000000000',
+                        'email'       => 'abc@gmail.com,omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
+                        'type'        => 'dispuTe'
+                    ],
+                    [
+                        'merchant_id' => '10000000000000',
+                        'email'       => 'abc@gmail.com,omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
+                        'type'        => 'Dispute'
+                    ],
+                    [
+                        'merchant_id' => '10000000000000',
+                        'email'       => 'omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
+                        'type'        => 'refund'
+                    ],
+                    [
+                        'merchant_id' => '10000000000000',
+                        'email'       => 'abc@gmail.com,omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
+                        'type'        => 'SuPPort'
+                    ],
+                    [
+                        'merchant_id' => '10000000000000',
+                        'email'       => 'abc@gmail.com,omprakash.ahrodia@spicejet.com,fraudcontrol@spicejet.com,nimisha.sharma@spicejet.com,deepak.kumar@razorpay.com',
+                        'type'        => 'Rzpinternal'
+                    ]
+                ]
+            ],
+            'url'     => '/admin/bulkcreate',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'success_count' => 1,
+                'failed_count'  => 5,
             ],
         ],
     ],

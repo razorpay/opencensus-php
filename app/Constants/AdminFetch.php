@@ -42,6 +42,37 @@ class AdminFetch
     public static function externalEntities()
     {
         return [
+            Entity::UFH_FILES => [
+                'status'          => [
+                    Fetch::LABEL        => 'status',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'created',
+                        'failed',
+                        'uploaded',
+                    ],
+                ],
+                'type'            => [
+                    Fetch::LABEL        => 'type',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'entity_id'       => [
+                    Fetch::LABEL        => 'entity_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'merchant_id'           => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'entity_type'     => [
+                    Fetch::LABEL        => 'entity_type',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'bucket_config_name' => [
+                    Fetch::LABEL        => 'bucket_config_name',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+            ],
             Entity::REPORTING_LOGS => [
                 'consumer'         => Fetch::FIELD_MERCHANT_ID,
                 'config_id'        => [
@@ -245,9 +276,40 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
-            Entity::PAYMENTS_CARDS_AUTHORIZATION  => [],
-            Entity::PAYMENTS_CARDS_AUTHENTICATION => [],
 
+            
+            Entity::PAYMENTS_NBPLUS_NETBANKING => [],
+
+            Entity::PAYMENTS_CARDS_AUTHORIZATION  => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+                'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
+                'gateway'      => Fetch::FIELD_GATEWAY,
+                'status'       => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'failed',
+                        'authorized',
+                        'captured',
+                    ],
+                ],
+            ],
+            Entity::PAYMENTS_CARDS_AUTHENTICATION => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+                'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
+                'gateway'      => Fetch::FIELD_GATEWAY,
+                'status'       => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'success',
+                        'failed',
+                    ],
+                ],
+            ],
 
             Entity::SUBSCRIPTIONS_SUBSCRIPTION => [
                 'auth_attempts' => [
@@ -1318,6 +1380,10 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
+            Entity::MERCHANT_DOCUMENT => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::MERCHANT => [
                 'activated' => [
                     Fetch::LABEL  => 'Activated',
@@ -2213,6 +2279,21 @@ class AdminFetch
                 ],
             ],
 
+            Entity::MERCHANT_INHERITANCE_MAP => [
+                'merchant_id' => [
+                    Fetch::LABEL  => 'Merchant Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ],
+                'parent_merchant_id' => [
+                    Fetch::LABEL => 'Parent Merchant Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'created_at' =>  [
+                    Fetch::LABEL  => 'Created At',
+                    Fetch::TYPE   => Fetch::TYPE_STRING
+                ]
+            ],
+
             Entity::PARTNER_CONFIG => [
                 Config\Entity::ENTITY_TYPE => [
                     Fetch::LABEL  => 'Entity Type',
@@ -2321,6 +2402,26 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ]
             ],
+
+            Entity::UPI_TRANSFER => [
+                'payment_id'            => Fetch::FIELD_PAYMENT_ID,
+                'virtual_account_id'    => [
+                    Fetch::LABEL => 'Virtual Account ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'payer_vpa'             => [
+                    Fetch::LABEL => 'Payer VPA',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'payee_vpa'             => [
+                    Fetch::LABEL => 'Payee VPA',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'npci_reference_id'     => [
+                    Fetch::LABEL => 'NPCI Reference Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ]
         ];
 
         //

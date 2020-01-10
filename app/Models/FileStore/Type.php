@@ -25,6 +25,9 @@ class Type
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
+    const CITI_NACH_REGISTER                = 'citi_nach_register';
+    const CITI_NACH_DEBIT                   = 'citi_nach_debit';
+    const CITI_NACH_DEBIT_SUMMARY           = 'citi_nach_debit_summary';
 
     const ALLAHABAD_NETBANKING_REFUND       = 'allahabad_netbanking_refund';
     const CANARA_NETBANKING_REFUND          = 'canara_netbanking_refund';
@@ -87,6 +90,14 @@ class Type
     const YESB_NETBANKING_CLAIM             = 'yesb_netbanking_claim';
 
     const YESB_NETBANKING_REFUND            = 'yesb_netbanking_refund';
+
+    const KVB_NETBANKING_REFUND             = 'kvb_netbanking_refund';
+
+    const KVB_NETBANKING_CLAIM              = 'kvb_netbanking_claim';
+
+    const SCB_NETBANKING_CLAIM              = 'scb_netbanking_claim';
+
+    const SCB_NETBANKING_REFUND             = 'scb_netbanking_refund';
 
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
@@ -168,8 +179,10 @@ class Type
     const MERCHANT_FORM_12A_URL                 = 'form_12a_url';
     const MERCHANT_FORM_80G_URL                 = 'form_80g_url';
     const MERCHANT_DRIVER_LICENSE_FRONT         = 'driver_license_front';
+    const MERCHANT_DRIVER_LICENSE_BACK          = 'driver_license_back';
     const MERCHANT_AADHAR_FRONT                 = 'aadhar_front';
     const MERCHANT_AADHAR_BACK                  = 'aadhar_back';
+    const MERCHANT_CANCELLED_CHEQUE             = 'cancelled_cheque';
     const MERCHANT_PASSPORT_BACK                = 'passport_back';
     const MERCHANT_PASSPORT_FRONT               = 'passport_front';
     const MERCHANT_VOTER_ID_FRONT               = 'voter_id_front';
@@ -192,7 +205,7 @@ class Type
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
-    const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . "." . FeatureConstants::VENDOR_AGREEMENT;
+    const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . '.' . FeatureConstants::VENDOR_AGREEMENT;
 
     /**
      * Map of types allowed for each entity.
@@ -208,6 +221,9 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::CITI_NACH_REGISTER,
+            self::CITI_NACH_DEBIT,
+            self::CITI_NACH_DEBIT_SUMMARY,
             self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
@@ -238,6 +254,10 @@ class Type
             self::IDFC_NETBANKING_CLAIMS,
             self::IDFC_NETBANKING_SUMMARY,
             self::AXIS_NETBANKING_CLAIMS,
+            self::KVB_NETBANKING_REFUND,
+            self::KVB_NETBANKING_CLAIM,
+            self::SCB_NETBANKING_CLAIM,
+            self::SCB_NETBANKING_REFUND,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
@@ -299,12 +319,14 @@ class Type
             self::MERCHANT_FORM_12A_URL,
             self::MERCHANT_FORM_80G_URL,
             self::MERCHANT_DRIVER_LICENSE_FRONT,
+            self::MERCHANT_DRIVER_LICENSE_BACK,
             self::MERCHANT_AADHAR_FRONT,
             self::MERCHANT_AADHAR_BACK,
             self::MERCHANT_PASSPORT_FRONT,
             self::MERCHANT_PASSPORT_BACK,
             self::MERCHANT_VOTER_ID_FRONT,
             self::MERCHANT_VOTER_ID_BACK,
+            self::MERCHANT_CANCELLED_CHEQUE,
         ],
 
         Constants\Entity::INVOICE => [
@@ -353,6 +375,9 @@ class Type
         self::HDFC_EMANDATE_REFUND,
         self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
+        self::CITI_NACH_DEBIT_SUMMARY,
+        self::CITI_NACH_DEBIT,
+        self::CITI_NACH_REGISTER,
         self::RBL_ENACH_DEBIT,
         self::RBL_ENACH_REGISTER,
         self::ENACH_NPCI_NB_DEBIT,
@@ -374,6 +399,10 @@ class Type
         self::RBL_NETBANKING_REFUND,
         self::SBI_NETBANKING_REFUND,
         self::CBI_NETBANKING_REFUND,
+        self::KVB_NETBANKING_REFUND,
+        self::KVB_NETBANKING_CLAIM,
+        self::SCB_NETBANKING_CLAIM,
+        self::SCB_NETBANKING_REFUND,
         self::CUB_NETBANKING_CLAIM,
         self::CUB_NETBANKING_REFUND,
         self::IBK_NETBANKING_REFUND,
@@ -434,7 +463,6 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::MINDGATE_UPI_REFUND,
-            self::SBI_UPI_REFUND,
             self::REPORT,
             self::BENEFICIARY_FILE,
             self::EMI_FILE,
@@ -490,7 +518,11 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::CITI_NACH_REGISTER,
+            self::CITI_NACH_DEBIT,
+            self::CITI_NACH_DEBIT_SUMMARY,
             self::FIRST_DATA_PARES_FILE,
+            self::SBI_UPI_REFUND,
         ],
 
         self::RECON_BUCKET_CONFIG => [

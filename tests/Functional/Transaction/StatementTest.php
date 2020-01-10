@@ -219,7 +219,6 @@ class StatementTest extends TestCase
         $this->assertEquals("fund_account.validation", $txn['source']['entity']);
         $this->assertEquals("fund_account", $txn['source']['fund_account']['entity']);
         $this->assertEquals("bank_account", $txn['source']['fund_account']['account_type']);
-        $this->assertEquals("111000111", $txn['source']['fund_account']['details']['account_number']);
         $this->assertEquals("111000111", $txn['source']['fund_account']['bank_account']['account_number']);
     }
 
@@ -228,5 +227,60 @@ class StatementTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         $this->payVirtualAccount($this->virtualAccount->getPublicId(), ['amount' => 25]);
+    }
+
+    public function testActionFilter()
+    {
+        $this->createPayout();
+
+        // Test debit filter after payout
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000');
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser->getId());
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=debit';
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+        $txn = $response['items'][0];
+        $this->assertEquals(count($response['items']), 1);
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction['amount'], $txn['debit']);
+
+        // test credit filter after payout
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=credit';
+        $response = $this->startTest();
+        $this->assertEquals(0, $response['count']);
+
+        // create reverse payout
+        $payout = $this->getDbEntity('payout');
+        $this->reversePayout($payout);
+
+        // test debit filter after reversal
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=debit';
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+        $txn = $response['items'][0];
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction['amount'], $txn['debit']);
+
+        // test credit filter after reversal
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=credit';
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+        $txn = $response['items'][0];
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction['amount'], $txn['credit']);
+    }
+
+    public function testActionFilterFailedPrivateAuth()
+    {
+        $this->createPayout();
+
+        $this->ba->privateAuth();
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=debit';
+
+        $this->startTest();
     }
 }

@@ -64,6 +64,7 @@ configure_db_dev(){
   echo "$(date) Seeding live database"
   cd /app/ && \
   php artisan rzp:dbr --install --seed
+  php artisan payments_upi:dbr
   echo "$(date) Seeding Test database"
   APP_ENV=testing_docker php artisan rzp:dbr --install
   echo "$(date) Seeding Auth Live database"

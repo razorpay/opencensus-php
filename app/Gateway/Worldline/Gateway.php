@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Worldline;
 
 use RZP\Gateway\Base;
+use RZP\Gateway\Mozart;
 use RZP\Exception;
 use RZP\Models\BharatQr;
 use RZP\Gateway\Base\Verify;
@@ -440,21 +441,18 @@ class Gateway extends Base\Gateway
     {
         if ($valid === true)
         {
-            $content = [
+            $response = [
                 'status'    => 'SUCCESS',
                 'errorMsg'  => '',
             ];
         }
         else
         {
-            $content = [
+            $response = [
                 'status'    => 'Failure',
                 'errorMsg'  => '',
             ];
         }
-
-        $response['Content-type'] = 'application/json';
-        $response['body'] = $content;
 
         return $response;
     }
@@ -546,6 +544,14 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
+
+        throw new Exception\LogicException(
+            'Not a supported action',
+            null,
+            [
+                'input'     => $input,
+                'gateway'   => $this->gateway
+            ]);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Base\Action::AUTHORIZE);
@@ -641,4 +647,25 @@ class Gateway extends Base\Gateway
                $response, $this->gateway, $this->paymentId);
         }
     }
+
+    public function createTerminal(array $input)
+    {
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::CREATE_TERMINAL, $input, $this->getMode());
+    }
+
+    public function verifyTerminal(array $input)
+    {
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::VERIFY_TERMINAL, $input, $this->getMode());
+    }
+
+    public function disableTerminal(array $input)
+    {
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::DISABLE_TERMINAL, $input, $this->getMode());
+    }
+
+    public function enableTerminal(array $input)
+    {
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::ENABLE_TERMINAL, $input, $this->getMode());
+    }
+
 }

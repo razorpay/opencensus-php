@@ -2,7 +2,8 @@
 
 namespace RZP\Models\Payment\Analytics;
 
-use RZP\Exception;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 
@@ -78,6 +79,29 @@ class Service extends Base\Service
         if (isset($input['_'][Entity::LIBRARY]) === false)
         {
             $input['_'][Entity::LIBRARY] = Metadata::PUSH;
+        }
+    }
+
+    public function updatePaymentAnalyticsData(Payment\Entity $payment)
+    {
+        try
+        {
+            $pa = $payment->analytics;
+
+            if ($pa === null)
+            {
+                $pa = new Payment\Analytics\Entity();
+            }
+
+            $parser = new Parser;
+
+            $parser->recordPaymentRequestData($pa, $payment);
+
+            $this->repo->saveOrFail($pa);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA);
         }
     }
 }

@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Models\P2p\Base;
 use RZP\Constants\Environment;
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 /**
@@ -118,8 +119,15 @@ class Core extends Base\Core
         if ($vpa instanceof Entity)
         {
             // Deleted VPA can available for the same device
-            if ($vpa->getDeviceId() === $this->context()->getDevice()->getId())
+            if (($vpa->getDeviceId() === $this->context()->getDevice()->getId()) and
+                ($vpa->trashed() === true))
             {
+                $vpa->bankAccount()->dissociate();
+
+                $vpa->setDefault(false);
+
+                $this->handleDefaultVpa($vpa);
+
                 $vpa->restore();
 
                 return $vpa;
@@ -229,6 +237,108 @@ class Core extends Base\Core
     public function delete(Entity $vpa)
     {
         $this->repo->deleteOrFail($vpa);
+    }
+
+    public function deregister()
+    {
+        $success = $this->repo->newP2pQuery()
+                        ->withTrashed()
+                        ->update([
+                            Entity::BANK_ACCOUNT_ID => null,
+                        ]);
+
+        if (empty($success) === true)
+        {
+            throw $this->logicException('Failed to unlink the VPAs');
+        }
+    }
+
+    public function restoreVpas(array $input)
+    {
+        $vpas = $this->repo->newP2pQuery()->withTrashed()
+                                          ->oldest()
+                                          ->get();
+        $restored = [];
+
+        $preDefault = null;
+
+        // This VPA will considered default
+        $toDefault  = $input['default'] ?? null;
+
+        // These VPAs will be left deleted
+        $deleted  = $input['deleted'] ?? [];
+
+        foreach ($vpas as $vpa)
+        {
+            // If there are many default the latest one will be picked.
+            if ((empty($toDefault) === false) and
+                ($vpa->getPublicId() === $toDefault))
+            {
+                $toDefault = $vpa;
+            }
+            else if ($vpa->isDefault())
+            {
+                $preDefault = $vpa;
+            }
+
+            // The VPA which are deleted and not in the list will be restored and marked inactive
+            if ($vpa->trashed() and
+                (in_array($vpa->getPublicId(), $deleted, true) === false))
+            {
+                $restored[] = $vpa->getId();
+            }
+        }
+
+        if ($toDefault instanceof Entity)
+        {
+            // If we got external request to make vpa default
+            $default = $toDefault;
+        }
+        else if ($preDefault instanceof Entity)
+        {
+            // Else if we found preDefault we will make this default
+            $default = $preDefault;
+        }
+        else
+        {
+            throw $this->logicException('There should be one default');
+        }
+
+        $this->repo->transaction(function() use ($restored, $default)
+        {
+            // First we will restore the VPAs
+            $this->repo->newP2pQuery()->whereIn(Entity::ID, $restored)
+                                      ->withTrashed()
+                                      ->update([
+                                          Entity::BANK_ACCOUNT_ID => null,
+                                          Entity::DELETED_AT      => null,
+                                      ]);
+
+            // Now make all VPAs default false except for the default VPA
+            $this->repo->newP2pQuery()->whereKeyNot($default->getId())
+                                      ->withTrashed()
+                                      ->update([
+                                          Entity::DEFAULT         => false,
+                                      ]);
+
+            // We will restore the default VPA
+            $toUpdate = [
+                Entity::DEFAULT     => true,
+                Entity::DELETED_AT  => null,
+            ];
+            // If it was deleted before, we will make it inactive
+            if ($default->trashed() === true)
+            {
+                $toUpdate[Entity::BANK_ACCOUNT_ID] = null;
+            }
+
+            // Now make sure default vpa is saved in database
+            $this->repo->newP2pQuery()->whereKey($default->getId())
+                                      ->withTrashed()
+                                      ->update($toUpdate);
+        });
+
+        return $this->fetchAll([]);
     }
 
     /**

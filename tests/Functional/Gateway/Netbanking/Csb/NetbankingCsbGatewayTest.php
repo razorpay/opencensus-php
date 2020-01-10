@@ -308,11 +308,11 @@ class NetbankingCsbGatewayTest extends TestCase
                 {
                     $content[ResponseFields::STATUS] = Status::FAILURE;
                     $content[ResponseFields::NARRATION] = 'Payment failed';
-                    $content[ResponseFields::TRAN_REF_NUM] = null;
+                    $content[ResponseFields::TRAN_REF_NUM] = "0";
                 }
                 else if ($action === 'verify')
                 {
-                    $content[ResponseFields::VERIFICATION] = Status::FAILURE;
+                    $content[ResponseFields::STATUS] = Status::FAILURE;
                 }
             });
     }
@@ -324,7 +324,7 @@ class NetbankingCsbGatewayTest extends TestCase
             {
                 if ($action === 'verify')
                 {
-                    $content[ResponseFields::VERIFICATION] = Status::FAILURE;
+                    $content[ResponseFields::STATUS] = Status::FAILURE;
                 }
             });
     }

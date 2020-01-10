@@ -141,4 +141,12 @@ final class Constants
     const RTGS_REVISED_CUTOFF_HOUR_MAX   = 17;
 
     const RTGS_REVISED_CUTOFF_MINUTE_MAX = 30;
+
+    const BENEFICIARY_STATUS             = 'beneficiary_status';
+
+    const COMPLETED                      = 'COMPLETED';
+
+    const VALIDATION_ERROR               = 'VALIDATION_ERROR';
+
+    const STATUS_FAILED                  = 'failed';
 }

@@ -6,7 +6,6 @@ use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Models\Order;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Transfer;
@@ -226,16 +225,46 @@ class Service extends Base\Service
         return $transferData;
     }
 
-    public function processOrderTransfers()
+    public function processPendingOrderTransfers()
+    {
+        $orderIds = $this->repo->transfer->fetchPendingTransfersToRetry(EntityConstant::ORDER);
+
+        $this->trace->info(
+            TraceCode::PENDING_ORDER_TRANSFER_PROCESS,
+            [
+                'order_ids' => $orderIds,
+            ]
+        );
+
+        return $this->processOrderTransfers($orderIds);
+    }
+
+    public function processFailedOrderTransfers()
+    {
+        $orderIds = $this->repo->transfer->fetchFailedTransfersToRetry(EntityConstant::ORDER);
+
+        $this->trace->info(
+            TraceCode::FAILED_ORDER_TRANSFER_PROCESS,
+            [
+                'order_ids' => $orderIds,
+            ]
+        );
+
+        return $this->processOrderTransfers($orderIds);
+    }
+
+    protected function processOrderTransfers(array $orderIds)
     {
         $transferOrderIds = [];
 
-        $orderIds = $this->repo->transfer->fetchTransfersToRetry();
-
-        $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY);
-
         foreach ($orderIds as $orderId)
         {
+            $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY,
+                [
+                    'order_id' => $orderId,
+                ]
+            );
+
             $order = $this->repo->order->find($orderId);
 
             if ($order === null)
@@ -280,6 +309,11 @@ class Service extends Base\Service
                     ]);
             }
         }
+
+        $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY_DONE,
+                           [
+                               'processed_order_ids' => $transferOrderIds
+                           ]);
 
         return $transferOrderIds;
     }

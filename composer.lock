@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4efdefd6b1815dfda88cb5507785d196",
+    "content-hash": "8b87b1c7b3dcd80ced24861a550b6a1c",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -351,6 +351,72 @@
             "time": "2017-03-28T13:07:48+00:00"
         },
         {
+            "name": "brozot/laravel-fcm",
+            "version": "1.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/brozot/Laravel-FCM.git",
+                "reference": "1b5c64c5ea829f46c7e5f274971c587a8c3f0668"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/brozot/Laravel-FCM/zipball/1b5c64c5ea829f46c7e5f274971c587a8c3f0668",
+                "reference": "1b5c64c5ea829f46c7e5f274971c587a8c3f0668",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "~6.0",
+                "illuminate/support": "5.*|^6",
+                "monolog/monolog": "^1.12|^2.0",
+                "php": ">=5.5.9"
+            },
+            "require-dev": {
+                "laravel/laravel": "5.2.*",
+                "mockery/mockery": "0.9.*",
+                "phpunit/phpunit": "4.7.*",
+                "satooshi/php-coveralls": "dev-master"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "LaravelFCM\\FCMServiceProvider"
+                    ],
+                    "aliases": {
+                        "FCM": "LaravelFCM\\Facades\\FCM",
+                        "FCMGroup": "LaravelFCM\\Facades\\FCMGroup"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "LaravelFCM\\": "src/",
+                    "LaravelFCM\\Mocks\\": "tests/mocks"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Brosy",
+                    "email": "nicolas.brosy@gmail.com"
+                }
+            ],
+            "description": "Laravel / Lumen package for Firebase Cloud Messaging ",
+            "keywords": [
+                "FCM",
+                "Firebase Cloud Messaging",
+                "firebase",
+                "laravel",
+                "lumen",
+                "notification",
+                "push"
+            ],
+            "time": "2019-11-26T16:14:39+00:00"
+        },
+        {
             "name": "cebe/markdown",
             "version": "1.2.1",
             "source": {
@@ -553,13 +619,13 @@
             "authors": [
                 {
                     "name": "Alex Corley",
-                    "role": "Developer",
-                    "email": "anthroprose@gmail.com"
+                    "email": "anthroprose@gmail.com",
+                    "role": "Developer"
                 },
                 {
                     "name": "DataDog",
-                    "role": "Developer",
-                    "email": "dev@datadoghq.com"
+                    "email": "dev@datadoghq.com",
+                    "role": "Developer"
                 }
             ],
             "description": "This is an extremely simple PHP datadogstatsd client",
@@ -2146,8 +2212,8 @@
             "authors": [
                 {
                     "name": "Mark Beech",
-                    "role": "Developer",
-                    "email": "m@rkbee.ch"
+                    "email": "m@rkbee.ch",
+                    "role": "Developer"
                 }
             ],
             "description": "CrawlerDetect is a PHP class for detecting bots/crawlers/spiders via the user agent",
@@ -2798,8 +2864,8 @@
             "authors": [
                 {
                     "name": "Luís Otávio Cobucci Oblonczyk",
-                    "role": "Developer",
-                    "email": "lcobucci@gmail.com"
+                    "email": "lcobucci@gmail.com",
+                    "role": "Developer"
                 }
             ],
             "description": "A simple library to work with JSON Web Token and JSON Web Signature",
@@ -3287,6 +3353,75 @@
             "time": "2018-07-31T08:38:40+00:00"
         },
         {
+            "name": "markbaker/matrix",
+            "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/MarkBaker/PHPMatrix.git",
+                "reference": "5348c5a67e3b75cd209d70103f916a93b1f1ed21"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/MarkBaker/PHPMatrix/zipball/5348c5a67e3b75cd209d70103f916a93b1f1ed21",
+                "reference": "5348c5a67e3b75cd209d70103f916a93b1f1ed21",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.6.0|^7.0.0"
+            },
+            "require-dev": {
+                "dealerdirect/phpcodesniffer-composer-installer": "dev-master",
+                "phpcompatibility/php-compatibility": "dev-master",
+                "phploc/phploc": "^4",
+                "phpmd/phpmd": "dev-master",
+                "phpunit/phpunit": "^5.7",
+                "sebastian/phpcpd": "^3.0",
+                "squizlabs/php_codesniffer": "^3.0@dev"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Matrix\\": "classes/src/"
+                },
+                "files": [
+                    "classes/src/functions/adjoint.php",
+                    "classes/src/functions/antidiagonal.php",
+                    "classes/src/functions/cofactors.php",
+                    "classes/src/functions/determinant.php",
+                    "classes/src/functions/diagonal.php",
+                    "classes/src/functions/identity.php",
+                    "classes/src/functions/inverse.php",
+                    "classes/src/functions/minors.php",
+                    "classes/src/functions/trace.php",
+                    "classes/src/functions/transpose.php",
+                    "classes/src/operations/add.php",
+                    "classes/src/operations/directsum.php",
+                    "classes/src/operations/subtract.php",
+                    "classes/src/operations/multiply.php",
+                    "classes/src/operations/divideby.php",
+                    "classes/src/operations/divideinto.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mark Baker",
+                    "email": "mark@lange.demon.co.uk"
+                }
+            ],
+            "description": "PHP Class for working with matrices",
+            "homepage": "https://github.com/MarkBaker/PHPMatrix",
+            "keywords": [
+                "mathematics",
+                "matrix",
+                "vector"
+            ],
+            "time": "2019-10-06T11:29:25+00:00"
+        },
+        {
             "name": "maxmind-db/reader",
             "version": "v1.1.3",
             "source": {
@@ -3475,19 +3610,19 @@
             "authors": [
                 {
                     "name": "Matyas Danter",
-                    "role": "Author",
-                    "homepage": "http://matejdanter.com/"
+                    "homepage": "http://matejdanter.com/",
+                    "role": "Author"
                 },
                 {
                     "name": "Thibaud Fabre",
-                    "role": "Maintainer",
                     "email": "thibaud@aztech.io",
-                    "homepage": "http://aztech.io"
+                    "homepage": "http://aztech.io",
+                    "role": "Maintainer"
                 },
                 {
                     "name": "Thomas Kerin",
-                    "role": "Maintainer",
-                    "email": "afk11@users.noreply.github.com"
+                    "email": "afk11@users.noreply.github.com",
+                    "role": "Maintainer"
                 }
             ],
             "description": "PHP Elliptic Curve Cryptography library",
@@ -3745,9 +3880,9 @@
             "authors": [
                 {
                     "name": "Serban Ghita",
-                    "role": "Developer",
                     "email": "serbanghita@gmail.com",
-                    "homepage": "http://mobiledetect.net"
+                    "homepage": "http://mobiledetect.net",
+                    "role": "Developer"
                 }
             ],
             "description": "Mobile_Detect is a lightweight PHP class for detecting mobile devices. It uses the User-Agent string combined with specific HTTP headers to detect the mobile environment.",
@@ -3983,6 +4118,54 @@
                 "templating"
             ],
             "time": "2017-07-11T12:54:05+00:00"
+        },
+        {
+            "name": "myclabs/deep-copy",
+            "version": "1.9.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/myclabs/DeepCopy.git",
+                "reference": "007c053ae6f31bba39dfa19a7726f56e9763bbea"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/007c053ae6f31bba39dfa19a7726f56e9763bbea",
+                "reference": "007c053ae6f31bba39dfa19a7726f56e9763bbea",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1"
+            },
+            "replace": {
+                "myclabs/deep-copy": "self.version"
+            },
+            "require-dev": {
+                "doctrine/collections": "^1.0",
+                "doctrine/common": "^2.6",
+                "phpunit/phpunit": "^7.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DeepCopy\\": "src/DeepCopy/"
+                },
+                "files": [
+                    "src/DeepCopy/deep_copy.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Create deep copies (clones) of your objects",
+            "keywords": [
+                "clone",
+                "copy",
+                "duplicate",
+                "object",
+                "object graph"
+            ],
+            "time": "2019-08-09T12:45:53+00:00"
         },
         {
             "name": "nesbot/carbon",
@@ -4982,21 +5165,22 @@
         },
         {
             "name": "phpoffice/phpspreadsheet",
-            "version": "1.4.0",
+            "version": "1.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPOffice/PhpSpreadsheet.git",
-                "reference": "125f462a718956f37d81305ca0df4f17cef0f3b9"
+                "reference": "1648dc9ebef6ebe0c5a172e16cf66732918416e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/125f462a718956f37d81305ca0df4f17cef0f3b9",
-                "reference": "125f462a718956f37d81305ca0df4f17cef0f3b9",
+                "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/1648dc9ebef6ebe0c5a172e16cf66732918416e0",
+                "reference": "1648dc9ebef6ebe0c5a172e16cf66732918416e0",
                 "shasum": ""
             },
             "require": {
                 "ext-ctype": "*",
                 "ext-dom": "*",
+                "ext-fileinfo": "*",
                 "ext-gd": "*",
                 "ext-iconv": "*",
                 "ext-libxml": "*",
@@ -5007,24 +5191,26 @@
                 "ext-xmlwriter": "*",
                 "ext-zip": "*",
                 "ext-zlib": "*",
-                "markbaker/complex": "^1.4.1",
-                "php": "^5.6|^7.0",
+                "markbaker/complex": "^1.4",
+                "markbaker/matrix": "^1.2",
+                "php": "^7.1",
                 "psr/simple-cache": "^1.0"
             },
             "require-dev": {
-                "dompdf/dompdf": "^0.8.0",
-                "friendsofphp/php-cs-fixer": "@stable",
+                "dompdf/dompdf": "^0.8.3",
+                "friendsofphp/php-cs-fixer": "^2.16",
                 "jpgraph/jpgraph": "^4.0",
-                "mpdf/mpdf": "^7.0.0",
-                "phpunit/phpunit": "^5.7",
-                "squizlabs/php_codesniffer": "^3.3",
-                "tecnickcom/tcpdf": "^6.2"
+                "mpdf/mpdf": "^8.0",
+                "phpcompatibility/php-compatibility": "^9.3",
+                "phpunit/phpunit": "^7.5",
+                "squizlabs/php_codesniffer": "^3.5",
+                "tecnickcom/tcpdf": "^6.3"
             },
             "suggest": {
                 "dompdf/dompdf": "Option for rendering PDF with PDF Writer",
                 "jpgraph/jpgraph": "Option for rendering charts, or including charts with PDF or HTML Writers",
                 "mpdf/mpdf": "Option for rendering PDF with PDF Writer",
-                "tecnick.com/tcpdf": "Option for rendering PDF with PDF Writer"
+                "tecnickcom/tcpdf": "Option for rendering PDF with PDF Writer"
             },
             "type": "library",
             "autoload": {
@@ -5034,23 +5220,26 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "LGPL-2.1-or-later"
+                "MIT"
             ],
             "authors": [
                 {
                     "name": "Maarten Balliauw",
-                    "homepage": "http://blog.maartenballiauw.be"
+                    "homepage": "https://blog.maartenballiauw.be"
+                },
+                {
+                    "name": "Mark Baker",
+                    "homepage": "https://markbakeruk.net"
+                },
+                {
+                    "name": "Franck Lefevre",
+                    "homepage": "https://rootslabs.net"
                 },
                 {
                     "name": "Erik Tilt"
                 },
                 {
-                    "name": "Franck Lefevre",
-                    "homepage": "http://rootslabs.net"
-                },
-                {
-                    "name": "Mark Baker",
-                    "homepage": "http://markbakeruk.net"
+                    "name": "Adrien Crivelli"
                 }
             ],
             "description": "PHPSpreadsheet - Read, Create and Write Spreadsheet documents in PHP - Spreadsheet engine",
@@ -5065,7 +5254,7 @@
                 "xls",
                 "xlsx"
             ],
-            "time": "2018-08-06T02:58:06+00:00"
+            "time": "2019-12-01T23:13:51+00:00"
         },
         {
             "name": "phpoption/phpoption",
@@ -5162,28 +5351,28 @@
             "authors": [
                 {
                     "name": "Jim Wigginton",
-                    "role": "Lead Developer",
-                    "email": "terrafrost@php.net"
+                    "email": "terrafrost@php.net",
+                    "role": "Lead Developer"
                 },
                 {
                     "name": "Patrick Monnerat",
-                    "role": "Developer",
-                    "email": "pm@datasphere.ch"
+                    "email": "pm@datasphere.ch",
+                    "role": "Developer"
                 },
                 {
                     "name": "Andreas Fischer",
-                    "role": "Developer",
-                    "email": "bantu@phpbb.com"
+                    "email": "bantu@phpbb.com",
+                    "role": "Developer"
                 },
                 {
                     "name": "Hans-Jürgen Petrich",
-                    "role": "Developer",
-                    "email": "petrich@tronic-media.com"
+                    "email": "petrich@tronic-media.com",
+                    "role": "Developer"
                 },
                 {
                     "name": "Graham Campbell",
-                    "role": "Developer",
-                    "email": "graham@alt-three.com"
+                    "email": "graham@alt-three.com",
+                    "role": "Developer"
                 }
             ],
             "description": "PHP Secure Communications Library - Pure-PHP implementations of RSA, AES, SSH2, SFTP, X.509 etc.",
@@ -5796,16 +5985,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.4.9",
+            "version": "1.4.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "a6611bf6d300ba514a4d430b01a192ce380676b4"
+                "reference": "01a17b0a0f5c528a19b7f2366b5da9b45515756f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/a6611bf6d300ba514a4d430b01a192ce380676b4",
-                "reference": "a6611bf6d300ba514a4d430b01a192ce380676b4",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/01a17b0a0f5c528a19b7f2366b5da9b45515756f",
+                "reference": "01a17b0a0f5c528a19b7f2366b5da9b45515756f",
                 "shasum": ""
             },
             "require": {
@@ -5819,7 +6008,8 @@
                 "guzzlehttp/psr7": "^1.3",
                 "php-http/message": "^1.7",
                 "php-http/mock-client": "^0.3 || ^1.0",
-                "phpunit/phpunit": "^6.0 || ^8.0 || ^7.0"
+                "phpunit/phpunit": "^6.0 || ^8.0 || ^7.0",
+                "symfony/yaml": "^5.0"
             },
             "type": "library",
             "autoload": {
@@ -5838,7 +6028,57 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2019-11-07T07:33:14+00:00"
+            "time": "2020-01-02T08:49:15+00:00"
+        },
+        {
+            "name": "razorpay/lqext",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/razorpay/lqext.git",
+                "reference": "0b20f566dc77fc22d781b4d28b88a81d3b2aebff"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/lqext/zipball/0b20f566dc77fc22d781b4d28b88a81d3b2aebff",
+                "reference": "0b20f566dc77fc22d781b4d28b88a81d3b2aebff",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/bus": "5.5.* || 5.6.* || 5.7.*",
+                "illuminate/contracts": "5.5.* || 5.6.* || 5.7.*",
+                "illuminate/database": "5.5.* || 5.6.* || 5.7.*",
+                "illuminate/events": "5.5.* || 5.6.* || 5.7.*",
+                "illuminate/mail": "5.5.* || 5.6.* || 5.7.*",
+                "illuminate/support": "5.5.* || 5.6.* || 5.7.*",
+                "php": "^7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.5",
+                "squizlabs/php_codesniffer": "^3.3"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Jitendra\\Lqext\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Jitendra\\Lqext\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "jitendra-1217",
+                    "email": "jitendraojha1217@gmail.com"
+                }
+            ],
+            "description": "Laravel queue enhancements, failure handling & retries.",
+            "time": "2019-12-16T05:40:19+00:00"
         },
         {
             "name": "razorpay/metrics-php",
@@ -6141,16 +6381,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.3.0",
+            "version": "2.4",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "839840b6ef86dde4fca8bc121e7df04d181695f1"
+                "reference": "2522ca661d13ae0aa8356cd1d14631d36561fa48"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/839840b6ef86dde4fca8bc121e7df04d181695f1",
-                "reference": "839840b6ef86dde4fca8bc121e7df04d181695f1",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/2522ca661d13ae0aa8356cd1d14631d36561fa48",
+                "reference": "2522ca661d13ae0aa8356cd1d14631d36561fa48",
                 "shasum": ""
             },
             "require": {
@@ -6211,10 +6451,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.3.0",
+                "source": "https://github.com/razorpay/trace/tree/2.4",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2019-08-23T08:33:50+00:00"
+            "time": "2019-11-22T04:28:28+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -7133,16 +7373,16 @@
         },
         {
             "name": "symfony/http-foundation",
-            "version": "v3.4.32",
+            "version": "v3.4.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-foundation.git",
-                "reference": "233f40cbebd595ffd91ddf291355f8a930a13777"
+                "reference": "d2d0cfe8e319d9df44c4cca570710fcf221d4593"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/233f40cbebd595ffd91ddf291355f8a930a13777",
-                "reference": "233f40cbebd595ffd91ddf291355f8a930a13777",
+                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/d2d0cfe8e319d9df44c4cca570710fcf221d4593",
+                "reference": "d2d0cfe8e319d9df44c4cca570710fcf221d4593",
                 "shasum": ""
             },
             "require": {
@@ -7183,7 +7423,7 @@
             ],
             "description": "Symfony HttpFoundation Component",
             "homepage": "https://symfony.com",
-            "time": "2019-10-02T16:15:21+00:00"
+            "time": "2019-11-28T12:52:59+00:00"
         },
         {
             "name": "symfony/http-kernel",
@@ -7384,16 +7624,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.12.0",
+            "version": "v1.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "b42a2f66e8f1b15ccf25652c3424265923eb4f17"
+                "reference": "7b4aab9743c30be783b73de055d24a39cf4b954f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/b42a2f66e8f1b15ccf25652c3424265923eb4f17",
-                "reference": "b42a2f66e8f1b15ccf25652c3424265923eb4f17",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/7b4aab9743c30be783b73de055d24a39cf4b954f",
+                "reference": "7b4aab9743c30be783b73de055d24a39cf4b954f",
                 "shasum": ""
             },
             "require": {
@@ -7405,7 +7645,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.12-dev"
+                    "dev-master": "1.13-dev"
                 }
             },
             "autoload": {
@@ -7439,7 +7679,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2019-08-06T08:03:45+00:00"
+            "time": "2019-11-27T14:18:11+00:00"
         },
         {
             "name": "symfony/polyfill-php56",
@@ -7499,16 +7739,16 @@
         },
         {
             "name": "symfony/polyfill-php70",
-            "version": "v1.12.0",
+            "version": "v1.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php70.git",
-                "reference": "54b4c428a0054e254223797d2713c31e08610831"
+                "reference": "af23c7bb26a73b850840823662dda371484926c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php70/zipball/54b4c428a0054e254223797d2713c31e08610831",
-                "reference": "54b4c428a0054e254223797d2713c31e08610831",
+                "url": "https://api.github.com/repos/symfony/polyfill-php70/zipball/af23c7bb26a73b850840823662dda371484926c4",
+                "reference": "af23c7bb26a73b850840823662dda371484926c4",
                 "shasum": ""
             },
             "require": {
@@ -7518,7 +7758,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.12-dev"
+                    "dev-master": "1.13-dev"
                 }
             },
             "autoload": {
@@ -7554,7 +7794,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2019-08-06T08:03:45+00:00"
+            "time": "2019-11-27T13:56:44+00:00"
         },
         {
             "name": "symfony/polyfill-util",
@@ -8016,8 +8256,8 @@
             "authors": [
                 {
                     "name": "Tijs Verkoyen",
-                    "role": "Developer",
-                    "email": "css_to_inline_styles@verkoyen.eu"
+                    "email": "css_to_inline_styles@verkoyen.eu",
+                    "role": "Developer"
                 }
             ],
             "description": "CssToInlineStyles is a class that enables you to convert HTML-pages/files into HTML-pages/files with inline styles. This is very useful when you're sending emails.",
@@ -8235,6 +8475,7 @@
                 "psr",
                 "psr-7"
             ],
+            "abandoned": "laminas/laminas-diactoros",
             "time": "2018-09-05T19:29:37+00:00"
         }
     ],
@@ -8834,48 +9075,6 @@
                 "testing"
             ],
             "time": "2019-02-12T16:07:13+00:00"
-        },
-        {
-            "name": "myclabs/deep-copy",
-            "version": "1.6.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "8e6e04167378abf1ddb4d3522d8755c5fd90d102"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/8e6e04167378abf1ddb4d3522d8755c5fd90d102",
-                "reference": "8e6e04167378abf1ddb4d3522d8755c5fd90d102",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "doctrine/collections": "1.*",
-                "phpunit/phpunit": "~4.1"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "DeepCopy\\": "src/DeepCopy/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "Create deep copies (clones) of your objects",
-            "homepage": "https://github.com/myclabs/DeepCopy",
-            "keywords": [
-                "clone",
-                "copy",
-                "duplicate",
-                "object",
-                "object graph"
-            ],
-            "time": "2017-04-12T18:52:22+00:00"
         },
         {
             "name": "orchestra/testbench",
@@ -10422,8 +10621,8 @@
             "authors": [
                 {
                     "name": "Arne Blankerts",
-                    "role": "Developer",
-                    "email": "arne@blankerts.de"
+                    "email": "arne@blankerts.de",
+                    "role": "Developer"
                 }
             ],
             "description": "A small library for converting tokenized PHP source code into XML and potentially other formats",

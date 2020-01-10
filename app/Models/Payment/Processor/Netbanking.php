@@ -111,6 +111,11 @@ class Netbanking
         IFSC::KVBL,
         self::PUNB_R,
         self::BARB_R,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::SBTR,
     ];
 
     protected static $selfCorp = [
@@ -582,15 +587,15 @@ class Netbanking
                 self::PUNB_C
             ]
         ],
-        Gateway::NETBANKING_EQUITAS => [
-            'retail' => [
-                IFSC::ESFB,
-            ]
-        ],
 
         Gateway::NETBANKING_SBI => [
             'retail' => [
                 IFSC::SBIN,
+                IFSC::SBBJ,
+                IFSC::SBHY,
+                IFSC::SBMY,
+                IFSC::STBP,
+                IFSC::SBTR,
             ],
             'tpv' => [
                 IFSC::SBIN

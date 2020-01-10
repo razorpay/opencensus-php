@@ -11,6 +11,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Card\SubType;
 use RZP\Models\Card\Type as CardType;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Payout;
 use RZP\Models\Transfer;
 use RZP\Models\FundAccount;
@@ -32,14 +33,14 @@ class Validator extends Base\Validator
         Entity::PROCURER                => 'sometimes|nullable|in:razorpay,merchant',
         Entity::PLAN_NAME               => 'sometimes',
         Entity::PAYMENT_METHOD          => 'required|string',
-        Entity::PAYMENT_METHOD_TYPE     => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
+        Entity::PAYMENT_METHOD_TYPE     => 'sometimes_if:payment_method,card,emandate,fund_transfer,nach|nullable',
         Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
-        Entity::PAYMENT_ISSUER          => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi,paylater|nullable|alpha|max:10',
+        Entity::PAYMENT_ISSUER          => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi,paylater,nach|nullable|alpha|max:10',
         Entity::EMI_DURATION            => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
         Entity::AUTH_TYPE               => 'sometimes_if:payment_method_type,debit|nullable|in:pin',
         Entity::INTERNATIONAL           => 'sometimes|in:0,1',
-        Entity::RECEIVER_TYPE           => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code',
+        Entity::RECEIVER_TYPE           => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code,vpa',
         Entity::AMOUNT_RANGE_ACTIVE     => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_MIN        => 'required_only_if:amount_range_active,1|integer|nullable|max:20000000000',
         Entity::AMOUNT_RANGE_MAX        => 'required_only_if:amount_range_active,1|integer|nullable|min:100|max:20000000000',
@@ -66,7 +67,7 @@ class Validator extends Base\Validator
         'addPlanRuleCard',
         'addPlanRuleNB',
         'addPlanRuleFundAccountValidation',
-        'addPlanRuleEmandate',
+        'addPlanRuleEmandateOrNach',
         'addPlanRulePaymentNetwork',
         'addPlanRuleInternational',
         'addPlanRuleAmountRange',
@@ -161,20 +162,23 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAddPlanRuleEmandate($input)
+    protected function validateAddPlanRuleEmandateOrNach($input)
     {
         if ((isset($input[Entity::PAYMENT_METHOD]) === true) and
-            ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE))
+            (
+                ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE) or
+                ($input[Entity::PAYMENT_METHOD] === Payment\Method::NACH)
+            ))
         {
             if (empty($input[Entity::PERCENT_RATE]) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Percentage rate pricing is not allowed for E-mandate');
+                    'Percentage rate pricing is not allowed for ' . $input[Entity::PAYMENT_METHOD]);
             }
 
             if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
             {
-                Payment\AuthType::validateAuthType($input[Entity::PAYMENT_METHOD_TYPE], Payment\Method::EMANDATE);
+                Payment\AuthType::validateAuthType($input[Entity::PAYMENT_METHOD_TYPE], $input[Entity::PAYMENT_METHOD]);
             }
 
             if (isset($input[Entity::PAYMENT_ISSUER]) === true)
@@ -532,6 +536,28 @@ class Validator extends Base\Validator
         }
     }
 
+
+    /**
+     * When adding new rule to an existing plan - this function validates that fee_bearer
+     * attribute of the new rule does not conflict with fee_bearer attributes of all merchants
+     * on this pricing plan
+     *
+     * Conflict happens when rule is fee_bearer 'platform' but one or more merchant on this
+     * pricing plan is is fee_bearer 'customer'(or vice versa)
+     * @param Plan $plan
+     * @param Entity $rule
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateRuleForFeeBearer(Plan $plan, Pricing\Entity $rule)
+    {
+        $merchants = (new Merchant\Repository())->fetchMerchantsWithPricingPlan($rule->getPlanId());
+
+        foreach ($merchants as $merchant)
+        {
+            $this->validateRuleFeeBearerForMerchant($rule, $merchant);
+        }
+    }
+
     /**
      * Throw an error if commission plan is posted for non-rzp orgs
      *
@@ -686,5 +712,32 @@ class Validator extends Base\Validator
     {
         // Only direct channels can have this set for now
         AccountType::exists($value);
+    }
+
+    protected function validateRuleFeeBearerForMerchant(Pricing\Entity $rule, Merchant\Entity $merchant)
+    {
+        if ($merchant->isFeeBearerDynamic() === true)
+        {
+            return;
+        }
+
+        if ($merchant->getFeeBearer() !== $rule->getFeeBearer())
+        {
+            $data = [
+                'pricing_plan_id'       => $rule->getPlanId(),
+                'pricing_plan_name'     => $rule->getPlanName(),
+                'rule_fee_bearer'       => $rule->getFeeBearer(),
+                'merchant_id'           => $merchant->getId(),
+                'merchant_fee_bearer'   => $merchant->getFeeBearer(),
+            ];
+
+            $message = 'Unable to add rule to plan ' . $rule->getPlanName() . '. Rule has fee_bearer ' . $rule->getFeeBearer() .
+                '. Merchant ' . $merchant->getId() . ' on this plan has fee_bearer ' . $merchant->getFeeBearer();
+
+            throw new Exception\BadRequestValidationFailureException(
+                $message,
+                'fee_bearer',
+                $data);
+        }
     }
 }

@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis;
 
-use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 
 use RZP\Gateway\Cybersource\Entity;
@@ -131,7 +130,7 @@ class Gateway extends Upi\Gateway
 
     protected function getTimeStamp()
     {
-        return (string) (Carbon::now(Timezone::IST)->getTimestamp() * 1000);
+        return (string) ($this->getCurrentTimestamp() * 1000);
     }
 
     protected function toBoolean($value)

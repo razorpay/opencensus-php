@@ -5,6 +5,7 @@ namespace RZP\Models\Order;
 use RZP\Exception;
 use RZP\Models\Transfer;
 use RZP\Models\Currency\Currency;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Models\SubscriptionRegistration\Core as TokenRegistrationCore;
 
 class PreCreateHook extends Hook
@@ -16,6 +17,8 @@ class PreCreateHook extends Hook
 
     public function validateTokenParams(array $paramInput)
     {
+        $paramInput[SubscriptionRegistration\Entity::METHOD] = $this->orderInput[Entity::METHOD] ?? null;
+
         (new TokenRegistrationCore())->validateTokenInput($paramInput);
 
         $this->validateCustomerIdNonEmpty();

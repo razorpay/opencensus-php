@@ -11,6 +11,7 @@ class Repository extends Base\Repository
 
     protected $expands = [
         Entity::BANKING_ACCOUNT_DETAILS,
+        Entity::MERCHANT
     ];
 
     public function getFromBalanceId(string $balanceId)
@@ -22,10 +23,21 @@ class Repository extends Base\Repository
 
     public function findByAccountNumberAndChannel(string $accountNumber, string $channel)
     {
+        return $this->whereAccountNumberAndChannelAre($accountNumber, $channel)
+                    ->firstOrFail();
+    }
+
+    public function findByAccountNumberAndChannelPublic(string $accountNumber, string $channel)
+    {
+        return $this->whereAccountNumberAndChannelAre($accountNumber, $channel)
+                    ->firstOrFailPublic();
+    }
+
+    public function whereAccountNumberAndChannelAre($accountNumber, $channel)
+    {
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                    ->where(Entity::CHANNEL, '=', $channel)
-                    ->firstOrFail();
+                    ->where(Entity::CHANNEL, '=', $channel);
     }
 
     /**

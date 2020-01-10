@@ -170,7 +170,7 @@ class Base extends BaseCore
                         return $payout;
                     });
 
-        $this->app->events->fire('api.payout.initiated', [$payout]);
+        $this->fireEventForPayoutStatus($payout);
 
         //
         // This needs to be done only for fund_account type and not for others.
@@ -264,17 +264,9 @@ class Base extends BaseCore
         return $this;
     }
 
-    public function setBatch($batchIdOrBatch): self
+    public function setBatch($batchId): self
     {
-        // TODO: remove batch entity handling once ramped to 100%
-        if (($batchIdOrBatch instanceof Batch\Entity) === true)
-        {
-            $this->batch = $batchIdOrBatch;
-        }
-        else if (is_string($batchIdOrBatch) === true)
-        {
-            $this->batchId = $batchIdOrBatch;
-        }
+        $this->batchId = $batchId;
 
         return $this;
     }
@@ -483,7 +475,7 @@ class Base extends BaseCore
 
         $validator = $payout->getValidator();
 
-        $validator->validateInput(camel_case($validatorOperation), $input);
+        $validator->validateInput($validatorOperation, $input);
     }
 
     protected function getPayoutType()
@@ -507,20 +499,7 @@ class Base extends BaseCore
 
     protected function fireEventForPayoutStatus(Payout\Entity $payout)
     {
-        if ($payout->isStatusQueued() === true)
-        {
-            $this->app->events->fire('api.payout.queued', [$payout]);
-        }
-        else if ($payout->isStatusPending() === true)
-        {
-            // TODO:: Add pending webhook trigger here
-        }
-        else
-        {
-            // api.payout.created to be removed after merchants have migrated.
-            $this->app->events->fire('api.payout.created', [$payout]);
-            $this->app->events->fire('api.payout.initiated', [$payout]);
-        }
+        return;
     }
 
     /**

@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Entity::PURPOSE         => 'required|filled|string|max:30|in:refund,settlement,penny_testing',
         Entity::SOURCE_TYPE     => 'required|filled|string|max:32|in:refund,payout,settlement,fund_account_validation',
         // This will be used while generating response while mock. Only used in api based settlements
-        'failed_response'       => 'sometimes|int',
+        'failed_response'       => 'sometimes|string',
         'ignore_time_limit'     => 'sometimes|string',
     ];
 
@@ -40,6 +40,7 @@ class Validator extends Base\Validator
     protected static $bulkReconcileRules = [
         'from' => 'required_with:to|epoch|date_format:U',
         'to'   => 'required_with:from|epoch|date_format:U',
+        'limit'=> 'sometimes|int'
     ];
 
     protected static $retryBeamFileUploadRules = [
@@ -136,8 +137,6 @@ class Validator extends Base\Validator
             return;
         }
 
-        Mode::validateModeOfAccountType($mode, $destinationType);
-
         if ($destinationType === Constants\Entity::CARD)
         {
             $cardIssuer = $attempt->card->getIssuer();
@@ -147,7 +146,21 @@ class Validator extends Base\Validator
             Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
         }
 
-        Channel::validateChannelAndMode($channel, $destinationType, $mode);
+        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+
+        if ($valid === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+                null,
+                [
+                    'channel'           => $channel,
+                    'mode'              => $mode,
+                    'destination_type'  => $destinationType
+                ],
+                $mode . ' is not supported'
+            );
+        }
 
         $amount = $attempt->source->getAmount();
 

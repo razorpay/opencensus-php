@@ -47,4 +47,26 @@ class VirtualAccountController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function addReceiver(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addReceiver($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * This function is used for the offline payments
+     * We create an order first and then create a VA using that
+     */
+    public function createOfflineQr()
+    {
+        $input = Request::all();
+
+        $va = $this->service()->createOfflineQr($input);
+
+        return ApiResponse::json($va);
+    }
 }

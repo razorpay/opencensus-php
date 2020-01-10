@@ -16,7 +16,7 @@ use RZP\Jobs\TerminalOnboardingCreateJob;
 use RZP\Models\TerminalOnboardingDetail;
 use RZP\Exception\BaseException;
 use RZP\Models\Terminal\Entity as TerminalEntity;
-use RZP\Models\Gateway\Terminal\Service as GatewayOnboardingService;
+use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;
 
 class Service extends Base\Service
 {
@@ -54,11 +54,11 @@ class Service extends Base\Service
 
         $this->verifyPartnerTerminalOnboardingAccess();
 
-        $onboardInput['gateway'] = Gateway::ATOS;
+        $onboardInput['gateway'] = Gateway::WORLDLINE;
 
         $onboardInput['gateway_input'] = $input;
 
-        $onboardedTerminal = (new GatewayOnboardingService)->onboardMerchantAsync($submerchant, $onboardInput);
+        $onboardedTerminal = (new GatewayTerminalService)->onboardMerchantAsync($submerchant, $onboardInput);
 
         return $onboardedTerminal->toArrayPublic();
     }
@@ -81,13 +81,25 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findByIdAndMerchantId($id, $merchantId);
 
-        if ($terminal->getStatus() !== Terminal\Status::ACTIVATED)
+        if ($terminal->getStatus() !== Terminal\Status::DEACTIVATED)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED);
+                ErrorCode::BAD_REQUEST_ONLY_DEACTIVATED_TERMINALS_CAN_BE_ENABLED);
         }
+        
+        (new GatewayTerminalService)->callGatewayForTerminalEnableOrDisable($terminal, 'enable_terminal');
 
         $terminal = (new Terminal\Core)->toggle($terminal, true);
+
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+        $terminal->setStatus(Terminal\Status::ACTIVATED);
+
+        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::ACTIVATED);
+
+        $terminal->save();
+
+        $terminalOnboardingDetail->save();
 
         return $terminal->toArrayPublic();
     }
@@ -110,7 +122,25 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findByIdAndMerchantId($id, $merchantId);
 
+        if ($terminal->getStatus() !== Terminal\Status::ACTIVATED)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_DISABLED);
+        }
+
+        (new GatewayTerminalService)->callGatewayForTerminalEnableOrDisable($terminal, 'disable_terminal');
+
         $terminal = (new Terminal\Core)->toggle($terminal, false);
+
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+        $terminal->setStatus(Terminal\Status::DEACTIVATED);
+
+        $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::DEACTIVATED);
+
+        $terminal->save();
+
+        $terminalOnboardingDetail->save();
 
         return $terminal->toArrayPublic();
     }
@@ -210,7 +240,49 @@ class Service extends Base\Service
 
         $terminals = $this->repo->terminal->fetchTerminalsForActivation($count);
 
-        $response = (new GatewayOnboardingService)->verifyTerminals($terminals);
+        $response = (new GatewayTerminalService)->verifyTerminals($terminals);
+
+        return $response;
+    }
+
+    /**
+     * Below method is for precautionary api to change terminalonboarding status manually
+     * if terminals get stuck in queued state forever
+     */
+    public function updateTerminalOnboardingStatus($input)
+    {
+        $response = ['updated_terminal_onboarding_ids'        => [],
+                     'not_applicable_terminal_onboarding_ids' => []];
+
+        foreach ($input as $terminalOnboardingDetailId)
+        {
+            try
+            {
+                $terminalOnboardingDetail = $this->repo->terminal_onboarding_detail->findOrFailPublic($terminalOnboardingDetailId);
+
+                $terminal = $terminalOnboardingDetail->terminal;
+
+                if ($terminalOnboardingDetail->getStatus() !== TerminalOnboardingDetail\Status::QUEUED)
+                {
+                    throw new Exception\LogicException(
+                        'Only queued status can be manually updated',
+                        null,
+                        [
+                            'input' => $input
+                        ]);
+                }
+
+                $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::CREATED);
+            
+                $terminalOnboardingDetail->save();    
+
+                array_push($response['updated_terminal_onboarding_ids'], $terminalOnboardingDetailId);
+            }
+            catch(\Throwable $ex)
+            {
+                array_push($response['not_applicable_terminal_onboarding_ids'], $terminalOnboardingDetailId);
+            }
+        }
 
         return $response;
     }

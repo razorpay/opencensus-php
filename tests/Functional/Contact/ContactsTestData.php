@@ -89,7 +89,25 @@ return [
                 'notes'        => [
                     'test1' => 'One',
                 ],
-            ]
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactWithoutType' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+            ],
+            'status_code' => '201'
         ],
     ],
 
@@ -242,26 +260,6 @@ return [
                 ],
             ],
             'status_code' => 400,
-        ],
-    ],
-
-    'testFetchContactByAccountNumber' => [
-        'request'  => [
-            'url'    => '/contacts?account_number=111000',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'id'     => 'cont_1000005contact',
-                        'entity' => 'contact',
-                        'email'  => 'test@test5.com',
-                    ],
-                ],
-            ]
         ],
     ],
 
@@ -468,7 +466,234 @@ return [
         ],
     ],
 
-    'testBulkContact' => [
+    'testDuplicateContactCreationOnApi' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '200'
+        ],
+    ],
+
+    'testDuplicateContactCreationOnDashboard' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testDuplicateContactCreationWithSameName' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testDuplicateContactCreationWithSameNameAndEmptyAttributes' =>  [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'contact'      => ""
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testGetContactTypes' => [
+        'request'  => [
+            'url'     => '/contacts/types',
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => "collection",
+                'count'     => 4,
+                'items'     => [
+                    [
+                        'type' => "customer",
+                    ],
+                    [
+                        'type' => "employee",
+                    ],
+                    [
+                        'type' => "vendor",
+                    ],
+                    [
+                        'type' => "self",
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAddCustomContactType' => [
+        'request'  => [
+            'content' => [
+                'type' => 'Payouts to Mehul'
+            ],
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ],
+
+        'response' => [
+            'content' => [
+                'entity'    => "collection",
+                'count'     => 5,
+                'items'     => [
+                    [
+                        'type' => "customer",
+                    ],
+                    [
+                        'type' => "employee",
+                    ],
+                    [
+                        'type' => "vendor",
+                    ],
+                    [
+                        'type' => "self",
+                    ],
+                    [
+                        'type' => "Payouts to Mehul",
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAddCustomContactTypeThatAlreadyExists' => [
+        'request'  => [
+            'content' => [
+                'type' => 'Payouts to Mehul'
+            ],
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Type \'Payouts to Mehul\' is already defined and cannot be added.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAdd101CustomContactTypes' => [
+        'request'  => [
+            'content' => [
+                'type' => 'Payouts to Mehul'
+            ],
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You have reached the maximum limit (100) of custom contact types that can be created.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateBulkContactsMoreThanAllowedNumber' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Current batch size 16, max limit of Bulk Fund Account is 15',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateBulkContactsInvalidType' => [
         'request'   => [
             'url'     => '/contacts/bulk',
             'method'  => 'POST',
@@ -483,7 +708,7 @@ return [
                     ],
                     'contact'  => [
                         'id'                => '',
-                        'type'              => 'vendor',
+                        'type'              => 'RZP Employees',
                         'name'              => 'Test rzp1',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
@@ -495,29 +720,6 @@ return [
                         'state'             => 'Karnataka'
                     ],
                     'idempotency_key'       => 'batch_abc123'
-                ],
-                [
-                    'fund'  => [
-                        'account_type'      => 'vpa',
-                        'account_name'      => 'Sample rzp2',
-                        'account_IFSC'      => '',
-                        'account_number'    => '',
-                        'account_vpa'       => '123@ybl'
-                    ],
-                    'contact'  => [
-                        'id'                => '',
-                        'type'              => 'customer',
-                        'name'              => 'Test rzp2',
-                        'email'             => '',
-                        'mobile'            => '',
-                        'reference_id'      => ''
-                    ],
-                    'notes'  => [
-                        'code'              => '',
-                        'place'             => '',
-                        'state'             => ''
-                    ],
-                    'idempotency_key'       => 'batch_abc124'
                 ],
                 [
                     'fund'  => [
@@ -541,51 +743,25 @@ return [
                         'state'             => 'Telengana'
                     ],
                     'idempotency_key'       => 'batch_abc125'
-                ]
-            ]
+                ],
+            ],
         ],
         'response'  => [
             'content'     => [
                 'entity' => 'collection',
-                'count'  => 3,
+                'count'  => 2,
                 'items'  => [
                     [
-                        'entity'                => 'fund_account',
-                        'account_type'          => 'bank_account',
-                        'details' => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
+                        'error' => [
+                            'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                            'description' => 'Invalid type: RZP Employees',
                         ],
-                        'bank_account'          => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
-                        ],
-                        'active'                => true,
-                    ],
-                    [
-                        'entity'                => 'fund_account',
-                        'account_type'          => 'vpa',
-                        'details'               => [
-                            'address'           => '123@ybl',
-                        ],
-                        'vpa'                   => [
-                            'address'           => '123@ybl',
-                        ],
-                        'active'                => true,
+                        'http_status_code' => 400,
+                        'idempotency_key'       => 'batch_abc123'
                     ],
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'bank_account',
-                        'details'               => [
-                            'ifsc'              => 'HDFC0003780',
-                            'bank_name'         => 'HDFC Bank',
-                            'name'              => 'Sample rzp3',
-                            'account_number'    => '1234567891',
-                        ],
                         'bank_account'          => [
                             'ifsc'              => 'HDFC0003780',
                             'bank_name'         => 'HDFC Bank',
@@ -593,13 +769,14 @@ return [
                             'account_number'    => '1234567891',
                         ],
                         'active'                => true,
-                    ]
-                ]
+                        'idempotency_key'       => 'batch_abc125'
+                    ],
+                ],
             ],
         ],
     ],
 
-    'testBulkContactWithInvalidContactId' => [
+    'testCreateBulkContactsInvalidName' => [
         'request'   => [
             'url'     => '/contacts/bulk',
             'method'  => 'POST',
@@ -613,9 +790,9 @@ return [
                         'account_vpa'       => ''
                     ],
                     'contact'  => [
-                        'id'                => 'invalid',
+                        'id'                => '',
                         'type'              => 'vendor',
-                        'name'              => 'Test rzp1',
+                        'name'              => 'A name can only be 50 characters long and this is more than that',
                         'email'             => 'sample@example.com',
                         'mobile'            => '9988998897',
                         'reference_id'      => ''
@@ -650,335 +827,31 @@ return [
                     ],
                     'idempotency_key'       => 'batch_abc124'
                 ],
-                [
-                    'fund'  => [
-                        'account_type'      => 'bank_account',
-                        'account_name'      => 'Sample rzp3',
-                        'account_IFSC'      => 'HDFC0003780',
-                        'account_number'    => '1234567891',
-                        'account_vpa'       => ''
-                    ],
-                    'contact'  => [
-                        'id'                => '',
-                        'type'              => 'customer',
-                        'name'              => 'Test rzp3',
-                        'email'             => 'sample@example.com',
-                        'mobile'            => '9988998897',
-                        'reference_id'      => ''
-                    ],
-                    'notes'  => [
-                        'code'              => 'xyz123',
-                        'place'             => 'Hyderabad',
-                        'state'             => 'Telengana'
-                    ],
-                    'idempotency_key'       => 'batch_abc125'
-                ]
-            ]
-        ],
-        'response'  => [
-            'content'     => [
-                'entity' => 'collection',
-                'count'  => 3,
-                'items'  => [
-                    [
-                        'http_status_code'      => 400,
-                        'error'                 => [
-                            'description'       => 'The id provided does not exist',
-                            'code'              => 'BAD_REQUEST_ERROR'
-                        ],
-                    ],
-                    [
-                        'entity'                => 'fund_account',
-                        'account_type'          => 'vpa',
-                        'details'               => [
-                            'address'           => '123@ybl',
-                        ],
-                        'vpa'                   => [
-                            'address'           => '123@ybl',
-                        ],
-                        'active'                => true,
-                    ],
-                    [
-                        'entity'                => 'fund_account',
-                        'account_type'          => 'bank_account',
-                        'details'               => [
-                            'ifsc'              => 'HDFC0003780',
-                            'bank_name'         => 'HDFC Bank',
-                            'name'              => 'Sample rzp3',
-                            'account_number'    => '1234567891',
-                        ],
-                        'bank_account'          => [
-                            'ifsc'              => 'HDFC0003780',
-                            'bank_name'         => 'HDFC Bank',
-                            'name'              => 'Sample rzp3',
-                            'account_number'    => '1234567891',
-                        ],
-                        'active'                => true,
-                    ]
-                ]
             ],
         ],
-    ],
-
-    'testBulkContactWithValidContactId' => [
-        'request'   => [
-            'url'     => '/contacts/bulk',
-            'method'  => 'POST',
-            'content' => [
-                [
-                    'fund'  => [
-                        'account_type'      => 'bank_account',
-                        'account_name'      => 'Sample rzp1',
-                        'account_IFSC'      => 'SBIN0007106',
-                        'account_number'    => '1234567890',
-                        'account_vpa'       => ''
-                    ],
-                    'contact'  => [
-                        'id'                => 'cont_1000001contact',
-                        'type'              => 'vendor',
-                        'name'              => 'Test rzp1',
-                        'email'             => 'sample@example.com',
-                        'mobile'            => '9988998897',
-                        'reference_id'      => ''
-                    ],
-                    'notes'  => [
-                        'code'              => 'abc123',
-                        'place'             => 'Bangalore',
-                        'state'             => 'Karnataka'
-                    ],
-                    'idempotency_key'       => 'batch_abc123',
-                    'contact_id'            => 'cont_1000001contact'
-                ],
-                [
-                    'fund'  => [
-                        'account_type'      => 'vpa',
-                        'account_name'      => 'Sample rzp2',
-                        'account_IFSC'      => '',
-                        'account_number'    => '',
-                        'account_vpa'       => '123@ybl'
-                    ],
-                    'contact'  => [
-                        'id'                => '',
-                        'type'              => 'customer',
-                        'name'              => 'Test rzp2',
-                        'email'             => '',
-                        'mobile'            => '',
-                        'reference_id'      => ''
-                    ],
-                    'notes'  => [
-                        'code'              => '',
-                        'place'             => '',
-                        'state'             => ''
-                    ],
-                    'idempotency_key'       => 'batch_abc124'
-                ],
-                [
-                    'fund'  => [
-                        'account_type'      => 'bank_account',
-                        'account_name'      => 'Sample rzp3',
-                        'account_IFSC'      => 'HDFC0003780',
-                        'account_number'    => '1234567891',
-                        'account_vpa'       => ''
-                    ],
-                    'contact'  => [
-                        'id'                => '',
-                        'type'              => 'customer',
-                        'name'              => 'Test rzp3',
-                        'email'             => 'sample@example.com',
-                        'mobile'            => '9988998897',
-                        'reference_id'      => ''
-                    ],
-                    'notes'  => [
-                        'code'              => 'xyz123',
-                        'place'             => 'Hyderabad',
-                        'state'             => 'Telengana'
-                    ],
-                    'idempotency_key'       => 'batch_abc125'
-                ]
-            ]
-        ],
         'response'  => [
             'content'     => [
                 'entity' => 'collection',
-                'count'  => 3,
+                'count'  => 2,
                 'items'  => [
                     [
-                        'entity'                => 'fund_account',
-                        'account_type'          => 'bank_account',
-                        'details' => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
+                        'error' => [
+                            'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                            'description' => 'The name may not be greater than 50 characters.',
                         ],
-                        'bank_account'          => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
-                        ],
-                        'active'                => true,
+                        'http_status_code' => 400,
+                        'idempotency_key'       => 'batch_abc123'
                     ],
                     [
                         'entity'                => 'fund_account',
                         'account_type'          => 'vpa',
-                        'details'               => [
-                            'address'           => '123@ybl',
-                        ],
                         'vpa'                   => [
                             'address'           => '123@ybl',
                         ],
                         'active'                => true,
+                        'idempotency_key'       => 'batch_abc124'
                     ],
-                    [
-                        'entity'                => 'fund_account',
-                        'account_type'          => 'bank_account',
-                        'details'               => [
-                            'ifsc'              => 'HDFC0003780',
-                            'bank_name'         => 'HDFC Bank',
-                            'name'              => 'Sample rzp3',
-                            'account_number'    => '1234567891',
-                        ],
-                        'bank_account'          => [
-                            'ifsc'              => 'HDFC0003780',
-                            'bank_name'         => 'HDFC Bank',
-                            'name'              => 'Sample rzp3',
-                            'account_number'    => '1234567891',
-                        ],
-                        'active'                => true,
-                    ]
-                ]
-            ],
-        ],
-    ],
-
-    'testBulkContactWithSameIdempotencyKey' => [
-        'request'   => [
-            'url'     => '/contacts/bulk',
-            'method'  => 'POST',
-            'content' => [
-                [
-                    'fund'  => [
-                        'account_type'      => 'bank_account',
-                        'account_name'      => 'Sample rzp1',
-                        'account_IFSC'      => 'SBIN0007106',
-                        'account_number'    => '1234567890',
-                        'account_vpa'       => ''
-                    ],
-                    'contact'  => [
-                        'id'                => '',
-                        'type'              => 'vendor',
-                        'name'              => 'Test rzp1',
-                        'email'             => 'sample@example.com',
-                        'mobile'            => '9988998897',
-                        'reference_id'      => ''
-                    ],
-                    'notes'  => [
-                        'code'              => 'abc123',
-                        'place'             => 'Bangalore',
-                        'state'             => 'Karnataka'
-                    ],
-                    'idempotency_key'       => 'batch_abc123'
                 ],
-                [
-                    'fund'  => [
-                        'account_type'      => 'vpa',
-                        'account_name'      => 'Sample rzp2',
-                        'account_IFSC'      => '',
-                        'account_number'    => '',
-                        'account_vpa'       => '123@ybl'
-                    ],
-                    'contact'  => [
-                        'id'                => '',
-                        'type'              => 'customer',
-                        'name'              => 'Test rzp2',
-                        'email'             => '',
-                        'mobile'            => '',
-                        'reference_id'      => ''
-                    ],
-                    'notes'  => [
-                        'code'              => '',
-                        'place'             => '',
-                        'state'             => ''
-                    ],
-                    'idempotency_key'       => 'batch_abc124'
-                ],
-                [
-                    'fund'  => [
-                        'account_type'      => 'bank_account',
-                        'account_name'      => 'Sample rzp3',
-                        'account_IFSC'      => 'HDFC0003780',
-                        'account_number'    => '1234567891',
-                        'account_vpa'       => ''
-                    ],
-                    'contact'  => [
-                        'id'                => '',
-                        'type'              => 'customer',
-                        'name'              => 'Test rzp3',
-                        'email'             => 'sample@example.com',
-                        'mobile'            => '9988998897',
-                        'reference_id'      => ''
-                    ],
-                    'notes'  => [
-                        'code'              => 'xyz123',
-                        'place'             => 'Hyderabad',
-                        'state'             => 'Telengana'
-                    ],
-                    'idempotency_key'       => 'batch_abc123'
-                ]
-            ]
-        ],
-        'response'  => [
-            'content'     => [
-                'entity' => 'collection',
-                'count'  => 3,
-                'items'  => [
-                    [
-                        'entity'                => 'fund_account',
-                        'account_type'          => 'bank_account',
-                        'details' => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
-                        ],
-                        'bank_account'          => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
-                        ],
-                        'active'                => true,
-                    ],
-                    [
-                        'entity'                => 'fund_account',
-                        'account_type'          => 'vpa',
-                        'details'               => [
-                            'address'           => '123@ybl',
-                        ],
-                        'vpa'                   => [
-                            'address'           => '123@ybl',
-                        ],
-                        'active'                => true,
-                    ],
-                    [
-                        'entity'                => 'fund_account',
-                        'account_type'          => 'bank_account',
-                        'details' => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
-                        ],
-                        'bank_account'          => [
-                            'ifsc'              => 'SBIN0007106',
-                            'bank_name'         => 'State Bank of India',
-                            'name'              => 'Sample rzp1',
-                            'account_number'    => '1234567890',
-                        ],
-                        'active'                => true,
-                    ]
-                ]
             ],
         ],
     ],

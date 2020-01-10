@@ -46,16 +46,10 @@ trait Callback
         $gatewayInputLog = $gatewayInput;
 
         unset($gatewayInputLog['otp']);
-        if (empty($gatewayInputLog['PaRes']) === false)
-        {
-            $gatewayInputLog['PaRes'] = '*****redacted**** length: ' . strlen($gatewayInputLog['PaRes']);
-        }
-
         if (empty($gatewayInputLog['PaReq']) === false)
         {
             $gatewayInputLog['PaReq'] = '*****redacted**** length: ' . strlen($gatewayInputLog['PaReq']);
         }
-
 
         $this->trace->info(
             TraceCode::PAYMENT_CALLBACK_REQUEST,
@@ -273,6 +267,13 @@ trait Callback
             $input['s2s'] = true;
         }
 
+        if ((empty($input['gateway']) === true) and
+            ($input['payment']['method'] === Payment\Method::CARD))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_GATEWAY_EMPTY_CALLBACK);
+        }
+
         try
         {
             $this->preProcessGatewayCallback($input);
@@ -378,7 +379,8 @@ trait Callback
     {
         // TODO: Refactor
         if ((isset($input['gateway']['type'])) and
-            ($input['gateway']['type'] === 'otp'))
+            ($input['gateway']['type'] === 'otp') and
+            $input['payment'][Payment\Entity::CPS_ROUTE] !== Payment\Entity::CARD_PAYMENT_SERVICE)
         {
             $this->validateCallbackInputIfApplicable($input);
 
@@ -415,8 +417,16 @@ trait Callback
     {
         $payment = $this->payment;
 
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            $pa = $this->repo->payment_analytics->findLatestByPayment($payment->getId());
+
+            $input['payment_analytics'] = $pa ? $pa->toArray() : null;
+        }
+
         if (($payment->isMethodCardOrEmi() === true) and
-            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP))
+            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP) and
+            ($payment->getCpsRoute() !== Payment\Entity::CARD_PAYMENT_SERVICE))
         {
             $input['gateway'] = $this->submitHeadlessOtp($payment, $input['gateway']);
         }

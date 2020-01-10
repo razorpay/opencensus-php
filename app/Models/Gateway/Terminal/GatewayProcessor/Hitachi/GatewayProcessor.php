@@ -3,12 +3,16 @@
 namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi;
 
 use Config;
+use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Terminal\Core;
 use RZP\Models\Terminal\Entity;
+use RZP\Constants\IndianStates;
 use RZP\Constants\Entity as Constants;
+use RZP\Models\Gateway\Terminal\Constants as TerminalConstants;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailConstants;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\BaseGatewayProcessor;
-use RZP\Trace\TraceCode;
 
 class GatewayProcessor extends BaseGatewayProcessor
 {
@@ -62,6 +66,44 @@ class GatewayProcessor extends BaseGatewayProcessor
         return $gateWayInput;
     }
 
+    public function addDefaultValueToMerchantDetailIfApplicable(array &$merchantDetail)
+    {
+        if ($this->shouldUpdateDefaultValuesInMerchantDetail($merchantDetail) === true) {
+
+            $merchantDetail[MerchantDetailConstants::BUSINESS_OPERATION_STATE] = TerminalConstants::DEFAULT_BUSINESS_OPERATION_STATE;
+
+            $merchantDetail[MerchantDetailConstants::BUSINESS_OPERATION_ADDRESS] = TerminalConstants::DEFAULT_BUSINESS_OPERATION_ADDRESS;
+
+            $merchantDetail[MerchantDetailConstants::BUSINESS_OPERATION_PIN] = TerminalConstants::DEFAULT_BUSINESS_OPERATION_PIN;
+
+            $merchantDetail[MerchantDetailConstants::BUSINESS_DBA] = TerminalConstants::DEFAULT_BUSINESS_DBA;
+
+            $merchantDetail[MerchantDetailConstants::BUSINESS_NAME] = TerminalConstants::DEFAULT_BUSINESS_NAME;
+
+            $merchantDetail[MerchantDetailConstants::BUSINESS_OPERATION_CITY] = TerminalConstants::DEFAULT_BUSINESS_OPERATION_CITY;
+        }
+    }
+
+    protected function shouldUpdateDefaultValuesInMerchantDetail($merchantDetail)
+    {
+        $shouldUpdate = false;
+
+        try
+        {
+            $gatewayProcessorValidator = new Validator();
+
+            $gatewayProcessorValidator->setStrictFalse();
+
+            $gatewayProcessorValidator->validateInput(self::MERCHANT_DETAIL_INPUT, $merchantDetail);
+        }
+        catch (Exception\BadRequestValidationFailureException $exception)
+        {
+            $shouldUpdate = true;
+        }
+
+        return $shouldUpdate;
+    }
+
     public function processTerminalData($terminalData, $merchant)
     {
         $this->setTerminalType($terminalData);
@@ -69,13 +111,11 @@ class GatewayProcessor extends BaseGatewayProcessor
         return (new Core)->create($terminalData, $merchant);
     }
 
-    public function validateGatewayInput($gatewayInput, $merchant)
+    public function validateGatewayInput($gatewayInput, $merchantDetail)
     {
         $gatewayProcessorValidator = new Validator();
 
         $gatewayProcessorValidator->validateInput(self::GATEWAY_INPUT, $gatewayInput);
-
-        $merchantDetail = $merchant->merchantDetail->toArray();
 
         $gatewayProcessorValidator->setStrictFalse();
 

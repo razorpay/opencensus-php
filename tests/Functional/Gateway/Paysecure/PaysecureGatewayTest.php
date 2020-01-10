@@ -24,7 +24,7 @@ class PaysecureGatewayTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    protected $paymentEntityGateway = 'hitachi';
+    protected $paymentEntityGateway = 'paysecure';
 
     const HITACHI_MID = 'sample_hitachi_mid';
     const HITACHI_TID = 'sample_hitachi_tid';
@@ -90,7 +90,6 @@ class PaysecureGatewayTest extends TestCase
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
-
 
         $this->app->razorx->method('getTreatment')
             ->will($this->returnCallback(
@@ -638,7 +637,7 @@ class PaysecureGatewayTest extends TestCase
 
         $payment = $this->getDbLastEntityToArray('payment');
 
-        //temporary: make gateway hitachi until paysecure has not been added to scrooge
+        // Set Mock gateway to hitachi
         $this->gateway = 'hitachi';
 
         $this->mockServerContentFunction(
@@ -665,14 +664,13 @@ class PaysecureGatewayTest extends TestCase
             [
                 'amount'     => 1000,
                 'payment_id' => $payment['id'],
-                'gateway'    => 'hitachi',
+                'gateway'    => 'paysecure',
                 'is_scrooge' => true,
                 'status'     => 'processed',
             ],
             $refund
         );
 
-        //temporary: make gateway paysecure for other testcases
         $this->gateway = 'paysecure';
     }
 
@@ -684,7 +682,7 @@ class PaysecureGatewayTest extends TestCase
 
         $this->clearMockFunction();
 
-        //temporary: make gateway hitachi until paysecure has not been added to scrooge
+        // Set Mock gateway to hitachi
         $this->gateway = 'hitachi';
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -711,14 +709,13 @@ class PaysecureGatewayTest extends TestCase
             [
                 'amount'     => 1000,
                 'payment_id' => $payment['id'],
-                'gateway'    => 'hitachi',
+                'gateway'    => 'paysecure',
                 'is_scrooge' => true,
                 'status'     => 'processed',
             ],
             $refund
         );
 
-        //temporary: make gateway paysecure for other testcases
         $this->gateway = 'paysecure';
     }
 
@@ -788,11 +785,12 @@ class PaysecureGatewayTest extends TestCase
     // the hitachi entity would not exist.
     public function testLateAuthorizedViaPurchaseTerminal()
     {
+        // making it direct terminal so that another hitachi terminal doesn't get created with default mode
         $this->fixtures->terminal->edit(
             \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
             [
                 'mode' => 2,
-
+                'merchant_id' => '10000000000000'
             ]
         );
 
@@ -813,7 +811,7 @@ class PaysecureGatewayTest extends TestCase
             $this->doAuthPayment($this->payment);
         });
 
-        $data = $this->testData['testVerifyFailedPayment'];
+        $data = $this->testData['testVerifyAuthTimeoutPayment'];
 
         $payment = $this->getDbLastEntity('payment');
 
@@ -836,7 +834,7 @@ class PaysecureGatewayTest extends TestCase
         );
     }
 
-    public function testVerifyFailedPayment()
+    public function testVerifyAuthTimeoutPayment()
     {
         $this->mockServerContentFunction(
             function (&$content, $action = null)
@@ -880,6 +878,66 @@ class PaysecureGatewayTest extends TestCase
         $paysecure = $this->getDbLastEntityToArray('paysecure');
 
         $this->assertNotNull($paysecure['apprcode']);
+    }
+
+    public function testVerifyMissingCallbackPayment()
+    {
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'initiate2')
+                {
+                    throw new GatewayTimeoutException('Timed out');
+                }
+            }
+        );
+
+        $data = $this->testData['testAuthorizeFailed'];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'transaction_status')
+                {
+                    // This is to ensure that the transaction status api is NOT hit on the gateway
+                    // If this exception is thrown, the "verified" field of payment would be failed
+                    throw new \Exception('Error from gateway');
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $payment = $this->getDbLastEntity('payment');
+
+                $this->verifyPayment($payment->getPublicId());
+            });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'method'        => 'card',
+                'gateway'       => $this->paymentEntityGateway,
+                'amount'        => 50000,
+                'status'        => 'failed',
+                'verified'      => null,
+            ],
+            $payment
+        );
+
+        $paysecure = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertNull($paysecure['apprcode']);
     }
 
     protected function assertSuccess($authResponse, $flow)

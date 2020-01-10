@@ -8,6 +8,7 @@ use RZP\Exception\IntegrationException;
 use RZP\Models\Feature;
 use RZP\Models\Risk;
 use RZP\Models\Payment;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -95,6 +96,39 @@ class FraudDetectionTest extends TestCase
         $this->assertNotNull($riskEntity['risk_score']);
     }
 
+    public function testSkipMaxmindCheckForAmexPayments()
+    {
+        $this->mockRazorx();
+        $this->mockShield();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => "American Express",
+                'type'    => 'debit',
+            ]);
+
+        $payment['card']['number'] = '5149066434045615';
+        $payment['card']['cvv']    = '1234';
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayKeysExist($response, ['razorpay_payment_id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $paymentAnalytics = $this->getLastEntity('payment_analytics', true);
+
+        $this->assertEquals($paymentAnalytics['risk_score'], 35);
+
+        $this->assertEquals($paymentAnalytics['risk_engine'], 'shield');
+    }
+
     public function testFraudNotDetected()
     {
         $this->mockMaxmind();
@@ -159,7 +193,7 @@ class FraudDetectionTest extends TestCase
     {
         $this->mockShield();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -188,7 +222,7 @@ class FraudDetectionTest extends TestCase
     {
         $this->mockShield();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -197,6 +231,46 @@ class FraudDetectionTest extends TestCase
         $response = $this->doAuthPayment($payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
+    public function testAllowByShieldWithHighRiskScore()
+    {
+        $this->mockShield();
+
+        $this->mockRazorx();
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => 'Visa',
+                'type'    => 'debit',
+                'country' => 'US',
+                'enabled' => '1'
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '5149067611060906';
+
+
+        $data = $this->testData['testFraudDetected'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals(
+            Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD,
+            $riskEntity['reason']
+        );
     }
 
     /*
@@ -219,13 +293,21 @@ class FraudDetectionTest extends TestCase
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $payment = $this->getDefaultPaymentArray();
 
-        $payment['card']['number'] = '341111111111111';
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => 'Visa',
+                'type'    => 'debit',
+                'country' => 'US',
+                'enabled' => '1'
+            ]);
 
-        $payment['card']['cvv'] = '1234';
+        $payment['card']['number'] = '5149067611060906';
 
         $data = $this->testData['testFraudDetectionFailedByShieldDetectedByMaxMind'];
 
@@ -264,7 +346,7 @@ class FraudDetectionTest extends TestCase
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+        $this->mockRazorx();
 
         $this->fixtures->merchant->enableUpi();
 
@@ -273,5 +355,168 @@ class FraudDetectionTest extends TestCase
         $response = $this->doAuthPayment($payment);
 
         $this->assertArrayHasKey('payment_id', $response);
+    }
+
+    protected function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+             ->method('getTreatment')
+             ->will($this->returnCallback(function ($mid, $feature, $mode)
+                    {
+                        if ($feature === 'shield_risk_evaluation')
+                        {
+                            return 'shield_on';
+                        }
+
+                        return 'shield_off';
+                    }));
+    }
+
+    protected function runPlatformTest($platform, $value)
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '341111111111111';
+
+        $payment['card']['cvv'] = '1234';
+
+        // Bootstrap to call shield code
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->mockRazorx();
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        if ($platform !== null)
+        {
+            $payment['_'] = ['platform' => $platform];
+        }
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing(function ($payload) use ($value) {
+                return [
+                    "action" => (($payload['input']['platform'] === $value) ? 'allow': 'block'),
+                    "max_rule_weight" => 0,
+                    "maxmind_score" => null,
+                    "triggered_rule_weight" => 0,
+                ];
+            });
+
+        $this->app->instance('shield', $shieldClient);
+
+        $this->doAuthPayment($payment);
+
+    }
+
+    /*
+     * In these 6 tests we are trying to check if the parameter platform is getting passed
+     * to the shield service correctly or not.
+     *
+     * For that we have created a payment and mocked razorx and shield client.
+     *
+     * Then for each value of platform we would block the payment if the platform value
+     * in the received payload doesn't match the actual platform value which we passed.
+     *
+     * This ensures the correct testing of this parameter in the actual payment flow
+     * upto and after the shield client has been used.
+     *
+     * The only reason for separate tests is that binding mock services to app can occur only
+     * once in a test, and we had to create different mock services for different parameters.
+     */
+
+    public function testFraudDetectionWithPlatformNull()
+    {
+        $this->runPlatformTest(null, null);
+    }
+
+    public function testFraudDetectionWithPlatformBrowser()
+    {
+        $this->runPlatformTest('browser', 'browser');
+    }
+
+    public function testFraudDetectionWithPlatformMobileSdk()
+    {
+        $this->runPlatformTest('mobile_sdk', 'mobile_sdk');
+    }
+
+    public function testFraudDetectionWithPlatformCordova()
+    {
+        $this->runPlatformTest('cordova', 'cordova');
+    }
+
+    public function testFraudDetectionWithPlatformServer()
+    {
+        $this->runPlatformTest('server', 'server');
+    }
+
+    public function testFraudDetectionWithPlatformRandom()
+    {
+        $this->runPlatformTest('xyz', 'others');
+    }
+
+    protected function runPayloadTest($payment, $comparatorFunc)
+    {
+        $this->mockRazorx();
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing($comparatorFunc);
+
+        $this->app->instance('shield', $shieldClient);
+
+        $this->doAuthPayment($payment);
+
+    }
+
+    public function testFraudDetectionForUpiFlowIntent()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+
+        $payment['_'] = ['flow' => 'intent'];
+
+        $comparatorFunc = function ($payload) {
+            return [
+                "action" => (($payload['input']['upi_type'] === 'intent') ? 'allow': 'block'),
+                "max_rule_weight" => 0,
+                "maxmind_score" => null,
+                "triggered_rule_weight" => 0,
+            ];
+        };
+
+        $this->runPayloadTest($payment, $comparatorFunc);
+    }
+
+    public function testFraudDetectionForUpiFlowCollect()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $comparatorFunc = function ($payload) {
+            return [
+                "action" => (($payload['input']['upi_type'] === 'collect') ? 'allow': 'block'),
+                "max_rule_weight" => 0,
+                "maxmind_score" => null,
+                "triggered_rule_weight" => 0,
+            ];
+        };
+
+        $this->runPayloadTest($payment, $comparatorFunc);
     }
 }

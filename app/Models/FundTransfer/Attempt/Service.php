@@ -2,8 +2,10 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
@@ -56,6 +58,64 @@ class Service extends Base\Service
         return $summary;
     }
 
+    private function checkBulkUpdateSkipConditions(Entity $fundTransferAttempt, array $params)
+    {
+        if ($fundTransferAttempt->getIsFts() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FUND_TRANSFER_ATTEMPT_UPDATE_NOT_ALLOWED,
+                null,
+                null,
+                'Only FTS can update this attempt');
+        }
+
+        //
+        // Payouts have a proper status management and is exposed to the merchants.
+        // FTA cannot change it randomly. Payouts creates reversals in case of failures.
+        // Payouts state cannot change from reversed to processed.
+        //
+        if ($fundTransferAttempt->getSourceType() === Type::PAYOUT)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FUND_TRANSFER_ATTEMPT_UPDATE_NOT_ALLOWED,
+                null,
+                null,
+                'Payouts cannot be updated directly, must go via recon flow');
+        }
+
+        //
+        // Temporarily allowing update of channel for Refund attempts.
+        // This is because we don't have a way to change channel in a
+        // clean way at the moment, but we may still want to change the
+        // channel sometimes, and retry it.
+        //
+        if ((isset($params[Entity::CHANNEL]) === true) and
+            ($fundTransferAttempt->isRefund() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FUND_TRANSFER_ATTEMPT_UPDATE_NOT_ALLOWED,
+                null,
+                null,
+                'Channel can only be edited for Refund attempts!');
+        }
+
+        // Allowing only specific state transitions on FTA
+        //  processed -> failed
+        //  initiated -> processed
+        //  initiated -> failed
+        if ((isset($params[Entity::STATUS]) === true) and
+            (($params[Entity::STATUS] === $fundTransferAttempt->getStatus()) or
+             (in_array($params[Entity::STATUS], [Status::PROCESSED, Status::FAILED], true) === false) or
+             (in_array($fundTransferAttempt->getStatus(), [Status::PROCESSED, Status::INITIATED], true) === false)))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FUND_TRANSFER_ATTEMPT_UPDATE_NOT_ALLOWED,
+                null,
+                null,
+                'Cant update status to ' . $params[Entity::STATUS] . ' from ' . $fundTransferAttempt->getStatus());
+        }
+    }
+
     public function bulkUpdate(array $input)
     {
         $this->trace->info(
@@ -76,59 +136,22 @@ class Service extends Base\Service
 
         foreach ($fundTransferAttempts as $fundTransferAttempt)
         {
-            if ($fundTransferAttempt->getIsFts() === true)
-            {
-                $this->trace->error(
-                    TraceCode::FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED,
-                    [
-                        'fta_id' => $fundTransferAttempt->getId(),
-                        'reason' => 'Only FTS can update this attempt',
-                    ]);
-
-                $notUpdatedIds[] = $fundTransferAttempt->getId();
-
-                continue;
-            }
-
-            //
-            // Payouts have a proper status management and is exposed to the merchants.
-            // FTA cannot change it randomly. Payouts creates reversals in case of failures.
-            // Payouts state cannot change from reversed to processed.
-            //
-            if ($fundTransferAttempt->getSourceType() === Type::PAYOUT)
-            {
-                $this->trace->error(
-                    TraceCode::FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED,
-                    [
-                        'fta_id' => $fundTransferAttempt->getId(),
-                        'reason' => 'Payouts cannot be updated directly. Should go through recon flow.',
-                    ]);
-
-                continue;
-            }
-
-            $sourceId = null;
-
             $id = $fundTransferAttempt->getId();
 
             $params = $input[$id];
 
             (new Validator)->validateInput('edit', $params);
 
-            //
-            // Temporarily allowing update of channel for Refund attempts.
-            // This is because we don't have a way to change channel in a
-            // clean way at the moment, but we may still want to change the
-            // channel sometimes, and retry it.
-            //
-            if ((isset($params[Entity::CHANNEL]) === true) and
-                ($fundTransferAttempt->isRefund() === false))
+            try
             {
-                $this->trace->error(
-                    TraceCode::FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED,
+                $this->checkBulkUpdateSkipConditions($fundTransferAttempt, $params);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->error(TraceCode::FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED,
                     [
-                        'fta_id' => $fundTransferAttempt->getId(),
-                        'reason' => 'Channel can only be edited for Refund attempts!',
+                        'fta_id'        => $id,
+                        'reason'        => $ex->getMessage(),
                     ]);
 
                 $notUpdatedIds[] = $id;
@@ -142,17 +165,10 @@ class Service extends Base\Service
 
             if ($fundTransferAttempt->isBatchSameAsSource() === true)
             {
-                $sourceId = $this->updateSource($fundTransferAttempt->source, $params);
+                $this->core()->updateSourceEntity($fundTransferAttempt);
             }
 
-            if ($sourceId !== null)
-            {
-                $updatedIds[] = $id;
-            }
-            else
-            {
-                $notUpdatedIds[] = $id;
-            }
+            $updatedIds[] = $id;
         }
 
         $response = [
@@ -160,9 +176,7 @@ class Service extends Base\Service
             'not_updated_ids'   => $notUpdatedIds
         ];
 
-        $this->trace->info(
-            TraceCode::FUND_TRANSFER_ATTEMPT_UPDATED,
-            $response);
+        $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_UPDATED, $response);
 
         return $response;
     }

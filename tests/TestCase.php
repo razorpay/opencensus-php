@@ -8,6 +8,8 @@ use Request;
 use ReflectionObject;
 use RZP\Models\Terminal\Options as TerminalOptions;
 use Illuminate\Foundation\Testing\TestCase as IlluminateTestCase;
+
+use RZP\Models\Admin;
 /**
  * Base test case class provided bdy laravel all, test cases inherit it
  * ALl test cases follow, GIVEN, WHEN, THEN structure
@@ -61,6 +63,8 @@ class TestCase extends IlluminateTestCase
         $this->config = $this->app['config'];
 
         $this->mockCardVault();
+
+        $this->disbaleCpsConfig();
     }
 
     public function tearDown()
@@ -173,5 +177,25 @@ class TestCase extends IlluminateTestCase
                   ->andReturnUsing($callable);
 
         $this->app->instance('card.cardVault', $cardVault);
+    }
+
+    public function enableCpsConfig()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED => 1]);
+    }
+
+    public function disbaleCpsConfig()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED => 0]);
+    }
+
+    public function enableNbPlusConfig()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED => 1]);
+    }
+
+    public function disableNbPlusConfig()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED => 0]);
     }
 }

@@ -59,5 +59,28 @@ class ViewDataSerializer extends Base\Core
 
     }
 
+    public function serializeForApiInternal()
+    {
+        $invoiceData = $this->serializeForApi();
 
+        $order = $this->invoice->order;
+
+        if ($this->invoice->getEntityType() === Constants\Entity::SUBSCRIPTION_REGISTRATION)
+        {
+            $subscriptionRegistration = $this->invoice->entity;
+
+            if ($order->getMethod() === Method::NACH)
+            {
+                $paperMandate = $subscriptionRegistration->paperMandate;
+
+                // for dashboard indicates whether form has been uploaded or not
+                // if form is already uploaded uploaded id will be populated or else it will be null
+                $invoiceData['is_nach_form_uploaded'] = empty($paperMandate->getUploadedFileID()) === false;
+            }
+
+            $invoiceData[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::STATUS] = $subscriptionRegistration->getStatus();
+        }
+
+        return $invoiceData;
+    }
 }

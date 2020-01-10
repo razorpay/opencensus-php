@@ -4,6 +4,26 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 
 return [
+    'testRblXlsxStatementGeneration' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/banking_account_statement/generate',
+            'content' => ['account_number' => '2224440041626905', 'send_email' => '0', 'format' => 'xlsx', 'to_date' => '', 'from_date' => '946684800', 'channel' => 'rbl']
+        ],
+        'response' => [
+            'content' => ['account_number' => '2224440041626905', 'send_email' => '0', 'format' => 'xlsx', 'from_date' => '946684800', 'channel' => 'rbl']
+        ]
+    ],
+    'testRblXlsxStatementEmailSent' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/banking_account_statement/generate',
+            'content' => ['account_number' => '2224440041626905', 'send_email' => '1', 'to_emails' => ['test@razorpay.com'], 'format' => 'xlsx', 'from_date' => '946684800', 'to_date' => '', 'channel' => 'rbl']
+        ],
+        'response' => [
+            'content' => ['account_number' => '2224440041626905', 'send_email' => '1', 'format' => 'xlsx', 'from_date' => '946684800', 'channel' => 'rbl']
+        ]
+    ],
     'testRblAccountStatementCase1' => [
         'request'  => [
             'method'  => 'POST',
@@ -153,4 +173,18 @@ return [
             'message'             => 'The PayGenRes.Body.transactionDetails.1.txnBalance.amountValue must be at least 0.'
         ],
     ],
+
+    'testRblAccountStatementTxnMappingCase1' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ]
 ];

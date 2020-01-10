@@ -28,7 +28,9 @@ final class Constants
 
     const BANK_PROCESSED_TIME   = 'bank_processed_time';
 
-    const INTERNAL_ERROR      = 'internal_error';
+    const INTERNAL_ERROR        = 'internal_error';
+
+    const IGNORE_TIME_LIMIT     = 'ignore_time_limit';
 
     const MAX_UPI_AMOUNT        = 100000;
 

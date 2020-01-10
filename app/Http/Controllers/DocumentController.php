@@ -46,4 +46,11 @@ class DocumentController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function delete(string $id)
+    {
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->delete($id);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
 use RZP\Gateway\Upi\Base;
+use RZP\Models\UpiTransfer;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Upi\Base\Entity;
@@ -24,6 +25,8 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    use Base\MandateTrait;
+
     const ACQUIRER = 'hdfc';
 
     protected $gateway = Payment\Gateway::UPI_MINDGATE;
@@ -34,7 +37,9 @@ class Gateway extends Base\Gateway
 
     const BANK = 'hdfc';
 
-    const TIMEOUT = 20;
+    const TIMEOUT       = 15;
+
+    const CONNECT_TIMEOUT = 1;
 
     /**
      * This is what shows up as the payee
@@ -85,7 +90,18 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::AUTHENTICATE);
 
-        if ($this->isBharatQrPayment() === true)
+        if ($this->isMandateCreateRequest($input) === true)
+        {
+            return $this->mandateCreate($input);
+        }
+
+        if ($this->isMandateExecuteRequest($input) === true)
+        {
+            return $this->mandateExecute($input);
+        }
+
+        if (($this->isBharatQrPayment() === true) or
+            ($this->isUpiTransferPayment() === true))
         {
             $attributes = $this->getBharatqrGatewayAttributes($input);
 
@@ -128,14 +144,25 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function authorizeIntent(array $input)
+    public function getIntentUrl(array $input)
+    {
+        // We can call authorize intent with persist false
+        return $this->authorizeIntent($input, false);
+    }
+
+    protected function authorizeIntent(array $input, bool $persist = true)
     {
         $attributes = [
             Entity::TYPE                => Base\Type::PAY,
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
         ];
 
-        $payment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
+        // No need to save the entity for Virtual Account, a corresponding
+        // entity will be created when a payment will be made for the VA.
+        if ($persist === true)
+        {
+            $payment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
+        }
 
         $request = $this->getIntentRequest($input);
 
@@ -293,6 +320,12 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallback($input, $isBharatQr = false): array
     {
+        //TODO:: Fix this condition when we know the correct callback response for OTM.
+        if (isset($input['payload']) === true and ($this->isLiveMode() === false))
+        {
+            return $this->preProcessMandateCallback($input, Payment\Gateway::UPI_MINDGATE);
+        }
+
         $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
 
         $response = $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
@@ -301,7 +334,11 @@ class Gateway extends Base\Gateway
 
         $bankDetails = $this->parseBankAccountDetails($response[ResponseFields::BANK_REFERENCE]);
 
+        $payeeVaDetails = $this->parsePayeeVaDetails($response[ResponseFields::REFERENCE_7]);
+
         $response = array_merge($response, $bankDetails);
+
+        $response = array_merge($response, $payeeVaDetails);
 
         if ($isBharatQr === true)
         {
@@ -341,6 +378,30 @@ class Gateway extends Base\Gateway
         return [
             'callback_data' => $input,
             'qr_data'       => $qrData
+        ];
+    }
+
+    public function getUpiTransferData(array $input)
+    {
+        $amount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
+
+        $upiTransferData = [
+            UpiTransfer\GatewayResponseParams::AMOUNT                => $amount,
+            UpiTransfer\GatewayResponseParams::GATEWAY               => $this->gateway,
+            UpiTransfer\GatewayResponseParams::PAYER_VPA             => $input[ResponseFields::PAYER_VA],
+            UpiTransfer\GatewayResponseParams::PAYEE_VPA             => $input[ResponseFields::PAYEE_VA],
+            UpiTransfer\GatewayResponseParams::PAYER_BANK            => $input[ResponseFields::BANK_NAME],
+            UpiTransfer\GatewayResponseParams::PAYER_IFSC            => $input[ResponseFields::IFSC_CODE],
+            UpiTransfer\GatewayResponseParams::PAYER_ACCOUNT         => $input[ResponseFields::ACCOUNT_NUMBER],
+            UpiTransfer\GatewayResponseParams::TRANSACTION_TIME      => $input[ResponseFields::TXN_AUTH_DATE],
+            UpiTransfer\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::CALLBACK_RESPONSE_PGMID],
+            UpiTransfer\GatewayResponseParams::NPCI_REFERENCE_ID     => $input[ResponseFields::NPCI_UPI_TXN_ID],
+            UpiTransfer\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
+        ];
+
+        return [
+            'callback_data'     => $input,
+            'upi_transfer_data' => $upiTransferData
         ];
     }
 
@@ -410,6 +471,19 @@ class Gateway extends Base\Gateway
     public function callback(array $input): array
     {
         parent::callback($input);
+
+        if (isset($input['gateway']['mandateDtls']) === true)
+        {
+            if ($input['gateway']['mandateDtls'][0]['mandateType'] === 'CREATE')
+            {
+                return $this->mandateCreateCallback($input);
+            }
+
+            if ($input['gateway']['mandateDtls'][0]['mandateType'] === 'UPDATE')
+            {
+                return $this->mandateUpdateCallback($input);
+            }
+        }
 
         $content = $input['gateway'];
 
@@ -492,6 +566,29 @@ class Gateway extends Base\Gateway
         }
 
         return $bankReferenceArray;
+    }
+
+    protected function parsePayeeVaDetails($payeeVaReference)
+    {
+        $fields = constant(__NAMESPACE__ . '\ResponseFields::PAYEE_VA_DETAILS');
+
+        $values = explode(ResponseFields::BANK_REFERENCE_SEPARATOR, $payeeVaReference);
+
+        $payeeVaReferenceArray = [];
+
+        $index = 0;
+
+        if (empty($values) === false)
+        {
+            foreach ($fields as $key)
+            {
+                $payeeVaReferenceArray[$key] = $values[$index];
+
+                $index++;
+            }
+        }
+
+        return $payeeVaReferenceArray;
     }
 
     protected function updateGatewayPaymentResponse($payment, array $response)
@@ -1073,6 +1170,11 @@ class Gateway extends Base\Gateway
      */
     public function getPaymentIdFromServerCallback(array $response)
     {
+        if (isset($response['mandateDtls']) === true)
+        {
+            return $this->getPaymentIdFromMandateCallback($response, Payment\Gateway::UPI_MINDGATE);
+        }
+
         return $response[ResponseFields::PAYMENT_ID];
     }
 
@@ -1092,6 +1194,16 @@ class Gateway extends Base\Gateway
                 ]
             );
         }
+    }
+
+    public function isMandateUpdateCallback($input)
+    {
+        if ((isset($input['mandateDtls']) === true) and ($input['mandateDtls'][0]['mandateType'] === 'UPDATE'))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function isValidUnexpectedPayment($callbackData)
@@ -1118,7 +1230,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
 
-        $this->checkResponseStatus($content[ResponseFields::STATUS], [Status::SUCCESS, Status::PENDING]);
+        $this->checkResponseStatus($content[ResponseFields::STATUS], [Status::SUCCESS]);
     }
 
     public function getParsedDataFromUnexpectedCallback($callbackData)

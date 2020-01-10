@@ -15,6 +15,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
+use RZP\Models\BankingAccountStatement;
 
 /**
  * Class Entity
@@ -74,6 +75,7 @@ class Entity extends Base\PublicEntity
     // Relation names/attributes
     const SOURCE            = 'source';
     const ACCOUNT_BALANCE   = 'account_balance';
+    const SETTLEMENT        = 'settlement';
 
     protected static $sign = 'txn';
 
@@ -120,6 +122,16 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::SETTLED_AT,
         self::SETTLEMENT_ID,
+    ];
+
+    /**
+     * Relations to be returned when receiving expand[] query param in fetch
+     * (eg. transaction, transaction.settlement with payment fetch)
+     *
+     * @var array
+     */
+    protected $expanded = [
+        self::SETTLEMENT,
     ];
 
     protected $publicSetters = [
@@ -235,6 +247,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany(Commission\Entity::class, Commission\Entity::TRANSACTION_ID, Entity::ID);
     }
 
+    public function bankingAccountStatement()
+    {
+        return $this->hasOne(BankingAccountStatement\Entity::class);
+    }
+
     public function getCredit()
     {
         return $this->getAttribute(self::CREDIT);
@@ -243,6 +260,16 @@ class Entity extends Base\PublicEntity
     public function getDebit()
     {
         return $this->getAttribute(self::DEBIT);
+    }
+
+    public function isCredit()
+    {
+        return ($this->getCredit() > 0);
+    }
+
+    public function isDebit()
+    {
+        return ($this->getDebit() > 0);
     }
 
     public function getNetAmount()
@@ -467,7 +494,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
     }
 
-    public function setReconciledType(string $reconciledType)
+    public function setReconciledType($reconciledType)
     {
         ReconciledType::validateReconciledType($reconciledType);
 
@@ -521,9 +548,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ESCROW_BALANCE, $balance);
     }
 
-    public function setBalance($balance)
+    public function setBalance($balance, $negativeBalanceEnabled = false)
     {
-        assertTrue ($balance >= 0);
+        if ($negativeBalanceEnabled === false)
+        {
+            assertTrue ($balance >= 0);
+        }
 
         $this->setAttribute(self::BALANCE, $balance);
     }
@@ -906,9 +936,9 @@ class Entity extends Base\PublicEntity
      *
      * Few examples of issues:
      * 1. Having a $transaction object outside this class you cannot access balance relation as normal.
-      *    Doing $transaction->balance will always get the integer attribute. Workarounds exist but are not
+     *    Doing $transaction->balance will always get the integer attribute. Workarounds exist but are not
      *    expressive. I.e. $transaction->getRelation('balance') etcetera.
-      * 2. For lists API, if having balance relation lazy loaded and existing balance integer attribute in $public,
+     * 2. For lists API, if having balance relation lazy loaded and existing balance integer attribute in $public,
      *    it'll always get overridden with balance relation because how the base serialization happens. Again,
      *    workaround for this also exists but not worth repeating.
      *
@@ -949,5 +979,17 @@ class Entity extends Base\PublicEntity
         $statement->original   = $this->original;
 
         return $statement;
+    }
+
+    /**
+     * Gives the cache tag which in join of all the variable passed and prefixed with entity name
+     * adding it here because queryCaching doesnt support `joinSub`.
+     * todo: move this to cachable trait once `joinSub` support is added
+     *
+     * @return string
+     */
+    public static function getCacheTag(): string
+    {
+        return implode('_', func_get_args());
     }
 }

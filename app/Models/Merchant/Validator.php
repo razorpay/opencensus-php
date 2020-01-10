@@ -13,6 +13,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Payment\Event;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -65,7 +66,7 @@ class Validator extends Base\Validator
         Entity::CHANNEL                               => 'sometimes|string|max:32|custom',
         Entity::RISK_RATING                           => 'sometimes|min:0|max:5',
         Entity::RISK_THRESHOLD                        => 'sometimes|integer|min:0|max:100',
-        Entity::FEE_BEARER                            => 'sometimes|in:customer,platform',
+        Entity::FEE_BEARER                            => 'sometimes|in:customer,platform,dynamic',
         Entity::FEE_MODEL                             => 'sometimes|in:prepaid,postpaid',
         Entity::REFUND_SOURCE                         => 'sometimes|string|max:32|in:balance,credits',
         Entity::MAX_PAYMENT_AMOUNT                    => 'sometimes|integer',
@@ -254,6 +255,7 @@ class Validator extends Base\Validator
         Constants::TO                    => 'integer',
         Constants::COUNT                 => 'integer|min:1|max:50',
         Constants::SKIP                  => 'integer',
+        Entity::MERCHANT_ID              => 'sometimes|array',
     ];
 
     protected static $partnerSubmerchantMapRules = [
@@ -304,6 +306,11 @@ class Validator extends Base\Validator
 
     protected static $preferencesRules = [
         'contact_id'  => 'filled|public_id',
+    ];
+
+    protected static $holidayNotifyRules = [
+        'lists'   => 'required|string',
+        'action'  => 'required|string',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -739,8 +746,7 @@ class Validator extends Base\Validator
             }
             // Only Merchant who have feature ES_ON_DEMAND enabled can change ES features
             else if (($input['es_enabled'] === false) and
-                     (($feature === Feature\Constants::ES_AUTOMATIC) or
-                     ($feature === Feature\Constants::ES_ON_DEMAND)))
+                    ($feature === Feature\Constants::ES_AUTOMATIC))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
@@ -1215,7 +1221,15 @@ class Validator extends Base\Validator
 
         if ($bankAccount === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+            // check partner bank account exists
+            $partner = (new Core)->getSettledToPartnersTypeOfMerchantIfExists($merchant);
+
+            $partnerbankAccountExits = (new Core)->isValidBankAccountForSettledToPartner($merchant, $partner);
+
+            if ($partnerbankAccountExits === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+            }
         }
     }
 

@@ -12,7 +12,7 @@ return [
     'available' => [
         'amex',
         'atom',
-        'atos',
+        'mozart',
         'axis_genius',
         'axis_migs',
         'billdesk',
@@ -25,6 +25,7 @@ return [
         'esigner_legaldesk',
         'enach_rbl',
         'enach_npci_netbanking',
+        'nach_citi',
         'ebs',
         'first_data',
         'hdfc',
@@ -32,6 +33,7 @@ return [
         'isg',
         'kotak',
         'mobikwik',
+        'mozart',
         'netbanking_sib',
         'netbanking_cbi',
         'netbanking_hdfc',
@@ -70,6 +72,7 @@ return [
         'upi_mindgate',
         'upi_hulk',
         'upi_sbi',
+        'upi_juspay',
         'upi_npci',
         'upi_rbl',
         'upi_yesbank',
@@ -94,6 +97,8 @@ return [
         'paysecure',
         'paylater',
         'google_pay',
+        'getsimpl',
+        'worldline',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -172,10 +177,12 @@ return [
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
     'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),
     'mock_wallet_phonepe'         => env('PHONEPE_MOCK'),
+    'mock_getsimpl'               => env('GETSIMPL_MOCK'),
     'mock_wallet_paypal'          => env('PAYPAL_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
+    'mock_upi_juspay'             => env('UPI_JUSPAY_MOCK'),
     'mock_worldline'              => env('WORLDLINE_MOCK'),
-    'mock_atos'                   => env('ATOS_MOCK'),
+    'mock_mozart'                 => env('MOZART_MOCK'),
     'mock_upi_citi'               => env('UPI_CITI_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
@@ -746,9 +753,12 @@ return [
     ],
 
     'netbanking_csb' => [
-        'test_merchant_id_2' => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id'   => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
-        'test_hash_secret'   => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id_2'            => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID2'),
+        'test_merchant_id'              => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'              => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
+        'test_terminal_password'        => env('NETBANKING_CSB_GATEWAY_TEST_TERMINAL_PASSWORD'),
+        'test_terminal_password2'       => env('NETBANKING_CSB_GATEWAY_TEST_TERMINAL_PASSWORD2'),
+        'test_gateway_secure_secret2'   => env('NETBANKING_CSB_GATEWAY_TEST_SECURE_SECRET2'),
     ],
 
     'netbanking_equitas' => [

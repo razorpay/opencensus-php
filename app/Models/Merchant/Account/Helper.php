@@ -230,6 +230,32 @@ class Helper
         return $customFields;
     }
 
+    /**
+     * We modify the input here because for some cases like address type, we want to accept case insensitive chars
+     * like both REGISTERED and registered. So we modify the input here, so that validations and === comparisons will
+     * pass and there will be uniformity elsewhere in the code
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public static function modifyAccountInput(array $input): array
+    {
+        if (empty($input[Constants::PROFILE][Constants::ADDRESSES]) === true)
+        {
+            return $input;
+        }
+
+        foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $key => $address)
+        {
+            $type = strtolower($input[Constants::PROFILE][Constants::ADDRESSES][$key][Constants::TYPE]);
+
+            $input[Constants::PROFILE][Constants::ADDRESSES][$key][Constants::TYPE] = $type;
+        }
+
+        return $input;
+    }
+
     private static function getAddressesFromInput(array $input): array
     {
         $addresses = [];

@@ -12,53 +12,58 @@ use RZP\Constants\Entity;
 use RZP\Base\Database\MySqlConnection;
 
 /**
- * @property Models\Plan\Subscription\Repository           $subscription
- * @property Models\Terminal\Repository                    $terminal
- * @property Models\Invoice\Repository                     $invoice
- * @property Models\Tax\Repository                         $tax
- * @property Models\Payment\Repository                     $payment
- * @property Models\Payment\Refund\Repository              $refund
- * @property Models\Merchant\Repository                    $merchant
- * @property Models\Batch\Repository                       $batch
- * @property Models\BankAccount\Repository                 $bank_account
- * @property Models\Merchant\Account\Repository            $account
- * @property Models\PaymentLink\Repository                 $payment_link
- * @property Models\Feature\Repository                     $feature
- * @property Models\Order\Repository                       $order
- * @property Models\Payment\Analytics\Repository           $payment_analytics
- * @property Models\Transaction\Repository                 $transaction
- * @property Models\Vpa\Repository                         $vpa
- * @property Models\Contact\Repository                     $contact
- * @property Models\FundAccount\Repository                 $fund_account
- * @property Models\Merchant\Balance\Repository            $balance
- * @property Models\Transaction\Statement\Repository       $statement
- * @property Models\FundAccount\Repository                 $customer_balance
- * @property Models\FundAccount\Validation\Repository      $fund_account_validation
- * @property Models\FundTransfer\Attempt\Repository        $fund_transfer_attempt
- * @property Models\Reversal\Repository                    $reversal
- * @property Models\Payout\Repository                      $payout
- * @property Models\Merchant\Detail\Repository             $merchant_detail
- * @property Models\BankingAccount\Repository              $banking_account
- * @property Models\BankingAccount\Detail\Repository       $banking_account_detail
- * @property Models\Item\Repository                        $item
- * @property Models\PaymentLink\PaymentPageItem\Repository $payment_page_item
- * @property Models\BankingAccountStatement\Repository     $banking_account_statement
- * @property Models\Admin\Role\Repository                  $role
- * @property Models\Admin\Permission\Repository            $permission
- * @property Models\Workflow\Action\Repository             $workflow_action
- * @property Models\Workflow\Step\Repository               $workflow_step
- * @property Models\Workflow\Repository                    $workflow
- * @property Models\Workflow\Action\Checker\Repository     $action_checker
- * @property Models\Workflow\PayoutAmountRules\Repository  $workflow_payout_amount_rules
- * @property Models\Mpan\Repository                        $mpan
- * @property Models\Merchant\Document\Repository           $merchant_document
- * @property Models\Card\Repository                        $card
- * @property Models\Settlement\bucket\Repository           $settlement_bucket
- * @property Models\D2cBureauDetail\Repository             $d2c_bureau_detail
- * @property Models\D2cBureauReport\Repository             $d2c_bureau_report
- * @property Models\Merchant\MerchantUser\Repository       $merchant_user
- * @property Models\Merchant\Invoice\Repository            $merchant_invoice
- * @property Models\Address\Repository                     $address
+ * @property Models\Plan\Subscription\Repository                $subscription
+ * @property Models\SubscriptionRegistration\Repository         $subscription_registration
+ * @property Models\Customer\Token\Repository                   $token
+ * @property Models\Terminal\Repository                         $terminal
+ * @property Models\Invoice\Repository                          $invoice
+ * @property Models\Tax\Repository                              $tax
+ * @property Models\Payment\Repository                          $payment
+ * @property Models\Payment\Refund\Repository                   $refund
+ * @property Models\Merchant\Repository                         $merchant
+ * @property Models\Batch\Repository                            $batch
+ * @property Models\BankAccount\Repository                      $bank_account
+ * @property Models\Merchant\Account\Repository                 $account
+ * @property Models\PaymentLink\Repository                      $payment_link
+ * @property Models\Feature\Repository                          $feature
+ * @property Models\Order\Repository                            $order
+ * @property Models\Payment\Analytics\Repository                $payment_analytics
+ * @property Models\Transaction\Repository                      $transaction
+ * @property Models\Vpa\Repository                              $vpa
+ * @property Models\Contact\Repository                          $contact
+ * @property Models\FundAccount\Repository                      $fund_account
+ * @property Models\Merchant\Balance\Repository                 $balance
+ * @property Models\Merchant\Balance\BalanceConfig\Repository   $balance_config
+ * @property Models\Transaction\Statement\Repository            $statement
+ * @property Models\FundAccount\Repository                      $customer_balance
+ * @property Models\FundAccount\Validation\Repository           $fund_account_validation
+ * @property Models\FundTransfer\Attempt\Repository             $fund_transfer_attempt
+ * @property Models\Reversal\Repository                         $reversal
+ * @property Models\Payout\Repository                           $payout
+ * @property Models\Merchant\Detail\Repository                  $merchant_detail
+ * @property Models\BankingAccount\Repository                   $banking_account
+ * @property Models\BankingAccount\Detail\Repository            $banking_account_detail
+ * @property Models\Item\Repository                             $item
+ * @property Models\PaymentLink\PaymentPageItem\Repository      $payment_page_item
+ * @property Models\BankingAccountStatement\Repository          $banking_account_statement
+ * @property Models\Admin\Role\Repository                       $role
+ * @property Models\Admin\Permission\Repository                 $permission
+ * @property Models\Workflow\Action\Repository                  $workflow_action
+ * @property Models\Workflow\Step\Repository                    $workflow_step
+ * @property Models\Workflow\Repository                         $workflow
+ * @property Models\Workflow\Action\Checker\Repository          $action_checker
+ * @property Models\Workflow\PayoutAmountRules\Repository       $workflow_payout_amount_rules
+ * @property Models\Mpan\Repository                             $mpan
+ * @property Models\Merchant\Document\Repository                $merchant_document
+ * @property Models\Card\Repository                             $card
+ * @property Models\Settlement\Bucket\Repository                $settlement_bucket
+ * @property Models\Settlement\Destination\Repository           $settlement_destination
+ * @property Models\D2cBureauDetail\Repository                  $d2c_bureau_detail
+ * @property Models\D2cBureauReport\Repository                  $d2c_bureau_report
+ * @property Models\Merchant\MerchantUser\Repository            $merchant_user
+ * @property Models\Merchant\Invoice\Repository                 $merchant_invoice
+ * @property Models\Address\Repository                          $address
+ * @property Models\Options\Repository                          $options
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {
@@ -158,7 +163,7 @@ class RepositoryManager extends Illuminate\Support\Manager
         }
     }
 
-    public function reload(& $entity)
+    public function reload(&$entity)
     {
         $repo = $this->getRepositoryClassFromObject($entity);
 

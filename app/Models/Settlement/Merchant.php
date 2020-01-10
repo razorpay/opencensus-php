@@ -42,6 +42,7 @@ class Merchant
     protected $mode;
     protected $env;
     protected $merchantSettleToPartner;
+    protected $isAggregateSettlement;
 
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
@@ -54,7 +55,8 @@ class Merchant
                                 $channel,
                                 $repo = null,
                                 $logging = false,
-                                array $merchantSettleToPartner = [])
+                                array $merchantSettleToPartner = [],
+                                bool $isAggregateSettlement = false)
     {
         $this->app = App::getFacadeRoot();
 
@@ -69,6 +71,8 @@ class Merchant
         $this->trace = $this->app['trace'];
 
         $this->merchantSettleToPartner = $merchantSettleToPartner;
+
+        $this->isAggregateSettlement = $isAggregateSettlement;
 
         // Get settlement bank account
         $this->attachSettlementBankAccount();
@@ -153,16 +157,29 @@ class Merchant
 
     public function createTransaction($settlement)
     {
-        $this->setl = $settlement;
-
-        $this->repo->transaction(function()
+        try
         {
-            $this->setlTransaction = (new Transaction\Core)->createFromSettlement($this->setl);
+            $this->setl = $settlement;
 
-            $this->repo->saveOrFail($this->setlTransaction);
+            $this->repo->transaction(function()
+            {
+                $this->setlTransaction = (new Transaction\Core)->createFromSettlement($this->setl);
 
-            $this->repo->saveOrFail($this->setl);
-        });
+                $this->repo->saveOrFail($this->setlTransaction);
+
+                $this->repo->saveOrFail($this->setl);
+            });
+        }
+        catch(\Throwable $e)
+        {
+            //
+            // this is required as any failure in transaction wont revert the changes in the model.
+            // so forcefully mark the settlement transaction as null
+            //
+            $settlement->transaction()->dissociate();
+
+            throw $e;
+        }
     }
 
     public function createSettlementAttempt($merchantSettleToPartner, $params = []) : FundTransferAttempt\Entity
@@ -235,6 +252,7 @@ class Merchant
             {
                 case Transaction\Type::PAYMENT:
                 case Transaction\Type::REVERSAL:
+                case Transaction\Type::SETTLEMENT_TRANSFER:
                     $details[$componentType]['amount'] += $txn->getAmount();
                     break;
 
@@ -428,10 +446,10 @@ class Merchant
      *
      * @param int|null $initiateAt
      * @param array $merchantSettleToPartner
+     * @return FundTransferAttempt\Entity
      */
     protected function createSettlementAttemptEntity(int $initiateAt = null, array $merchantSettleToPartner)
     {
-
         $customProperties = [
             'merchant_id'           => $this->merchant->getId(),
             'channel'               => $this->channel,
@@ -452,6 +470,10 @@ class Merchant
         {
             $this->updateMockResponse($fta);
         }
+
+        (new Destination\Core)->register($this->setl, $fta);
+
+        return $fta;
     }
 
     /**
@@ -601,7 +623,7 @@ class Merchant
     /**
      * Attaches bank account to merchant entity
      */
-    protected function attachSettlementBankAccount(): BankAccount\Entity
+    protected function attachSettlementBankAccount()
     {
         $mode = $this->ba->getMode();
 
@@ -617,7 +639,9 @@ class Merchant
         {
             $ba = $this->repo->bank_account->getBankAccount($this->merchant);
 
-            if ($ba === null and isset($this->merchantSettleToPartner[$mid]) === false)
+            if (($ba === null) and
+                (isset($this->merchantSettleToPartner[$mid]) === false) and
+                ($this->isAggregateSettlement === false))
             {
                 throw new Exception\LogicException(
                     'Settling bank account not found');
@@ -637,8 +661,13 @@ class Merchant
         return $ba;
     }
 
-    protected function attachTestBank($merchant): BankAccount\Entity
+    protected function attachTestBank($merchant)
     {
+        if ($this->isAggregateSettlement === true)
+        {
+            return null;
+        }
+
         $attributes = array(
             'ifsc_code'             => BankAccount\Entity::SPECIAL_IFSC_CODE,
             'beneficiary_name'      => random_string_special_chars(5),

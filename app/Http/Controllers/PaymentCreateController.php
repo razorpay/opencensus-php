@@ -35,7 +35,14 @@ class PaymentCreateController extends Controller
         if ((is_array($ret)) and
             (isset($ret['request']) === false))
         {
-            return ApiResponse::json($ret);
+            if((isset($this->input['provider'])) and ($this->input['provider'] === Payment\Gateway::GETSIMPL) and ($this->app['rzp.mode'] != 'test'))
+            {
+                assertTrue ($ret !== null);
+                return $this->returnCheckoutCallbackView($ret);
+            }
+            else {
+                return ApiResponse::json($ret);
+            }
         }
 
         return $ret;
@@ -109,7 +116,7 @@ class PaymentCreateController extends Controller
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
-        if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomer() === true) and
+        if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomerOrDynamic() === true) and
             (isset($input['fee']) === false))
         {
             $input['view'] = 'html';
@@ -233,6 +240,28 @@ class PaymentCreateController extends Controller
     public function postCreatePaymentFees()
     {
         $input = Request::all();
+
+        $this->logPaymentRequestEvent($input);
+
+        $this->setMerchantCallbackUrlIfApplicable($input);
+
+        return $this->createFeeBearerCustomerPayment($input);
+    }
+
+    public function postCalculatePaymentFees()
+    {
+        $input = Request::all();
+
+        /*
+         * A possible value of $input['view'] is 'html'. This is  used by createFeeBearerCustomerPayment()
+         *  to send the response in html. However *this* route is json only.
+         * So we unset the view parameter before sending to createFeeBearerCustomerPayment().
+         * This is to ensure only json ever gets returned.
+         */
+        if (isset($input['view']) === true)
+        {
+            unset($input['view']);
+        }
 
         $this->logPaymentRequestEvent($input);
 
@@ -505,9 +534,9 @@ class PaymentCreateController extends Controller
             else if (($data['type'] === 'async') or
                      ($data['type'] === 'intent'))
             {
-                $merchantLogoUrl = $this->app['basicauth']->getMerchant()->getLogoUrl();
+                $merchantLogoUrl = $this->app['basicauth']->getMerchant()->getFullLogoUrlWithSize();
 
-                if(isset($merchantLogoUrl))
+                if (isset($merchantLogoUrl) === true)
                 {
                     $data['merchant_logo_url'] = $merchantLogoUrl;
                 }
@@ -739,6 +768,11 @@ class PaymentCreateController extends Controller
      */
     protected function returnCheckoutCallbackView($data)
     {
+        if (Payment\Gateway::isNachNbResponseFlow($data) === true)
+        {
+            return $this->returnNachNbCallbackView($data);
+        }
+
         return View::make('gateway.callback')->with('data', $data);
     }
 
@@ -747,7 +781,22 @@ class PaymentCreateController extends Controller
      */
     protected function returnMerchantFullRedirectView($data)
     {
+        if (Payment\Gateway::isNachNbResponseFlow($data) === true)
+        {
+            return $this->returnNachNbRedirectView($data);
+        }
+
         return View::make('gateway.callbackReturnUrl')->with('data', $data);
+    }
+
+    protected function returnNachNbCallbackView($data)
+    {
+        return View::make('gateway.callbackNachNb')->with('data', $data);
+    }
+
+    protected function returnNachNbRedirectView($data)
+    {
+        return View::make('gateway.callbackNachNb')->with('data', $data);
     }
 
     protected function returnConvenienceFeesView($input, $data, $url)

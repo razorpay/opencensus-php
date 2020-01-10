@@ -6,6 +6,7 @@ use Mail;
 use Redis;
 
 use Carbon\Carbon;
+use RZP\Constants\Entity;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
@@ -275,7 +276,7 @@ class AttemptReconcileTest extends TestCase
 
         $setlFile = $this->verifySettlementReconFileProcessForIcici(true);
 
-        $this->reconcileEntitiesForChannel(Channel::ICICI);
+//        $this->reconcileEntitiesForChannel(Channel::ICICI);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
 
@@ -396,16 +397,12 @@ class AttemptReconcileTest extends TestCase
 
         $this->verifySettlementReconProcessForRbl();
 
-        $this->reconcileEntitiesForChannel(Channel::RBL);
-
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
 
     public function testSettlementReconcileEntitiesSuccessForYesbank()
     {
         $this->verifySettlementReconProcessForYesbank();
-
-        $this->reconcileEntitiesForChannel(Channel::YESBANK);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
@@ -420,8 +417,6 @@ class AttemptReconcileTest extends TestCase
 
         $this->verifyPayoutReconProcessForYesbankVpa();
 
-//        $this->reconcileEntitiesForChannel(Channel::YESBANK);
-
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::PAYOUT);
     }
 
@@ -432,19 +427,11 @@ class AttemptReconcileTest extends TestCase
         Carbon::setTestNow($now);
 
         $this->verifySettlementReconProcessForRbl(true);
-
-        $content = $this->reconcileEntitiesForChannel(Channel::RBL);
-
-        $this->assertOnlineReconcileEntitiesFailure($content, Channel::RBL);
     }
 
     public function testSettlementReconcileEntitiesFailureForYesbank()
     {
         $this->verifySettlementReconProcessForYesbank(true);
-
-        $content = $this->reconcileEntitiesForChannel(Channel::YESBANK);
-
-        $this->assertOnlineReconcileEntitiesFailure($content, Channel::YESBANK);
     }
 
     public function testPayoutReconcileEntitiesForKotak()
@@ -452,23 +439,13 @@ class AttemptReconcileTest extends TestCase
         $this->markTestSkipped('Kotak is not live.');
 
         $this->verifyPayoutReconFileProcessForKotak();
-
-        $this->reconcileEntitiesForChannel(Channel::KOTAK);
-
-        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::PAYOUT);
     }
 
     public function verifyReconcileEntitiesFailureForKotak()
     {
         Mail::fake();
 
-        $channel = Channel::KOTAK;
-
         $this->verifySettlementReconFileProcessFailureKotak();
-
-        $content = $this->reconcileEntitiesForChannel($channel);
-
-        $this->assertReconcileEntitiesFailure($content, $channel);
 
         $merchant = $this->getEntityById('merchant', '10000000000000', true);
         $this->assertEquals(true, $merchant['hold_funds']);
@@ -481,10 +458,6 @@ class AttemptReconcileTest extends TestCase
         $channel = Channel::ICICI;
 
         $this->verifySettlementReconFileProcessFailureIcici();
-
-        $content = $this->reconcileEntitiesForChannel($channel);
-
-        $this->assertReconcileEntitiesFailure($content, $channel);
     }
 
     protected function assertReconcileEntitiesFailure(array $content, string $channel)
@@ -613,6 +586,12 @@ class AttemptReconcileTest extends TestCase
         Carbon::setTestNow($now);
 
         $this->reinitiateSettlementAndAssertSuccessForChannel(Channel::ICICI);
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $bta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->validationSettlementDestination($setl['id'], Entity::FUND_TRANSFER_ATTEMPT, $bta['id']);
     }
 
     /**
@@ -690,7 +669,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $this->reconcileEntitiesForChannel($channel);
+//        $this->reconcileEntitiesForChannel($channel);
 
         $ftas = $this->getEntities('fund_transfer_attempt', [], true);
 
@@ -809,7 +788,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals(Status::RETURNSETTLED, $fta['bank_status_code']);
 
-        $this->assertEquals(Attempt\Status::INITIATED, $fta['status']);
+        $this->assertEquals(Attempt\Status::FAILED, $fta['status']);
 
         $this->reconcileEntitiesForChannel(Channel::AXIS);
 
@@ -835,5 +814,35 @@ class AttemptReconcileTest extends TestCase
         $this->assertEquals(Attempt\Status::INITIATED, $fta['status']);
 
         $this->assertEquals('FAILED', $fta['bank_status_code']);
+    }
+
+    public function testSettlementMerchantFailureForYesbank()
+    {
+        $channel = Channel::YESBANK;
+
+        $failure = 'merchant_error';
+
+        $this->createDataAndAssertInitiateOnlineTransferResponse(
+            $channel,
+            Attempt\Purpose::SETTLEMENT,
+            1,
+            Attempt\Type::SETTLEMENT,
+            $failure);
+
+        $this->reconcileOnlineSettlements($channel, $failure);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Attempt\Status::FAILED, $fta['status']);
+        $this->assertEquals('npci:E449', $fta['bank_response_code']);
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $this->assertEquals(Settlement\Status::FAILED, $settlement['status']);
+
+        $merchant = $this->getEntityById('merchant', '10000000000000', true);
+
+        $this->assertEquals(true, $merchant['hold_funds']);
+        $this->assertEquals('bank account/transaction was rejected from bank', $merchant['hold_funds_reason']);
     }
 }

@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\Helpers;
 
 use RZP\Models\Payout;
+use RZP\Services\RazorXClient;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
+
 /**
  * Consists reusable methods to help with business banking related tests.
  */
@@ -215,5 +217,22 @@ trait TestsBusinessBanking
         ];
 
         $this->fixtures->create('pricing', $pricingPlan);
+    }
+
+    protected function mockRazorxTreatment()
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $this->app->razorx->method('getCachedTreatment')
+                          ->willReturn('off');
     }
 }

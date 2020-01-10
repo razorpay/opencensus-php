@@ -1328,7 +1328,7 @@ return [
                     'entity' => [
                         'entity'            => 'terminal',
                         'status'            => 'activated',
-                        'enabled'           =>  false,
+                        'enabled'           =>  true,
                     ],
                 ],
             ],
@@ -1395,6 +1395,21 @@ return [
                         'error_code'        => 'SERVER_ERROR_TERMINAL_ONBOARDING_FAILED',
                     ],
                 ],
+            ],
+        ],
+    ],
+
+    'createSettingsForWebhookTranslateUrl' => [
+        'request'  => [
+            'url'     => '/settings/partner',
+            'method'  => 'post',
+            'content' => [
+                'translate_webhook_gateway'       => 'facebook',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
             ],
         ],
     ],
