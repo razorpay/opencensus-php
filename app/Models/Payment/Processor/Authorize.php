@@ -704,7 +704,8 @@ trait Authorize
             $card = $payment->card;
             $redirectUrl = null;
 
-            if ($payment->getGateway() !== Payment\Gateway::BAJAJ)
+            if (($payment->getGateway() !== Payment\Gateway::BAJAJ) and
+                ($payment->getGateway() !== Payment\Gateway::DEBIT_EMI))
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
