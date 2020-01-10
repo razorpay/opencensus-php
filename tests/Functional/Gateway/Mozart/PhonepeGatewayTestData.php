@@ -54,14 +54,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_GATEWAY_EMPTY_CALLBACK,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
