@@ -90,6 +90,7 @@
         status: '{{ $payout_link_status }}',
         allowUpi : !!'{{ $allow_upi }}',
         fundAccountDetails : JSON.parse('{!! $fund_account_details !!}')
+        purpose  : '{{ $purpose }}'
     };
 </script>
 <script src="{{ $banking_url }}/dist/payoutlinks.js"></script>

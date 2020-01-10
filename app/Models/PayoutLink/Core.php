@@ -435,7 +435,8 @@ class Core extends Base\Core
             'allow_upi'               => $isUpiEnabled,
             'banking_url'             => $this->config['applications.banking_service_url'],
             'is_production'           => $isProduction,
-            'fund_account_details'    => json_encode($fundAccountDetails)
+            'fund_account_details'    => json_encode($fundAccountDetails),
+            'purpose'                 => $payoutLink->getPurpose()
         ];
 
         return $data;
