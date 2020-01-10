@@ -412,6 +412,10 @@ class AdminFetch
                     Fetch::LABEL        => 'Transfer Id',
                     Fetch::TYPE         => Fetch::TYPE_STRING,
                 ],
+                'gateway_ref_no' => [
+                    Fetch::LABEL  => 'Gateway Ref No',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
             Entity::FTS_FUND_ACCOUNT => [],
             Entity::FTS_BENEFICIARY_STATUS => [
@@ -1182,6 +1186,10 @@ class AdminFetch
                     Fetch::LABEL  => 'Channel',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => Channel::getChannels()
+                ],
+                'gateway_ref_no' => [
+                    Fetch::LABEL  => 'Gateway Ref No',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
 
