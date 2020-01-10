@@ -140,7 +140,7 @@ class PublicController extends Controller
             'key'          => $this->ba->getPublicKey(),
             'options'      => json_encode(Request::all(), JSON_FORCE_OBJECT),
             'meta'         => json_encode($meta, JSON_FORCE_OBJECT),
-            'script'       => $this->config->get('url.cdn.production') . '/static/hosted/embedded.js',
+            'script'       => $this->config->get('url.cdn.production') . '/static/hosted/embedded-entry.js',
             'urls'         => "{}"
         ];
 
@@ -178,7 +178,7 @@ class PublicController extends Controller
 
         if ($showEmbeddedUi) {
             $key         = $params['checkout']['key'];
-            $embeddedJsUrl = $this->config->get('url.cdn.production') . '/static/hosted/embedded.js';
+            $embeddedJsUrl = $this->config->get('url.cdn.production') . '/static/hosted/embedded-entry.js';
             $data = [
                 'key'          => $key,
                 'options'      => $options,
