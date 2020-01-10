@@ -590,6 +590,15 @@ class PaymentCreateController extends Controller
                     return View::make('gateway.gatewayOtpPostForm')
                                ->with('data', $templateData);
                 }
+                else if ($data['method'] === Payment\Method::EMI) {
+                    if ((isset($data['missing']) === true) and
+                        (in_array('contact', $data['missing'], true) === true)) {
+                        $data['cdn'] = $this->config->get('url.cdn.production');
+
+                        return View::make('gateway.gatewayCardlessEmiForm')
+                            ->with('data', $data);
+                    }
+                }
             }
             else
             {

@@ -325,6 +325,13 @@ trait Authorize
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
+            $return = $this->returnSpawnCoprotoIfContactRequired($payment, $input);
+
+            if ($return !== null)
+            {
+                return $return;
+            }
+
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
             // passing $terminalGateawyInput and $gatewayInput
@@ -469,6 +476,36 @@ trait Authorize
         }
 
         return $request;
+    }
+
+    protected function returnSpawnCoprotoIfContactRequired($payment, $input)
+    {
+        $coproto = null;
+
+        $gateway = $payment->getGateway();
+
+        if ((in_array($gateway, Payment\Gateway::$contactMandatoryGateways) === true) and
+            ($payment->merchant->isPhoneOptional() === true) and
+            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
+        {
+            $coproto = [
+                'type'    => 'respawn',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
+                ],
+                'method' => 'emi',
+                'version' => '1',
+                'provider' => 'hdfc',
+            ];
+
+            $coproto['missing'][] = 'contact';
+
+            unset($coproto['request']['content']['contact']);
+        }
+
+        return $coproto;
     }
 
     protected function runOtpPaymentFlow(Payment\Entity $payment, array $gatewayInput)
@@ -636,6 +673,12 @@ trait Authorize
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
     {
+        if ((isset($request['type']) === true) and
+            ($request['type'] === 'respawn'))
+        {
+            return $request;
+        }
+
         $payment->incrementOtpCount();
 
         $this->repo->save($payment);
