@@ -59,6 +59,7 @@ export default class LogItem extends React.PureComponent {
             actualStatus={actualStatus}
             onDownloadClick={props.onDownloadClick}
             consumerId={props.consumer}
+            fileId={props.file_id}
           />
         </div>
         {!!logItemInfoMessages[actualStatus] && (
