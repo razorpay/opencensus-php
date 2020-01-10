@@ -775,10 +775,6 @@ class Core extends Base\Core
             $fta->setRemarks($input[Entity::REMARKS]);
         }
 
-        if (empty($input[Entity::GATEWAY_REF_NO]) === false) {
-            $fta->setGatewayRefNo($input[Entity::GATEWAY_REF_NO]);
-        }
-
         return $fta;
     }
 

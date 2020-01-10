@@ -24,8 +24,7 @@ class Repository extends Base\Repository
         Entity::UTR                    => 'sometimes|alpha_num',
         Entity::BATCH_FUND_TRANSFER_ID => 'sometimes|alpha_num|size:14',
         Entity::VERSION                => 'sometimes|string',
-        Entity::CHANNEL                => 'sometimes|string',
-        Entity::GATEWAY_REF_NO         => 'sometimes|string',
+        Entity::CHANNEL                => 'sometimes|string'
     ];
 
     protected function validateSourceType($attribute, $value)
