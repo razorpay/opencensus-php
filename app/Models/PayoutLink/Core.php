@@ -153,6 +153,7 @@ class Core extends Base\Core
             TraceCode::PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD,
             $input);
 
+        //
         // Adding Mutex, because we want only one initiate call at a time on the same payout-link
         // So by flow, if two calls to add a fund-account-id + initiate payout come in, and the first one is successful,
         // then the next call waiting for the mutex should fail in token verification itself.
@@ -160,7 +161,8 @@ class Core extends Base\Core
         // because the token verification was already successful and as soon as the mutex is acquired Fund Account
         // will be added and a payout created.
         // Also the whole thing will be a transaction, as we do not want to add new fund-account if any step fails
-        return $this->mutex->acquireAndRelease(
+        //
+        $payoutLink = $this->mutex->acquireAndRelease(
             $payoutLink,
             function() use ($payoutLink, $input)
             {
@@ -217,6 +219,8 @@ class Core extends Base\Core
             },
             self::MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $payoutLink;
     }
 
     /**
@@ -302,6 +306,7 @@ class Core extends Base\Core
                 {
                     return Mode::NEFT;
                 }
+
             case Type::VPA:
                 return Mode::UPI;
         }
@@ -414,7 +419,7 @@ class Core extends Base\Core
                                          Trace::ERROR,
                                          TraceCode::INVALID_EMAIL_CANNOT_MASK,
                                          [
-                                             'email'      => $email
+                                             'email'    => $email
                                          ]
             );
         }
@@ -434,7 +439,6 @@ class Core extends Base\Core
         return substr($phone, 0, 2) .
                str_repeat('*', $phoneLen - 4) .
                substr($phone, $phoneLen - 2, 2);
-
     }
 
     public function generateAndSendCustomerOtp(Entity $payoutLink, array $input): array
@@ -572,7 +576,8 @@ class Core extends Base\Core
 
         $email = $payoutLink->getContactEmail();
 
-        if ((empty($phoneNumber) === true) and (empty($email) === true))
+        if ((empty($phoneNumber) === true) and
+            (empty($email) === true))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL,
                                           [
@@ -783,7 +788,7 @@ class Core extends Base\Core
     {
         $displayName = $this->merchant->getDisplayName();
 
-        if(empty($displayName) === true)
+        if (empty($displayName) === true)
         {
             return $this->merchant->getName();
         }
