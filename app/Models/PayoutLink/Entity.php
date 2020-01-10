@@ -14,6 +14,11 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property Merchant\Entity        $merchant
+ * @property User\Entity            $user
+ * @property FundAccount\Entity     $fundAccount
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
@@ -40,7 +45,7 @@ class Entity extends Base\PublicEntity
     const NOTES                = 'notes';
     // This purpose will be used in creating payouts. So validation will be same as that on Payout Purpose
     const PURPOSE              = 'purpose';
-    // This description is text that the merchant wants to add while creating payoutlink id.
+    // This description is text that the merchant wants to add while creating payout-link id.
     // This will be shown to the customer while entering bank account details
     const DESCRIPTION          = 'description';
     const RECEIPT              = 'receipt';
