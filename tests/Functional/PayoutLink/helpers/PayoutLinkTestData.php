@@ -281,7 +281,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_LINK_EITHER_CONTACT_ID_OR_INFORMATION_TO_BE_SENT,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EITHER_CONTACT_ID_OR_INFORMATION_TO_BE_SENT,
                 ],
             ],
             'status_code' => 400,
