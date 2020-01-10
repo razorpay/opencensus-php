@@ -722,6 +722,20 @@ trait Authorize
 
             $response['metadata'] = $metaData;
 
+            if ($payment->getGateway() === Payment\Gateway::DEBIT_EMI)
+            {
+                $response = array_merge(
+                    $response,
+                    [
+                        'terms' => [
+                            'tnc'      => 'tnc_url',
+                            'schedule' => 'schedule_url',
+                        ],
+                        'mode' => 'hdfc_debit_emi',
+                    ]
+                );
+            }
+
             $templateData = [
                'data'       => $response,
                'cdn'        => $this->app['config']->get('url.cdn.production'),
