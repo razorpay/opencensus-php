@@ -62,7 +62,7 @@ function ConfigOption({ option }) {
   return (
     <div class="custom-powerselect-options m-b">
       <p>
-        <strong>{option.name}</strong>
+        <strong>{name}</strong>
       </p>
       <p>
         {description ? (
