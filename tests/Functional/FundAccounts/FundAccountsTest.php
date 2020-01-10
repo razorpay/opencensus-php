@@ -310,6 +310,13 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkFundAccountWithPrivateAuthFailed()
+    {
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+    }
+
     public function testBulkFundAccountWithSameContact()
     {
         $this->ba->batchAuth();

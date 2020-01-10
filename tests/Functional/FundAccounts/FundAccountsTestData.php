@@ -828,6 +828,43 @@ return [
         ],
     ],
 
+    'testBulkFundAccountWithPrivateAuthFailed' => [
+        'request'   => [
+            'url'     => '/fund_accounts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp1',
+                        'account_IFSC'      => 'SBIN0007106',
+                        'account_number'    => '1234567890',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'id'                => 'cont_1000001contact',
+                        'type'              => 'vendor',
+                        'name'              => 'Test rzp1',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'idempotency_key'       => 'batch_abc123',
+                    'contact_id'            => 'cont_1000001contact'
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testBulkFundAccountWithSameContact' => [
         'request'   => [
             'url'     => '/fund_accounts/bulk',
