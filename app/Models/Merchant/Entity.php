@@ -997,7 +997,7 @@ class Entity extends Base\PublicEntity
         return $this->hasOne(Balance\Entity::class)
             ->where(Balance\Entity::TYPE, Balance\Type::RESERVE_PRIMARY);
     }
-    
+
     public function reserveBankingBalance()
     {
         return $this->hasOne(Balance\Entity::class)

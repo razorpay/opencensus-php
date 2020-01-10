@@ -389,6 +389,8 @@ class Handler extends ExceptionHandler
 
         $error = $exception->getError();
 
+        $this->addExceptionDataToError($exception);
+
         return ApiResponse::generateErrorResponse($error, $debug);
     }
 
@@ -400,9 +402,33 @@ class Handler extends ExceptionHandler
 
         $data = $exception->getData();
 
+        $this->addExceptionDataToError($exception);
+
         return ApiResponse::generateNachNbErrorResponse($error, $data, $debug);
     }
 
+    protected function addExceptionDataToError($exception)
+    {
+        $error = $exception->getError();
+
+        $data = $exception->getData();
+
+        if(isset($data['payment_id']))
+        {
+            $error['payment_id']  = $data['payment_id'];
+        }
+
+        if(isset($data['merchant_id']))
+        {
+            $error['merchant_id'] = $data['merchant_id'];
+        }
+
+        if(isset($data['order_id']))
+        {
+            $error['order_id']    = $data['order_id'];
+        }
+
+    }
 
     protected function getExceptionData($exception)
     {

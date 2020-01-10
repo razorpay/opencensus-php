@@ -4,10 +4,13 @@ namespace RZP\Error;
 
 use RZP\Exception;
 use Illuminate\Support;
+use RZP\Models\Feature\Constants;
 use RZP\Services\DowntimeMetric;
+use RZP\Models\Feature\Repository;
 
 class Error extends Support\Fluent
 {
+
      /** Error codes in which data needs to persist in response
      * Data will be persisted in the error response in non-debug also
      */
@@ -35,6 +38,7 @@ class Error extends Support\Fluent
     const ACTION                = 'action';
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_DESC    = 'gateway_error_desc';
+    const METADATA              = 'metadata';
 
     protected $attributes = array();
 
@@ -64,6 +68,8 @@ class Error extends Support\Fluent
         $this->setAction($code);
 
         $this->setAttribute(self::INTERNAL_ERROR_DESC, $internalDesc);
+
+        $this->setMetadata();
     }
 
     public function appendToField(string $string)
@@ -95,7 +101,6 @@ class Error extends Support\Fluent
 
         $this->attributes[$key] = $value;
     }
-
 
     public function isInvalidTerminalError()
     {
@@ -192,6 +197,59 @@ class Error extends Support\Fluent
     protected function setHttpStatusCode($code)
     {
         $this->setAttribute(self::HTTP_STATUS_CODE, $code);
+    }
+
+    protected function setMetadata()
+    {
+        $metadata = null;
+
+        $featureRepository = new Repository();
+
+        $isMetadataFeatureEnabled = false;
+
+        $merchantId = $this->get('merchant_id');
+
+        if($merchantId !== null)
+        {
+            $feature = $featureRepository->findByEntityTypeEntityIdAndNameOrFail(Constants::MERCHANT,
+                $this->get(self::MERCHANT_ID),
+                Constants::ADDITIONAL_FIELDS_ERROR_RESPONSE);
+
+            if (!empty($feature))
+            {
+                $isMetadataFeatureEnabled = true;
+            }
+        }
+
+        if($isMetadataFeatureEnabled === true)
+        {
+            $contains = [];
+
+            $paymentId = $this->get('payment_id');
+
+            $orderId = $this->get('order_id');
+
+            if(isset($paymentId) === true)
+            {
+                array_push($contains, 'payment_id');
+
+                $metadata['payment_id'] = $paymentId;
+            }
+
+            if(isset($orderId) === true)
+            {
+                array_push($contains, 'order_id');
+
+                $metadata['order_id'] = $orderId;
+            }
+
+            $metadata['contains'] = $contains;
+
+            $this->setAttribute(self::METADATA, $metadata);
+
+        }
+
+        return $isMetadataFeatureEnabled;
     }
 
     protected function getAttribute($attr)
@@ -334,10 +392,19 @@ class Error extends Support\Fluent
     {
         $description = $isPublicRoute ? $this->getCustomerDescription() : $this->getDescription();
 
+        $isMetadataFeatureEnabled = $this->setMetadata();
+
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
         );
+
+        if($isMetadataFeatureEnabled === true)
+        {
+            array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
+        }
+
+        $this->unsetAttributes($error);
 
         $error = $this->checkAndAddDataToErrorResp($error);
 
@@ -382,8 +449,20 @@ class Error extends Support\Fluent
 
     public function toDebugArray()
     {
+        $this->setMetadata();
+
         $error = $this->checkAndAddDataToErrorResp($this->getAttributes());
+
+        $this->unsetAttributes($error);
+
         return array('error' => $error);
+    }
+
+    protected function unsetAttributes(array &$error)
+    {
+        unset($error['payment_id']);
+        unset($error['order_id']);
+        unset($error['merchant_id']);
     }
 
     protected function getDescriptionFromErrorCode($code)

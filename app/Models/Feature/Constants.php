@@ -287,6 +287,8 @@ class Constants
 
     const BLOCK_OFFER_CREATION     = 'block_offer_creation';
 
+    const ADDITIONAL_FIELDS_ERROR_RESPONSE = 'error_metadata_response';
+
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
@@ -488,6 +490,7 @@ class Constants
         self::GENERATE_PARTNER_INVOICE        => true,
         self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
+        self::ADDITIONAL_FIELDS_ERROR_RESPONSE=> true,
     ];
 
     // Entity type constants

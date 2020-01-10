@@ -504,6 +504,8 @@ trait Callback
                 null,
                 [
                     'payment_id' => $this->payment->getId(),
+                    'merchant_id'=> $this->payment->getMerchantId(),
+                    'order_id'   => $this->payment->getOrderId(),
                     'status' => $status
                 ]);
         }
@@ -539,6 +541,10 @@ trait Callback
     protected function updatePaymentOnExceptionAndThrow($e)
     {
         $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+        $e->setData(['payment_id' => $this->payment->getId(),
+                     'merchant_id'=> $this->payment->getMerchantId(),
+                     'order_id'   => $this->payment->getOrderId()]);
 
         if (Error\Error::hasAction($internalErrorCode) === false)
         {
