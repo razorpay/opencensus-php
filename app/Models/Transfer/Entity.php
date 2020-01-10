@@ -604,14 +604,7 @@ class Entity extends Base\PublicEntity
 
     public function toArrayPublic()
     {
-        $app = \App::getFacadeRoot();
-
-        $variant = $app['razorx']->getTreatment($this->merchant->getId(),
-                                                Merchant\RazorxTreatment::TRANSFERS_VIA_ORDER,
-                                                $app['basicauth']->getMode()
-        );
-
-        if (strtolower($variant) === 'on' and $this->isCreated())
+        if ($this->isCreated() === true)
         {
             $this->public = [
                 self::RECIPIENT,
