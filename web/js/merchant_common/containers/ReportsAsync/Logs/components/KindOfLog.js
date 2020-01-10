@@ -4,11 +4,11 @@ export default function KindOfReport({ createdAt, scheduleId }) {
   return (
     <div>
       {!!scheduleId ? (
-        <label>Scheduled</label>
+        <strong>Scheduled</strong>
       ) : (
         <>
-          <label>Requested</label>
-          <p class="text-muted">{getRequestedAtTime(createdAt)}</p>
+          <strong>Requested</strong>
+          <p class="text-muted text-small">{getRequestedAtTime(createdAt)}</p>
         </>
       )}
     </div>

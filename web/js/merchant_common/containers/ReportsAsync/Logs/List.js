@@ -1,4 +1,5 @@
 import { downloadFromUFH } from 'merchant/utils/downloadFile';
+import Spinner from 'common/ui/Spinner';
 
 import LogItem from './Item';
 
@@ -11,16 +12,18 @@ export default function LogList(props) {
       props.currentMerchantId !== consumerId
         ? consumerId.replace('acc_')
         : undefined;
-    downloadFromUFH(fileId, accountId);
+    return downloadFromUFH(fileId, accountId);
   };
 
   return (
     <div class="LogList">
       {loading ? (
-        <p>Loading...</p>
+        <div className="page-spinner-container">
+          <Spinner />
+        </div>
       ) : (
         <>
-          <div>
+          <div class="LogList__header">
             <strong>Recent Reports</strong>
           </div>
           {items.map(item => (

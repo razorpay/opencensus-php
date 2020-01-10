@@ -78,5 +78,5 @@ function ConfigOption({ option }) {
 }
 
 function ConfigSelected({ option }) {
-  return <strong>{option.name}</strong>;
+  return <span>{option.name}</span>;
 }

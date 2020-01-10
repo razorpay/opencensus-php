@@ -2,6 +2,7 @@ import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { isPresent } from 'common/utils/rzp-utils';
+import Spinner from 'common/ui/Spinner';
 
 import SelectConfig from './SelectConfig';
 import SelectPeriod from './SelectPeriod';
@@ -61,7 +62,9 @@ export default class GenerateReportPanel extends React.PureComponent {
     const isFormDisabled = !selectedConfig;
 
     return configs.loading ? (
-      <p>Loading...</p>
+      <div className="page-spinner-container">
+        <Spinner />
+      </div>
     ) : (
       <div className="GenerateReportPanel">
         <div className="m-b">
@@ -84,7 +87,6 @@ export default class GenerateReportPanel extends React.PureComponent {
             onDateRangeChanges={this.onDateRangeChanges}
           />
 
-          <div class="m-t" />
           <Input.Group class="InputGroup--inline">
             <div class="Input-content">
               {/* there is no format option in case of custom configs */}
@@ -100,19 +102,21 @@ export default class GenerateReportPanel extends React.PureComponent {
               <EmailReport
                 ref={ref => (this.emailReport = ref)}
                 emails={this.props.emailReportOptions}
+                isFormDisabled={isFormDisabled}
               />
             </div>
           </Input.Group>
-
-          <AsyncBtn.Primary
-            pendingState="Requesting..."
-            type="submit"
-            onClick={this.onGenerateReport}
-            disabled={isFormDisabled || !!dateRangeError}
-            class="m-t"
-          >
-            {isCustomConfig ? 'Download' : 'Generate'} Report
-          </AsyncBtn.Primary>
+          <Input.Group>
+            <AsyncBtn.Primary
+              pendingState="Requesting..."
+              type="submit"
+              onClick={this.onGenerateReport}
+              disabled={isFormDisabled || !!dateRangeError}
+              class="m-t"
+            >
+              {isCustomConfig ? 'Download' : 'Generate'} Report
+            </AsyncBtn.Primary>
+          </Input.Group>
         </Form>
       </div>
     );

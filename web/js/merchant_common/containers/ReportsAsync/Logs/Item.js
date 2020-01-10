@@ -36,13 +36,13 @@ export default class LogItem extends React.PureComponent {
       >
         <div className="LogItem__Body">
           <div>
-            <p>{config.name || '--'}</p>
-
+            <strong>{config.name || '--'}</strong>
             <ReportDuration
               startTime={props.start_time}
               endTime={props.end_time}
             />
           </div>
+
           <div>
             <FileFormat
               logTemplate={props.template_overrides}
@@ -92,11 +92,13 @@ function ReportDuration({ startTime, endTime }) {
 function FileFormat({ logTemplate, configTemplate }) {
   return (
     <>
-      <label>Format</label>
-      <p class="text-muted">
-        {extractExtensionFromTemplate(logTemplate) ||
+      <strong>Format</strong>
+      <p class="text-muted text-small">
+        {(
+          extractExtensionFromTemplate(logTemplate) ||
           extractExtensionFromTemplate(configTemplate) ||
-          DEFAULT_FILE_FORMAT}
+          DEFAULT_FILE_FORMAT
+        ).toUpperCase()}
       </p>
     </>
   );
