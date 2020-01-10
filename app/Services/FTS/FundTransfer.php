@@ -15,6 +15,7 @@ use RZP\Models\Bank\IFSC as IFSC;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Vpa\Core as VPACore;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankAccount\Core as BankAccountCore;
@@ -766,5 +767,47 @@ class FundTransfer extends Base
             parent::FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS,
             Requests::POST,
             $input);
+    }
+
+    public function getBulkStatus(array $input)
+    {
+        (new Validator)->validateInput('fetch_transfer_status', $input);
+
+        try
+        {
+            $attempts = $this->FTACore->getAttemptsFromIds($input['fta_ids']);
+
+            $ftsTransferIds = $this->getFtsTransferIdFromAttempts($attempts);
+
+            $response  = $this->createAndSendRequest(
+                parent::FUND_TRANSFER_FETCH_URI,
+                Requests::GET,
+                $ftsTransferIds)['body']['transfers'];
+
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::FTS_TRANSFER_STATUS_FETCH_FAILED,
+                [
+                    'input' => $input,
+                ]);
+        }
+    }
+
+    protected function getFtsTransferIdFromAttempts(PublicCollection  $attempts)
+    {
+        $ftsTransferIds = [];
+
+        foreach ($attempts as $attempt)
+        {
+            $ftsTransferId = $attempt->getFtsTransferId();
+
+            $ftsTransferIds['fts_'.$ftsTransferId] = $ftsTransferId;
+        }
+
+        return $ftsTransferIds;
     }
 }
