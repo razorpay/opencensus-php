@@ -1,5 +1,3 @@
-import { connect } from 'react-redux';
-
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
@@ -17,9 +15,10 @@ export default class GenerateReportPanel extends React.PureComponent {
     this.setState({ selectedConfig });
   };
 
-  onDateChange = (value, name) => {
-    const target = { value, name };
-    this.onChange({ target });
+  onDateRangeChanges = (startAt, endAt) => {
+    this.setState({
+      dateRangeError: getDateRangeError(startAt, endAt),
+    });
   };
 
   onGenerateReport = () => {
@@ -55,56 +54,67 @@ export default class GenerateReportPanel extends React.PureComponent {
 
   render() {
     const { configs, customConfigs } = this.props;
-    const { selectedConfig } = this.state;
+    const { selectedConfig, dateRangeError } = this.state;
     const allConfigs = [...configs.items, ...customConfigs];
 
     const isCustomConfig = (selectedConfig || {}).type === 'custom';
+    const isFormDisabled = !selectedConfig;
 
     return configs.loading ? (
       <p>Loading...</p>
     ) : (
-      <Form onChange={this.onChange}>
-        <SelectConfig
-          configs={allConfigs}
-          onConfigChange={this.onConfigChange}
-        />
+      <div className="GenerateReportPanel">
+        <div className="m-b">
+          You can generate new reports or download from the list of recently
+          generated reports
+        </div>
+        <Form onChange={this.onChange}>
+          <SelectConfig
+            configs={allConfigs}
+            onConfigChange={this.onConfigChange}
+            selectedConfig={selectedConfig}
+          />
 
-        <SelectPeriod
-          avlblPeriodOptions={defaultPeriodOptions}
-          onDateChange={this.onDateChange}
-          ref={ref => (this.selectPeriod = ref)}
-          isCustomConfig={isCustomConfig}
-        />
+          <SelectPeriod
+            avlblPeriodOptions={defaultPeriodOptions}
+            ref={ref => (this.selectPeriod = ref)}
+            isCustomConfig={isCustomConfig}
+            isFormDisabled={isFormDisabled}
+            dateRangeError={dateRangeError}
+            onDateRangeChanges={this.onDateRangeChanges}
+          />
 
-        <div class="m-t" />
-        <Input.Group class="InputGroup--inline">
-          <div class="Input-content">
-            {/* there is no format option in case of custom configs */}
-            {!isCustomConfig && (
-              <SelectFormat
-                selectedConfigId={(selectedConfig || {}).id}
-                allConfigs={configs.items}
-                ref={ref => (this.selectFormat = ref)}
+          <div class="m-t" />
+          <Input.Group class="InputGroup--inline">
+            <div class="Input-content">
+              {/* there is no format option in case of custom configs */}
+              {!isCustomConfig && (
+                <SelectFormat
+                  selectedConfigId={(selectedConfig || {}).id}
+                  allConfigs={configs.items}
+                  ref={ref => (this.selectFormat = ref)}
+                  isFormDisabled={isFormDisabled}
+                />
+              )}
+
+              <EmailReport
+                ref={ref => (this.emailReport = ref)}
+                emails={this.props.emailReportOptions}
               />
-            )}
+            </div>
+          </Input.Group>
 
-            <EmailReport
-              ref={ref => (this.emailReport = ref)}
-              emails={this.props.emailReportOptions}
-            />
-          </div>
-        </Input.Group>
-
-        <AsyncBtn.Primary
-          pendingState="Requesting..."
-          type="submit"
-          onClick={this.onGenerateReport}
-          disabled={!selectedConfig}
-          class="m-t"
-        >
-          {isCustomConfig ? 'Download' : 'Generate'} Report
-        </AsyncBtn.Primary>
-      </Form>
+          <AsyncBtn.Primary
+            pendingState="Requesting..."
+            type="submit"
+            onClick={this.onGenerateReport}
+            disabled={isFormDisabled || !!dateRangeError}
+            class="m-t"
+          >
+            {isCustomConfig ? 'Download' : 'Generate'} Report
+          </AsyncBtn.Primary>
+        </Form>
+      </div>
     );
   }
 }
@@ -117,3 +127,13 @@ const defaultPeriodOptions = [
   { label: 'Monthly', name: 'monthly' },
   { label: 'Custom', name: 'dateRange' },
 ];
+
+function getDateRangeError(startAt, endAt) {
+  const difference = endAt.diff(startAt, 'days');
+  if (difference > 7) {
+    return 'Date range cannot exceed period of 7 days';
+  } else if (difference < 0) {
+    return "Start at date can't exceed end at date";
+  }
+  return false;
+}

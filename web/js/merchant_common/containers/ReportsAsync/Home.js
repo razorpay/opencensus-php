@@ -1,10 +1,13 @@
+import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import LogList from './Logs/List';
 import GenerateReportPanel from './GenerateReportPanel';
 
+@connect(null, { showNotification })
 export default class ReportHome extends React.PureComponent {
   componentDidMount() {
     this.props.fetchConfigs();
@@ -20,6 +23,31 @@ export default class ReportHome extends React.PureComponent {
       .then(data => {
         if (data && data.id) {
           this.props.pollLog(data.id);
+        }
+      })
+      .catch(({ errors }) => {
+        const error = errors[0];
+        if (error.includes('You reached maximum limit')) {
+          return this.props.showNotification({
+            type: 'error',
+            message: (
+              <>
+                {data.error} See more details on this error{' '}
+                <NavLink
+                  to="https://razorpay.com/docs/payment-gateway/dashboard-guide/reports/"
+                  target="_blank"
+                >
+                  here
+                </NavLink>.
+              </>
+            ),
+            closeTimeout: 5000,
+          });
+        } else {
+          this.props.showNotification({
+            type: 'error',
+            message: error,
+          });
         }
       });
   };
@@ -38,7 +66,7 @@ export default class ReportHome extends React.PureComponent {
           </header>
           <TestModeBanner />
           <content>
-            <div class="content-wrapper">
+            <div class="content-wrapper Reporting--ContentWrapper">
               <GenerateReportPanel
                 configs={configs}
                 customConfigs={customConfigs}
@@ -46,6 +74,7 @@ export default class ReportHome extends React.PureComponent {
                 emailReportOptions={otherProps.emailReportOptions}
                 mode={otherProps.mode}
               />
+              <div class="m-t" />
               <LogList
                 currentMerchantId={user.current}
                 allConfigs={configs.items}

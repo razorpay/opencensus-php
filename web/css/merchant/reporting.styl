@@ -3,6 +3,9 @@
 $failedColor = #f56a6a
 $successColor = #0b5
 $color-pending = #FFBA00;
+$grey-background = #F8F8F8;
+$grey-border = #DFE5E7;
+$dark-grey = #E1E6E6;
 
 // these styles will be deprecated once async reports UI is in production
 .report-loader
@@ -46,44 +49,104 @@ $color-pending = #FFBA00;
     padding: 6px 38px
 
 // async report styles
-$logItemBackground = #F8F8F8;
-$logItemBorderColor = #DFE5E7;
-.LogList
-  .LoadMore
-    margin: 10px auto
-    width: fit-content;
-  .LogItem
-    padding: 16px;
-    background-color: $logItemBackground;
-    border: 1px solid $logItemBorderColor;
-    border-radius: 4px;
-    margin-top: 20px;
+.Reporting--ContentWrapper
+  width: 70%
+  margin-left: auto
+  margin-right: auto
 
-    &--created
-      .LogStatus
-        color: $color-pending;
+  .LogList
+    .LoadMore
+      margin: 10px auto
+      width: fit-content;
 
-    &--no-data
-      .LogStatus
-        color: $textDangerColor;
+    .LogItem
+      background-color: $grey-background;
+      border: 1px solid $grey-border;
+      border-radius: 4px;
+      margin-top: 20px;
+      overflow: hidden
 
-    &__Body
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      &--new
+        animation-name: animate-log-item
+        animation-duration: 500ms
 
-.Input.EmailReport
-  > .Input-content
-    > .Input
-      > .Input-label
-        top: 0
+      &--created
+        .LogStatus
+          color: $color-pending;
 
-  .Input--checkbox
-    .Input-content
+      &--no-data,
+      &--error
+        .LogStatus
+          color: $textDangerColor;
+
+      &__Body
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        & > div
+          flex-grow: 1
+          flex-basis: 0
+
+      &__InfoBar
+        padding: 3px 16px
+        &--created
+          background-color: $dark-grey
+        &--no-data,
+        &--error
+          background-color: alpha($failedColor, 0.08)
+        &--ready-for-download
+          background-color: alpha($primary-color, 0.08)
+          border-bottom: 2px solid $primary-color
+
+
+  .Input.EmailReport
+    > .Input-content
+      > .Input
+        > .Input-label
+          top: 0
+
+    .Input--checkbox
+      .Input-content
+        margin-right: 5px
+
+    .Input.ChooseEmail
+      vertical-align: bottom
+
+    .NoOfEmailsSelected
       margin-right: 5px
 
-  .Input.ChooseEmail
-    vertical-align: bottom
+  .GenerateReportPanel
+    background-color: $grey-background
+    box-shadow: 0 1px 1px $grey-border
+    margin: -24px -24px 0 -24px
+    padding: 10px 24px 24px 24px
 
-  .NoOfEmailsSelected
-    margin-right: 5px
+    .SelectConfig
+      margin-left: -24px
+      margin-right: -24px
+      border-left: 2px solid $color-pending
+
+      .rzp-banner
+        border: none
+        padding-left: 24px
+
+    .Input
+      .Input-elWrapper
+        font-size: inherit
+
+    .PowerSelect__TriggerInput,
+    .PowerSelect__SearchInput
+      &::placeholder
+        opacity: 0.8
+        text-transform: initial
+
+@keyframes animate-log-item
+  from
+    height: 0
+    opacity: 0
+
+  to
+    height: 80px
+    opacity: 1

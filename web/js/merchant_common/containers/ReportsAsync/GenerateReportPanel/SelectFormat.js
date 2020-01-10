@@ -55,6 +55,7 @@ export default class SelectFormat extends React.Component {
         options={formatOptions}
         size="half_big"
         onChange={this.onChange}
+        disabled={this.props.isFormDisabled}
       />
     );
   }

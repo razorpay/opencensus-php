@@ -6,20 +6,22 @@ export default function LogStatus(props) {
   );
 }
 
-function renderActionBasedOnStatus({ status, ...props }) {
-  switch (status) {
+function renderActionBasedOnStatus({ actualStatus, ...props }) {
+  switch (actualStatus) {
     case 'created':
       return <p>Generating...</p>;
-
-    case 'processed':
-      return !!props.fileId ? renderDownloadButton(props) : renderNoDataError();
-
+    case 'no-data':
+      return <NoDataError />;
+    case 'ready-for-download':
+      return <DownloadButton {...props} />;
+    case 'error':
+      return <p>Failed</p>;
     default:
       return null;
   }
 }
 
-function renderDownloadButton(props) {
+function DownloadButton(props) {
   return (
     <button
       class="btn btn-link"
@@ -32,6 +34,6 @@ function renderDownloadButton(props) {
   );
 }
 
-function renderNoDataError() {
+function NoDataError() {
   return <p>No data available</p>;
 }
