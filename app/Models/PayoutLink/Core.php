@@ -521,7 +521,8 @@ class Core extends Base\Core
             'merchant_name'           => $this->getDisplayName(),
             'allow_upi'               => $isUpiEnabled,
             'banking_url'             => $this->config['applications.banking_service_url'],
-            'is_production'           => $isProduction
+            'is_production'           => $isProduction,
+            'purpose'                 => $payoutLink->getPurpose()
         ];
 
         return $data;
