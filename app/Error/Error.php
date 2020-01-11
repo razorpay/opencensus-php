@@ -239,9 +239,10 @@ class Error extends Support\Fluent
             }
 
             $metadata['contains'] = $contains;
-
-            $this->setAttribute(self::METADATA, $metadata);
         }
+
+        $this->setAttribute(self::METADATA, $metadata);
+
         return $isMetadataFeatureEnabled;
     }
 
