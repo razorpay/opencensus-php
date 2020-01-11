@@ -64,6 +64,37 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testContactsWithExpiredKey()
+    {
+        $this->fixtures->key->edit('TheTestAuthKey', ['expired_at' => time()]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        // Create Contact
+        $data['request']['url'] = '/contacts';
+        $data['request']['method'] = 'POST';
+
+        $this->startTest($data);
+
+        // Fetch Contacts
+        $data['request']['url'] = '/contacts';
+        $data['request']['method'] = 'GET';
+
+        $this->startTest($data);
+
+        // GET Contact
+        $data['request']['url'] = '/contacts/1000000contact';
+        $data['request']['method'] = 'GET';
+
+        $this->startTest($data);
+
+        // GET Contact
+        $data['request']['url'] = '/contacts/1000000contact';
+        $data['request']['method'] = 'PATCH';
+
+        $this->startTest($data);
+    }
+
     public function testCreateContactWithoutName()
     {
         $this->startTest();
