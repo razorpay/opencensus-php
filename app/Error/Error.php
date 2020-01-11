@@ -238,7 +238,10 @@ class Error extends Support\Fluent
                 $metadata['order_id'] = $orderId;
             }
 
-            $metadata['contains'] = $contains;
+            if(count($contains) > 0)
+            {
+                $metadata['contains'] = $contains;
+            }
         }
 
         $this->setAttribute(self::METADATA, $metadata);
@@ -395,7 +398,7 @@ class Error extends Support\Fluent
 
         if($isMetadataFeatureEnabled === true)
         {
-            array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
+            $error = array_merge($error,[self::METADATA  => $this->getAttribute(self::METADATA)]);
         }
 
         $this->unsetAttributes($error);
