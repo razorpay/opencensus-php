@@ -361,4 +361,48 @@ class ContactsTest extends TestCase
 
         return $this->runRequestResponseFlow($testdata);
     }
+
+    public function testGetContactPublic()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Contact X']);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactBulk()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testCreateContactBulkWithoutBatchId()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testCreateContactBulkPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
 }
