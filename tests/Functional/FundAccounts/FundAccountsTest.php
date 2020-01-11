@@ -519,4 +519,35 @@ class FundAccountsTest extends TestCase
 
         Queue::assertPushed(CreateAccount::class);
     }
+
+    public function testFundAccountsWithExpiredKey()
+    {
+        $this->fixtures->key->edit('TheTestAuthKey', ['expired_at' => time()]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        // Create Contact
+        $data['request']['url'] = '/fund_accounts';
+        $data['request']['method'] = 'POST';
+
+        $this->startTest($data);
+
+        // Fetch Contacts
+        $data['request']['url'] = '/fund_accounts';
+        $data['request']['method'] = 'GET';
+
+        $this->startTest($data);
+
+        // GET Contact
+        $data['request']['url'] = '/fund_accounts/100000000000fa';
+        $data['request']['method'] = 'GET';
+
+        $this->startTest($data);
+
+        // GET Contact
+        $data['request']['url'] = '/fund_accounts/100000000000fa';
+        $data['request']['method'] = 'PATCH';
+
+        $this->startTest($data);
+    }
 }
