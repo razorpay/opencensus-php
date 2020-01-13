@@ -1328,7 +1328,7 @@ final class Route
         'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
         'banking_account_statement_generate'      => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                ],
         'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
-        'banking_account_statement_channel_fetch' => ['post',     'banking_account_statement//process/{channel}',              'BankingAccountStatementController@processAccountStatementForChannel'],
+        'banking_account_statement_channel_fetch' => ['post',     'banking_account_statement/process/{channel}',               'BankingAccountStatementController@processAccountStatementForChannel'],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
