@@ -26,14 +26,11 @@ export default class Settings extends Component {
   };
 
   componentWillMount() {
-    this.props
-      .fetchAddWebsiteWorkflowStatus()
-      .then(({ data }) => {
-        this.setState({
-          isWebsiteInWorkflow: data,
-        });
-      })
-      .catch(err => {});
+    this.props.fetchAddWebsiteWorkflowStatus().then(({ data }) => {
+      this.setState({
+        isWebsiteInWorkflow: data,
+      });
+    });
   }
 
   onWebsiteAdd = () => {
