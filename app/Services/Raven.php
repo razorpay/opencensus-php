@@ -26,6 +26,7 @@ class Raven
     const MOCK_VALID_OTP = '0007';
 
     // In test mode this otp is evaluated as true in verify.
+    const TEST_MODE_ACTION = 'verify-test-mode-otp';
     const TEST_VALID_OTP = '754081';
 
     protected $baseUrl;
@@ -136,7 +137,12 @@ class Raven
 
         $response = null;
 
-        if ($this->mode === Mode::TEST and $otp !== self::TEST_VALID_OTP)
+        if ($this->mode === Mode::LIVE)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OPERATION_NOT_ALLOWED_IN_LIVE);
+        }
+
+        if ($otp !== self::TEST_VALID_OTP)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
         }
@@ -165,6 +171,12 @@ class Raven
         }
         else
         {
+            // If action is self::TEST_MODE_ACTION, don't send request to raven service
+            if ($input['action'] === self::TEST_MODE_ACTION)
+            {
+                return $this->verifyTestOtp($input);
+            }
+
             $response = $this->sendRequest(self::RAVEN_URLS['verify-otp'], 'post', $input);
         }
 

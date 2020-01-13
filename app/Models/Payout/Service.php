@@ -8,6 +8,7 @@ use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Services\Raven;
 use RZP\Models\Contact;
 use RZP\Models\Pricing;
 use RZP\Models\Reversal;
@@ -193,14 +194,14 @@ class Service extends Base\Service
     {
         $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
 
-        if ($this->mode === Constants\Mode::LIVE)
+        $action = 'create_payout';
+
+        if ($this->mode === Constants\Mode::TEST)
         {
-            (new User\Core)->verifyOtp($input + ['action' => 'create_payout'], $this->merchant, $this->user);
+            $action = Raven::TEST_MODE_ACTION;
         }
-        else
-        {
-            $this->app->raven->verifyTestOtp($input);
-        }
+
+        (new User\Core)->verifyOtp($input + ['action' => $action], $this->merchant, $this->user);
 
         $payoutInput = array_except($input, ['otp', 'token']);
 
