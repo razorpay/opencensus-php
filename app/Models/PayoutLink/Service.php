@@ -58,7 +58,11 @@ class Service extends Base\Service
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
     {
-        $fundAccounts = $this->core->getFundAccountsOfContact($payoutLinkId, $input);
+        $payoutLink = $this->repo
+                           ->payout_link
+                           ->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+        $fundAccounts = $this->core->getFundAccountsOfContact($payoutLink, $input);
 
         return $fundAccounts->toArrayPublic();
     }

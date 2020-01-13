@@ -20,14 +20,10 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Contact
 {
-    protected $trace;
-
     protected $repo;
 
     public function __construct()
     {
-        $this->trace = App::getFacadeRoot()['trace'];
-
         $this->repo = App::getFacadeRoot()['repo'];
     }
 

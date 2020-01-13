@@ -69,7 +69,7 @@ class Validator extends Base\Validator
         Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Entity::NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
-        Entity::PAYOUT_LINK_ID       => 'sometimes|filled|size:14',
+        Entity::PAYOUT_LINK_ID       => 'sometimes|filled|public_id',
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 

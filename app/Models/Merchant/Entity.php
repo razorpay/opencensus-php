@@ -1515,6 +1515,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DISPLAY_NAME);
     }
 
+    public function getDisplayNameElseName()
+    {
+        return (empty($this->getDisplayName()) === false) ? $this->getDisplayName() : $this->getName();
+    }
+
     public function setDisplayName($displayName)
     {
         $this->setAttribute(self::DISPLAY_NAME, $displayName);

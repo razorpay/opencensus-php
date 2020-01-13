@@ -20,8 +20,8 @@ class Validator extends Base\Validator
     const SETTINGS_RULE                    = 'settings';
 
     protected static $settingsRules = [
-        Mode::UPI  => 'sometimes|boolean|filled',
-        Mode::IMPS => 'sometimes|boolean|filled',
+        Mode::UPI  => 'required_without:IMPS|boolean|filled',
+        Mode::IMPS => 'required_without:UPI|boolean|filled',
     ];
 
     protected static $addFundAccountRules = [

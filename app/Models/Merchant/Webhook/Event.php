@@ -279,12 +279,12 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED          => 57,
         self::ACCOUNT_PAYMENTS_DISABLED         => 58,
         self::TRANSACTION_UPDATED               => 59,
-        self::PAYOUT_LINK_ISSUED                => 60,
-        self::PAYOUT_LINK_PROCESSED             => 61,
-        self::PAYOUT_LINK_PROCESSING            => 62,
-        self::PAYOUT_LINK_CANCELLED             => 63,
-        self::PAYOUT_LINK_ATTEMPTED             => 64,
-        self::PAYOUT_UPDATED                    => 65,
+        self::PAYOUT_UPDATED                    => 60,
+        self::PAYOUT_LINK_ISSUED                => 61,
+        self::PAYOUT_LINK_PROCESSED             => 62,
+        self::PAYOUT_LINK_PROCESSING            => 63,
+        self::PAYOUT_LINK_CANCELLED             => 64,
+        self::PAYOUT_LINK_ATTEMPTED             => 65
     ];
 
     /**

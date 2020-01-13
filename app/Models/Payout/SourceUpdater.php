@@ -24,11 +24,15 @@ class SourceUpdater
      */
     const DELAY = 5;
 
-    public static function dispatchToQueue(string $mode, Entity $payout, string $previousStatus = null)
+    public static function dispatchToQueue(string $mode,
+                                    Entity $payout,
+                                    string $previousStatus = null,
+                                    string $expectedCurrentStatus = null)
     {
         PayoutSourceUpdaterJob::dispatch($mode,
                                          $payout->getPublicId(),
-                                         $previousStatus)
+                                         $previousStatus,
+                                         $expectedCurrentStatus)
                               ->delay(self::DELAY);
     }
 

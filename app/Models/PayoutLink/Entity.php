@@ -9,6 +9,7 @@ use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Settings;
 use RZP\Models\FundAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -72,6 +73,10 @@ class Entity extends Base\PublicEntity
     const PHONE_NUMBER         = 'contact';
 
     const MAX_PAYOUT_LIMIT     = Payout\Entity::MAX_PAYOUT_LIMIT;
+    const PAYOUT_LINK_ID       = 'payout_link_id';
+    const MERCHANT_NAME        = 'merchant_name';
+    const PAYOUT_PURPOSE       = 'payout_purpose';
+    const CUSTOMER_NAME        = 'customer_name';
 
     protected $generateIdOnCreate = true;
 
@@ -335,5 +340,10 @@ class Entity extends Base\PublicEntity
         ];
     }
     // -------------------------------------- End Mutators -----------------------------
+
+    public static function getSettingsAccessor($merchant)
+    {
+        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+    }
 
 }
