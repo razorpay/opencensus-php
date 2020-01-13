@@ -7,9 +7,14 @@ export default ({
   discountType,
   getFormElementValidations,
   minAmount,
+  maxAmount,
   currency,
   getFormOnChangeHandler,
+  type,
 }) => {
+  const fieldToResetOnMinAmountChange =
+    discountType === 'no_cost_emi' ? ['emi_durations', 'issuer'] : [];
+
   return (
     <React.Fragment>
       <strong>Instant Discount</strong>
@@ -22,31 +27,57 @@ export default ({
           placeholder="Discount Type"
           required
           defaultValue={discountType}
-          options={[
-            { label: 'Select Type', name: '' },
-            { label: 'Flat', name: 'flat' },
-            { label: 'Percentage', name: 'percent' },
-          ]}
+          options={
+            (type === 'instant' && [
+              { label: 'Select Type', name: '' },
+              { label: 'Flat', name: 'flat' },
+              { label: 'Percentage', name: 'percent' },
+              { label: 'No Cost EMI', name: 'no_cost_emi' },
+            ]) || [
+              { label: 'Select Type', name: '' },
+              { label: 'Flat', name: 'flat' },
+              { label: 'Percentage', name: 'percent' },
+            ]
+          }
           onChange={getFormOnChangeHandler('stateResetter')([
             'flat_cashback',
             'percent_rate',
             'max_cashback',
+            'emi_durations',
+            'max_order_amount',
           ])}
           validator={getFormElementValidations('discount_type')}
         />
         {discountType && (
           <Input
-            label="Min Order amount"
+            label="Minimum Order amount"
             placeholder="0.00"
             name="min_amount"
             defaultValue={minAmount}
             class="Input--half"
             addonBefore={<span>{window.currencyList[currency].symbol}</span>}
             validator={getFormElementValidations('min_amount')}
-            required={discountType === 'flat'}
-            onChange={getFormOnChangeHandler()}
+            required={discountType !== 'percent'}
+            onChange={getFormOnChangeHandler('stateResetter')(
+              fieldToResetOnMinAmountChange
+            )}
           />
         )}
+        {discountType &&
+          discountType === 'no_cost_emi' && (
+            <Input
+              label="Maximum Order amount"
+              placeholder="0.00"
+              name="max_order_amount"
+              defaultValue={maxAmount}
+              class="Input--half"
+              addonBefore={<span>{window.currencyList[currency].symbol}</span>}
+              validator={getFormElementValidations('max_order_amount')}
+              required={discountType === 'flat'}
+              onChange={getFormOnChangeHandler()}
+            />
+          )}
+
         {discountType &&
           discountType === 'flat' && (
             <Input

@@ -73,6 +73,7 @@ export default class KeysListContainer extends ListContainer {
     let status = this.state.status;
     let hasKeyAccess = this.props.session.user.has_key_access;
     let businessWebsite = this.props.session.user.business_website;
+    const { isWebsiteInWorkflow, onWebsiteAdd } = this.props;
 
     return (
       <div class="content-wrapper">
@@ -87,6 +88,8 @@ export default class KeysListContainer extends ListContainer {
           merchantId={this.props.session.user.id}
           hasKeyAccess={hasKeyAccess}
           businessWebsite={businessWebsite}
+          isWebsiteInWorkflow={isWebsiteInWorkflow}
+          onWebsiteAdd={onWebsiteAdd}
         />
       </div>
     );

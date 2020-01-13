@@ -288,8 +288,8 @@ export default class SettlementsListContainer extends ListContainer {
                       View Settlement Cycle
                     </div>
                   )}
-                  {this.props.user.isOndemandSettlementEnabled && (
-                    <ShowWhen myRole="owner admin finance">
+                  {this.props.user.isOndemandSettlementEnabled &&
+                    this.props.user.isAllowedView('early_settlement') && (
                       <div className="box-left-pad10-inline">
                         <ScheduledBanner
                           onExit={() => {
@@ -303,8 +303,7 @@ export default class SettlementsListContainer extends ListContainer {
                           }
                         />
                       </div>
-                    </ShowWhen>
-                  )}
+                    )}
                 </React.Fragment>
               </HeaderAction>
               <SettlementsListFilter
@@ -426,8 +425,8 @@ export default class SettlementsListContainer extends ListContainer {
                   </>
                 )}
 
-                {this.props.user.isOndemandSettlementEnabled && (
-                  <ShowWhen myRole="owner admin finance">
+                {this.props.user.isOndemandSettlementEnabled &&
+                  this.props.user.isAllowedView('early_settlement') && (
                     <div className="box-left-pad10-inline">
                       <Button.Primary
                         class="settle-btn"
@@ -438,8 +437,7 @@ export default class SettlementsListContainer extends ListContainer {
                         Settle Now
                       </Button.Primary>
                     </div>
-                  </ShowWhen>
-                )}
+                  )}
               </div>
 
               <div class="clearfix" />
