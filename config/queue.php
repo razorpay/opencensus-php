@@ -331,12 +331,12 @@ return [
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
     ],
     'fts_create_account' => [
-        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
-        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+        'test'       => env('AWS_FTS_TEST_QUEUE'),
+        'live'       => env('AWS_FTS_LIVE_QUEUE'),
     ],
     'fts_register_account' => [
-        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
-        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+        'test'       => env('AWS_FTS_TEST_QUEUE'),
+        'live'       => env('AWS_FTS_LIVE_QUEUE'),
     ],
     'fts_fund_transfer' => [
         'test'       => env('AWS_FTS_TEST_QUEUE'),
@@ -393,6 +393,10 @@ return [
     'rbl_banking_account_statement' => [
         'test'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_TEST_QUEUE'),
         'live'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_LIVE_QUEUE'),
+    ],
+    'payment_nbplus_api_reconciliation' => [
+        'test'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_TEST_QUEUE'),
+        'live'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_LIVE_QUEUE'),
     ],
     /*
      | Lists various queues to be used per mailable

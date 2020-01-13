@@ -46,8 +46,6 @@ class UpiTransferTest extends TestCase
 
     public function testProcessUpiTransferPayment()
     {
-        $this->markTestSkipped();
-
         $this->processUpiTransfer();
 
         $upiTransfer = $this->getLastEntity('upi_transfer', true);
@@ -119,8 +117,6 @@ class UpiTransferTest extends TestCase
 
     public function testProcessUpiTransferUnexpectedPayment()
     {
-        $this->markTestSkipped();
-
         $this->processUpiTransfer(__FUNCTION__);
 
         $upiTransfer = $this->getLastEntity('upi_transfer', true);
@@ -136,8 +132,6 @@ class UpiTransferTest extends TestCase
 
     public function testProcessUpiTransferWithVpaPricing()
     {
-        $this->markTestSkipped();
-
         $pricingPlanId = $this->fixtures->create('pricing:upi_transfer_pricing_plan');
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $pricingPlanId]);
