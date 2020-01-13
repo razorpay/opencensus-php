@@ -152,7 +152,7 @@ class Raven
         return $response;
     }
 
-    public function verifyOtp(array $input): array
+    public function verifyOtp(array $input, bool $mock = false): array
     {
         $app = App::getFacadeRoot();
 
@@ -171,8 +171,8 @@ class Raven
         }
         else
         {
-            // If action is self::TEST_MODE_ACTION, don't send request to raven service
-            if ($input['action'] === self::TEST_MODE_ACTION)
+            // If mock is true, don't send request to raven service
+            if ($mock === true)
             {
                 return $this->verifyTestOtp($input);
             }

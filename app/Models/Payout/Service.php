@@ -194,14 +194,10 @@ class Service extends Base\Service
     {
         $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
 
-        $action = 'create_payout';
-
-        if ($this->mode === Constants\Mode::TEST)
-        {
-            $action = Raven::TEST_MODE_ACTION;
-        }
-
-        (new User\Core)->verifyOtp($input + ['action' => $action], $this->merchant, $this->user);
+        (new User\Core)->verifyOtp($input + ['action' => 'create_payout'],
+                                   $this->merchant,
+                                   $this->user,
+                             $this->mode === Constants\Mode::TEST);
 
         $payoutInput = array_except($input, ['otp', 'token']);
 
