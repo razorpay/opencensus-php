@@ -285,7 +285,7 @@ class Processor extends VirtualAccount\Processor
 
             $key = $this->repo->key->getFirstActiveKeyForMerchant($this->merchant->getId());
 
-            $this->app['basicauth']->setKeyEntity($key);
+            $this->app['basicauth']->authCreds->setKeyEntity($key);
         }
         catch (\Throwable $e)
         {
