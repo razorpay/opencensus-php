@@ -122,17 +122,17 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ErrorCodes\NetbankingErrorCodes::getInternalErrorCode($gatewayPayment->getErrorCode());
 
-                $exceptionData = [
-                    'emandate_details' => self::fetchEmandateDisplayDetails(
-                        $input['payment'],
-                        $input['token'],
-                        $input['terminal'],
-                        $input['merchant'],
-                        $this->config,
-                        $this->mode,
-                        $gatewayPayment
-                    )
-                ];
+            $exceptionData = [
+                'emandate_details' => self::fetchEmandateDisplayDetails(
+                    $input['payment'],
+                    $input['token'],
+                    $input['terminal'],
+                    $input['merchant'],
+                    $this->config,
+                    $this->mode,
+                    $gatewayPayment
+                )
+            ];
 
             throw new Exception\GatewayErrorException(
                 $errorCode,
@@ -231,9 +231,9 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($dataToTrace, $input);
 
-            $request['method'] = 'direct';
+        $request['method'] = 'direct';
 
-            $request['content'] = $this->getRequestContentAsView($request, $input);
+        $request['content'] = $this->getRequestContentAsView($request, $input);
 
         return $request;
     }
