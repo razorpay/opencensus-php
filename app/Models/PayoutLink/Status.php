@@ -37,16 +37,16 @@ class Status
     ];
 
     const PAYOUT_TO_PAYOUT_LINK_STATUSES = [
-        PayoutStatus::CANCELLED  => self::CANCELLED,
         PayoutStatus::FAILED     => self::ATTEMPTED,
         PayoutStatus::REVERSED   => self::ATTEMPTED,
+        PayoutStatus::REJECTED   => self::ATTEMPTED,
         PayoutStatus::CREATED    => self::PROCESSING,
         PayoutStatus::INITIATED  => self::PROCESSING,
         PayoutStatus::PROCESSING => self::PROCESSING,
         PayoutStatus::QUEUED     => self::PROCESSING,
-        PayoutStatus::PROCESSED  => self::PROCESSED,
-        PayoutStatus::REJECTED   => self::ATTEMPTED,
         PayoutStatus::PENDING    => self::PROCESSING,
+        PayoutStatus::PROCESSED  => self::PROCESSED,
+        PayoutStatus::CANCELLED  => self::CANCELLED,
     ];
 
     const INTERNAL_TO_PUBLIC_STATUS = [
