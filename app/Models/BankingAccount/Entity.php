@@ -139,7 +139,6 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_EMAIL,
         self::FTS_FUND_ACCOUNT_ID,
         self::INTERNAL_COMMENT,
-        self::LAST_STATEMENT_ATTEMPT_AT,
     ];
 
     protected $visible = [

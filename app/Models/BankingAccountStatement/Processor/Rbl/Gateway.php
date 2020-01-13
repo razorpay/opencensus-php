@@ -30,7 +30,7 @@ class Gateway extends BaseProcessor
     /**
      * @var BankingAccountStatementCore
      */
-    protected $core;
+    protected $basCore;
 
     public function __construct(string $channel, string $accountNumber)
     {
@@ -38,7 +38,7 @@ class Gateway extends BaseProcessor
 
         parent::__construct($channel, $accountNumber);
 
-        $this->core = new BankingAccountStatementCore;
+        $this->basCore = new BankingAccountStatementCore;
     }
 
     protected function sendRequestAndGetResponse(array $input)
@@ -117,7 +117,7 @@ class Gateway extends BaseProcessor
         // But not sure if this logic is generic for all bank as of now
         if (($this->hasMoreData($bankResponse) === true))
         {
-            $this->core->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber);
+            $this->basCore->dispatchBankingAccountStatementJob($this->channel, $this->accountNumber);
         }
 
         return $finalFormattedResponse;
