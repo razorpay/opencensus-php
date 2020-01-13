@@ -512,6 +512,10 @@ trait Authorize
         {
             $request = $this->runAutoDebitFlow($payment, $gatewayInput);
         }
+        else if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
+        {
+            $request = $this->callGatewayFunction(Action::AUTHORIZE, $gatewayInput);
+        }
         else
         {
             $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
