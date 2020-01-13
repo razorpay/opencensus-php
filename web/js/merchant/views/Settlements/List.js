@@ -248,7 +248,7 @@ export default class SettlementsListContainer extends ListContainer {
           <EarlySettlementsAnnouncement userId={user.current} />
         )}
 
-        {balance < 0 && (
+        {current_balance.data.balance < 0 && (
           <NegativeBalanceBanner
             title="Add Funds"
             theme="warning"

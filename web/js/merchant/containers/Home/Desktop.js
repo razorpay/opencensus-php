@@ -122,7 +122,7 @@ class AnalyticsDesktop extends Component {
     let negativeBalanceClassName = '';
 
     if (balance < 0) {
-      balance = Math.abs(current_balance);
+      balance = Math.abs(current_balance.data.balance);
       negativeBalanceClassName = 'negative-balance';
     }
 
@@ -146,7 +146,7 @@ class AnalyticsDesktop extends Component {
             <Announcement mode={mode} user={user} payments={payments} />
           )}
 
-          {balance < 0 && (
+          {current_balance.data.balance < 0 && (
             <NegativeBalanceBanner
               title="Add Funds"
               theme="warning"
