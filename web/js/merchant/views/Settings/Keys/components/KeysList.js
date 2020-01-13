@@ -57,6 +57,8 @@ export default connect(null, { openModal, closeModal })(props => {
     businessWebsite,
     showRollKeyModal = () => {},
     generateKey = () => {},
+    isWebsiteInWorkflow,
+    onWebsiteAdd,
   } = props;
 
   let params = {
@@ -101,7 +103,7 @@ export default connect(null, { openModal, closeModal })(props => {
                         Generate {mode} Key
                       </button>
                     </React.Fragment>
-                  ) : !businessWebsite ? (
+                  ) : !businessWebsite && !isWebsiteInWorkflow ? (
                     <div>
                       <p
                       >{`Please provide your Business Website/App details in order to generate API keys in Live Mode`}</p>
@@ -111,7 +113,10 @@ export default connect(null, { openModal, closeModal })(props => {
                           props.openModal({
                             size: 'small',
                             component: (
-                              <EditWebsiteDetails onClose={props.closeModal} />
+                              <EditWebsiteDetails
+                                onClose={props.closeModal}
+                                onWebsiteAdd={onWebsiteAdd}
+                              />
                             ),
                           })
                         }
