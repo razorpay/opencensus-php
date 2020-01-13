@@ -271,6 +271,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_TOKEN_RESPONSE                                  = 'FETCH_TOKEN_RESPONSE';
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
     const HITACHI_ONBOARD_REQUEST_CREATION_ERROR                = 'HITACHI_ONBOARD_REQUEST_CREATION_ERROR';
+    const SKIPPING_HITACHI_AUTOMATIC_ONBOARDING                 = 'SKIPPING_HITACHI_AUTOMATIC_ONBOARDING';
 
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
