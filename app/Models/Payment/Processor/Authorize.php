@@ -6608,11 +6608,6 @@ trait Authorize
 
         $merchant = $payment->merchant;
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::ENACH_INTERMEDIATE) === false)
-        {
-            return $returnData;
-        }
-
         $token = $payment->getGlobalOrLocalTokenEntity();
 
         $terminal = $payment->terminal;
