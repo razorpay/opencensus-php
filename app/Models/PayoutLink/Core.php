@@ -5,7 +5,6 @@ namespace RZP\Models\PayoutLink;
 use View;
 use Mail;
 use RZP\Models\Base;
-use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Mode;
@@ -26,23 +25,21 @@ class Core extends Base\Core
 {
     use Base\Traits\ProcessAccountNumber;
 
-    const LONG_URL_FORMAT         = '%s/v1/payout-links/%s/view';
-    const PARAMS                  = 'params';
-    const CUSTOMER_NAME           = 'customer_name';
-    const TEMPLATE                = 'template';
-    const SOURCE                  = 'source';
-    const RECEIVER                = 'receiver';
-    const SMS_TEMPLATE            = 'sms.payout_link.otp';
-    const API_PAYOUT_LINK_SRC_STR = 'api.payout-link';
-    const API_POUT_LNK_SCR        = 'api.pout_l';
-    const OK                      = 'OK';
-    const PAYOUT_LINK_ID          = 'payout_link_id';
-    const TWO_LACS                =  20000000;
-    const MESSAGE                 = 'message';
-    const SUCCESS                 = 'success';
-    const MUTEX_TIMEOUT           = 60;
-    const MERCHANT_NAME           = 'merchant_name';
-    const PAYOUT_PURPOSE          = 'payout_purpose';
+    const LONG_URL_FORMAT = '%s/v1/payout-links/%s/view';
+    const PARAMS          = 'params';
+    const TEMPLATE        = 'template';
+    const SOURCE          = 'source';
+    const RECEIVER        = 'receiver';
+    const SMS_TEMPLATE    = 'sms.payout_link.otp';
+
+    // Source param, where calling Raven Apis
+    const API_POUT_LNK_SRC = 'api.pout_l';
+
+    const OK               = 'OK';
+    const MAX_IMPS_AMOUNT  = 20000000;
+    const MESSAGE          = 'message';
+    const SUCCESS          = 'success';
+    const MUTEX_TIMEOUT    = 60;
 
     protected $elfin;
 
@@ -67,7 +64,7 @@ class Core extends Base\Core
 
     public function getSettings(MerchantEntity $merchant)
     {
-        $settingsAccessor = $this->getSettingsAccessor($merchant);
+        $settingsAccessor = Entity::getSettingsAccessor($merchant);
 
         return $settingsAccessor->all()->toArray();
     }
@@ -87,27 +84,22 @@ class Core extends Base\Core
                 'input'       => $input
             ]
         );
-
         (new Validator())->validateInput(Validator::SETTINGS_RULE, $input);
 
-        $settingsAccessor = $this->getSettingsAccessor($merchant);
+        $settingsAccessor = Entity::getSettingsAccessor($merchant);
 
         $settingsAccessor->upsert($input)->save();
 
-        return [self::SUCCESS => self::OK];
+        return $settingsAccessor->all()->toArray();
     }
 
-    public function getFundAccountsOfContact(string $payoutLinkId, array $input)
+    public function getFundAccountsOfContact(Entity $payoutLink, array $input)
     {
         (new Validator)->validateInput(Validator::GET_FUND_ACCOUNT_BY_CONTACT_RULE, $input);
 
         $this->tokenService->verify($input[Entity::TOKEN]);
 
-        $fundAccounts = $this->repo
-                             ->payout_link
-                             ->getActiveFundAccountsByPayoutLinkIdAndMerchant($payoutLinkId, $this->merchant);
-
-        return $fundAccounts;
+        return $payoutLink->contact->fundAccounts->where('active', true);
     }
 
     public function cancel(Entity $payoutLink): Entity
@@ -119,16 +111,17 @@ class Core extends Base\Core
             ]
         );
 
-        // If already cancelled, then return the entity without any change. Makes this call idempotent.
-        if ($payoutLink->getStatus() === Status::CANCELLED)
-        {
-            return $payoutLink;
-        }
-
         return $this->mutex->acquireAndRelease(
-            $payoutLink->getId(),
+            $payoutLink->getPublicId(),
             function () use ($payoutLink)
             {
+                // If already cancelled, then return the entity without any change.
+                // Makes this call idempotent.
+                if ($payoutLink->getStatus() === Status::CANCELLED)
+                {
+                    return $payoutLink;
+                }
+
                 $payoutLink->setStatus(Status::CANCELLED);
 
                 $this->repo->saveOrFail($payoutLink);
@@ -149,10 +142,7 @@ class Core extends Base\Core
      */
     public function initiate(Entity $payoutLink, array $input): Entity
     {
-        $this->trace->info(
-            TraceCode::PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD,
-            $input);
-
+        (new Validator())->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
         //
         // Adding Mutex, because we want only one initiate call at a time on the same payout-link
         // So by flow, if two calls to add a fund-account-id + initiate payout come in, and the first one is successful,
@@ -163,13 +153,17 @@ class Core extends Base\Core
         // Also the whole thing will be a transaction, as we do not want to add new fund-account if any step fails
         //
         $payoutLink = $this->mutex->acquireAndRelease(
-            $payoutLink,
-            function() use ($payoutLink, $input)
+            $payoutLink->getPublicId(),
+            function () use ($payoutLink, $input)
             {
                 return $this->repo->transaction(
-                    function() use ($payoutLink, $input)
+                    function () use ($payoutLink, $input)
                     {
-                        (new Validator())->validateInput(Validator::ADD_FUND_ACCOUNT_RULE, $input);
+                        $this->trace->info(
+                            TraceCode::PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD,
+                            [
+                                Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId()
+                            ]);
 
                         $token = array_pull($input, Entity::TOKEN);
 
@@ -180,8 +174,8 @@ class Core extends Base\Core
                             throw new BadRequestException(
                                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
                                 [
-                                    self::PAYOUT_LINK_ID => $payoutLink->getPublicId(),
-                                    Entity::STATUS       => $payoutLink->getStatus()
+                                    Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId(),
+                                    Entity::STATUS         => $payoutLink->getStatus()
                                 ]);
                         }
 
@@ -189,6 +183,7 @@ class Core extends Base\Core
                         $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
                                                                                           $this->merchant,
                                                                                           $payoutLink->contact);
+
                         $payoutLink->fundAccount()->associate($fundAccount);
 
                         // pushing this to DB layer, before going to payout create flow
@@ -208,8 +203,8 @@ class Core extends Base\Core
 
                         $this->trace->info(TraceCode::PAYOUT_LINK_INVALIDATING_REDIS_TOKEN,
                                            [
-                                               'payout_link_id'     => $payoutLink->getPublicId(),
-                                               'payout_link_status' => $payoutLink->getStatus()
+                                               Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId(),
+                                               Entity::STATUS         => $payoutLink->getStatus()
                                            ]);
 
                         $this->tokenService->invalidate($token);
@@ -242,6 +237,7 @@ class Core extends Base\Core
                                       'payout_status'  => $payoutStatus,
                                       'payout_id'      => $payout->getPublicId()
                                   ]);
+
             return;
         }
 
@@ -251,10 +247,10 @@ class Core extends Base\Core
             TraceCode::PAYOUT_LINK_PAYOUT_UPDATE_PUSH,
             [
                 'payout_link_id'          => $payoutLink->getPublicId(),
+                'payout_id'               => $payout->getPublicId(),
                 'payout_status'           => $payoutStatus,
                 'next_payout_link_status' => $nextPayoutLinkStatus
             ]);
-
         //
         // Its possible that the mutex on the same payoutLinksId be acquired twice in the same request.
         // But instead of failing on lock-acquire, because the requestId is the same,
@@ -280,44 +276,11 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
-    /**
-     * @param Entity $payoutLink
-     * @return string
-     */
-    protected function getPayoutMode(Entity $payoutLink)
-    {
-        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
-
-        $amount = $payoutLink->getAmount();
-
-        $fundAccount = $payoutLink->fundAccount;
-
-        switch ($fundAccount->getAccountType())
-        {
-            case Type::BANK_ACCOUNT:
-                $isImpsEnabled = boolval($settingsAccessor->get(Entity::IMPS));
-
-                if (($isImpsEnabled === true) and
-                    ($amount < self::TWO_LACS))
-                {
-                    return Mode::IMPS;
-                }
-                else
-                {
-                    return Mode::NEFT;
-                }
-
-            case Type::VPA:
-                return Mode::UPI;
-        }
-    }
-
     public function create(array $input): Entity
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CREATE_REQUEST,
             $input);
-
         (new Validator())->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
 
         $this->processAccountNumber($input);
@@ -368,88 +331,14 @@ class Core extends Base\Core
         return View::make('payout_link.customer_hosted', $hostedPageData);
     }
 
-    /**
-     * Masks the customer email as follows
-     * Input: test_email@gmail.com
-     * Output: tes*****l@g****.com
-     *
-     * @param string $email
-     * @return mixed|string
-     */
-    protected function getMaskedEmail(string $email)
-    {
-        $maskedEmail = $email;
-
-        if (empty($email) === true)
-        {
-            return '';
-        }
-
-        try
-        {
-            // assuming that if this is filled, then its a valid email
-
-            $email = explode('@', $email); // ex: test_email@gmail.com
-
-            $emailName = $email[0]; // test_email
-
-            $emailDomain = $email[1]; // gmail.com
-
-            $emailDomain = explode('.', $emailDomain);
-
-            $domain = $emailDomain[0]; // gmail
-
-            $topLevelDomain = $emailDomain[1]; // .com
-
-            // replace the name except first 3 characters with *
-            $maskedEmailName = substr($emailName, 0, 3) .
-                               str_repeat('*', strlen($emailName) - 3);
-
-            // replace the domain with *, except the first and the last character
-            $maskedDomain = $domain[0] .
-                            str_repeat('*', strlen($domain) - 2) .
-                            $domain[strlen($domain) - 1];
-
-            $maskedEmail = sprintf('%s@%s.%s', $maskedEmailName, $maskedDomain, $topLevelDomain);
-        }
-        catch(\Exception $e)
-        {
-            // Do not want the page load to fail because the email was incorrect
-            $this->trace->traceException($e,
-                                         Trace::ERROR,
-                                         TraceCode::INVALID_EMAIL_CANNOT_MASK,
-                                         [
-                                             'email'    => $email
-                                         ]
-            );
-        }
-
-        return $maskedEmail;
-    }
-
-    protected function getMaskedPhone(string $phone)
-    {
-        if (empty($phone) === true)
-        {
-            return '';
-        }
-
-        $phoneLen = strlen($phone);
-
-        return substr($phone, 0, 2) .
-               str_repeat('*', $phoneLen - 4) .
-               substr($phone, $phoneLen - 2, 2);
-    }
-
     public function generateAndSendCustomerOtp(Entity $payoutLink, array $input): array
     {
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE,
             [
-                self::PAYOUT_LINK_ID => $payoutLink->getPublicId()
+                Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId()
             ]
         );
-
         // extra context param, that the F.E. can pass, in case they want to
         // force generation of a new OTP
         $context = array_pull($input, Entity::CONTEXT);
@@ -474,7 +363,7 @@ class Core extends Base\Core
         $payload = [
             self::RECEIVER  => $receiver,
             Entity::CONTEXT => $requestContext,
-            self::SOURCE    => self::API_POUT_LNK_SCR,
+            self::SOURCE    => self::API_POUT_LNK_SRC,
             Entity::OTP     => $input[Entity::OTP]
         ];
 
@@ -483,7 +372,7 @@ class Core extends Base\Core
             [
                 self::RECEIVER  => $receiver,
                 Entity::CONTEXT => $requestContext,
-                self::SOURCE    => self::API_POUT_LNK_SCR
+                self::SOURCE    => self::API_POUT_LNK_SRC
             ]
         );
 
@@ -496,13 +385,47 @@ class Core extends Base\Core
         ];
     }
 
+    /**
+     * @param Entity $payoutLink
+     * @return string
+     */
+    protected function getPayoutMode(Entity $payoutLink)
+    {
+        $settingsAccessor = Entity::getSettingsAccessor($this->merchant);
+
+        $amount = $payoutLink->getAmount();
+
+        $fundAccount = $payoutLink->fundAccount;
+
+        switch ($fundAccount->getAccountType())
+        {
+            case Type::BANK_ACCOUNT:
+                $isImpsEnabled = boolval($settingsAccessor->get(Entity::IMPS));
+
+                if (($isImpsEnabled === true) and
+                    ($amount < self::MAX_IMPS_AMOUNT))
+                {
+                    return Mode::IMPS;
+                }
+                else
+                {
+                    return Mode::NEFT;
+                }
+
+            case Type::VPA:
+                return Mode::UPI;
+                break;
+            # todo, pl handle Default, and raise the right exception
+        }
+    }
+
     protected function getDataForHostedPage(Entity $payoutLink): array
     {
-        $maskedEmail = $this->getMaskedEmail($payoutLink->getContactEmail());
+        $maskedEmail = Utility::getMaskedEmail($payoutLink->getContactEmail());
 
-        $maskedPhone = $this->getMaskedPhone($payoutLink->getContactPhoneNumber());
+        $maskedPhone = Utility::getMaskedPhone($payoutLink->getContactPhoneNumber());
 
-        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
+        $settingsAccessor = Entity::getSettingsAccessor($this->merchant);
 
         $isUpiEnabled = boolval($settingsAccessor->get(Entity::UPI));
 
@@ -522,7 +445,7 @@ class Core extends Base\Core
             'merchant_logo_url'       => $this->merchant->getLogoUrl(),
             'payout_link_description' => $payoutLink->getDescription(),
             'primary_color'           => $this->merchant->getBrandColor(),
-            'merchant_name'           => $this->getDisplayName(),
+            'merchant_name'           => $this->merchant->getDisplayNameElseName(),
             'allow_upi'               => $isUpiEnabled,
             'banking_url'             => $this->config['applications.banking_service_url'],
             'is_production'           => $isProduction,
@@ -546,11 +469,6 @@ class Core extends Base\Core
         }
 
         return $balance;
-    }
-
-    protected function getSettingsAccessor($merchant)
-    {
-        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
     }
 
     protected function processContext(string $payoutLinkId, string $context = null): string
@@ -585,11 +503,10 @@ class Core extends Base\Core
                                               ContactEntity::NAME    => $payoutLink->getContactName(),
                                               ContactEntity::CONTACT => $payoutLink->getContactPhoneNumber(),
                                               ContactEntity::EMAIL   => $payoutLink->getContactEmail(),
-                                              self::PAYOUT_LINK_ID   => $payoutLink->getPublicId()
+                                              Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId()
                                           ]
             );
         }
-
         if (empty($phoneNumber) === false)
         {
             $receiver = $phoneNumber;
@@ -618,14 +535,12 @@ class Core extends Base\Core
         if (empty($phoneNumber) === false)
         {
             $payload = $this->getSmsPayload($payoutLink, $otp);
-
             try
             {
                 $this->raven->sendSms($payload);
 
                 $successfulChannelPushCount++;
-            }
-            catch (\Exception $e)
+            } catch (\Exception $e)
             {
                 $this->trace->traceException($e,
                                              Trace::ERROR,
@@ -633,41 +548,35 @@ class Core extends Base\Core
                                              [
                                                  Entity::CONTACT_ID           => $payoutLink->getContactId(),
                                                  Entity::CONTACT_NAME         => $payoutLink->getContactName(),
-                                                 self::PAYOUT_LINK_ID         => $payoutLink->getPublicId(),
+                                                 Entity::PAYOUT_LINK_ID       => $payoutLink->getPublicId(),
                                                  Entity::CONTACT_PHONE_NUMBER => $payoutLink->getContactPhoneNumber(),
                                              ]);
             }
         }
-
         $email = $payoutLink->getContactEmail();
-
         if (empty($email) === false)
         {
             $customerEmailOtp = new CustomerOtp($payoutLink->getId(),
                                                 $this->merchant->getId(),
                                                 $otp);
-
             try
             {
                 Mail::queue($customerEmailOtp);
 
                 $successfulChannelPushCount++;
-            }
-            catch(\Exception $e)
+            } catch (\Exception $e)
             {
                 $this->trace->traceException($e,
                                              Trace::ERROR,
                                              TraceCode::PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED,
                                              [
-                                                 Entity::CONTACT_ID    => $payoutLink->getContactId(),
-                                                 Entity::CONTACT_NAME  => $payoutLink->getContactName(),
-                                                 Entity::CONTACT_EMAIL => $payoutLink->getContactEmail(),
-                                                 self::PAYOUT_LINK_ID  => $payoutLink->getPublicId()
+                                                 Entity::CONTACT_ID     => $payoutLink->getContactId(),
+                                                 Entity::CONTACT_NAME   => $payoutLink->getContactName(),
+                                                 Entity::CONTACT_EMAIL  => $payoutLink->getContactEmail(),
+                                                 Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId()
                                              ]);
             }
-
         }
-
         if ($successfulChannelPushCount === 0)
         {
             throw new BadRequestException(
@@ -678,7 +587,7 @@ class Core extends Base\Core
                     Entity::CONTACT_NAME         => $payoutLink->getContactName(),
                     Entity::CONTACT_PHONE_NUMBER => $payoutLink->getContactPhoneNumber(),
                     Entity::CONTACT_EMAIL        => $payoutLink->getContactEmail(),
-                    self::PAYOUT_LINK_ID         => $payoutLink->getPublicId()
+                    Entity::PAYOUT_LINK_ID       => $payoutLink->getPublicId()
                 ]
             );
         }
@@ -688,12 +597,12 @@ class Core extends Base\Core
     {
         $payload = [
             self::PARAMS   => [
-                self::MERCHANT_NAME  => $this->getDisplayName(),
-                Entity::OTP          => $otp,
-                self::PAYOUT_PURPOSE => $payoutLink->getPurpose()
+                Entity::MERCHANT_NAME  => $this->merchant->getDisplayNameElseName(),
+                Entity::OTP            => $otp,
+                Entity::PAYOUT_PURPOSE => $payoutLink->getPurpose()
             ],
             self::TEMPLATE => self::SMS_TEMPLATE,
-            self::SOURCE   => self::API_PAYOUT_LINK_SRC_STR,
+            self::SOURCE   => self::API_POUT_LNK_SRC,
             self::RECEIVER => $payoutLink->getContactPhoneNumber()
         ];
 
@@ -707,9 +616,9 @@ class Core extends Base\Core
         $requestContext = $this->processContext($payoutLink->getPublicId(), $context);
 
         $payload = [
-            self::RECEIVER => $receiver,
-            Entity::CONTEXT  => $requestContext,
-            self::SOURCE   => self::API_POUT_LNK_SCR
+            self::RECEIVER  => $receiver,
+            Entity::CONTEXT => $requestContext,
+            self::SOURCE    => self::API_POUT_LNK_SRC
         ];
 
         $this->trace->info(
@@ -718,11 +627,6 @@ class Core extends Base\Core
         );
 
         $response = $this->raven->generateOtp($payload);
-
-        $this->trace->info(
-            TraceCode::PAYOUT_LINK_CUSTOMER_OTP_RESPONSE,
-            $response
-        );
 
         if (key_exists(Entity::OTP, $response) === false)
         {
@@ -733,8 +637,14 @@ class Core extends Base\Core
                                           ]
             );
         }
+        $otp = array_pull($response, Entity::OTP);
 
-        return $response[Entity::OTP];
+        $this->trace->info(
+            TraceCode::PAYOUT_LINK_CUSTOMER_OTP_RESPONSE,
+            $response
+        );
+
+        return $otp;
     }
 
     protected function generateAndSetShortUrl(Entity &$payoutLink)
@@ -742,26 +652,23 @@ class Core extends Base\Core
         $targetUrl = sprintf(self::LONG_URL_FORMAT,
                              $this->config['url.api.production'],
                              $payoutLink->getPublicId());
-
         $params = [
-            'metadata'       => [
+            'metadata' => [
                 'mode'   => $this->mode,
                 'entity' => $payoutLink->getEntity(),
                 'id'     => $payoutLink->getPublicId(),
             ]
         ];
-
         try
         {
             $shortUrl = $this->elfin->shorten($targetUrl, $params, false);
 
             $this->trace->info(TraceCode::PAYOUT_LINK_SHORT_URL_CREATED,
-                [
-                    Entity::ID        => $payoutLink->getPublicId(),
-                    Entity::SHORT_URL => $shortUrl
-                ]);
-        }
-        catch (\Exception $e)
+                               [
+                                   Entity::ID        => $payoutLink->getPublicId(),
+                                   Entity::SHORT_URL => $shortUrl
+                               ]);
+        } catch (\Exception $e)
         {
             // in case of a problem with elfin, the short url will be same as the target url.
             $shortUrl = $targetUrl;
@@ -771,28 +678,13 @@ class Core extends Base\Core
                 null,
                 TraceCode::PAYOUT_LINK_SHORT_URL_GENERATION_FAILED,
                 [
-                    self::MESSAGE        => $e->getMessage(),
-                    self::PAYOUT_LINK_ID => $payoutLink->getId(),
-                    'target_url'         => $targetUrl
+                    self::MESSAGE          => $e->getMessage(),
+                    Entity::PAYOUT_LINK_ID => $payoutLink->getId(),
+                    'target_url'           => $targetUrl
                 ]
             );
         }
 
         $payoutLink->setShortUrl($shortUrl);
-    }
-
-    /**
-     * @return string
-     */
-    protected function getDisplayName(): string
-    {
-        $displayName = $this->merchant->getDisplayName();
-
-        if (empty($displayName) === true)
-        {
-            return $this->merchant->getName();
-        }
-
-        return $displayName;
     }
 }

@@ -18,16 +18,6 @@ use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 
 class Payout
 {
-    protected $trace;
-
-    protected $repo;
-
-    public function __construct()
-    {
-        $this->trace = App::getFacadeRoot()['trace'];
-
-        $this->repo = App::getFacadeRoot()['repo'];
-    }
 
     public function processPayout(PayoutLinkEntity $payoutLink, MerchantEntity $merchant, string $mode): PayoutEntity
     {
@@ -41,7 +31,7 @@ class Payout
             PayoutEntity::FUND_ACCOUNT_ID      => $payoutLink->fundAccount->getPublicId(),
             PayoutEntity::MODE                 => $mode,
             PayoutEntity::REFERENCE_ID         => $payoutLink->getReceipt(),
-            PayoutEntity::PAYOUT_LINK_ID       => $payoutLink->getId(),
+            PayoutEntity::PAYOUT_LINK_ID       => $payoutLink->getPublicId(),
             PayoutEntity::QUEUE_IF_LOW_BALANCE => true
         ];
 

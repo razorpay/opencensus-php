@@ -463,7 +463,7 @@ class Base extends BaseCore
 
         if (empty($payoutLinkId) === false)
         {
-            $payoutLink = $this->repo->payout_link->findByIdAndMerchant($payoutLinkId, $this->merchant);
+            $payoutLink = $this->repo->payout_link->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
 
             $payout->payoutLink()->associate($payoutLink);
         }

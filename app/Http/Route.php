@@ -868,7 +868,6 @@ final class Route
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
-        'transfer_process'                         => ['post',     'transfers/process',                              'TransferController@processOrderTransfers'                          ],
         'transfer_pending_process'                 => ['post',     'transfers/process_pending',                      'TransferController@processPendingOrderTransfers'                   ],
         'transfer_failed_process'                  => ['post',     'transfers/process_failed',                       'TransferController@processFailedOrderTransfers'                    ],
         'transfer_edit'                            => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],

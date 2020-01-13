@@ -774,7 +774,8 @@ return [
             ]],
         'response'  => [
             'content'     => [
-                'success' => 'OK'
+                'UPI'  => '1',
+                'IMPS' => '1',
             ]
         ]
     ],

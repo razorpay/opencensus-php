@@ -12,13 +12,17 @@ class PayoutSourceUpdaterJob extends Job
 
     protected $previousPayoutStatus;
 
-    public function __construct(string $mode, string $payoutPublicId, $previousPayoutStatus)
+    protected $expectedCurrentStatus;
+
+    public function __construct(string $mode, string $payoutPublicId, $previousPayoutStatus, $expectedCurrentStatus)
     {
         parent::__construct($mode);
 
         $this->payoutPublicId = $payoutPublicId;
 
         $this->previousPayoutStatus = $previousPayoutStatus;
+
+        $this->expectedCurrentStatus = $expectedCurrentStatus;
     }
 
     public function handle()
@@ -27,14 +31,25 @@ class PayoutSourceUpdaterJob extends Job
 
         $payout = $this->repoManager->payout->findByPublicId($this->payoutPublicId);
 
+        $context = [
+            'payout_id'               => $this->payoutPublicId,
+            'current_status'          => $payout->getStatus(),
+            'previous_status'         => $this->previousPayoutStatus,
+            'expected_current_status' => $this->expectedCurrentStatus
+        ];
+
         $this->trace->info(
             TraceCode::PAYOUT_SOURCE_UPDATER_JOB,
-            [
-                'payout_id'      => $this->payoutPublicId,
-                'current_status' => $payout->getStatus(),
-                'previous_statu' => $this->previousPayoutStatus
-            ]
+            $context
         );
+
+        if ($this->expectedCurrentStatus !== $payout->getStatus())
+        {
+            // todo, pl add a slack push here
+            $this->trace->warning(TraceCode::PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS,
+                                  $context);
+            return;
+        }
 
         SourceUpdater::update($payout, $this->previousPayoutStatus);
     }
