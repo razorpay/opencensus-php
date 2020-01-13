@@ -29,6 +29,7 @@ export default ({
     />
 
     <AccountDetails
+      required={!skipBankDetails}
       disabled={skipBankDetails}
       beneficiaryName={beneficiaryName}
       bankAccountNumber={bankAccountNumber}

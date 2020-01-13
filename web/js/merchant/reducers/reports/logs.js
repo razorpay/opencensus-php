@@ -78,7 +78,10 @@ const createLog = reportType => {
   const actionName = `${reportType.toUpperCase()}_LOG_CREATE`;
   return payload => ({
     type: actionName,
-    payload: new Log({ reportType }).save(payload),
+    payload: new Log({ reportType }).save(payload).then(data => ({
+      ...data,
+      isNew: true,
+    })),
   });
 };
 

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
@@ -12,9 +13,32 @@ import Applications from 'merchant/views/Settings/Applications/';
 import Configuration from 'merchant/views/Settings/Configuration';
 import ApplicationsNew from 'merchant/views/Settings/Applications/new';
 
+import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
+
 @RTracking(() => window.rzpQ.component('Settings'))
 @withRouter
+@connect(null, {
+  fetchAddWebsiteWorkflowStatus,
+})
 export default class Settings extends Component {
+  state = {
+    isWebsiteInWorkflow: false,
+  };
+
+  componentWillMount() {
+    this.props.fetchAddWebsiteWorkflowStatus().then(({ data }) => {
+      this.setState({
+        isWebsiteInWorkflow: data,
+      });
+    });
+  }
+
+  onWebsiteAdd = () => {
+    this.setState({
+      isWebsiteInWorkflow: true,
+    });
+  };
+
   componentDidMount() {
     analyticsGoTo('Settings');
   }
@@ -95,7 +119,16 @@ export default class Settings extends Component {
         <content>
           <Route path="/config" component={Configuration} />
           <Route path="/webhooks" component={Webhooks} />
-          <Route path="/keys" component={ApiKeys} />
+          <Route
+            path="/keys"
+            component={props => (
+              <ApiKeys
+                {...props}
+                onWebsiteAdd={this.onWebsiteAdd}
+                isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
+              />
+            )}
+          />
           <ShowWhenRoute
             path="/reminders"
             component={Reminders}
