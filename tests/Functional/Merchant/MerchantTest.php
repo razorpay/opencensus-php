@@ -5578,7 +5578,7 @@ class MerchantTest extends TestCase
 
         $this->app->make(Factory::class)->load($factoryPath);
 
-        $subMerchant = $this->fixtures->create('merchant');
+        $subMerchant = $this->fixtures->merchant->createEntityInTestAndLive('merchant');
 
         $subMerchantId = $subMerchant->getId();
 
@@ -5591,7 +5591,7 @@ class MerchantTest extends TestCase
             'entity_owner_id' => '10000000000000',
         ];
 
-        $this->fixtures->create('merchant_access_map', $accessMapData);
+        $this->fixtures->merchant_access_map->createEntityInTestAndLive('merchant_access_map', $accessMapData);
 
         return $subMerchantId;
     }
