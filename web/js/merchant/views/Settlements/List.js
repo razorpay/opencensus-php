@@ -263,7 +263,10 @@ export default class SettlementsListContainer extends ListContainer {
           </NegativeBalanceBanner>
         )}
 
-        {handleNegativeBalanceLimit(this.props.merchantBalanceConfigs) && (
+        {handleNegativeBalanceLimit(
+          this.props.merchantBalanceConfigs,
+          balance
+        ) && (
           <NegativeBalanceBanner
             title="On Hold!"
             theme="danger"

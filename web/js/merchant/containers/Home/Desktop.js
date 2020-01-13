@@ -161,7 +161,7 @@ class AnalyticsDesktop extends Component {
             </NegativeBalanceBanner>
           )}
 
-          {handleNegativeBalanceLimit(merchantBalanceConfigs) && (
+          {handleNegativeBalanceLimit(merchantBalanceConfigs, balance) && (
             <NegativeBalanceBanner
               title="On Hold!"
               theme="danger"
