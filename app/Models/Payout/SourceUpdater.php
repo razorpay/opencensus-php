@@ -40,7 +40,7 @@ class SourceUpdater
      * @param Entity $payout
      * @param string $previousPayoutStatus
      */
-    public static function handleUpdateFromQueue(Entity $payout, string $previousPayoutStatus)
+    public static function handleUpdateFromQueue(Entity $payout, string $previousPayoutStatus = null)
     {
         $payoutLink = $payout->payoutLink;
 
