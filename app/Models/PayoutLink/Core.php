@@ -649,7 +649,18 @@ class Core extends Base\Core
             ]
         );
 
-        $this->raven->verifyOtp($payload);
+        $response = $this->raven->verifyOtp($payload);
+
+        if ((isset($response['success']) === false) or
+            ($response['success'] !== true)
+        )
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+                                          null,
+                                          [
+                                            'payout_link_id' => $payoutLink->getPublicId()
+                                          ]);
+        }
 
         $token = $this->tokenService->generate($payoutLink->getPublicId());
 
