@@ -13,7 +13,6 @@ use RZP\Models\Payout\Purpose;
 use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
-use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Vpa\Entity as VpaEntity;
@@ -40,11 +39,12 @@ class Core extends Base\Core
     // Source param, where calling Raven Apis
     const API_POUT_LNK_SRC = 'api.pout_l';
 
-    const OK               = 'OK';
-    const MAX_IMPS_AMOUNT  = 20000000;
-    const MESSAGE          = 'message';
-    const SUCCESS          = 'success';
-    const MUTEX_TIMEOUT    = 60;
+    const OK              = 'OK';
+    const MAX_IMPS_AMOUNT = 20000000;
+    const MAX_UPI_AMOUNT  = 10000000;
+    const MESSAGE         = 'message';
+    const SUCCESS         = 'success';
+    const MUTEX_TIMEOUT   = 60;
 
     protected $elfin;
 
@@ -189,7 +189,7 @@ class Core extends Base\Core
 
                         $this->tokenService->verify($token, $payoutLink->getPublicId());
 
-                        if (in_array($payoutLink->getStatus(), Status::VALID_STARTING_STATUSES) === false)
+                        if (Status::payoutLinkInProcessableState($payoutLink->getStatus()) === false)
                         {
                             throw new BadRequestException(
                                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
@@ -383,7 +383,7 @@ class Core extends Base\Core
         // force generation of a new OTP
         $context = array_pull($input, Entity::CONTEXT);
 
-        if (in_array($payoutLink->getStatus(), Status::VALID_PROCESSING_START_STATUSES) === false)
+        if (Status::payoutLinkInProcessableState($payoutLink->getStatus()) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION,
@@ -406,7 +406,7 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput(Validator::VERIFY_OTP, $input);
 
-        if (in_array($payoutLink->getStatus(), Status::VALID_PROCESSING_START_STATUSES) === false)
+        if (Status::payoutLinkInProcessableState($payoutLink->getStatus()) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION,
@@ -482,7 +482,7 @@ class Core extends Base\Core
             $channelSupportsUpi = false;
         }
 
-        $amountLessThanLac = $payoutLink->getAmount() <= self::ONE_LAC ? true : false;
+        $amountLessThanLac = $payoutLink->getAmount() <= self::MAX_UPI_AMOUNT ? true : false;
 
         return $upiEnabledInSettings and $channelSupportsUpi and $amountLessThanLac;
     }

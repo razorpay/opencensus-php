@@ -51,6 +51,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // payout links
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
+    const PAYOUT_SOURCE_UPDATER_JOB_RELEASED                    = 'PAYOUT_SOURCE_UPDATER_JOB_RELEASED';
+    const PAYOUT_SOURCE_UPDATER_JOB_DELETED                     = 'PAYOUT_SOURCE_UPDATER_JOB_DELETED';
     const PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS        = 'PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS';
     const PAYOUT_LINK_SHORT_URL_CREATED                         = 'PAYOUT_LINK_SHORT_URL_CREATED';
     const PAYOUT_LINK_SETTINGS_UPDATE                           = 'PAYOUT_LINK_SETTINGS_UPDATE';

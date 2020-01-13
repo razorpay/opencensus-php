@@ -140,7 +140,7 @@ class Entity extends Base\PublicEntity
     const REVERSAL        = 'reversal';
     const WORKFLOW_ACTION = 'workflow_action';
 
-    const MAX_PAYOUT_LIMIT = '10000000000';
+    const MAX_PAYOUT_LIMIT = 10000000000;
 
     protected $queueFlag = false;
 

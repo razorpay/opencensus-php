@@ -8,8 +8,9 @@ use RZP\Models\Payout\SourceUpdater;
 
 class PayoutSourceUpdaterJob extends Job
 {
+    const MAX_RETIRES = 5;
 
-    protected $queueConfigKey = 'fund_transfer_recon_update';
+    const MAX_RETRY_DELAY   = 300;
 
     protected $payoutPublicId;
 
@@ -30,16 +31,18 @@ class PayoutSourceUpdaterJob extends Job
 
     public function handle()
     {
+        $context = [
+            'payout_id'               => $this->payoutPublicId,
+            'previous_status'         => $this->previousPayoutStatus,
+            'expected_current_status' => $this->expectedCurrentStatus
+        ];
+
         try
         {
             $payout = $this->repoManager->payout->findByPublicId($this->payoutPublicId);
 
-            $context = [
-                'payout_id'               => $this->payoutPublicId,
-                'current_status'          => $payout->getStatus(),
-                'previous_status'         => $this->previousPayoutStatus,
-                'expected_current_status' => $this->expectedCurrentStatus
-            ];
+            $context['current_status'] = $payout->getStatus();
+
             $this->trace->info(
                 TraceCode::PAYOUT_SOURCE_UPDATER_JOB,
                 $context
@@ -65,9 +68,20 @@ class PayoutSourceUpdaterJob extends Job
                     'payout_id'       => $this->payoutPublicId,
                     'previous_status' => $this->previousPayoutStatus
                 ]);
+
+            if($this->attempts() < self::MAX_RETIRES)
+            {
+                $this->trace->info(TraceCode::PAYOUT_SOURCE_UPDATER_JOB_RELEASED,
+                                   $context);
+
+                $this->release(self::MAX_RETRY_DELAY);
+            }
         }
         finally
         {
+            $this->trace->info(TraceCode::PAYOUT_SOURCE_UPDATER_JOB_RELEASED,
+                               $context);
+
             $this->delete();
         }
     }

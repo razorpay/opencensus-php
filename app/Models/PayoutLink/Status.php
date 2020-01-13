@@ -36,11 +36,6 @@ class Status
         self::CANCELLED  => 'api.payout_link.cancelled',
     ];
 
-    const VALID_STARTING_STATUSES = [
-        self::ISSUED,
-        self::ATTEMPTED
-    ];
-
     const PAYOUT_TO_PAYOUT_LINK_STATUSES = [
         PayoutStatus::FAILED     => self::ATTEMPTED,
         PayoutStatus::REVERSED   => self::ATTEMPTED,
@@ -127,4 +122,8 @@ class Status
         return self::INTERNAL_TO_PUBLIC_STATUS[$internalStatus] ?? $internalStatus;
     }
 
+    public static function payoutLinkInProcessableState($status)
+    {
+        return in_array($status, Status::VALID_PROCESSING_START_STATUSES);
+    }
 }

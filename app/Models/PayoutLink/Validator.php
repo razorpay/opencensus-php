@@ -44,7 +44,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_NAME         => 'required|string|max:50',
         Entity::CONTACT_EMAIL        => 'sometimes|nullable|email',
         Entity::CONTACT_PHONE_NUMBER => 'sometimes|nullable|contact_syntax',
-        Entity::BALANCE_ID           => 'sometimes|string|size:14',
+        Entity::BALANCE_ID           => 'required|string|size:14',
         Entity::AMOUNT               => 'required|integer|min:100|max:'. Entity::MAX_PAYOUT_LIMIT,
         Entity::CURRENCY             => 'required|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
