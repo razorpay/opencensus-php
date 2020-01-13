@@ -7,6 +7,7 @@ use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi\GatewayProcessor;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Services\RazorXClient;
@@ -1314,49 +1315,7 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->merchant->setCategory('1240');
 
-        $cardArray = [
-            'number'        => '4012001036275556',
-            'expiry_month'  => '1',
-            'expiry_year'   => '2035',
-            'cvv'           => '123',
-            'network'       => 'Visa',
-            'issuer'        => 'HDFC',
-            'name'          => 'Test',
-            'international' => false,
-        ];
-
-        $card = (new Card\Entity)->fill($cardArray);
-
-        $merchantDetailArray = [
-            'contact_name'                  => 'rzp',
-            'contact_email'                 => 'test@rzp.com',
-            'merchant_id'                   => '10000000000000',
-            'business_operation_address'    => 'Koramangala',
-            'business_operation_state'      => 'KARNATAKA',
-            'business_operation_pin'        =>  560047,
-            'business_dba'                  => 'test',
-            'business_name'                 => 'rzp_test',
-            'business_operation_city'       => 'Bangalore',
-        ];
-
-        $this->fixtures->create('merchant_detail', $merchantDetailArray);
-
-        $paymentArray = $this->getDefaultPaymentArray();
-        unset($paymentArray['card']);
-        $paymentArray['status'] = 'created';
-        $paymentArray['method'] = 'card';
-
-        $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
-
-        $merchant = Merchant\Entity::find('10000000000000');
-
-        $payment->merchant()->associate($merchant);
-
-        $input = [
-            'payment' => $payment,
-            'merchant' => $payment->merchant
-        ];
+        $input = $this->getInputForHitachiTerminalCreationOnRun();
 
         $this->app['rzp.mode'] = Mode::TEST;
 
@@ -1371,6 +1330,27 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('38RR00000010001', $terminal->getGatewayMerchantId());
         $this->assertEquals('38R10001', $terminal->getGatewayTerminalId());
         $this->assertEquals('1240', $terminal->getCategory());
+    }
+    
+    public function testSkipHitachiTerminalCreationOnRun()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->setCategory('1240');
+
+        $this->fixtures->merchant->addFeatures(Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD);
+
+        $input = $this->getInputForHitachiTerminalCreationOnRun();
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+
+        // There should be no seleted terminals, not even of 'hitachi' gateway
+        $this->assertEquals(1, sizeof($selectedTerminals));        
+        $this->assertNull($selectedTerminals[0]);
     }
 
     public function testBlockedMccOnHitachiTerminal()
@@ -1439,49 +1419,7 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->merchant->setCategory('0240');
 
-        $cardArray = [
-            'number'        => '4012001036275556',
-            'expiry_month'  => '1',
-            'expiry_year'   => '2035',
-            'cvv'           => '123',
-            'network'       => 'Visa',
-            'issuer'        => 'HDFC',
-            'name'          => 'Test',
-            'international' => false,
-        ];
-
-        $card = (new Card\Entity)->fill($cardArray);
-
-        $merchantDetailArray = [
-            'contact_name'                  => 'rzp',
-            'contact_email'                 => 'test@rzp.com',
-            'merchant_id'                   => '10000000000000',
-            'business_operation_address'    => 'Koramangala',
-            'business_operation_state'      => 'KARNATAKA',
-            'business_operation_pin'        =>  560047,
-            'business_dba'                  => 'test',
-            'business_name'                 => 'rzp_test',
-            'business_operation_city'       => 'Bangalore',
-        ];
-
-        $this->fixtures->create('merchant_detail', $merchantDetailArray);
-
-        $paymentArray = $this->getDefaultPaymentArray();
-        unset($paymentArray['card']);
-        $paymentArray['status'] = 'created';
-        $paymentArray['method'] = 'card';
-
-        $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
-
-        $merchant = Merchant\Entity::find('10000000000000');
-
-        $payment->merchant()->associate($merchant);
-
-        $input = [
-            'payment' => $payment,
-            'merchant' => $payment->merchant
-        ];
+        $input = $this->getInputForHitachiTerminalCreationOnRun();
 
         $this->app['rzp.mode'] = Mode::TEST;
 
@@ -1559,49 +1497,7 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->merchant->setCategory('1240');
 
-        $cardArray = [
-            'number'        => '4012001036275556',
-            'expiry_month'  => '1',
-            'expiry_year'   => '2035',
-            'cvv'           => '123',
-            'network'       => 'Visa',
-            'issuer'        => 'HDFC',
-            'name'          => 'Test',
-            'international' => false,
-        ];
-
-        $card = (new Card\Entity)->fill($cardArray);
-
-        $merchantDetailArray = [
-            'contact_name'                  => 'rzp',
-            'contact_email'                 => 'test@rzp.com',
-            'merchant_id'                   => '10000000000000',
-            'business_operation_address'    => 'Koramangala',
-            'business_operation_state'      => 'KARNATAKA',
-            'business_operation_pin'        =>  560047,
-            'business_dba'                  => 'test',
-            'business_name'                 => 'rzp_test',
-            'business_operation_city'       => 'Bangalore',
-        ];
-
-        $this->fixtures->create('merchant_detail', $merchantDetailArray);
-
-        $paymentArray = $this->getDefaultPaymentArray();
-        unset($paymentArray['card']);
-        $paymentArray['status'] = 'created';
-        $paymentArray['method'] = 'card';
-
-        $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
-
-        $merchant = Merchant\Entity::find('10000000000000');
-
-        $payment->merchant()->associate($merchant);
-
-        $input = [
-            'payment' => $payment,
-            'merchant' => $payment->merchant
-        ];
+        $input = $this->getInputForHitachiTerminalCreationOnRun();
 
         $this->app['rzp.mode'] = Mode::TEST;
 
@@ -1634,49 +1530,7 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->merchant->setCategory('1240');
 
-        $cardArray = [
-            'number'        => '4012001036275556',
-            'expiry_month'  => '1',
-            'expiry_year'   => '2035',
-            'cvv'           => '123',
-            'network'       => 'Visa',
-            'issuer'        => 'HDFC',
-            'name'          => 'Test',
-            'international' => false,
-        ];
-
-        $card = (new Card\Entity)->fill($cardArray);
-
-        $merchantDetailArray = [
-            'contact_name'                  => 'rzp',
-            'contact_email'                 => 'test@rzp.com',
-            'merchant_id'                   => '10000000000000',
-            'business_operation_address'    => 'Koramangala',
-            'business_operation_state'      => 'KARNATAKA',
-            'business_operation_pin'        =>  560047,
-            'business_dba'                  => 'test',
-            'business_name'                 => 'rzp_test',
-            'business_operation_city'       => 'Bangalore',
-        ];
-
-        $this->fixtures->create('merchant_detail', $merchantDetailArray);
-
-        $paymentArray = $this->getDefaultPaymentArray();
-        unset($paymentArray['card']);
-        $paymentArray['status'] = 'created';
-        $paymentArray['method'] = 'card';
-
-        $payment = (new Payment\Entity)->fill($paymentArray);
-        $payment->card = $card;
-
-        $merchant = Merchant\Entity::find('10000000000000');
-
-        $payment->merchant()->associate($merchant);
-
-        $input = [
-            'payment' => $payment,
-            'merchant' => $payment->merchant
-        ];
+        $input = $this->getInputForHitachiTerminalCreationOnRun();
 
         $this->app['rzp.mode'] = Mode::TEST;
 
@@ -2130,5 +1984,54 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('hdfc', $terminal->getGateway());
         $this->assertEquals('10000000000000', $terminal->getMerchantId());
         $this->assertEquals($parentTerminal["id"], $terminal->getId());
+    }
+
+    protected function getInputForHitachiTerminalCreationOnRun()
+    {
+        $cardArray = [
+            'number'        => '4012001036275556',
+            'expiry_month'  => '1',
+            'expiry_year'   => '2035',
+            'cvv'           => '123',
+            'network'       => 'Visa',
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => false,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $merchantDetailArray = [
+            'contact_name'                  => 'rzp',
+            'contact_email'                 => 'test@rzp.com',
+            'merchant_id'                   => '10000000000000',
+            'business_operation_address'    => 'Koramangala',
+            'business_operation_state'      => 'KARNATAKA',
+            'business_operation_pin'        =>  560047,
+            'business_dba'                  => 'test',
+            'business_name'                 => 'rzp_test',
+            'business_operation_city'       => 'Bangalore',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        return $input;
     }
 }

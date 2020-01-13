@@ -131,6 +131,7 @@ return [
             ],
         ],
     ],
+
     'testProcessOrderTransfersPartialPayment' => [
         'request'   => [
             'method'  => 'POST',
@@ -163,10 +164,21 @@ return [
         ],
     ],
 
+    'testCronProcessPendingOrderTransfers' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/transfers/process_pending',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
+
     'testCronProcessFailedOrderTransfers' => [
         'request'   => [
             'method'    => 'POST',
-            'url'       => '/transfers/process',
+            'url'       => '/transfers/process_failed',
             'content'   => [],
         ],
         'response'  => [

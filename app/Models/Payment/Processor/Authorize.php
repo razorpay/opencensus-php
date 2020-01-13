@@ -512,6 +512,10 @@ trait Authorize
         {
             $request = $this->runAutoDebitFlow($payment, $gatewayInput);
         }
+        else if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
+        {
+            $request = $this->callGatewayFunction(Action::AUTHORIZE, $gatewayInput);
+        }
         else
         {
             $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
@@ -6584,8 +6588,7 @@ trait Authorize
     {
         return (!is_null($currentTerminal) and
             ($currentTerminal[Terminal\Entity::GATEWAY] === Gateway::HITACHI) and
-            ($payment->card['network_code'] === Network::RUPAY) and
-            ($this->app->razorx->getTreatment($payment->getId(), 'enable_paysecure_gateway', $this->mode) === 'on'));
+            ($payment->card['network_code'] === Network::RUPAY));
     }
 
     /**

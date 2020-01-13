@@ -2262,4 +2262,350 @@ return [
             ],
         ],
     ],
+
+    'testCreatePayoutWithWrongFundAccountId' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_101200340560fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'testCreatePayoutIMPSMoreThanMaxAmount' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 30000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Given method / mode cannot be used for the payout amount specified',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
+        ],
+    ],
+
+    'testCreatePayoutUPIMoreThanMaxAmount' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 30000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'fund_account_id' => 'fa_100000000003fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Given method / mode cannot be used for the payout amount specified',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
+        ],
+    ],
+
+    'testCreatePayoutRTGSLessThanMinAmount' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 3000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'RTGS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Given method / mode cannot be used for the payout amount specified',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
+        ],
+    ],
+
+    'testSearchPayoutByMode' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testSearchPayoutByReferenceId' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testCreatePayoutInvalidCurrency' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 30000,
+                'currency'        => 'USD',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected currency is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetAllPayoutPurposes' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/payouts/purposes',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 6,
+                'items'     =>  [
+                    [
+                        'purpose'       =>  'refund',
+                        'purpose_type'  =>  'refund',
+                    ],
+                    [
+                        'purpose'       => 'cashback',
+                        'purpose_type'  => 'refund',
+                    ],
+                    [
+                        'purpose'       => 'payout',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'salary',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'utility bill',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'vendor bill',
+                        'purpose_type'  =>  'settlement',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testAddCustomPayoutPurpose' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'       => 'Give Mehul A Bonus',
+                'purpose_type'  => 'settlement'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 7,
+                'items'     =>  [
+                    [
+                        'purpose'       => 'refund',
+                        'purpose_type'  => 'refund',
+                    ],
+                    [
+                        'purpose'       => 'cashback',
+                        'purpose_type'  => 'refund',
+                    ],
+                    [
+                        'purpose'       => 'payout',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'salary',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'utility bill',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'vendor bill',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'Give Mehul A Bonus',
+                        'purpose_type'  => 'settlement',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAddCustomPayoutPurposeWithWrongPurposeType' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'       => 'Give Mehul A Bonus',
+                'purpose_type'  => 'penny_tesing'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected purpose type is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddCustomPayoutPurposeThatAlreadyExists' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'       => 'Give Mehul A Bonus',
+                'purpose_type'  => 'settlement'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Purpose \'Give Mehul A Bonus\' is already defined and cannot be added.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAdd101CustomPayoutPurposes' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'       => 'Give Mehul A Bonus',
+                'purpose_type'  => 'settlement'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You have reached the maximum limit (100) of custom payout purposes that can be created.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

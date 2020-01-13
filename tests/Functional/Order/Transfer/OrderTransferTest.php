@@ -38,6 +38,8 @@ class OrderTransferTest extends TestCase
 
     public function testCreateOrderTransfers()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $order = $this->startTest();
 
         return $order;
@@ -145,6 +147,35 @@ class OrderTransferTest extends TestCase
         $this->testProcessOrderTransfers();
     }
 
+    public function testCronProcessPendingOrderTransfers()
+    {
+        $this->markTestSkipped();
+
+        $order = $this->testCreateOrderTransfers();
+
+        // Disable dispatch here
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('pending', $transfer['status']);
+
+        // Enable dispatch here
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $orderIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('processed', $transfer['status']);
+
+        $this->assertEquals($order['id'], 'order_' . $orderIds[0]);
+    }
+
     public function testCronProcessFailedOrderTransfers()
     {
         $order = $this->testCreateOrderTransfers();
@@ -205,4 +236,23 @@ class OrderTransferTest extends TestCase
         $this->app->instance('webhook.inferno', $inferno);
     }
 
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode) {
+                                  if ($feature === 'transfers_via_order')
+                                  {
+                                      return 'on';
+                                  }
+                                  return 'off';
+                              }));
+    }
 }
