@@ -101,11 +101,10 @@ class RblBankingAccountStatementTest extends TestCase
         $this->ba->cronAuth();
 
         $content = [
-            'channel'  => 'rbl',
         ];
 
         $request = [
-            'url'       => '/banking_account_statement/processChannel',
+            'url'       => '/banking_account_statement/process/rbl',
             'method'    => 'POST',
             'content'   => $content
         ];
