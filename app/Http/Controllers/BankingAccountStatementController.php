@@ -38,11 +38,11 @@ class BankingAccountStatementController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function processAccountStatementForChannel()
+    public function processAccountStatementForChannel(string $channel)
     {
         $input = Request::all();
 
-        $response = $this->service()->processAccountStatementForChannel($input);
+        $response = $this->service()->processAccountStatementForChannel($channel, $input);
 
         return ApiResponse::json($response);
     }

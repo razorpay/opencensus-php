@@ -97,10 +97,12 @@ class Entity extends Base\PublicEntity
 
     const DETAILS       = 'details';
 
+    //for rbl statement fetch time tracking
+    //using this to fetch statement of accounts in order
+    const LAST_STATEMENT_ATTEMPT_AT = 'last_statement_attempt_at';
+
     // Relation Constants
     const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
-
-    const LAST_STATEMENT_ATTEMPT_AT = 'last_statement_attempt_at';
 
     protected $entity = 'banking_account';
 
@@ -440,7 +442,7 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Public setters ---------------------------------
 
-    public function setPublicBankingAccountDetailsAttribute(array &$array)
+    public function setPublicBankingAccountDetailsAttribute(array & $array)
     {
         if (app('basicauth')->isAdminAuth() === false)
         {

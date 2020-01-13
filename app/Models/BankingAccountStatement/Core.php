@@ -566,7 +566,7 @@ class Core extends Base\Core
         }
     }
 
-    public function dispatchAccountNumberForChannel(array $input)
+    public function dispatchAccountNumberForChannel(string $channel, array $input)
     {
         //
         // 0. Trace the request here.
@@ -577,7 +577,6 @@ class Core extends Base\Core
         // Create and dispatch jobs to pull data for those MIDs
         // Return accountNumbers dispatched for processing for the route response
         //
-        $channel = array_pull($input, Entity::CHANNEL);
 
         // TODO: Need to move the limit number into config
         // Limit will be set on the basis of cron frequency, 2 is set for every 12 mins
