@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -14,6 +15,7 @@ use RZP\Models\Base\Traits\NotesTrait;
  * @property Merchant\Entity    $merchant
  * @property BankAccount\Entity $bankAccount
  * @property Customer\Entity    $customer
+ * @property Terminal\Entity    $terminal
  */
 class Entity extends Base\PublicEntity
 {
@@ -271,5 +273,10 @@ class Entity extends Base\PublicEntity
     public function bankAccount()
     {
         return $this->belongsTo(BankAccount\Entity::class);
+    }
+
+    public function terminal()
+    {
+        return $this->belongsTo(Terminal\Entity::class);
     }
 }
