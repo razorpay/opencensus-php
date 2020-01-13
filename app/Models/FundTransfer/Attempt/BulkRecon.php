@@ -86,7 +86,11 @@ class BulkRecon extends Base\Core
                 return $this->initiateBulkReconProcess($collection);
             });
 
-        $this->notifyCriticalErrors();
+        //Removing slack alerts and mails for recon yesbank
+        if((in_array($channel, Channel::getApiBasedChannels(), true) === false))
+        {
+            $this->notifyCriticalErrors();
+        }
 
         $this->fireSettlementWebhook();
     }

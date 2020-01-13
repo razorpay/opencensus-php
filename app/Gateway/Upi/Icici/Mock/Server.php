@@ -56,7 +56,8 @@ class Server extends Base\Mock\Server
             Fields::SUCCESS          => 'true',
             Fields::MESSAGE          => 'Transaction initiated',
             Fields::MERCHANT_TRAN_ID => $input['merchantTranId'],
-            Fields::BANK_RRN         => random_int(111111111, 999999999),
+            // Intent will not return RRN
+            Fields::BANK_RRN         => isset($input['payerVa']) ? random_int(111111111, 999999999) : null,
         ];
 
         $dontEncrypt = ((isset($input['payerVa']) === true) and
@@ -349,7 +350,7 @@ class Server extends Base\Mock\Server
             'merchantId'        => $upiEntity['gateway_merchant_id'],
             'subMerchantId'     => '1234',
             'terminalId'        => '1234',
-            'BankRRN'           => $upiEntity['gateway_payment_id'],
+            'BankRRN'           => $upiEntity['gateway_payment_id'] ?? '12345678987654321',
             'merchantTranId'    => $upiEntity['payment_id'],
             'PayerName'         => 'payer name not available',
             'PayerMobile'       => $payment['contact'],
@@ -358,7 +359,7 @@ class Server extends Base\Mock\Server
             'TxnStatus'         => 'SUCCESS',
             'TxnInitDate'       => $initDate->format('Ymdhis'),
             'TxnCompletionDate' => $completeDate->format('Ymdhis'),
-            'originalBankRRN'   => '12345678987654321',
+            'originalBankRRN'   => $payment['status'] === 'created' ? null : '12345678987654321',
         ];
 
         $this->content($response);

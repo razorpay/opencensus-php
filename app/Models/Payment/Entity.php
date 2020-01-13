@@ -33,6 +33,7 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\UpiTransfer;
 use RZP\Models\BankTransfer;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Payment\Processor\Wallet;
@@ -214,12 +215,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const API                               = 0;
     const CORE_PAYMENT_SERVICE              = 1;
     const CARD_PAYMENT_SERVICE              = 2;
+    const NB_PLUS_SERVICE                   = 3;
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
     const HOSTED_TIME_FORMAT                = 'j M Y';
 
     const UPI_PROVIDER                      = 'upi_provider';
+
+    const ACCOUNT_ID                        = 'account_id';
 
     protected static $sign      = 'pay';
 
@@ -266,6 +270,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::METHOD,
         self::AMOUNT,
         self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
         self::BASE_AMOUNT_REFUNDED,
@@ -343,7 +348,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CREATED_AT,
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
-        self::OFFER_ID,
         self::FEE_BEARER,
     ];
 
@@ -352,6 +356,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
+        self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
@@ -385,7 +391,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
-        self::OFFER_ID,
+        self::ACCOUNT_ID,
     ];
 
     /**
@@ -439,6 +445,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::ORDER_ID,
         self::INVOICE_ID,
         self::CARD_ID,
@@ -448,7 +456,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
-        self::OFFER_ID,
+        self::ACCOUNT_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -1264,6 +1272,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::CPS_ROUTE, 2);
     }
 
+    public function enableNbPlusService()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 3);
+    }
+
     public function setMethod(string $method)
     {
         $this->setAttribute(self::METHOD, $method);
@@ -1302,13 +1315,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setSubscriptionId(string $subscriptionId)
     {
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
-    }
-
-
-    public function setOfferId(string $offerId)
-    {
-        $this->setAttribute(self::OFFER_ID, $offerId);
-
     }
 
     public function setFeeBearer($feeBearer)
@@ -1679,6 +1685,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::PAYMENT_LINK_ID);
     }
 
+    public function hasReceiver()
+    {
+        return ($this->isAttributeNotNull(self::RECEIVER_ID));
+    }
+
     public function hasMetadata($key = null)
     {
         if ($key === null)
@@ -1815,6 +1826,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isRoutedThroughCardPayments()
     {
         return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::CARD_PAYMENT_SERVICE);
+    }
+
+    public function isRoutedThroughNbPlus()
+    {
+        return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::NB_PLUS_SERVICE);
     }
 
     public function isPushPaymentMethod()
@@ -2607,6 +2623,41 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $reference;
     }
 
+    /**
+     * @param array $array
+     *
+     * Base amount should be set in public array iff
+     * 1) route is privileged route
+     * 2) the payment is non-inr payment
+     */
+    public function setPublicBaseAmountAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        if (($this->getCurrency() !== Currency\Currency::INR) or
+            ($app['basicauth']->isProxyOrPrivilegeAuth() === true))
+        {
+            return;
+        }
+
+        unset($array[self::BASE_AMOUNT]);
+    }
+    /**
+     * @param array $array
+     *
+     * Base currency should be set in public array iff
+     * 1) the payment is non-inr payment
+     */
+    public function setPublicBaseCurrencyAttribute(array & $array)
+    {
+        if ($this->getCurrency() === Currency\Currency::INR)
+        {
+            return;
+        }
+
+        $array[self::BASE_CURRENCY] = Currency\Currency::INR;
+    }
+
     public function setPublicOrderIdAttribute(array & $array)
     {
         if (isset($array[self::ORDER_ID]))
@@ -2637,15 +2688,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $array[self::CARD_ID] =
                 Card\Entity::getIdPrefix() . $this->getAttribute(self::CARD_ID);
-        }
-    }
-
-    public function setPublicOfferIdAttribute(array & $array)
-    {
-        if (isset($array[self::OFFER_ID]))
-        {
-            $array[self::OFFER_ID] =
-                Offer\Entity::getIdPrefix() . $this->getAttribute(self::OFFER_ID);
         }
     }
 
@@ -2732,6 +2774,31 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
+    public function setPublicAccountIdAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        /*
+         *  Set accounttId attribute if
+         * 1) we are in non privileged auth and payment merchant id is different from auth merchant id
+         */
+
+        if ($auth->isPrivilegeAuth() === true)
+        {
+            return;
+        }
+
+        if (($auth->getMerchant() === null) or
+            ($auth->getMerchant()->getId() === $this->getMerchantId()))
+        {
+            return;
+        }
+
+        $array[self::ACCOUNT_ID] = Account\Entity::getSignedId($array[self::MERCHANT_ID]);
+    }
+
     public function associateTerminal($terminal)
     {
         if ($terminal === null)
@@ -2795,20 +2862,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $cardData = $card->getAttributes();
 
         $data['card'] = $cardData;
-
-        return $data;
-    }
-
-    public function toArrayPublicWithExpand()
-    {
-        $data =  parent::toArrayPublicWithExpand();
-
-        if ($this->getCurrency() !== Currency\Currency::INR)
-        {
-            $data[self::BASE_AMOUNT] = $this->getBaseAmount();
-
-            $data[self::BASE_CURRENCY] = Currency\Currency::INR;
-        }
 
         return $data;
     }
@@ -3083,7 +3136,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function dissociateOffer(Offer\Entity $offer)
     {
-        $this->offers()->detach($offer);
+        $this->offers()->detach($offer->getId());
     }
 
     /**
@@ -3092,8 +3145,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function getOffer()
     {
-        return $this->offers->first();
+        return $this->offers()->first();
     }
+
 
 // --------------- Relation to other entity section ends -----------------------
 
@@ -3333,8 +3387,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return false;
         }
 
-        return (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true));
+        return (($this->card->isInternational() === true) and
+                ($this->card->isAmex() === false));
     }
 
     public function shouldRunShieldChecks()

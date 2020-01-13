@@ -2,6 +2,7 @@
 
 namespace RZP\Models\UpiTransfer;
 
+use Config;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;

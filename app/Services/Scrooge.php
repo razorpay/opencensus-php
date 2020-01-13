@@ -39,22 +39,23 @@ class Scrooge
     const RESPONSE_SUCCESS_CODES = [200];
 
     const URLS = [
-        'retry'                         => 'retry',
-        'get_reports'                   => 'reports',
-        'bulk_status_update'            => 'bulk-status-update',
-        'bulk_recon'                    => 'bulk-reconcile',
-        'bulk_reference1_update'        => 'bulk-reference1-update',
-        'get_refunds'                   => 'refunds',
-        'get_dashboard_init_data'       => 'init',
-        'status_update'                 => 'status-update',
-        'verify'                        => 'verify',
-        'download_refunds'              => 'refunds/download',
-        'enqueue'                       => 'enqueue',
-        'download_refunds_gateway_file' => 'refunds/download-gateway-file',
-        'instant_refunds_mode'          => 'instant_refunds_mode',
-        'get_file_based_refunds'        => 'file_based_refunds',
-        'refresh_fta_modes'             => 'fta_modes_refresh',
-        'fetch_instant_refunds_modes'   => 'fetch/instant_refund_mode_configs'
+        'retry'                              => 'retry',
+        'get_reports'                        => 'reports',
+        'bulk_status_update'                 => 'bulk-status-update',
+        'bulk_recon'                         => 'bulk-reconcile',
+        'bulk_reference1_update'             => 'bulk-reference1-update',
+        'get_refunds'                        => 'refunds',
+        'get_dashboard_init_data'            => 'init',
+        'status_update'                      => 'status-update',
+        'verify'                             => 'verify',
+        'download_refunds'                   => 'refunds/download',
+        'enqueue'                            => 'enqueue',
+        'download_refunds_gateway_file'      => 'refunds/download-gateway-file',
+        'instant_refunds_mode'               => 'instant_refunds_mode',
+        'get_file_based_refunds'             => 'file_based_refunds',
+        'refresh_fta_modes'                  => 'fta_modes_refresh',
+        'fetch_instant_refunds_modes'        => 'fetch/instant_refund_mode_configs',
+        'instant-refunds-decisioning-helper' => 'instant-refunds-decisioning-helper',
     ];
 
     // Headers
@@ -361,32 +362,26 @@ class Scrooge
     }
 
     /**
-     * @param string $merchantId
      * @param array $params
-     * @return string
+     * @return array
      */
-    public function getInstantRefundsMode(string $merchantId, array $params): string
+    public function getInstantRefundsMode(string $merchantId, array $params): array
     {
-        $mode = '';
-
-        $scroogeResponse = $this->sendRequest(self::MerchantsBaseURL . '/' . $merchantId . '/' . self::URLS['instant_refunds_mode'], Requests::GET, $params);
+        $scroogeResponse = $this->sendRequest(
+            self::MerchantsBaseURL . '/' . $merchantId . '/' . self::URLS['instant_refunds_mode'],
+            Requests::GET,
+            $params);
 
         $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
 
         if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
         {
-            $scroogeResponseBody = $scroogeResponse[self::RESPONSE_BODY];
-
-            $responseStatus = $scroogeResponseBody[self::RESPONSE_STATUS] ?? false;
-
-            // If the status is false or if the mode is empty we are decisioning the speed to normal
-            if ($responseStatus === true)
-            {
-                $mode = $scroogeResponseBody[self::MODE] ?? '';
-            }
+            return $scroogeResponse[self::RESPONSE_BODY];
         }
 
-        return $mode;
+        return [
+            'mode' => null
+        ];
     }
 
     /**

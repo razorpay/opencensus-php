@@ -19,7 +19,7 @@ abstract class Base extends Nach\Base
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
             ->getTimestamp();
 
-        $tokens = $this->repo->token->fetchPendingNachDebit($this->gateway, $begin, $end);
+        $tokens = $this->repo->token->fetchPendingNachDebit( static::GATEWAY, $begin, $end);
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 

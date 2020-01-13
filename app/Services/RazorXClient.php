@@ -273,6 +273,7 @@ class RazorXClient
         $headers = [];
 
         $options = [
+            'connect_timeout' => self::REQUEST_TIMEOUT,
             'timeout' => self::REQUEST_TIMEOUT,
             'auth'    => [$this->key, $this->secret],
         ];

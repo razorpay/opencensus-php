@@ -46,6 +46,11 @@ final class Constants
     const REMOVE                                  = 'remove';
     const LIVE                                    = 'live';
 
+    public static $internationalActionMapping = [
+        Action::ENABLE_INTERNATIONAL  => 1,
+        Action::DISABLE_INTERNATIONAL => 0,
+    ];
+
     public static $partnerTypes = [
         self::BANK,
         self::RESELLER,
@@ -182,5 +187,10 @@ final class Constants
         Entity::CATEGORY,
         Entity::CATEGORY2,
         Entity::BILLING_LABEL,
+    ];
+
+    const INSURANCE_CATEGORIES = [
+        '6211',
+        '6300',
     ];
 }

@@ -331,6 +331,7 @@ class Gateway
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::CARDLESS_EMI,
         Payment\Gateway::PAYTM,
+        Payment\Gateway::PAYSECURE,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -368,6 +369,8 @@ class Gateway
         IFSC::YESB,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
+        IFSC::SBIN,
+        IFSC::ORBC,
     ];
 
     // banks supported by enach_npci_netbanking gateway for auth type card
@@ -388,6 +391,7 @@ class Gateway
         IFSC::UTBI,
         IFSC::YESB,
         Netbanking::PUNB_R,
+        IFSC::SBIN,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -665,6 +669,8 @@ class Gateway
         Payment\Gateway::NETBANKING_IBK,
         Payment\Gateway::UPI_SBI,
         Payment\Gateway::NETBANKING_HDFC,
+        Payment\Gateway::PAYSECURE,
+        Payment\Gateway::NETBANKING_KOTAK,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -690,6 +696,7 @@ class Gateway
         Payment\Gateway::NETBANKING_IBK         => 1576578600,
         Payment\Gateway::UPI_SBI                => 1576578600,
         Payment\Gateway::NETBANKING_HDFC        => 1577097000,
+        Payment\Gateway::NETBANKING_KOTAK       => 1578479400,
     ];
 
     public static $channels = [
@@ -880,6 +887,13 @@ class Gateway
     ];
 
     /**
+     * Every gateway in this list must also be a part of $scroogeGateways [that is onboarded in Scrooge] - since FTAs are initiated via Scrooge.
+     */
+    const UPI_TRANSFER_REFUND_GATEWAYS = [
+       self::UPI_MINDGATE,
+    ];
+
+    /**
      * Card gateways which support auth and capture mechanism for at
      * least one card network.
      *
@@ -908,7 +922,10 @@ class Gateway
      * @var array
      */
     public static $gatewayNetworkPurchaseSupport = [
-        self::HITACHI               => [
+        self::HITACHI                 => [
+            self::NOT_SUPPORTED     => [Network::RUPAY]
+        ],
+        self::PAYSECURE             => [
             self::NOT_SUPPORTED     => [Network::RUPAY]
         ],
     ];
@@ -994,6 +1011,9 @@ class Gateway
             Network::MC,
             Network::VISA,
         ],
+        self::PAYSECURE => [
+            Network::RUPAY,
+        ]
     ];
 
     /**
@@ -1073,6 +1093,9 @@ class Gateway
             Network::VISA,
             Network::AMEX,
         ],
+        self::PAYSECURE => [
+            Network::RUPAY,
+        ]
     ];
 
     public static $bharatQrCardNetwork = [
@@ -1080,6 +1103,9 @@ class Gateway
         self::HITACHI => [
             Network::VISA,
             Network::MC,
+            Network::RUPAY,
+        ],
+        self::PAYSECURE => [
             Network::RUPAY,
         ],
         self::ISG => [
@@ -1649,10 +1675,8 @@ class Gateway
                 IFSC::ANDB,
                 IFSC::SYNB,
                 IFSC::SURY,
-                IFSC::UCBA,
                 IFSC::ICIC,
                 IFSC::CBIN,
-                IFSC::IDFB,
             ]
         ],
 
@@ -2281,6 +2305,25 @@ class Gateway
         return (in_array($gateway, Payment\Gateway::$captureVerifyReportDisabledGateways, true) === false);
     }
 
+    /**
+     * Enach through NPCI has mandated that additional information has to be displayed
+     * when rendering the response page to the user.
+     * emandate_details contains this additional information. In this flow
+     * we open a different view based on the requirements set by NPCI after callback
+     *
+     * @param $input
+     * @return bool
+     */
+    public static function isNachNbResponseFlow($input)
+    {
+        if ((empty($input) === false) and (isset($input['emandate_details']) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public static function isAutoDebitPowerWalletSupported($payment)
     {
         $gateway = $payment->getGateway();
@@ -2308,6 +2351,15 @@ class Gateway
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
             self::PAYSECURE,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
+    public static function isNbPlusServiceGateway($gateway)
+    {
+        $gateways = [
+            self::ATOM
         ];
 
         return (in_array($gateway, $gateways, true));

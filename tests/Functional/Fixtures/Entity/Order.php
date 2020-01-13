@@ -44,7 +44,6 @@ class Order extends Base
             'merchant_id' => '10000000000000',
             'currency'    => 'INR',
             'amount'      => 100000,
-            'discount'    => true,
             'force_offer' => false,
         ];
 
@@ -68,8 +67,6 @@ class Order extends Base
 
     public function createWithUndiscountedOffers($offers, array $attributes = [])
     {
-        $attributes['discount'] = false;
-
         return $this->createWithOffers($offers, $attributes);
     }
 

@@ -95,6 +95,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setMerchantIdInOutput($this->refund->getMerchantId());
 
+        $this->calculateAndSetNetAmountInOutputFile($row);
+
         try
         {
             $this->reconciled = $this->checkIfAlreadyReconciled($this->refund);
@@ -161,6 +163,21 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         }
 
         return null;
+    }
+
+    /**
+     * Fetches refund amount and sets in the
+     * output file as negative as it is debit.
+     *
+     * @param array $row
+     */
+    protected function calculateAndSetNetAmountInOutputFile(array $row)
+    {
+        $grossAmt = intval($this->getReconRefundAmount($row));
+
+        $netAmount = (-1) * $grossAmt / 100;
+
+        $this->setReconNetAmountInOutput($netAmount);
     }
 
     public function resetRowProcessingAttributes()
@@ -962,10 +979,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
                     'amount'                    => $this->refund->getAmount(),
@@ -999,10 +1018,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         if ((empty($dbReferenceNumber) === false) and
             ($dbReferenceNumber !== $referenceNumber))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
                     'amount'                    => $this->refund->getAmount(),

@@ -4,18 +4,19 @@ namespace RZP\Models\Payment\Refund;
 
 class Constants
 {
-    const IS_FTA                            = 'is_fta';
-    const MOZART                            = 'mozart';
-    const ENTITIES                          = 'entities';
-    const REFUND_IDS                        = 'refund_ids';
-    const DB_FETCH_LIMIT                    = 'limit';
-    const GATEWAY_ENTITY                    = 'gateway_entity';
-    const SPEED_CHANGE_TIME                 = 'speed_change_time';
-    const REFUND_REFERENCE1                 = 'refund_reference1';
-    const INSTANT_REFUND_SUPPORT            = 'instant_refund_support';
-    const MAX_REFUND_RETRY_ATTEMPTS         = 3;
-    const MAX_REFUND_VERIFY_REQUESTS        = 20;
-    const SCROOGE_TAGGING_LIVE_TIMESTAMP    = 1552646209;
+    const MODE                           = 'mode';
+    const IS_FTA                         = 'is_fta';
+    const MOZART                         = 'mozart';
+    const ENTITIES                       = 'entities';
+    const REFUND_IDS                     = 'refund_ids';
+    const DB_FETCH_LIMIT                 = 'limit';
+    const GATEWAY_ENTITY                 = 'gateway_entity';
+    const SPEED_CHANGE_TIME              = 'speed_change_time';
+    const REFUND_REFERENCE1              = 'refund_reference1';
+    const INSTANT_REFUND_SUPPORT         = 'instant_refund_support';
+    const MAX_REFUND_RETRY_ATTEMPTS      = 3;
+    const MAX_REFUND_VERIFY_REQUESTS     = 20;
+    const SCROOGE_TAGGING_LIVE_TIMESTAMP = 1552646209;
     /**
      * We get the last 10 days refunds created of a gateway.
      * We run the cron for this once a day.
@@ -85,5 +86,8 @@ class Constants
     const SCROOGE_GATEWAY     = 'gateway';
     const SCROOGE_CREATED_AT  = 'created_at';
     const SCROOGE_BASE_AMOUNT = 'base_amount';
+
+    // Fetch Entities Related Constants
+    const EXTRA_DATA = 'extra_data';
     const SCROOGE_MERCHANT_ID = 'merchant_id';
 }

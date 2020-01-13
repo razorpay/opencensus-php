@@ -439,6 +439,13 @@ class BatchMicroService
             ];
         }
 
+        if (isset($inputQueryParams['types']))
+        {
+            $queryParams = [
+                'batchTypeIds' => $inputQueryParams['types']
+            ];
+        }
+
         $this->checkAndInsert('from', $inputQueryParams, $queryParams);
 
         $this->checkAndInsert('to', $inputQueryParams, $queryParams);

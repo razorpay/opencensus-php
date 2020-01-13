@@ -20,6 +20,7 @@ final class Route
         'account'                                  => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                 => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                          => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
+        'checkout_public_canary'                   => ['get',      'checkout/public/canary',                         'MerchantController@getCheckoutPublic'                              ],
 
         // callback_url case handler for automatic checkout
         'checkout_onyx'                            => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
@@ -850,7 +851,8 @@ final class Route
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
-        'transfer_process'                         => ['post',     'transfers/process',                              'TransferController@processOrderTransfers'                                   ],
+        'transfer_pending_process'                 => ['post',     'transfers/process_pending',                      'TransferController@processPendingOrderTransfers'                   ],
+        'transfer_failed_process'                  => ['post',     'transfers/process_failed',                       'TransferController@processFailedOrderTransfers'                    ],
         'transfer_edit'                            => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                          => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                 => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
@@ -1383,10 +1385,40 @@ final class Route
         'merchant_activation_status_partner'      => ['patch',    'partner/merchant/{id}/activation/status',                    'MerchantController@updateActivationStatusPartner'          ],
 
         //route for updating merchant mtu
-        'merchant_mtu_update'                     => ['post',      'merchant_mtu_update',                                       'MerchantController@merchantsMtuUpdate'                    ],
+        'merchant_mtu_update'                      => ['post',      'merchant_mtu_update',                                     'MerchantController@merchantsMtuUpdate'                    ],
+
+        //balance configs apis
+        'fetch_merchant_balance_configs'           => ['get',      'balance_configs',                                           'BalanceConfigController@getMerchantBalanceConfigs'                    ],
+        'get_merchant_balance_config'              => ['get',      'balance_configs/{id}',                                      'BalanceConfigController@getBalanceConfigById'                      ],
+        'add_merchant_balance_config'              => ['post',     'balance_configs/{merchant_id}',                             'BalanceConfigController@addBalanceConfig'                        ],
+        'edit_merchant_balance_config'             => ['patch',    'balance_configs/{id}',                                      'BalanceConfigController@editBalanceConfig'                        ],
 
         //route to add additional website through admin dashboard
-        'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                 ],
+        'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
+
+        // merchant config inheritance
+        'merchant_inheritance_parent_fetch'       => ['get',       'merchants/{id}/inheritance_parent',                          'MerchantController@getInheritanceParent'                  ],
+        'merchant_inheritance_parent_set'         => ['post',      'merchants/{id}/inheritance_parent',                          'MerchantController@postInheritanceParent'                 ],
+        'merchant_inheritance_parent_set_bulk'    => ['post',      'merchants/inheritance_parent/bulk',                          'MerchantController@postInheritanceParentBulk'             ],
+        'merchant_inheritance_parent_delete'      => ['delete',    'merchants/{id}/inheritance_parent',                          'MerchantController@deleteInheritanceParent'               ],
+
+         //route for sending request to server from device
+        'create_virtual_account_from_order'       => ['post',       'virtual_accounts/offline_qr',                              'VirtualAccountController@createOfflineQr'                 ],
+
+        // Route for Success Rate Global Configurations
+        'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
+        'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
+
+        // Offline
+        'fetch_offline_device_multiple'           => ['get',       'offlines/devices',                                          'OfflineController@fetchMultiple'                              ],
+        'register_offline_device'                 => ['post',      'offlines/devices/register',                                 'OfflineController@registerDevice'                             ],
+        'link_offline_device'                     => ['post',      'offlines/devices/link',                                     'OfflineController@linkDevice'                                 ],
+
+        'activate_test_offline_device'            => ['post',      't/offlines/devices/activate/initiate',                         'OfflineController@initiateDeviceActivationTest'            ],
+        'activate_live_offline_device'            => ['post',      'l/offlines/devices/activate/initiate',                         'OfflineController@initiateDeviceActivationLive'            ],
+        'offline_qr_poll_test_order_status'       => ['get',       't/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusTest'                  ],
+        'offline_qr_poll_live_order_status'       => ['get',       'l/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusLive'                  ],
+
     ];
 
     public static $public = [
@@ -1617,7 +1649,8 @@ final class Route
         'transfer_fetch',
         'transfer_edit',
         'transfer_create',
-        'transfer_process',
+        'transfer_pending_process',
+        'transfer_failed_process',
         'transfer_create_reversal',
         'virtual_account_create',
         'virtual_account_edit',
@@ -1697,12 +1730,18 @@ final class Route
         'merchant_fetch_schedule_tasks',
         'setl_holidays',
         'fb_setl_fetch_transactions',
+        'create_virtual_account_from_order',
+
+        // Offline QR
+        'link_offline_device',
+        'fetch_offline_device_multiple',
     ];
 
     // Only routes defined in internalApps go here
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_inheritance_parent_set_bulk',
         'pricing_add_plan_rule_bulk',
         'admin_lead_verify',
         'admin_authentication',
@@ -1860,7 +1899,8 @@ final class Route
         'recon_fetch_batchs_files_multiple',
         'recon_fetch_files_count',
         'mailing_list_remove_suspended_merchant',
-        'transfer_process',
+        'transfer_pending_process',
+        'transfer_failed_process',
         'merchant_mtu_update',
         'transaction_settled_data_fix',
     ];
@@ -2162,7 +2202,11 @@ final class Route
         'offer_fetch_by_id',
         'partner_referral_fetch',
         'partner_referral_create',
-        ];
+
+        //balance configs
+        'fetch_merchant_balance_configs',
+        'get_merchant_balance_config',
+    ];
 
     //
     // These will run on internal auth with the assurance
@@ -2659,6 +2703,20 @@ final class Route
 
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
+
+        'merchant_inheritance_parent_fetch',
+        'merchant_inheritance_parent_set',
+        'merchant_inheritance_parent_delete',
+
+        'add_merchant_balance_config',
+        'edit_merchant_balance_config',
+
+        // SuccessRate Config Routes
+        'update_sr_level_global_config',
+        'get_all_sr_level_global_config',
+
+        // Offline QR
+        'register_offline_device',
     ];
 
     public static $routePermission = [
@@ -3194,6 +3252,7 @@ final class Route
         'fts_dashboard_source_account_delete'       => Permission::GATEWAY_PVT,
         'mozart_gateway_action'                     => Permission::GATEWAY_PVT,
         'reports_monthly_banking_invoice'           => '*',
+
         'setl_holidays'                             => '*',
 
         'create_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
@@ -3201,8 +3260,26 @@ final class Route
         'update_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
         'delete_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
 
+        'merchant_inheritance_parent_fetch'                  =>  '*',
+        'merchant_inheritance_parent_set'                    =>  '*',
+        'merchant_inheritance_parent_set_bulk'               =>  '*',
+        'merchant_inheritance_parent_delete'                 =>  '*',
+
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
+
+        'fetch_merchant_balance_configs'            => '*',
+        'get_merchant_balance_config'               => '*',
+        'add_merchant_balance_config'               => '*',
+        'edit_merchant_balance_config'              => '*',
+
+        //Todo update permission later
+        //'update_sr_level_global_config'             => Permission::UPDATE_DOWNTIME_CONFIG,
+        'update_sr_level_global_config'             => '*',
+        //'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
+        'get_all_sr_level_global_config'            => '*',
+
+        'register_offline_device'                   => '*',
     ];
 
     public static $direct = [
@@ -3232,6 +3309,7 @@ final class Route
         'subscription_fetch_hosted_live',
         'sms_callback',
         'checkout_public',
+        'checkout_public_canary',
         'mock_hdfc_3dsecure',
         'mock_ebs_payment',
         'transparent_redirect_get',
@@ -3276,6 +3354,12 @@ final class Route
         'gateway_payment_callback_upi_airtel',
         'payment_page_create_order',
         'payment_page_create_order_option',
+
+        // Offline QR
+        'activate_test_offline_device',
+        'activate_live_offline_device',
+        'offline_qr_poll_test_order_status',
+        'offline_qr_poll_live_order_status',
     ];
 
     /**
@@ -3465,7 +3549,8 @@ final class Route
             'reconciliate',
             'mailing_list_remove_suspended_merchant',
             'create_fts_nodal_beneficiary',
-            'transfer_process',
+            'transfer_pending_process',
+            'transfer_failed_process',
             'banking_account_statement_process_cron',
             'create_merchant_options_admin',
             'transaction_settled_data_fix',
@@ -3597,8 +3682,10 @@ final class Route
             'partner_submerchant_map',
             'iin_batch_process_record',
             'pricing_add_plan_rule_bulk',
+            'subscription_registration_create_links',
             'virtual_account_create',
             'oauth_token_create',
+            'merchant_inheritance_parent_set_bulk',
         ],
 
         'stork' => [
@@ -3721,6 +3808,7 @@ final class Route
         'merchant_activation_update_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
         'merchant_activation_status_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],
         'enable_es_scheduled'                  => [Feature::ES_ON_DEMAND],
+        'create_virtual_account_from_order'    => [Feature::OFFLINE_PAYMENTS],
     ];
 
     /*

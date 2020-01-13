@@ -2,6 +2,8 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -12,6 +14,9 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
+use RZP\Models\QrCode;
+use RZP\Models\Currency\Currency;
+use RZP\Models\Offline\Device as OfflineDevice;
 
 class Service extends Base\Service
 {
@@ -43,6 +48,8 @@ class Service extends Base\Service
         $order = $this->getOrderIfGiven($input);
 
         $this->modifyRequestFromOldFormat($input);
+
+        (new Validator)->validateDefaultCloseBy($input);
 
         $virtualAccount = $this->core->create($input, $this->merchant, $customer, $order);
 
@@ -94,7 +101,7 @@ class Service extends Base\Service
                     ],
                 ];
 
-                if(isset($input[Entity::CLOSE_BY]) === true)
+                if (isset($input[Entity::CLOSE_BY]) === true)
                 {
                     $createArray[Entity::CLOSE_BY] =  $input[Entity::CLOSE_BY];
                 }
@@ -481,5 +488,81 @@ class Service extends Base\Service
         $virtualAccount = $this->core->addReceiver($virtualAccount, $input, $this->merchant);
 
         return $virtualAccount->toArrayPublic();
+    }
+
+    public function createOfflineQr($input = [])
+    {
+        (new Entity)->validateInput('create_offline_qr', $input);
+
+        $order = $this->createOrder($input);
+
+        // We don't any mutex here unlike create from order, since
+        // we are creating the order in this request.
+
+        $closeByTime = Carbon::now(Timezone::IST)->addSeconds(120)->getTimestamp();
+
+        $createVaArray = [
+            Entity::ORDER_ID        => $order->getPublicId(),
+            Entity::AMOUNT_EXPECTED => $order->getAmount(),
+            Entity::NOTES           => $input[Entity::NOTES] ?? [],
+            Entity::RECEIVERS       => [
+                Entity::TYPES => [
+                    Receiver::QR_CODE,
+                ],
+            ],
+            Entity::CLOSE_BY        => $closeByTime,
+        ];
+
+        $virtualAccount = $this->core->create($createVaArray, $this->merchant, null, $order);
+
+        $this->pushToDeviceIfApplicable($input, $virtualAccount);
+
+        // Doing this separately since we don't want to affect the VA entity code
+        $orderId = $order->getPublicId();
+
+        $va = $virtualAccount->toArrayPublic();
+
+        $va['order_id'] = $orderId;
+
+        return $va;
+    }
+
+    protected function pushToDeviceIfApplicable(array $input, $virtualAccount)
+    {
+        if (isset($input['notifications']['device_id']) === false)
+        {
+            return;
+        }
+
+        $device = $this->repo
+                       ->offline_device
+                       ->findByPublicIdAndMerchant($input['notifications']['device_id'], $this->merchant);
+
+        $currency = $input['currency'];
+
+        $formattedAmount = Currency::getSymbol($currency) . ' ' . ($input['amount'] / Currency::getExponent($currency));
+
+        $payload = [
+            'id'                => $virtualAccount->getPublicId(),
+            'action'            => 'showqr',
+            'qr_string'         => $virtualAccount->qrCode->getQrString(),
+            'formatted_amount'  => $formattedAmount,
+            'description'       => $virtualAccount->getDescription(),
+            'close_by'          => $virtualAccount->getCloseBy(),
+            'merchant_name'     => $this->merchant->getDbaName(),
+        ];
+
+        (new OfflineDevice\Service)->push($device, $payload);
+    }
+
+    protected function createOrder(array $input)
+    {
+        $orderInput = [
+            Order\Entity::AMOUNT   => $input['amount'],
+            Order\Entity::CURRENCY => $input['currency'],
+            Order\Entity::RECEIPT  => $input['receipt'],
+        ];
+
+        return (new Order\Core)->create($orderInput, $this->merchant);
     }
 }

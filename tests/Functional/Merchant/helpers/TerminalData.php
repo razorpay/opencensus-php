@@ -2243,6 +2243,28 @@ return [
         ]
     ],
 
+
+    'testEnableTerminalFailedOnGateway'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'Terminal enable failed on gateway',
+                ],
+            ],
+            'status_code' => 502
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TERMINAL_ENABLE_FAILED
+        ],
+    ],
+
+
+
     'testDisableTerminal'  => [
         'request' => [
             'method' => 'PUT'
@@ -2250,7 +2272,7 @@ return [
         'response' => [
             'content' => [
                 'entity'              => 'terminal',
-                'status'              => 'activated',
+                'status'              => 'deactivated',
                 'enabled'             =>  false,
                 'notes'               =>  'some notes',
                 'mpan'                =>  [
@@ -2262,6 +2284,26 @@ return [
         ]
     ],
 
+    'testDisableTerminalFailedOnGateway'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'Terminal disable failed on gateway',
+                ],
+            ],
+            'status_code' => 502
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TERMINAL_DISABLE_FAILED
+        ],
+    ],
+
+
     'testOnlyActivatedTerminalShouldBeEnabled'  => [
         'request' => [
             'method' => 'PUT'
@@ -2270,14 +2312,14 @@ return [
             'content'  => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only terminals in activated state can be enabled',
+                    'description' => 'Only deactivated terminals can be enabled',
                 ],
             ],
             'status_code' => 400
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_DEACTIVATED_TERMINALS_CAN_BE_ENABLED
         ],
     ],
 
@@ -2555,8 +2597,8 @@ return [
                     Terminal\Type::NON_RECURRING => '1',
                     Terminal\Type::UPI_TRANSFER  => '1',
                 ],
-                'virtual_upi_root'            => 'rzp.',
-                'virtual_upi_merchant_prefix' => 'pay.',
+                'virtual_upi_root'            => 'rzpy.',
+                'virtual_upi_merchant_prefix' => 'payto00000',
                 'virtual_upi_handle'          => 'hdfcbank',
             ],
             'method'  => 'POST',

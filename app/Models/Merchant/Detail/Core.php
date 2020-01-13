@@ -32,6 +32,7 @@ use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
+use RZP\Mail\Merchant\Rejection as RejectionEmail;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -498,14 +499,15 @@ class Core extends Base\Core
         }
 
         $input = [
-            DEConstants::PAN_NUMBER => $merchantDetails->getPromoterPan(),
+            DEConstants::PAN_NUMBER        => $merchantDetails->getPromoterPan(),
+            Document\Entity::DOCUMENT_TYPE => DEConstants::PROMOTER_PAN,
         ];
 
         $response = null;
 
         try
         {
-            $verifier = FactoryVerifier::getPoiVerifier($input);
+            $verifier = FactoryVerifier::getPoiVerifier($input, $merchant);
 
             $response = $verifier->verifyDetails();
 
@@ -679,7 +681,7 @@ class Core extends Base\Core
         $requiredDocuments = $this->getRequireActivationDocuments($merchantDetails);
 
         $params = [];
-        
+
         foreach ($requiredDocuments as $requiredDocument)
         {
             $params[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
@@ -1004,6 +1006,8 @@ class Core extends Base\Core
                     $oldMerchantDetails,
                     $newMerchantDetails,
                     $rejectionReasons);
+
+                $this->sendRejectionEmail($merchant);
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
@@ -1851,5 +1855,46 @@ class Core extends Base\Core
         }
 
         return $requiredDocuments;
+    }
+
+    public function sendRejectionEmail($merchant)
+    {
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+        $data = [
+            'name'  => $merchant->getName(),
+            'email' => $merchant->getEmail(),
+            'id'    => $merchant->getId(),
+        ];
+
+        // For marketplace accounts, send this email to the parent merchant
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $data['email'] = $merchant->parent->getEmail();
+        }
+
+        $rejectionMail = new RejectionEmail($data, $org->toArray());
+
+        Mail::queue($rejectionMail);
+    }
+
+    public function updateInternationalActivationFlow(Merchant\Entity $merchant, $international)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $internationalActivationFlow = ActivationFlow::BLACKLIST;
+
+        if ($international === 1)
+        {
+            $internationalActivationFlow = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
+                BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
+                $merchantDetail->getBusinessCategory(),
+                $merchantDetail->getBusinessSubcategory(),
+                ActivationFlow::BLACKLIST);
+        }
+
+        $merchantDetail->setInternationalActivationFlow($internationalActivationFlow);
+
+        $this->repo->saveOrFail($merchantDetail);
     }
 }

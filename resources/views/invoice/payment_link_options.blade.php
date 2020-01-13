@@ -10,6 +10,7 @@ $invoice_status                 = $invoice_data['status'];
 $customer_details               = $invoice_data['customer_details'];
 $checkout_options               = $data['options']['checkout'];
 $hostedpage_options             = $data['options']['hosted_page'];
+$isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'];
 ?>
 
     <!doctype html>
@@ -46,7 +47,15 @@ $hostedpage_options             = $data['options']['hosted_page'];
             </script>
         @endif
     @endif
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    @if($invoice_status !== 'paid')
+        @if($isHostedCheckout)
+            <script src="https://cdn.razorpay.com/static/hosted/embedded-invoke.js"></script>
+        @else
+            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        @endif
+    @endif
+
+
     @include('invoice.payment_link_stylesheet')
 
     <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
@@ -413,6 +422,9 @@ $hostedpage_options             = $data['options']['hosted_page'];
                                 @endif
                             </div>
                         </div>
+                        @if($isHostedCheckout && $invoice_status === 'issued')
+                            <button id="desk-payment-btn">PROCEED TO PAY</button>
+                        @endif
                         <div id="scs-box">
                             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACUAAAAlCAMAAADyQNAxAAAASFBMVEUAAADD+tvD+tvD+tvD+tvD+dvD+trD+dvE+9vE/NvG+9zD/+HH/+H////C+doewGBj2JOW6rojwmOo8MeL5rF/4qh03qBm2ZW6Mr7TAAAADnRSTlMA6JrxzLKRiHlOOiIUAmMEAH8AAADOSURBVDjLlZRZDoMwDERtSAgEMizd7n/TSi0qSerE8P6QniwM46GY4J01DDbW+UAyY8M44GYUnKlDTjfl0tDin3ZIpR4yfSw1KNFkk7RpA2oM+3YtarTfTTvU6T4fExpjvF9tz8CQWR/Y4UC+JG3zih1PrigtvwdHVpdgyegSDLEugQkHt0w6iGa9trUgcfRey7ytogRDFokmSbDkkGhPQYIjj0SbBQk++4+LJHHIM3GXMnE6X3pWT+dev6EL96jftt4TZztH76/rXaj36ht1cjrNdgCxBgAAAABJRU5ErkJggg==" />
                             <div style="font-weight: 600; font-size: 18px">Payment Completed</div>
@@ -710,6 +722,12 @@ $hostedpage_options             = $data['options']['hosted_page'];
         if (checkIsDesktop()) {
             document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
             document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
+
+            var payBtn = document.getElementById('desk-payment-btn');
+            if (payBtn) {
+                payBtn.style['background-color'] = color;
+                payBtn.style['display'] = 'block';
+            }
         } else {
             var payBtn = document.getElementById('mob-payment-btn');
             payBtn.style['background-color'] = color;
@@ -722,6 +740,8 @@ $hostedpage_options             = $data['options']['hosted_page'];
             var invoiceObj = data.invoice;
             var merchant = data.merchant;
             var $checkout_options = data.options.checkout;
+            var $hostedpage_options = data.options.hosted_page;
+            var $isHostedCheckout = !!Number($hostedpage_options.enable_embedded_checkout);
 
             // : base options
             var options = {
@@ -823,17 +843,34 @@ $hostedpage_options             = $data['options']['hosted_page'];
                 }
             }
 
-            var razorpay;
+            if ($isHostedCheckout) {
+                var ele;
 
-            if (checkIsDesktop()) {
-                options.parent = '#chkout-box';
-                razorpay = window.razorpay = Razorpay(options);
+                if (checkIsDesktop()) {
+                    ele = document.getElementById('desk-payment-btn')
+                } else {
+                    ele = document.getElementById('mob-payment-btn')
+                }
+
+                ele.addEventListener('click', function() {
+                    const hostedCheckoutURL = 'https://api.razorpay.com/v1/checkout/embedded';
+                    window.invokeHostedCheckout(options, 'post', hostedCheckoutURL); // Redirects to Hosted checkout page, so handler not needed
+                })
+
             } else {
-                document.getElementById('mob-payment-btn').addEventListener('click', function() {
+                var razorpay;
+
+                if (checkIsDesktop()) {
+                    options.parent = '#chkout-box';
                     razorpay = window.razorpay = Razorpay(options);
-                    razorpay.open();
-                });
+                } else {
+                    document.getElementById('mob-payment-btn').addEventListener('click', function() {
+                        razorpay = window.razorpay = Razorpay(options);
+                        razorpay.open();
+                    });
+                }
             }
+
 
         }(window.RZP_DATA = window.RZP_DATA || {}));
     </script>

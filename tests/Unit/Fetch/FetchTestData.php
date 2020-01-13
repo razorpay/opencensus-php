@@ -485,4 +485,22 @@ return [
     E::CREDITNOTE => [],
 
     E::MPAN => [],
+
+    E::UPI_TRANSFER => [],
+
+    E::BALANCE_CONFIG => [
+        Type::PROXY_AUTH => [
+            [
+                'balance_id' => str_random(14)
+            ],
+        ],
+    ],
+
+    E::BALANCE => [
+        Type::PROXY_AUTH => [
+            [
+                'type' => 'banking'
+            ],
+        ],
+    ],
 ];

@@ -5,11 +5,13 @@ namespace RZP\Reconciliator\UpiAxis\SubReconciliator;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Upi\Axis\Fields;
 use RZP\Gateway\Upi\Axis\Action;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\UniqueIdEntity;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\Reconciliate;
 use Razorpay\Spine\Exception\DbQueryException;
 
@@ -33,6 +35,23 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const ACCOUNT_DETAILS_NAME  = 'name';
 
     const SUCCESS = 'Success';
+
+    //
+    // This field is manually added in MIS for creating unexpected payment
+    // against a reference number (rrn). Its the RRN of the payment to be
+    // created but still taking in input as a confirmation token of unexpected
+    // payment creation.
+    //
+    const UNEXPECTED_PAYMENT_REF_ID = 'unexpected_payment_ref_id';
+
+    //
+    // Below two column are also not present in recon file and
+    // are added manually. These are required to find the terminal.
+    //
+    const UPI_MERCHANT_ID           = 'upi_merchant_id';
+    const UPI_MERCHANT_CHANNEL_ID   = 'upi_merchant_channel_id';
+
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
 
     const BLACKLISTED_COLUMNS = [
         self::ACCOUNT_CUST_NAME,
@@ -73,21 +92,138 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
         {
-            $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
+            return $this->getPaymentIdForUnexpectedPayment($row);
+        }
+
+        return $paymentId;
+    }
+
+    /**
+     * Sometimes we don't get payment id in the expected column.
+     * So, this function utilises the rrn received in the MIS,
+     * and fetches the payment id from the upi repo.
+     *
+     * @param $row
+     * @return null|string
+     */
+    protected function getPaymentIdForUnexpectedPayment($row)
+    {
+        $paymentId = null;
+
+        $referenceNumber = $this->getReferenceNumber($row);
+
+        $upiEntity = $this->repo->upi->fetchByNpciReferenceId($referenceNumber);
+
+        if (empty($upiEntity) === true)
+        {
+            if (empty($row[self::UNEXPECTED_PAYMENT_REF_ID]) === false)
+            {
+                $paymentId = $this->attemptToCreateUnexpectedPayment($referenceNumber, $row);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'info_code'            => Base\InfoCode::UNEXPECTED_PAYMENT,
+                        'payment_reference_id' => $referenceNumber,
+                        'gateway'              => $this->gateway,
+                        'batch_id'             => $this->batch->getId(),
+                    ]);
+            }
+        }
+        else
+        {
+            $paymentId = $upiEntity->getPaymentId();
+        }
+
+        return $paymentId;
+    }
+
+    /**
+     * Attempts to create unexpected payment
+     * Returns payment_id if attempt is successful,
+     * null otherwise.
+     * @param string $rrn
+     * @param array $input
+     * @return string|null
+     */
+    protected function attemptToCreateUnexpectedPayment(string $rrn, array $input)
+    {
+        $paymentId = null;
+        //
+        // Prepared callback input required for creating unexpected payment
+        //
+        $callbackInput = [
+            'customerVpa'            => $input[self::VPA],
+            'merchantId'             => $input[self::UPI_MERCHANT_ID] ?? null,
+            'merchantChannelId'      => $input[self::UPI_MERCHANT_CHANNEL_ID] ?? null,
+            'merchantTransactionId'  => $input[self::COLUMN_PAYMENT_ID[0]] ?? ($input[self::COLUMN_PAYMENT_ID[1]] ?? null),
+            'transactionTimestamp'   => $input[self::COLUMN_TRANSACTION_DATE[0]] ?? ($input[self::COLUMN_TRANSACTION_DATE[1]] ?? null),
+            'transactionAmount'      => $input[self::COLUMN_PAYMENT_AMOUNT],
+            'gatewayTransactionId'   => $input[self::TXN_ID],
+            'gatewayResponseCode'    => $input[self::RESPCODE],
+            'gatewayResponseMessage' => $input[self::RESPONSE],
+            'rrn'                    => $input[self::RRN],
+            'checksum'               => null,
+        ];
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'infoCode'                  => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
+                'rrn'                       => $input[self::RRN],
+                'gateway_payment_id'        => $callbackInput['merchantTransactionId'],
+                'unexpected_payment_ref_id' => $input[self::UNEXPECTED_PAYMENT_REF_ID],
+                'gateway'                   => $this->gateway,
+                'batch_id'                  => $this->batch->getId(),
+            ]);
+
+        try
+        {
+            $response = (new Payment\Service)->unexpectedCallback($callbackInput, $callbackInput['merchantTransactionId'], Gateway::UPI_AXIS);
+
+            if (empty($response['payment_id']) === false)
+            {
+                $paymentId = $response['payment_id'];
+
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'infoCode'              => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
+                        'payment_id'            => $paymentId,
+                        'rrn'                   => $rrn,
+                        'gateway_payment_id'    => $callbackInput['merchantTransactionId'],
+                        'gateway'               => $this->gateway,
+                        'batch_id'              => $this->batch->getId(),
+                    ]);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'infoCode'              => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                        'rrn'                   => $rrn,
+                        'gateway_payment_id'    => $callbackInput['merchantTransactionId'],
+                        'gateway'               => $this->gateway,
+                        'batch_id'              => $this->batch->getId(),
+                    ]);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
                 [
-                    'info_code'  => Base\InfoCode::UNEXPECTED_PAYMENT,
-                    'payment_id' => $paymentId,
-                    'gateway'    => $this->gateway
-                ]);
-
-            //
-            // Setting this unprocessed row as success as we receive such direct settlements daily.
-            // And as these payments are expected, not counting them as failure.
-            //
-            $this->setFailUnprocessedRow(false);
-
-            return null;
+                    'rrn'                       => $rrn,
+                    'gateway_payment_id'        => $callbackInput['merchantTransactionId'],
+                    'gateway'                   => $this->gateway,
+                    'batch_id'                  => $this->batch->getId(),
+                ]
+            );
         }
 
         return $paymentId;
@@ -173,16 +309,20 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ((empty($npciRefId) === false) and
             ($npciRefId !== $referenceNumber))
         {
-            $this->trace->info(TraceCode::RECON_INFO_ALERT, [
-                'message'           => 'Npci Reference id is not same as in recon',
-                'info_code'         => Base\InfoCode::DATA_MISMATCH,
-                'payment_id'        => $this->payment->getId(),
-                'amount'            => $this->payment->getBaseAmount(),
-                'payment_status'    => $this->payment->getStatus(),
-                'api_reference1'    => $npciRefId,
-                'recon_reference1'  => $referenceNumber,
-                'gateway'           => $this->gateway
-            ]);
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'message'                   => 'Npci Reference id is not same as in recon',
+                    'info_code'                 => $infoCode,
+                    'payment_id'                => $this->payment->getId(),
+                    'amount'                    => $this->payment->getBaseAmount(),
+                    'payment_status'            => $this->payment->getStatus(),
+                    'db_reference_number'       => $npciRefId,
+                    'recon_reference_number'    => $referenceNumber,
+                    'gateway'                   => $this->gateway
+                ]);
 
             return;
         }
@@ -250,10 +390,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->trace->info(
                 TraceCode::RECON_MISMATCH,
                 [
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getBaseAmount(),

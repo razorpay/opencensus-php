@@ -34,6 +34,13 @@ class AuthenticationTerminals
         ],
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::PAYSECURE,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
             self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
             self::AUTH_TYPE                 => AuthType::_3DS,
@@ -245,6 +252,13 @@ class AuthenticationTerminals
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
             self::AUTHENTICATION_GATEWAY    => Gateway::PAYSECURE,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::PAYSECURE,
+            self::AUTHENTICATION_GATEWAY    => null,
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
         ],

@@ -169,7 +169,8 @@ class Shield
                 break;
 
             case Payment\Method::UPI:
-                $payloadDetails[ShieldConstants::VPA] = $payment->getVpa();
+                $payloadDetails[ShieldConstants::VPA]      = $payment->getVpa();
+                $payloadDetails[ShieldConstants::UPI_TYPE] = $payment->getMetadata('flow') ?? 'collect';
 
                 break;
 
@@ -198,6 +199,12 @@ class Shield
     {
         $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE] = $this->request->header('Accept-Language');
 
+        $shieldMetadata = $payment->getMetadata('shield');
+
+        if ((is_array($shieldMetadata) === true) && (isset($shieldMetadata['fhash']) === true)) {
+            $payloadDetails[ShieldConstants::FRONTEND_FP_HASH] = $shieldMetadata['fhash'];
+        }
+
         $paymentAnalytics = $payment->getMetadata('payment_analytics');
 
         if (is_null($paymentAnalytics) === true)
@@ -206,6 +213,7 @@ class Shield
         }
 
         $payloadDetails[ShieldConstants::IP]               = $paymentAnalytics->getIp();
+        $payloadDetails[ShieldConstants::CHECKOUT_ID]      = $paymentAnalytics->getCheckoutId();
         $payloadDetails[ShieldConstants::USER_AGENT]       = $paymentAnalytics->getUserAgent();
         $payloadDetails[ShieldConstants::REFERER]          = $paymentAnalytics->getReferer();
         $payloadDetails[ShieldConstants::BROWSER]          = $paymentAnalytics->getBrowser();

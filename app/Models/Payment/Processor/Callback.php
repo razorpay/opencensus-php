@@ -267,6 +267,13 @@ trait Callback
             $input['s2s'] = true;
         }
 
+        if ((empty($input['gateway']) === true) and
+            ($input['payment']['method'] === Payment\Method::CARD))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_GATEWAY_EMPTY_CALLBACK);
+        }
+
         try
         {
             $this->preProcessGatewayCallback($input);
@@ -372,7 +379,8 @@ trait Callback
     {
         // TODO: Refactor
         if ((isset($input['gateway']['type'])) and
-            ($input['gateway']['type'] === 'otp'))
+            ($input['gateway']['type'] === 'otp') and
+            $input['payment'][Payment\Entity::CPS_ROUTE] !== Payment\Entity::CARD_PAYMENT_SERVICE)
         {
             $this->validateCallbackInputIfApplicable($input);
 
@@ -417,7 +425,8 @@ trait Callback
         }
 
         if (($payment->isMethodCardOrEmi() === true) and
-            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP))
+            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP) and
+            ($payment->getCpsRoute() !== Payment\Entity::CARD_PAYMENT_SERVICE))
         {
             $input['gateway'] = $this->submitHeadlessOtp($payment, $input['gateway']);
         }

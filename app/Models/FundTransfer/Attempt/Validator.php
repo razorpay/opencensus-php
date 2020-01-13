@@ -63,7 +63,9 @@ class Validator extends Base\Validator
         'fund_transfer_id'       => 'required|int',
         'extra_info'             => 'sometimes',
         'extra_info.*'           => 'sometimes',
+        'return_utr'             => 'sometimes|string',
         Entity::BANK_STATUS_CODE => 'sometimes|string',
+        Entity::GATEWAY_REF_NO   => 'sometimes|string',
     ];
 
     protected  static $ftsFundTransferRules = [

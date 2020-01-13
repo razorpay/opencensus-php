@@ -6,6 +6,7 @@ class Constants
 {
     const NAME                    = 'name';
     const VERIFIED                = 'verified';
+    const API_CALL_SUCCESSFUL     = 'api_call_successful';
     const SUCCESS                 = 'success';
     const DOCUMENT_TYPE           = 'document_type';
     const OCR_MATCHING_THRESHOLD  = 'ocr_matching_threshold';

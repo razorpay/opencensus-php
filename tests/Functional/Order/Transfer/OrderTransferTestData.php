@@ -131,6 +131,7 @@ return [
             ],
         ],
     ],
+
     'testProcessOrderTransfersPartialPayment' => [
         'request'   => [
             'method'  => 'POST',
@@ -160,6 +161,28 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCronProcessPendingOrderTransfers' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/transfers/process_pending',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
+
+    'testCronProcessFailedOrderTransfers' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/transfers/process_failed',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
         ],
     ],
 ];

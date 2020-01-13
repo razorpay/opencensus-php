@@ -48,7 +48,6 @@ class TransactionFilter extends Terminal\Filter
         'fee_bearer',
         'shared_terminal',
         'mcc',
-        'upi_transfer',
     ];
 
     public function methodFilter($terminal)
@@ -347,6 +346,11 @@ class TransactionFilter extends Terminal\Filter
 
         if ($payment->isUpi() === true)
         {
+            if ($payment->isUpiTransfer() !== $terminal->isUpiTransfer())
+            {
+                return false;
+            }
+
             $flow = $payment->getMetadata('flow', 'collect');
 
             if (($payment->isBharatQr() === true) and ($payment->isFlowIntent() === false))
@@ -845,26 +849,6 @@ class TransactionFilter extends Terminal\Filter
         {
             return ($terminal->isBharatQr() === false);
         }
-    }
-
-    protected function upiTransferFilter($terminal)
-    {
-        if ($this->input['payment']->isUpiTransfer() === true)
-        {
-            if ((empty($terminal->getVirtualUpiHandle()) === true) or
-                (empty($terminal->getVirtualUpiRoot()) === true) or
-                (empty($terminal->getVirtualUpiMerchantPrefix()) === true))
-            {
-                return false;
-            }
-
-            if ($terminal->isUpiTransfer() === false)
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public function directSettlementFilter($terminal, $applicableTerminals)
