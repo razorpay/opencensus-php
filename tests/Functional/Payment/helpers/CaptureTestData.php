@@ -701,4 +701,13 @@ return [
             ],
         ],
     ],
+
+    'testCaptureAddBalanceToNegativeBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
 ];

@@ -3292,20 +3292,7 @@ class RefundTest extends TestCase
 
         $this->startTest($payment['id'], (string) $payment['amount']);
 
-        Mail::assertQueued(NegativeBalanceAlert::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('test@razorpay.com', $viewData['email']);
-
-            $this->assertEquals(10000000000000, $viewData['merchant_id']);
-
-            $this->assertEquals(-54800, $viewData['balance']);
-
-            $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
-
-            return true;
-        });
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
     }
 
     //refund flow allowed for negative
@@ -3341,20 +3328,7 @@ class RefundTest extends TestCase
 
         $this->startTest($payment['id'], (string) $payment['amount']);
 
-        Mail::assertQueued(NegativeBalanceAlert::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('test@razorpay.com', $viewData['email']);
-
-            $this->assertEquals(10000000000000, $viewData['merchant_id']);
-
-            $this->assertEquals(-54800, $viewData['balance']);
-
-            $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
-
-            return true;
-        });
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
     }
 
     //refund flow allowed for negative
