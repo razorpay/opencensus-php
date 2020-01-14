@@ -9,6 +9,7 @@ use Crypt;
 use RZP\Models\Base;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
+use Illuminate\Support\Facades\Redis;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Http\Throttle\Constant as Throttle;
@@ -131,7 +132,7 @@ class Core extends Base\Core
 
         try
         {
-            Cache::set(Throttle::KEYID_MID_KEY_PREFIX . $keyId, $merchantId);
+           Redis::connection()->client()->set(Throttle::KEYID_MID_KEY_PREFIX . $keyId, $merchantId);
         }
         catch (\Throwable $e)
         {
