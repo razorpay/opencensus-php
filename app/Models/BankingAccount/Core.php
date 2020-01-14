@@ -24,6 +24,9 @@ use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFac
 
 class Core extends Base\Core
 {
+    const GATEWAY   = 'gateway';
+    const Processor = 'processor';
+
     public function __construct()
     {
         parent::__construct();
@@ -509,6 +512,63 @@ class Core extends Base\Core
             ]);
 
         return $response;
+    }
+
+    /**
+     * for CA, balance needs to be fetched from balance api provided by respective banks/gateways at regular frequency
+     * which is agreed upon in SLA
+     *
+     * @param array $input
+     *
+     * @return mixed
+     *
+     * @throws BadRequestException | BadRequestValidationFailureException
+     */
+    public function fetchGatewayBalance(array $input)
+    {
+        $validator = new Validator();
+
+        $validator->validateInput(Validator::FETCH_GATEWAY_BALANCE, $input);
+
+        $validator->validateChannelForFetchingGatewayBalance($input);
+
+        $channel = array_get($input, Entity::CHANNEL);
+
+        $gatewayProcessor = $this->getGatewayProcessorClass($channel);
+
+        $bankingAccount = $this->repo->banking_account->getBankingAccountOfMerchant($this->merchant, $input[Entity::CHANNEL]);
+
+        if ($bankingAccount === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND,
+                null,
+                [
+                    'input' => $input,
+                ]
+            );
+        }
+
+        return $gatewayProcessor->fetchGatewayBalance($bankingAccount);
+    }
+
+    protected function getGatewayProcessorClass($channel)
+    {
+        $gatewayProcessor = __NAMESPACE__ . '\\' . studly_case(self::GATEWAY) . '\\' . studly_case($channel) . '\\' . studly_case(self::Processor);
+
+        if (class_exists($gatewayProcessor) === true)
+        {
+            return new $gatewayProcessor;
+        }
+        else
+        {
+            throw new BadRequestException(
+                'Bad request, gateway Processor class does not exist for the channel:' . $channel,
+                null,
+                [
+                    'channel' => $channel,
+                ]);
+        }
     }
 
     protected function getBalanceAttributesToSave(Entity $bankingAccount)

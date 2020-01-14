@@ -326,4 +326,6 @@ abstract class Processor extends Base\Core
     abstract protected function preProcessInputForAccountCreation(array $input);
 
     abstract protected function generateRequestForSourceAccount(Entity $bankingAccount);
+
+    abstract public function fetchGatewayBalance(Entity $bankingAccount);
 }

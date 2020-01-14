@@ -161,4 +161,17 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function fetchGatewayBalance(array $input)
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_FETCH_GATEWAY_BALANCE_REQUEST,
+            [
+                'input'   => $input,
+            ]);
+
+        $response = $this->core->fetchGatewayBalance($input);
+
+        return $response;
+    }
 }
