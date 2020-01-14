@@ -887,7 +887,8 @@ class Service extends Base\Service
             'nps_survey_banner',
             'vpa_enabled',
             'async_reports',
-            'new_pp_success_modal'
+            'new_pp_success_modal',
+            'hide_company_name'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

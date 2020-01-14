@@ -100,13 +100,13 @@
       </div>
       <div class="auth-substep name-substep">
         <form class="details-form" name="forms.detailsForm" >
-          <label class="form-label details-label" for="business_name">Company:</label>
-          <div class="details-form-input-group">
+          <label class="form-label details-label" for="business_name" ng-if="showCompanyName">Company:</label>
+          <div class="details-form-input-group" ng-if="showCompanyName">
             <i class="fa fa-building"></i>
             <input  ng-focus="onInputFocus('comapny_name')" type="text" name="business_name" id="business_name" ng-model="signup.merchantData.business_name"
               class="form-control auth-form-input" placeholder="Company Name" required ng-minlength="4">
           </div>
-          <div class="details-form-input-group">
+          <div class="details-form-input-group" ng-if="showCompanyName">
               <i class="fa fa-globe"></i>
             <input type="text" ng-focus="onInputFocus('business_website')" name="business_website" id="business_website" ng-model="signup.merchantData.business_website"
               class="form-control auth-form-input" ng-pattern="websiteRegex" placeholder="Website" >
@@ -148,7 +148,10 @@
             <div class="back-btn btn" ng-click="goToSignupStep(1, 2);trackBackClick('Department');">
               Back
             </div>
-            <button type="submit" override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.business_name && signup.merchantData.contact_mobile)" class="btn btn-primary signup-details-button pull-right" ng-click="sendDetails();onFinishClick()">
+            <button type="submit" ng-if="!showCompanyName" override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.contact_mobile)" class="btn btn-primary signup-details-button pull-right" ng-click="sendDetails();onFinishClick()">
+              Finish
+            </button>
+            <button type="submit" ng-if="showCompanyName" override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.business_name && signup.merchantData.contact_mobile)" class="btn btn-primary signup-details-button pull-right" ng-click="sendDetails();onFinishClick()">
               Finish
             </button>
           </div>
