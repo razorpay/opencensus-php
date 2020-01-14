@@ -26,7 +26,6 @@ class Raven
     const MOCK_VALID_OTP = '0007';
 
     // In test mode this otp is evaluated as true in verify.
-    const TEST_MODE_ACTION = 'verify-test-mode-otp';
     const TEST_VALID_OTP = '754081';
 
     protected $baseUrl;

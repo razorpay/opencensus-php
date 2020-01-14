@@ -197,7 +197,7 @@ class Service extends Base\Service
         (new User\Core)->verifyOtp($input + ['action' => 'create_payout'],
                                    $this->merchant,
                                    $this->user,
-                             $this->mode === Constants\Mode::TEST);
+                                   $this->mode === Constants\Mode::TEST);
 
         $payoutInput = array_except($input, ['otp', 'token']);
 
