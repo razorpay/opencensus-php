@@ -10,7 +10,7 @@ import Group, { GroupItem } from 'common/ui/Group';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
-
+import NegativeBalanceBanner from 'merchant/components/Announcement';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
@@ -27,7 +27,7 @@ import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/
 import CreditPullModal from 'merchant/containers/CreditPull/CreditPullModal';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
-
+import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import { trackPresetChange, trackSettlementsClick, trackSettleNow } from './ga';
 import Time from 'common/ui/Time';
 
@@ -107,6 +107,7 @@ class AnalyticsDesktop extends Component {
       paymentInsightsTitle,
       recentActivityTitle,
       trafficSectionTitle,
+      merchantBalanceConfigs,
     } = this.props;
 
     const { settlement_ux_revamp } = config.config;
@@ -116,6 +117,14 @@ class AnalyticsDesktop extends Component {
 
     const nextSettlement = !settlement_amount.data.next_settlement_time;
     const { no_settlement } = settlement_amount.data;
+
+    let balance = current_balance.data.balance;
+    let negativeBalanceClassName = '';
+
+    if (balance < 0) {
+      balance = Math.abs(current_balance.data.balance);
+      negativeBalanceClassName = 'negative-balance';
+    }
 
     return (
       <div className="home-analytics-desktop">
@@ -135,6 +144,37 @@ class AnalyticsDesktop extends Component {
 
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />
+          )}
+
+          {current_balance.data.balance < 0 && (
+            <NegativeBalanceBanner
+              title="Add Funds"
+              theme="warning"
+              canBeClosed={true}
+            >
+              Your balance went into negative value. Add funds to avoid the
+              transaction failures.{' '}
+              <Link to={'/addfunds'} target="_blank">
+                {' '}
+                Add Funds
+              </Link>
+            </NegativeBalanceBanner>
+          )}
+
+          {handleNegativeBalanceLimit(merchantBalanceConfigs, balance) && (
+            <NegativeBalanceBanner
+              title="On Hold!"
+              theme="danger"
+              canBeClosed={true}
+            >
+              Your current balance had reached the maximum negative limit.
+              Transactions will start to fail now. Please add funds to avoid
+              transaction failures.{' '}
+              <Link to={'/addfunds'} target="_blank">
+                {' '}
+                Add Funds
+              </Link>
+            </NegativeBalanceBanner>
           )}
 
           {/* capital banner*/}
@@ -194,8 +234,9 @@ class AnalyticsDesktop extends Component {
                         Current Balance:{' '}
                         {!current_balance.loading && (
                           <Amount
-                            value={current_balance.data.balance}
+                            value={balance}
                             currency={'INR'}
+                            className={negativeBalanceClassName}
                           />
                         )}
                       </span>
