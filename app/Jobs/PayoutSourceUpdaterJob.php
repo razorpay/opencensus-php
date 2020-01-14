@@ -31,6 +31,9 @@ class PayoutSourceUpdaterJob extends Job
 
     public function handle()
     {
+
+        parent::handle();
+
         $context = [
             'payout_id'               => $this->payoutPublicId,
             'previous_status'         => $this->previousPayoutStatus,
@@ -56,7 +59,7 @@ class PayoutSourceUpdaterJob extends Job
 
                 return;
             }
-            SourceUpdater::update($payout, $this->previousPayoutStatus);
+            SourceUpdater::handleUpdateFromQueue($payout, $this->previousPayoutStatus);
         }
         catch (\Throwable $e)
         {
