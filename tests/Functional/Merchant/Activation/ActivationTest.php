@@ -1094,6 +1094,19 @@ class ActivationTest extends OAuthTestCase
         $this->assertFalse($merchant->convertOnApi());
     }
 
+    public function testWhitelistInternationalForRiskyBusinessType()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->runFixturesForInternationalActivation($merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
     public function testWhitelistInternationalWithNoWebsite()
     {
         $merchantId = '1cXSLlUU8V9sXl';
@@ -1397,9 +1410,9 @@ class ActivationTest extends OAuthTestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
-        $this->assertTrue($merchant->isInternational());
+        $this->assertFalse($merchant->isInternational());
 
-        $this->assertFalse($merchant->convertOnApi());
+        $this->assertNull($merchant->convertOnApi());
     }
 
     public function testGreylistInternationalInstantActivationOnKYC()
@@ -1433,9 +1446,9 @@ class ActivationTest extends OAuthTestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
-        $this->assertTrue($merchant->isInternational());
+        $this->assertFalse($merchant->isInternational());
 
-        $this->assertFalse($merchant->convertOnApi());
+        $this->assertNull($merchant->convertOnApi());
     }
 
     public function testBlacklistInternationalOnKYC()

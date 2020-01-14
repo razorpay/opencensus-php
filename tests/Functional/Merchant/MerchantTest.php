@@ -4812,21 +4812,36 @@ class MerchantTest extends TestCase
 
     public function testInternationalEnable()
     {
-        // Mock Razorx
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('On');
-
         $merchantDetailsData = [
-            'business_category'     => 'not_for_profit',
-            'business_subcategory'  => 'educational',
-            'activation_status'     => 'activated',
+            'business_category'             => 'ecommerce',
+            'business_subcategory'          => 'arts_and_collectibles',
+            'international_activation_flow' => 'whitelist',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantData = [
+            'international'     => 0,
+            'activated'         => 1,
+            'convert_currency'  => null,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testInternationalEnableForGreyList()
+    {
+        $merchantDetailsData = [
+            'business_category'             => 'not_for_profit',
+            'business_subcategory'          => 'educational',
+            'activation_status'             => 'activated',
+            'international_activation_flow' => 'greylist',
         ];
 
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
