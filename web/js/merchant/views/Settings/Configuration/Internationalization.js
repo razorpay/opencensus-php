@@ -22,7 +22,6 @@ const CUSTOM_MSG = {
   ),
   generic_msg:
     'Settlement cycle and transaction fee is higher for International payments.',
-  contact_support: 'Please reach out to support.',
 };
 
 @connect(
@@ -89,6 +88,10 @@ export default class FlashCheckout extends Component {
       });
   };
 
+  openTicketForm = () => {
+    window && window.rzpTicketSystem.openModal('#ticket');
+  };
+
   render() {
     let { internationalEnabled } = this.state;
     const { user } = this.props;
@@ -112,7 +115,18 @@ export default class FlashCheckout extends Component {
         if (user.internationalActivationFlow.isBlacklistFlow) {
           displayMsg = CUSTOM_MSG['not_supported'];
         } else if (user.internationalActivationFlow.isGraylistFlow) {
-          displayMsg = CUSTOM_MSG['contact_support'];
+          displayMsg = (
+            <>
+              Please contact{' '}
+              <span
+                className="text-primary"
+                role="button"
+                onClick={this.openTicketForm}
+              >
+                Support.
+              </span>
+            </>
+          );
         } else if (user.internationalActivationFlow.isWhitelistFlow) {
           showToggler = true;
           displayMsg = CUSTOM_MSG['generic_msg'];
