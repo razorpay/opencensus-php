@@ -471,7 +471,7 @@ class Core extends Base\Core
     {
         $channelSupportsUpi = true;
 
-        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
+        $settingsAccessor = Entity::getSettingsAccessor($this->merchant);
 
         $upiEnabledInSettings = boolval($settingsAccessor->get(Entity::UPI));
 
