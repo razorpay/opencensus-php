@@ -175,6 +175,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new CardPaymentService();
         });
 
+        $this->app->singleton('nbplus.payments', function($app)
+        {
+            $nbPlusMock = $app['config']->get('applications.nbplus_payment_service.mock');
+
+            if ($nbPlusMock === true)
+            {
+                return new Mock\NbPlus\Service();
+            }
+
+            return new NbPlus\Service();
+        });
+
         $this->app->singleton('card.otpelf', function($app)
         {
             $mock = $app['config']->get('applications.otpelf.mock');
@@ -212,6 +224,18 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('diag', function($app)
         {
             return new DiagClient($app);
+        });
+
+        $this->app->singleton('salesforce', function($app)
+        {
+            $salesForceMock = $app['config']->get('applications.salesforce.mock');
+
+            if ($salesForceMock === true)
+            {
+                return new Mock\SalesForceClient($app);
+            }
+
+            return new SalesForceClient($app);
         });
 
         $this->app->singleton('gateway_downtime_metric', function($app)
@@ -376,6 +400,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'diag',
             'mozart',
             'hubspot',
+            'salesforce',
         ];
     }
 

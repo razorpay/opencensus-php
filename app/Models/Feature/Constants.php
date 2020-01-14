@@ -294,6 +294,11 @@ class Constants
      */
     const X_PRO_INVITE  = 'x_pro_invite';
 
+    /*
+     * This flag will be used to skip some merchants from hitachi automatic onboarding
+     */
+    const SKIP_HITACHI_AUTO_ONBOARD  = 'skip_hitachi_auto_onboard';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -488,6 +493,7 @@ class Constants
         self::GENERATE_PARTNER_INVOICE        => true,
         self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
+        self::SKIP_HITACHI_AUTO_ONBOARD       => true,
     ];
 
     // Entity type constants

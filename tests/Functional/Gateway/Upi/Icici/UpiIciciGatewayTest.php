@@ -156,18 +156,20 @@ class UpiIciciGatewayTest extends TestCase
 
         $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
         $this->assertNull($payment['vpa']);
+        $this->assertNull($upiEntity['npci_reference_id']);
 
         $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
-        $upi = $this->getLastEntity('upi', true);
+        $upi = $this->getEntityById('upi', $upiEntity['id'], true);
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals($payment['vpa'], 'user@icici');
         $this->assertEquals('ICIC', $upi['bank']);
         $this->assertEquals('icici', $upi['acquirer']);
         $this->assertEquals('icici', $upi['provider']);
+        $this->assertSame('12345678987654321', $upi['npci_reference_id']);
         $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
     }
 

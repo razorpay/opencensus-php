@@ -64,6 +64,41 @@ class UpiAxisReconTest extends TestCase
         $this->createFileAndReconcile('Razorpay Software Private Limited.xlsx', $entries);
     }
 
+    public function testUpiAxisDirectSettlementPaymentFileForceCreate()
+    {
+        $this->sharedTerminal->fill([
+            'gateway_merchant_id' => 'shared_merchant',
+        ])->saveOrFail();
+
+        $terminal = $this->fixtures->create('terminal:direct_settlement_upi_axis_terminal');
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntity = [
+            'payment_id'                => 'SomeUnexpectedOrderId',
+            'npci_reference_id'         => '000100010001',
+        ];
+
+        $entries[] = $this->overrideUpiAxisPayment($upiEntity);
+
+        $entries[0]['amount']                       = '600.00';
+
+        // Adds additional columns as needed for unexpected payment creation
+        $entries[0]['unexpected_payment_ref_id']    = '000100010001';
+        $entries[0]['upi_merchant_id']              = 'TSTMERCHI';
+        $entries[0]['upi_merchant_channel_id']      = 'TSTMERCHIAPP';
+
+        $this->createFileAndReconcile('Razorpay Software Private Limited.xlsx', $entries);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+            'merchant_reference'    => 'SomeUnexpectedOrderId',
+            'npci_reference_id'     => '000100010001',
+            'gateway_merchant_id'   => 'TSTMERCHI'
+        ], $upi->toArray());
+    }
+
     public function testUpiAxisNewPaymentFile()
     {
         $this->payment = $this->getDefaultUpiPaymentArray();
@@ -71,6 +106,19 @@ class UpiAxisReconTest extends TestCase
         $upiEntity = $this->getNewAxisUpiEntity('10000000000000', 'upi_axis');
 
         $entries[] = $this->overrideNewUpiAxisPayment($upiEntity);
+
+        $this->createFileAndReconcile('Razorpay Software Pvt Ltd.xlsx', $entries);
+    }
+
+    public function testUpiAxisUnexpectedPaymentFile()
+    {
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $upiEntity = $this->getNewAxisUpiEntity('10000000000000', 'upi_axis');
+
+        $upiEntity['payment_id'] = 'BB31121900923519425756';
+
+        $entries[] = $this->overrideUpiAxisPayment($upiEntity);
 
         $this->createFileAndReconcile('Razorpay Software Pvt Ltd.xlsx', $entries);
     }

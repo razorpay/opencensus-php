@@ -77,6 +77,22 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
+    protected $public = [
+        self::ID,
+        self::MERCHANT_ID,
+        self::TYPE,
+        self::CURRENCY,
+        self::NAME,
+        self::BALANCE,
+        self::AMOUNT_CREDITS,
+        self::FEE_CREDITS,
+        self::REFUND_CREDITS,
+        self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
+        self::CHANNEL,
+        self::UPDATED_AT,
+    ];
+
     protected $entity = 'balance';
 
     protected $generateIdOnCreate = true;

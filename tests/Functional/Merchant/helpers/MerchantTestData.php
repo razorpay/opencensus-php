@@ -5373,7 +5373,7 @@ return [
         'request'   => [
             'method'    => 'POST',
             'url'       => '/merchants/inheritance_parent/bulk',
-            'content'   => 
+            'content'   =>
                 [
                     [
                         'idempotency_key'    =>  '12345',
@@ -5449,44 +5449,134 @@ return [
         'response' => [
             'status_code' => 200,
             'content' => [
-                    'count' => 2,
-                    'items' => [
-                        '0' => [
-                            'id'                => '100def000def00',
-                            'merchant_id'       => '100ghi000ghi00',
-                            'type'              => 'primary',
-                            'currency'          => null,
-                            'name'              => null,
-                            'balance'           => 100000,
-                        ],
-                        '1' => [
-                            'id'                => '100abc000abc00',
-                            'merchant_id'       => '100ghi000ghi00',
-                            'type'              => 'banking',
-                            'currency'          => 'INR',
-                            'name'              => null,
-                            'balance'           => 0,
-                        ]
+                'count' => 2,
+                'items' => [
+                    '0' => [
+                        'id'                => '100def000def00',
+                        'merchant_id'       => '100ghi000ghi00',
+                        'type'              => 'primary',
+                        'currency'          => null,
+                        'name'              => null,
+                        'balance'           => 100000,
+                    ],
+                    '1' => [
+                        'id'                => '100abc000abc00',
+                        'merchant_id'       => '100ghi000ghi00',
+                        'type'              => 'banking',
+                        'currency'          => 'INR',
+                        'name'              => null,
+                        'balance'           => 0,
                     ]
+                ]
             ],
         ],
     ],
 
     'testGetBalancesByType' => [
         'request' => [
-            'url' => '/balance?type=primary',
+            'url' => '/balances?type=primary',
             'method' => 'GET',
         ],
         'response' => [
             'status_code' => 200,
             'content' => [
-                'id'                => '100def000def00',
-                'merchant_id'       => '100ghi000ghi00',
-                'type'              => 'primary',
-                'currency'          => null,
-                'name'              => null,
-                'balance'           => 100000,
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    '0' => [
+                        'id'                => '100def000def00',
+                        'merchant_id'       => '100ghi000ghi00',
+                        'type'              => 'primary',
+                        'currency'          => null,
+                        'name'              => null,
+                        'balance'           => 100000,
+                    ],
+                ],
             ],
         ],
+    ],
+
+    'testMerchantInternationalDisableAction' => [
+        'request'  => [
+            'content' => [
+                'action' => 'disable_international'
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'merchant',
+                'international'   => false,
+                'merchant_detail' => [
+                    'international_activation_flow' => 'blacklist',
+                ]
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalEnableAction' => [
+        'request'  => [
+            'content' => [
+                'action' => 'enable_international'
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'merchant',
+                'international'   => true,
+                'merchant_detail' => [
+                    'international_activation_flow' => 'whitelist',
+                ]
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalDisableBulkEdit' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids' => [
+                    '10000000000000',
+                ],
+                'attributes'   => [
+                    'international'    => 0,
+                    'convert_currency' => 0,
+                ],
+            ],
+            'url'     => '/merchants/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 1,
+                'success' => 1,
+                'failed'  => 0,
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalEnableBulkEdit' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids' => [
+                    '10000000000000',
+                ],
+                'attributes'   => [
+                    'international'    => 1,
+                    'convert_currency' => 1,
+                ],
+            ],
+            'url'     => '/merchants/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 1,
+                'success' => 1,
+                'failed'  => 0,
+            ]
+        ]
     ],
 ];

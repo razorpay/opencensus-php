@@ -10,6 +10,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 //This code is not being used to generate refund file go to app/Gateway/Netbanking/Kotak/RefundFile.php
 
@@ -27,10 +28,16 @@ class Kotak extends Base
 
     protected $type = Payment\Entity::BANK;
 
-    public function fetchEntities(): PublicCollection
+    /**
+     * @param int $begin
+     * @param int $end
+     * @return PublicCollection
+     */
+    protected function fetchRefundsFromAPI(int $begin, int $end): PublicCollection
     {
-        $begin = $this->gatewayFile->getBegin();
-        $end = $this->gatewayFile->getEnd();
+        //
+        // Regular flow - fetching refunds from API DB
+        //
 
         $tpv = $this->gatewayFile->getTpv();
 
@@ -44,6 +51,96 @@ class Kotak extends Base
         );
 
         return $refunds;
+    }
+
+    /**
+     * Fetches all necessary refund related data required for generating the file
+     * $entities - since it can either be payments or refunds based on whether we fetch from scrooge or not
+     *
+     * @param  PublicCollection $entities
+     *
+     * @return array
+     */
+    public function generateData(PublicCollection $entities)
+    {
+        $data = [];
+        $isTpv = $this->gatewayFile->getTpv();
+
+        // Refunds were fetched from scrooge
+        if ($this->fetchRefundsFromScrooge === true)
+        {
+            foreach ($this->scroogeRefunds as $refund)
+            {
+                $payment = $entities->where(Payment\Entity::ID, '=', $refund[RefundConstants::PAYMENT_ID])->first();
+
+                if ($payment->terminal->isTpv() == $isTpv)
+                {
+                    $col = $this->collectPaymentData($payment);
+
+                    $col['refund'] = $refund;
+
+                    $data[] = $col;
+                }
+            }
+
+            $data = $this->addGatewayEntitiesToDataWithPaymentIds($data, $this->scroogeRefundPaymentIds);
+        }
+        else
+        {
+            $scroogeRefundIds = [];
+
+            // Is file based refund gateway for which refunds data need to be fetched from Scrooge
+            $fileBasedRefundGateway = in_array(
+                static::GATEWAY,
+                array_keys(Payment\Gateway::$scroogeFileBasedRefundGatewaysWithTimestamps), true
+            );
+
+            if ($fileBasedRefundGateway === true)
+            {
+                $scroogeRefundIds = $entities->where(Payment\Refund\Entity::IS_SCROOGE, '=', 1)->getIds();
+
+                if (count($scroogeRefundIds) > 0)
+                {
+                    $this->populateScroogeRefundsGivenIds($scroogeRefundIds);
+                }
+
+                $scroogeRefundIds = array_unique(array_column($this->scroogeRefunds, RefundConstants::SCROOGE_ID));
+            }
+
+            // regular API flow
+            foreach ($entities as $refund)
+            {
+                //
+                // The following checks are being made to ensure these conditions
+                // If a refund belongs to scrooge - Scrooge is the single source of truth -
+                // whether the refund is to be sent in the file or not, there are various flows in which Scrooge
+                // could process these refunds - Instant Refunds, FTAs, TPV, etc.
+                // Hence, if a refund belongs to scrooge and it is of a file based gateway -
+                // whose refunds data is fetched from Scrooge - we need to ensure that the refund must be present
+                // in the response from Scrooge.
+                //
+                // Therefore, the only case where the following conditions don't evaluate to true is the following:
+                // The refund was processed on scrooge, belonging to a file based refunds gateway via Scrooge,
+                // by tpv or instant refunds so it should not be included in the file
+                //
+                if (($refund->isScrooge() === false) or
+                    ($fileBasedRefundGateway === false) or
+                    (in_array($refund->getId(), $scroogeRefundIds, true) === true))
+                {
+                    $payment = $refund->payment;
+
+                    $col = $this->collectPaymentData($payment);
+
+                    $col['refund'] = $refund->toArray();
+
+                    $data[] = $col;
+                }
+            }
+
+            $data = $this->addGatewayEntitiesToData($data, $entities);
+        }
+
+        return $data;
     }
 
     protected function formatDataForFile(array $data)

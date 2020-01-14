@@ -103,6 +103,10 @@
           <directory>./tests/Unit/</directory>
           <directory>./tests/Functional/Refund/</directory>
           <file>./tests/Functional/Merchant/MerchantTest.php</file>
+          <exclude>./tests/Unit/PaymentsUpi</exclude>
+      </testsuite>
+      <testsuite name="Feature-6 Test Suite">
+          <directory>./tests/Unit/PaymentsUpi</directory>
       </testsuite>
       <testsuite name="Payment Test Suite">
           <directory>./tests/Functional/Payment/</directory>

@@ -164,7 +164,8 @@ class Validator extends Base\Validator
 
         foreach ($orderTransfers as $orderTransfer)
         {
-            if ($orderTransfer->getStatus() === Status::CREATED or
+            if (($orderTransfer->getStatus() === Status::CREATED) or
+                ($orderTransfer->getStatus() === Status::PENDING) or
                 ($orderTransfer->getStatus() === Status::FAILED and $orderTransfer->getAttempts() < Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS))
             {
                 $orderTransferUnprocessedAmount += $orderTransfer->getAmount();
@@ -178,7 +179,8 @@ class Validator extends Base\Validator
                 Entity::AMOUNT,
                 [
                     'sum'           => $transferSum,
-                    'untransferred' => $payment->getAmountUntransferred()
+                    'untransferred' => $payment->getAmountUntransferred(),
+                    'unprocessed'   => $orderTransferUnprocessedAmount,
                 ]);
         }
     }

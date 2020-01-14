@@ -54,7 +54,7 @@ class Validator extends Base\Validator
         'receipt'                  => 'required|string|max:40',
         'currency'                 => 'required|string|size:3|in:INR',
         'notifications'            => 'array',
-        'notifications.device_id'  => 'filled|string|public_id|size:20',
+        'notifications.device_id'  => 'filled|string|public_id|size:18',
         Entity::DESCRIPTION        => 'sometimes|nullable|string|max:2048',
         Entity::NOTES              => 'sometimes|notes',
     ];

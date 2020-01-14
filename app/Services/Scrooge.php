@@ -365,11 +365,11 @@ class Scrooge
      * @param array $params
      * @return array
      */
-    public function instantRefundsDecisioningHelper(array $params): array
+    public function getInstantRefundsMode(string $merchantId, array $params): array
     {
         $scroogeResponse = $this->sendRequest(
-            self::RefundsBaseURL . '/' . self::URLS['instant-refunds-decisioning-helper'],
-            Requests::POST,
+            self::MerchantsBaseURL . '/' . $merchantId . '/' . self::URLS['instant_refunds_mode'],
+            Requests::GET,
             $params);
 
         $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];

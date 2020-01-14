@@ -33,6 +33,10 @@ trait AuthorizeFailed
             {
                 $this->app['card.payments']->action($gateway, PaymentAction::VERIFY, $input);
             }
+            elseif (($input[Constants\Entity::PAYMENT][Entity::CPS_ROUTE] === Entity::NB_PLUS_SERVICE))
+            {
+                $this->app['nbplus.payments']->action($gateway, PaymentAction::VERIFY, $input);
+            }
             else
             {
                 $this->verify($input);

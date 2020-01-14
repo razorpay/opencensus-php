@@ -4,8 +4,9 @@ namespace RZP\Tests\Functional\Order\Transfers;
 
 use Mockery;
 use Closure;
-
+use Carbon\Carbon;
 use RZP\Models\Transfer;
+use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
@@ -144,6 +145,66 @@ class OrderTransferTest extends TestCase
         });
 
         $this->testProcessOrderTransfers();
+    }
+
+    public function testCronProcessPendingOrderTransfers()
+    {
+        $this->markTestSkipped();
+
+        $order = $this->testCreateOrderTransfers();
+
+        // Disable dispatch here
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('pending', $transfer['status']);
+
+        // Enable dispatch here
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $orderIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('processed', $transfer['status']);
+
+        $this->assertEquals($order['id'], 'order_' . $orderIds[0]);
+    }
+
+    public function testCronProcessFailedOrderTransfers()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $this->fixtures->merchant->editBalance(100);
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        $this->fixtures->merchant->editBalance(100000);
+
+        $timestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $this->fixtures->transfer->editProcessedAt($timestamp - 10, $transfer['id']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $orderIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('processed', $transfer['status']);
+
+        $this->assertEquals($order['id'], 'order_' . $orderIds[0]);
     }
 
     protected function capturePaymentProcessOrderTransfers($order, $paymentAmount = null)
