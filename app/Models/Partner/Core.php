@@ -6,7 +6,6 @@ use Razorpay\OAuth;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Detail;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
@@ -56,33 +55,5 @@ class Core extends Base\Core
         (new Merchant\AccessMap\Core)->addMappingForOAuthApp($merchant, $subMerchant, $mapInput);
 
         return $token['partner_token'];
-    }
-
-    public function isForceGreylistMerchant(Merchant\Entity $subMerchant, Merchant\Entity $partner = null)
-    {
-        $subMerchantDetails = (new Detail\Core())->getMerchantDetails($subMerchant);
-
-        //
-        // if submerchant asked for international and partner wants to force international to greylist
-        //
-        return ((empty($partner) === false) and
-                ($subMerchantDetails->getBusinessInternational() === true) and
-                ($partner->forceGreyListInternational() === true));
-    }
-
-    public function isForceGreylistAccount(Merchant\Entity $subMerchant)
-    {
-        $partners = (new Merchant\Core)->fetchAffiliatedPartners($subMerchant->getId());
-
-        //
-        // Filter partners whose feature (FORCE_GREYLIST_INTERNAT) is present.
-        //
-        $partner = $partners->filter(function(Merchant\Entity $partner) use ($subMerchant) {
-
-            return (self::isForceGreylistMerchant($subMerchant, $partner));
-
-        })->first();
-
-        return empty($partner) === false;
     }
 }

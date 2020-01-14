@@ -87,23 +87,6 @@ class BusinessType
         ]
     ];
 
-    protected static $GreylistedInternationalActivationFlowBusinessType = [
-        self::PROPRIETORSHIP,
-        self::NGO,
-        self::SOCIETY,
-        self::TRUST
-    ];
-
-    public static function isBusinessTypeGreylistedForInternational($businessType = null)
-    {
-        if (empty($businessType) === true)
-        {
-            return false;
-        }
-
-        return in_array($businessType, self::$GreylistedInternationalActivationFlowBusinessType, true);
-    }
-
     /**
      * @param string $businessTypeBucket
      *

@@ -47,10 +47,4 @@ class Constants
     const REQUIRED_FIELDS = 'required_fields';
 
     const DUMMY_ACTIVATION_FILE = '100000000Dummy';
-
-    // flows used during activation
-    const ACTIVATION = 'activaiton';
-    const INTERNATIONAL_ACTIVATION = 'international_activation';
-
-    const ACTIVATION_FLOWS = [self::ACTIVATION, self::INTERNATIONAL_ACTIVATION];
 }
