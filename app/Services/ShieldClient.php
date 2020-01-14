@@ -9,6 +9,7 @@ use Requests_Hooks;
 use RZP\Constants\Shield as ShieldConstants;
 use RZP\Error\ErrorCode;
 use RZP\Exception\IntegrationException;
+use RZP\Http\Request\Request;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
@@ -333,7 +334,6 @@ class ShieldClient implements ExternalService
         $options = [
             'auth'    => $this->getAuthHeaders(),
             'timeout' => self::REQUEST_TIMEOUT,
-            'hooks'   => $this->getRequestHooks(),
         ];
 
         $content = '';
@@ -357,7 +357,7 @@ class ShieldClient implements ExternalService
 
         try
         {
-            $response = Requests::request(
+            $response = Request::request(
                 $url,
                 $headers,
                 $content,
@@ -379,35 +379,6 @@ class ShieldClient implements ExternalService
 
             throw $e;
         }
-    }
-
-    public function traceCurlInfo($headers, $info)
-    {
-        $this->trace->info(TraceCode::SHIELD_REQUEST_DURATION,[
-            'total_time'         => $info['total_time'],
-            'connect_time'       => $info['connect_time'],
-            'redirect_time'      => $info['redirect_time'],
-            'namelookup_time'    => $info['namelookup_time'],
-            'pretransfer_time'   => $info['pretransfer_time'],
-            'starttransfer_time' => $info['starttransfer_time'],
-            'primary_ip'         => $info['primary_ip'] ?? 'nil',
-        ]);
-    }
-
-    protected function getRequestHooks()
-    {
-        $hooks = new Requests_Hooks();
-
-        $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
-
-        $variant = $this->app->razorx->getTreatment('10000000000000', self::TRACE_REQUEST_FEATURE, $this->mode);
-
-        if ($variant === 'on')
-        {
-            $hooks->register('curl.after_request', [$this, 'traceCurlInfo']);
-        }
-
-        return $hooks;
     }
 
     protected function parseAndReturnResponse($res, array $data)
