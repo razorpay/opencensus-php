@@ -21,6 +21,7 @@ use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\External\FundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PayoutLink\External\Payout as PayoutClient;
 use RZP\Models\PayoutLink\External\Contact as ContactClient;
 use RZP\Models\PayoutLink\External\FundAccount as FundAccountClient;
@@ -558,8 +559,11 @@ class Core extends Base\Core
 
             case Type::VPA:
                 return Mode::UPI;
-                break;
-            # todo, pl handle Default, and raise the right exception
+
+            default:
+                throw new BadRequestValidationFailureException('Fund Accounts of type ' .
+                                                               $fundAccount->getAccountType() .
+                                                               'are not supported');
         }
     }
 
