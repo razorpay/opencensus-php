@@ -40,6 +40,13 @@ server {
         proxy_pass http://localhost:8080;
     }
 
+    location /status {
+       access_by_lua_block {
+           local lib = require 'rate_limit'
+           lib.check_redis_connection(ngx)
+       }
+    }
+
     access_log /dev/stdout openresty-api;
     error_log  /dev/stderr warn;
 }

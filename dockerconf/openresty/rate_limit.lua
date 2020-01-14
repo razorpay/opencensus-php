@@ -274,4 +274,14 @@ function M.rate_limit_ngx(ngx)
     end
 end
 
+--Readiness probe for the application , basically checks if the app is able to establish redis connection
+function M.check_redis_connection(ngx)
+    local redis, err = get_redis_conn()
+    if err then
+        ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
+    else
+        ngx.exit(ngx.HTTP_OK)
+    end
+end
+
 return M
