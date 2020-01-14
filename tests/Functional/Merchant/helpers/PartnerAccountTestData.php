@@ -230,7 +230,7 @@ return [
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
-                    'international'  => true,
+                    'international'  => false,
                 ],
                 'settlement' => [
                     'fund_accounts' => [
@@ -602,7 +602,7 @@ return [
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
-                    'international'  => true,
+                    'international'  => false,
                 ],
                 'tnc'        => [
                     'accepted'   => 1,
