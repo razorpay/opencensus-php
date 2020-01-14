@@ -19,7 +19,7 @@ class Utility
      * @param string $email
      * @return mixed|string
      */
-    public static function getMaskedEmail(string $email)
+    public static function getMaskedEmail(string $email = null)
     {
         $trace = App::getFacadeRoot()['trace'];
 
@@ -73,7 +73,7 @@ class Utility
         return $maskedEmail;
     }
 
-    public static function getMaskedPhone(string $phone)
+    public static function getMaskedPhone(string $phone = null)
     {
         if (empty($phone) === true)
         {
