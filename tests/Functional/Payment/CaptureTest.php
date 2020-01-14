@@ -1719,6 +1719,40 @@ class CaptureTest extends TestCase
         Mail::assertNotQueued(BalancePositiveAlert::class);
     }
 
+    public function testCaptureAddBalanceToNegativeBalance()
+    {
+        Mail::fake();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->fixtures->base->editEntity('balance', '10000000000000',
+            [
+                'balance'     => -1000,
+            ]
+        );
+
+        $this->payment = $this->defaultAuthPayment();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+
+        Mail::assertQueued(CapturedMail::class);
+        Mail::assertQueued(BalancePositiveAlert::class);
+    }
+
     public function startBulkTest(array $payments)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

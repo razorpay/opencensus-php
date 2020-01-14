@@ -800,6 +800,16 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_LENDING_KART:
+                $sender = 'LDKART';
+
+                break;
+
+            case Preferences::MID_BFL:
+                $sender = 'SPRCRD';
+
+                break;
+
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
@@ -826,6 +836,28 @@ class Notifier extends Base\Core
         {
             $receipt = $this->invoice->getNotes()['loan_number'] ?? $receipt;
         }
+
+        $subscriptionRegistration = $this->invoice->entity;
+
+        if ($subscriptionRegistration->isMethodCard() === true)
+        {
+            $template = 'sms.custom_invoice.subr_card';
+        }
+
+        if ($subscriptionRegistration->isMethodEmandate() === true)
+        {
+            $template = 'sms.custom_invoice.subr_emandate';
+        }
+
+        $merchantName = $merchant->getBillingLabel();
+
+        $merchantName = substr($merchantName, 0, 30);
+
+        $params   = [
+            'merchant_name' => $merchantName,
+            'invoice_link'  => $this->invoice->getShortUrl(),
+            'amount'        => $this->invoice->getAmount() / 100,
+        ];
 
         $invoiceLink = $this->invoice->getShortUrl();
 
@@ -912,6 +944,12 @@ class Notifier extends Base\Core
                         'invoice_link'      => $invoiceLink,
                     ];
                 }
+
+                break;
+
+            case Preferences::MID_LENDING_KART:
+
+                $sender = 'LDKART';
 
                 break;
 
