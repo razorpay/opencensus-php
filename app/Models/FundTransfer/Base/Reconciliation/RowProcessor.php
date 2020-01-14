@@ -293,15 +293,6 @@ abstract class RowProcessor extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
-
-            $alerts = new Alerts();
-
-            $slackData = $ftaData + [
-                'headLine' => 'fta source processing failed',
-                'error'    => $e->getMessage(),
-            ];
-
-            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 
