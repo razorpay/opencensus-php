@@ -487,6 +487,13 @@ class Core extends Base\Core
         return $upiEnabledInSettings and $channelSupportsUpi and $amountLessThanLac;
     }
 
+    /**
+     * Masks the VPA details before sending to the front-end
+     * todo, pl Need to move to VPA/Entity [https://razorpay.atlassian.net/browse/RX-1343]
+     *
+     * @param FundAccountEntity|null $fundAccount
+     * @return array|null
+     */
     protected function getMaskedFundAccountDetails(FundAccountEntity $fundAccount = null)
     {
 
