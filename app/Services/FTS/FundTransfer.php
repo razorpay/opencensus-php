@@ -818,9 +818,13 @@ class FundTransfer extends Base
             $ftsTransferIds = $this->getFtsTransferIdFromAttempts($attempts);
 
             $response  = $this->createAndSendRequest(
-                parent::FUND_TRANSFER_FETCH_URI,
+                parent::FUND_TRANSFER_ATTEMPTS_STATUS_FETCH,
                 Requests::GET,
-                $ftsTransferIds)['body']['transfers'];
+                [ 'id' => $ftsTransferIds ])['body']['transfers'];
+
+            $data = $this->extractFtsResponse($response);
+
+            return $this->combineStatusForApiAndFTS($attempts, $data);
 
         }
         catch (\Throwable $ex)
@@ -833,6 +837,8 @@ class FundTransfer extends Base
                     'input' => $input,
                 ]);
         }
+
+        return [];
     }
 
     protected function getFtsTransferIdFromAttempts(PublicCollection  $attempts)
@@ -843,9 +849,55 @@ class FundTransfer extends Base
         {
             $ftsTransferId = $attempt->getFtsTransferId();
 
-            $ftsTransferIds['fts_'.$ftsTransferId] = $ftsTransferId;
+            $ftsTransferIds[] = $ftsTransferId;
         }
 
-        return $ftsTransferIds;
+        return implode("," ,$ftsTransferIds);
+    }
+
+    protected function extractFtsResponse(array $response)
+    {
+        $result = [];
+
+        foreach ($response as $val)
+        {
+
+          $result[$val['id']] = $val['status'];
+        }
+
+        return $result;
+    }
+
+    protected function combineStatusForApiAndFTS(PublicCollection $attempts, array $response)
+    {
+        $responseData = [];
+
+        $ftsFetchedIds = array_keys($response);
+
+        foreach ($attempts as $attempt)
+        {
+            $ftsTransferId = $attempt->getFtsTransferId();
+
+            $ftsTransferStatus = '';
+
+            $source = $attempt->source;
+
+            if (array_key_exists($ftsTransferId, $ftsFetchedIds) === true)
+            {
+                $ftsTransferStatus = $response[ $ftsTransferId ];
+            }
+
+            $responseData[$attempt->getId()] = [
+                'fta_status'          => $attempt->getStatus(),
+                'source_id'           => $attempt->getSourceId(),
+                'source_type'         => $attempt->getSourceType(),
+                'source_status'       => $source->getStatus(),
+                'gateway_ref_no'      => $attempt->getGatewayRefNo(),
+                'fts_transfer_id'     => $ftsTransferId,
+                'fts_transfer_status' => $ftsTransferStatus,
+            ];
+        }
+
+        return $responseData;
     }
 }
