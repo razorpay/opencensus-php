@@ -20,14 +20,9 @@ const CUSTOM_MSG = {
       payments
     </span>
   ),
-  kyc_pending: (
-    <span>
-      Your <Link to="/activation">KYC form</Link> has to be approved in-order to
-      accept International card payments.
-    </span>
-  ),
   generic_msg:
     'Settlement cycle and transaction fee is higher for International payments.',
+  contact_support: 'Please reach out to support.',
 };
 
 @connect(
@@ -112,34 +107,15 @@ export default class FlashCheckout extends Component {
       // If international profiling(whitelist-blacklist-graylist) is set
       if (user.international_activation_flow) {
         /*
-        * For GrayList(international) if L1 submitted but not L2.
+        * Blacklist(international) - show not supported
         * */
-        if (
-          !user.submitted &&
-          user.internationalActivationFlow.isGraylistFlow
-        ) {
-          displayMsg = CUSTOM_MSG['kyc_pending'];
-        } else if (user.internationalActivationFlow.isBlacklistFlow) {
+        if (user.internationalActivationFlow.isBlacklistFlow) {
           displayMsg = CUSTOM_MSG['not_supported'];
-        } else if (
-          user.internationalActivationFlow.isWhitelistFlow ||
-          (user.activation_status === 'activated' &&
-            user.internationalActivationFlow.isGraylistFlow)
-        ) {
-          // To show only for newly activated merchants (whitelist and activated graylist only)
-
+        } else if (user.internationalActivationFlow.isGraylistFlow) {
+          displayMsg = CUSTOM_MSG['contact_support'];
+        } else if (user.internationalActivationFlow.isWhitelistFlow) {
           showToggler = true;
           displayMsg = CUSTOM_MSG['generic_msg'];
-        } else if (user.internationalActivationFlow.isGraylistFlow) {
-          // If not activated
-          if (user.activation_status !== 'activated') {
-            displayMsg = CUSTOM_MSG['generic_msg'];
-          }
-
-          // If L2 form submitted but KYC approval is pending.
-          if (user.submitted) {
-            displayMsg = CUSTOM_MSG['kyc_pending'];
-          }
         }
       } else {
         /*
