@@ -550,8 +550,8 @@ trait Callback
         $internalErrorCode = $e->getError()->getInternalErrorCode();
 
         $e->setData(['payment_id'  => $this->payment->getId(),
-                     'merchant_id' => $this->payment->getApiOrderId(),
-                     'order_id'    => $this->payment->getOrderId()]);
+                     'merchant_id' => $this->payment->getMerchantId(),
+                     'order_id'    => $this->payment->getApiOrderId()]);
 
         if (Error\Error::hasAction($internalErrorCode) === false)
         {
