@@ -458,10 +458,6 @@ abstract class NodalAccount extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $data
             );
-
-            $alerts = new Alerts();
-
-            $alerts->notifySlack($data + ['headLine' => 'fta source processing failed'], Alerts::ALERT);
         }
     }
 
