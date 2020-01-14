@@ -18,6 +18,15 @@ class PayoutLinkController extends Controller
         return ApiResponse::json('Not Supported');
     }
 
+    public function allowCors()
+    {
+        $response = ApiResponse::json([]);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
     /**
      * This is a POST request because,
      * 1. It takes a TOKEN which should be sent in the Body and not URL Param
@@ -29,7 +38,11 @@ class PayoutLinkController extends Controller
     {
         $response = $this->service()->getFundAccountsOfContact($payoutLinkId, $this->input);
 
-        return ApiResponse::json($response);
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
     }
 
     /**
@@ -65,21 +78,33 @@ class PayoutLinkController extends Controller
     {
         $response = $this->service()->initiate($payoutLinkId, $this->input);
 
-        return ApiResponse::json($response);
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
     }
 
     public function generateAndSendCustomerOtp(string $payoutLinkId)
     {
         $response = $this->service()->generateAndSendCustomerOtp($payoutLinkId, $this->input);
 
-        return ApiResponse::json($response);
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
     }
 
     public function verifyCustomerOtp(string $payoutLinkId)
     {
         $response = $this->service()->verifyCustomerOtp($payoutLinkId, $this->input);
 
-        return ApiResponse::json($response);
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
     }
 
     public function viewHostedPage($payoutLinkId)
@@ -94,5 +119,14 @@ class PayoutLinkController extends Controller
         $data = $this->service()->cancel($payoutLinkId);
 
         return ApiResponse::json($data);
+    }
+
+    private function addCorsHeaders(& $response)
+    {
+        $response->headers->set('Access-Control-Allow-Origin', $this->config['applications.payout_links.url']);
+
+        $response->headers->set('Access-Control-Allow-Credentials' , 'true');
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
     }
 }

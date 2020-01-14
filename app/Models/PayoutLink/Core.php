@@ -582,7 +582,7 @@ class Core extends Base\Core
         $isProduction = $this->app->environment() === Environment::PRODUCTION;
 
         $data = [
-            'api_host'                => $this->config['applications.payout_links.url'],
+            'api_host'                => $this->config['url.api.production'],
             'payout_link_id'          => $payoutLink->getPublicId(),
             'payout_link_status'      => $payoutLink->getStatus(),
             'amount'                  => $payoutLink->getAmount(),
@@ -592,7 +592,7 @@ class Core extends Base\Core
             'user_email'              => $maskedEmail,
             'user_phone'              => $maskedPhone,
             'receipt'                 => $payoutLink->getReceipt(),
-            'merchant_logo_url'       => $this->merchant->getLogoUrl(),
+            'merchant_logo_url'       => $this->merchant->getFullLogoUrlWithSize(),
             'payout_link_description' => $payoutLink->getDescription(),
             'primary_color'           => $this->merchant->getBrandColor(),
             'merchant_name'           => $this->merchant->getDisplayNameElseName(),

@@ -97,7 +97,7 @@ class CustomerOtp extends Mailable
             'otp'                   => $this->otp,
             'merchant_display_name' => $displayName,
             'purpose'               => $payoutLink->getPurpose(),
-            'logoUrl'               => $merchant->getLogoUrl(),
+            'logoUrl'               => $merchant->getFullLogoUrlWithSize(),
             'primary_color'         => $merchant->getBrandColorElseDefault(),
         ];
 

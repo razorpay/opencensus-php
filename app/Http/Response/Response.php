@@ -402,11 +402,7 @@ class Response
             'fund_account_create_public',
             'payment_validate_account',
             'payment_page_create_order',
-            'payment_page_create_order_option',
-            'payout_links_generate_end_user_otp',
-            'payout_links_verify_customer_otp',
-            'payout_links_added_fund_accounts',
-            'payout_links_initiate'
+            'payment_page_create_order_option'
         ];
 
         if (in_array($route, $routes, true) === true)
