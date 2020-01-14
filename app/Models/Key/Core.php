@@ -2,14 +2,13 @@
 
 namespace RZP\Models\Key;
 
-use Cache;
+use Illuminate\Support\Facades\Redis;
 
 use RZP\Constants\Mode;
 use Crypt;
 use RZP\Models\Base;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
-use Illuminate\Support\Facades\Redis;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Http\Throttle\Constant as Throttle;
