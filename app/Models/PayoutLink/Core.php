@@ -585,7 +585,7 @@ class Core extends Base\Core
             'payout_link_description' => $payoutLink->getDescription(),
             'primary_color'           => $this->merchant->getBrandColor(),
             'merchant_name'           => $this->merchant->getDisplayNameElseName(),
-            'allow_upi'               => $isUpiEnabled,
+            'allow_upi'               => $this->allowUpi($payoutLink),
             'banking_url'             => $this->config['applications.banking_service_url'],
             'is_production'           => $isProduction,
             'fund_account_details'    => json_encode($fundAccountDetails),
