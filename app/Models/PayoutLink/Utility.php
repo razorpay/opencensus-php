@@ -45,7 +45,7 @@ class Utility
             $topLevelDomain = $emailDomain[1]; // .com
 
             $emailLen = strlen($emailName);
-            dd($emailLen);
+
             $lengthToMask = ceil($emailLen * self::PERCENTAGE_TO_MASK);
 
             // replace the name except first 3 characters with *
