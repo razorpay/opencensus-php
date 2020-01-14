@@ -2201,7 +2201,7 @@ class Processor
         {
             $this->persistCardDetailsTemporarily($input);
         }
-        else if ($action === Action::CALLBACK)
+        else if ($action === Action::CALLBACK or $action === Action::CAPTURE)
         {
             $this->setCardNumberAndCvv($input);
         }

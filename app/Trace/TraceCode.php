@@ -271,6 +271,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_TOKEN_RESPONSE                                  = 'FETCH_TOKEN_RESPONSE';
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
     const HITACHI_ONBOARD_REQUEST_CREATION_ERROR                = 'HITACHI_ONBOARD_REQUEST_CREATION_ERROR';
+    const SKIPPING_HITACHI_AUTOMATIC_ONBOARDING                 = 'SKIPPING_HITACHI_AUTOMATIC_ONBOARDING';
 
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
@@ -1217,6 +1218,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_VAULT_REQUEST_FAILED                             = 'CARD_VAULT_REQUEST_FAILED';
     const CARD_VAULT_TOKEN_MISSING                              = 'CARD_VAULT_TOKEN_MISSING';
     const CARD_VAULT_REQUEST_DURATION                           = 'CARD_VAULT_REQUEST_DURATION';
+    const SHIELD_REQUEST_DURATION                               = 'SHIELD_REQUEST_DURATION';
     const CORE_PAYMENT_SERVICE_REQUEST                          = 'CORE_PAYMENT_SERVICE_REQUEST';
     const CORE_PAYMENT_SERVICE_RESPONSE                         = 'CORE_PAYMENT_SERVICE_RESPONSE';
     const CORE_PAYMENT_SERVICE_RETRY                            = 'CORE_PAYMENT_SERVICE_RETRY';
@@ -2472,6 +2474,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RESERVE_BALANCE_CREATE_REQUEST                        = 'RESERVE_BALANCE_CREATE_REQUEST';
     const RESERVE_BALANCE_CREATE_SUCCESSFUL                     = 'RESERVE_BALANCE_CREATE_SUCCESSFUL';
 
+    //RazorX
+    const NEGATIVE_BALANCE_RAZORX_REQUEST                       = 'NEGATIVE_BALANCE_RAZORX_REQUEST';
+    const NEGATIVE_BALANCE_RAZORX_RESPONSE                      = 'NEGATIVE_BALANCE_RAZORX_RESPONSE';
+
+    const CHECK_MERCHANT_BALANCE                                 = 'CHECK_MERCHANT_BALANCE';
+    const CHECK_MERCHANT_REFUND_CREDITS                          = 'CHECK_MERCHANT_REFUND_CREDITS';
+   
     const TRACE_FOR_INCREASED_RESPONSE_TIMES                    = 'TRACE_FOR_INCREASED_RESPONSE_TIMES';
 
     protected static $messages = [

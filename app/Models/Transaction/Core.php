@@ -918,9 +918,24 @@ class Core extends Base\Core
 
         $oldBalance = $merchantBalance->getBalance();
 
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $txn->merchant->getId(),
+            ]
+        );
+
         $response = $this->app->razorx->getTreatment($txn->getMerchantId(),
                                                      BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE,
                                                      $mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $txn->merchant->getId(),
+                'response'      => $response
+            ]
+        );
 
         $merchantBalance->updateBalance($txn, $response === 'on');
 
@@ -1096,7 +1111,7 @@ class Core extends Base\Core
         }
     }
 
-    public function updateRefundCredits(Transaction\Entity $txn)
+    public function updateRefundCredits(Transaction\Entity $txn, bool $negativeBalanceEnabled = false)
     {
         // While filling the txn fees and amount, we have not used fee credits.
         if ((($txn->isTypeRefund() === false) and
@@ -1114,20 +1129,32 @@ class Core extends Base\Core
 
         $refundCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::REFUND);
 
-        if ($refundCredits < $amount)
+        if ($negativeBalanceEnabled === false)
         {
-            throw new Exception\LogicException(
-                'Refund Credits should be higher or equal to the refund amount',
-                null,
-                [
-                    'transaction_id'    => $txn->getId(),
-                    'merchant_id'       => $merchantId,
-                    'refund_credits'    => $refundCredits,
-                    'amount'            => $amount,
-                ]);
-        }
+            if($refundCredits < $amount)
+            {
+                throw new Exception\LogicException(
+                    'Refund Credits should be higher or equal to the refund amount',
+                    null,
+                    [
+                        'transaction_id' => $txn->getId(),
+                        'merchant_id'    => $merchantId,
+                        'refund_credits' => $refundCredits,
+                        'amount'         => $amount,
+                    ]);
+            }
 
-        $merchantBalance->subtractRefundCredits($amount);
+            $merchantBalance->subtractRefundCredits($amount, $negativeBalanceEnabled);
+        }
+        else
+        {
+            $merchantBalance->subtractRefundCredits($amount, $negativeBalanceEnabled);
+
+            $newCredits = $this->merchantBalance->getRefundCredits();
+
+            (new Balance\Core)->sendNegativeBalanceMailIfApplicable($this->merchantBalance->merchant, $refundCredits, $newCredits,
+                $this->merchantBalance->getType(), 'refund credits', $this->txn->getType());
+        }
 
         //create a credit transaction for the same
         $this->createCreditTransaction($amount, $txn, Credits\Type::REFUND);
@@ -1250,6 +1277,26 @@ class Core extends Base\Core
 
     public function updateCredits(Transaction\Entity $txn, Base\PublicEntity $entity)
     {
+        $mode = $this->mode ?? 'live';
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $txn->merchant->getId(),
+            ]
+        );
+
+        $response = $this->app->razorx->getTreatment($txn->merchant->getId(),
+            BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE, $mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $txn->merchant->getId(),
+                'response'      => $response
+            ]
+        );
+
         if ($txn->isGratis() === true)
         {
             $this->updateAmountCredits($txn, $entity);
@@ -1260,7 +1307,7 @@ class Core extends Base\Core
         }
         else if ($txn->isRefundCredits() === true)
         {
-            $this->updateRefundCredits($txn);
+            $this->updateRefundCredits($txn, $response === 'on');
         }
     }
 
@@ -1529,8 +1576,23 @@ class Core extends Base\Core
 
         $mode = $this->mode ?? 'live';
 
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $payment->merchant->getId(),
+            ]
+        );
+
         $response = $this->app->razorx->getTreatment($payment->merchant->getId(),
                                                     BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE, $mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $payment->merchant->getId(),
+                'response'      => $response
+            ]
+        );
 
         $processor->updateCredits($response === 'on');
 
