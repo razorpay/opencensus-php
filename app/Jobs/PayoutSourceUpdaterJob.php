@@ -2,10 +2,19 @@
 
 namespace RZP\Jobs;
 
+use App;
 use RZP\Trace\TraceCode;
+use RZP\Models\PayoutLink\Core;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\SourceUpdater;
 
+/***
+ * NOTE: In case the Payout Status updates are out of order, the PayoutLink State Machine may fail.
+ * In which case either all the status updates will be dropped, or only a subset of them will be actually applied.
+ *
+ * Class PayoutSourceUpdaterJob
+ * @package RZP\Jobs
+ */
 class PayoutSourceUpdaterJob extends Job
 {
     const MAX_RETRIES = 5;
@@ -53,7 +62,9 @@ class PayoutSourceUpdaterJob extends Job
 
             if ($this->expectedCurrentStatus !== $payout->getStatus())
             {
-                // todo, pl add a slack push here
+                (new Core())->pushSlackAlert(TraceCode::PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS,
+                                             $context);
+
                 $this->trace->warning(TraceCode::PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS,
                                       $context);
 

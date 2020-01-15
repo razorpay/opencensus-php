@@ -18,6 +18,8 @@ class Validator extends Base\Validator
     const GENERATE_OTP                     = 'generate_otp';
     const ADD_FUND_ACCOUNT_RULE            = 'add_fund_account';
     const SETTINGS_RULE                    = 'settings';
+    const MAX_IMPS_AMOUNT                  = 20000000;
+    const MAX_UPI_AMOUNT                   = 10000000;
 
     protected static $settingsRules = [
         Mode::UPI  => 'required_without:IMPS|boolean|filled',

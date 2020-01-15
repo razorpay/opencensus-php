@@ -15,12 +15,12 @@ class Status
     const PROCESSED  = 'processed';
     const CANCELLED  = 'cancelled';
 
-    const VALID_PROCESSING_START_STATUSES = [
+    protected const VALID_PROCESSING_START_STATUSES = [
         self::ISSUED,
         self::ATTEMPTED
     ];
 
-    const VALID_STATUSES = [
+    protected const VALID_STATUSES = [
         self::ISSUED,
         self::PROCESSING,
         self::ATTEMPTED,
@@ -28,7 +28,7 @@ class Status
         self::CANCELLED
     ];
 
-    const STATUS_TO_WEBHOOK_EVENT = [
+    protected const STATUS_TO_WEBHOOK_EVENT = [
         self::ISSUED     => 'api.payout_link.issued',
         self::PROCESSING => 'api.payout_link.processing',
         self::ATTEMPTED  => 'api.payout_link.attempted',
@@ -46,17 +46,17 @@ class Status
         PayoutStatus::QUEUED     => self::PROCESSING,
         PayoutStatus::PENDING    => self::PROCESSING,
         PayoutStatus::PROCESSED  => self::PROCESSED,
-        PayoutStatus::CANCELLED  => self::CANCELLED,
+        PayoutStatus::CANCELLED  => self::ATTEMPTED,
     ];
 
-    const INTERNAL_TO_PUBLIC_STATUS = [
+    protected const INTERNAL_TO_PUBLIC_STATUS = [
         self::ATTEMPTED => self::ISSUED
     ];
 
     /**
      * Valid state transitions.
      */
-    const STATE_MACHINE = [
+    protected const STATE_MACHINE = [
         null             => [
             self::ISSUED
         ],
@@ -89,7 +89,7 @@ class Status
 
         $allowedNextStates = self::STATE_MACHINE[$currentStatus];
 
-        if (in_array($nextStatus, $allowedNextStates) === false)
+        if (in_array($nextStatus, $allowedNextStates, true) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS_TRANSITION,
@@ -105,7 +105,7 @@ class Status
 
     public static function validate($status)
     {
-        if (in_array($status, self::VALID_STATUSES) === false)
+        if (in_array($status, self::VALID_STATUSES, true) === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS,
@@ -125,5 +125,14 @@ class Status
     public static function payoutLinkInProcessableState($status)
     {
         return in_array($status, Status::VALID_PROCESSING_START_STATUSES, true);
+    }
+
+    public static function getWebhookEventCorrespondingToStatus(string $status)
+    {
+        if (array_key_exists($status, Status::STATUS_TO_WEBHOOK_EVENT) === false)
+        {
+            return null;
+        }
+        return Status::STATUS_TO_WEBHOOK_EVENT[$status];
     }
 }

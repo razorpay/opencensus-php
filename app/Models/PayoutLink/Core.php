@@ -7,6 +7,7 @@ use Mail;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settings;
 use RZP\Models\Payout\Mode;
 use RZP\Constants\Environment;
 use RZP\Models\Payout\Purpose;
@@ -30,21 +31,22 @@ class Core extends Base\Core
 {
     use Base\Traits\ProcessAccountNumber;
 
-    const LONG_URL_FORMAT = '%s/v1/payout-links/%s/view';
-    const PARAMS          = 'params';
-    const TEMPLATE        = 'template';
-    const SOURCE          = 'source';
-    const RECEIVER        = 'receiver';
-    const SMS_TEMPLATE    = 'sms.payout_link.otp';
+    const LONG_URL_FORMAT     = '%s/v1/payout-links/%s/view';
+    const PARAMS              = 'params';
+    const TEMPLATE            = 'template';
+    const SOURCE              = 'source';
+    const RECEIVER            = 'receiver';
+    const SMS_TEMPLATE        = 'sms.payout_link.otp';
 
     // Source param, when calling Raven Apis
-    const API_POUT_LNK_SRC = 'api.pout_l';
-    const OK              = 'OK';
-    const MAX_IMPS_AMOUNT = 20000000;
-    const MAX_UPI_AMOUNT  = 10000000;
-    const MESSAGE         = 'message';
-    const SUCCESS         = 'success';
-    const MUTEX_TIMEOUT   = 60;
+    const API_POUT_LNK_SRC    = 'api.pout_l';
+
+    const OK                  = 'OK';
+    const MESSAGE             = 'message';
+    const SUCCESS             = 'success';
+    const MUTEX_TIMEOUT       = 60;
+    const SLACK_CHANNEL_COLOR = 'danger';
+    const SLACK_CHANNEL       = 'x-apps-payout-links-alerts';
 
     protected $elfin;
 
@@ -69,7 +71,7 @@ class Core extends Base\Core
 
     public function getSettings(MerchantEntity $merchant)
     {
-        $settingsAccessor = Entity::getSettingsAccessor($merchant);
+        $settingsAccessor = $this->getSettingsAccessor($merchant);
 
         return $settingsAccessor->all()->toArray();
     }
@@ -91,7 +93,7 @@ class Core extends Base\Core
         );
         (new Validator())->validateInput(Validator::SETTINGS_RULE, $input);
 
-        $settingsAccessor = Entity::getSettingsAccessor($merchant);
+        $settingsAccessor = $this->getSettingsAccessor($merchant);
 
         $settingsAccessor->upsert($input)->save();
 
@@ -120,6 +122,8 @@ class Core extends Base\Core
             $payoutLink->getPublicId(),
             function () use ($payoutLink)
             {
+                $this->repo->reload($payoutLink);
+
                 // on code level, we are not going to allow cancel operation when payout-link is in processing
                 // not adding this check in Status.php, because payoutlink can move from
                 // Processing -> Cancelled, when the underlying payout is cancelled
@@ -129,9 +133,9 @@ class Core extends Base\Core
                         ErrorCode::BAD_REQUEST_PAYOUT_LINK_CANNOT_BE_CANCELLED_IN_THIS_STATE,
                         null,
                         [
-                            Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId(),
-                            'current_status'     => $payoutLink->getStatus(),
-                            'next_status'        => Status::CANCELLED
+                            'payout_link_id' => $payoutLink->getPublicId(),
+                            'current_status' => $payoutLink->getStatus(),
+                            'next_status'    => Status::CANCELLED
                         ]);
                 }
 
@@ -146,13 +150,23 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($payoutLink);
 
-                $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::CANCELLED],
+                $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus(Status::CANCELLED),
                                          [$payoutLink]);
 
                 return $payoutLink;
             },
             self::MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    public function pushSlackAlert(string $headline, array $message)
+    {
+        $settings = [
+            'channel' => self::SLACK_CHANNEL,
+            'color'   => self::SLACK_CHANNEL_COLOR
+        ];
+
+        $this->app['slack']->queue($headline, $message, $settings);
     }
 
     /**
@@ -179,10 +193,12 @@ class Core extends Base\Core
                 return $this->repo->transaction(
                     function () use ($payoutLink, $input)
                     {
+                        $this->repo->reload($payoutLink);
+
                         $this->trace->info(
                             TraceCode::PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD,
                             [
-                                Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId()
+                                'payout_link_id' => $payoutLink->getPublicId()
                             ]);
 
                         $token = array_pull($input, Entity::TOKEN);
@@ -195,8 +211,8 @@ class Core extends Base\Core
                                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
                                 null,
                                 [
-                                    Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId(),
-                                    Entity::STATUS         => $payoutLink->getStatus()
+                                    'payout_link_id' => $payoutLink->getPublicId(),
+                                    Entity::STATUS   => $payoutLink->getStatus()
                                 ]);
                         }
 
@@ -230,19 +246,29 @@ class Core extends Base\Core
                         // code to create a payout as this payout-link as the source
                         $mode = $this->getPayoutMode($payoutLink);
 
-                        (new PayoutClient())->processPayout($payoutLink, $this->merchant, $mode);
-
+                        //
+                        // setting the status to Processing, before the payout-create call, even though,
+                        // the payout on getting issued would have updated the PayoutLink via a queue,
+                        // for the following two scenarios
+                        // 1. Payout takes 5 seconds (queue delay) to update PL, and in the mean while
+                        //    PL is in ISSUED state, where it can get cancelled. Hence there can
+                        //    be an active Payout, with a cancelled PL
+                        // 2. Another PayoutLink initiate request is fired before Payout updated PayoutLink,
+                        //    and now we have two active payouts for the same PayoutLink.
+                        //
                         $payoutLink->setStatus(Status::PROCESSING);
 
                         $this->repo->saveOrFail($payoutLink);
 
-                        $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::PROCESSING],
+                        (new PayoutClient())->processPayout($payoutLink, $this->merchant, $mode);
+
+                        $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus(Status::PROCESSING),
                                                  [$payoutLink]);
 
                         $this->trace->info(TraceCode::PAYOUT_LINK_INVALIDATING_REDIS_TOKEN,
                                            [
-                                               Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId(),
-                                               Entity::STATUS         => $payoutLink->getStatus()
+                                               'payout_link_id' => $payoutLink->getPublicId(),
+                                               Entity::STATUS   => $payoutLink->getStatus()
                                            ]);
 
                         $this->tokenService->invalidate($token);
@@ -299,6 +325,8 @@ class Core extends Base\Core
             $payoutLink->getPublicId(),
             function () use ($payoutLink, $payoutStatus, $nextPayoutLinkStatus)
             {
+                $this->repo->reload($payoutLink);
+
                 $payoutLink->setStatus($nextPayoutLinkStatus);
 
                 $isDirty = $payoutLink->isDirty();
@@ -307,7 +335,8 @@ class Core extends Base\Core
 
                 if ($isDirty === true)
                 {
-                    $this->app->events->fire(Status::STATUS_TO_WEBHOOK_EVENT[$nextPayoutLinkStatus], [$payoutLink]);
+                    $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus($nextPayoutLinkStatus),
+                                             [$payoutLink]);
                 }
             },
             self::MUTEX_TIMEOUT,
@@ -358,7 +387,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payoutLink);
 
-        $this->app['events']->fire(Status::STATUS_TO_WEBHOOK_EVENT[Status::ISSUED],
+        $this->app['events']->fire(Status::getWebhookEventCorrespondingToStatus(Status::ISSUED),
                                    [$payoutLink]);
 
         return $payoutLink;
@@ -376,7 +405,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE,
             [
-                Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId()
+                'payout_link_id' => $payoutLink->getPublicId()
             ]
         );
         // extra context param, that the F.E. can pass, in case they want to
@@ -471,18 +500,18 @@ class Core extends Base\Core
     {
         $channelSupportsUpi = true;
 
-        $settingsAccessor = Entity::getSettingsAccessor($this->merchant);
+        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
 
         $upiEnabledInSettings = boolval($settingsAccessor->get(Entity::UPI));
 
-        $bankingAccount = $this->repo->banking_account->getFromBalanceId($payoutLink->getBalanceId());
+        $bankingAccount = $payoutLink->balance->bankingAccount;
 
         if ($bankingAccount->getChannel() === Channel::RBL)
         {
             $channelSupportsUpi = false;
         }
 
-        $amountLessThanLac = $payoutLink->getAmount() <= self::MAX_UPI_AMOUNT ? true : false;
+        $amountLessThanLac = $payoutLink->getAmount() <= Validator::MAX_UPI_AMOUNT ? true : false;
 
         return $upiEnabledInSettings and $channelSupportsUpi and $amountLessThanLac;
     }
@@ -535,7 +564,7 @@ class Core extends Base\Core
      */
     protected function getPayoutMode(Entity $payoutLink)
     {
-        $settingsAccessor = Entity::getSettingsAccessor($this->merchant);
+        $settingsAccessor = $this->getSettingsAccessor($this->merchant);
 
         $amount = $payoutLink->getAmount();
 
@@ -547,7 +576,7 @@ class Core extends Base\Core
                 $isImpsEnabled = boolval($settingsAccessor->get(Entity::IMPS));
 
                 if (($isImpsEnabled === true) and
-                    ($amount < self::MAX_IMPS_AMOUNT))
+                    ($amount < Validator::MAX_IMPS_AMOUNT))
                 {
                     return Mode::IMPS;
                 }
@@ -562,22 +591,27 @@ class Core extends Base\Core
             default:
                 throw new BadRequestValidationFailureException('Fund Accounts of type ' .
                                                                $fundAccount->getAccountType() .
-                                                               'are not supported');
+                                                               'are not supported',
+                                                               null,
+                                                               [
+                                                                   'payout_link_id'    => $payoutLink->getPublicId(),
+                                                                   'fund_account_id'   => $fundAccount->getPublicId(),
+                                                                   'fund_account_type' => $fundAccount->getAccountType()
+                                                               ]
+                );
         }
     }
 
     protected function getDataForHostedPage(Entity $payoutLink): array
     {
-        $maskedEmail = Utility::getMaskedEmail($payoutLink->getContactEmail());
+        $maskedEmail = mask_email($payoutLink->getContactEmail());
 
-        $maskedPhone = Utility::getMaskedPhone($payoutLink->getContactPhoneNumber());
-
-        $settingsAccessor = Entity::getSettingsAccessor($this->merchant);
-
-        $isUpiEnabled = boolval($settingsAccessor->get(Entity::UPI));
+        $maskedPhone = mask_phone($payoutLink->getContactPhoneNumber());
 
         $fundAccountDetails = $this->getMaskedFundAccountDetails($payoutLink->fundAccount);
 
+        // This is required to Add/Remove code on the HTML page that pushed GA events.
+        // We do not want this to be added in non-prod envs
         $isProduction = $this->app->environment() === Environment::PRODUCTION;
 
         $data = [
@@ -599,7 +633,8 @@ class Core extends Base\Core
             'banking_url'             => $this->config['applications.banking_service_url'],
             'is_production'           => $isProduction,
             'fund_account_details'    => json_encode($fundAccountDetails),
-            'purpose'                 => $payoutLink->getPurpose()
+            'purpose'                 => $payoutLink->getPurpose(),
+            'payout_utr'              => $payoutLink->payout()->getUtr()
         ];
 
         return $data;
@@ -647,7 +682,7 @@ class Core extends Base\Core
                                               ContactEntity::NAME    => $payoutLink->getContactName(),
                                               ContactEntity::CONTACT => $payoutLink->getContactPhoneNumber(),
                                               ContactEntity::EMAIL   => $payoutLink->getContactEmail(),
-                                              Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId()
+                                              'payout_link_id'       => $payoutLink->getPublicId()
                                           ]
             );
         }
@@ -692,7 +727,7 @@ class Core extends Base\Core
                                              [
                                                  Entity::CONTACT_ID           => $payoutLink->getContactId(),
                                                  Entity::CONTACT_NAME         => $payoutLink->getContactName(),
-                                                 Entity::PAYOUT_LINK_ID       => $payoutLink->getPublicId(),
+                                                 'payout_link_id'             => $payoutLink->getPublicId(),
                                                  Entity::CONTACT_PHONE_NUMBER => $payoutLink->getContactPhoneNumber(),
                                              ]);
             }
@@ -714,10 +749,10 @@ class Core extends Base\Core
                                              Trace::ERROR,
                                              TraceCode::PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED,
                                              [
-                                                 Entity::CONTACT_ID     => $payoutLink->getContactId(),
-                                                 Entity::CONTACT_NAME   => $payoutLink->getContactName(),
-                                                 Entity::CONTACT_EMAIL  => $payoutLink->getContactEmail(),
-                                                 Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId()
+                                                 Entity::CONTACT_ID    => $payoutLink->getContactId(),
+                                                 Entity::CONTACT_NAME  => $payoutLink->getContactName(),
+                                                 Entity::CONTACT_EMAIL => $payoutLink->getContactEmail(),
+                                                 'payout_link_id'      => $payoutLink->getPublicId()
                                              ]);
             }
         }
@@ -731,7 +766,7 @@ class Core extends Base\Core
                     Entity::CONTACT_NAME         => $payoutLink->getContactName(),
                     Entity::CONTACT_PHONE_NUMBER => $payoutLink->getContactPhoneNumber(),
                     Entity::CONTACT_EMAIL        => $payoutLink->getContactEmail(),
-                    Entity::PAYOUT_LINK_ID       => $payoutLink->getPublicId()
+                    'payout_link_id'             => $payoutLink->getPublicId()
                 ]
             );
         }
@@ -823,13 +858,18 @@ class Core extends Base\Core
                 null,
                 TraceCode::PAYOUT_LINK_SHORT_URL_GENERATION_FAILED,
                 [
-                    self::MESSAGE          => $e->getMessage(),
-                    Entity::PAYOUT_LINK_ID => $payoutLink->getId(),
-                    'target_url'           => $targetUrl
+                    self::MESSAGE    => $e->getMessage(),
+                    'payout_link_id' => $payoutLink->getId(),
+                    'target_url'     => $targetUrl
                 ]
             );
         }
 
         $payoutLink->setShortUrl($shortUrl);
+    }
+
+    protected function getSettingsAccessor($merchant)
+    {
+        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
     }
 }
