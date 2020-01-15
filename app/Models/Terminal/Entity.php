@@ -1221,7 +1221,7 @@ class Entity extends Base\PublicEntity
     {
         $ignoreEmiDurationGateways = [
             Gateway::BAJAJ,
-            Gateway::DEBIT_EMI,
+            Gateway::HDFC_DEBIT_EMI,
         ];
 
         if (($this->isEmiEnabled()) and

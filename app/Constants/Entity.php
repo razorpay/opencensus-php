@@ -257,7 +257,7 @@ class Entity
     const UPI_AIRTEL             = 'upi_airtel';
     const GOOGLE_PAY             = 'google_pay';
     const WORLDLINE              = 'worldline';
-    const DEBIT_EMI              = 'debit_emi';
+    const HDFC_DEBIT_EMI         = 'hdfc_debit_emi';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -566,27 +566,27 @@ class Entity
         self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Enstage::class,
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Amazonpay::class,
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
-        self::MOZART                 => \RZP\Gateway\Mozart::class,
-        self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
-        self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
-        self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
-        self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
-        self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
-        self::UPI_JUSPAY             => \RZP\Gateway\Mozart::class,
-        self::UPI_CITI               => \RZP\Gateway\Mozart::class,
-        self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
-        self::WORLDLINE              => \RZP\Gateway\Worldline::class,
-        self::DEBIT_EMI              => \RZP\Gateway\Mozart::class,
+        self::MOZART         => \RZP\Gateway\Mozart::class,
+        self::BAJAJFINSERV   => \RZP\Gateway\Mozart::class,
+        self::GOOGLE_PAY     => \RZP\Gateway\Mozart::class,
+        self::WALLET_PHONEPE => \RZP\Gateway\Mozart::class,
+        self::WALLET_PAYPAL  => \RZP\Gateway\Mozart::class,
+        self::UPI_AIRTEL     => \RZP\Gateway\Mozart::class,
+        self::UPI_JUSPAY     => \RZP\Gateway\Mozart::class,
+        self::UPI_CITI       => \RZP\Gateway\Mozart::class,
+        self::PAYLATER       => \RZP\Gateway\CardlessEmi::class,
+        self::WORLDLINE      => \RZP\Gateway\Worldline::class,
+        self::HDFC_DEBIT_EMI => \RZP\Gateway\Mozart::class,
 
         // heimdall
-        self::ORG                          => \RZP\Models\Admin\Org::class,
-        self::ROLE                         => \RZP\Models\Admin\Role::class,
-        self::ADMIN                        => \RZP\Models\Admin\Admin::class,
-        self::GROUP                        => \RZP\Models\Admin\Group::class,
-        self::ADMIN_LEAD                   => \RZP\Models\Admin\AdminLead::class,
-        self::PERMISSION                   => \RZP\Models\Admin\Permission::class,
-        self::ADMIN_TOKEN                  => \RZP\Models\Admin\Admin\Token::class,
-        self::ORG_HOSTNAME                 => \RZP\Models\Admin\Org\Hostname::class,
+        self::ORG            => \RZP\Models\Admin\Org::class,
+        self::ROLE           => \RZP\Models\Admin\Role::class,
+        self::ADMIN          => \RZP\Models\Admin\Admin::class,
+        self::GROUP          => \RZP\Models\Admin\Group::class,
+        self::ADMIN_LEAD     => \RZP\Models\Admin\AdminLead::class,
+        self::PERMISSION     => \RZP\Models\Admin\Permission::class,
+        self::ADMIN_TOKEN    => \RZP\Models\Admin\Admin\Token::class,
+        self::ORG_HOSTNAME   => \RZP\Models\Admin\Org\Hostname::class,
         self::ORG_FIELD_MAP                => \RZP\Models\Admin\Org\FieldMap::class,
         self::WORKFLOW                     => \RZP\Models\Workflow::class,
         self::WORKFLOW_STEP                => \RZP\Models\Workflow\Step::class,

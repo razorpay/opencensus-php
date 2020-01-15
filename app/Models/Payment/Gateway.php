@@ -134,7 +134,8 @@ class Gateway
     const BAJAJFINSERV       = 'bajajfinserv';
     const GOOGLE_PAY         = 'google_pay';
 
-    const DEBIT_EMI          = 'debit_emi';
+    // Debit emi gateways
+    const HDFC_DEBIT_EMI     = 'hdfc_debit_emi';
 
 
     //
@@ -168,17 +169,17 @@ class Gateway
         self::HDFC         => [self::ACQUIRER_HDFC],
         self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::FIRST_DATA   => [self::ACQUIRER_ICIC],
-        self::AMEX         => [self::ACQUIRER_AMEX],
-        self::AEPS_ICICI   => [self::ACQUIRER_ICIC],
-        self::CARD_FSS     => [self::ACQUIRER_FSS, self::ACQUIRER_BARB, self::ACQUIRER_SBIN],
-        self::HITACHI      => [self::ACQUIRER_RATN],
-        self::ENACH_RBL    => [self::ACQUIRER_RATN],
-        self::UPI_HULK     => [self::ACQUIRER_HDFC],
-        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
-        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL],
-        self::WORLDLINE    => [self::ACQUIRER_AXIS],
-        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
-        self::DEBIT_EMI    => [self::ACQUIRER_HDFC],
+        self::AMEX           => [self::ACQUIRER_AMEX],
+        self::AEPS_ICICI     => [self::ACQUIRER_ICIC],
+        self::CARD_FSS       => [self::ACQUIRER_FSS, self::ACQUIRER_BARB, self::ACQUIRER_SBIN],
+        self::HITACHI        => [self::ACQUIRER_RATN],
+        self::ENACH_RBL      => [self::ACQUIRER_RATN],
+        self::UPI_HULK       => [self::ACQUIRER_HDFC],
+        self::CARDLESS_EMI   => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
+        self::PAYLATER       => [PayLater::EPAYLATER, PayLater::GETSIMPL],
+        self::WORLDLINE      => [self::ACQUIRER_AXIS],
+        self::MPGS           => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
+        self::HDFC_DEBIT_EMI => [self::ACQUIRER_HDFC],
     ];
 
     const POWER_WALLETS = [
@@ -222,7 +223,7 @@ class Gateway
 
     const MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS = [
         self::WORLDLINE,
-        self::DEBIT_EMI,
+        self::HDFC_DEBIT_EMI,
     ];
 
     // TODO: Add gateway and gateway_acquirer map to fix
@@ -841,7 +842,7 @@ class Gateway
             self::AMEX,
             self::HDFC,
             self::FIRST_DATA,
-            self::DEBIT_EMI,
+            self::HDFC_DEBIT_EMI,
         ],
 
         Method::UPI => [
@@ -1027,7 +1028,7 @@ class Gateway
     // and the method is EMI, the gateway is supported
     public static $ignoreCardNetworkSupport = [
         Issuer::HDFC => [
-            self::DEBIT_EMI,
+            self::HDFC_DEBIT_EMI,
         ],
     ];
 
@@ -1223,7 +1224,7 @@ class Gateway
         self::NETBANKING_VIJAYA,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CBI,
-        self::DEBIT_EMI,
+        self::HDFC_DEBIT_EMI,
     ];
 
     public static $captureVerifyEnabled = [
@@ -1677,7 +1678,7 @@ class Gateway
     public static $emiBankToGatewayMap = [
         IFSC::HDFC => [
             Emi\Type::CREDIT => Gateway::HDFC,
-            Emi\Type::DEBIT  => Gateway::DEBIT_EMI,
+            Emi\Type::DEBIT  => Gateway::HDFC_DEBIT_EMI,
         ],
         IFSC::HSBC => [
             Emi\Type::CREDIT => Gateway::FIRST_DATA
@@ -1758,7 +1759,7 @@ class Gateway
     ];
 
     public static $contactMandatoryGateways = [
-        Gateway::DEBIT_EMI,
+        Gateway::HDFC_DEBIT_EMI,
     ];
 
     public static function isNonTerminalGateway(string $gateway)

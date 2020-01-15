@@ -288,7 +288,7 @@ class PayVerifyData extends Base\Mock\Server
         return $response;
     }
 
-    public function debit_emi($entities)
+    public function hdfc_debit_emi($entities)
     {
         $otp = $entities['gateway']['redirect']['otp'];
 

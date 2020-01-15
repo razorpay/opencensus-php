@@ -2,9 +2,9 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
-trait PaymentDebitEmiTrait
+trait PaymentHdfcDebitEmiTrait
 {
-    protected function runPaymentCallbackFlowDebitEmi($response, &$callback = null)
+    protected function runPaymentCallbackFlowHdfcDebitEmi($response, &$callback = null)
     {
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 

@@ -101,7 +101,7 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::INTENT);
         }
 
-        if (($this->getGateway($input) === 'debit_emi') and
+        if (($this->getGateway($input) === Payment\Gateway::HDFC_DEBIT_EMI) and
             ($input['payment']['contact'] == Payment\Entity::DUMMY_PHONE))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
@@ -487,7 +487,7 @@ class Gateway extends Base\Gateway
             'url'       => $request['url'],
             'content'   => $request['content'],
         ];
-        
+
         $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_DISABLE_TERMINAL_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
@@ -508,7 +508,7 @@ class Gateway extends Base\Gateway
             'url'       => $request['url'],
             'content'   => $request['content'],
         ];
-        
+
         $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_ENABLE_TERMINAL_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
@@ -857,7 +857,7 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalOnboardingMozartRequestArray($input)
     {
-        if ( (isset($input['terminal']) === true) and 
+        if ( (isset($input['terminal']) === true) and
              (($input['terminal'] instanceof TerminalEntity) === true) )
         {
             $input['terminal'] = $input['terminal']->toArrayWithPassword();
@@ -937,7 +937,7 @@ class Gateway extends Base\Gateway
     protected function getPreviousStepName($gateway)
     {
         $previousActionForStep = [
-            Payment\Gateway::DEBIT_EMI => [
+            Payment\Gateway::HDFC_DEBIT_EMI => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY => Action::PAY_VERIFY,
@@ -1056,7 +1056,7 @@ class Gateway extends Base\Gateway
     protected function getPreviousStepForDB($gateway)
     {
         $previousActionForData = [
-            Payment\Gateway::DEBIT_EMI => [
+            Payment\Gateway::HDFC_DEBIT_EMI => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,

@@ -8,7 +8,7 @@ class PayInitData extends Base\Mock\Server
 {
     use Base\Mock\GatewayTrait;
 
-    public function debit_emi($entities)
+    public function hdfc_debit_emi($entities)
     {
         return [
             'data' =>

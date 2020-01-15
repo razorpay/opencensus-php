@@ -91,7 +91,7 @@ class RefundData extends Base\Mock\Server
         return $response;
     }
 
-    public static function debit_emi($entities)
+    public static function hdfc_debit_emi($entities)
     {
         $response = [
             'data' =>

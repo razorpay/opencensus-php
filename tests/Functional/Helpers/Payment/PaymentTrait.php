@@ -34,7 +34,6 @@ trait PaymentTrait
     use PaymentBladeTrait;
     use EntityActionTrait;
     use PaymentHitachiTrait;
-    use PaymentDebitEmiTrait;
     use PaymentMobikwikTrait;
     use PaymentOlamoneyTrait;
     use PaymentPayLaterTrait;
@@ -51,6 +50,7 @@ trait PaymentTrait
     use PaymentCybersourceTrait;
     use PaymentCardlessEmiTrait;
     use PaymentBajajFinservTrait;
+    use PaymentHdfcDebitEmiTrait;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 

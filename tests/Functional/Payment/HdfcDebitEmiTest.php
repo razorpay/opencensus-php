@@ -6,18 +6,18 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class DebitEmiTest extends TestCase
+class HdfcDebitEmiTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/DebitEmiTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/HdfcDebitEmiTestData.php';
 
         parent::setUp();
 
-        $this->gateway = 'debit_emi';
+        $this->gateway = 'hdfc_debit_emi';
 
         $this->fixtures->merchant->enableEmi();
 
@@ -71,7 +71,7 @@ class DebitEmiTest extends TestCase
                 'merchant_id' => '10000000000000',
                 'method'      => 'emi',
                 'status'      => 'captured',
-                'gateway'     => 'debit_emi',
+                'gateway'     => 'hdfc_debit_emi',
                 'card_id'     => $card->getId(),
             ]);
 
@@ -85,7 +85,7 @@ class DebitEmiTest extends TestCase
                 'payment_id' => $payment->getId(),
                 'action'     => 'authorize',
                 'amount'     => 300000,
-                'gateway'    => 'debit_emi',
+                'gateway'    => 'hdfc_debit_emi',
                 'raw'        => '{"Token": "123456", "Status": "Success", "ErrorCode": "0000", "BankReferncNo": "abc123456", "EligibilityStatus": "Yes", "MerchantReferenceNo": "DoERhejxpA5CjO", "OrderConfirmationStatus": "Yes"}',
             ]);
 
@@ -145,7 +145,7 @@ class DebitEmiTest extends TestCase
                 'status'  => 'created',
                 'amount'  => 300000,
                 'method'  => 'emi',
-                'gateway' => 'debit_emi',
+                'gateway' => 'hdfc_debit_emi',
 
             ],
             $payment->toArray()

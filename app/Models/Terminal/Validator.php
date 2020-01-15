@@ -1129,8 +1129,8 @@ class Validator extends Base\Validator
         Entity::VPA                        => 'sometimes|string',
     ];
 
-    protected static $debitEmiTerminalRules = [
-        Entity::GATEWAY             => 'required|in:debit_emi',
+    protected static $hdfcDebitEmiTerminalRules = [
+        Entity::GATEWAY             => 'required|in:hdfc_debit_emi',
         Entity::GATEWAY_MERCHANT_ID => 'required|string',
         Entity::EMI                 => 'required|boolean',
         Entity::EMI_SUBVENTION      => 'sometimes|in:customer,merchant',
@@ -1326,7 +1326,7 @@ class Validator extends Base\Validator
         }
 
         if (($input[Entity::GATEWAY] === Gateway::BAJAJ) or
-            ($input[Entity::GATEWAY] === Gateway::DEBIT_EMI))
+            ($input[Entity::GATEWAY] === Gateway::HDFC_DEBIT_EMI))
         {
             return;
         }

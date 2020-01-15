@@ -3416,15 +3416,14 @@ class Terminal extends Base
         $defaultValues = [
             'id'                   => 'HdfcDebitEmiTl',
             'merchant_id'          => '10000000000000',
-            'gateway'              => 'debit_emi',
+            'gateway'              => 'hdfc_debit_emi',
             'card'                 => 0,
             'netbanking'           => 0,
             'cardless_emi'         => 0,
             'emi'                  => 1,
             'emi_duration'         => 3,
-            'gateway_merchant_id'  => 'cardless_emi_merchant',
-            'gateway_merchant_id2' => 'cardless_emi_merchant2',
-            'gateway_acquirer'     => 'hdfc',
+            'gateway_merchant_id'  => 'debit_emi_merchant',
+            'gateway_merchant_id2' => 'debit_emi_merchant2',
             'mode'                 => 1,
         ];
 

@@ -2411,7 +2411,7 @@ UPDATE hdfc
 
 UPDATE hdfc
     SET gateway_payment_id = gateway_transaction_id
-    WHERE gateway_payment_id IS NULL AND created_at 
+    WHERE gateway_payment_id IS NULL AND created_at
     = 1502841600 AND action IN ('1', '4');
 
 # Adding index on payments.updated_at, payments.captured_at
@@ -5581,3 +5581,6 @@ ALTER TABLE `merchant_documents`
 
 ALTER TABLE pricing
      MODIFY COLUMN amount_range_min BIGINT(20) unsigned DEFAULT NULL;
+
+ALTER TABLE emi_plans
+    ADD COLUMN type VARCHAR(255) DEFAULT NULL;

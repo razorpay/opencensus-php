@@ -737,7 +737,7 @@ trait Authorize
             $redirectUrl = null;
 
             if (($payment->getGateway() !== Payment\Gateway::BAJAJ) and
-                ($payment->getGateway() !== Payment\Gateway::DEBIT_EMI))
+                ($payment->getGateway() !== Payment\Gateway::HDFC_DEBIT_EMI))
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
@@ -754,7 +754,7 @@ trait Authorize
 
             $response['metadata'] = $metaData;
 
-            if ($payment->getGateway() === Payment\Gateway::DEBIT_EMI)
+            if ($payment->getGateway() === Payment\Gateway::HDFC_DEBIT_EMI)
             {
                 $response = array_merge(
                     $response,
@@ -5150,7 +5150,7 @@ trait Authorize
                     }
                 }
 
-                if ((($payment->getGateway() === Payment\Gateway::BAJAJ) OR ($payment->getGateway() === Payment\Gateway::DEBIT_EMI)) and
+                if ((($payment->getGateway() === Payment\Gateway::BAJAJ) OR ($payment->getGateway() === Payment\Gateway::HDFC_DEBIT_EMI)) and
                     ($payment->isEmi() === true))
                 {
                     return true;
