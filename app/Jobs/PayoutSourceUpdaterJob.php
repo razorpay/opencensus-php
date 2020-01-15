@@ -3,10 +3,14 @@
 namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\SourceUpdater;
 
 class PayoutSourceUpdaterJob extends Job
 {
+    const MAX_RETIRES = 5;
+
+    const MAX_RETRY_DELAY   = 300;
 
     protected $payoutPublicId;
 
@@ -27,30 +31,61 @@ class PayoutSourceUpdaterJob extends Job
 
     public function handle()
     {
-        parent::handle();
 
-        $payout = $this->repoManager->payout->findByPublicId($this->payoutPublicId);
+        parent::handle();
 
         $context = [
             'payout_id'               => $this->payoutPublicId,
-            'current_status'          => $payout->getStatus(),
             'previous_status'         => $this->previousPayoutStatus,
             'expected_current_status' => $this->expectedCurrentStatus
         ];
 
-        $this->trace->info(
-            TraceCode::PAYOUT_SOURCE_UPDATER_JOB,
-            $context
-        );
-
-        if ($this->expectedCurrentStatus !== $payout->getStatus())
+        try
         {
-            // todo, pl add a slack push here
-            $this->trace->warning(TraceCode::PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS,
-                                  $context);
-            return;
-        }
+            $payout = $this->repoManager->payout->findByPublicId($this->payoutPublicId);
 
-        SourceUpdater::update($payout, $this->previousPayoutStatus);
+            $context['current_status'] = $payout->getStatus();
+
+            $this->trace->info(
+                TraceCode::PAYOUT_SOURCE_UPDATER_JOB,
+                $context
+            );
+
+            if ($this->expectedCurrentStatus !== $payout->getStatus())
+            {
+                // todo, pl add a slack push here
+                $this->trace->warning(TraceCode::PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS,
+                                      $context);
+
+                return;
+            }
+            SourceUpdater::handleUpdateFromQueue($payout, $this->previousPayoutStatus);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYOUT_SOURCE_UPDATER_JOB_FAILED,
+                [
+                    'payout_id'       => $this->payoutPublicId,
+                    'previous_status' => $this->previousPayoutStatus
+                ]);
+
+            if($this->attempts() < self::MAX_RETIRES)
+            {
+                $this->trace->info(TraceCode::PAYOUT_SOURCE_UPDATER_JOB_RELEASED,
+                                   $context);
+
+                $this->release(self::MAX_RETRY_DELAY);
+            }
+        }
+        finally
+        {
+            $this->trace->info(TraceCode::PAYOUT_SOURCE_UPDATER_JOB_RELEASED,
+                               $context);
+
+            $this->delete();
+        }
     }
 }

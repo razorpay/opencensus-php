@@ -279,7 +279,7 @@ class PayoutLinkTest extends TestCase
         $payoutLinkId = $response['id'];
 
         $expectedTargetUrl = sprintf($urlFormat,
-                                     $this->app['config']['url.api.production'],
+                                     $this->app['config']['applications.payout_links.url'],
                                      $payoutLinkId);
 
         // asserting that the short_url is same as the full target url, because elfin failed
@@ -541,7 +541,9 @@ class PayoutLinkTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['cancelled_at']);
     }
 
     public function testCancellingPayoutLinkFromProcessingStatusShouldThrowException()
@@ -556,6 +558,10 @@ class PayoutLinkTest extends TestCase
         $payoutLink->setStatus(Status::PROCESSING);
 
         $payoutLink->saveOrFail();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     public function testSettingPayoutLinkToInvalidStatusShouldThrowException()
@@ -1066,19 +1072,6 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
-    protected function mockInfernoFire(Closure $closure)
-    {
-        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
-
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on($closure));
-
-        $this->app->instance('webhook.inferno', $inferno);
-    }
-
     public function testPayoutLinkThrowsExceptionWhenInitiateCalledWithInvalidState()
     {
         $payoutLink = $this->fixtures->create('payout_link',
@@ -1094,6 +1087,98 @@ class PayoutLinkTest extends TestCase
         $payoutLink->saveOrFail();
 
         $this->startTest();
+    }
+
+    public function testGenerateOtpOnCancelledLinkThrowsException()
+    {
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $payoutLink->setStatus(Status::CANCELLED);
+
+        $payoutLink->saveOrFail();
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::GENERATE_CUSTOMER_OTP);
+
+        $this->startTest();
+    }
+
+    public function testVerifyOtpOnCancelledLinkThrowsException()
+    {
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $payoutLink->setStatus(Status::CANCELLED);
+
+        $payoutLink->saveOrFail();
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::VERIFY_CUSTOMER_OTP);
+
+        $this->startTest();
+    }
+
+    public function testInitiateApiWithInvalidFundAccountTypeThrowsException()
+    {
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $this->mockRedisSuccess(__FUNCTION__, $payoutLink->getPublicId());
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $fd = $this->fixtures->create('fund_account',
+                                      [
+                                          'id'          => '100000000003fa',
+                                          'source_type' => 'contact',
+                                          'source_id'   => $this->contact->getId(),
+                                          'merchant_id' => $this->contact->merchant->getId(),
+                                          'account_type' => 'card',
+                                          'account_id' => $card->getId()
+                                      ]);
+
+        $fd->saveOrFail();
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
+
+        $this->startTest();
+    }
+
+    public function testPayoutAmountAboveLimitFailsCreation()
+    {
+        $this->ba->privateAuth();
+
+        $this->addAccountNumberParameter(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testInvalidPurposeThrowsException()
+    {
+        $this->ba->privateAuth();
+
+        $this->addAccountNumberParameter(__FUNCTION__);
+
+        $this->startTest();
+
+    }
+
+    protected function mockInfernoFire(Closure $closure)
+    {
+        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
+
+        $inferno->shouldReceive('fire')
+                ->once()
+                ->with(
+                    Mockery::type('RZP\Jobs\WebHook'),
+                    Mockery::on($closure));
+
+        $this->app->instance('webhook.inferno', $inferno);
     }
 
     protected function mockRedisSuccess($funcName, $payoutLinkId)
@@ -1113,5 +1198,4 @@ class PayoutLinkTest extends TestCase
     {
         $this->testData[$funcName]['request']['url'] = '/payout-links/' . $payoutLinkId . '/' . $path;
     }
-
 }

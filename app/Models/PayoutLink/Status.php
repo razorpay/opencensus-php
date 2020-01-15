@@ -15,6 +15,11 @@ class Status
     const PROCESSED  = 'processed';
     const CANCELLED  = 'cancelled';
 
+    const VALID_PROCESSING_START_STATUSES = [
+        self::ISSUED,
+        self::ATTEMPTED
+    ];
+
     const VALID_STATUSES = [
         self::ISSUED,
         self::PROCESSING,
@@ -29,11 +34,6 @@ class Status
         self::ATTEMPTED  => 'api.payout_link.attempted',
         self::PROCESSED  => 'api.payout_link.processed',
         self::CANCELLED  => 'api.payout_link.cancelled',
-    ];
-
-    const VALID_STARTING_STATUSES = [
-        self::ISSUED,
-        self::ATTEMPTED
     ];
 
     const PAYOUT_TO_PAYOUT_LINK_STATUSES = [
@@ -85,20 +85,7 @@ class Status
                                                 string $currentStatus = null,
                                                 string $payoutLinkId = null)
     {
-        $context = [
-            'id'             => $payoutLinkId,
-            'current_status' => $currentStatus,
-            'next_status'    => $nextStatus
-        ];
-
-        if (in_array($nextStatus, self::VALID_STATUSES) === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS,
-                null,
-                $context
-            );
-        }
+        self::validate($nextStatus);
 
         $allowedNextStates = self::STATE_MACHINE[$currentStatus];
 
@@ -107,7 +94,25 @@ class Status
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS_TRANSITION,
                 null,
-                $context
+                [
+                    'id'             => $payoutLinkId,
+                    'current_status' => $currentStatus,
+                    'next_status'    => $nextStatus
+                ]
+            );
+        }
+    }
+
+    public static function validate($status)
+    {
+        if (in_array($status, self::VALID_STATUSES) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS,
+                null,
+                [
+                    'status' => $status
+                ]
             );
         }
     }
@@ -117,4 +122,8 @@ class Status
         return self::INTERNAL_TO_PUBLIC_STATUS[$internalStatus] ?? $internalStatus;
     }
 
+    public static function payoutLinkInProcessableState($status)
+    {
+        return in_array($status, Status::VALID_PROCESSING_START_STATUSES);
+    }
 }

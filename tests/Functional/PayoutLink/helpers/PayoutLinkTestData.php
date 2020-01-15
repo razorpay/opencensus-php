@@ -292,6 +292,41 @@ return [
         ]
     ],
 
+
+    'testPayoutAmountAboveLimitFailsCreation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/',
+            'content' => [
+                'amount'      => 1000003928379,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'refund',
+                'contact'     => [
+                    'name'       => 'cskdsds',
+                    'email'      => 'dsknlds@gmail.com',
+                    'contact'    => '1231231231'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount may not be greater than 10000000000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'field'               => 'amount'
+        ]
+    ],
+
     'testGenerateOtpForOnlyEmailContact' => [
         'request'  => [
             'method'  => 'POST',
@@ -425,13 +460,61 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_LINK_CANNOT_BE_CANCELLED_IN_THIS_STATE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_CANNOT_BE_CANCELLED_IN_THIS_STATE,
+        ]
+    ],
+
+    'testGenerateOtpOnCancelledLinkThrowsException' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '',
+            'content' => [
+                'context' => '12345'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION,
+        ]
+    ],
+
+    'testVerifyOtpOnCancelledLinkThrowsException' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '',
+            'content' => [
+                'context' => '12345',
+                'otp'     => '0007'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION,
         ]
     ],
 
@@ -801,6 +884,63 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
+        ]
+    ],
+
+    'testInitiateApiWithInvalidFundAccountTypeThrowsException' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '',
+            'content' => [
+                'token'           => '1234',
+                'fund_account_id' => 'fa_100000000003fa'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ONLY_VPA_AND_BANK_ACCOUNT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_VPA_AND_BANK_ACCOUNT_SUPPORTED,
+        ]
+    ],
+
+    'testInvalidPurposeThrowsException' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payout-links',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'description' => 'This is a test payout',
+                'purpose'     => 'an invalid purpose',
+                'contact'     => [
+                    'name'    => 'Test Contact Name',
+                    'email'   => 'testemail@test.com',
+                    'contact' => '1231231231'
+                ],
+                'notes'       => ['hi' => 'hello'],
+                'receipt'     => 'Test Payout Receipt'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid purpose: an invalid purpose',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 

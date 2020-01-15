@@ -41,7 +41,7 @@ class TokenService
 
         $token = $context . '.' . $timestamp;
 
-        $this->redis->set($token, '', self::REDIS_EXPIRY_PARAM, self::TOKEN_EXPIRES_IN_SECONDS);
+        $this->redis->set($token, $context, self::REDIS_EXPIRY_PARAM, self::TOKEN_EXPIRES_IN_SECONDS);
 
         return $token;
     }
@@ -50,9 +50,10 @@ class TokenService
      * Will raise exception if the token is not found
      *
      * @param $token
+     * @param $context
      * @throws BadRequestException
      */
-    public function verify($token)
+    public function verify($token, $context)
     {
         $value = $this->redis->get($token);
 
@@ -62,7 +63,18 @@ class TokenService
                 ErrorCode::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
                 null,
                 [
-                    Entity::TOKEN => $token
+                    Entity::CONTEXT => $context
+                ]
+            );
+        }
+
+        if ($value !== $context)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
+                null,
+                [
+                    Entity::CONTEXT => $context
                 ]
             );
         }

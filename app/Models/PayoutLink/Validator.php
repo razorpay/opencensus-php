@@ -6,8 +6,6 @@ use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Mode;
 use RZP\Exception\BadRequestException;
-use Functional\Fixtures\Entity\EntityOrigin;
-use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -47,7 +45,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_EMAIL        => 'sometimes|nullable|email',
         Entity::CONTACT_PHONE_NUMBER => 'sometimes|nullable|contact_syntax',
         Entity::BALANCE_ID           => 'required|string|size:14',
-        Entity::AMOUNT               => 'required|integer',
+        Entity::AMOUNT               => 'required|integer|min:100|max:'. Entity::MAX_PAYOUT_LIMIT,
         Entity::CURRENCY             => 'required|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
         Entity::DESCRIPTION          => 'required|string|max:255',

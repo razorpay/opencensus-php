@@ -140,6 +140,8 @@ class Entity extends Base\PublicEntity
     const REVERSAL        = 'reversal';
     const WORKFLOW_ACTION = 'workflow_action';
 
+    const MAX_PAYOUT_LIMIT = 10000000000;
+
     protected $queueFlag = false;
 
     /**
@@ -857,7 +859,7 @@ class Entity extends Base\PublicEntity
         // pushing a message in the queue to update the source for payout
         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
-        SourceUpdater::dispatch($mode, $this, $currentStatus, $status);
+        SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
     }
 
     protected function setStatusAttribute($status)

@@ -24,7 +24,7 @@ class SourceUpdater
      */
     const DELAY = 5;
 
-    public static function dispatch(string $mode,
+    public static function dispatchToQueue(string $mode,
                                     Entity $payout,
                                     string $previousStatus = null,
                                     string $expectedCurrentStatus = null)
@@ -44,7 +44,7 @@ class SourceUpdater
      * @param Entity $payout
      * @param string $previousPayoutStatus
      */
-    public static function update(Entity $payout, string $previousPayoutStatus)
+    public static function handleUpdateFromQueue(Entity $payout, string $previousPayoutStatus = null)
     {
         $payoutLink = $payout->payoutLink;
 

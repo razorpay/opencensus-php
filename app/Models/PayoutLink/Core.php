@@ -9,14 +9,19 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Mode;
 use RZP\Constants\Environment;
+use RZP\Models\Payout\Purpose;
 use RZP\Models\FundAccount\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
 use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Channel;
+use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Models\PayoutLink\External\FundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PayoutLink\External\Payout as PayoutClient;
 use RZP\Models\PayoutLink\External\Contact as ContactClient;
 use RZP\Models\PayoutLink\External\FundAccount as FundAccountClient;
@@ -35,11 +40,12 @@ class Core extends Base\Core
     // Source param, where calling Raven Apis
     const API_POUT_LNK_SRC = 'api.pout_l';
 
-    const OK               = 'OK';
-    const MAX_IMPS_AMOUNT  = 20000000;
-    const MESSAGE          = 'message';
-    const SUCCESS          = 'success';
-    const MUTEX_TIMEOUT    = 60;
+    const OK              = 'OK';
+    const MAX_IMPS_AMOUNT = 20000000;
+    const MAX_UPI_AMOUNT  = 10000000;
+    const MESSAGE         = 'message';
+    const SUCCESS         = 'success';
+    const MUTEX_TIMEOUT   = 60;
 
     protected $elfin;
 
@@ -97,7 +103,7 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput(Validator::GET_FUND_ACCOUNT_BY_CONTACT_RULE, $input);
 
-        $this->tokenService->verify($input[Entity::TOKEN]);
+        $this->tokenService->verify($input[Entity::TOKEN], $payoutLink->getPublicId());
 
         return $payoutLink->contact->fundAccounts->where('active', true);
     }
@@ -115,6 +121,21 @@ class Core extends Base\Core
             $payoutLink->getPublicId(),
             function () use ($payoutLink)
             {
+                // on code level, we are not going to allow cancel operation when payout-link is in processing
+                // not adding this check in Status.php, because payoutlink can move from
+                // Processing -> Cancelled, when the underlying payout is cancelled
+                if ($payoutLink->getStatus() === Status::PROCESSING)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYOUT_LINK_CANNOT_BE_CANCELLED_IN_THIS_STATE,
+                        null,
+                        [
+                            Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId(),
+                            'current_status'     => $payoutLink->getStatus(),
+                            'next_status'        => Status::CANCELLED
+                        ]);
+                }
+
                 // If already cancelled, then return the entity without any change.
                 // Makes this call idempotent.
                 if ($payoutLink->getStatus() === Status::CANCELLED)
@@ -167,12 +188,13 @@ class Core extends Base\Core
 
                         $token = array_pull($input, Entity::TOKEN);
 
-                        $this->tokenService->verify($token);
+                        $this->tokenService->verify($token, $payoutLink->getPublicId());
 
-                        if (in_array($payoutLink->getStatus(), Status::VALID_STARTING_STATUSES) === false)
+                        if (Status::payoutLinkInProcessableState($payoutLink->getStatus()) === false)
                         {
                             throw new BadRequestException(
                                 ErrorCode::BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST,
+                                null,
                                 [
                                     Entity::PAYOUT_LINK_ID => $payoutLink->getPublicId(),
                                     Entity::STATUS         => $payoutLink->getStatus()
@@ -183,6 +205,23 @@ class Core extends Base\Core
                         $fundAccount = (new FundAccountClient())->processFundAccountInput($input,
                                                                                           $this->merchant,
                                                                                           $payoutLink->contact);
+
+                        // in case a fund-account-id send if not of type bank_account / vpa,
+                        // then exception should be thrown
+                        $fundAccountType = $fundAccount->getAccountType();
+
+                        if (($fundAccountType !== Type::VPA) and
+                            ($fundAccountType !== Type::BANK_ACCOUNT))
+                        {
+                            throw new BadRequestException(
+                                ErrorCode::BAD_REQUEST_ONLY_VPA_AND_BANK_ACCOUNT_SUPPORTED,
+                                null,
+                                [
+                                    Entity::ID              => $payoutLink->getId(),
+                                    Entity::FUND_ACCOUNT_ID => $fundAccount->getId(),
+                                ]
+                            );
+                        }
 
                         $payoutLink->fundAccount()->associate($fundAccount);
 
@@ -283,6 +322,8 @@ class Core extends Base\Core
             $input);
         (new Validator())->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
 
+        (new Purpose())->validatePurpose($this->merchant, $input[Entity::PURPOSE]);
+
         $this->processAccountNumber($input);
 
         $contactDetails = array_pull($input, 'contact');
@@ -343,6 +384,18 @@ class Core extends Base\Core
         // force generation of a new OTP
         $context = array_pull($input, Entity::CONTEXT);
 
+        if (Status::payoutLinkInProcessableState($payoutLink->getStatus()) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_GENERATION,
+                null,
+                [
+                    Entity::ID     => $payoutLink->getPublicId(),
+                    Entity::STATUS => $payoutLink->getStatus()
+                ]
+            );
+        }
+
         $otp = $this->generateOtp($payoutLink, $context);
 
         $this->deliverOtp($payoutLink, $otp);
@@ -353,6 +406,18 @@ class Core extends Base\Core
     public function verifyCustomerOtp(Entity $payoutLink, $input): array
     {
         (new Validator)->validateInput(Validator::VERIFY_OTP, $input);
+
+        if (Status::payoutLinkInProcessableState($payoutLink->getStatus()) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_STATE_FOR_OTP_VERIFICATION,
+                null,
+                [
+                    Entity::ID     => $payoutLink->getPublicId(),
+                    Entity::STATUS => $payoutLink->getStatus()
+                ]
+            );
+        }
 
         $context = array_pull($input, Entity::CONTEXT);
 
@@ -376,13 +441,93 @@ class Core extends Base\Core
             ]
         );
 
-        $this->raven->verifyOtp($payload);
+        $response = $this->raven->verifyOtp($payload);
+
+        if ((isset($response['success']) === false) or
+            ($response['success'] !== true)
+        )
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+                                          null,
+                                          [
+                                              'payout_link_id' => $payoutLink->getPublicId()
+                                          ]);
+        }
 
         $token = $this->tokenService->generate($payoutLink->getPublicId());
 
         return [
             'token' => $token
         ];
+    }
+
+    /**
+     * 1. Setting is enabled
+     * 2. Is not RBL
+     * 3. Amount less than 1 lac
+     * @param Entity $payoutLink
+     * @return bool
+     */
+    protected function allowUpi(Entity $payoutLink)
+    {
+        $channelSupportsUpi = true;
+
+        $settingsAccessor = Entity::getSettingsAccessor($this->merchant);
+
+        $upiEnabledInSettings = boolval($settingsAccessor->get(Entity::UPI));
+
+        $bankingAccount = $this->repo->banking_account->getFromBalanceId($payoutLink->getBalanceId());
+
+        if ($bankingAccount->getChannel() === Channel::RBL)
+        {
+            $channelSupportsUpi = false;
+        }
+
+        $amountLessThanLac = $payoutLink->getAmount() <= self::MAX_UPI_AMOUNT ? true : false;
+
+        return $upiEnabledInSettings and $channelSupportsUpi and $amountLessThanLac;
+    }
+
+    /**
+     * Masks the VPA details before sending to the front-end
+     * todo, pl Need to move to VPA/Entity [https://razorpay.atlassian.net/browse/RX-1343]
+     *
+     * @param FundAccountEntity|null $fundAccount
+     * @return array|null
+     */
+    protected function getMaskedFundAccountDetails(FundAccountEntity $fundAccount = null)
+    {
+
+        if ($fundAccount === null)
+        {
+            return null;
+        }
+
+        $details = $fundAccount->toArrayPublic();
+
+        $type = $fundAccount->getAccountType();
+
+        switch ($type)
+        {
+            case Type::VPA:
+                $address = $details[Type::VPA][VpaEntity::ADDRESS];
+
+                $handle = explode('@', $address)[1];
+
+                $address = explode('@', $address)[0];
+
+                $maskedAddress = substr($address, 0, 2) .
+                                 str_repeat('*', strlen($address) - 4) .
+                                 substr($address, strlen($address) - 2, 2);
+
+                $maskedHandle = substr($handle, 0, 2) .
+                                str_repeat('*', strlen($handle) - 4) .
+                                substr($handle, strlen($handle) - 2, 2);
+
+                $details[Type::VPA][VpaEntity::ADDRESS] = sprintf('%s@%s', $maskedAddress, $maskedHandle);
+        }
+
+        return $details;
     }
 
     /**
@@ -414,8 +559,11 @@ class Core extends Base\Core
 
             case Type::VPA:
                 return Mode::UPI;
-                break;
-            # todo, pl handle Default, and raise the right exception
+
+            default:
+                throw new BadRequestValidationFailureException('Fund Accounts of type ' .
+                                                               $fundAccount->getAccountType() .
+                                                               'are not supported');
         }
     }
 
@@ -428,6 +576,8 @@ class Core extends Base\Core
         $settingsAccessor = Entity::getSettingsAccessor($this->merchant);
 
         $isUpiEnabled = boolval($settingsAccessor->get(Entity::UPI));
+
+        $fundAccountDetails = $this->getMaskedFundAccountDetails($payoutLink->fundAccount);
 
         $isProduction = $this->app->environment() === Environment::PRODUCTION;
 
@@ -442,13 +592,14 @@ class Core extends Base\Core
             'user_email'              => $maskedEmail,
             'user_phone'              => $maskedPhone,
             'receipt'                 => $payoutLink->getReceipt(),
-            'merchant_logo_url'       => $this->merchant->getLogoUrl(),
+            'merchant_logo_url'       => $this->merchant->getFullLogoUrlWithSize(),
             'payout_link_description' => $payoutLink->getDescription(),
             'primary_color'           => $this->merchant->getBrandColor(),
             'merchant_name'           => $this->merchant->getDisplayNameElseName(),
-            'allow_upi'               => $isUpiEnabled,
+            'allow_upi'               => $this->allowUpi($payoutLink),
             'banking_url'             => $this->config['applications.banking_service_url'],
             'is_production'           => $isProduction,
+            'fund_account_details'    => json_encode($fundAccountDetails),
             'purpose'                 => $payoutLink->getPurpose()
         ];
 
@@ -498,6 +649,7 @@ class Core extends Base\Core
             (empty($email) === true))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL,
+                                          null,
                                           [
                                               ContactEntity::ID      => $payoutLink->getContactId(),
                                               ContactEntity::NAME    => $payoutLink->getContactName(),
@@ -631,6 +783,7 @@ class Core extends Base\Core
         if (key_exists(Entity::OTP, $response) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED,
+                                          null,
                                           [
                                               'request'  => $payload,
                                               'response' => $response,
@@ -650,7 +803,7 @@ class Core extends Base\Core
     protected function generateAndSetShortUrl(Entity &$payoutLink)
     {
         $targetUrl = sprintf(self::LONG_URL_FORMAT,
-                             $this->config['url.api.production'],
+                             $this->config['applications.payout_links.url'],
                              $payoutLink->getPublicId());
         $params = [
             'metadata' => [

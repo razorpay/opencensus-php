@@ -60,7 +60,7 @@ class Validator extends Base\Validator
      */
     protected static $fundAccountPayoutRules = [
         Entity::PURPOSE              => 'required|filled|string|max:30|alpha_dash_space',
-        Entity::AMOUNT               => 'required|integer|min:100|max:10000000000',
+        Entity::AMOUNT               => 'required|integer|min:100|max:' . Entity::MAX_PAYOUT_LIMIT,
         Entity::CURRENCY             => 'required|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
         Entity::BALANCE_ID           => 'sometimes|filled|size:14',
