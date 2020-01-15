@@ -280,8 +280,10 @@ class Base extends BaseCore
     protected function handleWorkflowsIfApplicable(callable $createPayoutCallback)
     {
         $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
+        $isApiRequest = ($this->app['basicauth']->getRequestOriginProduct() !== ProductType::BANKING) ? true : false;
 
-        if ($areWorkflowsEnabled === false)
+        if ($areWorkflowsEnabled === false ||
+            $isApiRequest === true)
         {
             //
             // Workflows feature was not enabled.
