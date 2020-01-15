@@ -18,4 +18,14 @@ class Reconciliate extends Base\Reconciliate
     {
         return FileProcessor::EXCEL;
     }
+
+    public function inExcludeList(array $fileDetails, array $inputDetails = [])
+    {
+        if (strpos($fileDetails[FileProcessor::EXTENSION], 'txt') === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
