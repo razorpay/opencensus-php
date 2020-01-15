@@ -19,24 +19,21 @@ class Service extends Base\Service
      * @param string $merchantId
      * @return array
      */
-    public function getWorkflowPayoutAmountRules(): array
+    public function getWorkflowPayoutAmountRules($input): array
     {
         $merchantId = $this->merchant->getId();
-
-        $relations = [];
 
         // If adminAuth is used retrieve additional information such as steps and roles in the workflow
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
-            $relations = ['steps','steps.role'];
+            $input['expand'] = ['steps','steps.role'];
         }
 
-        // TODO: explore fetch() with expands
         $amountRules =  $this->repo
                              ->workflow_payout_amount_rules
-                             ->fetchWorkflowRulesForMerchant($merchantId, $relations);
+                             ->fetch($input, $merchantId);
 
-        return $amountRules->toArrayPublic();
+        return $amountRules->toArrayWithItems();
     }
 
     /**
@@ -56,7 +53,7 @@ class Service extends Base\Service
         $results = $this->repo->workflow_payout_amount_rules->getMerchantIdsForCreatePayoutWorkflowPermission($orgId,
                                                                                                               $input);
 
-        return $results->toArrayPublic();
+        return $results->toArrayWithItems();
     }
 
     /**
@@ -79,9 +76,10 @@ class Service extends Base\Service
 
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
+        $params = [];
 
         /** @var Entity $wfPayoutAmountRules */
-        $wfPayoutAmountRules = $this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId);
+        $wfPayoutAmountRules = $this->repo->workflow_payout_amount_rules->fetch($params, $merchantId);
 
         // Ensure that workflow_payout_amount_rules rules do not exist already
         // We fail here because editing existing workflow_payout_amount_rules could cause conflicts with the new ones
