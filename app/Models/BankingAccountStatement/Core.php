@@ -13,7 +13,9 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Mail\BankingAccount\StatementMail;
+use RZP\Models\Admin\Service as AdminService;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -610,7 +612,8 @@ class Core extends Base\Core
         // TODO: Need to move the limit number into config
         // Limit will be set on the basis of cron frequency, 2 is set for every 12 mins
         // to process total 10 accounts per hour
-        $limit = 2;
+
+        $limit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT]);
 
         $accountNumbers = $this->repo->banking_account->fetchAccountNumberByChannel($channel, $limit);
 
