@@ -8,4 +8,5 @@ export const downloadFromUFH = (fileId, accountId) =>
     if (response.success) {
       window.location = response.data.signed_url;
     }
+    return response;
   });
