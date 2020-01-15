@@ -37,9 +37,8 @@ class Core extends Base\Core
     const RECEIVER        = 'receiver';
     const SMS_TEMPLATE    = 'sms.payout_link.otp';
 
-    // Source param, where calling Raven Apis
+    // Source param, when calling Raven Apis
     const API_POUT_LNK_SRC = 'api.pout_l';
-
     const OK              = 'OK';
     const MAX_IMPS_AMOUNT = 20000000;
     const MAX_UPI_AMOUNT  = 10000000;
@@ -610,14 +609,7 @@ class Core extends Base\Core
     {
         $balanceId = array_pull($input, Entity::BALANCE_ID);
 
-        if (empty($balanceId) === true)
-        {
-            $balance = $this->merchant->primaryBalance;
-        }
-        else
-        {
-            $balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
-        }
+        $balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
 
         return $balance;
     }

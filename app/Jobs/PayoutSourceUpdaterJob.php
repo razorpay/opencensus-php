@@ -8,7 +8,7 @@ use RZP\Models\Payout\SourceUpdater;
 
 class PayoutSourceUpdaterJob extends Job
 {
-    const MAX_RETIRES = 5;
+    const MAX_RETRIES = 5;
 
     const MAX_RETRY_DELAY   = 300;
 
@@ -59,6 +59,7 @@ class PayoutSourceUpdaterJob extends Job
 
                 return;
             }
+
             SourceUpdater::handleUpdateFromQueue($payout, $this->previousPayoutStatus);
         }
         catch (\Throwable $e)
@@ -72,7 +73,7 @@ class PayoutSourceUpdaterJob extends Job
                     'previous_status' => $this->previousPayoutStatus
                 ]);
 
-            if($this->attempts() < self::MAX_RETIRES)
+            if ($this->attempts() < self::MAX_RETRIES)
             {
                 $this->trace->info(TraceCode::PAYOUT_SOURCE_UPDATER_JOB_RELEASED,
                                    $context);

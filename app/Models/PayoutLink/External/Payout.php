@@ -17,7 +17,6 @@ use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 
 class Payout
 {
-
     public function processPayout(PayoutLinkEntity $payoutLink, MerchantEntity $merchant, string $mode): PayoutEntity
     {
         $input = [

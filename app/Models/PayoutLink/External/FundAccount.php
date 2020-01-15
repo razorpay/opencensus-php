@@ -38,7 +38,7 @@ class FundAccount
     {
         // Fund_account_id will not be present when a new fund-account needs to be created before it
         // can be linked to the payout-link.
-        // When a pre-existing payout-link is selected, then we get the fund-account-id
+        // When a pre-existing fund-account is selected, then we get the fund-account-id
         if (array_key_exists(Entity::FUND_ACCOUNT_ID, $input) === true)
         {
             $fundAccountId = $input[Entity::FUND_ACCOUNT_ID];

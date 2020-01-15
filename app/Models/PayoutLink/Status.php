@@ -124,6 +124,6 @@ class Status
 
     public static function payoutLinkInProcessableState($status)
     {
-        return in_array($status, Status::VALID_PROCESSING_START_STATUSES);
+        return in_array($status, Status::VALID_PROCESSING_START_STATUSES, true);
     }
 }
