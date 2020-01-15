@@ -3748,6 +3748,8 @@ trait Authorize
         // To fix this, we'll need to backfill and whole emi plans with the type credit / debit.
         $planType = ($iinEntity->getType() === 'debit' ? 'debit' : null);
 
+        $planType = null;
+
         // Set emi plan id
         $emiPlan = $this->getMerchantEmiPlans($iinEntity, $emiDuration, $payment->merchant, $planType);
 
