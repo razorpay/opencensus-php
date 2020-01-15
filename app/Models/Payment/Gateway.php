@@ -179,7 +179,6 @@ class Gateway
         self::PAYLATER       => [PayLater::EPAYLATER, PayLater::GETSIMPL],
         self::WORLDLINE      => [self::ACQUIRER_AXIS],
         self::MPGS           => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
-        self::HDFC_DEBIT_EMI => [self::ACQUIRER_HDFC],
     ];
 
     const POWER_WALLETS = [
