@@ -233,13 +233,36 @@ trait Authorize
             return null;
         }
 
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:238"
+            ]
+        );
+
         if ($this->canAuthorizeViaCps($payment) === true)
         {
+
             $request =  $this->authorizeViaCps($payment, $input, $gatewayInput);
+
+            $this->trace->info(
+                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+                [
+                    'line'      => "Models/Payment/Processor/Authorize.php:251"
+                ]
+            );
+
         }
         else
         {
             $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+
+            $this->trace->info(
+                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+                [
+                    'line'      => "Models/Payment/Processor/Authorize.php:263"
+                ]
+            );
         }
 
         if (($request !== null) and
@@ -294,7 +317,12 @@ trait Authorize
 
         // Checking razorX flag for feedback loop here per paymentId
         $razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($payment->getId());
-
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:323"
+            ]
+        );
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -520,6 +548,10 @@ trait Authorize
             ($this->merchant->isFeatureEnabled(Feature\Constants::WALLET_AUTO_DEBIT) === true))
         {
             $request = $this->runAutoDebitFlow($payment, $gatewayInput);
+        }
+        else if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
+        {
+            $request = $this->callGatewayFunction(Action::AUTHORIZE, $gatewayInput);
         }
         else
         {
@@ -1940,6 +1972,14 @@ trait Authorize
         $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
         $this->setPaymentRoutedThroughCpsIfApplicable($payment, $gatewayInput);
+
+
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:1917"
+            ]
+        );
 
         $this->repo->saveOrFail($payment);
 
@@ -6611,8 +6651,7 @@ trait Authorize
     {
         return (!is_null($currentTerminal) and
             ($currentTerminal[Terminal\Entity::GATEWAY] === Gateway::HITACHI) and
-            ($payment->card['network_code'] === Network::RUPAY) and
-            ($this->app->razorx->getTreatment($payment->getId(), 'enable_paysecure_gateway', $this->mode) === 'on'));
+            ($payment->card['network_code'] === Network::RUPAY));
     }
 
     /**
@@ -6634,11 +6673,6 @@ trait Authorize
         }
 
         $merchant = $payment->merchant;
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::ENACH_INTERMEDIATE) === false)
-        {
-            return $returnData;
-        }
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 

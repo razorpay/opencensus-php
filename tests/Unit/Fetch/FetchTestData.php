@@ -486,6 +486,8 @@ return [
 
     E::MPAN => [],
 
+    E::UPI_TRANSFER => [],
+
     E::BALANCE_CONFIG => [
         Type::PROXY_AUTH => [
             [

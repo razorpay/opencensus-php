@@ -143,7 +143,7 @@ class Entity extends Base\PublicEntity
 
     public function vpa()
     {
-        return $this->belongsTo('RZP\Models\Vpa\Entity');
+        return $this->belongsTo('RZP\Models\Vpa\Entity')->withTrashed();
     }
 
     public function customer()
@@ -254,6 +254,11 @@ class Entity extends Base\PublicEntity
     public function getName()
     {
         return $this->getAttribute(self::NAME);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
     }
 
     public function getStatus()

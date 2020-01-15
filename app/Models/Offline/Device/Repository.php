@@ -17,7 +17,7 @@ class Repository extends Base\Repository
                     ->count();
     }
 
-    public function findDeviceByActivationToken($activationToken)
+    public function findByActivationToken($activationToken)
     {
         return $this->newQuery()
                     ->whereNotNull(Entity::ACTIVATION_TOKEN)

@@ -4831,21 +4831,36 @@ class MerchantTest extends TestCase
 
     public function testInternationalEnable()
     {
-        // Mock Razorx
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('On');
-
         $merchantDetailsData = [
-            'business_category'     => 'not_for_profit',
-            'business_subcategory'  => 'educational',
-            'activation_status'     => 'activated',
+            'business_category'             => 'ecommerce',
+            'business_subcategory'          => 'arts_and_collectibles',
+            'international_activation_flow' => 'whitelist',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantData = [
+            'international'     => 0,
+            'activated'         => 1,
+            'convert_currency'  => null,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testInternationalEnableForGreyList()
+    {
+        $merchantDetailsData = [
+            'business_category'             => 'not_for_profit',
+            'business_subcategory'          => 'educational',
+            'activation_status'             => 'activated',
+            'international_activation_flow' => 'greylist',
         ];
 
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
@@ -5358,7 +5373,7 @@ class MerchantTest extends TestCase
     }
 
     public function testSetInheritanceParent()
-    {        
+    {
         $this->ba->adminAuth();
 
         $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
@@ -5383,7 +5398,7 @@ class MerchantTest extends TestCase
     }
 
     public function testSetInheritanceParentBatch()
-    {        
+    {
         $this->ba->proxyAuth();
 
         $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
@@ -5428,7 +5443,7 @@ class MerchantTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content'] = [
             'id'    =>  '10000000000000'
         ];
-        
+
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionCode(
@@ -5438,7 +5453,7 @@ class MerchantTest extends TestCase
             'Inheritance parent should be aggregator or fully-managed partner of the submerchant');
 
         $this->startTest();
-    
+
     }
 
     public function testGetInheritanceParent()
@@ -5461,7 +5476,7 @@ class MerchantTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
 
         $res = $this->startTest();
-        
+
         $this->assertEquals($res['merchant_id'], $subMerchantId);
 
         $this->assertEquals($res['parent_merchant_id'], '10000000000000');
@@ -5496,7 +5511,7 @@ class MerchantTest extends TestCase
 
         $this->assertNull($merchantInheritanceMap);
     }
-    
+
     public function testGetBalances()
     {
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
@@ -5543,7 +5558,7 @@ class MerchantTest extends TestCase
 
         $this->startTest();
     }
-    
+
     public function testGetBalancesByType()
     {
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
@@ -5597,7 +5612,7 @@ class MerchantTest extends TestCase
 
         $this->app->make(Factory::class)->load($factoryPath);
 
-        $subMerchant = $this->fixtures->create('merchant');
+        $subMerchant = $this->fixtures->merchant->createEntityInTestAndLive('merchant');
 
         $subMerchantId = $subMerchant->getId();
 
@@ -5610,7 +5625,7 @@ class MerchantTest extends TestCase
             'entity_owner_id' => '10000000000000',
         ];
 
-        $this->fixtures->create('merchant_access_map', $accessMapData);
+        $this->fixtures->merchant_access_map->createEntityInTestAndLive('merchant_access_map', $accessMapData);
 
         return $subMerchantId;
     }
@@ -5626,5 +5641,76 @@ class MerchantTest extends TestCase
             ->will($this->onConsecutiveCalls('on', 'off'));
 
         $this->app->instance('razorx', $razorxMock);
+    }
+
+    public function testMerchantInternationalDisableAction()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['international' => true]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'international_activation_flow' => 'whitelist']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantInternationalEnableAction()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantInternationalDisableBulkEdit()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(true, 'whitelist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
+
+        $this->assertEquals($merchant['international'], false);
+
+        $this->assertEquals($merchantDetail['international_activation_flow'], 'blacklist');
+    }
+
+    public function testMerchantInternationalEnableBulkEdit()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
+
+        $this->assertEquals($merchant['international'], true);
+
+        $this->assertEquals($merchantDetail['international_activation_flow'], 'whitelist');
+    }
+
+    public function setMerchantMerchantDetailsAndPricing($international, $internationalActivationFlow)
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id' => '1In3Yh5Mluj605',
+            'international'   => $international]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'international_activation_flow' => $internationalActivationFlow,
+            'business_category'             => 'education',
+            'business_subcategory'          => 'college']);
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->fixtures->edit('pricing', '1AXp2Xd3t5aRLX', ['international' => true]);
     }
 }

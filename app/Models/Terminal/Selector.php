@@ -7,6 +7,7 @@ use Cache;
 use Config;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Diag\EventCode;
 use RZP\Models\Terminal;
@@ -316,10 +317,23 @@ class Selector extends Base\Core
 
     protected function getTerminals()
     {
-        // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
-        $merchantTerminals = $this->repo
-                                  ->terminal
-                                  ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
+        $response = $this->app->razorx->getTreatment($this->input['merchant']->getId(), 'payments_fetch_config_parent_terminal',
+                    $this->mode);
+
+        if ($response === 'on')
+        {
+            // Fetch all terminals (enabled/disabled) for both the current merchant, parent merchant and the shared Merchant
+            $merchantTerminals = $this->repo
+                                      ->terminal
+                                      ->getTerminalForMerchantParentMerchantAndSharedMerchant($this->input['merchant']);
+        }
+        else
+        {
+            // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
+            $merchantTerminals = $this->repo
+                                      ->terminal
+                                      ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
+        }
 
         $payment = $this->input['payment'];
 
@@ -494,6 +508,18 @@ class Selector extends Base\Core
             $payment = $this->input['payment'];
 
             $merchant = $this->input['merchant'];
+
+            if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD) === true)
+            {
+                $this->trace->info(
+                    TraceCode::SKIPPING_HITACHI_AUTOMATIC_ONBOARDING,
+                    [
+                        'payment'             => $payment,
+                        'merchant'            => $merchant,
+                    ]);
+    
+                return;
+            }
 
             if (($payment->isMethod(Method::CARD) === true) and ($payment->isBharatQr() === false)
                 and (in_array($merchant->getCategory(), GatewayProcessor::HITACHI_BLACKLISTED_MCC) === false))

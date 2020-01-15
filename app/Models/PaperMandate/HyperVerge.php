@@ -337,7 +337,7 @@ class HyperVerge extends Base\Core
             $input[self::EMAIL_ID] = $bankAccount->getBeneficiaryEmail();
         }
 
-        $input[self::COMPANY_NAME] = $this->merchant->getName();
+        $input[self::COMPANY_NAME] = $this->getCompanyName($paperMandate);
 
         $input[self::FREQUENCY] = self::$frequencyMapping[$paperMandateDetails[Entity::FREQUENCY]];
 
@@ -390,6 +390,13 @@ class HyperVerge extends Base\Core
         }
 
         return $input;
+    }
+
+    protected function getCompanyName(Entity $paperMandate): string
+    {
+        $terminal = $paperMandate->terminal;
+
+        return $terminal->merchant->getName();
     }
 
     protected function getFormattedContactNumber($number)

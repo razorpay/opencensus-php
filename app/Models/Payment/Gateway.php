@@ -1691,12 +1691,10 @@ class Gateway
     public static $gatewayAcquirerIfscMapping = [
         Gateway::CARD_FSS => [
             self::ACQUIRER_FSS => [
-                IFSC::UTIB,
                 IFSC::IOBA,
                 IFSC::ANDB,
                 IFSC::SYNB,
                 IFSC::SURY,
-                IFSC::ICIC,
                 IFSC::CBIN,
             ]
         ],
@@ -2382,6 +2380,15 @@ class Gateway
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
             self::PAYSECURE,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
+    public static function isNbPlusServiceGateway($gateway)
+    {
+        $gateways = [
+            self::ATOM
         ];
 
         return (in_array($gateway, $gateways, true));

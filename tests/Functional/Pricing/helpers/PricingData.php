@@ -102,10 +102,7 @@ return [
                     'payment_network'       => '',
                     'percent_rate'          => '10',
                     'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM',
-                    'amount_range_active'   => '',
-                    'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM'
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -116,10 +113,7 @@ return [
                     'payment_network'       => 'DICL',
                     'percent_rate'          => '10',
                     'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfM',
-                    'amount_range_active'   => '',
-                    'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfM'
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -130,10 +124,7 @@ return [
                     'payment_network'       => 'DICL',
                     'percent_rate'          => '10',
                     'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfn',
-                    'amount_range_active'   => '',
-                    'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfn'
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -144,10 +135,7 @@ return [
                     'payment_network'       => '',
                     'percent_rate'          => '10',
                     'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXdcdLaM',
-                    'amount_range_active'   => '',
-                    'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'idempotency_key'       => 'batch_DZtFGiJXdcdLaM'
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -158,66 +146,7 @@ return [
                     'payment_network'       => '',
                     'percent_rate'          => '',
                     'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXdcdqaM',
-                    'amount_range_active'   => '',
-                    'amount_range_min'      => '',
-                    'amount_range_max'      => ''
-                ],
-                [
-                    'merchant_id'           => '10000000000000',
-                    'product'               => 'primary',
-                    'feature'               => 'esautomatic',
-                    'payment_method'        => 'wallet',
-                    'payment_method_type'   => '',
-                    'payment_network'       => '',
-                    'percent_rate'          => '',
-                    'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXdcddef',
-                    'amount_range_active'   => true,
-                    'amount_range_min'      => 900,
-                    'amount_range_max'      => 1000,
-                ],
-                [
-                    'merchant_id'           => '10000000000000',
-                    'product'               => 'primary',
-                    'feature'               => 'esautomatic',
-                    'payment_method'        => 'wallet',
-                    'payment_method_type'   => '',
-                    'payment_network'       => '',
-                    'percent_rate'          => '',
-                    'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXdcdcde',
-                    'amount_range_active'   => true,
-                    'amount_range_min'      => 1000,
-                    'amount_range_max'      => 2000,
-                ],
-                [
-                    'merchant_id'           => '10000000000000',
-                    'product'               => 'primary',
-                    'feature'               => 'esautomatic',
-                    'payment_method'        => 'wallet',
-                    'payment_method_type'   => '',
-                    'payment_network'       => '',
-                    'percent_rate'          => '',
-                    'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXdcdbcd',
-                    'amount_range_active'   => true,
-                    'amount_range_min'      => 900,
-                    'amount_range_max'      => 1100,
-                ],
-                [
-                    'merchant_id'           => '10000000000000',
-                    'product'               => 'primary',
-                    'feature'               => 'esautomatic',
-                    'payment_method'        => 'wallet',
-                    'payment_method_type'   => '',
-                    'payment_network'       => '',
-                    'percent_rate'          => '',
-                    'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXdcdabc',
-                    'amount_range_active'   => false,
-                    'amount_range_min' => '',
-                    'amount_range_max' => '',
+                    'idempotency_key'       => 'batch_DZtFGiJXdcdqaM'
                 ],
             ],
             'url'       => '/pricing/rules/bulk',
@@ -226,7 +155,7 @@ return [
         'response' => [
             'content'   => [
                 'entity'    => 'collection',
-                'count'     => 9,
+                'count'     => 5,
                 'items'     => [
                     [
                         'success'           => true,
@@ -264,32 +193,6 @@ return [
                             'code'          => 'BAD_REQUEST_VALIDATION_FAILURE'
                         ]
                     ],
-                    [
-                        'plan_id'           =>  "1ycviEdCgurrFI",
-                        'success'           =>  true,
-                        'idempotency_key'   =>  "batch_DZtFGiJXdcddef"
-                    ],
-                    [
-                        'plan_id'           =>  "1ycviEdCgurrFI",
-                        'success'           =>  true,
-                        'idempotency_key'   =>  "batch_DZtFGiJXdcdcde"
-                    ],
-                    [
-                        'idempotency_key'   =>  "batch_DZtFGiJXdcdbcd",
-                        'success'           =>  false,
-                        'error'  =>  [
-                            'description'   => "Pricing rule amount range collides with another existing rule's amount range.",
-                            'code'          => "BAD_REQUEST_VALIDATION_FAILURE"
-                        ]
-                    ],
-                    [
-                        'idempotency_key'   =>  "batch_DZtFGiJXdcdabc",
-                        'success'           =>  false,
-                        'error' =>  [
-                            'description'   =>  "Pricing rule amount range collides with another existing rule's amount range.",
-                            'code'          =>  "BAD_REQUEST_VALIDATION_FAILURE"
-                         ]
-                     ],
                 ]
             ],
             'status_code' => 200,
@@ -308,10 +211,7 @@ return [
                     'payment_network'       => '',
                     'percent_rate'          => '10',
                     'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM',
-                    'amount_range_active'   => '',
-                    'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM'
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -322,10 +222,7 @@ return [
                     'payment_network'       => '',
                     'percent_rate'          => '10',
                     'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM',
-                    'amount_range_active'   => '',
-                    'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM'
                 ],
                 [
                     'merchant_id'           => '10000000000000',
@@ -336,10 +233,7 @@ return [
                     'payment_network'       => 'DICL',
                     'percent_rate'          => '10',
                     'international'         => '0',
-                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfM',
-                    'amount_range_active'   => '',
-                    'amount_range_min'      => '',
-                    'amount_range_max'      => ''
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLfM'
                 ]
             ],
             'url'       => '/pricing/rules/bulk',
@@ -1151,6 +1045,29 @@ return [
         ],
     ],
 
+    'testAddPricingPlanNachRegistrationRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_issuer'      => 'initial',
+                'fixed_rate'          => 1000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_network'     => null,
+                'payment_issuer'      => 'initial',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000
+            ],
+        ],
+    ],
+
     'testAddPricingPlanEmandateDebitAadhaarRule' => [
         'request' => [
             'content' => [
@@ -1174,6 +1091,29 @@ return [
         ],
     ],
 
+    'testAddPricingPlanNachDebitRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_issuer'      => 'auto',
+                'fixed_rate'          => 2000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'nach',
+                'payment_method_type' => 'physical',
+                'payment_network'     => null,
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 2000
+            ],
+        ],
+    ],
+
     'testAddPricingPlanEmandatePercentageRateRule' => [
         'request' => [
             'content' => [
@@ -1188,7 +1128,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Percentage rate pricing is not allowed for E-mandate',
+                    'description' => 'Percentage rate pricing is not allowed for emandate',
                 ],
             ],
             'status_code' => 400,

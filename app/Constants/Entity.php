@@ -317,10 +317,14 @@ class Entity
 
     const COMMISSION = 'commission';
 
+
+    const PAYMENTS_NBPLUS_NETBANKING = 'payments_nbplus.netbanking';
+
     // Service: Payments UPi
     const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
     const PAYMENTS_UPI_BANK_ACCOUNT     = 'payments_upi_bank_account';
     const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'payments_upi_vpa_bank_account';
+
 
     /**
      * Defines a map of entites which are currently
@@ -688,19 +692,20 @@ class Entity
         self::BATCH_FILE_STORE              => \RZP\Services\BatchMicroService::class,
         self::PAYMENTS_CARDS_AUTHENTICATION => \RZP\Services\CardPaymentService::class,
         self::PAYMENTS_CARDS_AUTHORIZATION  => \RZP\Services\CardPaymentService::class,
-        self::SUBSCRIPTIONS_SUBSCRIPTION   => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_ADDON          => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_PLAN           => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_CYCLE          => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_VERSION        => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_TRANSACTION    => \RZP\Models\Plan\Subscription\Service::class,
-        self::STORK_WEBHOOK                => \RZP\Services\Stork::class,
-        self::FTS_TRANSFERS                => \RZP\Services\FTS\FtsAdminClient::class,
-        self::FTS_FUND_ACCOUNT             => \RZP\Services\FTS\FtsAdminClient::class,
-        self::FTS_BENEFICIARY_STATUS       => \RZP\Services\FTS\FtsAdminClient::class,
-        self::FTS_ATTEMPTS                 => \RZP\Services\FTS\FtsAdminClient::class,
-        self::UFH_FILES                    => \RZP\Services\UfhClient::class,
+        self::SUBSCRIPTIONS_SUBSCRIPTION    => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_ADDON           => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_PLAN            => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_CYCLE           => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_VERSION         => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_UPDATE_REQUEST  => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_TRANSACTION     => \RZP\Models\Plan\Subscription\Service::class,
+        self::STORK_WEBHOOK                 => \RZP\Services\Stork::class,
+        self::FTS_TRANSFERS                 => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_FUND_ACCOUNT              => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_BENEFICIARY_STATUS        => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_ATTEMPTS                  => \RZP\Services\FTS\FtsAdminClient::class,
+        self::UFH_FILES                     => \RZP\Services\UfhClient::class,
+        self::PAYMENTS_NBPLUS_NETBANKING    => \RZP\Services\NbPlus\Netbanking::class,
     ];
 
     protected static $syncedInLiveAndTest = [
