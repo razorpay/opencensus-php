@@ -18,6 +18,21 @@ class Repository extends Base\Repository
     const DEFAULT_FETCH_OFFSET = 0;
 
     /**
+     * Gets payout amount rules for a single merchant
+     *
+     * @param string $merchantId
+     * @param array $relations
+     * @return array
+     */
+    public function fetchWorkflowRulesForMerchant(string $merchantId, array $relations = [])
+    {
+        return $this->newQuery()
+                    ->with($relations)
+                    ->merchantId($merchantId)
+                    ->get();
+    }
+
+    /**
      * Returns list of merchant ids which have a workflow with create_payout permission
      * On selecting a certain merchant id, a second api shall be called which will return the rules for that merchant
      *
