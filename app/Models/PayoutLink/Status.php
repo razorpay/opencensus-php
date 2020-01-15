@@ -15,12 +15,12 @@ class Status
     const PROCESSED  = 'processed';
     const CANCELLED  = 'cancelled';
 
-    protected const VALID_PROCESSING_START_STATUSES = [
+    const VALID_PROCESSING_START_STATUSES = [
         self::ISSUED,
         self::ATTEMPTED
     ];
 
-    protected const VALID_STATUSES = [
+    const VALID_STATUSES = [
         self::ISSUED,
         self::PROCESSING,
         self::ATTEMPTED,
@@ -28,7 +28,7 @@ class Status
         self::CANCELLED
     ];
 
-    protected const STATUS_TO_WEBHOOK_EVENT = [
+    const STATUS_TO_WEBHOOK_EVENT = [
         self::ISSUED     => 'api.payout_link.issued',
         self::PROCESSING => 'api.payout_link.processing',
         self::ATTEMPTED  => 'api.payout_link.attempted',
@@ -49,14 +49,14 @@ class Status
         PayoutStatus::CANCELLED  => self::ATTEMPTED,
     ];
 
-    protected const INTERNAL_TO_PUBLIC_STATUS = [
+    const INTERNAL_TO_PUBLIC_STATUS = [
         self::ATTEMPTED => self::ISSUED
     ];
 
     /**
      * Valid state transitions.
      */
-    protected const STATE_MACHINE = [
+    const STATE_MACHINE = [
         null             => [
             self::ISSUED
         ],
