@@ -202,7 +202,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testGetMerchantWorkflowPayoutAmountRules()
     {
-        $this->ba->adminAuth();
+        $this->ba->adminProxyAuth();
 
         // These entries have to be made and inserted here and not setup() because otherwise the create workflow rules
         // test above will fail, stating that the workflow payout rules have already been created.
@@ -225,16 +225,13 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             ]
         ];
 
-        for ($index = 0; $index < 2; $index++)
-        {
-            $this->testData[__FUNCTION__]['response']['content']['items'][$index]['workflow_id'] = $this->workflowIds[$index];
-        }
-
-        $this->testData[__FUNCTION__]['response']['content']['items'][$index]['workflow_id'] = 'workflowId1000';
+        $this->testData[__FUNCTION__]['response']['content']['items'][2]['workflow_id'] = $this->workflowIds[0];
+        $this->testData[__FUNCTION__]['response']['content']['items'][1]['workflow_id'] = $this->workflowIds[1];
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['workflow_id'] = 'workflowId1000';
 
         $index = 0;
 
-        // Attach first two rules workflows which we have created without steps
+        // Attach first two rules to workflows which we have created without steps
         for (; $index < 2; $index++)
         {
             $entries[$index]['workflow_id'] = $this->workflowIds[$index];
@@ -244,12 +241,13 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         // Attach third rule to default workflow created in parent setup since it contains steps
         // This is used for testing whether steps field is given properly
         $entries[$index]['workflow_id'] = 'workflowId1000';
+
         $this->fixtures->create('workflow_payout_amount_rules', $entries[$index]);
 
         $this->startTest();
     }
 
-    // Old api returrns workflow rules for a merchant through proxy auth
+    // Old api returns workflow rules for a merchant through proxy auth
     public function testGetMerchantWorkflowPayoutAmountRulesProxyAuth()
     {
         $this->ba->proxyAuth();
@@ -258,9 +256,9 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         // test above will fail, stating that the workflow payout rules have already been created.
         $entries = [
             [
-                'id'          => 1,
-                'min_amount'  => 0,
-                'max_amount'  => 100
+                'id'          => 3,
+                'min_amount'  => 1000,
+                'max_amount'  => null,
             ],
             [
                 'id'          => 2,
@@ -268,9 +266,9 @@ class WorkflowPayoutAmountRulesTest extends TestCase
                 'max_amount'  => 1000
             ],
             [
-                'id'          => 3,
-                'min_amount'  => 1000,
-                'max_amount'  => null,
+                'id'          => 1,
+                'min_amount'  => 0,
+                'max_amount'  => 100
             ]
         ];
 

@@ -262,7 +262,7 @@ return [
     'testGetMerchantIdsForCreatePayoutWorkflowPermission' => [
         'request' => [
             'method'  => 'GET',
-            'url'     => '/workflows/permissions/create_payout/merchants',
+            'url'     => '/merchants/workflows/permissions/create_payout',
             'content' => [],
         ],
         'response' => [
@@ -281,7 +281,7 @@ return [
     'testGetMerchantWorkflowPayoutAmountRules' => [
         'request' => [
             'method'  => 'GET',
-            'url'     => '/workflows/rules/payout_amount/merchant/10000000000000',
+            'url'     => '/workflows/rules/payout_amount/admin',
             'content' => [],
         ],
         'response' => [
@@ -290,20 +290,6 @@ return [
                 "entity"    =>  "collection",
                 'count'     =>  3,
                 'items'     =>  [
-                    [
-                        'merchant_id'   =>  '10000000000000',
-                        'condition'     =>  null,
-                        'min_amount'    =>  0,
-                        'max_amount'    =>  100,
-                        'steps'         =>  []
-                    ],
-                    [
-                        'merchant_id'   =>  '10000000000000',
-                        'condition'     =>  null,
-                        'min_amount'    =>  100,
-                        'max_amount'    =>  1000,
-                        'steps'         =>  []
-                    ],
                     [
                         'merchant_id'   =>  '10000000000000',
                         'condition'     =>  null,
@@ -351,9 +337,23 @@ return [
                                 ]
                             ]
                         ]
-                    ]
-                ]
+                    ],
+                    [
+                        'merchant_id'   =>  '10000000000000',
+                        'condition'     =>  null,
+                        'min_amount'    =>  100,
+                        'max_amount'    =>  1000,
+                        'steps'         =>  []
+                    ],
+                    [
+                        'merchant_id'   =>  '10000000000000',
+                        'condition'     =>  null,
+                        'min_amount'    =>  0,
+                        'max_amount'    =>  100,
+                        'steps'         =>  []
+                    ],
 
+                ]
             ],
         ]
     ],
@@ -371,16 +371,16 @@ return [
                 'count'     =>  3,
                 'items'     =>  [
                     [
-                        'min_amount'    =>  0,
-                        'max_amount'    =>  100,
+                        'min_amount'    =>  1000,
+                        'max_amount'    =>  null,
                     ],
                     [
                         'min_amount'    =>  100,
                         'max_amount'    =>  1000,
                     ],
                     [
-                        'min_amount'    =>  1000,
-                        'max_amount'    =>  null,
+                        'min_amount'    =>  0,
+                        'max_amount'    =>  100,
                     ]
                 ]
             ],
