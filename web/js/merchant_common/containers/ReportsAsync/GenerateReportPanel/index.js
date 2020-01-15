@@ -1,3 +1,5 @@
+import RTracking from 'react-tracking';
+
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
@@ -9,6 +11,7 @@ import SelectPeriod from './SelectPeriod';
 import SelectFormat from './SelectFormat';
 import EmailReport from './EmailReport';
 
+@RTracking(() => window.rzpQ.component('GenerateReportPanel'))
 export default class GenerateReportPanel extends React.PureComponent {
   state = {};
 
@@ -22,6 +25,21 @@ export default class GenerateReportPanel extends React.PureComponent {
     });
   };
 
+  @RTracking((props, state) => {
+    try {
+      const { selectedConfig: { id, name, report_type } = {} } = state;
+      const { tracking } = props;
+      return tracking.trackEvent(
+        window.rzpQ.reporting().initiated('reporting.generate_report', {
+          config_id: id,
+          config_name: name,
+          config_report_type: report_type,
+        })
+      );
+    } catch (err) {
+      console.error({ err });
+    }
+  })
   onGenerateReport = () => {
     const { selectedConfig } = this.state;
     if (selectedConfig.type === 'custom') {
