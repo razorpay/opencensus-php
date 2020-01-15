@@ -48,34 +48,63 @@ class Core extends Base\Core
      */
     public function processStatementForAccount(array $input)
     {
-        $channel = array_pull($input, Entity::CHANNEL);
+        try
+        {
+            $channel = array_pull($input, Entity::CHANNEL);
 
-        $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
+            $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
 
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
-            [
-                'channel'        => $channel,
-                'account_number' => $accountNumber,
-            ]);
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
+                [
+                    'channel'        => $channel,
+                    'account_number' => $accountNumber,
+                ]);
 
-        $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
+            //taking lock after taking trace info of request process
+            //returing processed true in finally because even if other worker is already fetching
+            //account statement for job, we need to remove this account number from queue
+            $this->mutex = App::getFacadeRoot()['api.mutex'];
 
-        $currentTime = Carbon::now()->getTimestamp();
+            $this->mutex->acquireAndRelease(
+                'bank_account_statement' . $accountNumber,
+                function ()
+                {
 
-        $bankingAccount->setLastStatementAttemptAt($currentTime);
+                    $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
 
-        $bankingAccount->saveOrFail();
+                    $currentTime = Carbon::now()->getTimestamp();
 
-        $merchant = $bankingAccount->merchant;
+                    $bankingAccount->setLastStatementAttemptAt($currentTime);
 
-        $processor = $this->getProcessor($channel, $accountNumber);
+                    $bankingAccount->saveOrFail();
 
-        $accountStatementDetails = $processor->fetchAccountStatementDetails($input);
+                    $merchant = $bankingAccount->merchant;
 
-        $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant);
+                    $processor = $this->getProcessor($channel, $accountNumber);
 
-        return ['processed' => true];
+                    $accountStatementDetails = $processor->fetchAccountStatementDetails($input);
+
+                    $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant);
+                },
+                120,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+            );
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_FAILED,
+                    [
+                        'channel'       => $channel,
+                        'accountNumber' => $accountNumber,
+                        'message'       => $e->getMessage(),
+                    ]);
+        }
+        finally
+        {
+            return ['processed' => true];
+        }
     }
 
     public function requestAccountStatement($input)
