@@ -67,7 +67,7 @@ class Core extends Base\Core
             $this->mutex = App::getFacadeRoot()['api.mutex'];
 
             $this->mutex->acquireAndRelease(
-                'bank_account_statement' . $accountNumber,
+                'banking_account_statement_' . $accountNumber,
                 function ()
                 {
 
