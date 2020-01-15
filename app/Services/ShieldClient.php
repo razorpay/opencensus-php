@@ -398,9 +398,7 @@ class ShieldClient implements ExternalService
     {
         $hooks = new Requests_Hooks();
 
-        $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
-
-        $variant = $this->app->razorx->getTreatment('10000000000000', self::TRACE_REQUEST_FEATURE, $this->mode);
+        $variant = $this->app->razorx->getTreatment('10000000000000', self::TRACE_REQUEST_FEATURE, 'live');
 
         if ($variant === 'on')
         {
