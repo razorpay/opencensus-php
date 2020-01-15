@@ -24,7 +24,7 @@ class Hooks
         $this->mode = $this->app['rzp.mode'];
     }
 
-    public function addCurlProperties(string $url, array $options)
+    public function addCurlProperties(string $url, array &$options)
     {
         $this->url = $url;
 
@@ -32,7 +32,7 @@ class Hooks
             $options['hooks'] = new Requests_Hooks();
         }
 
-        $hooks = $options['hooks'];
+        $hooks = &$options['hooks'];
 
         $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
 
@@ -44,12 +44,12 @@ class Hooks
         }
     }
 
-    protected function setCurlOptions($curl)
+    public function setCurlOptions($curl)
     {
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
     }
 
-    protected function traceCurlInfo($headers, $info)
+    public function traceCurlInfo($headers, $info)
     {
         $this->app['trace']->info(TraceCode::TRACE_REQUEST_METRIC,[
             'url'                => $this->url,
