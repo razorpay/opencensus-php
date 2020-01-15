@@ -59,7 +59,10 @@ export default class SelectPeriod extends React.Component {
       value = dateValue.add(timeInUnix, 'seconds');
     } else {
       const timeInUnix = getTimeUnix(this.state.values[name]);
-      value = value.add(timeInUnix, 'seconds');
+      value = value
+        .clone()
+        .startOf('day')
+        .add(timeInUnix, 'seconds');
     }
 
     const target = { value, name };
@@ -98,7 +101,7 @@ export default class SelectPeriod extends React.Component {
         }
         const startTimeUnix = selectedStartAt.format('X');
         const endTimeUnix = selectedEndAt.format('X');
-        return [startTimeUnix, endTimeUnix];
+        return [Number(startTimeUnix), Number(endTimeUnix)];
     }
   };
 
@@ -349,7 +352,10 @@ function getStartAndEndUnixTimeStampsForMonth(
     .startOf('month')
     .format('X');
 
-  return [firstDayOfLastMonthStartOfDayUnix, lastDayOfLastMonthEndOfDayUnix];
+  return [
+    Number(firstDayOfLastMonthStartOfDayUnix),
+    Number(lastDayOfLastMonthEndOfDayUnix),
+  ];
 }
 
 const dateRangeKeys = ['selectedStartAt', 'selectedEndAt'];
