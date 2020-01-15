@@ -634,7 +634,7 @@ class Core extends Base\Core
             'is_production'           => $isProduction,
             'fund_account_details'    => json_encode($fundAccountDetails),
             'purpose'                 => $payoutLink->getPurpose(),
-            'payout_utr'              => $payoutLink->payout()->getUtr()
+            'payout_utr'              => $payoutLink->getPayoutUtr()
         ];
 
         return $data;

@@ -348,4 +348,12 @@ class Entity extends Base\PublicEntity
     }
     // -------------------------------------- End Mutators -----------------------------
 
+    public function getPayoutUtr()
+    {
+        if ($this->payout() !== null)
+        {
+            return $this->payout()->getUtr();
+        }
+    }
+
 }
