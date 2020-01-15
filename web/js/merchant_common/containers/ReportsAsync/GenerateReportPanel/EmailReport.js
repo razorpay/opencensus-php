@@ -109,6 +109,7 @@ function SelectEmailCheckBox({
       defaultValue={!!singleSelectedEmail}
       onChange={onChange}
       disabled={isFormDisabled}
+      autoRender
     />
   );
 }
