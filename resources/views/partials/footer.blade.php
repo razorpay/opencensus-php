@@ -14,11 +14,12 @@
       setUser:noop, //Set a user one time
       defineEventModifiers:noop,//Extends to set custom event properties
       //Any modifiers
-      onbr:()=>window.rzpQ, 
+      onbr:()=>window.rzpQ,
       merchantActions:()=>window.rzpQ,
       productOnboarding: function() {
         return window.rzpQ;
-      }
+      },
+      reporting: () => window.rzpQ,
     };
 
     //Above code doesn't perform any function, can avoid application breakage if the library is
@@ -77,7 +78,11 @@
             {
                 propertyName:'event_group',
                 value:'merchant_actions'
-            }]
+            }],
+            reporting: [
+              { propertyName: 'event_type', value: 'reporting-events' },
+              { propertyName: 'event_group', value: 'reporting_events' },
+            ],
         });
 
         ga('create', 'UA-53341507-1', 'auto', 'old');
