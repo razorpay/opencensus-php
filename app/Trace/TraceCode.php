@@ -2512,6 +2512,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
    
     const TRACE_FOR_INCREASED_RESPONSE_TIMES                    = 'TRACE_FOR_INCREASED_RESPONSE_TIMES';
 
+    const TRACE_REQUEST_METRIC                                  = 'TRACE_REQUEST_METRIC';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

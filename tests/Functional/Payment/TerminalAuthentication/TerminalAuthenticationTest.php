@@ -286,7 +286,7 @@ class TerminalAuthenticationTest extends TestCase
         $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
-            'issuer'  => 'ICIC',
+            'issuer'  => 'CBIN',
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
@@ -297,6 +297,7 @@ class TerminalAuthenticationTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
         $payment['preferred_auth'] = ['pin'];
+        $payment['bank']           = 'CBIN';
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 

@@ -9,29 +9,32 @@ use Requests_Hooks;
 use RZP\Constants\Shield as ShieldConstants;
 use RZP\Error\ErrorCode;
 use RZP\Exception\IntegrationException;
+use RZP\Http\Request\Request;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 class ShieldClient implements ExternalService
 {
-    const RULES_PATH               = '/merchants/{merchant_id}/rules';
-    const EVALUATE_PATH            = '/rules/evaluate';
-    const ANALYTICS_PATH           = '/rules/analytics';
-    const RISKS_PATH               = '/merchants/{merchant_id}/risks';
-    const LISTS_PATH               = '/merchants/{merchant_id}/lists';
-    const LIST_ITEMS_PATH          = '/merchants/{merchant_id}/lists/{list_id}/list_items';
-    const CONTENT_TYPE             = 'content-type';
-    const RULES                    = 'rules';
-    const RULE_ANALYTICS           = 'rule_analytics';
-    const RISKS                    = 'risks';
-    const LISTS                    = 'lists';
-    const LIST_ITEMS               = 'list_items';
-    const REQUEST_TIMEOUT          = 10;
-    const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
-    const X_REQUEST_ID             = 'X-Request-ID';
+    const RULES_PATH                        = '/merchants/{merchant_id}/rules';
+    const EVALUATE_PATH                     = '/rules/evaluate';
+    const ANALYTICS_PATH                    = '/rules/analytics';
+    const RISKS_PATH                        = '/merchants/{merchant_id}/risks';
+    const LISTS_PATH                        = '/merchants/{merchant_id}/lists';
+    const LIST_ITEMS_PATH                   = '/merchants/{merchant_id}/lists/{list_id}/list_items';
+    const CONTENT_TYPE                      = 'content-type';
+    const RULES                             = 'rules';
+    const RULE_ANALYTICS                    = 'rule_analytics';
+    const RISKS                             = 'risks';
+    const LISTS                             = 'lists';
+    const LIST_ITEMS                        = 'list_items';
+    const REQUEST_TIMEOUT_INTERNATIONAL     = 10;
+    const REQUEST_TIMEOUT_OTHERS            = 2;
+    const X_RAZORPAY_TASKID_HEADER          = 'X-Razorpay-TaskId';
+    const X_REQUEST_ID                      = 'X-Request-ID';
 
     const TRACE_REQUEST_FEATURE    = 'shield_dns_trace';
 
@@ -332,8 +335,7 @@ class ShieldClient implements ExternalService
 
         $options = [
             'auth'    => $this->getAuthHeaders(),
-            'timeout' => self::REQUEST_TIMEOUT,
-            'hooks'   => $this->getRequestHooks(),
+            'timeout' => $this->getTimeout($data),
         ];
 
         $content = '';
@@ -357,7 +359,7 @@ class ShieldClient implements ExternalService
 
         try
         {
-            $response = Requests::request(
+            $response = Request::request(
                 $url,
                 $headers,
                 $content,
@@ -379,33 +381,6 @@ class ShieldClient implements ExternalService
 
             throw $e;
         }
-    }
-
-    public function traceCurlInfo($headers, $info)
-    {
-        $this->trace->info(TraceCode::SHIELD_REQUEST_DURATION,[
-            'total_time'         => $info['total_time'],
-            'connect_time'       => $info['connect_time'],
-            'redirect_time'      => $info['redirect_time'],
-            'namelookup_time'    => $info['namelookup_time'],
-            'pretransfer_time'   => $info['pretransfer_time'],
-            'starttransfer_time' => $info['starttransfer_time'],
-            'primary_ip'         => $info['primary_ip'] ?? 'nil',
-        ]);
-    }
-
-    protected function getRequestHooks()
-    {
-        $hooks = new Requests_Hooks();
-
-        $variant = $this->app->razorx->getTreatment('10000000000000', self::TRACE_REQUEST_FEATURE, 'live');
-
-        if ($variant === 'on')
-        {
-            $hooks->register('curl.after_request', [$this, 'traceCurlInfo']);
-        }
-
-        return $hooks;
     }
 
     protected function parseAndReturnResponse($res, array $data)
@@ -461,6 +436,18 @@ class ShieldClient implements ExternalService
     private function getMerchantPath(string $path, string $merchantId = Account::SHARED_ACCOUNT): string
     {
         return str_replace('{merchant_id}', $merchantId, $path);
+    }
+
+    private function getTimeout($input)
+    {
+        if (((isset($input['input'][Payment\Entity::INTERNATIONAL])) and
+            ($input['input'][Payment\Entity::INTERNATIONAL] === true)) or
+            ((isset($input['input']['card_network'])) and ($input['input']['card_network'] === Network::AMEX)))
+        {
+            return self::REQUEST_TIMEOUT_INTERNATIONAL;
+        }
+
+        return self::REQUEST_TIMEOUT_OTHERS;
     }
 
 }
