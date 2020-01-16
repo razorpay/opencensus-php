@@ -428,11 +428,14 @@ class Handler extends ExceptionHandler
             $orderId = $data['order_id'];
         }
 
-        $merchant = $this->app['basicauth']->getMerchant();
+        if( $this->app['basicauth'] !== null )
+        {
+            $merchant = $this->app['basicauth']->getMerchant();
 
-        $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
 
-        $error->setMetadata($isMetadataFeatureEnabled, $paymentId, $orderId);
+            $error->setMetadata($isMetadataFeatureEnabled, $paymentId, $orderId);
+        }
     }
 
     protected function getExceptionData($exception)
