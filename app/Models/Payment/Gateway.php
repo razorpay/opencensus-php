@@ -219,6 +219,7 @@ class Gateway
 
     const MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS = [
         self::WORLDLINE,
+        self::HDFC,
     ];
 
     // TODO: Add gateway and gateway_acquirer map to fix
