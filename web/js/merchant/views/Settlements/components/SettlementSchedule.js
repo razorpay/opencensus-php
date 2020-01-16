@@ -196,7 +196,7 @@ export default class SettlementSchedule extends Component {
                       <h5 style={{ textAlign: 'left' }}>
                         <b>Example: No Bank Holiday</b>
                       </h5>
-                      <SettlementsExample duration={4} />
+                      <img src="/public/img/No_Bank_Holiday.svg" />
                     </div>
                   </div>
                   <div class="box settlement-holiday-example">
@@ -204,7 +204,7 @@ export default class SettlementSchedule extends Component {
                       <h5 style={{ textAlign: 'left' }}>
                         <b>Example: Bank Holiday in between</b>
                       </h5>
-                      <SettlementsExample holiday={true} duration={4} />
+                      <img src="/public/img/Bank_Holiday_in_between.svg" />
                     </div>
                   </div>
                 </Fragment>
