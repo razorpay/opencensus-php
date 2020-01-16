@@ -74,6 +74,11 @@ class Event
     const ACCOUNT_REJECTED                  = 'account.rejected';
     const ACCOUNT_PAYMENTS_ENABLED          = 'account.payments_enabled';
     const ACCOUNT_PAYMENTS_DISABLED         = 'account.payments_disabled';
+    const PAYOUT_LINK_ISSUED                = 'payout_link.issued';
+    const PAYOUT_LINK_PROCESSING            = 'payout_link.processing';
+    const PAYOUT_LINK_ATTEMPTED             = 'payout_link.attempted';
+    const PAYOUT_LINK_CANCELLED             = 'payout_link.cancelled';
+    const PAYOUT_LINK_PROCESSED             = 'payout_link.processed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -135,6 +140,11 @@ class Event
         self::ACCOUNT_REJECTED,
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
+        self::PAYOUT_LINK_ISSUED,
+        self::PAYOUT_LINK_PROCESSED,
+        self::PAYOUT_LINK_PROCESSING,
+        self::PAYOUT_LINK_CANCELLED,
+        self::PAYOUT_LINK_ATTEMPTED
     ];
 
     /**
@@ -202,6 +212,11 @@ class Event
         self::ACCOUNT_REJECTED,
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
+        self::PAYOUT_LINK_ISSUED,
+        self::PAYOUT_LINK_PROCESSED,
+        self::PAYOUT_LINK_PROCESSING,
+        self::PAYOUT_LINK_CANCELLED,
+        self::PAYOUT_LINK_ATTEMPTED
     ];
 
     protected static $bitPosition = [
@@ -265,6 +280,11 @@ class Event
         self::ACCOUNT_PAYMENTS_DISABLED         => 58,
         self::TRANSACTION_UPDATED               => 59,
         self::PAYOUT_UPDATED                    => 60,
+        self::PAYOUT_LINK_ISSUED                => 61,
+        self::PAYOUT_LINK_PROCESSED             => 62,
+        self::PAYOUT_LINK_PROCESSING            => 63,
+        self::PAYOUT_LINK_CANCELLED             => 64,
+        self::PAYOUT_LINK_ATTEMPTED             => 65
     ];
 
     /**
@@ -328,6 +348,11 @@ class Event
         self::ACCOUNT_REJECTED                  => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_ENABLED          => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_DISABLED         => [Product::PRIMARY],
+        self::PAYOUT_LINK_ISSUED                => [Product::BANKING],
+        self::PAYOUT_LINK_PROCESSED             => [Product::BANKING],
+        self::PAYOUT_LINK_PROCESSING            => [Product::BANKING],
+        self::PAYOUT_LINK_CANCELLED             => [Product::BANKING],
+        self::PAYOUT_LINK_ATTEMPTED             => [Product::BANKING],
         self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
     ];
 
@@ -392,6 +417,11 @@ class Event
         self::ACCOUNT_REJECTED                  => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_ENABLED          => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_DISABLED         => Entity::MERCHANT,
+        self::PAYOUT_LINK_ISSUED                => Entity::PAYOUT_LINK,
+        self::PAYOUT_LINK_PROCESSED             => Entity::PAYOUT_LINK,
+        self::PAYOUT_LINK_PROCESSING            => Entity::PAYOUT_LINK,
+        self::PAYOUT_LINK_CANCELLED             => Entity::PAYOUT_LINK,
+        self::PAYOUT_LINK_ATTEMPTED             => Entity::PAYOUT_LINK,
         self::PAYOUT_UPDATED                    => Entity::PAYOUT,
     ];
 

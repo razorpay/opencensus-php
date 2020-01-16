@@ -43,7 +43,12 @@ class Core extends Base\Core
             {
                 $this->repo->saveOrFail($rule);
 
-                $this->app->smartRouting->createGatewayRule($rule->toArray());
+                $response = $this->app->smartRouting->createGatewayRule($rule->toArray());
+
+                if ($response === null)
+                {
+                    throw new Exception\RuntimeException('Router rule create failed', $rule->toArray());
+                }
             });
         }
         catch (\Throwable $e)
@@ -81,7 +86,13 @@ class Core extends Base\Core
             {
                 $this->repo->saveOrFail($rule);
 
-                $this->app->smartRouting->updateGatewayRule($rule->toArray());
+                $response = $this->app->smartRouting->updateGatewayRule($rule->toArray());
+
+                if ($response === null)
+                {
+                    throw new Exception\RuntimeException('Router rule update failed', $rule->toArray());
+                }
+
             });
         }
         catch (\Throwable $e)

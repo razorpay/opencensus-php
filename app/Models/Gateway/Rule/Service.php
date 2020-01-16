@@ -36,7 +36,12 @@ class Service extends Base\Service
             {
                 $this->repo->deleteOrFail($rule);
 
-                $this->app->smartRouting->deleteGatewayRule($id, $rule->getGroup());
+                $response =  $this->app->smartRouting->deleteGatewayRule($id, $rule->getGroup());
+
+                if ($response === null)
+                {
+                    throw new Exception\RuntimeException('Router rule delete failed', $rule->toArray());
+                }
             });
         }
         catch (\Throwable $e)
