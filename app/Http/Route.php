@@ -804,7 +804,7 @@ final class Route
         'action_request_execute'                   => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
-        'workflow_payout_amount_rules_get_admin'   => ['get',      'workflows/rules/payout_amount/admin',            'WorkflowController@getWorkflowPayoutAmountRules'                   ],
+        'workflow_payout_amount_rules_get_admin'   => ['get',      'admin-workflows/rules/payout_amount',            'WorkflowController@getWorkflowPayoutAmountRules'                   ],
         'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
         'workflow_merchants_create_payout_get'     => ['get',      'merchants/workflows/permissions/create_payout',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
 

@@ -23,17 +23,11 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
-        // If adminAuth is used retrieve additional information such as steps and roles in the workflow
-        if ($this->app['basicauth']->isAdminAuth() === true)
-        {
-            $input['expand'] = ['steps','steps.role'];
-        }
-
         $amountRules =  $this->repo
                              ->workflow_payout_amount_rules
                              ->fetch($input, $merchantId);
 
-        return $amountRules->toArrayWithItems();
+        return $amountRules->toArrayPublic();
     }
 
     /**

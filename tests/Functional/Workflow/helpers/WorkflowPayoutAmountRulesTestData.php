@@ -281,7 +281,7 @@ return [
     'testGetMerchantWorkflowPayoutAmountRules' => [
         'request' => [
             'method'  => 'GET',
-            'url'     => '/workflows/rules/payout_amount/admin',
+            'url'     => '/admin-workflows/rules/payout_amount?expand[]=steps&expand[]=steps.role',
             'content' => [],
         ],
         'response' => [
@@ -292,65 +292,73 @@ return [
                 'items'     =>  [
                     [
                         'merchant_id'   =>  '10000000000000',
-                        'condition'     =>  null,
                         'min_amount'    =>  1000,
                         'max_amount'    =>  null,
                         'steps'         =>  [
-
-                            [
-                                'role_id'           =>  'RzpAdminRoleId',
-                                'workflow_id'       =>  'workflowId1000',
-                                'reviewer_count'    =>  1,
-                                'op_type'           =>  'or',
-                                'level'             =>  1,
-                                'role'              =>  [
-                                    'id'                => 'RzpAdminRoleId',
-                                    'name'              => 'SuperAdmin',
-                                    'description'       => 'Manager of roles',
-                                    'org_id'            => '100000razorpay',
-                                ]
-                            ],
-                            [
-                                'role_id'           => 'RzpChekrRoleId',
-                                'workflow_id'       => 'workflowId1000',
-                                'reviewer_count'    =>  1,
-                                'op_type'           => 'or',
-                                'level'             =>  1,
-                                'role'              => [
-                                    'id'                => 'RzpChekrRoleId',
-                                    'name'              => 'Checker',
-                                    'description'       => 'Manager of roles',
-                                    'org_id'            => '100000razorpay',
-                                ]
-                            ],
-                            [
-                                'role_id'           => 'RzpMakerRoleId',
-                                'workflow_id'       => 'workflowId1000',
-                                'reviewer_count'    =>  1,
-                                'op_type'           => 'and',
-                                'level'             =>  2,
-                                'role'              => [
-                                    'id'                => 'RzpMakerRoleId',
-                                    'name'              => 'Maker',
-                                    'description'       => 'Manager of roles',
-                                    'org_id'            => '100000razorpay'
+                            "entity"    =>  "collection",
+                            'count'     =>  3,
+                            'items'     =>  [
+                                [
+                                    'role_id'           =>  'role_RzpAdminRoleId',
+                                    'workflow_id'       =>  'workflow_workflowId1000',
+                                    'reviewer_count'    =>  1,
+                                    'op_type'           =>  'or',
+                                    'level'             =>  1,
+                                    'role'              =>  [
+                                        'id'                => 'role_RzpAdminRoleId',
+                                        'name'              => 'SuperAdmin',
+                                        'description'       => 'Manager of roles',
+                                        'org_id'            => 'org_100000razorpay',
+                                    ]
+                                ],
+                                [
+                                    'role_id'           => 'role_RzpChekrRoleId',
+                                    'workflow_id'       => 'workflow_workflowId1000',
+                                    'reviewer_count'    =>  1,
+                                    'op_type'           => 'or',
+                                    'level'             =>  1,
+                                    'role'              => [
+                                        'id'                => 'role_RzpChekrRoleId',
+                                        'name'              => 'Checker',
+                                        'description'       => 'Manager of roles',
+                                        'org_id'            => 'org_100000razorpay',
+                                    ]
+                                ],
+                                [
+                                    'role_id'           => 'role_RzpMakerRoleId',
+                                    'workflow_id'       => 'workflow_workflowId1000',
+                                    'reviewer_count'    =>  1,
+                                    'op_type'           => 'and',
+                                    'level'             =>  2,
+                                    'role'              => [
+                                        'id'                => 'role_RzpMakerRoleId',
+                                        'name'              => 'Maker',
+                                        'description'       => 'Manager of roles',
+                                        'org_id'            => 'org_100000razorpay'
+                                    ]
                                 ]
                             ]
                         ]
                     ],
                     [
                         'merchant_id'   =>  '10000000000000',
-                        'condition'     =>  null,
                         'min_amount'    =>  100,
                         'max_amount'    =>  1000,
-                        'steps'         =>  []
+                        'steps'         =>  [
+                            "entity"    =>  "collection",
+                            'count'     =>  0,
+                            'items'     =>  []
+                            ]
                     ],
                     [
                         'merchant_id'   =>  '10000000000000',
-                        'condition'     =>  null,
                         'min_amount'    =>  0,
                         'max_amount'    =>  100,
-                        'steps'         =>  []
+                        'steps'         =>  [
+                            "entity"    =>  "collection",
+                            'count'     =>  0,
+                            'items'     =>  []
+                        ]
                     ],
 
                 ]
