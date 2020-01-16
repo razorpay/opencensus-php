@@ -5581,3 +5581,6 @@ ALTER TABLE `merchant_documents`
 
 ALTER TABLE pricing
      MODIFY COLUMN amount_range_min BIGINT(20) unsigned DEFAULT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN kyc_id char(14) DEFAULT NULL ;
