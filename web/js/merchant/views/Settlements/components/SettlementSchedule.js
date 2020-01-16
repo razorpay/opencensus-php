@@ -173,8 +173,7 @@ export default class SettlementSchedule extends Component {
             </div>
             <div style={{ padding: '13px' }}>
               <p>
-                <b>Note:</b> Bank Holidays aren’t counted as working days.{' '}
-                <br />
+                <b>Note:</b> Weekends aren’t counted as working days. <br />
                 <a
                   style={{ marginTop: '10px' }}
                   onClick={this.toggleExample}

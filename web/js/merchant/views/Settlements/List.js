@@ -208,7 +208,7 @@ export default class SettlementsListContainer extends ListContainer {
 
   viewSettlementCycle = () => {
     this.props.openModal({
-      size: 'regular',
+      size: 'medium',
       component: <SettlementSchedule holidayList={this.props.holidayList} />,
     });
 
@@ -253,7 +253,7 @@ export default class SettlementsListContainer extends ListContainer {
             <OnHoldBanner
               ctaOnClick={() => {
                 this.props.openModal({
-                  size: 'regular',
+                  size: 'medium',
                   component: (
                     <SettlementDetail
                       settlementAmount={this.props.settlement_amount.data}
