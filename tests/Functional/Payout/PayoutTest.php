@@ -792,7 +792,7 @@ class PayoutTest extends TestCase
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
         $user->roles()->attach($checkerRole);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', $firstUser->getId());
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
 
         $this->startTest();
 
