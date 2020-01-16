@@ -21,11 +21,11 @@ class Reconciliate extends Base\Reconciliate
 
     public function inExcludeList(array $fileDetails, array $inputDetails = [])
     {
-        if (strpos($fileDetails[FileProcessor::EXTENSION], 'txt') === true)
+        if (strpos($fileDetails[FileProcessor::EXTENSION], 'xlsx') === false)
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 }
