@@ -15,7 +15,8 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\QrCode;
-use RZP\Models\VirtualAccount;
+use RZP\Models\Currency\Currency;
+use RZP\Models\Offline\Device as OfflineDevice;
 
 class Service extends Base\Service
 {
@@ -514,7 +515,7 @@ class Service extends Base\Service
 
         $virtualAccount = $this->core->create($createVaArray, $this->merchant, null, $order);
 
-        // todo: add push notification for device
+        $this->pushToDeviceIfApplicable($input, $virtualAccount);
 
         // Doing this separately since we don't want to affect the VA entity code
         $orderId = $order->getPublicId();
@@ -524,6 +525,34 @@ class Service extends Base\Service
         $va['order_id'] = $orderId;
 
         return $va;
+    }
+
+    protected function pushToDeviceIfApplicable(array $input, $virtualAccount)
+    {
+        if (isset($input['notifications']['device_id']) === false)
+        {
+            return;
+        }
+
+        $device = $this->repo
+                       ->offline_device
+                       ->findByPublicIdAndMerchant($input['notifications']['device_id'], $this->merchant);
+
+        $currency = $input['currency'];
+
+        $formattedAmount = Currency::getSymbol($currency) . ' ' . ($input['amount'] / Currency::getExponent($currency));
+
+        $payload = [
+            'id'                => $virtualAccount->getPublicId(),
+            'action'            => 'showqr',
+            'qr_string'         => $virtualAccount->qrCode->getQrString(),
+            'formatted_amount'  => $formattedAmount,
+            'description'       => $virtualAccount->getDescription(),
+            'close_by'          => $virtualAccount->getCloseBy(),
+            'merchant_name'     => $this->merchant->getDbaName(),
+        ];
+
+        (new OfflineDevice\Service)->push($device, $payload);
     }
 
     protected function createOrder(array $input)

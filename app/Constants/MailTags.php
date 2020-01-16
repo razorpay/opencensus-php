@@ -106,6 +106,9 @@ class MailTags
     const RBL_ENACH_DEBIT_MAIL             = 'rbl_enach_debit_mail';
     const RBL_ENACH_REGISTER_MAIL          = 'rbl_enach_register_mail';
 
+    const CITI_NACH_REGISTER_MAIL          = 'citi_nach_register_mail';
+    const CITI_NACH_DEBIT_MAIL             = 'citi_nach_debit_mail';
+
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
     const FEE_CREDITS_ALERT                = 'fee_credits_alert';

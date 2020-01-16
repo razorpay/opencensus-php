@@ -1320,6 +1320,29 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\Invoice\Reminder\Entity::class, [
+        ]);
+
+        $factory(\RZP\Models\PayoutLink\Entity::class, [
+            'id'                   => $faker->uniqueid,
+            'contact_id'           => '1000010contact',
+            'contact_name'         => '1000010contact',
+            'contact_phone_number' => '1231231231',
+            'contact_email'        => 'test@rzp.com',
+            'amount'               => 1000,
+            'merchant_id'          => '10000000000000',
+            'user_id'              => null,
+            'currency'             => 'INR',
+            'description'          => 'This is a test payout',
+            'purpose'              => 'refund',
+            'receipt'              => 'Test Payout Receipt',
+            'notes'                => null,
+            'short_url'            => 'http=>//76594130.ngrok.io/i/mGs4ehe',
+            'status'               => 'issued',
+            'created_at'           => 1575367399,
+            'cancelled_at'         => null,
+        ]);
+
         $factory(\RZP\Models\Options\Entity::class, [
             'id'                => $faker->uniqueid,
             'merchant_id'       => '10000000000000',
@@ -1335,5 +1358,12 @@ final class FactoryData
         $factory(\RZP\Models\Invoice\Reminder\Entity::class, [
             ]
         );
+
+        $factory(\RZP\Models\Offline\Device\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'type'               => 'android',
+            'status'             => 'created',
+            'activation_token'   => $faker->sha256,
+        ]);
     }
 }

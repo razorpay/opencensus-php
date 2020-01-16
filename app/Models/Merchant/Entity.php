@@ -1461,6 +1461,8 @@ class Entity extends Base\PublicEntity
      * if convert_currency === null, then international payments are off
      * if convert_currency === false, then conversion is handled by Gateway
      * if convert_currency === true, then conversion is handled by us
+     *
+     * @param $val
      */
     public function setCurrencyConversion($val)
     {
@@ -1513,6 +1515,11 @@ class Entity extends Base\PublicEntity
     public function getDisplayName()
     {
         return $this->getAttribute(self::DISPLAY_NAME);
+    }
+
+    public function getDisplayNameElseName()
+    {
+        return (empty($this->getDisplayName()) === false) ? $this->getDisplayName() : $this->getName();
     }
 
     public function setDisplayName($displayName)

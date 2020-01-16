@@ -267,6 +267,13 @@ trait Callback
             $input['s2s'] = true;
         }
 
+        if ((empty($input['gateway']) === true) and
+            ($input['payment']['method'] === Payment\Method::CARD))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_GATEWAY_EMPTY_CALLBACK);
+        }
+
         try
         {
             $this->preProcessGatewayCallback($input);

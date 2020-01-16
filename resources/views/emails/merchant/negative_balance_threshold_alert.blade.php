@@ -58,7 +58,6 @@
 
                         Your account has reached {{$percentage}}% of your total negative limit.
                         Kindly load funds into your account to avoid any interruptions.<br>
-                        Account number:  {{$account_number}} <br>
                         Account balance: {{$balance}}        <br>
                         Balance Source:  {{$balance_source}} <br>
                         <br>

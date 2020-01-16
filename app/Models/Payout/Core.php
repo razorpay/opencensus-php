@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use App;
 use RZP\Exception;
 use RZP\Constants;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
@@ -70,10 +71,10 @@ class Core extends Base\Core
      * SOURCE: Merchant PG balance
      * TO: Merchant linked bank account (destination_id)
      *
+     * @param array $input
      * @param Merchant\Entity $merchant
-     * @param array           $input
-     *
      * @return mixed|null
+     * @throws Exception\BadRequestException
      */
     public function createPayoutToMerchant(array $input, Merchant\Entity $merchant): Entity
     {
@@ -339,6 +340,8 @@ class Core extends Base\Core
         // For non-Yesbank, we will not get public_failure_reason
         $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
 
+        $initialUtr = $payout->getUtr();
+
         $payout->setUtr($ftaData[Attempt\Constants::UTR]);
 
         $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
@@ -369,6 +372,12 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($payout);
+
+        if (($initialUtr === null) and
+            ($payout->getUtr() !== null))
+        {
+            $this->app->events->fire('api.payout.updated', [$payout]);
+        }
     }
 
     public function processDispatchForQueuedPayouts(Base\PublicCollection $queuedPayouts)

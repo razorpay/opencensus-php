@@ -195,7 +195,7 @@ trait TestsBusinessBanking
                 'source_id'   => $this->contact->getId(),
             ],
             [
-                'name'           => "test",
+                'name'           => 'test',
                 'ifsc'           => 'SBIN0007105',
                 'account_number' => '111000',
             ]);
@@ -211,7 +211,7 @@ trait TestsBusinessBanking
             'type'                => 'pricing',
             'plan_id'             => '1hDYlICobzOCYt',
             'product'             => 'banking',
-            "feature"             => 'fund_account_validation',
+            'feature'             => 'fund_account_validation',
             'payment_method'      => 'bank_account',
             'account_type'        => 'shared'
         ];
@@ -224,12 +224,15 @@ trait TestsBusinessBanking
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
                           ->willReturn('on');
+
+        $this->app->razorx->method('getCachedTreatment')
+                          ->willReturn('off');
     }
 }

@@ -1,22 +1,22 @@
-Alter table cards
-    add merchant_id varchar(14) after id;
+ALTER TABLE cards
+    ADD merchant_id varchar(14) after id;
 
-alter table merchant_documents
-    modify file_store_id char(14) NULL;
+ALTER TABLE merchant_documents
+    MODIFY file_store_id char(14) NULL;
 
 ALTER TABLE merchant_documents
     ADD INDEX (`file_store_id`);
 
-update cards, payments
-    set cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
+UPDATE cards, payments
+    SET cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
 
 ALTER TABLE cards MODIFY COLUMN merchant_id VARCHAR(14) NOT NULL,
     ADD CONSTRAINT cards_merchant_id_foreign FOREIGN KEY(merchant_id)
     REFERENCES merchants(id) ON DELETE RESTRICT;
 ALTER TABLE `cards` ADD INDEX `cards_network_index` (`network`);
 
-alter table transactions
-    add channel VARCHAR(8) NOT NULL after escrow_balance;
+ALTER TABLE transactions
+    ADD channel VARCHAR(8) NOT NULL after escrow_balance;
 ALTER TABLE transactions
     ADD INDEX transactions_channel_index (`channel`);
 
@@ -5550,7 +5550,11 @@ ALTER TABLE gateway_downtimes
     Add COLUMN psp VARCHAR(255) DEFAULT NULL AFTER method;
 
 ALTER TABLE merchant_details
-	ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
+    ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN gateway_ref_no varchar(255) DEFAULT NULL,
+    ADD UNIQUE INDEX fund_transfer_attempts_gateway_ref_no_unique (gateway_ref_no);
 
 ALTER TABLE `transfers`
     ADD INDEX `transfers_source_id_index` (`source_id`),
@@ -5574,3 +5578,16 @@ ALTER TABLE offers
     ADD COLUMN default_offer bool DEFAULT 0,
     ADD COLUMN max_order_amount int(11) DEFAULT NULL,
     MODIFY type VARCHAR(20);
+
+ALTER TABLE `merchant_documents`
+    ADD COLUMN `source` enum('API', 'UFH') NOT NULL DEFAULT 'API' ;
+
+ALTER TABLE pricing
+     MODIFY COLUMN amount_range_min BIGINT(20) unsigned DEFAULT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN kyc_id char(14) DEFAULT NULL ;
+
+ALTER TABLE payouts
+   ADD COLUMN payout_link_id CHAR(14) DEFAULT NULL AFTER `idempotency_key`,
+   ADD INDEX `payouts_payout_link_id_index` (`payout_link_id`);

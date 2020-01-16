@@ -14,6 +14,9 @@ class Core extends Base\Core
     {
         $inheritanceMapping = (new Entity)->build();
 
+        // need this because merchant_inheritance_map is synced in test and live, removing this will fail tests
+        $inheritanceMapping->generateId();
+
         $inheritanceMapping->merchant()->associate($merchant);
 
         $inheritanceMapping->parentMerchant()->associate($parentMerchant);

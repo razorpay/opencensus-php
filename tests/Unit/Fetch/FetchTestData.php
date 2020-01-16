@@ -292,6 +292,9 @@ return [
         ],
     ],
 
+    E::PAYOUT_LINK => [
+    ],
+
     E::PLAN => [
         Type::PROXY_AUTH => [
             [
@@ -485,6 +488,8 @@ return [
     E::CREDITNOTE => [],
 
     E::MPAN => [],
+
+    E::UPI_TRANSFER => [],
 
     E::BALANCE_CONFIG => [
         Type::PROXY_AUTH => [

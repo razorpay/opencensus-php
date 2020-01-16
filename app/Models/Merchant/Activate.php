@@ -87,7 +87,7 @@ class Activate extends Base\Core
 
         $merchantCore = new Merchant\Core;
 
-        $merchantCore->activateInternationalIfApplicable($merchant, $merchantDetail);
+        $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
         $merchantBalance = $merchantCore->createBalance($merchant, 'live');
 
@@ -129,6 +129,7 @@ class Activate extends Base\Core
      * @return array
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
+     * @throws \Throwable
      */
     public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails): array
     {
@@ -142,7 +143,7 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
-        (new Merchant\Core)->activateInternationalIfApplicable($merchant, $merchantDetails);
+        (new Merchant\Core)->updateInternationalIfApplicable($merchant, $merchantDetails);
 
         $merchant->holdFunds();
 
@@ -216,7 +217,7 @@ class Activate extends Base\Core
 
         $merchantCore = new Merchant\Core;
 
-        $merchantCore->activateInternationalIfApplicable($merchant, $merchantDetail);
+        $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
         {
