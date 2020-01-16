@@ -359,13 +359,16 @@ class Error extends Support\Fluent
             self::DESCRIPTION       => $description,
         );
 
-        $merchant = $this->app['basicauth']->getMerchant();
-
-        $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
-
-        if( $isMetadataFeatureEnabled === true )
+        if( $this->app['basicauth'] !== null)
         {
-            $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+
+            if( $isMetadataFeatureEnabled === true )
+            {
+                $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
+            }
         }
 
         $error = $this->checkAndAddDataToErrorResp($error);
