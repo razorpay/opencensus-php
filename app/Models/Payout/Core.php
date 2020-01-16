@@ -1429,6 +1429,8 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($payout);
 
+                $this->app->events->fire('api.payout.rejected', [$payout]);
+
                 return $payout;
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
