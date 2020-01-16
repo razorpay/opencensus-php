@@ -800,7 +800,7 @@ class Core extends Base\Core
 
     protected function getChannelForPayout(Base\PublicEntity $source, string $accountType, CardEntity $card = null)
     {
-        if (empty($source->getChannel()) === true)
+        if ((empty($source->getChannel()) === true) || ($this->isTestMode() === true))
         {
             return [false, Settlement\Channel::YESBANK];
         }
