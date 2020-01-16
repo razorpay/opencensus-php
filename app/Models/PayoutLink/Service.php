@@ -4,6 +4,7 @@ namespace RZP\Models\PayoutLink;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payout\SourceUpdater;
 
 class Service extends Base\Service
 {
@@ -54,6 +55,25 @@ class Service extends Base\Service
         $payoutLink = $this->core->initiate($payoutLink, $input);
 
         return $payoutLink->toArrayPublic();
+    }
+
+    public function pullPayoutStatus($payoutLinkId)
+    {
+        $payoutLink = $this->repo
+                           ->payout_link->findByPublicId($payoutLinkId);
+
+        $payout = $payoutLink->payout();
+
+        if ($payout !== null)
+        {
+            SourceUpdater::handleUpdateFromQueue($payout);
+
+            return 'Updated from payout : ' . $payout->getPublicId();
+        }
+        else
+        {
+          return 'No associated payouts';
+        }
     }
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)

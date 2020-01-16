@@ -502,7 +502,8 @@ class Core extends Base\Core
 
         $settingsAccessor = $this->getSettingsAccessor($this->merchant);
 
-        $upiEnabledInSettings = boolval($settingsAccessor->get(Entity::UPI));
+        $upiEnabledInSettings = $settingsAccessor->exists(Entity::UPI) and
+                                boolval($settingsAccessor->get(Entity::UPI));
 
         $bankingAccount = $payoutLink->balance->bankingAccount;
 
@@ -573,7 +574,8 @@ class Core extends Base\Core
         switch ($fundAccount->getAccountType())
         {
             case Type::BANK_ACCOUNT:
-                $isImpsEnabled = boolval($settingsAccessor->get(Entity::IMPS));
+                $isImpsEnabled = $settingsAccessor->exists(Entity::IMPS) and
+                                 boolval($settingsAccessor->get(Entity::IMPS));
 
                 if (($isImpsEnabled === true) and
                     ($amount < Validator::MAX_IMPS_AMOUNT))
