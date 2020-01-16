@@ -12,6 +12,22 @@ export default class SettlementDetail extends Component {
     showBreakUp: false,
   };
 
+  handleContactSupport = () => {
+    this.props.closeModal();
+
+    if (window.rzpTicketSystem) {
+      const rzpTicketSystem = window.rzpTicketSystem;
+      rzpTicketSystem.setPrefill('#request', [
+        'merchant',
+        'international-early-settlement',
+      ]);
+      rzpTicketSystem.openModal('#ticket');
+      setTimeout(() => {
+        rzpTicketSystem.modal.next();
+      }, 0);
+    }
+  };
+
   render() {
     const isOnHold = !this.props.settlementAmount.next_settlement_time;
     const onHoldReason = this.props.settlementAmount.no_settlement;
@@ -93,7 +109,12 @@ export default class SettlementDetail extends Component {
             >
               {isOnHold && (
                 <div>
-                  <button class="btn btn-default">Contact Support</button>
+                  <button
+                    class="btn btn-default"
+                    onClick={this.handleContactSupport}
+                  >
+                    Contact Support
+                  </button>
                 </div>
               )}
 
