@@ -76,8 +76,8 @@ class Entity
     const TRANSACTION               = 'transaction';
     const FEE_BREAKUP               = 'fee_breakup';
     const CREDITNOTE                = 'creditnote';
-    const PAYMENT_LINK              = 'payment_link';
     const PAYOUT_LINK               = 'payout_link';
+    const PAYMENT_LINK              = 'payment_link';
     const PAYMENT_PAGE_ITEM         = 'payment_page_item';
     const GATEWAY_RULE              = 'gateway_rule';
     const GATEWAY_FILE              = 'gateway_file';

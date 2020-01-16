@@ -48,6 +48,29 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_BULK_RESPONSE                         = 'PAYMENT_CAPTURE_BULK_RESPONSE';
     const PAYMENT_CAPTURE_BULK_FAILURE                          = 'PAYMENT_CAPTURE_BULK_FAILURE';
     const PAYMENT_ALREADY_CAPTURED                              = 'PAYMENT_ALREADY_CAPTURED';
+
+    // payout links
+    const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
+    const PAYOUT_SOURCE_UPDATER_JOB_RELEASED                    = 'PAYOUT_SOURCE_UPDATER_JOB_RELEASED';
+    const PAYOUT_SOURCE_UPDATER_JOB_DELETED                     = 'PAYOUT_SOURCE_UPDATER_JOB_DELETED';
+    const PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS        = 'PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS';
+    const PAYOUT_LINK_SHORT_URL_CREATED                         = 'PAYOUT_LINK_SHORT_URL_CREATED';
+    const PAYOUT_LINK_SETTINGS_UPDATE                           = 'PAYOUT_LINK_SETTINGS_UPDATE';
+    const PAYOUT_LINK_UN_HANDLED_PAYOUT_STATUS                  = 'PAYOUT_LINK_UN_HANDLED_PAYOUT_STATUS';
+    const PAYOUT_LINK_INVALIDATING_REDIS_TOKEN                  = 'PAYOUT_LINK_INVALIDATING_REDIS_TOKEN';
+    const PAYOUT_LINK_PROCESS_CONTACT_REQUEST                   = 'PAYOUT_LINK_PROCESS_CONTACT_REQUEST';
+    const PAYOUT_LINK_SHORT_URL_GENERATION_FAILED               = 'PAYOUT_LINK_SHORT_URL_GENERATION_FAILED';
+    const PAYOUT_LINK_CUSTOMER_OTP_GENERATE                     = 'PAYOUT_LINK_CUSTOMER_OTP_GENERATE';
+    const PAYOUT_LINK_CUSTOMER_OTP_VERIFY                       = 'PAYOUT_LINK_CUSTOMER_OTP_VERIFY';
+    const PAYOUT_LINK_CUSTOMER_OTP_REQUEST                      = 'PAYOUT_LINK_CUSTOMER_OTP_REQUEST';
+    const PAYOUT_LINK_CUSTOMER_OTP_RESPONSE                     = 'PAYOUT_LINK_CUSTOMER_OTP_RESPONSE';
+    const PAYOUT_LINK_CUSTOMER_OTP_SMS_FAILED                   = 'PAYOUT_LINK_CUSTOMER_OTP_SMS_FAILED';
+    const PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED                  = 'PAYOUT_LINK_CUSTOMER_OTP_MAIL_FAILED';
+    const PAYOUT_LINK_CANCEL_REQUEST                            = 'PAYOUT_LINK_CANCEL_REQUEST';
+    const PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD                 = 'PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD';
+    const PAYOUT_LINK_PAYOUT_UPDATE_PUSH                        = 'PAYOUT_LINK_PAYOUT_UPDATE_PUSH';
+    const PAYOUT_SOURCE_UPDATER_JOB                             = 'PAYOUT_SOURCE_UPDATER_JOB';
+
     const PAYMENT_PAYOUT_REQUEST                                = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                                  = 'PAYMENT_AUTO_CAPTURE';
     const PAYMENT_AUTO_CAPTURE_CRON                             = 'PAYMENT_AUTO_CAPTURE_CRON';
@@ -282,6 +305,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DELETED_SUSPENDED_MERCHANT_FROM_MAILING_LIST          = 'DELETED_SUSPENDED_MERCHANT_FROM_MAILING_LIST';
     const FTA_RECON_ALERT_FAILED                                = 'FTA_RECON_ALERT_FAILED';
     const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
+    const INVALID_EMAIL_CANNOT_MASK                             = 'INVALID_EMAIL_CANNOT_MASK';
 
     const RAZORX_VARIANT_3DS                                    = 'RAZORX_VARIANT_3DS';
     const RAZORX_VARIANT_SHIELD                                 = 'RAZORX_VARIANT_SHIELD';
@@ -858,6 +882,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECON_JOB_DISPATCHED                              = 'FTA_RECON_JOB_DISPATCHED';
     const FTA_RECONCILE_SKIPPED                                 = 'FTA_RECONCILE_SKIPPED';
     const FTA_RECONCILE_JOB_FAILED                              = 'FTA_RECONCILE_JOB_FAILED';
+    const PAYOUT_SOURCE_UPDATER_JOB_FAILED                      = 'PAYOUT_SOURCE_UPDATER_JOB_FAILED';
     const INITIATE_FUND_TRANSFER                                = 'INITIATE_FUND_TRANSFER';
     const DISPATCH_FOR_SETTLEMENT_INITIATE                      = 'DISPATCH_FOR_SETTLEMENT_INITIATE';
     const INVALID_ATTEMPT_ID                                    = 'INVALID_ATTEMPT_ID';
@@ -2009,11 +2034,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_REQUEST_RETRIED_DUE_TO_CURL_ISSUES            = 'GATEWAY_REQUEST_RETRIED_DUE_TO_CURL_ISSUES';
     const GATEWAY_REQUEST_CURL_INFO                             = 'GATEWAY_REQUEST_CURL_INFO';
 
+    // Payout Link Codes
+
     const PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST                 = 'PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST';
     const PAYOUT_FROM_CUSTOMER_WALLET_CREATE_REQUEST            = 'PAYOUT_FROM_CUSTOMER_WALLET_CREATE_REQUEST';
     const PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST               = 'PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST';
     const PAYOUT_FOR_PAYMENT_CREATE_REQUEST                     = 'PAYOUT_FOR_PAYMENT_CREATE_REQUEST';
     const PAYOUT_CREATED                                        = 'PAYOUT_CREATED';
+    const PAYOUT_CUSTOMER_OTP_REQUEST                           = 'PAYOUT_CUSTOMER_OTP_REQUEST';
+
     const QUEUED_PAYOUT_CREATED                                 = 'QUEUED_PAYOUT_CREATED';
     const PENDING_PAYOUT_CREATED                                = 'PENDING_PAYOUT_CREATED';
     const PAYOUT_REVERSAL_INITIATED                             = 'PAYOUT_REVERSAL_INITIATED';

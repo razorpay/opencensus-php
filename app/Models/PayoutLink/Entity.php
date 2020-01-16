@@ -184,4 +184,175 @@ class Entity extends Base\PublicEntity
         self::NOTES                => [],
         self::CANCELLED_AT         => null,
     ];
+
+    // -------------------------------------- Relations -------------------------------
+
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User\Entity::class);
+    }
+
+    public function fundAccount()
+    {
+        return $this->belongsTo(FundAccount\Entity::class);
+    }
+
+    public function contact()
+    {
+        return $this->belongsTo(Contact\Entity::class);
+    }
+
+    public function payouts()
+    {
+        return $this->hasMany(Payout\Entity::class);
+    }
+
+    // -------------------------------------- End Relations ---------------------------
+
+    // ----------------------------------------- Getters ------------------------------
+    /**
+     * There can be multiple payouts associated with a Payout Link
+     * We fetch the latest payout associated with it.
+     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Relations\HasMany|object|null
+     */
+    public function payout()
+    {
+        return $this->payouts()->orderBy('created_at', 'desc')->first();
+    }
+
+    public function getReceipt()
+    {
+        return $this->getAttribute(self::RECEIPT);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getFundAccountId()
+    {
+        return $this->getAttribute(self::FUND_ACCOUNT_ID);
+    }
+
+    public function getPurpose()
+    {
+        return $this->getAttribute(self::PURPOSE);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getContactId()
+    {
+        return $this->getAttribute(self::CONTACT_ID);
+    }
+
+    public function getContactName()
+    {
+        return $this->getAttribute(self::CONTACT_NAME);
+    }
+
+    public function getContactPhoneNumber()
+    {
+        return $this->getAttribute(self::CONTACT_PHONE_NUMBER);
+    }
+
+    public function getContactEmail()
+    {
+        return $this->getAttribute(self::CONTACT_EMAIL);
+    }
+
+    // -------------------------------------- End Getters -----------------------------
+
+    // ----------------------------------------- Setters ------------------------------
+
+    public function setShortUrl(string $shortUrl)
+    {
+        $this->setAttribute(self::SHORT_URL, $shortUrl);
+    }
+
+    public function setStatus($newStatus)
+    {
+        $currentStatus = $this->getStatus();
+
+        if ($currentStatus === $newStatus)
+        {
+            return;
+        }
+
+        Status::validateStatusUpdate($newStatus, $currentStatus, $this->getId());
+
+        $this->setAttribute(self::STATUS, $newStatus);
+
+        if ($newStatus === Status::CANCELLED)
+        {
+            $currentTime = Carbon::now()->getTimestamp();
+
+            $this->setAttribute(self::CANCELLED_AT, $currentTime);
+        }
+    }
+
+    // -------------------------------------- End Setters -----------------------------
+
+    // ----------------------------------------- Mutators ------------------------------
+
+    public function setPublicStatusAttribute(array & $attributes)
+    {
+        $internalStatus = $this->getAttribute(self::STATUS);
+
+        $externalStatus = Status::getPublicStatusFromInternalStatus($internalStatus);
+
+        $attributes[self::STATUS] = $externalStatus;
+    }
+
+    public function setPublicContactIdAttribute(array & $attributes)
+    {
+        $attributes[self::CONTACT_ID] = Contact\Entity::getSignedIdOrNull($attributes[self::CONTACT_ID]);
+    }
+
+    public function setPublicFundAccountIdAttribute(array & $attributes)
+    {
+        $attributes[self::FUND_ACCOUNT_ID] = FundAccount\Entity::getSignedIdOrNull($attributes[self::FUND_ACCOUNT_ID]);
+    }
+
+    public function setPublicContactAttribute(array & $attributes)
+    {
+        $attributes[self::CONTACT] = [
+            self::NAME         => $this->getContactName(),
+            self::EMAIL        => $this->getContactEmail(),
+            self::PHONE_NUMBER => $this->getContactPhoneNumber(),
+        ];
+    }
+    // -------------------------------------- End Mutators -----------------------------
+
+    public function getPayoutUtr()
+    {
+        if ($this->payout() !== null)
+        {
+            return $this->payout()->getUtr();
+        }
+    }
 }
