@@ -280,6 +280,13 @@ class Reporting implements ExternalService
         //
         $input['mode'] = $this->mode;
 
+        /**
+         * Adds the merchant id of the merchant who initiated the request
+         * irrespective of the case whether the request was for the merchant itself
+         * or for one of it's linked account
+         */
+        $input['generated_by'] = $this->ba->authCreds->getKey();
+
         $path = self::LOG_PATH;
 
         if (empty($input['emails']) === true)
