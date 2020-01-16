@@ -5582,6 +5582,9 @@ ALTER TABLE `merchant_documents`
 ALTER TABLE pricing
      MODIFY COLUMN amount_range_min BIGINT(20) unsigned DEFAULT NULL;
 
+ALTER TABLE merchant_details
+    ADD COLUMN kyc_id char(14) DEFAULT NULL ;
+
 ALTER TABLE payouts
    ADD COLUMN payout_link_id CHAR(14) DEFAULT NULL AFTER `idempotency_key`,
    ADD INDEX `payouts_payout_link_id_index` (`payout_link_id`);

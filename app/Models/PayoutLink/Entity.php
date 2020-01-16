@@ -355,5 +355,4 @@ class Entity extends Base\PublicEntity
             return $this->payout()->getUtr();
         }
     }
-
 }

@@ -93,6 +93,14 @@ return [
         'secret'    => env('RAVEN_SECRET'),
     ],
 
+    'kyc' => [
+        'mock'           => env('KYC_MOCK', false),
+        'url'            => env('KYC_URL'),
+        'password'       => env('KYC_PASSWORD'),
+        'authentication' => env('KYC_AUTH_NAME'),
+        'x_service_id'   => env('KYC_SERVICE_ID')
+    ],
+
     'reminders' => [
         'mock'             => env('REMINDERS_MOCK'),
         'url'              => env('REMINDERS_URL'),
@@ -426,10 +434,6 @@ return [
 
     'automation' => [
         'secret' => env('AUTOMATION_API_SECRET'),
-    ],
-
-    'kyc_service' => [
-        'mock' => env('KYC_SERVICE_MOCK', false),
     ],
 
     'salesforce' => [

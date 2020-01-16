@@ -224,6 +224,41 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertArraySelectiveEquals($acquirerData, $payment[Payment\Entity::ACQUIRER_DATA]);
     }
 
+    public function testPaymentFailedVerifyFailed()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content = [
+                NbPlusPaymentService\Response::RESPONSE  => null,
+                NbPlusPaymentService\Response::ERROR     => [
+                    NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                    NbPlusPaymentService\Error::CAUSE => [
+                        NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'BAD_REQUEST_PAYMENT_FAILED'
+                    ]
+                ],
+            ];
+        });
+
+        $paymentArray = $this->getDefaultNetbankingPaymentArray();
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            GatewayErrorException::class);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->verifyPayment($payment[Payment\Entity::ID]);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
+
+        $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
+    }
+
     public function testAuthorizeHandleErrorResponse()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
@@ -257,43 +292,6 @@ class NbPlusPaymentServiceTest extends TestCase
         $this->assertEquals('BAD_REQUEST_ERROR', $payment[Payment\Entity::ERROR_CODE]);
 
         $this->assertEquals('BAD_REQUEST_PAYMENT_FAILED', $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
-    }
-
-    public function testAuthorizeHandleServerErrorResponse()
-    {
-        $this->mockServerContentFunction(function(&$content, $action = null)
-        {
-            $content = [
-                NbPlusPaymentService\Response::RESPONSE => null,
-                NbPlusPaymentService\Response::ERROR    => [
-                    NbPlusPaymentService\Error::CODE  => 'GATEWAY',
-                    NbPlusPaymentService\Error::CAUSE => [
-                        NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'SERVER_ERROR'
-                    ]
-                ],
-            ];
-        });
-
-        $paymentArray = $this->getDefaultNetbankingPaymentArray();
-
-        $this->makeRequestAndCatchException(
-            function() use ($paymentArray)
-            {
-                $this->doAuthPayment($paymentArray);
-            },
-            \RZP\Exception\LogicException::class);
-
-        $payment = $this->getLastPayment(true);
-
-        $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
-
-        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
-
-        $this->assertEquals($this->terminal->getId(), $payment[Payment\Entity::TERMINAL_ID]);
-
-        $this->assertEquals('SERVER_ERROR', $payment[Payment\Entity::ERROR_CODE]);
-
-        $this->assertEquals('SERVER_ERROR', $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
     }
 
     public function testAuthorizeHandleGatewayErrorResponse()
