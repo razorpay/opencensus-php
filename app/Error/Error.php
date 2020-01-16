@@ -359,7 +359,7 @@ class Error extends Support\Fluent
             self::DESCRIPTION       => $description,
         );
 
-        if( $this->app['basicauth'] !== null)
+        if( $this->app['basicauth'] !== null and $this->app['basicauth']->getMerchant() !== null)
         {
             $merchant = $this->app['basicauth']->getMerchant();
 
