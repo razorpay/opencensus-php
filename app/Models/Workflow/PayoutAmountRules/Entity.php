@@ -66,6 +66,7 @@ class Entity extends Base\Entity
         self::MERCHANT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::STEPS,
     ];
 
     protected $dates = [

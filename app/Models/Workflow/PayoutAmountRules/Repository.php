@@ -27,7 +27,6 @@ class Repository extends Base\Repository
     public function fetchWorkflowRulesForMerchant(string $merchantId, array $relations = [])
     {
         return $this->newQuery()
-                    ->with($relations)
                     ->merchantId($merchantId)
                     ->get();
     }
@@ -48,9 +47,6 @@ class Repository extends Base\Repository
 
         $offset = $params[self::SKIP] ?? self::DEFAULT_FETCH_OFFSET;
 
-        // TODO: cehck if this is required. remove otherwise. Prefer removing this
-        $merchantId = $params[Entity::MERCHANT_ID] ?? null;
-
         $query = $this->repo->permission->newQuery()
                                         ->where(Admin\Permission\Entity::NAME, Admin\Permission\Name::CREATE_PAYOUT)
                                         ->where(Admin\Permission\Entity::CATEGORY, Admin\Permission\Category::PAYOUTS);
@@ -70,9 +66,9 @@ class Repository extends Base\Repository
                                       ->orgId($orgId)
                                       ->distinct();
 
-        if (empty($merchantId) === false)
+        if (empty($this->merchant) === false)
         {
-            $query->merchantId($merchantId);
+            $query->merchantId($this->merchant->getId());
         }
 
         $query->skip($offset)
