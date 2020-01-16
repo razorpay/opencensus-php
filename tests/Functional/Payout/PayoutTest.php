@@ -1502,7 +1502,7 @@ class PayoutTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
 
-        $this->ba->privateAuth('rzp_test_TheLiveAuthKey');
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->liveSetUp();
 
