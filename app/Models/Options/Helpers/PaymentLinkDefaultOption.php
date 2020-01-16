@@ -52,7 +52,7 @@ class PaymentLinkDefaultOption implements DefaultOption
                             'upi' => "1",
                             'emi' => "1",
                             'upi_intent' => "0",
-                            'qr' => "0"
+                            'qr' => "1"
                         ),
                     'features' =>
                         array (

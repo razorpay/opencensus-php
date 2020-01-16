@@ -1461,6 +1461,8 @@ class Entity extends Base\PublicEntity
      * if convert_currency === null, then international payments are off
      * if convert_currency === false, then conversion is handled by Gateway
      * if convert_currency === true, then conversion is handled by us
+     *
+     * @param $val
      */
     public function setCurrencyConversion($val)
     {
