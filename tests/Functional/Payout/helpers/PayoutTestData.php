@@ -263,6 +263,7 @@ return [
                 'payout_ids' => [],
                 'token'      => 'BUIj3m2Nx2VvVj',
                 'otp'        => '0007',
+                'comment'    => 'Bulk Approving'
             ],
         ],
         'response' => [
@@ -284,7 +285,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'status' => 'pending',
+                'status' => 'rejected',
             ],
         ],
     ],

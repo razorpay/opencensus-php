@@ -19,6 +19,7 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Settlement\Channel as BankChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
+use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 
 class Validator extends Base\Validator
 {
@@ -120,11 +121,13 @@ class Validator extends Base\Validator
         Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
         User\Entity::OTP         => 'required|filled|min:4',
         User\Entity::TOKEN       => 'required|unsigned_id',
+        ActionChecker::COMMENT   => 'sometimes|string|max:255',
     ];
 
     protected static $bulkRejectRules = [
         Entity::PAYOUT_IDS       => 'required|array',
         Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
+        ActionChecker::COMMENT   => 'sometimes|string|max:255',
     ];
 
     protected function validateMethod($attribute, $method)
