@@ -1616,6 +1616,9 @@ class Gateway
         IFSC::CBIN => Gateway::NETBANKING_CBI,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        IFSC::CIUB => Gateway::NETBANKING_CUB,
+        IFSC::SIBL => Gateway::NETBANKING_SIB,
+        IFSC::YESB => Gateway::NETBANKING_YESB,
     ];
 
 
