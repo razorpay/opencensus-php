@@ -827,6 +827,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_INVALID                                              = 'BAD_REQUEST_MERCHANT_INVALID';
     const BAD_REQUEST_INVALID_SUBCATEGORY                                           = 'BAD_REQUEST_INVALID_SUBCATEGORY';
     const INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW                                  = 'INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW';
+    const UNHANDLED_KYC_PROCESSOR_TYPE                                              = 'UNHANDLED_KYC_PROCESSOR_TYPE';
     const GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION                            = 'GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION';
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                      = 'BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET';
     const BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET                                      = 'BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET';
@@ -892,6 +893,10 @@ class ErrorCode
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
     const BAD_REQUEST_UFH_INTEGRATION                                               = 'BAD_REQUEST_UFH_INTEGRATION';
     const BAD_REQUEST_CAPITAL_INTEGRATION                                           = 'BAD_REQUEST_CAPITAL_INTEGRATION';
+    const BAD_REQUEST_KYC_INTEGRATION                                               = 'BAD_REQUEST_KYC_INTEGRATION';
+    const BAD_REQUEST_INVALID_STATUS_CODE                                           = 'BAD_REQUEST_INVALID_STATUS_CODE';
+    const BAD_REQUEST_KYC_ID_MISSING                                                = 'BAD_REQUEST_KYC_ID_MISSING';
+    const BAD_REQUEST_INVALID_RESPONSE_BODY                                         = 'BAD_REQUEST_INVALID_RESPONSE_BODY';
 
     const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
     const SERVER_ERROR_NO_TERMINAL_FOUND                                            = 'SERVER_ERROR_NO_TERMINAL_FOUND';

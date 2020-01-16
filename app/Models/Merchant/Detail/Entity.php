@@ -7,6 +7,7 @@ use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Constants\IndianStates;
+use RZP\Models\Merchant\AutoKyc;
 
 /**
  * Class Entity
@@ -15,7 +16,7 @@ use RZP\Constants\IndianStates;
  *
  * @package RZP\Models\Merchant\Detail
  */
-class Entity extends Base\PublicEntity
+class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 {
     const MERCHANT_ID                        = 'merchant_id';
     const CONTACT_NAME                       = 'contact_name';
@@ -1026,5 +1027,10 @@ class Entity extends Base\PublicEntity
     public function setKycId(string $kycId)
     {
         $this->setAttribute(self::KYC_ID, $kycId);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getMerchantId();
     }
 }

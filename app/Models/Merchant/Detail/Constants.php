@@ -5,8 +5,9 @@ namespace RZP\Models\Merchant\Detail;
 class Constants
 {
     // input params for pan verifier
-    const PAN_NUMBER   = 'pan_number';
-    const PROMOTER_PAN = 'promoter_pan';
+    const PAN_NUMBER        = 'pan_number';
+    const PROMOTER_PAN      = 'promoter_pan';
+    const PROMOTER_PAN_NAME = 'promoter_pan_name';
 
     const POI_STATUS                       = 'poi_status';
     const POA_STATUS                       = 'poa_status';
@@ -39,8 +40,6 @@ class Constants
     const FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME = 'fuzzy_match_percentage_with_bank_account_name';
     const BANK_VERIFICATION_THRESHOLD_FOR_PAN           = 'bank_detail_verification_threshold_for_pan';
     const BANK_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT  = 'bank_detail_verification_threshold_for_bank_account';
-    const RESPONSE_TIME                                 = 'response_time';
-    const STATUS_CODE                                   = 'status_code';
 
     // merchant verification
     const VERIFICATION    = 'verification';
@@ -48,9 +47,63 @@ class Constants
 
     const DUMMY_ACTIVATION_FILE = '100000000Dummy';
 
+    //kyc integration constants
+    const ENTITY_ID              = 'entity_id';
+    const KYC_ID                 = 'kyc_id';
+    const STATUS_CODE            = 'status_code';
+    const PAN_NAME_FROM_NSDL     = 'pan_name_from_nsdl';
+    const INTERNAL_ERROR         = 'internal_error';
+    const INTERNAL_ERROR_CODE    = 'internal_error_code';
+    const INTERNAL_ERROR_MESSAGE = 'internal_error_message';
+    const CODE                   = 'code';
+    const MESSAGE                = 'message';
+    const NAME                   = 'name';
+    const DOCUMENTS              = 'documents';
+    const CONTEXT                = 'context';
+    const METHOD                 = 'method';
+
+    const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
+    const OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME = 'ocr_match_percentage_with_pan_name';
+
+    const DOCUMENT_TYPES = [
+        self::PERSONAL_PAN    => 'personal_pan',
+        self::AADHAAR         => 'aadhaar',
+        self::PASSPORT        => 'passport',
+        self::VOTERS_ID       => 'voters_id',
+        self::DRIVERS_LICENSE => 'drivers_license'
+    ];
+
+    const KYC_API_TYPES = ['AUTH' => 'auth', 'OCR' => 'ocr'];
+
+    const RESPONSE_BODY          = 'response_body';
+    const RESPONSE_TIME          = 'response_time';
+    const API_STATUS_CODE        = 'api_status_code';
+    const DOCUMENT_FILE_ID       = 'document_file_id';
+
+    // kyc service error codes
+    const  VALIDATION_ERROR = 'VALIDATION_ERROR';
+    const  NO_DATA_FOUND    = 'NO_DATA_FOUND';
+    const  BAD_REQUEST      = 'BAD_REQUEST';
+    const  UNAUTHORIZED     = 'UNAUTHORIZED';
+
+
+    // kyc service processor type
+    const PROCESSOR_TYPE = "processorType";
+    const POI            = 'POI';
+    const POA            = 'POA';
+    const REGISTER       = 'REGISTER';
+
+    // kyc service document type
+    const PERSONAL_PAN    = 'PERSONAL_PAN';
+    const AADHAAR         = 'AADHAAR';
+    const PASSPORT        = 'PASSPORT';
+    const VOTERS_ID       = 'VOTERS_ID';
+    const DRIVERS_LICENSE = 'DRIVERS_LICENSE';
+
     // flows used during activation
     const ACTIVATION = 'activaiton';
     const INTERNATIONAL_ACTIVATION = 'international_activation';
 
     const ACTIVATION_FLOWS = [self::ACTIVATION, self::INTERNATIONAL_ACTIVATION];
 }
+

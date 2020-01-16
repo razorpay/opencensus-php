@@ -2256,12 +2256,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CAPITAL_INTEGRATION_API_REQUEST                       = 'CAPITAL_INTEGRATION_API_REQUEST';
     const CAPITAL_INTEGRATION_API_RESPONSE                      = 'CAPITAL_INTEGRATION_API_RESPONSE';
 
+
+    //KYC service integration
+    const KYC_SERVICE_API_REQUEST                               = 'KYC_SERVICE_API_REQUEST';
+    const KYC_SERVICE_API_RESPONSE                              = 'KYC_SERVICE_API_RESPONSE';
+    const KYC_SERVICE_INTEGRATION_ERROR                         = 'KYC_SERVICE_INTEGRATION_ERROR';
+
     // Salesforce integration
     const SALESFORCE_ACCESS_TOKEN_ERROR                         = 'SALESFORCE_ACCESS_TOKEN_ERROR';
     const SALESFORCE_INTEGRATION_ERROR                          = 'SALESFORCE_INTEGRATION_ERROR';
     const SALESFORCE_INTEGRATION_API_REQUEST                    = 'SALESFORCE_INTEGRATION_API_REQUEST';
     const SALESFORCE_INTEGRATION_API_RESPONSE                   = 'SALESFORCE_INTEGRATION_API_RESPONSE';
-
 
     // Banking account
     const BANKING_ACCOUNT_EDIT                                  = 'BANKING_ACCOUNT_EDIT';
