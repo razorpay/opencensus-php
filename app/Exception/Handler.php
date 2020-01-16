@@ -414,9 +414,19 @@ class Handler extends ExceptionHandler
 
         $data = $exception->getData();
 
-        $paymentId = $data['payment_id'];
+        $paymentId = null;
 
-        $orderId = $data['payment_id'];
+        $orderId = null;
+
+        if( isset($data['payment_id']) === true )
+        {
+            $paymentId = $data['payment_id'];
+        }
+
+        if( isset($data['order_id']) === true )
+        {
+            $orderId = $data['order_id'];
+        }
 
         $merchant = $this->app['basicauth']->getMerchant();
 
