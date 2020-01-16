@@ -54,6 +54,7 @@ class Event
     const PAYOUT_QUEUED                     = 'payout.queued';
     const PAYOUT_INITIATED                  = 'payout.initiated';
     const PAYOUT_UPDATED                    = 'payout.updated';
+    const PAYOUT_REJECTED                   = 'payout.rejected';
     const REFUND_SPEED_CHANGED              = 'refund.speed_changed';
     const REFUND_PROCESSED                  = 'refund.processed';
     const REFUND_FAILED                     = 'refund.failed';
@@ -120,6 +121,7 @@ class Event
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
         self::PAYOUT_UPDATED,
+        self::PAYOUT_REJECTED,
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
@@ -192,6 +194,7 @@ class Event
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
         self::PAYOUT_UPDATED,
+        self::PAYOUT_REJECTED,
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
@@ -284,7 +287,8 @@ class Event
         self::PAYOUT_LINK_PROCESSED             => 62,
         self::PAYOUT_LINK_PROCESSING            => 63,
         self::PAYOUT_LINK_CANCELLED             => 64,
-        self::PAYOUT_LINK_ATTEMPTED             => 65
+        self::PAYOUT_LINK_ATTEMPTED             => 65,
+        self::PAYOUT_REJECTED                   => 66,
     ];
 
     /**
@@ -354,6 +358,7 @@ class Event
         self::PAYOUT_LINK_CANCELLED             => [Product::BANKING],
         self::PAYOUT_LINK_ATTEMPTED             => [Product::BANKING],
         self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
+        self::PAYOUT_REJECTED                   => [Product::PRIMARY, Product::BANKING],
     ];
 
     /**
@@ -423,6 +428,7 @@ class Event
         self::PAYOUT_LINK_CANCELLED             => Entity::PAYOUT_LINK,
         self::PAYOUT_LINK_ATTEMPTED             => Entity::PAYOUT_LINK,
         self::PAYOUT_UPDATED                    => Entity::PAYOUT,
+        self::PAYOUT_REJECTED                   => Entity::PAYOUT,
     ];
 
     public static $eventsToFeatureMap = [
@@ -455,6 +461,7 @@ class Event
         self::TERMINAL_ACTIVATED                => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_FAILED                   => Feature\Constants::TERMINAL_ONBOARDING,
         self::PAYOUT_UPDATED                    => Feature\Constants::PAYOUT,
+        self::PAYOUT_REJECTED                   => Feature\Constants::PAYOUT,
     ];
 
     /**
