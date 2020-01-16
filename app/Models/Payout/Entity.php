@@ -1547,7 +1547,7 @@ class Entity extends Base\PublicEntity
                 'name'     => $userData['name'] ?? '',
                 'email'    => $userData['email'] ?? '',
                 'approved' => $checker['approved'],
-                'comment' => $checker['comment'],
+                'comment'  => $checker['comment'],
             ];
         }
 

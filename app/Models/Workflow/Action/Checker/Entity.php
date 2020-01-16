@@ -60,6 +60,7 @@ class Entity extends Base\Entity
         self::ACTION_ID,
         self::STEP_ID,
         self::APPROVED,
+        self::COMMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
