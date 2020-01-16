@@ -265,9 +265,14 @@ class Constants
     const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
 
     /**
- * Enables workflow feature on Payout for Business Banking (RazorpayX)
- */
+     * Enables workflow feature on Payout for Business Banking (RazorpayX)
+     */
     const PAYOUT_WORKFLOWS              = 'payout_workflows';
+
+    /**
+     * Skips workflow for API requests for creating payouts for Business Banking (RazorpayX)
+     */
+    const SKIP_WORKFLOWS_FOR_API        = 'skip_workflow_for_api';
 
     /**
      * Aggregator Partner + OAuth Client access

@@ -20,7 +20,9 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+
 
 /**
  * Payouts base where we will have a generic flow for the customer/merchants payouts.
@@ -280,10 +282,19 @@ class Base extends BaseCore
     protected function handleWorkflowsIfApplicable(callable $createPayoutCallback)
     {
         $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
+
+        $hasSkipWorkflowFeature = $this->merchant->isFeatureEnabled(Features::SKIP_WORKFLOWS_FOR_API);
+
         $isApiRequest = ($this->app['basicauth']->getRequestOriginProduct() !== ProductType::BANKING) ? true : false;
 
-        if ($areWorkflowsEnabled === false ||
-            $isApiRequest === true)
+        //
+        // Skip workflow if its not enabled for the merchant or
+        // if the workflow is enabled, check if the request if from API and merchant wants to
+        // skip workflow for requests through API
+        //
+        if (($areWorkflowsEnabled === false) or
+            (($isApiRequest === true) and
+                ($hasSkipWorkflowFeature === true)))
         {
             //
             // Workflows feature was not enabled.
@@ -317,6 +328,7 @@ class Base extends BaseCore
                  ->setEntityAndId($payout->getEntity(), $payout->getId())
                  ->setPermission(Permission\Name::CREATE_PAYOUT)
                  ->handle((new \stdClass), $payout);
+
         }
         catch (Exception\EarlyWorkflowResponse $ex)
         {

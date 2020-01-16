@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payout;
 
+use DB;
 use Mail;
 use Config;
 
@@ -9,6 +10,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Admin;
 use RZP\Models\Payout;
+use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
@@ -39,6 +41,8 @@ class PayoutTest extends TestCase
     use PayoutTrait;
     use WebhookTrait;
     use MocksDnsTrait;
+
+    const DEFAULT_WORKFLOW_ID = 'workflowId1034';
 
     public function setUp()
     {
@@ -2047,5 +2051,170 @@ class PayoutTest extends TestCase
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
+    }
+
+    public function testWorkflowTriggerForBankingRequest()
+    {
+        $this->fixtures->create('workflow', ['id' => self::DEFAULT_WORKFLOW_ID]);
+
+        $permissionId = DB::table('permissions')->where('name','=','create_payout')
+            ->where('category','=','payouts')
+            ->value('id');
+
+        DB::table('workflow_permissions')->insert(
+            [
+                'workflow_id'      => self::DEFAULT_WORKFLOW_ID,
+                'permission_id'    => $permissionId
+            ]
+        );
+
+        DB::table(Table::WORKFLOW_PAYOUT_AMOUNT_RULES)->insert(
+            [
+                [
+                    'id'            => 345,
+                    'merchant_id'   => '10000000000000',
+                    'condition'     => null,
+                    'workflow_id'   => self::DEFAULT_WORKFLOW_ID,
+                    'min_amount'    => 0,
+                    'max_amount'    => 100000000,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ]
+            ]
+        );
+
+        DB::table(Table::FEATURE)->insert(
+            [
+                [
+                    'id'            => 'feature_q5x0y3',
+                    'name'          => 'payout_workflows',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ]
+            ]
+        );
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testDefaultWorkflowBehaviourForAPIRequest()
+    {
+        //
+        // default behaviour is if workflow is enabled, it should get triggerd
+        // here, merchant doesn't want the workflow to be skipped for API request
+        //
+        $this->fixtures->create('workflow', ['id' => self::DEFAULT_WORKFLOW_ID]);
+
+        $permissionId = DB::table('permissions')->where('name','=','create_payout')
+            ->where('category','=','payouts')
+            ->value('id');
+
+        DB::table('workflow_permissions')->insert(
+            [
+                'workflow_id'      => self::DEFAULT_WORKFLOW_ID,
+                'permission_id'    => $permissionId
+            ]
+        );
+
+        DB::table(Table::WORKFLOW_PAYOUT_AMOUNT_RULES)->insert(
+            [
+                [
+                    'id'            => 345,
+                    'merchant_id'   => '10000000000000',
+                    'condition'     => null,
+                    'workflow_id'   => self::DEFAULT_WORKFLOW_ID,
+                    'min_amount'    => 0,
+                    'max_amount'    => 100000000,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ]
+            ]
+        );
+
+        DB::table(Table::FEATURE)->insert(
+            [
+                [
+                    'id'            => 'feature_q5x0y3',
+                    'name'          => 'payout_workflows',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ]
+            ]
+        );
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testSkipWorkflowForAPIRequest()
+    {
+        //
+        // Here workflows are enabled for create payouts,
+        // However user wants to disable the workflow for API request
+        //
+        $this->fixtures->create('workflow', ['id' => self::DEFAULT_WORKFLOW_ID]);
+
+        $permissionId = DB::table('permissions')->where('name','=','create_payout')
+            ->where('category','=','payouts')
+            ->value('id');
+
+        DB::table('workflow_permissions')->insert(
+            [
+                'workflow_id'      => self::DEFAULT_WORKFLOW_ID,
+                'permission_id'    => $permissionId
+            ]
+        );
+
+        DB::table(Table::WORKFLOW_PAYOUT_AMOUNT_RULES)->insert(
+            [
+                [
+                    'id'            => 345,
+                    'merchant_id'   => '10000000000000',
+                    'condition'     => null,
+                    'workflow_id'   => self::DEFAULT_WORKFLOW_ID,
+                    'min_amount'    => 0,
+                    'max_amount'    => 100000000,
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ]
+            ]
+        );
+
+        DB::table(Table::FEATURE)->insert(
+            [
+                [
+                    'id'            => 'feature_ghx0y3',
+                    'name'          => 'payout_workflows',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ]
+            ]
+        );
+
+        DB::table(Table::FEATURE)->insert(
+            [
+                [
+                    'id'            => 'feature_r5x4y3',
+                    'name'          => 'skip_workflow_for_api',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => time(),
+                    'updated_at'    => time()
+                ]
+            ]
+        );
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 }
