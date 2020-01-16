@@ -31,7 +31,7 @@ class Provider
      * payment to a virtual account.
      */
     const DASHBOARD = 'dashboard';
-
+    const AUTOMATION = 'automation';
     // Qr Code Providers
     const BHARAT_QR = 'bharat_qr';
     const UPI_QR    = 'upi_qr';
@@ -86,6 +86,9 @@ class Provider
             self::KOTAK_IP,
         ],
         self::DASHBOARD => [
+            '*',
+        ],
+        self::AUTOMATION => [
             '*',
         ],
     ];
