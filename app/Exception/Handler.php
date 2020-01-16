@@ -6,6 +6,7 @@ use App;
 use Response;
 use Exception;
 use ApiResponse;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -389,7 +390,7 @@ class Handler extends ExceptionHandler
 
         $error = $exception->getError();
 
-        $this->addExceptionDataToError($exception);
+        $this->fetchFeatureFlagAndSetMetadata($exception);
 
         return ApiResponse::generateErrorResponse($error, $debug);
     }
@@ -402,32 +403,26 @@ class Handler extends ExceptionHandler
 
         $data = $exception->getData();
 
-        $this->addExceptionDataToError($exception);
+        $this->fetchFeatureFlagAndSetMetadata($exception);
 
         return ApiResponse::generateNachNbErrorResponse($error, $data, $debug);
     }
 
-    protected function addExceptionDataToError($exception)
+    protected function fetchFeatureFlagAndSetMetadata($exception)
     {
         $error = $exception->getError();
 
         $data = $exception->getData();
 
-        if(isset($data['payment_id']))
-        {
-            $error['payment_id']  = $data['payment_id'];
-        }
+        $paymentId = $data['payment_id'];
 
-        if(isset($data['merchant_id']))
-        {
-            $error['merchant_id'] = $data['merchant_id'];
-        }
+        $orderId = $data['payment_id'];
 
-        if(isset($data['order_id']))
-        {
-            $error['order_id']    = $data['order_id'];
-        }
+        $merchant = $this->app['basicauth']->getMerchant();
 
+        $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+
+        $error->setMetadata($isMetadataFeatureEnabled, $paymentId, $orderId);
     }
 
     protected function getExceptionData($exception)

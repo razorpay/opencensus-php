@@ -195,58 +195,23 @@ class Error extends Support\Fluent
         $this->setAttribute(self::HTTP_STATUS_CODE, $code);
     }
 
-    protected function setMetadata()
+    public function setMetadata($isMetadataFeatureEnabled, $paymentId, $orderId)
     {
         $metadata = null;
 
-        $featureRepository = new Repository();
-
-        $isMetadataFeatureEnabled = false;
-
-        $merchantId = $this->get('merchant_id');
-
-        if($merchantId !== null)
+        if( $isMetadataFeatureEnabled === true )
         {
-            $feature = $featureRepository->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
-                $merchantId, Constants::ERROR_METADATA_RESPONSE);
-
-            if (!empty($feature))
+            if( $paymentId !== null )
             {
-                $isMetadataFeatureEnabled = true;
-            }
-        }
-
-        if($isMetadataFeatureEnabled === true)
-        {
-            $contains = [];
-
-            $paymentId = $this->get('payment_id');
-
-            $orderId = $this->get('order_id');
-
-            if(isset($paymentId) === true)
-            {
-                array_push($contains, 'payment_id');
-
                 $metadata['payment_id'] = $paymentId;
             }
-
-            if(isset($orderId) === true)
+            if( $orderId !== null )
             {
-                array_push($contains, 'order_id');
-
                 $metadata['order_id'] = $orderId;
-            }
-
-            if(count($contains) > 0)
-            {
-                $metadata['contains'] = $contains;
             }
         }
 
         $this->setAttribute(self::METADATA, $metadata);
-
-        return $isMetadataFeatureEnabled;
     }
 
     protected function getAttribute($attr)
@@ -389,19 +354,19 @@ class Error extends Support\Fluent
     {
         $description = $isPublicRoute ? $this->getCustomerDescription() : $this->getDescription();
 
-        $isMetadataFeatureEnabled = $this->setMetadata();
-
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
         );
 
-        if($isMetadataFeatureEnabled === true)
-        {
-            $error = array_merge($error,[self::METADATA  => $this->getAttribute(self::METADATA)]);
-        }
+        $merchant = $this->app['basicauth']->getMerchant();
 
-        $this->unsetAttributes($error);
+        $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+
+        if( $isMetadataFeatureEnabled === true )
+        {
+            $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
+        }
 
         $error = $this->checkAndAddDataToErrorResp($error);
 
@@ -446,20 +411,9 @@ class Error extends Support\Fluent
 
     public function toDebugArray()
     {
-        $this->setMetadata();
-
         $error = $this->checkAndAddDataToErrorResp($this->getAttributes());
 
-        $this->unsetAttributes($error);
-
         return array('error' => $error);
-    }
-
-    protected function unsetAttributes(array &$error)
-    {
-        unset($error['payment_id']);
-        unset($error['order_id']);
-        unset($error['merchant_id']);
     }
 
     protected function getDescriptionFromErrorCode($code)
