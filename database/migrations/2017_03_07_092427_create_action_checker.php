@@ -42,7 +42,7 @@ class CreateActionChecker extends Migration
                   ->nullable();
 
             $table->string(Checker::COMMENT, 255)
-                ->nullable();
+                  ->nullable();
 
             $table->foreign(Checker::STEP_ID)
                   ->references(Step::ID)
