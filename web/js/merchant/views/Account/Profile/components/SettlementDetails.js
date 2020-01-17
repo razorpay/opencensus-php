@@ -28,7 +28,7 @@ export default class SettlementDetails extends Component {
 
   viewSettlementSchedule = () => {
     this.props.openModal({
-      size: 'regular',
+      size: 'medium',
       component: <SettlementSchedule />,
     });
 
