@@ -526,6 +526,7 @@ class Core extends Base\Core
      */
     protected function getMaskedFundAccountDetails(FundAccountEntity $fundAccount = null)
     {
+        $percentageToMask = '0.7';
 
         if ($fundAccount === null)
         {
@@ -539,21 +540,29 @@ class Core extends Base\Core
         switch ($type)
         {
             case Type::VPA:
-                $address = $details[Type::VPA][VpaEntity::ADDRESS];
+                $address = $details[Type::VPA][VpaEntity::USERNAME];
 
-                $handle = explode('@', $address)[1];
+                $handle = $details[Type::VPA][VpaEntity::HANDLE];
 
-                $address = explode('@', $address)[0];
+                $addressLen = strlen($address);
 
-                $maskedAddress = substr($address, 0, 2) .
-                                 str_repeat('*', strlen($address) - 4) .
-                                 substr($address, strlen($address) - 2, 2);
+                $handleLen = strlen($handle);
 
-                $maskedHandle = substr($handle, 0, 2) .
-                                str_repeat('*', strlen($handle) - 4) .
-                                substr($handle, strlen($handle) - 2, 2);
+                $lengthOfHandleToMask = ceil($handleLen * $percentageToMask);
+
+                $lengthOfAddressToMask = ceil($addressLen * $percentageToMask);
+
+                $maskedAddress = substr($address, 0, $addressLen - $lengthOfAddressToMask) .
+                                 str_repeat('*', $lengthOfAddressToMask);
+
+                $maskedHandle = substr($handle, 0, $handleLen - $lengthOfHandleToMask) .
+                                str_repeat('*', $lengthOfHandleToMask);
 
                 $details[Type::VPA][VpaEntity::ADDRESS] = sprintf('%s@%s', $maskedAddress, $maskedHandle);
+
+                $details[Type::VPA][VpaEntity::HANDLE] = $maskedHandle;
+
+                $details[Type::VPA][VpaEntity::USERNAME] = $maskedAddress;
         }
 
         return $details;
