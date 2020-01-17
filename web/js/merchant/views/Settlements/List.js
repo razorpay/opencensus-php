@@ -385,7 +385,7 @@ export default class SettlementsListContainer extends ListContainer {
                               <span
                                 onClick={() => {
                                   this.props.openModal({
-                                    size: 'regular',
+                                    size: 'medium',
                                     component: (
                                       <SettlementDetail
                                         settlementAmount={

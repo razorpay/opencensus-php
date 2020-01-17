@@ -82,7 +82,7 @@ export default class SettlementDetail extends Component {
                     )}
                   </p>
                 </div>
-                <hr />
+                <hr style={{ margin: '10px' }} />
                 {isOnHold ? (
                   <p class="grey">
                     {onHoldReason && onHoldReason.reason ? (
