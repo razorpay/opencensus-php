@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccount;
 
 use Mail;
+use Carbon\Carbon;
 use Razorpay\IFSC\Bank;
 use Razorpay\Trace\Logger as Trace;
 
@@ -26,6 +27,8 @@ class Core extends Base\Core
 {
     const GATEWAY   = 'gateway';
     const Processor = 'processor';
+
+    private $update;
 
     public function __construct()
     {
@@ -524,7 +527,7 @@ class Core extends Base\Core
      *
      * @throws BadRequestException | BadRequestValidationFailureException
      */
-    public function fetchGatewayBalance(array $input)
+    public function fetchAndUpdateGatewayBalance(array $input)
     {
         $validator = new Validator();
 
@@ -549,7 +552,34 @@ class Core extends Base\Core
             );
         }
 
-        return $gatewayProcessor->fetchGatewayBalance($bankingAccount);
+        $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
+//TODO:// add migration
+        $updateRequest = [
+            Entity::TEMP_BALANCE            => $balance,
+            Entity::BALANCE_LAST_FETCHED_AT => Carbon::now()->getTimestamp(),
+        ];
+
+        try
+        {
+            $this->repo->transaction(function () use ($bankingAccount, $updateRequest)
+            {
+                $bankingAccount->update($updateRequest);
+
+                $this->repo->saveOrFail($bankingAccount);
+            });
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
+                [
+                    'channel' => $channel,
+                ]);
+        }
+
+        return ['success' => true];
     }
 
     protected function getGatewayProcessorClass($channel)
