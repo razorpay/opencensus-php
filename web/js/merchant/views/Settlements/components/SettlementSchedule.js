@@ -181,7 +181,7 @@ export default class SettlementSchedule extends Component {
                     (T is the date of payment capture)
                   </div>
                 </div>
-                <hr />
+                <hr style={{ marginTop: 0 }} />
               </div>
             </div>{' '}
             <div style={{ padding: '13px' }}>
