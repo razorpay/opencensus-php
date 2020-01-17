@@ -251,7 +251,7 @@ class AnalyticsDesktop extends Component {
                             style={{ marginLeft: '5px' }}
                             onClick={() => {
                               this.props.openModal({
-                                size: 'regular',
+                                size: 'medium',
                                 component: (
                                   <SettlementDetail
                                     settlementAmount={settlement_amount.data}
@@ -306,7 +306,7 @@ class AnalyticsDesktop extends Component {
           <OnHoldBanner
             ctaOnClick={() => {
               this.props.openModal({
-                size: 'regular',
+                size: 'medium',
                 component: (
                   <SettlementDetail settlementAmount={settlement_amount.data} />
                 ),
