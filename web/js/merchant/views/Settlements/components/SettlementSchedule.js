@@ -193,11 +193,7 @@ export default class SettlementSchedule extends Component {
             <div style={{ padding: '13px' }}>
               <p>
                 <b>Note:</b> Weekends aren’t counted as working days. <br />
-                <a
-                  style={{ marginTop: '25px' }}
-                  onClick={this.toggleExample}
-                  class="link"
-                >
+                <a onClick={this.toggleExample} class="link">
                   {this.state.showExample ? 'Hide' : 'View'} Examples{' '}
                   <i
                     class={`i i-arrow-${
@@ -216,13 +212,13 @@ export default class SettlementSchedule extends Component {
                 </Fragment>
               ) : null}
 
-              <div style={{ marginTop: '15px' }}>
+              <div style={{ marginTop: '25px' }}>
                 <button
                   onClick={this.viewHolidayList}
                   style={{ width: '48%', margin: '0 1%' }}
                   class="btn btn-outline"
                 >
-                  List of Bank Holidays
+                  Bank Holidays
                 </button>
                 <a href="https://razorpay.com/settlement" target="_blank">
                   <button
