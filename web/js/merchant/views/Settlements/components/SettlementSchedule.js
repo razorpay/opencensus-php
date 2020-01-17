@@ -5,6 +5,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import HolidayModal from 'merchant/views/Settlements/components/Modals/HolidayModal';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import { titleCase } from 'common/utils/rzp-utils';
 
 @connect(state => state.settlement, {
   closeModal,
@@ -92,14 +93,8 @@ export default class SettlementSchedule extends Component {
         <div class="modal-body">
           <Fragment>
             <div class="settlement-details-overflow-box">
-              <div
-                style={{
-                  textAlign: 'left',
-                  paddingBottom: '10px',
-                  marginLeft: '15px',
-                }}
-              >
-                Your payments get settled to your account in
+              <div class="payment-heading">
+                Your payments get settled to your account in,
               </div>
               <div class="emphzd">
                 <div class="emphzd-div">
@@ -147,28 +142,31 @@ export default class SettlementSchedule extends Component {
                     </div>
                   )}
                 </div>
+                {this.state.otherMethods.length ? (
+                  <p class="grey" style={{ margin: '10px' }}>
+                    Other method specific Settlement schedules,
+                  </p>
+                ) : null}
 
                 {this.state.otherMethods.map((item, idx) => {
-                  <div style={{ margin: '10px' }} key={idx}>
-                    <p class="grey">
-                      Other method specific Settlement schedules,
-                    </p>
-                    <div
-                      class="flex"
-                      style={{ margin: '10px', fontSize: '16px' }}
-                    >
-                      <div class="w50 text-left p20">{item.method}</div>
-                      <div class="w50 text-right p20">
-                        {item.is_early_settlement_schedule ? (
-                          this.formatTime(item.hour)
-                        ) : (
-                          <>
-                            <strong>T+{item.delay}</strong> working days
-                          </>
-                        )}
+                  return (
+                    <div style={{ margin: '10px' }} key={idx}>
+                      <div class="flex" style={{ fontSize: '16px' }}>
+                        <div class="w50 text-left">
+                          {titleCase(item.method)}
+                        </div>
+                        <div class="w50 text-right">
+                          {item.is_early_settlement_schedule ? (
+                            this.formatTime(item.hour)
+                          ) : (
+                            <>
+                              <strong>T+{item.delay}</strong> working days
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>;
+                  );
                 })}
                 <div
                   class="settlement-default-note"
