@@ -114,7 +114,8 @@ class ConfigKey
         self::NB_PLUS_SERVICE_ENABLED,
         self::CITI_CHANNEL_PAYOUT_MIDS,
         self::ICICI_CHANNEL_PAYOUT_MIDS,
-        self::LOW_BALANCE_RX_EMAIL
+        self::LOW_BALANCE_RX_EMAIL,
+        self::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT
     ];
 
     public static function isSensitive(string $key)
