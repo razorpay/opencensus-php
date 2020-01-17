@@ -286,7 +286,7 @@ class Checkout
 
             $tokenCore = (new Customer\Token\Core);
 
-            $savedTokens = $tokenCore->fetchTokensByCustomer($customer);
+            $savedTokens = $tokenCore->fetchTokensByCustomer($customer, $merchant);
 
             //
             // TODO: Remove this later when we start handling the below case.

@@ -42,6 +42,7 @@ use RZP\Constants\Entity;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
+use RZP\Models\PaymentsUpi;
 use RZP\Constants\Environment;
 use RZP\Models\Card\Network;
 use RZP\Jobs\RunShieldCheck;
@@ -3287,6 +3288,14 @@ trait Authorize
         {
             $payment->localToken()->associate($token);
         }
+        else if ($this->shouldSaveVpaForUpiPayments() === true)
+        {
+            $payment->localToken()->associate($token);
+
+            $vpa = $token->vpa;
+
+            $payment->setVpa($vpa->getAddress());
+        }
         else if ($payment->isNach() === true)
         {
             $payment->localToken()->associate($token);
@@ -3340,6 +3349,14 @@ trait Authorize
         else if ($payment->isUpiRecurring() === true)
         {
             $payment->globalToken()->associate($token);
+        }
+        else if ($this->shouldSaveVpaForUpiPayments() === true)
+        {
+            $payment->globalToken()->associate($token);
+
+            $vpa = $token->vpa;
+
+            $payment->setVpa($vpa->getAddress());
         }
     }
 
@@ -3407,6 +3424,10 @@ trait Authorize
             // save emandate bank locally for local customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
+        else if ($this->shouldSaveVpaForUpiPayments() === true)
+        {
+            $token = $this->savePaymentMethod($customer, $payment, null, $input);
+        }
         else if ($payment->isNach() === true)
         {
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
@@ -3446,6 +3467,10 @@ trait Authorize
         else if ($payment->isEmandate() === true or $payment->isUpiRecurring() === true)
         {
             // save emandate bank token globally for global customer
+            $token = $this->savePaymentMethod($customer, $payment, null, $input);
+        }
+        else if ($this->shouldSaveVpaForUpiPayments() === true)
+        {
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
 
@@ -3584,6 +3609,14 @@ trait Authorize
                                             $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
             $saveMethodInput[Token\Entity::START_TIME] =
                                             $input[Payment\Entity::RECURRING_TOKEN][Token\Entity::START_TIME] ?? null;
+        }
+        else if ($payment->isUpi() === true)
+        {
+            $saveMethodInput[Token\Entity::METHOD] = Payment\Method::UPI;
+
+            $vpa = $this->createVpaEntity($input);
+
+            $saveMethodInput[Token\Entity::VPA_ID] = $vpa[PaymentsUpi\Vpa\Entity::ID];
         }
 
         $token = null;
@@ -5328,6 +5361,15 @@ trait Authorize
 
     }
 
+    protected function createVpaEntity($input)
+    {
+        $vpaCore = new PaymentsUpi\Vpa\Core;
+
+        $vpa = $vpaCore->firstOrCreate($input);
+
+        return $vpa->toArray();
+    }
+
     protected function setRzpVaultForPayment(array &$cardInput, bool $vault, Merchant\Entity $merchant, array $input = [])
     {
         $merchantIds = [
@@ -5657,7 +5699,8 @@ trait Authorize
     {
         // if not recurring, validate that card data and cvv in card data is present
         if (($payment->isRecurring() === false) and
-            ($payment->getTokenId() !== null))
+            ($payment->getTokenId() !== null) and
+            ($payment->getMethod() === Method::CARD))
         {
             $payment->getValidator()->validateCardAndCvv($input);
         }

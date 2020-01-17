@@ -622,6 +622,10 @@ class Entity
         self::COMMISSION_INVOICE    => \RZP\Models\Partner\Commission\Invoice::class,
 
         self::OPTIONS               => \RZP\Models\Options::class,
+
+        self::PAYMENTS_UPI_VPA              => \RZP\Models\PaymentsUpi\Vpa::class,
+        self::PAYMENTS_UPI_BANK_ACCOUNT     => \RZP\Models\PaymentsUpi\BankAccount::class,
+        self::PAYMENTS_UPI_VPA_BANK_ACCOUNT => \RZP\Models\PaymentsUpi\Vpa\BankAccount::class
     ];
 
     protected static $repository = [

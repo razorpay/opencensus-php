@@ -920,6 +920,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::BASE_AMOUNT, $amount);
     }
 
+    public function setVpa(string $vpa)
+    {
+        $this->setAttribute(self::VPA, $vpa);
+    }
+
     public function setAmountAuthorized()
     {
         $authAmount = $this->getAttribute(self::AMOUNT);
