@@ -2491,6 +2491,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
+    const ALREADY_ACTIVATED                                     = 'ALREADY_ACTIVATED';
+    const NOT_ACTIVATED                                         = 'NOT_ACTIVATED';
+
     const MERCHANT_DEFAULT_GROUP_ATTACH                         = 'MERCHANT_DEFAULT_GROUP_ATTACH';
 
     //Balance Config
