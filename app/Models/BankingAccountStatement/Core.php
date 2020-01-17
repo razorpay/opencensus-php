@@ -66,13 +66,13 @@ class Core extends Base\Core
             //taking lock after taking trace info of request process
             //returing processed true in finally because even if other worker is already fetching
             //account statement for job, we need to remove this account number from queue
-            $this->mutex = App::getFacadeRoot()['api.mutex'];
+
+            $this->mutex = $this->app['api.mutex'];
 
             $this->mutex->acquireAndRelease(
                 'banking_account_statement_' . $accountNumber,
-                function ()
+                function () use ($channel, $accountNumber, $input)
                 {
-
                     $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
 
                     $currentTime = Carbon::now()->getTimestamp();
