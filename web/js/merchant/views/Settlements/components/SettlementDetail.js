@@ -15,6 +15,12 @@ export default class SettlementDetail extends Component {
   handleContactSupport = () => {
     this.props.closeModal();
 
+    window.rzpAnalytics({
+      eventCategory: 'Settlement Revamp',
+      eventAction: 'Contact Support',
+      eventLabel: `Settlements`,
+    });
+
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
       rzpTicketSystem.setPrefill('#request', [

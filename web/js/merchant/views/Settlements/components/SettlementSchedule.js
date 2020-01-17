@@ -64,8 +64,9 @@ export default class SettlementSchedule extends Component {
     });
 
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlement UI Revamp',
-      eventAction: 'View Settlement Example',
+      eventCategory: 'Settlement Revamp',
+      eventAction: this.state.showExample ? 'View Examples' : 'Hide Examples',
+      eventLabel: `Settlements`,
     });
   };
 
@@ -78,8 +79,9 @@ export default class SettlementSchedule extends Component {
     });
 
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlement UI Revamp',
-      eventAction: 'View Holiday List',
+      eventCategory: 'Settlement Revamp',
+      eventAction: 'List of Bank Holidays',
+      eventLabel: `Settlements`,
     });
   };
 
@@ -227,6 +229,13 @@ export default class SettlementSchedule extends Component {
                   <button
                     style={{ width: '48%', margin: '0 1%' }}
                     class="btn btn-primary"
+                    onClick={() => {
+                      window.rzpAnalytics({
+                        eventCategory: 'Settlement Revamp',
+                        eventAction: 'Settlement Guide',
+                        eventLabel: `Settlements`,
+                      });
+                    }}
                   >
                     Settlement Guide
                   </button>
