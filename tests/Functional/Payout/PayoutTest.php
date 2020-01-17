@@ -43,6 +43,8 @@ class PayoutTest extends TestCase
     use WebhookTrait;
     use MocksDnsTrait;
 
+    private $checkerRoleUser;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
@@ -64,6 +66,11 @@ class PayoutTest extends TestCase
             ]);
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        // Create Checker Role User
+        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
+        $this->checkerRoleUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
+        $this->checkerRoleUser->roles()->attach($checkerRole);
     }
 
     public function liveSetUp()
@@ -716,12 +723,8 @@ class PayoutTest extends TestCase
                                 'min_amount' => '0', 'max_amount' => '5000000']);
         $payout = $this->createPayoutWithWorkflow($workflow);
 
-        // Create Checker Role User for 1st level of approval
-        $firstLevelRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
-        $firstUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
-        $firstUser->roles()->attach($firstLevelRole);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $firstUser->getId());
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
@@ -762,12 +765,8 @@ class PayoutTest extends TestCase
                                 'min_amount' => '0', 'max_amount' => '5000000']);
         $payout = $this->createPayoutWithWorkflow($workflow);
 
-        // Create Checker Role User for 1st level of approval
-        $role = $this->getDbEntityById('role', Org::CHECKER_ROLE);
-        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
-        $user->roles()->attach($role);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
@@ -815,11 +814,8 @@ class PayoutTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
-        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
-        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
-        $user->roles()->attach($checkerRole);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $this->startTest();
 
@@ -834,7 +830,7 @@ class PayoutTest extends TestCase
 
         $workflow = $this->getDbLastEntity('workflow');
         $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
-            'min_amount' => '0', 'max_amount' => '5000000']);
+                                'min_amount' => '0', 'max_amount' => '5000000']);
 
         $payout1 = $this->createPayoutWithWorkflow($workflow);
         $payout2 = $this->createPayoutWithWorkflow($workflow);
@@ -842,11 +838,8 @@ class PayoutTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
-        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
-        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
-        $user->roles()->attach($checkerRole);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $this->startTest();
 
@@ -868,11 +861,8 @@ class PayoutTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
-        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
-        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
-        $user->roles()->attach($checkerRole);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $this->startTest();
 
@@ -888,18 +878,15 @@ class PayoutTest extends TestCase
 
         $workflow = $this->getDbLastEntity('workflow');
         $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
-            'min_amount' => '0', 'max_amount' => '5000000']);
+                                'min_amount' => '0', 'max_amount' => '5000000']);
 
         $payout = $this->createPayoutWithWorkflow($workflow);
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
-        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
-        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
-        $user->roles()->attach($checkerRole);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $this->startTest();
 
@@ -924,12 +911,8 @@ class PayoutTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
-
-        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
-        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
-        $user->roles()->attach($checkerRole);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $this->startTest();
 
@@ -944,21 +927,16 @@ class PayoutTest extends TestCase
 
         $workflow = $this->getDbLastEntity('workflow');
         $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
-            'min_amount' => '0', 'max_amount' => '5000000']);
+                                'min_amount' => '0', 'max_amount' => '5000000']);
 
         $payout1 = $this->createPayoutWithWorkflow($workflow);
         $payout2 = $this->createPayoutWithWorkflow($workflow);
 
-
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
-
-        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
-        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
-        $user->roles()->attach($checkerRole);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $this->startTest();
 
