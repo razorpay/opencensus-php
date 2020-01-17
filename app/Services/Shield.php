@@ -168,9 +168,9 @@ class Shield
         $payloadDetails[ShieldConstants::INVOICE_TYPE]        = '';
         $payloadDetails[ShieldConstants::INVOICE_ENTITY_TYPE] = '';
 
-        if ($payment->hasInvoice()) {
-            $payloadDetails[ShieldConstants::INVOICE_TYPE] = $payment->getType();
-            $payloadDetails[ShieldConstants::INVOICE_ENTITY_TYPE] = $payment->getEntityType() ?? '';
+        if ($payment->hasInvoice() == true) {
+            $payloadDetails[ShieldConstants::INVOICE_TYPE] = $payment->invoice->getType();
+            $payloadDetails[ShieldConstants::INVOICE_ENTITY_TYPE] = $payment->invoice->getEntityType() ?? '';
         }
 
         switch ($payloadDetails[ShieldConstants::METHOD])
