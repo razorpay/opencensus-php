@@ -96,7 +96,10 @@ class Service extends Base\Service
     {
         $inheritanceMap = $this->repo->merchant_inheritance_map->fetchInheritanceMapByMerchantId($merchantId);
 
-        $this->repo->deleteOrFail($inheritanceMap);
+        $this->repo->transactionOnLiveAndTest(function() use ($inheritanceMap)
+        {
+            $this->repo->merchant_inheritance_map->deleteOrFail($inheritanceMap);
+        });
 
         return $inheritanceMap->toArrayDeleted();
     }

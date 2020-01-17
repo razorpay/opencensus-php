@@ -128,6 +128,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SOURCE_ID);
     }
 
+    public function getContactId()
+    {
+        return $this->getAttribute(self::CONTACT_ID);
+    }
+
     public function getSourceType()
     {
         return $this->getAttribute(self::SOURCE_TYPE);

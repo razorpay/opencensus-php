@@ -256,6 +256,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NAME);
     }
 
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);

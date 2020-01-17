@@ -40,4 +40,6 @@ class Action
     const MANDATE_UPDATE_VERIFY = 'mandate_update_verify';
 
     const MANDATE_CREATE_VERIFY = 'mandate_create_verify';
+
+    const DECRYPT               = 'decrypt';
 }

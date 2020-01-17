@@ -40,7 +40,10 @@ class Processor extends VirtualAccount\Processor
 
         $this->trace->info(
             TraceCode::UPI_TRANSFER_PAYMENT_DUPLICATE_NOTIFICATION,
-            $upiTransfer->toArray());
+            [
+                'Existing upi transfer'   => $upiTransferEntity->getPublicId(),
+                'Received bank reference' => $upiTransfer->getBankReference(),
+            ]);
 
         return true;
     }
@@ -131,7 +134,12 @@ class Processor extends VirtualAccount\Processor
             $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
                 [
-                    'entity' => $upiTransfer->toArray(),
+                    'entity' => [
+                        Entity::PAYER_VPA      => $upiTransfer->getPayerVpa(),
+                        Entity::PAYEE_VPA      => $upiTransfer->getPayeeVpa(),
+                        Entity::AMOUNT         => $upiTransfer->getAmount(),
+                        Entity::BANK_REFERENCE => $upiTransfer->getBankReference(),
+                    ],
                 ]);
 
             return true;

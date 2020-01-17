@@ -29,7 +29,7 @@ class PublicEntity extends UniqueIdEntity
     */
     const IDS                   = 'ids';
 
-    const SIGNED_PUBLIC_ID_REGEX   = '/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/';
+    const SIGNED_PUBLIC_ID_REGEX   = '/\b[a-z]{0,6}_[a-zA-Z0-9]{14}\b/';
 
     protected static $sign      = '';
 

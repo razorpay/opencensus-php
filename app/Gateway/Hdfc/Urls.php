@@ -7,8 +7,10 @@ class Urls
     const TEST_DOMAIN                    = 'https://securepgtest.fssnet.co.in/pgway';
     const LIVE_DOMAIN                    = 'https://securepg.fssnet.co.in/pgway';
     const TEST_DOMAIN_V2                 = 'https://securepgtest.fssnet.co.in/ipayb';
-
     const LIVE_DOMAIN_V2                 = 'https://securepayments.fssnet.co.in/hdfcbank';
+
+    const TEST_DOMAIN_V3                 = 'https://securepaymentstest.hdfcbank.com/PG';
+    const LIVE_DOMAIN_V3                 = 'https://hdfcbankpayments.hdfcbank.com/PG';
 
     const DEBIT_PIN_AUTHENTICATION_URL   = '/servlet/TranPortalXMLServlet';
 

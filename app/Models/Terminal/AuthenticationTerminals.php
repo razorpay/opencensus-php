@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
+use Illuminate\Auth\Access\Gate;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\AuthType;
@@ -108,6 +109,13 @@ class AuthenticationTerminals
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::CYBERSOURCE,
             self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CYBERSOURCE,
+            self::AUTHENTICATION_GATEWAY    => Gateway::GOOGLE_PAY,
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => null,
         ],
@@ -280,6 +288,13 @@ class AuthenticationTerminals
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::SHARP,
             self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::SHARP,
+            self::AUTHENTICATION_GATEWAY    => Gateway::GOOGLE_PAY,
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => null,
         ],

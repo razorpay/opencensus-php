@@ -72,18 +72,18 @@ return [
         'password'  => env('MOZART_PASSWORD'),
         'username'  => env('MOZART_USERNAME'),
 
-        'test'  =>  [
+        'test' => [
             'mock'      => env('MOZART_TEST_MOCK', false),
             'url'       => env('MOZART_TEST_URL'),
             'password'  => env('MOZART_TEST_PASSWORD'),
             'username'  => env('MOZART_TEST_USERNAME'),
         ],
 
-        'live'  =>  [
-            'mock'      => env('MOZART_LIVE_MOCK', false),
-            'url'       => env('MOZART_LIVE_URL'),
-            'password'  => env('MOZART_LIVE_PASSWORD'),
-            'username'  => env('MOZART_LIVE_USERNAME'),
+        'live' => [
+            'mock'     => env('MOZART_LIVE_MOCK', false),
+            'url'      => env('MOZART_LIVE_URL'),
+            'password' => env('MOZART_LIVE_PASSWORD'),
+            'username' => env('MOZART_LIVE_USERNAME'),
         ]
     ],
 
@@ -91,6 +91,14 @@ return [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
         'secret'    => env('RAVEN_SECRET'),
+    ],
+
+    'kyc' => [
+        'mock'           => env('KYC_MOCK', false),
+        'url'            => env('KYC_URL'),
+        'password'       => env('KYC_PASSWORD'),
+        'authentication' => env('KYC_AUTH_NAME'),
+        'x_service_id'   => env('KYC_SERVICE_ID')
     ],
 
     'reminders' => [
@@ -137,8 +145,8 @@ return [
             'username'  => env('GOVERNOR_CPS_SERVICE_KEY'),
             'password'  => env('GOVERNOR_CPS_SERVICE_SECRET'),
         ],
-        'adminapi'=> [
-            'username' => env('GOVERNOR_ADMINAPI_SERVICE_KEY' ),
+        'adminapi' => [
+            'username' => env('GOVERNOR_ADMINAPI_SERVICE_KEY'),
             'password' => env('GOVERNOR_ADMINAPI_SERVICE_SECRET'),
         ],
         'url'       => env('GOVERNOR_LIVE_URL'),
@@ -333,6 +341,10 @@ return [
 
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),
 
+    'payout_links' => [
+            'url' => env('APP_PAYOUT_LINKS_URL', 'https://payout-links.razorpay.com')
+        ],
+
     'vajra' => [
         'secret'   => env('APP_VAJRA_SECRET'),
     ],
@@ -410,12 +422,18 @@ return [
         ],
     ],
 
-    'automation' => [
-        'secret' => env('AUTOMATION_API_SECRET'),
+    'nbplus_payment_service' => [
+        'mock'      => env('NBPLUS_PAYMENT_SERVICE_MOCK', false),
+        'username'  => env('NBPLUS_PAYMENT_SERVICE_KEY'),
+        'password'  => env('NBPLUS_PAYMENT_SERVICE_SECRET'),
+        'url'       => [
+            'live' => env('NBPLUS_PAYMENT_SERVICE_LIVE_URL'),
+            'test' => env('NBPLUS_PAYMENT_SERVICE_TEST_URL'),
+        ],
     ],
 
-    'kyc_service' => [
-        'mock' => env('KYC_SERVICE_MOCK', false),
+    'automation' => [
+        'secret' => env('AUTOMATION_API_SECRET'),
     ],
 
     'salesforce' => [
