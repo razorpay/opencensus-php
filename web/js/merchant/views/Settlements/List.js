@@ -218,8 +218,9 @@ export default class SettlementsListContainer extends ListContainer {
     });
 
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlement UI Revamp',
-      eventAction: 'View Settlement Cycle - Settlements Page',
+      eventCategory: 'Settlement Revamp',
+      eventAction: 'View Settlement Cycle',
+      eventLabel: `Settlements`,
     });
   };
 
@@ -307,8 +308,9 @@ export default class SettlementsListContainer extends ListContainer {
                 });
 
                 window.rzpAnalytics({
-                  eventCategory: 'Dashboard - Settlement UI Revamp',
-                  eventAction: 'Click Know More(On Hold) - Settlements Page',
+                  eventCategory: 'Settlement Revamp',
+                  eventAction: 'View details - Funds on Hold',
+                  eventLabel: `Settlements`,
                 });
               }}
             />
@@ -444,10 +446,9 @@ export default class SettlementsListContainer extends ListContainer {
                                   });
 
                                   window.rzpAnalytics({
-                                    eventCategory:
-                                      'Dashboard - Settlement UI Revamp',
-                                    eventAction:
-                                      'Click Know More - Settlements Page',
+                                    eventCategory: 'Settlement Revamp',
+                                    eventAction: 'Know more - Next Settlement',
+                                    eventLabel: `Settlements`,
                                   });
                                 }}
                                 class="btn-link pointer"

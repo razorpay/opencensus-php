@@ -38,6 +38,11 @@ export default class SettlementDetail extends Component {
           title={`Settlement Details`}
           onCloseClick={() => {
             this.props.closeModal();
+            window.rzpAnalytics({
+              eventCategory: 'Settlement Revamp',
+              eventAction: 'Close - Next Settlement Modal',
+              eventLabel: `Settlements`,
+            });
           }}
         />
         <div class="modal-body">

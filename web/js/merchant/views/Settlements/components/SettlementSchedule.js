@@ -88,7 +88,14 @@ export default class SettlementSchedule extends Component {
       <div>
         <ModalHeader
           title={`Settlement Cycle`}
-          onCloseClick={() => this.props.closeModal()}
+          onCloseClick={() => {
+            this.props.closeModal();
+            window.rzpAnalytics({
+              eventCategory: 'Settlement Revamp',
+              eventAction: 'Close - Settlement Cycle Modal',
+              eventLabel: `Settlements`,
+            });
+          }}
         />
         <div class="modal-body">
           <Fragment>
