@@ -121,7 +121,6 @@ class Event
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
         self::PAYOUT_UPDATED,
-        self::PAYOUT_REJECTED,
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
@@ -145,7 +144,6 @@ class Event
         self::PAYOUT_LINK_ISSUED,
         self::PAYOUT_LINK_PROCESSED,
         self::PAYOUT_LINK_PROCESSING,
-        self::PAYOUT_LINK_CANCELLED,
         self::PAYOUT_LINK_ATTEMPTED
     ];
 
