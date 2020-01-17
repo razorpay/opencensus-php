@@ -286,7 +286,7 @@ class Event
         self::PAYOUT_LINK_ISSUED                => 61,
         self::PAYOUT_LINK_PROCESSED             => 62,
         self::PAYOUT_LINK_PROCESSING            => 63,
-        self::PAYOUT_REJECTED                   => 64,
+        self::PAYOUT_LINK_ATTEMPTED             => 64,
     ];
 
     /**
@@ -353,8 +353,8 @@ class Event
         self::PAYOUT_LINK_ISSUED                => [Product::BANKING],
         self::PAYOUT_LINK_PROCESSED             => [Product::BANKING],
         self::PAYOUT_LINK_PROCESSING            => [Product::BANKING],
+        self::PAYOUT_LINK_ATTEMPTED             => [Product::BANKING],
         self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
-        self::PAYOUT_REJECTED                   => [Product::PRIMARY, Product::BANKING],
     ];
 
     /**

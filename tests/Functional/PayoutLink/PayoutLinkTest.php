@@ -837,8 +837,6 @@ class PayoutLinkTest extends TestCase
     // until we handle dispatching of update events once the transaction is completed
     public function _testPayoutStatusReversedMakesLinkStatusAttempted()
     {
-        self::markTestSkipped('Skipping this till feature storing is resolved');
-
         $payoutLink = $this->fixtures->create('payout_link',
                                               [
                                                   'balance_id' => $this->bankingBalance->getId()
