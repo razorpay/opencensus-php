@@ -148,6 +148,7 @@ export default {
   invitations: [OWNER, RBL_SUPERVISOR],
   webhooks: [OWNER, ADMIN, MANAGER],
   configuration: [OWNER, ADMIN, MANAGER],
+  early_settlement: [OWNER, ADMIN],
   applications: [OWNER],
   offers: [OWNER, ADMIN, MANAGER, OPERATIONS, SUPPORT, AGENT],
 

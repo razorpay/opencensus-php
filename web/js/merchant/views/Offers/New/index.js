@@ -20,10 +20,12 @@ import OfferDescription from 'merchant/views/Offers/New/offerDescription';
 import OfferDiscount from 'merchant/views/Offers/New/offerDiscount';
 import OfferDuration from 'merchant/views/Offers/New/offerDuration';
 import OfferReview from 'merchant/views/Offers/New/offerReview';
+import NoCostEmiMethods from 'merchant/views/Offers/New/NoCostEmiMethods';
 
 const MAX_INT = 21474836;
 const CURRENCY = 'INR';
 const SUCCESS_NOTIFICATION = 'New offer created';
+const NO_COST_EMI = 'no_cost_emi';
 
 @withRouter
 @connect(state => state.session, {
@@ -33,7 +35,7 @@ const SUCCESS_NOTIFICATION = 'New offer created';
   luminateRow,
   appendOfferInReduxList,
 })
-@RTracking(() => window.rzpQ.component('CreateOfferForm'))
+@RTracking(() => window.rzpQ.component('CreateOfferWizard'))
 export default class CreateOfferWizard extends React.Component {
   state = {
     currentTab: 0,
@@ -71,7 +73,9 @@ export default class CreateOfferWizard extends React.Component {
           discountType={this.state.discount_type}
           getFormElementValidations={this.getFormElementValidations}
           minAmount={this.state.min_amount}
+          maxAmount={this.state.max_order_amount}
           currency={CURRENCY}
+          type={this.state.type}
         />
       ),
       getFieldsToBeValidated: () => {
@@ -81,7 +85,8 @@ export default class CreateOfferWizard extends React.Component {
               return ['flat_cashback'];
             case 'percent':
               return ['max_cashback', 'percent_rate'];
-
+            case 'no_cost_emi':
+              return [];
             default:
               return [];
           }
@@ -91,22 +96,38 @@ export default class CreateOfferWizard extends React.Component {
     },
     {
       name: 'Applicable On',
-      renderFunction: () => (
-        <PaymentMethods
-          allPaymentMethodsAllowed={this.state.allPaymentMethodsAllowed}
-          getFormOnChangeHandler={this.getFormOnChangeHandler}
-          isSelectedPaymentMethod={this.isSelectedPaymentMethod}
-          iins={this.state.iins}
-          paymentNetwork={this.state.payment_network}
-          maxPaymentCount={this.state.max_payment_count}
-          paymentMethodType={this.state.payment_method_type}
-          issuer={this.state.issuer}
-          walletIssuer={this.state.wallet_issuer}
-          paymentMethod={this.state.payment_method}
-          getFormElementValidations={this.getFormElementValidations}
-        />
-      ),
+      renderFunction: () => {
+        if (this.state.discount_type === NO_COST_EMI) {
+          return (
+            <NoCostEmiMethods
+              getFormOnChangeHandler={this.getFormOnChangeHandler}
+              minAmount={this.state.min_amount || 0}
+              emiDurations={this.state.emi_durations}
+              issuer={this.state.issuer}
+              getFormElementValidations={this.getFormElementValidations}
+            />
+          );
+        }
+        return (
+          <PaymentMethods
+            allPaymentMethodsAllowed={this.state.allPaymentMethodsAllowed}
+            getFormOnChangeHandler={this.getFormOnChangeHandler}
+            isSelectedPaymentMethod={this.isSelectedPaymentMethod}
+            iins={this.state.iins}
+            paymentNetwork={this.state.payment_network}
+            maxPaymentCount={this.state.max_payment_count}
+            paymentMethodType={this.state.payment_method_type}
+            issuer={this.state.issuer}
+            walletIssuer={this.state.wallet_issuer}
+            paymentMethod={this.state.payment_method}
+            getFormElementValidations={this.getFormElementValidations}
+          />
+        );
+      },
       getFieldsToBeValidated: () => {
+        if (this.state.discount_type === NO_COST_EMI) {
+          return ['issuer', 'emi_durations'];
+        }
         return ['payment_method'];
       },
     },
@@ -121,6 +142,7 @@ export default class CreateOfferWizard extends React.Component {
           block={this.state.block}
           minAmount={this.state.min_amount}
           maxOfferUsage={this.state.max_offer_usage}
+          checkoutDisplay={this.state.default_offer}
         />
       ),
       getFieldsToBeValidated: () => {
@@ -218,6 +240,20 @@ export default class CreateOfferWizard extends React.Component {
             return 'Minimum payment is less than discount value';
           }
         }
+        if (this.state.max_order_amount && this.state.max_order_amount < val) {
+          return `Minimum order amount should be less than max order amount`;
+        }
+      },
+      max_order_amount: val => {
+        if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
+          return 'Please enter number upto 2 decimal points';
+        val = parseFloat(val);
+        if (val > MAX_INT) {
+          return `Maximum value allowed is ${MAX_INT}`;
+        }
+        if (!this.state.min_amount || val < this.state.min_amount) {
+          return `Maximum order amount should be more than minimum order amount`;
+        }
       },
       max_cashback: val => {
         if (!new RegExp('^[0-9]+(.[0-9][0-9]?)?$').test(val))
@@ -231,6 +267,9 @@ export default class CreateOfferWizard extends React.Component {
         if (!val) return 'Please select a date';
         if (this.state.starts_at >= val) {
           return 'End date cannot be less that start date.';
+        }
+        if (moment() > val) {
+          return 'End date cannot be in past.';
         }
       },
       starts_at: val => {
@@ -260,6 +299,19 @@ export default class CreateOfferWizard extends React.Component {
           return `Maximum value allowed is ${MAX_INT}`;
         }
       },
+      issuer: val => {
+        if (this.state.discount_type === NO_COST_EMI && (!val || val === '')) {
+          return 'Issuer cannot be null for no cost emi';
+        }
+      },
+      emi_durations: val => {
+        if (
+          !Array.isArray(this.state.emi_durations) ||
+          this.state.emi_durations.length < 1
+        ) {
+          return 'Emi durations not selected';
+        }
+      },
       type: val => {
         if (!val) return 'Please select a value';
       },
@@ -279,10 +331,11 @@ export default class CreateOfferWizard extends React.Component {
 
   getFormOnChangeHandler = (type = 'default', ...options) => {
     const handlers = {
-      default: syntheticEvent =>
+      default: syntheticEvent => {
         this.setState({
           [syntheticEvent.target.name]: syntheticEvent.target.value,
-        }),
+        });
+      },
       // momentObj / null if not date is required
       datetime: momentObj => this.setState({ [options[0]]: momentObj }),
       stateResetter: resetFields => syntheticEvent => {
@@ -331,7 +384,6 @@ export default class CreateOfferWizard extends React.Component {
   renderWizard() {
     const { currentTab, validTabs } = this.state;
     const isLastTab = currentTab === this.tabsData.length - 1;
-
     return (
       <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
         <ModalAsideNav
@@ -405,6 +457,7 @@ export default class CreateOfferWizard extends React.Component {
       'max_payment_count',
       'iins',
       'max_offer_usage',
+      'max_order_amount',
     ];
     const fieldsTobeDeleted = [
       'discount_type',
@@ -417,6 +470,11 @@ export default class CreateOfferWizard extends React.Component {
       'allPaymentMethodsAllowed',
       'creation_terms_accepted',
     ];
+    const checkboxFields = ['default_offer'];
+
+    checkboxFields.forEach(field => {
+      transformed[field] = form[field] === '1' ? 1 : 0;
+    });
 
     dateFields.forEach(field => {
       if (!form[field]) {
@@ -436,8 +494,19 @@ export default class CreateOfferWizard extends React.Component {
     if (transformed.discount_type === 'flat') {
       fieldsTobeDeleted.push('max_cashback');
       fieldsTobeDeleted.push('percent_rate');
-    } else {
+    }
+    if (transformed.discount_type === 'percent') {
       fieldsTobeDeleted.push('flat_cashback');
+    }
+    if (transformed.discount_type === 'no_cost_emi') {
+      fieldsTobeDeleted.push('flat_cashback');
+      fieldsTobeDeleted.push('max_cashback');
+      fieldsTobeDeleted.push('percent_rate');
+      fieldsTobeDeleted.push('payment_network');
+      transformed['emi_subvention'] = 1;
+      transformed['payment_method'] = 'emi';
+    } else {
+      fieldsTobeDeleted.push('max_order_amount');
     }
     if (!this.isSelectedPaymentMethod('card', 'emi')) {
       fieldsTobeDeleted.push('max_payment_count');
@@ -452,6 +521,10 @@ export default class CreateOfferWizard extends React.Component {
       }
     });
     transformed.block = this.stringToInt(transformed.block);
+    if (transformed.issuer === 'AMEX') {
+      delete transformed.issuer;
+      transformed.payment_network = 'AMEX';
+    }
     return transformed;
   }
 
@@ -542,7 +615,7 @@ export default class CreateOfferWizard extends React.Component {
     );
   };
 
-  areGivenFormElementsValid = (...args) => {
-    return !args.some(x => !this.isFormElementValid(x));
+  areGivenFormElementsValid = (...formFields) => {
+    return !formFields.some(formField => !this.isFormElementValid(formField));
   };
 }

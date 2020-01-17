@@ -1,43 +1,75 @@
+import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
+
 import { downloadFromUFH } from 'merchant/utils/downloadFile';
+import Spinner from 'common/ui/Spinner';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import LogItem from './Item';
 
-export default function LogList(props) {
-  const { loading, items, allConfigs } = props;
-
-  const onDownloadClick = ({ target }) => {
+@RTracking(() => window.rzpQ.component('LogList'))
+@connect(null, { showNotification })
+export default class LogList extends React.PureComponent {
+  onDownloadClick = ({ target }) => {
     const { fileId, consumerId } = target.dataset;
     const accountId =
-      props.currentMerchantId !== consumerId
+      this.props.currentMerchantId !== consumerId
         ? consumerId.replace('acc_')
         : undefined;
-    downloadFromUFH(fileId, accountId);
+    return downloadFromUFH(fileId, accountId)
+      .then(response => {
+        this.props.tracking.trackEvent(
+          window.rzpQ.reporting().success('reporting.download_file', {
+            report_file_id: fileId,
+            report_consumer: consumerId,
+          })
+        );
+        return response;
+      })
+      .catch(({ errors }) => {
+        return this.props.showNotification({
+          type: 'error',
+          message: (errors || [])[0],
+        });
+      });
   };
 
-  return (
-    <div class="LogList">
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        items.map(item => (
-          <LogItem
-            key={item.id}
-            config={allConfigs.find(({ id }) => id === item.config_id) || {}}
-            onDownloadClick={onDownloadClick}
-            pollLog={props.pollLog}
-            {...item}
-          />
-        ))
-      )}
-      {!loading &&
-        5 <= items.length &&
-        items.length < 10 && (
-          <div class="LoadMore">
-            <button onClick={props.onLoadMoreClick} class="btn btn-link">
-              Load More
-            </button>
+  render() {
+    const { loading, items, allConfigs, ...props } = this.props;
+    return (
+      <div class="LogList">
+        {loading ? (
+          <div className="page-spinner-container">
+            <Spinner />
           </div>
+        ) : (
+          <>
+            <div class="LogList__header">
+              <strong>Recent Reports</strong>
+            </div>
+            {items.map(item => (
+              <LogItem
+                key={item.id}
+                config={
+                  allConfigs.find(({ id }) => id === item.config_id) || {}
+                }
+                onDownloadClick={this.onDownloadClick}
+                pollLog={props.pollLog}
+                {...item}
+              />
+            ))}
+          </>
         )}
-    </div>
-  );
+        {!loading &&
+          5 <= items.length &&
+          items.length < 10 && (
+            <div class="LoadMore">
+              <button onClick={props.onLoadMoreClick} class="btn btn-link">
+                Load More
+              </button>
+            </div>
+          )}
+      </div>
+    );
+  }
 }

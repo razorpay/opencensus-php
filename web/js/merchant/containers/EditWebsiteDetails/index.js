@@ -31,28 +31,42 @@ class EditWebsiteDetails extends Component {
       mode: this.props.mode,
       method: 'put',
       data: { business_website: autoPrefixUrls(form.business_website) },
-    }).then(response => {
-      if (response.success) {
-        //update user session details
-        const newUser = new User({
-          ...user,
-          business_website: response.data.business_website,
-          has_key_access: response.data.has_key_access,
-        });
+    })
+      .then(response => {
+        if (response.success) {
+          //update user session details
+          const newUser = new User({
+            ...user,
+            business_website: response.data.business_website,
+            has_key_access: response.data.has_key_access,
+          });
 
-        this.props.updateSession({
-          user: newUser,
-          mode: this.props.mode,
-        });
+          this.props.updateSession({
+            user: newUser,
+            mode: this.props.mode,
+          });
 
-        this.props.onWebsiteAdd && this.props.onWebsiteAdd();
-        showNotification({
-          type: 'success',
-          message: 'Thank you for providing website.',
-        });
-        this.props.onClose();
-      }
-    });
+          this.props.onWebsiteAdd && this.props.onWebsiteAdd();
+          showNotification({
+            type: 'success',
+            message: 'Thank you for providing website.',
+          });
+          this.props.onClose();
+        }
+      })
+      .catch(err => {
+        if (err.errors && err.errors[0]) {
+          showNotification({
+            type: 'error',
+            message: err.errors[0],
+          });
+        } else {
+          showNotification({
+            type: 'error',
+            message: 'Failed to add website!',
+          });
+        }
+      });
   };
 
   render() {

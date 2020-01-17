@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -29,7 +29,7 @@ import {
   fetchHolidayList,
 } from 'merchant/reducers/settlements/details';
 import OndemandModal from 'merchant/views/Settlements/components/Modals/OndemandModal';
-
+import NegativeBalanceBanner from 'merchant/components/Announcement';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -37,6 +37,9 @@ import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBann
 import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import Time from 'common/ui/Time';
+import { fetchBalanceConfig } from 'merchant/reducers/home';
+import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
+
 @withRouter
 @connect(
   state => ({
@@ -57,6 +60,7 @@ import Time from 'common/ui/Time';
     fetchSchedule,
     fetchSettlementAmount,
     fetchHolidayList,
+    fetchBalanceConfig,
   }
 )
 export default class SettlementsListContainer extends ListContainer {
@@ -110,6 +114,7 @@ export default class SettlementsListContainer extends ListContainer {
 
     this.props.fetchCurrentBalance();
     this.props.fetchSchedule();
+    this.props.fetchBalanceConfig();
 
     if (this.props.location.hash === '#requestearlyaccess') {
       this.showRequestEarySettlementForm();
@@ -222,6 +227,12 @@ export default class SettlementsListContainer extends ListContainer {
     let { loading, items, error, current_balance, user, mode } = this.props,
       { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;
+    let negativeBalanceClassName = '';
+
+    if (balance < 0) {
+      balance = Math.abs(balance);
+      negativeBalanceClassName = 'negative-balance';
+    }
 
     const nextSettlement = this.props.settlement_amount.data
       .next_settlement_time;
@@ -235,6 +246,40 @@ export default class SettlementsListContainer extends ListContainer {
         {/* instant settlements banner */}
         {user.isISBannerEnabled && (
           <EarlySettlementsAnnouncement userId={user.current} />
+        )}
+
+        {current_balance.data.balance < 0 && (
+          <NegativeBalanceBanner
+            title="Add Funds"
+            theme="warning"
+            canBeClosed={true}
+          >
+            Your balance went into negative value. Add funds to avoid the
+            transaction failures.{' '}
+            <Link to={'/addfunds'} target="_blank">
+              {' '}
+              Add Funds
+            </Link>
+          </NegativeBalanceBanner>
+        )}
+
+        {handleNegativeBalanceLimit(
+          this.props.merchantBalanceConfigs,
+          this.props.current_balance.data.balance
+        ) && (
+          <NegativeBalanceBanner
+            title="On Hold!"
+            theme="danger"
+            canBeClosed={true}
+          >
+            Your current balance had reached the maximum negative limit.
+            Transactions will start to fail now. Please add funds to avoid
+            transaction failures.{' '}
+            <Link to={'/addfunds'} target="_blank">
+              {' '}
+              Add Funds
+            </Link>
+          </NegativeBalanceBanner>
         )}
 
         <tabbed-container
@@ -288,8 +333,8 @@ export default class SettlementsListContainer extends ListContainer {
                       View Settlement Cycle
                     </div>
                   )}
-                  {this.props.user.isOndemandSettlementEnabled && (
-                    <ShowWhen myRole="owner admin finance">
+                  {this.props.user.isOndemandSettlementEnabled &&
+                    this.props.user.isAllowedView('early_settlement') && (
                       <div className="box-left-pad10-inline">
                         <ScheduledBanner
                           onExit={() => {
@@ -303,8 +348,7 @@ export default class SettlementsListContainer extends ListContainer {
                           }
                         />
                       </div>
-                    </ShowWhen>
-                  )}
+                    )}
                 </React.Fragment>
               </HeaderAction>
               <SettlementsListFilter
@@ -325,7 +369,11 @@ export default class SettlementsListContainer extends ListContainer {
                       <div>
                         <span class="settlement-balance-amount">
                           Current Balance:{' '}
-                          <Amount value={balance} currency={'INR'} />
+                          <Amount
+                            value={balance}
+                            currency={'INR'}
+                            className={negativeBalanceClassName}
+                          />
                         </span>
                         <br />
                         {settlement_ux_revamp &&
@@ -427,8 +475,8 @@ export default class SettlementsListContainer extends ListContainer {
                   </>
                 )}
 
-                {this.props.user.isOndemandSettlementEnabled && (
-                  <ShowWhen myRole="owner admin finance">
+                {this.props.user.isOndemandSettlementEnabled &&
+                  this.props.user.isAllowedView('early_settlement') && (
                     <div className="box-left-pad10-inline">
                       <Button.Primary
                         class="settle-btn"
@@ -439,8 +487,7 @@ export default class SettlementsListContainer extends ListContainer {
                         Settle Now
                       </Button.Primary>
                     </div>
-                  </ShowWhen>
-                )}
+                  )}
               </div>
 
               <div class="clearfix" />
