@@ -5,6 +5,7 @@ namespace RZP\Gateway\Sharp;
 use Crypt;
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Gateway\GooglePay\Action;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -98,6 +99,15 @@ class Gateway extends Base\Gateway
         if (isset($input['payment']['recurring']) === true)
         {
             $content['recurring'] = boolval($input['payment']['recurring']) ? 1 : 0;
+        }
+
+        if ($input['payment']['authentication_gateway'] === Payment\Gateway::GOOGLE_PAY)
+        {
+            $this->action = Action::AUTHENTICATE;
+
+            $authResponse = $this->callAuthenticationGateway($input, Payment\Gateway::GOOGLE_PAY);
+
+            return $authResponse;
         }
 
         if ($content['method'] === 'card')
@@ -234,6 +244,15 @@ class Gateway extends Base\Gateway
         return [];
     }
 
+    protected function callAuthenticationGateway(array $input, $authenticationGateway)
+    {
+        return $this->app['gateway']->call(
+            $authenticationGateway,
+            $this->action,
+            $input,
+            $this->mode);
+    }
+
     public function mandateUpdate(array $input)
     {
         $token = $input['token'];
@@ -318,6 +337,11 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $this->wasGatewayHit = true;
+
+        if ($input['payment']['authentication_gateway'] === 'google_pay')
+        {
+            return [];
+        }
 
         if (($input['payment']['method'] === 'card') and
             ($input['card']['iin'] === '501010') and

@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use App;
 use RZP\Exception;
 use RZP\Constants;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
@@ -70,10 +71,10 @@ class Core extends Base\Core
      * SOURCE: Merchant PG balance
      * TO: Merchant linked bank account (destination_id)
      *
+     * @param array $input
      * @param Merchant\Entity $merchant
-     * @param array           $input
-     *
      * @return mixed|null
+     * @throws Exception\BadRequestException
      */
     public function createPayoutToMerchant(array $input, Merchant\Entity $merchant): Entity
     {
@@ -1427,6 +1428,8 @@ class Core extends Base\Core
                 $payout->setStatus(Status::REJECTED);
 
                 $this->repo->saveOrFail($payout);
+
+                $this->app->events->fire('api.payout.rejected', [$payout]);
 
                 return $payout;
             },

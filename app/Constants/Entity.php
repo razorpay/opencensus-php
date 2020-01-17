@@ -76,6 +76,7 @@ class Entity
     const TRANSACTION               = 'transaction';
     const FEE_BREAKUP               = 'fee_breakup';
     const CREDITNOTE                = 'creditnote';
+    const PAYOUT_LINK               = 'payout_link';
     const PAYMENT_LINK              = 'payment_link';
     const PAYMENT_PAGE_ITEM         = 'payment_page_item';
     const GATEWAY_RULE              = 'gateway_rule';
@@ -380,6 +381,7 @@ class Entity
         self::SUBSCRIPTION,
         self::PAYMENT_LINK,
         self::OPTIONS,
+        self::PAYOUT_LINK
     ];
 
     /**
@@ -440,6 +442,7 @@ class Entity
         self::BANK_ACCOUNT              => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION              => \RZP\Models\Plan\Subscription::class,
         self::PAYMENT_LINK              => \RZP\Models\PaymentLink::class,
+        self::PAYOUT_LINK               => \RZP\Models\PayoutLink::class,
         self::PAYMENT_PAGE_ITEM         => \RZP\Models\PaymentLink\PaymentPageItem::class,
         self::GATEWAY_TOKEN             => \RZP\Models\Customer\GatewayToken::class,
         self::ENTITY_ORIGIN             => \RZP\Models\EntityOrigin::class,
@@ -568,7 +571,7 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::MOZART                 => \RZP\Gateway\Mozart::class,
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
-        self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
+        self::GOOGLE_PAY             => \RZP\Gateway\GooglePay::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
@@ -619,6 +622,10 @@ class Entity
         self::COMMISSION_INVOICE    => \RZP\Models\Partner\Commission\Invoice::class,
 
         self::OPTIONS               => \RZP\Models\Options::class,
+
+        self::PAYMENTS_UPI_VPA              => \RZP\Models\PaymentsUpi\Vpa::class,
+        self::PAYMENTS_UPI_BANK_ACCOUNT     => \RZP\Models\PaymentsUpi\BankAccount::class,
+        self::PAYMENTS_UPI_VPA_BANK_ACCOUNT => \RZP\Models\PaymentsUpi\Vpa\BankAccount::class
     ];
 
     protected static $repository = [

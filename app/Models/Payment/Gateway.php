@@ -219,6 +219,7 @@ class Gateway
 
     const MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS = [
         self::WORLDLINE,
+        self::HDFC,
     ];
 
     // TODO: Add gateway and gateway_acquirer map to fix
@@ -1465,6 +1466,9 @@ class Gateway
         Gateway::WALLET_PHONEPE,
         Gateway::UPI_CITI,
         Gateway::UPI_JUSPAY,
+        // Cybersource does not make s2s callback, Google Pay makes s2s callback for payments
+        // that went through tokenization gateways.
+        Gateway::CYBERSOURCE,
     ];
 
     /**
@@ -1615,6 +1619,9 @@ class Gateway
         IFSC::CBIN => Gateway::NETBANKING_CBI,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        IFSC::CIUB => Gateway::NETBANKING_CUB,
+        IFSC::SIBL => Gateway::NETBANKING_SIB,
+        IFSC::YESB => Gateway::NETBANKING_YESB,
     ];
 
 
@@ -1628,6 +1635,13 @@ class Gateway
         Gateway::EBS,
         Gateway::PAYTM,
         Gateway::ATOM
+    ];
+
+    /**
+     * List of gateways which support tokenization.
+     */
+    public static $tokenizationGateways = [
+        Gateway::CYBERSOURCE,
     ];
 
     public static $emiBanks = [
@@ -1670,12 +1684,10 @@ class Gateway
     public static $gatewayAcquirerIfscMapping = [
         Gateway::CARD_FSS => [
             self::ACQUIRER_FSS => [
-                IFSC::UTIB,
                 IFSC::IOBA,
                 IFSC::ANDB,
                 IFSC::SYNB,
                 IFSC::SURY,
-                IFSC::ICIC,
                 IFSC::CBIN,
             ]
         ],

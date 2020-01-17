@@ -431,6 +431,9 @@ class Reconciliate extends Base\Core
         ];
 
         $this->trace->info(TraceCode::RECON_BATCH_ANALYTICS_OUTPUT_FILE, $traceData);
+
+        // Delete local file, as it has been upload to filestore (s3) now.
+        (new FileProcessor)->deleteFileLocally($filePath);
     }
 
     /**

@@ -41,6 +41,8 @@ class SettlementTransfer extends Base
         $this->txn->setApiFee(0);
 
         $this->repo->saveOrFail($this->txn);
+
+        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
     }
 
     public function setMerchantBalanceLockForUpdate()

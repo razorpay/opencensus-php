@@ -122,25 +122,17 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ErrorCodes\NetbankingErrorCodes::getInternalErrorCode($gatewayPayment->getErrorCode());
 
-            if ($input['merchant']->isFeatureEnabled(Feature::ENACH_INTERMEDIATE))
-            {
-
-                $exceptionData = [
-                    'emandate_details' => self::fetchEmandateDisplayDetails(
-                        $input['payment'],
-                        $input['token'],
-                        $input['terminal'],
-                        $input['merchant'],
-                        $this->config,
-                        $this->mode,
-                        $gatewayPayment
-                    )
-                ];
-            }
-            else
-            {
-                $exceptionData = null;
-            }
+            $exceptionData = [
+                'emandate_details' => self::fetchEmandateDisplayDetails(
+                    $input['payment'],
+                    $input['token'],
+                    $input['terminal'],
+                    $input['merchant'],
+                    $this->config,
+                    $this->mode,
+                    $gatewayPayment
+                )
+            ];
 
             throw new Exception\GatewayErrorException(
                 $errorCode,
@@ -239,12 +231,9 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($dataToTrace, $input);
 
-        if ($input['merchant']->isFeatureEnabled(Feature::ENACH_INTERMEDIATE))
-        {
-            $request['method'] = 'direct';
+        $request['method'] = 'direct';
 
-            $request['content'] = $this->getRequestContentAsView($request, $input);
-        }
+        $request['content'] = $this->getRequestContentAsView($request, $input);
 
         return $request;
     }

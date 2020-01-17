@@ -18,7 +18,8 @@ trait CardPaymentService
 
     public function canAuthorizeViaCps(Payment\Entity $payment): bool
     {
-        if ($payment->isMethodCardOrEmi() == false)
+        if (($payment->isMethodCardOrEmi() === false) or
+            ($payment->isGooglePayCard() === true))
         {
             return false;
         }

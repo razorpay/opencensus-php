@@ -338,7 +338,7 @@ class Service extends Base\Service
             $this->core->putAppTokenInSession($app);
 
             // Fetch existing tokens if exists
-            $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
+            $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer, $this->merchant);
 
             if (($tokens !== null) and ($tokens->count() > 0))
             {

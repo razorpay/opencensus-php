@@ -1,22 +1,22 @@
-Alter table cards
-    add merchant_id varchar(14) after id;
+ALTER TABLE cards
+    ADD merchant_id varchar(14) after id;
 
-alter table merchant_documents
-    modify file_store_id char(14) NULL;
+ALTER TABLE merchant_documents
+    MODIFY file_store_id char(14) NULL;
 
 ALTER TABLE merchant_documents
     ADD INDEX (`file_store_id`);
 
-update cards, payments
-    set cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
+UPDATE cards, payments
+    SET cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
 
 ALTER TABLE cards MODIFY COLUMN merchant_id VARCHAR(14) NOT NULL,
     ADD CONSTRAINT cards_merchant_id_foreign FOREIGN KEY(merchant_id)
     REFERENCES merchants(id) ON DELETE RESTRICT;
 ALTER TABLE `cards` ADD INDEX `cards_network_index` (`network`);
 
-alter table transactions
-    add channel VARCHAR(8) NOT NULL after escrow_balance;
+ALTER TABLE transactions
+    ADD channel VARCHAR(8) NOT NULL after escrow_balance;
 ALTER TABLE transactions
     ADD INDEX transactions_channel_index (`channel`);
 
@@ -2411,7 +2411,7 @@ UPDATE hdfc
 
 UPDATE hdfc
     SET gateway_payment_id = gateway_transaction_id
-    WHERE gateway_payment_id IS NULL AND created_at 
+    WHERE gateway_payment_id IS NULL AND created_at
     = 1502841600 AND action IN ('1', '4');
 
 # Adding index on payments.updated_at, payments.captured_at
@@ -5579,8 +5579,19 @@ ALTER TABLE offers
     ADD COLUMN max_order_amount int(11) DEFAULT NULL,
     MODIFY type VARCHAR(20);
 
+// For saved vpas.
+ALTER TABLE `tokens`
+    ADD COLUMN `vpa_id` varchar(14) NULL DEFAULT NULL;
+
 ALTER TABLE `merchant_documents`
     ADD COLUMN `source` enum('API', 'UFH') NOT NULL DEFAULT 'API' ;
 
 ALTER TABLE pricing
      MODIFY COLUMN amount_range_min BIGINT(20) unsigned DEFAULT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN kyc_id char(14) DEFAULT NULL ;
+
+ALTER TABLE payouts
+   ADD COLUMN payout_link_id CHAR(14) DEFAULT NULL AFTER `idempotency_key`,
+   ADD INDEX `payouts_payout_link_id_index` (`payout_link_id`);

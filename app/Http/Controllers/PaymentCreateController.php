@@ -591,6 +591,14 @@ class PaymentCreateController extends Controller
                                ->with('data', $templateData);
                 }
             }
+            else if ($data['type'] === 'application')
+            {
+                if ((isset($data['application_name']) === true) and
+                    ($data['application_name'] === 'google_pay'))
+                {
+                    return $data;
+                }
+            }
             else
             {
                 assertTrue(false, 'Should not reach here');
