@@ -145,7 +145,7 @@ export default class TransactionsContainer extends Component {
                 style={{ marginLeft: '5px' }}
                 onClick={() => {
                   this.props.openModal({
-                    size: 'regular',
+                    size: 'medium',
                     component: (
                       <SettlementDetail
                         settlementAmount={this.props.settlement_amount.data}
@@ -173,7 +173,7 @@ export default class TransactionsContainer extends Component {
           <OnHoldBanner
             ctaOnClick={() => {
               this.props.openModal({
-                size: 'regular',
+                size: 'medium',
                 component: (
                   <SettlementDetail
                     settlementAmount={this.props.settlement_amount.data}

@@ -91,86 +91,93 @@ export default class SettlementSchedule extends Component {
         />
         <div class="modal-body">
           <Fragment>
-            <div style={{ textAlign: 'left', paddingBottom: '10px' }}>
-              Your payments get settled to your account in
-            </div>
-            <div class="emphzd">
-              <div class="emphzd-div">
-                {this.state.defaultDomestic.length > 0 && (
-                  <div class="flex">
-                    <div class="w50 text-left">
-                      Domestic Payments<span class="text-danger">*</span>
-                    </div>
-                    <div class="w50 text-right">
-                      {this.state.defaultDomestic[0]
-                        .is_early_settlement_schedule ? (
-                        this.formatTime(this.state.defaultDomestic[0].hour)
-                      ) : (
-                        <>
-                          <strong>
-                            T+{this.state.defaultDomestic[0].delay}
-                          </strong>{' '}
-                          working days
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {this.state.defaultInternational.length > 0 && (
-                  <div class="flex">
-                    <div class="w50 text-left">
-                      International Payments<span class="text-danger">*</span>
-                    </div>
-                    <div class="w50 text-right">
-                      {this.state.defaultInternational[0]
-                        .is_early_settlement_schedule ? (
-                        this.formatTime(this.state.defaultInternational[0].hour)
-                      ) : (
-                        <>
-                          <strong>
-                            T+{this.state.defaultInternational[0].delay}
-                          </strong>{' '}
-                          working days
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
+            <div class="settlement-details-overflow-box">
+              <div style={{ textAlign: 'left', paddingBottom: '10px' }}>
+                Your payments get settled to your account in
               </div>
-
-              {this.state.otherMethods.map((item, idx) => {
-                <div style={{ margin: '10px' }} key={idx}>
-                  <p class="grey">
-                    Other method specific Settlement schedules,
-                  </p>
-                  <div
-                    class="flex"
-                    style={{ margin: '10px', fontSize: '16px' }}
-                  >
-                    <div class="w50 text-left p20">{item.method}</div>
-                    <div class="w50 text-right p20">
-                      {item.is_early_settlement_schedule ? (
-                        this.formatTime(item.hour)
-                      ) : (
-                        <>
-                          <strong>T+{item.delay}</strong> working days
-                        </>
-                      )}
+              <div class="emphzd">
+                <div class="emphzd-div">
+                  {this.state.defaultDomestic.length > 0 && (
+                    <div class="flex">
+                      <div class="w50 text-left">
+                        Domestic Payments<span class="text-danger">*</span>
+                      </div>
+                      <div class="w50 text-right">
+                        {this.state.defaultDomestic[0]
+                          .is_early_settlement_schedule ? (
+                          this.formatTime(this.state.defaultDomestic[0].hour)
+                        ) : (
+                          <>
+                            <strong>
+                              T+{this.state.defaultDomestic[0].delay}
+                            </strong>{' '}
+                            working days
+                          </>
+                        )}
+                      </div>
                     </div>
+                  )}
+
+                  {this.state.defaultInternational.length > 0 && (
+                    <div class="flex">
+                      <div class="w50 text-left">
+                        International Payments<span class="text-danger">*</span>
+                      </div>
+                      <div class="w50 text-right">
+                        {this.state.defaultInternational[0]
+                          .is_early_settlement_schedule ? (
+                          this.formatTime(
+                            this.state.defaultInternational[0].hour
+                          )
+                        ) : (
+                          <>
+                            <strong>
+                              T+{this.state.defaultInternational[0].delay}
+                            </strong>{' '}
+                            working days
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {this.state.otherMethods.map((item, idx) => {
+                  <div style={{ margin: '10px' }} key={idx}>
+                    <p class="grey">
+                      Other method specific Settlement schedules,
+                    </p>
+                    <div
+                      class="flex"
+                      style={{ margin: '10px', fontSize: '16px' }}
+                    >
+                      <div class="w50 text-left p20">{item.method}</div>
+                      <div class="w50 text-right p20">
+                        {item.is_early_settlement_schedule ? (
+                          this.formatTime(item.hour)
+                        ) : (
+                          <>
+                            <strong>T+{item.delay}</strong> working days
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>;
+                })}
+                <div
+                  class="settlement-default-note"
+                  style={{ fontSize: '13px' }}
+                >
+                  <div class="w50 text-left p20">
+                    <span class="text-danger">*</span> for Default Schedules
                   </div>
-                </div>;
-              })}
-              <div class="settlement-default-note" style={{ fontSize: '13px' }}>
-                <div class="w50 text-left p20">
-                  <span class="text-danger">*</span> for Default Schedules
+                  <div class="w50 text-right p20">
+                    (T is the date of payment capture)
+                  </div>
                 </div>
-                <div class="w50 text-right p20">
-                  (T is the date of payment capture)
-                </div>
+                <hr />
               </div>
-              <hr />
-            </div>
+            </div>{' '}
             <div style={{ padding: '13px' }}>
               <p>
                 <b>Note:</b> Weekends aren’t counted as working days. <br />
@@ -193,18 +200,10 @@ export default class SettlementSchedule extends Component {
 
                   <div class="box settlement-holiday-example">
                     <div class="box-heading">
-                      <h5 style={{ textAlign: 'left' }}>
+                      {/* <h5 style={{ textAlign: 'left' }}>
                         <b>Example: No Bank Holiday</b>
-                      </h5>
-                      <img src="/public/img/No_Bank_Holiday.svg" />
-                    </div>
-                  </div>
-                  <div class="box settlement-holiday-example">
-                    <div class="box-heading">
-                      <h5 style={{ textAlign: 'left' }}>
-                        <b>Example: Bank Holiday in between</b>
-                      </h5>
-                      <img src="/public/img/Bank_Holiday_in_between.svg" />
+                      </h5> */}
+                      <img src="img/settlement-example/full.svg" />
                     </div>
                   </div>
                 </Fragment>
