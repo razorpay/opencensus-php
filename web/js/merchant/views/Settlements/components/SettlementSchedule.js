@@ -91,7 +91,7 @@ export default class SettlementSchedule extends Component {
         />
         <div class="modal-body">
           <Fragment>
-            <div style={{ textAlign: 'center', fontSize: '17px' }}>
+            <div style={{ textAlign: 'left', paddingBottom: '10px' }}>
               Your payments get settled to your account in
             </div>
             <div class="emphzd">
@@ -173,8 +173,7 @@ export default class SettlementSchedule extends Component {
             </div>
             <div style={{ padding: '13px' }}>
               <p>
-                <b>Note:</b> Bank Holidays aren’t counted as working days.{' '}
-                <br />
+                <b>Note:</b> Weekends aren’t counted as working days. <br />
                 <a
                   style={{ marginTop: '10px' }}
                   onClick={this.toggleExample}
@@ -197,7 +196,7 @@ export default class SettlementSchedule extends Component {
                       <h5 style={{ textAlign: 'left' }}>
                         <b>Example: No Bank Holiday</b>
                       </h5>
-                      <SettlementsExample duration={4} />
+                      <img src="/public/img/No_Bank_Holiday.svg" />
                     </div>
                   </div>
                   <div class="box settlement-holiday-example">
@@ -205,7 +204,7 @@ export default class SettlementSchedule extends Component {
                       <h5 style={{ textAlign: 'left' }}>
                         <b>Example: Bank Holiday in between</b>
                       </h5>
-                      <SettlementsExample holiday={true} duration={4} />
+                      <img src="/public/img/Bank_Holiday_in_between.svg" />
                     </div>
                   </div>
                 </Fragment>
