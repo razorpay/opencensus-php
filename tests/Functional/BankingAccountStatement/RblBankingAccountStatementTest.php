@@ -111,7 +111,9 @@ class RblBankingAccountStatementTest extends TestCase
             'content'   => $content
         ];
 
-        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 1]);
+        $this->app['cache']->flush();
+
+        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => ['1']]);
 
         Queue::fake();
 
