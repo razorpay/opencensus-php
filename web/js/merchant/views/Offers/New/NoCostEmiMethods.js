@@ -130,11 +130,11 @@ export default class NoCostEmiMethods extends React.Component {
           <ul>
             <li>
               Only banks with minimum EMI order amount of{' '}
-              <Amount value={this.props.minAmount * 100} /> displayed
+              <Amount value={this.props.minAmount * 100} /> are being displayed.
             </li>
             <li>
               In No-Cost-EMI, the interest charged by bank is given as a
-              discount to the customer. To know more about how this works click{' '}
+              discount to the customer. To know more about how this works, click{' '}
               <a
                 target="_blank"
                 href={'https://razorpay.com/docs/offers/no-cost-emi/'}
