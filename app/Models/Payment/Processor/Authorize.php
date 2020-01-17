@@ -576,6 +576,10 @@ trait Authorize
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
     {
+        if ($payment->isGooglePayCard() === true)
+        {
+            return;
+        }
         // try calculating the fees, throws exception if fees is more than amount
         list($fee, $tax, $feesSplit) = $this->repo->useSlave(function () use ($payment)
         {
@@ -767,6 +771,22 @@ trait Authorize
         return $response;
     }
 
+    protected function getGooglePayCardPaymentCreatedResponse($request, $payment)
+    {
+        $this->repo->saveOrFail($payment);
+
+        $response = [
+            'version'               => 1,
+            'type'                  => 'application',
+            'application_name'      => 'google_pay',
+            'payment_id'            => $payment->getPublicId(),
+            'gateway'               => $this->getEncryptedGatewayText($payment->getGateway()),
+            'request'               => $request,
+        ];
+
+        return $response;
+    }
+
     protected function updateTwoFactorAuthForOneStepPayment()
     {
         $payment = $this->payment;
@@ -947,6 +967,8 @@ trait Authorize
 
             $this->validatePayLaterIfApplicable($payment, $input);
 
+            $this->validateApplicationIfApplicable($payment, $input);
+
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
         catch (\Throwable $ex)
@@ -981,6 +1003,23 @@ trait Authorize
         }
 
         $this->validateContactAndProviderFromToken($payment, $input);
+    }
+
+    protected function validateApplicationIfApplicable(Payment\Entity $payment, $input)
+    {
+        if (isset($input['application']) === true)
+        {
+            switch($input['application'])
+            {
+                case 'google_pay':
+                    if ($payment->merchant->isFeatureEnabled(Feature\Constants::GOOGLE_PAY_CARDS) === false)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Google Pay Cards not enabled for merchant.');
+                    }
+                    break;
+            }
+        }
     }
 
     private function validateContactAndProviderFromToken(Payment\Entity $payment, $input)
@@ -2280,6 +2319,12 @@ trait Authorize
 
     protected function runInternationalChecks(Payment\Entity $payment)
     {
+        //return if payment is of GPay Cards
+        if ($payment->isGooglePayCard() === true)
+        {
+            return;
+        }
+
         // return if method is not card or card is not international
         if (($payment->getMethod() !== Method::CARD) or
             ($payment->card->isInternational() === false))
@@ -3175,7 +3220,8 @@ trait Authorize
         }
 
         // No card saving, normal simple flow
-        if ($payment->isMethodCardOrEmi())
+        if ($payment->isMethodCardOrEmi() and
+            ($payment->isGooglePayCard() === false))
         {
             $payment->setSave(false);
 
@@ -3320,7 +3366,7 @@ trait Authorize
 
         $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
 
-        if ($payment->isMethodCardOrEmi() === true)
+        if (($payment->isMethodCardOrEmi() === true) and ($payment->isGooglePayCard() === false))
         {
             $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
 
@@ -3410,7 +3456,7 @@ trait Authorize
         $token = null;
 
         // create local saved card and link to payment
-        if ($payment->isMethodCardOrEmi() === true)
+        if (($payment->isMethodCardOrEmi() === true) and ($payment->isGooglePayCard() === false))
         {
             $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant, $input);
 
@@ -3788,6 +3834,10 @@ trait Authorize
             case $this->canRunOtpPaymentFlow($payment):
 
                 return $this->getOtpPaymentCreatedResponse($request, $payment);
+
+            case $this->canRunGooglePayCardPaymentFlow($payment):
+
+                return $this->getGooglePayCardPaymentCreatedResponse($request, $payment);
 
             default:
 
@@ -5078,7 +5128,7 @@ trait Authorize
 
         // If the payment is card payment with headless browser flow then
         // we render the otp submission page to the user
-        if ($payment->isMethodCardOrEmi() === true)
+        if (($payment->isMethodCardOrEmi() === true) and ($payment->isGooglePayCard() === false))
         {
             if ($payment->card->iinRelation !== null)
             {
@@ -5264,6 +5314,16 @@ trait Authorize
         if (($payment->getMethod() === Payment\Method::WALLET) and
             ($payment->getGateway() === Payment\Gateway::WALLET_PHONEPE) and
             ($payment->getMetadata('flow') === 'intent'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunGooglePayCardPaymentFlow($payment)
+    {
+        if ($payment->isGooglePayCard() === true)
         {
             return true;
         }
@@ -5617,21 +5677,26 @@ trait Authorize
 
     protected function verifyCardEnabledInLive(Payment\Entity $payment)
     {
-        $card = $payment->card;
-
-        $merchantMethods = $this->methods;
-
         // Only check enabled or not on live mode
         if ($this->mode === Mode::TEST)
         {
             return;
         }
 
+        $merchantMethods = $this->methods;
+
         if ($merchantMethods->isCardEnabled() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENABLED_FOR_MERCHANT);
         }
+
+        if ($payment->isGooglePayCard() === true)
+        {
+            return;
+        }
+
+        $card = $payment->card;
 
         $type = $card->getType();
 
@@ -6263,6 +6328,11 @@ trait Authorize
 
         if (($authType !== null) and
             ($authType !== Payment\AuthType::_3DS))
+        {
+            return false;
+        }
+
+        if ($payment->isGooglePayCard() === true)
         {
             return false;
         }

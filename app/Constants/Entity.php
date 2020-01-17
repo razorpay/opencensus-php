@@ -571,7 +571,7 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::MOZART                 => \RZP\Gateway\Mozart::class,
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
-        self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
+        self::GOOGLE_PAY             => \RZP\Gateway\GooglePay::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,

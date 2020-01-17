@@ -2258,6 +2258,8 @@ class Processor
 
         $this->validateAndSetInvoiceDetailsIfApplicable($payment);
 
+        $this->setApplicationIfApplicable($payment, $input);
+
         $metadata = $payment->getMetadata();
 
         $this->trace->info(
@@ -2700,6 +2702,14 @@ class Processor
         $this->payment = $payment;
 
         return $this;
+    }
+
+    protected function setApplicationIfApplicable(Payment\Entity $payment, $input)
+    {
+        if (isset($input['application']) === true)
+        {
+            $payment->setApplication($input['application']);
+        }
     }
 
     public function setRazorXDopplerProperty(bool $razorXFlag): Processor
