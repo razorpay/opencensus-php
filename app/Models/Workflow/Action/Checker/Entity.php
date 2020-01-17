@@ -15,7 +15,7 @@ class Entity extends Base\Entity
     const CHECKER_ID   = 'checker_id';
     const STEP_ID      = 'step_id';
     const APPROVED     = 'approved';
-    const COMMENT      = 'comment';
+    const USER_COMMENT = 'user_comment';
 
     // APPROVED column values
     const APPROVED_ENUM = [
@@ -35,7 +35,7 @@ class Entity extends Base\Entity
 
     protected $fillable = [
         self::APPROVED,
-        self::COMMENT,
+        self::USER_COMMENT,
     ];
 
     protected $visible = [
@@ -48,7 +48,7 @@ class Entity extends Base\Entity
         self::ACTION_ID,
         self::STEP_ID,
         self::APPROVED,
-        self::COMMENT,
+        self::USER_COMMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -60,7 +60,7 @@ class Entity extends Base\Entity
         self::ACTION_ID,
         self::STEP_ID,
         self::APPROVED,
-        self::COMMENT,
+        self::USER_COMMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];

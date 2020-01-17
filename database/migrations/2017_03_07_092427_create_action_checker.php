@@ -41,7 +41,7 @@ class CreateActionChecker extends Migration
             $table->tinyInteger(Checker::APPROVED)
                   ->nullable();
 
-            $table->string(Checker::COMMENT, 255)
+            $table->string(Checker::USER_COMMENT, 255)
                   ->nullable();
 
             $table->foreign(Checker::STEP_ID)

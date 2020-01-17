@@ -224,7 +224,7 @@ return [
             'content' => [
                 'token'   => 'BUIj3m2Nx2VvVj',
                 'otp'     => '0007',
-                'comment' => 'Approving',
+                'user_comment' => 'Approving',
             ],
         ],
         'response' => [
@@ -275,10 +275,10 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts/approve/bulk',
             'content' => [
-                'payout_ids' => [],
-                'token'      => 'BUIj3m2Nx2VvVj',
-                'otp'        => '0007',
-                'comment'    => 'Bulk Approving'
+                'payout_ids'   => [],
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Bulk Approving'
             ],
         ],
         'response' => [
@@ -314,7 +314,7 @@ return [
             'content' => [
                 'token'   => 'BUIj3m2Nx2VvVj',
                 'otp'     => '1234',
-                'comment' => 'Rejecting',
+                'user_comment' => 'Rejecting',
             ],
         ],
         'response' => [
@@ -346,7 +346,7 @@ return [
             'url'     => '/payouts/reject/bulk',
             'content' => [
                 'payout_ids' => [],
-                'comment'    => 'Bulk Rejecting',
+                'user_comment'    => 'Bulk Rejecting',
             ],
         ],
         'response' => [

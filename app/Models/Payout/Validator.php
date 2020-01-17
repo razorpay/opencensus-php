@@ -118,17 +118,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $bulkApproveRules = [
-        Entity::PAYOUT_IDS       => 'required|array',
-        Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
-        User\Entity::OTP         => 'required|filled|min:4',
-        User\Entity::TOKEN       => 'required|unsigned_id',
-        ActionChecker::COMMENT   => 'sometimes|string|max:255',
+        Entity::PAYOUT_IDS          => 'required|array',
+        Entity::PAYOUT_IDS. '.*'    => 'required|public_id|size:19',
+        User\Entity::OTP            => 'required|filled|min:4',
+        User\Entity::TOKEN          => 'required|unsigned_id',
+        ActionChecker::USER_COMMENT => 'sometimes|string|max:255',
     ];
 
     protected static $bulkRejectRules = [
-        Entity::PAYOUT_IDS       => 'required|array',
-        Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
-        ActionChecker::COMMENT   => 'sometimes|string|max:255',
+        Entity::PAYOUT_IDS          => 'required|array',
+        Entity::PAYOUT_IDS. '.*'    => 'required|public_id|size:19',
+        ActionChecker::USER_COMMENT => 'sometimes|string|max:255',
     ];
 
     protected function validateMethod($attribute, $method)

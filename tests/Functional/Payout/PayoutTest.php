@@ -732,7 +732,7 @@ class PayoutTest extends TestCase
         $firstActionChecker = $this->getDbLastEntity('action_checker');
         $this->assertEquals(2, $firstApprovalResponse['workflow_history']['current_level']);
         $this->assertEquals('pending', $firstApprovalResponse['status']);
-        $this->assertEquals('Approving', $firstActionChecker['comment']);
+        $this->assertEquals('Approving', $firstActionChecker['user_comment']);
         $this->assertEquals(true, $firstActionChecker['approved']);
 
         // Create Checker Role User for 2bd level of approval
@@ -748,7 +748,7 @@ class PayoutTest extends TestCase
         $secondActionChecker = $this->getDbLastEntity('action_checker');
         $this->assertEquals(2, $secondApprovalResponse['workflow_history']['current_level']);
         $this->assertEquals('processing', $secondApprovalResponse['status']);
-        $this->assertEquals('Approving', $secondActionChecker['comment']);
+        $this->assertEquals('Approving', $secondActionChecker['user_comment']);
         $this->assertEquals(true, $secondActionChecker['approved']);
     }
 
@@ -825,7 +825,7 @@ class PayoutTest extends TestCase
 
         $actionChecker = $this->getDbLastEntity('action_checker');
         $this->assertEquals(true, $actionChecker['approved']);
-        $this->assertEquals('Bulk Approving', $actionChecker['comment']);
+        $this->assertEquals('Bulk Approving', $actionChecker['user_comment']);
     }
 
     public function testBulkApprovePayoutWithoutComment()
@@ -852,7 +852,7 @@ class PayoutTest extends TestCase
 
         $actionChecker = $this->getDbLastEntity('action_checker');
         $this->assertEquals(true, $actionChecker['approved']);
-        $this->assertEquals(null, $actionChecker['comment']);
+        $this->assertEquals(null, $actionChecker['user_comment']);
     }
 
     public function testRejectPayoutWithComment()
@@ -879,7 +879,7 @@ class PayoutTest extends TestCase
         $actionChecker = $this->getDbLastEntity('action_checker');
 
         $this->assertEquals(false, $actionChecker['approved']);
-        $this->assertEquals('Rejecting', $actionChecker['comment']);
+        $this->assertEquals('Rejecting', $actionChecker['user_comment']);
     }
 
     public function testRejectPayoutWithoutComment()
@@ -906,7 +906,7 @@ class PayoutTest extends TestCase
         $actionChecker = $this->getDbLastEntity('action_checker');
 
         $this->assertEquals(false, $actionChecker['approved']);
-        $this->assertEquals(null, $actionChecker['comment']);
+        $this->assertEquals(null, $actionChecker['user_comment']);
     }
 
     public function testBulkRejectPayoutsWithComment()
@@ -935,7 +935,7 @@ class PayoutTest extends TestCase
 
         $actionChecker = $this->getDbLastEntity('action_checker');
         $this->assertEquals(false, $actionChecker['approved']);
-        $this->assertEquals('Bulk Rejecting', $actionChecker['comment']);
+        $this->assertEquals('Bulk Rejecting', $actionChecker['user_comment']);
     }
 
     public function testBulkRejectPayoutsWithoutComment()
@@ -964,7 +964,7 @@ class PayoutTest extends TestCase
 
         $actionChecker = $this->getDbLastEntity('action_checker');
         $this->assertEquals(false, $actionChecker['approved']);
-        $this->assertEquals(null, $actionChecker['comment']);
+        $this->assertEquals(null, $actionChecker['user_comment']);
     }
 
     public function testRetryPayout(): array
