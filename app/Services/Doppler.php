@@ -304,10 +304,12 @@ class Doppler
             'method'    => $method,
             'content'   => $data,
             'options'   => $options,
-            'headers'   => $headers,
+            //'headers'   => $headers,
         ];
 
         $this->trace->info(TraceCode::DOPPLER_SERVICE_SUCCESS_RATE_REQUEST, $request);
+
+        $request['headers'] = $headers;
 
         $response = $this->sendRawRequest($request);
 
