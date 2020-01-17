@@ -706,7 +706,7 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testApprovePayoutWithOtp()
+    public function testApprovePayoutWithComment()
     {
         $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
 
@@ -725,7 +725,6 @@ class PayoutTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
-        $testData['request']['content']['comment'] = 'First Approving Comment';
 
         $firstApprovalResponse = $this->startTest();
 
@@ -733,7 +732,7 @@ class PayoutTest extends TestCase
         $firstActionChecker = $this->getDbLastEntity('action_checker');
         $this->assertEquals(2, $firstApprovalResponse['workflow_history']['current_level']);
         $this->assertEquals('pending', $firstApprovalResponse['status']);
-        $this->assertEquals('First Approving Comment', $firstActionChecker['comment']);
+        $this->assertEquals('Approving', $firstActionChecker['comment']);
         $this->assertEquals(true, $firstActionChecker['approved']);
 
         // Create Checker Role User for 2bd level of approval
@@ -749,7 +748,36 @@ class PayoutTest extends TestCase
         $secondActionChecker = $this->getDbLastEntity('action_checker');
         $this->assertEquals(2, $secondApprovalResponse['workflow_history']['current_level']);
         $this->assertEquals('processing', $secondApprovalResponse['status']);
+        $this->assertEquals('Approving', $secondActionChecker['comment']);
         $this->assertEquals(true, $secondActionChecker['approved']);
+    }
+
+    public function testApprovePayoutWithoutComment()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        // Create pending payout with default workflow
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+                                'min_amount' => '0', 'max_amount' => '5000000']);
+        $payout = $this->createPayoutWithWorkflow($workflow);
+
+        // Create Checker Role User for 1st level of approval
+        $role = $this->getDbEntityById('role', Org::CHECKER_ROLE);
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
+        $user->roles()->attach($role);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $approvalResponse = $this->startTest();
+
+        // Validating first approval response
+        $actionChecker = $this->getDbLastEntity('action_checker');
+        $this->assertEquals(2, $approvalResponse['workflow_history']['current_level']);
+        $this->assertEquals(true, $actionChecker['approved']);
     }
 
     public function testApprovePayoutWithInvalidOtp()
@@ -773,7 +801,7 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testApproveBulkPayoutWithOtp()
+    public function testBulkApprovePayoutWithComment()
     {
         $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
 
@@ -786,7 +814,6 @@ class PayoutTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
-        $testData['request']['content']['comment'] = 'Bulk Approve comment';
 
         $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
@@ -798,10 +825,37 @@ class PayoutTest extends TestCase
 
         $actionChecker = $this->getDbLastEntity('action_checker');
         $this->assertEquals(true, $actionChecker['approved']);
-        $this->assertEquals('Bulk Approve comment', $actionChecker['comment']);
+        $this->assertEquals('Bulk Approving', $actionChecker['comment']);
     }
 
-    public function testRejectPayout()
+    public function testBulkApprovePayoutWithoutComment()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+            'min_amount' => '0', 'max_amount' => '5000000']);
+
+        $payout1 = $this->createPayoutWithWorkflow($workflow);
+        $payout2 = $this->createPayoutWithWorkflow($workflow);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
+        $user->roles()->attach($checkerRole);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker');
+        $this->assertEquals(true, $actionChecker['approved']);
+        $this->assertEquals(null, $actionChecker['comment']);
+    }
+
+    public function testRejectPayoutWithComment()
     {
         $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
 
@@ -813,7 +867,6 @@ class PayoutTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
-        $testData['request']['content']['comment'] = 'Rejected comment';
 
         $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
@@ -826,10 +879,37 @@ class PayoutTest extends TestCase
         $actionChecker = $this->getDbLastEntity('action_checker');
 
         $this->assertEquals(false, $actionChecker['approved']);
-        $this->assertEquals('Rejected comment', $actionChecker['comment']);
+        $this->assertEquals('Rejecting', $actionChecker['comment']);
     }
 
-    public function testBulkRejectPayouts()
+    public function testRejectPayoutWithoutComment()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+            'min_amount' => '0', 'max_amount' => '5000000']);
+
+        $payout = $this->createPayoutWithWorkflow($workflow);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
+        $user->roles()->attach($checkerRole);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker');
+
+        $this->assertEquals(false, $actionChecker['approved']);
+        $this->assertEquals(null, $actionChecker['comment']);
+    }
+
+    public function testBulkRejectPayoutsWithComment()
     {
         $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
 
@@ -843,7 +923,6 @@ class PayoutTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
-        $testData['request']['content']['comment'] = 'Bulk Reject comment';
 
 
         $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
@@ -856,7 +935,36 @@ class PayoutTest extends TestCase
 
         $actionChecker = $this->getDbLastEntity('action_checker');
         $this->assertEquals(false, $actionChecker['approved']);
-        $this->assertEquals('Bulk Reject comment', $actionChecker['comment']);
+        $this->assertEquals('Bulk Rejecting', $actionChecker['comment']);
+    }
+
+    public function testBulkRejectPayoutsWithoutComment()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+            'min_amount' => '0', 'max_amount' => '5000000']);
+
+        $payout1 = $this->createPayoutWithWorkflow($workflow);
+        $payout2 = $this->createPayoutWithWorkflow($workflow);
+
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+
+        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
+        $user->roles()->attach($checkerRole);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker');
+        $this->assertEquals(false, $actionChecker['approved']);
+        $this->assertEquals(null, $actionChecker['comment']);
     }
 
     public function testRetryPayout(): array
