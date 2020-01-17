@@ -225,7 +225,7 @@ export default class SettlementSchedule extends Component {
                 >
                   List of Bank Holidays
                 </button>
-                <a href="http://razorpay.com/settlement" target="_blank">
+                <a href="https://razorpay.com/settlement" target="_blank">
                   <button
                     style={{ width: '48%', margin: '0 1%' }}
                     class="btn btn-primary"

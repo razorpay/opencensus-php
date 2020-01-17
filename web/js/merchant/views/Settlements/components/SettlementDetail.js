@@ -139,7 +139,7 @@ export default class SettlementDetail extends Component {
                 </div>
               )}
 
-              <a href="http://razorpay.com/settlement" target="_blank">
+              <a href="https://razorpay.com/settlement" target="_blank">
                 <button class="btn btn-primary">Settlement Guide</button>
               </a>
             </div>
