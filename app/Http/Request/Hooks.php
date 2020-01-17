@@ -5,6 +5,7 @@ namespace RZP\Http\Request;
 use App;
 use Requests_Hooks;
 
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 
 class Hooks
@@ -21,7 +22,7 @@ class Hooks
     {
         $this->app = App::getFacadeRoot();
 
-        $this->mode = $this->app['rzp.mode'];
+        $this->mode = $this->app['rzp.mode'] ?? Mode::LIVE;
     }
 
     public function addCurlProperties(string $url, array &$options)
