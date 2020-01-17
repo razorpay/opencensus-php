@@ -105,7 +105,7 @@ export default class SettlementSchedule extends Component {
               <div class="payment-heading">
                 Your payments get settled to your account in,
               </div>
-              <div class="emphzd">
+              <div class="emphzd" style={{ paddingBottom: 0 }}>
                 <div class="emphzd-div">
                   {this.state.defaultDomestic.length > 0 && (
                     <div class="flex">
@@ -188,14 +188,13 @@ export default class SettlementSchedule extends Component {
                     (T is the date of payment capture)
                   </div>
                 </div>
-                <hr style={{ marginTop: 0 }} />
               </div>
             </div>{' '}
             <div style={{ padding: '13px' }}>
               <p>
                 <b>Note:</b> Weekends aren’t counted as working days. <br />
                 <a
-                  style={{ marginTop: '10px' }}
+                  style={{ marginTop: '25px' }}
                   onClick={this.toggleExample}
                   class="link"
                 >
