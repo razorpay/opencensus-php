@@ -10,15 +10,17 @@ use Mockery;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
 use RZP\Models\FundTransfer;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Tests\Functional\TestCase;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Models\External\Entity as ExternalEntity;
@@ -108,6 +110,8 @@ class RblBankingAccountStatementTest extends TestCase
             'method'    => 'POST',
             'content'   => $content
         ];
+
+        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 1]);
 
         Queue::fake();
 
