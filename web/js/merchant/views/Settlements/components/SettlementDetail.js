@@ -42,7 +42,10 @@ export default class SettlementDetail extends Component {
         />
         <div class="modal-body">
           <Fragment>
-            <div class="settlement-details-overflow-box">
+            <div
+              class="settlement-details-overflow-box"
+              style={{ paddingBottom: '0' }}
+            >
               <div class="emphzd" style={{ paddingTop: 0 }}>
                 <div class="settlement-alert-warning">
                   <span>
