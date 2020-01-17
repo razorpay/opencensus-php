@@ -19,7 +19,7 @@ export default class SettlementDetail extends Component {
       const rzpTicketSystem = window.rzpTicketSystem;
       rzpTicketSystem.setPrefill('#request', [
         'merchant',
-        'international-early-settlement',
+        'settlement-related',
       ]);
       rzpTicketSystem.openModal('#ticket');
       setTimeout(() => {

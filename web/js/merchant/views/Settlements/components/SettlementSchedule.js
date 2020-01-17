@@ -92,7 +92,13 @@ export default class SettlementSchedule extends Component {
         <div class="modal-body">
           <Fragment>
             <div class="settlement-details-overflow-box">
-              <div style={{ textAlign: 'left', paddingBottom: '10px' }}>
+              <div
+                style={{
+                  textAlign: 'left',
+                  paddingBottom: '10px',
+                  marginLeft: '15px',
+                }}
+              >
                 Your payments get settled to your account in
               </div>
               <div class="emphzd">
@@ -168,10 +174,10 @@ export default class SettlementSchedule extends Component {
                   class="settlement-default-note"
                   style={{ fontSize: '13px' }}
                 >
-                  <div class="w50 text-left p20">
+                  <div class="w50 text-left">
                     <span class="text-danger">*</span> for Default Schedules
                   </div>
-                  <div class="w50 text-right p20">
+                  <div class="w50 text-right">
                     (T is the date of payment capture)
                   </div>
                 </div>
