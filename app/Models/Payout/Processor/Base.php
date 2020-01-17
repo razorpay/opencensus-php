@@ -292,9 +292,7 @@ class Base extends BaseCore
         // if the workflow is enabled, check if the request if from API and merchant wants to
         // skip workflow for requests through API
         //
-        if (($areWorkflowsEnabled === false) or
-            (($isApiRequest === true) and
-                ($hasSkipWorkflowFeature === true)))
+        if ($this->isWorkflowEnabled() === false)
         {
             //
             // Workflows feature was not enabled.
@@ -328,7 +326,6 @@ class Base extends BaseCore
                  ->setEntityAndId($payout->getEntity(), $payout->getId())
                  ->setPermission(Permission\Name::CREATE_PAYOUT)
                  ->handle((new \stdClass), $payout);
-
         }
         catch (Exception\EarlyWorkflowResponse $ex)
         {
@@ -362,6 +359,36 @@ class Base extends BaseCore
         }
 
         return $payout;
+    }
+
+    /**
+     * Check if workflow is enabled for merchant
+     * Additionally check if the call is from API and merchant has disabled the workflow for API request
+     *
+     * @return bool
+     */
+    protected function isWorkflowEnabled(){
+        $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
+
+        $hasSkipWorkflowFeature = $this->merchant->isFeatureEnabled(Features::SKIP_WORKFLOWS_FOR_API);
+
+        $isApiRequest = ($this->app['basicauth']->getRequestOriginProduct() !== ProductType::BANKING) ? true : false;
+
+        //
+        // Skip workflow if its not enabled for the merchant or
+        // if the workflow is enabled, check if the request if from API and merchant wants to
+        // skip workflow for requests through API
+        //
+        if (($areWorkflowsEnabled === false) or
+            (($isApiRequest === true) and
+                ($hasSkipWorkflowFeature === true)))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 
     /**
