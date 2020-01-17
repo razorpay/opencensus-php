@@ -302,11 +302,10 @@ class AnalyticsDesktop extends Component {
                                   />
                                 ),
                               });
-
                               window.rzpAnalytics({
-                                eventCategory:
-                                  'Dashboard - Settlement UI Revamp',
-                                eventAction: 'Click Know More - Home Page',
+                                eventCategory: 'Settlement Revamp',
+                                eventAction: 'Know more - Next Settlement',
+                                eventLabel: `Home`,
                               });
                             }}
                           >
@@ -356,8 +355,9 @@ class AnalyticsDesktop extends Component {
               });
 
               window.rzpAnalytics({
-                eventCategory: 'Dashboard - Settlement UI Revamp',
-                eventAction: 'Click Know More(On Hold) - Home Page',
+                eventCategory: 'Settlement Revamp',
+                eventAction: 'View details - Funds on Hold',
+                eventLabel: `Home`,
               });
             }}
           />
