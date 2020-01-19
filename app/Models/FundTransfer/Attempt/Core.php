@@ -805,6 +805,13 @@ class Core extends Base\Core
             return [false, Settlement\Channel::YESBANK];
         }
 
+        if ((($source->getChannel() === Settlement\Channel::YESBANK) and
+             ($accountType === E::BANK_ACCOUNT)) and
+             ($this->isTestMode() === false))
+        {
+            return [true, $source->getChannel()];
+        }
+
         $key = 'fts_payout_' . strtolower($accountType) . '_' . $source->getChannel() . '_' . $source->getMode();
 
         $this->trace->info(TraceCode::FTA_PAYOUT_RAMP_INIT, ['key' => $key]);
