@@ -888,7 +888,13 @@ class Processor
             return;
         }
 
-        if ((isset($input['_']['flow']) === false) or ($input['_']['flow'] === Payment\Flow::COLLECT))
+        /***
+         * For collect payments, we need the vpa. However, in case of saved vpa, we dont get the vpa directly. We get
+         * the token linked to the vpa entity in the request. Therefore adding a check here that either the vpa should
+         * be present or token should be present.
+         */
+        if (((isset($input['_']['flow']) === false) or ($input['_']['flow'] === Payment\Flow::COLLECT))
+            and (isset($input['token']) === false))
         {
             $missing[] = 'vpa';
         }
@@ -2252,6 +2258,8 @@ class Processor
 
         $this->validateAndSetInvoiceDetailsIfApplicable($payment);
 
+        $this->setApplicationIfApplicable($payment, $input);
+
         $metadata = $payment->getMetadata();
 
         $this->trace->info(
@@ -2694,6 +2702,14 @@ class Processor
         $this->payment = $payment;
 
         return $this;
+    }
+
+    protected function setApplicationIfApplicable(Payment\Entity $payment, $input)
+    {
+        if (isset($input['application']) === true)
+        {
+            $payment->setApplication($input['application']);
+        }
     }
 
     public function setRazorXDopplerProperty(bool $razorXFlag): Processor
@@ -3638,5 +3654,8 @@ class Processor
         }
     }
 
-
+    protected function shouldSaveVpaForUpiPayments():bool
+    {
+        return (($this->payment->isUpi() === true) and ($this->merchant->shouldSaveVpa() === true));
+    }
 }

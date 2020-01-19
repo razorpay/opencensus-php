@@ -21,6 +21,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
+use RZP\Gateway\GooglePay;
 use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
@@ -199,6 +200,11 @@ class Gateway extends Base\Gateway
 
                 return $this->authorizeNotEnrolled($input);
 
+            case Payment\Gateway::GOOGLE_PAY:
+                $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+                return $authResponse;
+
             default:
                 // send enroll request to check status of enrollment of card.
                 parent::action($input, 'authenticate_init');
@@ -333,8 +339,19 @@ class Gateway extends Base\Gateway
                 $dataForMozart = $this->formatDataForMozart($input, $authResponse);
 
                 $input['gateway'] = $dataForMozart;
-                break;
 
+                //setting card number & cvv now as it is required in pay_init step
+                $this->setCardNumberAndCvv($input);
+                break;
+            case Payment\Gateway::GOOGLE_PAY:
+                parent::callback($input);
+
+                $dataForMozart = $this->formatDataForMozartForTokenization($input);
+
+                $input['gateway'] = $dataForMozart;
+
+                $input['card']['number'] = $input['gateway']['card_number'];
+                break;
             default:
                 parent::action($input, 'authenticate_verify');
 
@@ -360,11 +377,11 @@ class Gateway extends Base\Gateway
                 $input['gateway']['authenticate_verify'] = $this->mapInReverseWay($authenticateVerify);
 
                 $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_PROCESSED, $input);
+
+                //setting card number & cvv now as it is required in pay_init step
+                $this->setCardNumberAndCvv($input);
                 break;
         }
-
-        //setting card number & cvv now as it is required in pay_init step
-        $this->setCardNumberAndCvv($input);
 
         // callback data verified. now send actual authorize request
         parent::action($input, 'pay_init');
@@ -394,9 +411,44 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    public function formatDataForMozartForTokenization($input)
+    {
+        $verifyContent['commerce_indicator']     = $this->getCommerceIndicator($input, []);
+        $verifyContent['eci']                    = $this->getEci($input);
+        $verifyContent['cavv']                   = $input['gateway'][GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS]
+                                                    [GooglePay\RequestFields::CRYPTOGRAM_3DS];
+        $verifyContent['xid']                    = $verifyContent['cavv'];
+
+        $data['authenticate_verify']             = $verifyContent;
+        $data['card_number']                     = $input['gateway'][GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS]
+                                                    [GooglePay\RequestFields::CARD_NUMBER];
+        return $data;
+    }
+
+    protected function getEci($input)
+    {
+        $network = $input['card']['network_code'];
+
+        switch ($network)
+        {
+            Case Card\Network::VISA:
+                return '7';
+            Case Card\Network::MC:
+            default:
+                return '2';
+        }
+    }
+
     protected function getCommerceIndicator($input, $response)
     {
-        $eci = $response[Mpi\Base\Entity::ECI];
+        if (isset($response[Mpi\Base\Entity::ECI]))
+        {
+            $eci = $response[Mpi\Base\Entity::ECI];
+        }
+        else
+        {
+            $eci = '7';
+        }
 
         $commerceIndicatorMap = [
             Card\Network::VISA => [

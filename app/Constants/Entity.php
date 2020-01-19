@@ -571,7 +571,7 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::MOZART                 => \RZP\Gateway\Mozart::class,
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
-        self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
+        self::GOOGLE_PAY             => \RZP\Gateway\GooglePay::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
@@ -622,6 +622,10 @@ class Entity
         self::COMMISSION_INVOICE    => \RZP\Models\Partner\Commission\Invoice::class,
 
         self::OPTIONS               => \RZP\Models\Options::class,
+
+        self::PAYMENTS_UPI_VPA              => \RZP\Models\PaymentsUpi\Vpa::class,
+        self::PAYMENTS_UPI_BANK_ACCOUNT     => \RZP\Models\PaymentsUpi\BankAccount::class,
+        self::PAYMENTS_UPI_VPA_BANK_ACCOUNT => \RZP\Models\PaymentsUpi\Vpa\BankAccount::class
     ];
 
     protected static $repository = [

@@ -1466,6 +1466,9 @@ class Gateway
         Gateway::WALLET_PHONEPE,
         Gateway::UPI_CITI,
         Gateway::UPI_JUSPAY,
+        // Cybersource does not make s2s callback, Google Pay makes s2s callback for payments
+        // that went through tokenization gateways.
+        Gateway::CYBERSOURCE,
     ];
 
     /**
@@ -1632,6 +1635,13 @@ class Gateway
         Gateway::EBS,
         Gateway::PAYTM,
         Gateway::ATOM
+    ];
+
+    /**
+     * List of gateways which support tokenization.
+     */
+    public static $tokenizationGateways = [
+        Gateway::CYBERSOURCE,
     ];
 
     public static $emiBanks = [
