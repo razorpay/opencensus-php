@@ -48,11 +48,13 @@ class TransactionFilter extends Terminal\Filter
         'fee_bearer',
         'shared_terminal',
         'mcc',
+        'application',
     ];
 
     public function methodFilter($terminal)
     {
-        $method = $this->input['payment']->getMethod();
+        $method  = $this->input['payment']->getMethod();
+        $payment = $this->input['payment'];
 
         switch ($method)
         {
@@ -113,7 +115,8 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if ($payment->isMethodCardOrEmi() === true)
+        if (($payment->isMethodCardOrEmi() === true) and
+            ($payment->isGooglePayCard() === false))
         {
             $network = $payment->card->getNetworkCode();
             $gateway = $terminal->getGateway();
@@ -1006,6 +1009,22 @@ class TransactionFilter extends Terminal\Filter
             }
 
             return false;
+        }
+
+        return true;
+    }
+
+    public function applicationFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+        $application = $payment->getApplication();
+
+        switch ($application)
+        {
+            case 'google_pay':
+                return ($terminal->isTokenizationSupported() === true);
+            default:
+                return true;
         }
 
         return true;

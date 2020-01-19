@@ -54,6 +54,7 @@ class Event
     const PAYOUT_QUEUED                     = 'payout.queued';
     const PAYOUT_INITIATED                  = 'payout.initiated';
     const PAYOUT_UPDATED                    = 'payout.updated';
+    const PAYOUT_REJECTED                   = 'payout.rejected';
     const REFUND_SPEED_CHANGED              = 'refund.speed_changed';
     const REFUND_PROCESSED                  = 'refund.processed';
     const REFUND_FAILED                     = 'refund.failed';
@@ -74,6 +75,11 @@ class Event
     const ACCOUNT_REJECTED                  = 'account.rejected';
     const ACCOUNT_PAYMENTS_ENABLED          = 'account.payments_enabled';
     const ACCOUNT_PAYMENTS_DISABLED         = 'account.payments_disabled';
+    const PAYOUT_LINK_ISSUED                = 'payout_link.issued';
+    const PAYOUT_LINK_PROCESSING            = 'payout_link.processing';
+    const PAYOUT_LINK_ATTEMPTED             = 'payout_link.attempted';
+    const PAYOUT_LINK_CANCELLED             = 'payout_link.cancelled';
+    const PAYOUT_LINK_PROCESSED             = 'payout_link.processed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -115,6 +121,7 @@ class Event
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
         self::PAYOUT_UPDATED,
+        self::PAYOUT_REJECTED,
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
@@ -135,6 +142,11 @@ class Event
         self::ACCOUNT_REJECTED,
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
+        self::PAYOUT_LINK_ISSUED,
+        self::PAYOUT_LINK_PROCESSED,
+        self::PAYOUT_LINK_PROCESSING,
+        self::PAYOUT_LINK_CANCELLED,
+        self::PAYOUT_LINK_ATTEMPTED
     ];
 
     /**
@@ -182,6 +194,7 @@ class Event
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
         self::PAYOUT_UPDATED,
+        self::PAYOUT_REJECTED,
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
@@ -202,6 +215,11 @@ class Event
         self::ACCOUNT_REJECTED,
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
+        self::PAYOUT_LINK_ISSUED,
+        self::PAYOUT_LINK_PROCESSED,
+        self::PAYOUT_LINK_PROCESSING,
+        self::PAYOUT_LINK_CANCELLED,
+        self::PAYOUT_LINK_ATTEMPTED
     ];
 
     protected static $bitPosition = [
@@ -265,6 +283,12 @@ class Event
         self::ACCOUNT_PAYMENTS_DISABLED         => 58,
         self::TRANSACTION_UPDATED               => 59,
         self::PAYOUT_UPDATED                    => 60,
+        self::PAYOUT_LINK_ISSUED                => 61,
+        self::PAYOUT_LINK_PROCESSED             => 62,
+        self::PAYOUT_LINK_PROCESSING            => 63,
+        self::PAYOUT_LINK_CANCELLED             => 64,
+        self::PAYOUT_LINK_ATTEMPTED             => 65,
+        self::PAYOUT_REJECTED                   => 66,
     ];
 
     /**
@@ -328,7 +352,13 @@ class Event
         self::ACCOUNT_REJECTED                  => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_ENABLED          => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_DISABLED         => [Product::PRIMARY],
+        self::PAYOUT_LINK_ISSUED                => [Product::BANKING],
+        self::PAYOUT_LINK_PROCESSED             => [Product::BANKING],
+        self::PAYOUT_LINK_PROCESSING            => [Product::BANKING],
+        self::PAYOUT_LINK_CANCELLED             => [Product::BANKING],
+        self::PAYOUT_LINK_ATTEMPTED             => [Product::BANKING],
         self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
+        self::PAYOUT_REJECTED                   => [Product::PRIMARY, Product::BANKING],
     ];
 
     /**
@@ -392,7 +422,13 @@ class Event
         self::ACCOUNT_REJECTED                  => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_ENABLED          => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_DISABLED         => Entity::MERCHANT,
+        self::PAYOUT_LINK_ISSUED                => Entity::PAYOUT_LINK,
+        self::PAYOUT_LINK_PROCESSED             => Entity::PAYOUT_LINK,
+        self::PAYOUT_LINK_PROCESSING            => Entity::PAYOUT_LINK,
+        self::PAYOUT_LINK_CANCELLED             => Entity::PAYOUT_LINK,
+        self::PAYOUT_LINK_ATTEMPTED             => Entity::PAYOUT_LINK,
         self::PAYOUT_UPDATED                    => Entity::PAYOUT,
+        self::PAYOUT_REJECTED                   => Entity::PAYOUT,
     ];
 
     public static $eventsToFeatureMap = [
@@ -425,6 +461,7 @@ class Event
         self::TERMINAL_ACTIVATED                => Feature\Constants::TERMINAL_ONBOARDING,
         self::TERMINAL_FAILED                   => Feature\Constants::TERMINAL_ONBOARDING,
         self::PAYOUT_UPDATED                    => Feature\Constants::PAYOUT,
+        self::PAYOUT_REJECTED                   => Feature\Constants::PAYOUT,
     ];
 
     /**

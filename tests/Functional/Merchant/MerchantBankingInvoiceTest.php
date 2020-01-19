@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
+use Respect\Validation\Rules\In;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -973,6 +974,32 @@ class MerchantBankingInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testFetchMultipleBankingInvoicesWhenMonthIsGivenWithoutYear()
+    {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createDataForFetchingBankingInvoices();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+
     public function testFetchMultipleBankingInvoicesGivenAccountNumber()
     {
         $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
@@ -1155,4 +1182,153 @@ class MerchantBankingInvoiceTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    protected function setUpForMerchantInvoiceFetch()
+    {
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year,'merchant_ids' => ['10000000000000']],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testMerchantInvoiceFetchFromAdminDashboardWhenMonthIsGivenWithYearAndMerchantId()
+    {
+        $this->setUpForMerchantInvoiceFetch();
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $request = [
+            'url'     => '/admin/merchant_invoice',
+            'method'  => 'GET',
+            'content' => [
+                'month'       => 7,
+                'year'        => 2019,
+                'merchant_id' => '10000000000000',
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        foreach ($content['items'] as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::MONTH       => $e[Invoice\Entity::MONTH],
+                Invoice\Entity::YEAR        => $e[Invoice\Entity::YEAR],
+                Invoice\Entity::MERCHANT_ID => $e[Invoice\Entity::MERCHANT_ID],
+                Invoice\Entity::AMOUNT      => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX         => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testMerchantInvoiceFetchFromAdminDashboardWhenMonthIsGivenWithoutYearButWithMerchantId()
+    {
+        $this->setUpForMerchantInvoiceFetch();
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testMerchantInvoiceFetchFromAdminDashboardWhenMonthIsGivenWithoutYearAndMerchantId()
+    {
+        $this->setUpForMerchantInvoiceFetch();
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testMerchantInvoiceFetchFromAdminDashboardWhenYearIsGivenWithMerchantId()
+    {
+        $this->setUpForMerchantInvoiceFetch();
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $request = [
+            'url'     => '/admin/merchant_invoice',
+            'method'  => 'GET',
+            'content' => [
+                'year' => 2019,
+                'merchant_id' => '10000000000000',
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        foreach ($content['items'] as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::YEAR        => $e[Invoice\Entity::YEAR],
+                Invoice\Entity::MERCHANT_ID => $e[Invoice\Entity::MERCHANT_ID],
+                Invoice\Entity::AMOUNT      => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX         => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testMerchantInvoiceFetchFromAdminDashboardWhenYearIsGivenWithoutMerchantId()
+    {
+        $this->setUpForMerchantInvoiceFetch();
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
 }

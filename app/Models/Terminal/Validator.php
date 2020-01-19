@@ -479,6 +479,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
         Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER          => 'sometimes|string|max:50',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
     ];
 
     protected static $netbankingIndusindEditTerminalRules = [

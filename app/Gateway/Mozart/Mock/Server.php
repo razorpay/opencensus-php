@@ -664,6 +664,43 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    public function decrypt($input)
+    {
+        $decryptedMessage = [
+            'paymentMethod' => 'TOKENIZED_CARD',
+            'version'       => '1.0',
+            'paymentMethodDetails' => [
+                'dpan'            => '4444333322221111',
+                'expirationMonth' => '10',
+                'expirationYear'  => '2021',
+                'authMethod'      => '3DS',
+                '3dsCryptogram'   => 'AAAAAA',
+                '3dsEciIndicator' => 'eci indicator',
+            ],
+            'gatewayMerchantId' => '10000000000000',
+            'messageId'         => 'some message id',
+            'messageExpiration' => '1492343123',
+        ];
+
+        $responseBody = [
+            'data' => [
+                '_raw'             => '',
+                'decryptedMessage' => $decryptedMessage,
+            ],
+            'error'             => [],
+            'external_trace_id' => '',
+            'mozart_id'         => 'blfq216r1gunssphbs01',
+            'next'              => null,
+            'success'           => true,
+        ];
+
+        $response = \Response::make($responseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
     public function disableTerminal($body)
     {
         $mockCase = $this->app['config']->get('worldline_terminal_onboarding_disable.case');
@@ -700,6 +737,7 @@ class Server extends Base\Mock\Server
             ];
 
         }
+
 
         $response = \Response::make($responseBody);
 

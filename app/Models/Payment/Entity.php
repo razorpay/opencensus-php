@@ -223,6 +223,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const UPI_PROVIDER                      = 'upi_provider';
 
+    // To identify GPay Card Payments
+    protected $application                  = null;
+
     const ACCOUNT_ID                        = 'account_id';
 
     protected static $sign      = 'pay';
@@ -905,6 +908,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setInternational()
     {
+        if ($this->isGooglePayCard() === true)
+        {
+            return;
+        }
+
         $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
 
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
@@ -918,6 +926,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setBaseAmount(int $amount)
     {
         $this->setAttribute(self::BASE_AMOUNT, $amount);
+    }
+
+    public function setVpa(string $vpa)
+    {
+        $this->setAttribute(self::VPA, $vpa);
     }
 
     public function setAmountAuthorized()
@@ -1190,6 +1203,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setConvertCurrency($convert)
     {
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
+    }
+
+    public function setApplication(string $applicationName)
+    {
+        $this->application = $applicationName;
     }
 
     public function setAuthType($authType)
@@ -1841,6 +1859,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                ($this->isUpi() === true);
     }
 
+    public function isGooglePayCard()
+    {
+        return (($this->isCard()) and
+                ($this->application === 'google_pay'));
+    }
+
     public function isBharatQr()
     {
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
@@ -2262,6 +2286,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
+    }
+
+    public function getApplication()
+    {
+        return $this->application;
     }
 
     public function getTwoFactorAuth()
@@ -3373,7 +3402,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function shouldRunFraudChecks()
     {
-        if ($this->isCard() === false)
+        if (($this->isCard() === false) or ($this->isGooglePayCard() === true))
         {
             return false;
         }

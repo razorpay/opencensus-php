@@ -109,7 +109,20 @@ class GatewayController extends Controller
 
         $paymentRepo = $this->app['repo']->payment;
 
-        $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
+        if ($gatewayDriver === Gateway::GOOGLE_PAY)
+        {
+            $mode = $paymentRepo->determineLiveOrTestModeForEntityWithNotNullGateway($paymentId, $gatewayDriver);
+
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $payment = $paymentRepo->findOrFail($paymentId);
+
+            $gatewayDriver = $payment->getGateway();
+        }
+        else
+        {
+            $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
+        }
 
         $postInput = [
             'gateway' => $input,
@@ -292,6 +305,7 @@ class GatewayController extends Controller
             case Gateway::UPI_MINDGATE:
             case Gateway::UPI_SBI:
             case Gateway::UPI_AXIS:
+            case Gateway::GOOGLE_PAY:
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;
 
@@ -955,6 +969,21 @@ class GatewayController extends Controller
         $input = Request::all();
 
         $data = $service->processGatewayDowntimeWebhook($source, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyPayment($gateway)
+    {
+        $gatewayInput = Request::all();
+
+        $data = [];
+
+        switch($gateway)
+        {
+            case Payment\Gateway::GOOGLE_PAY:
+                $data = $this->app['gateway']->call($gateway, Action::VERIFY, $gatewayInput, null, null);
+        }
 
         return ApiResponse::json($data);
     }

@@ -29,6 +29,13 @@ class Type
     const FORM_12A_URL                   = 'form_12a_url';
     const FORM_80G_URL                   = 'form_80g_url';
 
+    // For KYC service integration
+    const PERSONAL_PAN                   = 'personal_pan';
+    const AADHAAR                        = 'aadhaar';
+    const PASSPORT                       = 'passport';
+    const VOTERS_ID                      = 'voters_id';
+    const DRIVERS_LICENSE                = 'drivers_license';
+
 
     /**
      * Following documents needs to perform for OCR
