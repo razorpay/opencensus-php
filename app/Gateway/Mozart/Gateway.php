@@ -101,10 +101,14 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::INTENT);
         }
 
-        if (($this->getGateway($input) === Payment\Gateway::HDFC_DEBIT_EMI) and
-            ($input['payment']['contact'] == Payment\Entity::DUMMY_PHONE))
+        if ($this->getGateway($input) === Payment\Gateway::HDFC_DEBIT_EMI)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
+            if ($input['payment']['contact'] == Payment\Entity::DUMMY_PHONE)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
+            }
+
+            parent::action($input, Action::AUTH_INIT);
         }
 
         switch ($this->terminal->getGatewayAcquirer())
@@ -120,24 +124,7 @@ class Gateway extends Base\Gateway
                 break;
         }
 
-        $request = $this->getMozartRequestArray($input);
-
-        $traceReq = [
-            'method' => $request['method'],
-            'url' => $request['url'],
-        ];
-
-        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $traceRes = $this->getRedactedData($response);
-
-        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
-
-        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
-
-        $attributes = $this->getMappedAttributes($response);
+        list($response, $attributes) = $this->sendMozartRequestAndGetResponse($input);
 
         $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
 
@@ -291,24 +278,7 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::PAY_INIT);
 
-        $request = $this->getMozartRequestArray($input);
-
-        $traceReq = [
-            'method' => $request['method'],
-            'url'    => $request['url'],
-        ];
-
-        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_MANDATE_EXECUTE_REQUEST);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $traceRes = $this->getRedactedData($response);
-
-        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_MANDATE_EXECUTE_RESPONSE);
-
-        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
-
-        $attributes = $this->getMappedAttributes($response);
+        list($response, $attributes) = $this->sendMozartRequestAndGetResponse($input);
 
         $this->createGatewayPaymentEntity($attributes, $input, Action::MANDATE_EXECUTE);
 
@@ -368,26 +338,30 @@ class Gateway extends Base\Gateway
 
             $traceRes = $this->getRedactedData($gateway);
 
-            $this->traceGatewayPaymentRequest($traceRes, $input, TraceCode::PAYMENT_CALLBACK_REQUEST );
+            $this->traceGatewayPaymentRequest($traceRes, $input, TraceCode::PAYMENT_CALLBACK_REQUEST);
 
             unset($input['gateway']);
 
             $input['gateway']['redirect'] = $gateway;
 
-            $request = $this->getMozartRequestArray($input);
+            if ($input['payment']['gateway'] === Payment\Gateway::HDFC_DEBIT_EMI)
+            {
+                parent::action($input, Action::AUTH_VERIFY);
 
-            $traceReq = [
-                'method' => $request['method'],
-                'url' => $request['url'],
-            ];
+                $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                    $input['payment']['id'], Action::AUTHORIZE);
 
-            $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_REQUEST);
+                /*
+                 * Merges the array like so:
+                 * {
+                 *  "redirect":{"otp": "111111"},
+                 *  "BankReferenceNo": "bank_ref"
+                 * }
+                 */
+                $input['gateway'] = array_merge($input['gateway'], $gatewayPayment->toArray());
+            }
 
-            $response = $this->sendGatewayRequest($request);
-
-            $traceRes = $this->getRedactedData($response);
-
-            $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_PAYMENT_RESPONSE);
+            list($response, $attributes) = $this->sendMozartRequestAndGetResponse($input);
         }
         else
         {
@@ -416,7 +390,22 @@ class Gateway extends Base\Gateway
 
         $this->runCallbackValidationsIfApplicable($input, $response);
 
-        $gatewayName = $input['payment']['gateway'];
+        if ($input['payment']['gateway'] === Payment\Gateway::HDFC_DEBIT_EMI)
+        {
+            parent::action($input, Action::PAY_INIT);
+
+            // This was set when we sent auth_verify request
+            unset($input['gateway']['redirect']);
+
+            list($response, $attributes) = $this->sendMozartRequestAndGetResponse($input);
+
+            $this->gatewayPayment = $this->updateGatewayPaymentEntityWithAction(
+                $gatewayPayment,
+                $response,
+                true,
+                $action
+            );
+        }
 
         if ($this->immediateVerifyApplicable($input) === true)
         {
@@ -630,22 +619,7 @@ class Gateway extends Base\Gateway
                 break;
         }
 
-        $request = $this->getMozartRequestArray($input);
-
-        $traceReq = [
-            'method' => $request['method'],
-            'url' => $request['url'],
-        ];
-
-        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_REFUND_REQUEST);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $traceRes = $this->getRedactedData($response);
-
-        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
-
-        $attributes = $this->getMappedAttributes($response);
+        list($response, $attributes) = $this->sendMozartRequestAndGetResponse($input);
 
         $this->gatewayPayment = $this->createGatewayRefundEntity($attributes, $input, $this->action);
 
@@ -938,10 +912,11 @@ class Gateway extends Base\Gateway
     {
         $previousActionForStep = [
             Payment\Gateway::HDFC_DEBIT_EMI => [
-                Action::PAY_INIT => null,
-                Action::PAY_VERIFY => Action::PAY_INIT,
-                Action::VERIFY => Action::PAY_VERIFY,
-                Action::REFUND => Action::PAY_VERIFY,
+                Action::AUTH_INIT   => null,
+                Action::AUTH_VERIFY => Action::AUTH_INIT,
+                Action::PAY_INIT    => Action::AUTH_VERIFY,
+                Action::VERIFY      => Action::PAY_INIT,
+                Action::REFUND      => Action::PAY_INIT,
             ],
             Payment\Gateway::BAJAJFINSERV => [
                 Action::PAY_INIT      => null,
@@ -1057,12 +1032,12 @@ class Gateway extends Base\Gateway
     {
         $previousActionForData = [
             Payment\Gateway::HDFC_DEBIT_EMI => [
-                Action::PAY_INIT   => null,
-                Action::PAY_VERIFY => Action::AUTHORIZE,
-                Action::VERIFY     => Action::AUTHORIZE,
-                Action::REFUND     => Action::AUTHORIZE,
+                Action::AUTH_INIT => null,
+                Action::AUTH_VERIFY => Action::AUTHORIZE,
+                Action::PAY_INIT => Action::AUTHORIZE,
+                Action::VERIFY => Action::AUTHORIZE,
+                Action::REFUND => Action::AUTHORIZE,
             ],
-
             Payment\Gateway::BAJAJFINSERV => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
@@ -1755,5 +1730,29 @@ class Gateway extends Base\Gateway
     protected function isNetbankingGateway($gateway)
     {
         return in_array($gateway, Payment\Gateway::$methodMap[Payment\Method::NETBANKING], true);
+    }
+
+    protected function sendMozartRequestAndGetResponse($input)
+    {
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        return [$response, $attributes];
     }
 }
