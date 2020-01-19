@@ -33,8 +33,9 @@ export default class SettlementDetails extends Component {
     });
 
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlement UI Revamp',
-      eventAction: 'View Settlement Cycle - Profile Page',
+      eventCategory: 'Settlement Revamp',
+      eventAction: 'View Settlement Cycle',
+      eventLabel: `My Account`,
     });
   };
 
