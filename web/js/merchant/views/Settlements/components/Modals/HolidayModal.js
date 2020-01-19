@@ -17,7 +17,14 @@ export default class HolidayModal extends Component {
       <div>
         <ModalHeader
           title={`Holidays List`}
-          onCloseClick={this.props.closeModal}
+          onCloseClick={() => {
+            this.props.closeModal();
+            window.rzpAnalytics({
+              eventCategory: 'Settlement Revamp',
+              eventAction: 'Close',
+              eventLabel: `List of Bank Holidays`,
+            });
+          }}
         />
         <HolidaysTable
           items={this.props.holidayList.data[year]}
