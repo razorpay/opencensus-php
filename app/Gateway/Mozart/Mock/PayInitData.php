@@ -13,27 +13,9 @@ class PayInitData extends Base\Mock\Server
         return [
             'data' =>
                 [
-                    'Status'              => 'Success',
-                    'BankReferncNo'       => 'abc123456',
-                    'MerchantReferenceNo' => $entities['payment']['id'],
-                    'ErrorCode'           => '0000',
-                    'EligibilityStatus'   => 'Yes',
-                    'Token'               => '123456',
-                    '_raw'                => '',
+                    'OrderConfirmationStatus' => 'Yes',
+                    '_raw'                    => '',
                 ],
-            'next' => [
-                'redirect' => [
-                    'content' => [
-                        'type' => 'otp',
-                        'bank' => '',
-                        'next' => [
-                            'submit_otp',
-                        ]
-                    ],
-                    'method' => 'post',
-                    'url' => $entities['otpSubmitUrl'],
-                ]
-            ],
             'error'             => null,
             'success'           => true,
             'mozart_id'         => '',

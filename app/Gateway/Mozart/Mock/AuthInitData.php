@@ -8,6 +8,39 @@ class AuthInitData extends Base\Mock\Server
 {
     use Base\Mock\GatewayTrait;
 
+    public function hdfc_debit_emi($entities)
+    {
+        return [
+            'data' =>
+                [
+                    'Status'              => 'Success',
+                    'BankReferncNo'       => 'abc123456',
+                    'MerchantReferenceNo' => $entities['payment']['id'],
+                    'ErrorCode'           => '0000',
+                    'EligibilityStatus'   => 'Yes',
+                    'Token'               => '123456',
+                    '_raw'                => '',
+                ],
+            'next' => [
+                'redirect' => [
+                    'content' => [
+                        'type' => 'otp',
+                        'bank' => '',
+                        'next' => [
+                            'submit_otp',
+                        ]
+                    ],
+                    'method' => 'post',
+                    'url' => $entities['otpSubmitUrl'],
+                ]
+            ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+    }
+
     public function upi_mindgate($entities)
     {
         $response = [

@@ -100,6 +100,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $mandateCreateObj, Action::AUTH_INIT);
     }
 
+    public function authVerify($input)
+    {
+        $authVerifyObj = new AuthVerifyData();
+
+        return $this->processMockResponse($input, $authVerifyObj, Action::AUTH_VERIFY);
+    }
+
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
@@ -660,7 +667,7 @@ class Server extends Base\Mock\Server
     public function disableTerminal($body)
     {
         $mockCase = $this->app['config']->get('worldline_terminal_onboarding_disable.case');
-        
+
         switch ($mockCase)
         {
             case "1":
@@ -677,7 +684,7 @@ class Server extends Base\Mock\Server
                 'next'              => null,
                 'success'           => true,
             ];
-            break; 
+            break;
             case "2":
                 $responseBody = [
                     'data' => [
@@ -697,14 +704,14 @@ class Server extends Base\Mock\Server
         $response = \Response::make($responseBody);
 
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-        
+
         return $response;
     }
 
     public function enableTerminal($body)
     {
         $mockCase = $this->app['config']->get('worldline_terminal_onboarding_enable.case');
-        
+
         switch ($mockCase)
         {
             case "1":
@@ -721,7 +728,7 @@ class Server extends Base\Mock\Server
                 'next'              => null,
                 'success'           => true,
             ];
-            break; 
+            break;
             case "2":
                 $responseBody = [
                     'data' => [
@@ -741,7 +748,7 @@ class Server extends Base\Mock\Server
         $response = \Response::make($responseBody);
 
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-        
+
         return $response;
     }
 
