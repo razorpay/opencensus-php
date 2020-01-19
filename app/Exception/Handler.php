@@ -418,17 +418,17 @@ class Handler extends ExceptionHandler
 
         $orderId = null;
 
-        if( isset($data['payment_id']) === true )
+        if(isset($data['payment_id']) === true)
         {
             $paymentId = $data['payment_id'];
         }
 
-        if( isset($data['order_id']) === true )
+        if(isset($data['order_id']) === true)
         {
             $orderId = $data['order_id'];
         }
 
-        if( $this->app['basicauth'] !== null and $this->app['basicauth']->getMerchant() !== null )
+        if($this->app['basicauth'] !== null and $this->app['basicauth']->getMerchant() !== null)
         {
             $merchant = $this->app['basicauth']->getMerchant();
 
