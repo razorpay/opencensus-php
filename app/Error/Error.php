@@ -360,7 +360,7 @@ class Error extends Support\Fluent
 
             if ($app['basicauth']->getMerchant() !== null)
             {
-                $merchant = $this->app['basicauth']->getMerchant();
+                $merchant = $app['basicauth']->getMerchant();
 
                 $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
             }
