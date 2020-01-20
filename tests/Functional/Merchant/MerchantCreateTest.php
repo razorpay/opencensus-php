@@ -192,7 +192,7 @@ class MerchantCreateTest extends TestCase
         {
             $schedule = $this->getEntityById('schedule', $scheduledTask['schedule_id'], true);
 
-            $delay = $scheduledTask['international'] ? 7 : 3;
+            $delay = $scheduledTask['international'] ? 7 : 2;
 
             $this->assertEquals($merchant['id'], $scheduledTask['merchant_id']);
             $this->assertEquals($schedule['period'], 'daily');
@@ -960,7 +960,7 @@ class MerchantCreateTest extends TestCase
             $this->assertEquals($linkedAcc['id'], $scheduleTask['merchant_id']);
 
             // 7 is default delay for international schedule
-            $delay =  $scheduleTask['international'] === 1 ? 7 : 3;
+            $delay =  $scheduleTask['international'] === 1 ? 7 : 2;
 
             $this->assertEquals($schedule['delay'], $delay);
         }
