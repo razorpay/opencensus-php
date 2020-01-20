@@ -2226,6 +2226,7 @@ final class Route
         'merchant_partner_configs_fetch',
         'banking_accounts_list',
         'reports_monthly_banking_invoice',
+        'workflow_payout_amount_rules',
         'merchant_2fa_change_setting',
         'user_update_contact',
         'user_update_contact_merchant',
@@ -2246,8 +2247,6 @@ final class Route
         //balance configs
         'fetch_merchant_balance_configs',
         'get_merchant_balance_config',
-
-        'workflow_payout_amount_rules',
     ];
 
     //
@@ -2257,12 +2256,6 @@ final class Route
     public static $admin = [
         'payout_links_settings_post',
         'payout_links_settings_get',
-        'add_additional_website',
-        'workflow_get_multiple_dashboard',
-        'workflow_payout_amount_rules_all',
-        'workflow_payout_amount_rules_merchants',
-        'workflow_permission_merchants_get',
-        'workflow_payout_amount_rules_create',
         'add_additional_website',
         'reminder_admin',
         'merchant_document_admin_fetch',
