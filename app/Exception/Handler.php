@@ -433,9 +433,9 @@ class Handler extends ExceptionHandler
                 {
                     $metadata['order_id'] = $data['order_id'];
                 }
-            }
 
-            $error->setMetadata($metadata);
+                $error->setMetadata($metadata);
+            }
         }
     }
 
