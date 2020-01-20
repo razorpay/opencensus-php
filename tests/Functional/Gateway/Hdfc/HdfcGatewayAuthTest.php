@@ -294,7 +294,6 @@ class HdfcGatewayAuthTest extends TestCase
         });
 
         $content = $this->startTest();
-        s($content);
 
         $this->assertArrayHasKey('metadata', $content['error']);
 
