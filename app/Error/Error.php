@@ -366,15 +366,18 @@ class Error extends Support\Fluent
             }
             else
             {
-                $repo = new Repository();
-
-                $feature = $repo->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
-                    $this->getAttribute(self::MERCHANT_ID),
-                    Constants::ERROR_METADATA_RESPONSE);
-
-                if (empty($feature) === false)
+                if ($this->getAttribute(self::MERCHANT_ID) !== null)
                 {
-                    $isMetadataFeatureEnabled = true;
+                    $repo = new Repository();
+
+                    $feature = $repo->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
+                        $this->getAttribute(self::MERCHANT_ID),
+                        Constants::ERROR_METADATA_RESPONSE);
+
+                    if (empty($feature) === false)
+                    {
+                        $isMetadataFeatureEnabled = true;
+                    }
                 }
             }
         }
