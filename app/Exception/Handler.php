@@ -417,18 +417,17 @@ class Handler extends ExceptionHandler
 
         $isMetadataFeatureEnabled = false;
 
-        if ($this->app['basicauth'] !== null)
+        if (($this->app['basicauth'] !== null) and
+            $this->app['basicauth']->getMerchant() !== null)
         {
-            if ($this->app['basicauth']->getMerchant() !== null)
-            {
-                $merchant = $this->app['basicauth']->getMerchant();
+            $merchant = $this->app['basicauth']->getMerchant();
 
-                $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
-            }
-            else
+            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+        }
+        else
+        {
+            if (isset($data['merchant_id']) === true)
             {
-                if (isset($data['merchant_id']) === true)
-                {
                 $repo = new Repository();
 
                 $feature = $repo->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
@@ -440,24 +439,23 @@ class Handler extends ExceptionHandler
                     $isMetadataFeatureEnabled = true;
                 }
                     $error->setMerchantId($data['merchant_id']);
-                }
             }
+        }
 
             $metadata = null;
 
-            if ($isMetadataFeatureEnabled === true)
+        if ($isMetadataFeatureEnabled === true)
+        {
+            if (isset($data['payment_id']) === true)
             {
-                if (isset($data['payment_id']) === true)
-                {
-                    $metadata['payment_id'] = $data['payment_id'];
-                }
-                if (isset($data['order_id']) === true)
-                {
-                    $metadata['order_id'] = $data['order_id'];
-                }
-
-                $error->setMetadata($metadata);
+                $metadata['payment_id'] = $data['payment_id'];
             }
+            if (isset($data['order_id']) === true)
+            {
+                $metadata['order_id'] = $data['order_id'];
+            }
+
+            $error->setMetadata($metadata);
         }
     }
 

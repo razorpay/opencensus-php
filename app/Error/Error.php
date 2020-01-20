@@ -356,28 +356,26 @@ class Error extends Support\Fluent
 
         $isMetadataFeatureEnabled = false;
 
-        if ($app['basicauth'] !== null) {
-
-            if ($app['basicauth']->getMerchant() !== null)
-            {
+        if (($app['basicauth'] !== null) and
+            ($app['basicauth']->getMerchant() !== null))
+        {
                 $merchant = $app['basicauth']->getMerchant();
 
                 $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
-            }
-            else
+        }
+        else
+        {
+            if ($this->getAttribute(self::MERCHANT_ID) !== null)
             {
-                if ($this->getAttribute(self::MERCHANT_ID) !== null)
+                $repo = new Repository();
+
+                $feature = $repo->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
+                    $this->getAttribute(self::MERCHANT_ID),
+                    Constants::ERROR_METADATA_RESPONSE);
+
+                if (empty($feature) === false)
                 {
-                    $repo = new Repository();
-
-                    $feature = $repo->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
-                        $this->getAttribute(self::MERCHANT_ID),
-                        Constants::ERROR_METADATA_RESPONSE);
-
-                    if (empty($feature) === false)
-                    {
-                        $isMetadataFeatureEnabled = true;
-                    }
+                    $isMetadataFeatureEnabled = true;
                 }
             }
         }
