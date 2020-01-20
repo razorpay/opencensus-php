@@ -386,24 +386,24 @@ class Handler extends ExceptionHandler
 
     protected function recoverableErrorResponse($debug, $exception = null)
     {
+        $this->setErrorMetadataIfApplicable($exception);
+
         $this->ifTestingThenRethrowException($exception);
 
         $error = $exception->getError();
-
-        $this->setErrorMetadataIfApplicable($exception);
 
         return ApiResponse::generateErrorResponse($error, $debug);
     }
 
     protected function recoverableNachNbErrorResponse($debug, $exception = null)
     {
+        $this->setErrorMetadataIfApplicable($exception);
+
         $this->ifTestingThenRethrowException($exception);
 
         $error = $exception->getError();
 
         $data = $exception->getData();
-
-        $this->setErrorMetadataIfApplicable($exception);
 
         return ApiResponse::generateNachNbErrorResponse($error, $data, $debug);
     }
@@ -428,7 +428,8 @@ class Handler extends ExceptionHandler
             $orderId = $data['order_id'];
         }
 
-        if (($this->app['basicauth'] !== null) and ($this->app['basicauth']->getMerchant() !== null))
+        if (($this->app['basicauth'] !== null) and
+            ($this->app['basicauth']->getMerchant() !== null))
         {
             $merchant = $this->app['basicauth']->getMerchant();
 

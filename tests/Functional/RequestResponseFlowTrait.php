@@ -40,8 +40,6 @@ trait RequestResponseFlowTrait
 
             $this->processAndAssertException($e, $data['exception']);
 
-            $this->setErrorMetadataIfApplicable($e);
-
             $response = $e->generatePublicJsonResponse();
         }
         catch (\Razorpay\OAuth\Exception\BaseException $e)
@@ -65,51 +63,6 @@ trait RequestResponseFlowTrait
 
         return $this->processAndAssertResponseData($data, $response);
     }
-
-    public function setErrorMetadataIfApplicable($exception)
-    {
-        $error = $exception->getError();
-
-        $data = $exception->getData();
-
-        $paymentId = null;
-
-        $orderId = null;
-
-        if (isset($data['payment_id']) === true)
-        {
-            $paymentId = $data['payment_id'];
-        }
-
-        if (isset($data['order_id']) === true)
-        {
-            $orderId = $data['order_id'];
-        }
-
-        if (($this->app['basicauth'] !== null) and ($this->app['basicauth']->getMerchant() !== null))
-        {
-            $merchant = $this->app['basicauth']->getMerchant();
-
-            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
-
-            $metadata = null;
-
-            if ($isMetadataFeatureEnabled === true)
-            {
-                if ($paymentId !== null)
-                {
-                    $metadata['payment_id'] = $paymentId;
-                }
-                if ($orderId !== null)
-                {
-                    $metadata['order_id'] = $orderId;
-                }
-            }
-
-            $error->setMetadata($metadata);
-        }
-    }
-
 
     protected function processJsonp($content, $callback)
     {
