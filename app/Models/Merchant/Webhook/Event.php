@@ -141,10 +141,7 @@ class Event
         self::ACCOUNT_REJECTED,
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
-        self::PAYOUT_LINK_ISSUED,
-        self::PAYOUT_LINK_PROCESSED,
-        self::PAYOUT_LINK_PROCESSING,
-        self::PAYOUT_LINK_ATTEMPTED
+
     ];
 
     /**
@@ -281,10 +278,6 @@ class Event
         self::ACCOUNT_PAYMENTS_DISABLED         => 58,
         self::TRANSACTION_UPDATED               => 59,
         self::PAYOUT_UPDATED                    => 60,
-        self::PAYOUT_LINK_ISSUED                => 61,
-        self::PAYOUT_LINK_PROCESSED             => 62,
-        self::PAYOUT_LINK_PROCESSING            => 63,
-        self::PAYOUT_LINK_ATTEMPTED             => 64,
     ];
 
     /**
@@ -348,10 +341,6 @@ class Event
         self::ACCOUNT_REJECTED                  => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_ENABLED          => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_DISABLED         => [Product::PRIMARY],
-        self::PAYOUT_LINK_ISSUED                => [Product::BANKING],
-        self::PAYOUT_LINK_PROCESSED             => [Product::BANKING],
-        self::PAYOUT_LINK_PROCESSING            => [Product::BANKING],
-        self::PAYOUT_LINK_ATTEMPTED             => [Product::BANKING],
         self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
     ];
 
