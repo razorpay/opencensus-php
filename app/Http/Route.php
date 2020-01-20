@@ -2826,7 +2826,6 @@ final class Route
         'workflow_create'                          => Permission::CREATE_WORKFLOW, // Fix permissions
         'workflow_payout_amount_rules_create'      => Permission::CREATE_WORKFLOW,
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
-        'workflow_payout_amount_rules_get'         => Permission::VIEW_WORKFLOW,
         'workflow_payout_amount_rules_get_admin'   => Permission::VIEW_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
         'workflow_merchants_create_payout_get'     => Permission::VIEW_ALL_WORKFLOW,
