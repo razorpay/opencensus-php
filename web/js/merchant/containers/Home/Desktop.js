@@ -295,18 +295,17 @@ class AnalyticsDesktop extends Component {
                             style={{ marginLeft: '5px' }}
                             onClick={() => {
                               this.props.openModal({
-                                size: 'regular',
+                                size: 'medium',
                                 component: (
                                   <SettlementDetail
                                     settlementAmount={settlement_amount.data}
                                   />
                                 ),
                               });
-
                               window.rzpAnalytics({
-                                eventCategory:
-                                  'Dashboard - Settlement UI Revamp',
-                                eventAction: 'Click Know More - Home Page',
+                                eventCategory: 'Settlement Revamp',
+                                eventAction: 'Know more - Next Settlement',
+                                eventLabel: `Home`,
                               });
                             }}
                           >
@@ -349,15 +348,16 @@ class AnalyticsDesktop extends Component {
           <OnHoldBanner
             ctaOnClick={() => {
               this.props.openModal({
-                size: 'regular',
+                size: 'medium',
                 component: (
                   <SettlementDetail settlementAmount={settlement_amount.data} />
                 ),
               });
 
               window.rzpAnalytics({
-                eventCategory: 'Dashboard - Settlement UI Revamp',
-                eventAction: 'Click Know More(On Hold) - Home Page',
+                eventCategory: 'Settlement Revamp',
+                eventAction: 'View details - Funds on Hold',
+                eventLabel: `Home`,
               });
             }}
           />

@@ -292,8 +292,9 @@ export default class PaymentDetailsContainer extends Component {
 
   viewSettlementOverview = () => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlement UI Revamp',
-      eventAction: 'View Settlement Details On Payment',
+      eventCategory: 'Settlement Revamp',
+      eventAction: 'View - Settlements Breakup',
+      eventLabel: `Settled on`,
     });
   };
 

@@ -213,13 +213,14 @@ export default class SettlementsListContainer extends ListContainer {
 
   viewSettlementCycle = () => {
     this.props.openModal({
-      size: 'regular',
+      size: 'medium',
       component: <SettlementSchedule holidayList={this.props.holidayList} />,
     });
 
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlement UI Revamp',
-      eventAction: 'View Settlement Cycle - Settlements Page',
+      eventCategory: 'Settlement Revamp',
+      eventAction: 'View Settlement Cycle',
+      eventLabel: `Settlements`,
     });
   };
 
@@ -298,7 +299,7 @@ export default class SettlementsListContainer extends ListContainer {
             <OnHoldBanner
               ctaOnClick={() => {
                 this.props.openModal({
-                  size: 'regular',
+                  size: 'medium',
                   component: (
                     <SettlementDetail
                       settlementAmount={this.props.settlement_amount.data}
@@ -307,8 +308,9 @@ export default class SettlementsListContainer extends ListContainer {
                 });
 
                 window.rzpAnalytics({
-                  eventCategory: 'Dashboard - Settlement UI Revamp',
-                  eventAction: 'Click Know More(On Hold) - Settlements Page',
+                  eventCategory: 'Settlement Revamp',
+                  eventAction: 'View details - Funds on Hold',
+                  eventLabel: `Settlements`,
                 });
               }}
             />
@@ -396,6 +398,7 @@ export default class SettlementsListContainer extends ListContainer {
                           nextSettlement &&
                           !no_settlement && (
                             <span style={{ fontSize: '13px' }}>
+                              <span>&nbsp;</span>
                               <strong>
                                 <Amount
                                   value={
@@ -432,7 +435,7 @@ export default class SettlementsListContainer extends ListContainer {
                               <span
                                 onClick={() => {
                                   this.props.openModal({
-                                    size: 'regular',
+                                    size: 'medium',
                                     component: (
                                       <SettlementDetail
                                         settlementAmount={
@@ -443,10 +446,9 @@ export default class SettlementsListContainer extends ListContainer {
                                   });
 
                                   window.rzpAnalytics({
-                                    eventCategory:
-                                      'Dashboard - Settlement UI Revamp',
-                                    eventAction:
-                                      'Click Know More - Settlements Page',
+                                    eventCategory: 'Settlement Revamp',
+                                    eventAction: 'Know more - Next Settlement',
+                                    eventLabel: `Settlements`,
                                   });
                                 }}
                                 class="btn-link pointer"

@@ -28,13 +28,14 @@ export default class SettlementDetails extends Component {
 
   viewSettlementSchedule = () => {
     this.props.openModal({
-      size: 'regular',
+      size: 'medium',
       component: <SettlementSchedule />,
     });
 
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlement UI Revamp',
-      eventAction: 'View Settlement Cycle - Profile Page',
+      eventCategory: 'Settlement Revamp',
+      eventAction: 'View Settlement Cycle',
+      eventLabel: `My Account`,
     });
   };
 

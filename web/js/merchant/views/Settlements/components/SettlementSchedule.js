@@ -5,6 +5,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import HolidayModal from 'merchant/views/Settlements/components/Modals/HolidayModal';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
+import { titleCase } from 'common/utils/rzp-utils';
 
 @connect(state => state.settlement, {
   closeModal,
@@ -63,8 +64,9 @@ export default class SettlementSchedule extends Component {
     });
 
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlement UI Revamp',
-      eventAction: 'View Settlement Example',
+      eventCategory: 'Settlement Revamp',
+      eventAction: this.state.showExample ? 'View Examples' : 'Hide Examples',
+      eventLabel: `View settlement Cycle`,
     });
   };
 
@@ -77,8 +79,9 @@ export default class SettlementSchedule extends Component {
     });
 
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlement UI Revamp',
-      eventAction: 'View Holiday List',
+      eventCategory: 'Settlement Revamp',
+      eventAction: 'List of Bank Holidays',
+      eventLabel: `View settlement Cycle`,
     });
   };
 
@@ -86,88 +89,111 @@ export default class SettlementSchedule extends Component {
     return (
       <div>
         <ModalHeader
-          title={`Settlement Schedule`}
-          onCloseClick={() => this.props.closeModal()}
+          title={`Settlement Cycle`}
+          onCloseClick={() => {
+            this.props.closeModal();
+            window.rzpAnalytics({
+              eventCategory: 'Settlement Revamp',
+              eventAction: 'Close',
+              eventLabel: `Settlment Cycle`,
+            });
+          }}
         />
         <div class="modal-body">
           <Fragment>
-            <div style={{ textAlign: 'center', fontSize: '17px' }}>
-              Your payments get settled to your account in
-            </div>
-            <div class="emphzd">
-              <div class="emphzd-div">
-                {this.state.defaultDomestic.length > 0 && (
-                  <div class="flex">
-                    <div class="w50 text-left">
-                      Domestic Payments<span class="text-danger">*</span>
+            <div class="settlement-details-overflow-box">
+              <div class="payment-heading">
+                Your payments get settled to your account in,
+              </div>
+              <div class="emphzd" style={{ paddingBottom: 0 }}>
+                <div class="emphzd-div">
+                  {this.state.defaultDomestic.length > 0 && (
+                    <div class="flex">
+                      <div class="w50 text-left">
+                        Domestic Payments<span class="text-danger">*</span>
+                      </div>
+                      <div class="w50 text-right">
+                        {this.state.defaultDomestic[0]
+                          .is_early_settlement_schedule ? (
+                          this.formatTime(this.state.defaultDomestic[0].hour)
+                        ) : (
+                          <>
+                            <strong>
+                              T+{this.state.defaultDomestic[0].delay}
+                            </strong>{' '}
+                            working days
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div class="w50 text-right">
-                      {this.state.defaultDomestic[0]
-                        .is_early_settlement_schedule
-                        ? this.formatTime(this.state.defaultDomestic[0].hour)
-                        : `T+${
-                            this.state.defaultDomestic[0].delay
-                          } working days`}
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {this.state.defaultInternational.length > 0 && (
-                  <div class="flex">
-                    <div class="w50 text-left">
-                      International Payments<span class="text-danger">*</span>
-                    </div>
-                    <div class="w50 text-right">
-                      {this.state.defaultInternational[0]
-                        .is_early_settlement_schedule
-                        ? this.formatTime(
+                  {this.state.defaultInternational.length > 0 && (
+                    <div class="flex">
+                      <div class="w50 text-left">
+                        International Payments<span class="text-danger">*</span>
+                      </div>
+                      <div class="w50 text-right">
+                        {this.state.defaultInternational[0]
+                          .is_early_settlement_schedule ? (
+                          this.formatTime(
                             this.state.defaultInternational[0].hour
                           )
-                        : `T+${
-                            this.state.defaultInternational[0].delay
-                          } working days`}
+                        ) : (
+                          <>
+                            <strong>
+                              T+{this.state.defaultInternational[0].delay}
+                            </strong>{' '}
+                            working days
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {this.state.otherMethods.map((item, idx) => {
-                <div style={{ margin: '10px' }} key={idx}>
-                  <p class="grey">
+                  )}
+                </div>
+                {this.state.otherMethods.length ? (
+                  <p class="grey" style={{ margin: '10px' }}>
                     Other method specific Settlement schedules,
                   </p>
-                  <div
-                    class="flex"
-                    style={{ margin: '10px', fontSize: '16px' }}
-                  >
-                    <div class="w50 text-left p20">{item.method}</div>
-                    <div class="w50 text-right p20">
-                      {item.is_early_settlement_schedule
-                        ? this.formatTime(item.hour)
-                        : `T+${item.delay} working days`}
+                ) : null}
+
+                {this.state.otherMethods.map((item, idx) => {
+                  return (
+                    <div style={{ margin: '10px' }} key={idx}>
+                      <div class="flex" style={{ fontSize: '16px' }}>
+                        <div class="w50 text-left">
+                          {titleCase(item.method)}
+                        </div>
+                        <div class="w50 text-right">
+                          {item.is_early_settlement_schedule ? (
+                            this.formatTime(item.hour)
+                          ) : (
+                            <>
+                              <strong>T+{item.delay}</strong> working days
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
+                  );
+                })}
+                <div
+                  class="settlement-default-note"
+                  style={{ fontSize: '13px' }}
+                >
+                  <div class="w50 text-left">
+                    <span class="text-danger">*</span> for Default Schedules
                   </div>
-                </div>;
-              })}
-              <div class="settlement-default-note" style={{ fontSize: '13px' }}>
-                <div class="w50 text-left p20">
-                  <span class="text-danger">*</span> for Default Schedules
-                </div>
-                <div class="w50 text-right p20">
-                  (T is the date of payment capture)
+                  <div class="w50 text-right">
+                    (T is the date of payment capture)
+                  </div>
                 </div>
               </div>
-              <hr />
-            </div>
+            </div>{' '}
             <div style={{ padding: '13px' }}>
               <p>
-                <b>Note:</b> Bank Holidays aren’t counted as working days.{' '}
-                <br />
-                <a
-                  style={{ marginTop: '10px' }}
-                  onClick={this.toggleExample}
-                  class="link"
-                >
+                <b>Note:</b> Weekends aren’t counted as working days. <br />
+                <a onClick={this.toggleExample} class="link">
                   {this.state.showExample ? 'Hide' : 'View'} Examples{' '}
                   <i
                     class={`i i-arrow-${
@@ -178,39 +204,33 @@ export default class SettlementSchedule extends Component {
               </p>
               {this.state.showExample ? (
                 <Fragment>
-                  <h5>Following is an example for T+4 Days</h5>
-
-                  <div class="box settlement-holiday-example">
-                    <div class="box-heading">
-                      <h5 style={{ textAlign: 'left' }}>
-                        <b>Example: No Bank Holiday</b>
-                      </h5>
-                      <SettlementsExample duration={4} />
-                    </div>
-                  </div>
-                  <div class="box settlement-holiday-example">
-                    <div class="box-heading">
-                      <h5 style={{ textAlign: 'left' }}>
-                        <b>Example: Bank Holiday in between</b>
-                      </h5>
-                      <SettlementsExample holiday={true} duration={4} />
-                    </div>
-                  </div>
+                  <h5>Following is an example for T+3 Days</h5>
+                  <img
+                    src="/img/settlement-example.svg"
+                    style={{ width: '100%' }}
+                  />
                 </Fragment>
               ) : null}
 
-              <div style={{ marginTop: '15px' }}>
+              <div style={{ marginTop: '25px' }}>
                 <button
                   onClick={this.viewHolidayList}
-                  style={{ width: '48%' }}
+                  style={{ width: '48%', margin: '0 1%' }}
                   class="btn btn-outline"
                 >
-                  List of Bank Holidays
+                  Bank Holidays
                 </button>
-                <a href="http://razorpay.com/settlement" target="_blank">
+                <a href="https://razorpay.com/settlement" target="_blank">
                   <button
-                    style={{ width: '48%', marginLeft: '5px' }}
+                    style={{ width: '48%', margin: '0 1%' }}
                     class="btn btn-primary"
+                    onClick={() => {
+                      window.rzpAnalytics({
+                        eventCategory: 'Settlement Revamp',
+                        eventAction: 'Settlement Guide',
+                        eventLabel: `View settlement Cycle`,
+                      });
+                    }}
                   >
                     Settlement Guide
                   </button>
