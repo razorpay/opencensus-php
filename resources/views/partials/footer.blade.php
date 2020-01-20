@@ -39,7 +39,7 @@
     var disableEventEmitters = '{{$env}}'==='dev' ? true : false; //If true events will not be emitted to LJ and PROM
     var appEnvironment = window.location.hostname == "dashboard.razorpay.com" ? 'prod' : 'stage';
 
-    if (true || window.analytics) {
+    if (window.analytics) {
         analytics.init(
           ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj'],
           {
@@ -48,9 +48,9 @@
             lj:'{{$ljKey}}',
           //  perf:'medash-{{$env}}'
           },
-          false,
+          isLocal,
           appEnvironment,
-          false, // disableEventEmitters
+          disableEventEmitters,
         );
 
          // Init old key as well
