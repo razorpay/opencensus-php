@@ -456,16 +456,16 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
-            'gateway_error_code'  => 'RP00005',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+            'gateway_error_code'  => 'GW00555',
         ],
     ],
 ];
