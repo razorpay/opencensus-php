@@ -275,21 +275,7 @@ class HdfcGatewayAuthTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['error_metadata_response']);
 
-        $this->mockServerContentFunction(function (& $content, $action)
-        {
-            if ($action === 'enroll')
-            {
-                $content = [
-                    'error_text' => '!ERROR!-GW00555-Terminal ID is Deactivated, Please contact PG Helpdesk.',
-                    'trackid'    => $content['trackid'],
-                    'udf1'       => 'test',
-                    'udf2'       => 'a@b.com',
-                    'udf3'       => '9918899029',
-                    'udf4'       => 'test',
-                    'udf5'       => 'test',
-                ];
-            }
-        });
+        $this->hdfcPaymentMockResultCode('DENIED BY RISK', 'authorize');
 
         $content = $this->startTest();
 
