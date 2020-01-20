@@ -656,6 +656,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_MERCHANT_ON_HOLD                           = 'SETTLEMENT_MERCHANT_ON_HOLD';
     const SETTLEMENT_MERCHANT_SKIPPED                           = 'SETTLEMENT_MERCHANT_SKIPPED';
 
+    const TOGGLE_TRANSACTION_HOLD                               = 'TOGGLE_TRANSACTION_HOLD';
+    const TOGGLE_TRANSACTION_RELEASE                            = 'TOGGLE_TRANSACTION_RELEASE';
+    const TOGGLE_TRANSACTION_COMPLETE                           = 'TOGGLE_TRANSACTION_COMPLETE';
+    const TOGGLE_TRANSACTION_UPDATE_FAILED                      = 'TOGGLE_TRANSACTION_UPDATE_FAILED';
+
     // Info trace code for when a request would have been throttled but didn't because it is mocked.
     const THROTTLE_REQUEST_THROTTLED_MOCK                       = 'THROTTLE_REQUEST_THROTTLED_MOCK';
 
@@ -2676,7 +2681,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_MTU_UPDATE_FAILURE                           => 'Updating live by transaction failed for merchant ',
         self::MERCHANT_BALANCE_DEBIT_FAILURE                        => 'Not enough balance',
         self::MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 => 'Not enough refund credits',
-        self::NEGATIVE_BALANCE_BREACHED                              => 'Negative Balance has crossed the negative limit threshold',
+        self::NEGATIVE_BALANCE_BREACHED                             => 'Negative Balance has crossed the negative limit threshold',
         ];
 
     /**
