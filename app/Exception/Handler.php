@@ -390,7 +390,7 @@ class Handler extends ExceptionHandler
 
         $error = $exception->getError();
 
-        $this->fetchFeatureFlagAndSetMetadata($exception);
+        $this->setErrorMetadataIfApplicable($exception);
 
         return ApiResponse::generateErrorResponse($error, $debug);
     }
@@ -403,12 +403,12 @@ class Handler extends ExceptionHandler
 
         $data = $exception->getData();
 
-        $this->fetchFeatureFlagAndSetMetadata($exception);
+        $this->setErrorMetadataIfApplicable($exception);
 
         return ApiResponse::generateNachNbErrorResponse($error, $data, $debug);
     }
 
-    protected function fetchFeatureFlagAndSetMetadata($exception)
+    protected function setErrorMetadataIfApplicable($exception)
     {
         $error = $exception->getError();
 
@@ -434,7 +434,21 @@ class Handler extends ExceptionHandler
 
             $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
 
-            $error->setMetadata($isMetadataFeatureEnabled, $paymentId, $orderId);
+            $metadata = null;
+
+            if ($isMetadataFeatureEnabled === true)
+            {
+                if ($paymentId !== null)
+                {
+                    $metadata['payment_id'] = $paymentId;
+                }
+                if ($orderId !== null)
+                {
+                    $metadata['order_id'] = $orderId;
+                }
+            }
+
+            $error->setMetadata($metadata);
         }
     }
 

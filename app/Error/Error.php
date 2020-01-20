@@ -195,22 +195,8 @@ class Error extends Support\Fluent
         $this->setAttribute(self::HTTP_STATUS_CODE, $code);
     }
 
-    public function setMetadata($isMetadataFeatureEnabled, $paymentId, $orderId)
+    public function setMetadata($metadata)
     {
-        $metadata = null;
-
-        if ($isMetadataFeatureEnabled === true)
-        {
-            if ($paymentId !== null)
-            {
-                $metadata['payment_id'] = $paymentId;
-            }
-            if ($orderId !== null)
-            {
-                $metadata['order_id'] = $orderId;
-            }
-        }
-
         $this->setAttribute(self::METADATA, $metadata);
     }
 
