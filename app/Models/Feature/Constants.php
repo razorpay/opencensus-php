@@ -287,6 +287,8 @@ class Constants
 
     const BLOCK_OFFER_CREATION     = 'block_offer_creation';
 
+    const ERROR_METADATA_RESPONSE  = 'error_metadata_response';
+
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
@@ -493,6 +495,7 @@ class Constants
         self::GENERATE_PARTNER_INVOICE        => true,
         self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
+        self::ERROR_METADATA_RESPONSE         => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
     ];
 
