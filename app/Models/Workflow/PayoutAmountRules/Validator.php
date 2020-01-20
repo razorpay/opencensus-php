@@ -10,8 +10,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::MERCHANT_ID     => 'sometimes|string|size:14',
-        Entity::WORKFLOW_ID     => 'sometimes|string|size:14|nullable',
+//        Entity::MERCHANT_ID     => 'sometimes|string|size:14',
+//        Entity::WORKFLOW_ID     => 'sometimes|string|size:14|nullable|unsigned_id',
         Entity::MIN_AMOUNT      => 'required|integer|min:0',
         Entity::MAX_AMOUNT      => 'sometimes|integer|nullable',
     ];
