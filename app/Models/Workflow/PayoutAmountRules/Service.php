@@ -16,10 +16,10 @@ class Service extends Base\Service
     /**
      * Gets workflow rules for a single merchant whose id is passed through proxyAuth or url in adminAuth
      *
-     * @param string $merchantId
+     * @param array $input
      * @return array
      */
-    public function getWorkflowPayoutAmountRules($input): array
+    public function getWorkflowPayoutAmountRules(array $input): array
     {
         $merchantId = $this->merchant->getId();
 
@@ -36,7 +36,7 @@ class Service extends Base\Service
      * @param $input
      * @return array
      */
-    public function getMerchantIdsForCreatePayoutWorkflowPermission(array $input)
+    public function getMerchantIdsForCreatePayoutWorkflowPermission(array $input): array
     {
         $orgId = $this->auth->getOrgId();
 
@@ -56,7 +56,7 @@ class Service extends Base\Service
      * @param array $input
      * @return array
      */
-    public function createWorkflowPayoutAmountRules($input): array
+    public function createWorkflowPayoutAmountRules(array $input): array
     {
         $this->trace->info(TraceCode::WORKFLOW_PAYOUT_RULES_ATTACHMENT, $input);
 
@@ -72,7 +72,7 @@ class Service extends Base\Service
 
         $params = [];
 
-        /** @var Entity $wfPayoutAmountRules */
+        /** @var Base\PublicCollection $wfPayoutAmountRules */
         $wfPayoutAmountRules = $this->repo->workflow_payout_amount_rules->fetch($params, $merchantId);
 
         // Ensure that workflow_payout_amount_rules rules do not exist already
@@ -101,6 +101,8 @@ class Service extends Base\Service
 
         Workflow\Entity::verifyIdAndSilentlyStripSignMultiple($workflowIdsFromInput);
 
+        // Taking diff of workflow ids from input and from database. If there are extra workflow ids in input
+        // it means that some workflow ids provided in input are invalid.
         $diff = array_diff($workflowIdsFromInput, $workflowIds);
 
         if (count($diff) > 0)

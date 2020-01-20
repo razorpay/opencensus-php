@@ -17,7 +17,6 @@ class Validator extends Base\Validator
         Entity::ORG_ID      => 'required|string|size:14',
         Entity::PERMISSIONS => 'required|array',
         Entity::LEVELS      => 'required|array',
-        Entity::MERCHANT_ID => 'sometimes|string|size:14|unsigned_id',
     ];
 
     protected static $editRules = [
