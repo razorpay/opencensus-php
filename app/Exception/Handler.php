@@ -427,6 +427,8 @@ class Handler extends ExceptionHandler
             }
             else
             {
+                if (isset($data['merchant_id']) === true)
+                {
                 $repo = new Repository();
 
                 $feature = $repo->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
@@ -437,8 +439,6 @@ class Handler extends ExceptionHandler
                 {
                     $isMetadataFeatureEnabled = true;
                 }
-                if (isset($data['merchant_id']) === true)
-                {
                     $error->setMerchantId($data['merchant_id']);
                 }
             }
