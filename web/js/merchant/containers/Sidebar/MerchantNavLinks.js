@@ -52,7 +52,6 @@ export default function MerchantNavLinks(props) {
         icon="i i-payment-pages text-warm temp-icon-style"
         to={routes.paymentpages}
         additionalCondition={user => user.isAllowedView('payment_pages')}
-        customBadge="v2.0"
       />
       <MainNavLink
         label="Route"

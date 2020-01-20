@@ -46,12 +46,6 @@ export default class PaymentPagesContainer extends React.Component {
         <header id="link-header">
           <NavLink exact to="/paymentpages">
             Payment Pages
-            <span
-              class="badge bg-success hidden-xs"
-              style={{ marginLeft: '5px' }}
-            >
-              v2.0
-            </span>
           </NavLink>
         </header>
 
