@@ -7,6 +7,7 @@ use RZP\Exception;
 use Illuminate\Support;
 use RZP\Services\DowntimeMetric;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Feature\Repository;
 
 class Error extends Support\Fluent
 {
@@ -38,6 +39,7 @@ class Error extends Support\Fluent
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_DESC    = 'gateway_error_desc';
     const METADATA              = 'metadata';
+    const MERCHANT_ID           = 'merchant_id';
 
     protected $attributes = array();
 
@@ -200,6 +202,11 @@ class Error extends Support\Fluent
         $this->setAttribute(self::METADATA, $metadata);
     }
 
+    public function setMerchantId($merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
     protected function getAttribute($attr)
     {
         if (isset($this->attributes[$attr]))
@@ -347,16 +354,34 @@ class Error extends Support\Fluent
 
         $app = App::getFacadeRoot();
 
-        if (($app['basicauth'] !== null) and ($app['basicauth']->getMerchant() !== null))
-        {
-            $merchant = $app['basicauth']->getMerchant();
+        $isMetadataFeatureEnabled = false;
 
-            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+        if ($app['basicauth'] !== null) {
 
-            if ($isMetadataFeatureEnabled === true)
+            if ($app['basicauth']->getMerchant() !== null)
             {
-                $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
+                $merchant = $this->app['basicauth']->getMerchant();
+
+                $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
             }
+            else
+            {
+                $repo = new Repository();
+
+                $feature = $repo->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
+                    $this->getAttribute(self::MERCHANT_ID),
+                    Constants::ERROR_METADATA_RESPONSE);
+
+                if (empty($feature) === false)
+                {
+                    $isMetadataFeatureEnabled = true;
+                }
+            }
+        }
+
+        if ($isMetadataFeatureEnabled === true)
+        {
+            $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
         }
 
         $error = $this->checkAndAddDataToErrorResp($error);

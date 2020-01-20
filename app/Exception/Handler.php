@@ -6,6 +6,7 @@ use App;
 use Response;
 use Exception;
 use ApiResponse;
+use RZP\Models\Feature\Repository;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -414,12 +415,33 @@ class Handler extends ExceptionHandler
 
         $data = $exception->getData();
 
-        if (($this->app['basicauth'] !== null) and
-            ($this->app['basicauth']->getMerchant() !== null))
-        {
-            $merchant = $this->app['basicauth']->getMerchant();
+        $isMetadataFeatureEnabled = false;
 
-            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+        if ($this->app['basicauth'] !== null)
+        {
+            if ($this->app['basicauth']->getMerchant() !== null)
+            {
+                $merchant = $this->app['basicauth']->getMerchant();
+
+                $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+            }
+            else
+            {
+                $repo = new Repository();
+
+                $feature = $repo->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
+                    $data['merchant_id'],
+                    Constants::ERROR_METADATA_RESPONSE);
+
+                if (empty($feature) === false)
+                {
+                    $isMetadataFeatureEnabled = true;
+                }
+                if (isset($data['merchant_id']) === true)
+                {
+                    $error->setMerchantId($data['merchant_id']);
+                }
+            }
 
             $metadata = null;
 
@@ -436,14 +458,6 @@ class Handler extends ExceptionHandler
 
                 $error->setMetadata($metadata);
             }
-
-            $this->trace->error(
-                TraceCode::ERROR_EXCEPTION,
-                [
-                    'isMetadataFeatureEnabled'    => $isMetadataFeatureEnabled,
-                    'metadata'  => $metadata,
-                ]
-            );
         }
     }
 
