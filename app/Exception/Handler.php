@@ -414,20 +414,6 @@ class Handler extends ExceptionHandler
 
         $data = $exception->getData();
 
-        $paymentId = null;
-
-        $orderId = null;
-
-        if (isset($data['payment_id']) === true)
-        {
-            $paymentId = $data['payment_id'];
-        }
-
-        if (isset($data['order_id']) === true)
-        {
-            $orderId = $data['order_id'];
-        }
-
         if (($this->app['basicauth'] !== null) and
             ($this->app['basicauth']->getMerchant() !== null))
         {
@@ -439,13 +425,13 @@ class Handler extends ExceptionHandler
 
             if ($isMetadataFeatureEnabled === true)
             {
-                if ($paymentId !== null)
+                if (isset($data['payment_id']) === true)
                 {
-                    $metadata['payment_id'] = $paymentId;
+                    $metadata['payment_id'] = $data['payment_id'];
                 }
-                if ($orderId !== null)
+                if (isset($data['order_id']) === true)
                 {
-                    $metadata['order_id'] = $orderId;
+                    $metadata['order_id'] = $data['order_id'];
                 }
             }
 
