@@ -135,6 +135,8 @@ trait Callback
 
                 $this->processPaymentCallback($payment, $gatewayInput, $isS2sCallback);
 
+                $this->postPaymentAuthorizeOfferProcessing($payment);
+
                 $this->autoCapturePaymentIfApplicable($payment);
             },
             60,
