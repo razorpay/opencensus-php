@@ -126,8 +126,7 @@ class Core extends Base\Core
 
         $validationResult = $this->validateExtractedData($extractedPaperMandateData, $paperMandate);
 
-        $uploadedFileId = (new FileUploader)->uploadEnhancedForm(
-            $paperMandate,
+        $uploadedFileId = (new FileUploader($paperMandate))->uploadEnhancedForm(
             $extractedPaperMandateData[Entity::ENHANCED_IMAGE]
         );
 
@@ -441,7 +440,7 @@ class Core extends Base\Core
 
         $data = (new HyperVerge)->generatePaperMandateForm($paperMandate);
 
-        $generatedFileId = (new FileUploader)->saveCreatedMandateAndFileId($paperMandate, $data[Entity::GENERATED_IMAGE]);
+        $generatedFileId = (new FileUploader($paperMandate))->saveCreatedMandateAndFileId($data[Entity::GENERATED_IMAGE]);
 
         $this->trace->info(
             TraceCode::PAPER_MANDATE_FORM_GENERATED,
