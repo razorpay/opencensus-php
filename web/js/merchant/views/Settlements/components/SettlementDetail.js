@@ -59,7 +59,7 @@ export default class SettlementDetail extends Component {
             >
               <div class="emphzd" style={{ paddingTop: 0 }}>
                 <div class="settlement-alert-warning">
-                  <span>
+                  <span style={{ fontWeight: 'bold', fontSize: '15px' }}>
                     {isOnHold ? (
                       <b>Settlements on Hold</b>
                     ) : (
