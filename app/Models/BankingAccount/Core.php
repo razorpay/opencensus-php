@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount;
 
 use Mail;
 use Carbon\Carbon;
+
 use Razorpay\IFSC\Bank;
 use Razorpay\Trace\Logger as Trace;
 
@@ -27,8 +28,6 @@ class Core extends Base\Core
 {
     const GATEWAY   = 'gateway';
     const Processor = 'processor';
-
-    private $update;
 
     public function __construct()
     {
