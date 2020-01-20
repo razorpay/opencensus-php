@@ -2055,7 +2055,9 @@ class PayoutTest extends TestCase
     {
         $this->createPayoutWithWorkflowHavingPayoutRules();
 
-        $this->ba->proxyAuth();
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'admin');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser->getId());
 
         $this->startTest();
     }
