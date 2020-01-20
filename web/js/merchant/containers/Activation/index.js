@@ -154,7 +154,7 @@ export default class ActivationContainer extends Component {
     this.sendEventsForSubMerchantView(
       window.rzpQ
         .routeActions()
-        .initiated('route.linked_account.activate_account.started')
+        .interaction('route.linked_account.activate_account.started')
     );
   }
 
@@ -246,6 +246,7 @@ export default class ActivationContainer extends Component {
           <InstantActivation
             {...commonProps}
             onFormValidityChange={this.handleIAFormValidityChange}
+            sendEventsForSubMerchantView={this.sendEventsForSubMerchantView}
           />
         );
         trackerIntent = 'act.form_fill';
@@ -255,6 +256,7 @@ export default class ActivationContainer extends Component {
             {...commonProps}
             onNewData={this.handleNewData}
             setAdditionalModalClass={this.setAdditionalModalClass}
+            sendEventsForSubMerchantView={this.sendEventsForSubMerchantView}
           />
         );
         trackerIntent = 'kyc.form_fill';

@@ -274,6 +274,12 @@ export default class ActivationWizard extends React.Component {
           twiData: 'o1ua0',
         }); //fb = false, bing, linkedin, twitter
 
+        this.props.sendEventsForSubMerchantView(
+          window.rzpQ
+            .routeActions()
+            .success('route.linked_account.activate_account.business_details')
+        );
+
         return this.props.history.replace(`/`);
       })
       .catch(err => {

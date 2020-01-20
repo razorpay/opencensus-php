@@ -12,6 +12,7 @@
       failed: noop, //A failure occured
       push: noop, //Explicitly push as custom event to the queue
       setUser:noop, //Set a user one time
+      interaction: noop,
       defineEventModifiers:noop,//Extends to set custom event properties
       //Any modifiers
       onbr:()=>window.rzpQ,
