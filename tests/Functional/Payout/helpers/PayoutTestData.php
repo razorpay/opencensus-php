@@ -849,6 +849,72 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
         ],
     ],
+    'testCreateMerchantPayoutOnDemandAmountInCrores' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 2000000000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 1976399410,
+                'currency'    => 'INR',
+                'tax'         => 3600090,
+                'fees'        => 23600590,
+                'notes'       => []
+            ],
+        ],
+    ],
+    'testCreateMerchantPayoutOnDemandExceedAmountLimit' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 2000000100,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount may not be greater than 2000000000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testCreateMerchantPayoutExceedAmountLimit' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout',
+            'content' => [
+                'amount'   => 1000000000,
+                'merchant_id'   => '10000000000000'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount may not be greater than 800000000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
     'testCreateMerchantPayoutOnHoldFunds' => [
         'request' => [
             'method'  => 'POST',
