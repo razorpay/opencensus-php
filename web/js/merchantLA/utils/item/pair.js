@@ -38,6 +38,10 @@ export const totalCount = { title: 'Count', value: item => item.total_count };
 
 export const settlementId = { title: 'Settlemt Id', value: id.settlement };
 export const transferId = { title: 'Transfer Id', value: id.transfer };
+export const parentPaymentId = {
+  title: 'Parent Payment Id',
+  value: item => item.parent_payment_id || '--',
+};
 export const customerRefundId = {
   title: 'Customer Refund Id',
   value: item => item.customer_refund_id,

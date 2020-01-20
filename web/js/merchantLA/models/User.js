@@ -61,6 +61,10 @@ export default class User {
     return this.features.indexOf('allow_reversals_from_la') >= 0;
   }
 
+  get isShowParentPaymentIdEnabled() {
+    return this.isFeatureEnabled('display_parent_payment_id');
+  }
+
   /* Check if the tag exists */
   findTag(tag) {
     return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());
