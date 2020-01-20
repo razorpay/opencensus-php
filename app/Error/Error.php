@@ -41,6 +41,7 @@ class Error extends Support\Fluent
     const METADATA              = 'metadata';
 
     protected $attributes = array();
+    protected $trace;
 
     public function __construct(
         $code,
