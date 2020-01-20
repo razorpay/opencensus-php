@@ -21,6 +21,7 @@ use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class UpiQrTest extends TestCase
@@ -94,5 +95,18 @@ class UpiQrTest extends TestCase
             Entity::AMOUNT_PAID         => 100,
             Entity::AMOUNT_RECEIVED     => 100,
         ], $this->va->toArray());
+    }
+
+    public function testFailureOnNoAmountExpected()
+    {
+        unset($this->input['amount_expected']);
+
+        $this->makeRequestAndCatchException(
+        function()
+        {
+            $this->createVirtualAccount($this->input);
+        },
+        BadRequestValidationFailureException::class,
+        'Amount expected is required for UPI QR receivers');
     }
 }
