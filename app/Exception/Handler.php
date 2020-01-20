@@ -436,6 +436,14 @@ class Handler extends ExceptionHandler
 
                 $error->setMetadata($metadata);
             }
+
+            $this->trace->error(
+                TraceCode::ERROR_EXCEPTION,
+                [
+                    'isMetadataFeatureEnabled'    => $isMetadataFeatureEnabled,
+                    'metadata'  => $metadata,
+                ]
+            );
         }
     }
 

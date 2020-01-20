@@ -343,9 +343,7 @@ class Error extends Support\Fluent
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
-            self::METADATA  => $this->getAttribute(self::METADATA)
-
-    );
+        );
 
         $app = App::getFacadeRoot();
 
