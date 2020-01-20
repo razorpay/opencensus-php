@@ -1,13 +1,14 @@
 <?php
 
-namespace RZP\Models\Merchant\Detail\Verifiers;
+namespace RZP\Models\Merchant\AutoKyc\MozartService;
 
 use RZP\Http\RequestHeader;
+use RZP\Models\Merchant\AutoKyc\Response;
 use RZP\Models\Merchant\Detail\Constants;
 
-class PanVerifier extends AbstractVerifier
+class PanProcessor extends BaseProcessor
 {
-    public function verifyDetails(): PanVerifierResponse
+    public function process(): Response
     {
         $content = [
             'pan'     => $this->input[Constants::PAN_NUMBER],
@@ -19,12 +20,12 @@ class PanVerifier extends AbstractVerifier
             'method'  => 'POST',
             'content' => $content,
             'headers' => [
-                RequestHeader::CONTENT_TYPE  => 'application/json',
+                RequestHeader::CONTENT_TYPE => 'application/json',
             ]
         ];
 
-        $response = $this->createAndSendRequest($request);
+        [$response, $responseMetaData] = $this->createAndSendRequest($request);
 
-        return new PanVerifierResponse($response);
+        return new PanProcessorResponse($response, $responseMetaData);
     }
 }

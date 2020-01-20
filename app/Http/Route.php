@@ -847,6 +847,29 @@ final class Route
         'payouts_process_queued'                   => ['post',     'payouts/queued/process',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
+
+        // Payout Links
+        'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
+        'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                          ],
+        'payout_links_create'                      => ['post',      'payout-links',                                  'PayoutLinkController@create'                                       ],
+        'payout_links_generate_end_user_otp'       => ['post',      'payout-links/{x_entity_id}'
+                                                                     . '/generate-customer-otp',                     'PayoutLinkController@generateAndSendCustomerOtp'                   ],
+        'payout_links_generate_end_user_otp_cors'  => ['options',   'payout-links/{x_entity_id}'
+                                                                    . '/generate-customer-otp',                       'PayoutLinkController@allowCors'                                   ],
+        'payout_links_verify_customer_otp'         => ['post',      'payout-links/{x_entity_id}'
+                                                                     . '/verify-customer-otp',                        'PayoutLinkController@verifyCustomerOtp'                            ],
+        'payout_links_verify_customer_otp_cors'    => ['options',      'payout-links/{x_entity_id}'
+                                                                    . '/verify-customer-otp',                         'PayoutLinkController@allowCors'                                    ],
+        'payout_links_cancel'                      => ['post',      'payout-links/{id}/cancel',                       'PayoutLinkController@cancel'                                       ],
+        'payout_links_customer_hosted_page'        => ['get',       'payout-links/{x_entity_id}/view',                'PayoutLinkController@viewHostedPage'                               ],
+        // Below is a POST request, for reasons listed in the Controller
+        'payout_links_added_fund_accounts'         => ['post',      'payout-links/{x_entity_id}/fund-accounts',       'PayoutLinkController@getFundAccountsOfContact'                     ],
+        'payout_links_added_fund_accounts_cors'    => ['options',   'payout-links/{x_entity_id}/fund-accounts',       'PayoutLinkController@allowCors'                                    ],
+        'payout_links_initiate'                    => ['post',      'payout-links/{x_entity_id}/initiate',            'PayoutLinkController@initiate'                                     ],
+        'payout_links_initiate_cors'               => ['options',      'payout-links/{x_entity_id}/initiate',          'PayoutLinkController@allowCors'                                   ],
+        'payout_links_settings_post'               => ['post',      'payout-links/{merchantId}/settings',             'PayoutLinkController@updateSettings'                               ],
+        'payout_links_settings_get'                => ['get',       'payout-links/{merchantId}/settings',             'PayoutLinkController@getSettings'                                  ],
+
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
@@ -1496,6 +1519,15 @@ final class Route
         'contact_get_public',
         'auth_link_paper_mandate_authenticate',
         'auth_link_paper_mandate_validate',
+        'payout_links_generate_end_user_otp',
+        'payout_links_verify_customer_otp',
+        'payout_links_customer_hosted_page',
+        'payout_links_added_fund_accounts',
+        'payout_links_initiate',
+        'payout_links_generate_end_user_otp_cors',
+        'payout_links_verify_customer_otp_cors',
+        'payout_links_initiate_cors',
+        'payout_links_added_fund_accounts_cors',
     ];
 
     public static $device = [
@@ -1533,6 +1565,10 @@ final class Route
     ];
 
     public static $private = [
+        'payout_links_fetch_multiple',
+        'payout_links_fetch_by_id',
+        'payout_links_create',
+        'payout_links_cancel',
         'payment_create_private',
         'payment_create_private_old',
         'payment_create_private_json',
@@ -2213,6 +2249,8 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'payout_links_settings_post',
+        'payout_links_settings_get',
         'add_additional_website',
         'reminder_admin',
         'merchant_document_admin_fetch',
@@ -2723,6 +2761,8 @@ final class Route
         'merchant_activation_update_website_status'=> '*',
         'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         'add_additional_website'                   => '*',
+        'payout_links_settings_post'               => Permission::EDIT_MERCHANT,
+        'payout_links_settings_get'                => Permission::EDIT_MERCHANT,
         'pricing_add_plan_rule_bulk'               => '*',
         'reminder_admin'                           => Permission::REMINDER_OPERATION,
         'merchant_document_admin_fetch'            => '*',

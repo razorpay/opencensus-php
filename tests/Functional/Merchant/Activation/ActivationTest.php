@@ -350,6 +350,44 @@ class ActivationTest extends OAuthTestCase
         }
     }
 
+    public function testIAForUnregisteredBusinessFromKycService()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $tests = [
+            'testIAForUnregisteredBusinessFeatureEnabledNameMisMatch'     => MerchantDetailsConstant::SUCCESS,
+            'testIAForUnregisteredBusinessFeatureEnabledIncorrectDetails' => MerchantDetailsConstant::INCORRECT_DETAILS,
+            'testIAForUnregisteredBusinessFeatureEnabledTimeout'          => MerchantDetailsConstant::FAILURE,
+            'testIAForUnregisteredBusinessFeatureEnabled'                 => MerchantDetailsConstant::SUCCESS, // at bottom because once successful, the request can not be tried again
+        ];
+
+        foreach ($tests as $test => $mockStatus)
+        {
+            Config::set('applications.kyc.pan_authentication', $mockStatus);
+
+            Config::set('applications.kyc.mock', true);
+
+            $featureVariantMap = [
+                'non_registered_onboarding' => 'on',
+                'kyc_service_verification'  => 'on',
+            ];
+
+            $this->mockRazorXMultiFeature($test,$featureVariantMap);
+
+            $testData = $this->testData[$test];
+
+            $this->runRequestResponseFlow($testData);
+        }
+    }
+
     protected function mockHubSpotClient($methodName)
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
@@ -365,11 +403,24 @@ class ActivationTest extends OAuthTestCase
 
     public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
     {
-        $testData                       = &$this->testData[$functionName];
+        $featureVariantMap = [$featureName => $variant];
 
-        $uniqueLocalId                  = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
+        $this->mockRazorXMultiFeature($functionName, $featureVariantMap, $merchantId);
+    }
 
-        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
+    public function mockRazorXMultiFeature(string $functionName, array $featureVariantMap, $merchantId = '1cXSLlUU8V9sXl')
+    {
+        $testData = &$this->testData[$functionName];
+
+        $localIdVariantMap = [];
+
+        foreach ($featureVariantMap as $featureName => $variant)
+        {
+            $uniqueLocalId                     = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
+            $localIdVariantMap[$uniqueLocalId] = $variant;
+        }
+
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => json_encode($localIdVariantMap)];
     }
 
     public function testInstantActivationOfSubscriptionsForActiveMerchants()
