@@ -7,6 +7,7 @@ use RZP\Exception;
 use Illuminate\Support;
 use RZP\Services\DowntimeMetric;
 use RZP\Models\Feature\Constants;
+use RZP\Trace\TraceCode;
 
 class Error extends Support\Fluent
 {
@@ -357,6 +358,12 @@ class Error extends Support\Fluent
             {
                 $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
             }
+
+            $this->trace->info(TraceCode::ERROR_EXCEPTION, [
+                'merchant' => $merchant,
+                'error' => $error,
+                'isMetadataFeatureEnabled' => $isMetadataFeatureEnabled
+            ]);
         }
 
         $error = $this->checkAndAddDataToErrorResp($error);
