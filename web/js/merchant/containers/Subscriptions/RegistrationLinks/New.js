@@ -29,8 +29,6 @@ import PaymentDetailsForm, {
 import TokenDetailsForm from 'merchant/components/Subscriptions/RegistrationLinksForm/TokenDetails';
 import {
   trackClickPaymentMethod,
-  trackReceivedNACHForm,
-  trackNACHToolTipHover,
   trackClickNext,
   trackSkipBankDetails,
   trackSubmitCreateForm,
@@ -65,6 +63,9 @@ const NACHMandatoryFields = [
 
 const CardMandatoryFields = [{ name: 'amount', validator: checkIfAmount }];
 
+let DEFAULT_MAX_AMOUNT = 99999;
+let DEFAULT_FIRST_CHARGE = 0;
+
 @withRouter
 @connect(state => ({ user: state.session.user }), {
   openModal,
@@ -79,8 +80,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   constructor(props) {
     super(props);
 
-    this.DEFAULT_MAX_AMOUNT = 99999;
-    this.DEFAULT_FIRST_CHARGE = 0;
     this.state = {
       loading: true,
       currentTab: 0,
@@ -95,7 +94,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         customerContact: '',
         configSmsNotify: '',
         configEmailNotify: '',
-        isNachFormAval: '',
         mandateMethod: '',
         bankName: '',
         skipBankDetails: '',
@@ -125,12 +123,12 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
   get isNACHPayment() {
     const isNACH = this.state.formFields.mandateMethod === 'nach';
     if (isNACH) {
-      this.DEFAULT_MAX_AMOUNT = 10000000;
+      DEFAULT_MAX_AMOUNT = 100000;
 
       return isNACH;
     }
 
-    this.DEFAULT_MAX_AMOUNT = 99999;
+    DEFAULT_MAX_AMOUNT = 99999;
     return isNACH;
   }
 
@@ -323,7 +321,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
         );
       }
 
-      let max_amount = rupeesToPaise(this.DEFAULT_MAX_AMOUNT);
+      let max_amount = rupeesToPaise(DEFAULT_MAX_AMOUNT);
 
       if (data.mandateMaxAmount) {
         max_amount = rupeesToPaise(data.mandateMaxAmount);
@@ -353,14 +351,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       })
       .then(response => {
         const entityId = response.id;
-
-        if (this.state.formFields.isNachFormAval) {
-          setTimeout(() => {
-            const redirectUrl = `/registration_links/${entityId}/upload_nach`;
-
-            this.props.history.push(redirectUrl);
-          }, 500);
-        }
 
         if (this.props.onClose) {
           this.props.luminateRow(entityId);
@@ -475,7 +465,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             avlblMethods={this.state.avlblMethods}
             mandateMethod={formFields.mandateMethod}
             emandateBanks={this.state.emandateBanks}
-            isNachFormAval={formFields.isNachFormAval}
             bankName={formFields.bankName}
             skipBankDetails={formFields.skipBankDetails}
             beneficiaryName={formFields.beneficiaryName}
@@ -486,8 +475,6 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             isEmandatePayment={this.isEmandatePayment}
             handleNotesChange={this.handleNotesChange}
             trackClickPaymentMethod={trackClickPaymentMethod}
-            trackReceivedNACHForm={trackReceivedNACHForm}
-            trackNACHToolTipHover={trackNACHToolTipHover}
             trackSkipBankDetails={trackSkipBankDetails}
             formReference1={formFields.formReference1}
             formReference2={formFields.formReference2}
@@ -503,8 +490,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             mandateExpireAt={formFields.mandateExpireAt}
             tokenHasNoExpiry={formFields.tokenHasNoExpiry}
             mandateMaxAmount={formFields.mandateMaxAmount}
-            defaultMandateMaxAmount={this.DEFAULT_MAX_AMOUNT}
-            defaultFirstChargeAmount={this.DEFAULT_FIRST_CHARGE}
+            defaultMandateMaxAmount={DEFAULT_MAX_AMOUNT}
+            defaultFirstChargeAmount={DEFAULT_FIRST_CHARGE}
             firstPaymentAmount={formFields.firstPaymentAmount}
             handleDateChange={this.handleDateChange}
           />

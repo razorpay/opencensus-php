@@ -18,25 +18,11 @@ export function trackClickPaymentMethod(event) {
   });
 }
 
-export function trackReceivedNACHForm(event) {
-  track({
-    eventAction: `${
-      event.target.checked ? 'Checked' : 'Unchecked'
-    } - Received NACH form`,
-  });
-}
-
 export function trackSkipBankDetails(event) {
   track({
     eventAction: `${
       event.target.checked ? 'Checked' : 'Unchecked'
     } - Skip bank details`,
-  });
-}
-
-export function trackNACHToolTipHover() {
-  track({
-    eventAction: `Hover - Received NACH form`,
   });
 }
 

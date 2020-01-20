@@ -397,6 +397,10 @@ export default class User {
     return this.getExpStatus('reminders');
   }
 
+  get isAsyncReportsEnabled() {
+    return this.getExpStatus('async_reports');
+  }
+
   get getPaymentLinkCustomizedFormFields() {
     return window.pl_customized_form_fields;
   }
@@ -458,6 +462,10 @@ export default class User {
 
   get isVPAFeatureEnabled() {
     return this.getExpStatus('vpa_enabled');
+  }
+
+  get isCompanyNameHiddenRazorX() {
+    return this.getExpStatus('hide_company_name');
   }
 
   get isNewPPSuccessModalEnabled() {

@@ -363,11 +363,10 @@ export default props => {
                     trackerFn={trackDetailViewEdits}
                   />
                 )}
-                {user.isOndemandSettlementEnabled && (
-                  <ShowWhen myRole="owner admin finance">
+                {user.isOndemandSettlementEnabled &&
+                  user.isAllowedView('early_settlement') && (
                     <ScheduledBanner fromWhere="Payment Pages" />
-                  </ShowWhen>
-                )}
+                  )}
               </div>
             </div>
           </div>

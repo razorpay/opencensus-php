@@ -29,19 +29,23 @@ export default class SelectPeriod extends React.Component {
     },
   };
 
-  onWithTimeChange = ({ target }) => {
-    this.setState({ withTime: target.checked });
-  };
-
   onChange = ({ target }) => {
     const { name, value, checked } = target;
 
-    this.setState({
-      values: {
-        ...this.state.values,
-        [name]: !isNone(checked) ? checked : value,
+    this.setState(
+      {
+        values: {
+          ...this.state.values,
+          [name]: !isNone(checked) ? checked : value,
+        },
       },
-    });
+      () => {
+        if (valuesRelatedToDateRange(name, value)) {
+          const { selectedStartAt, selectedEndAt } = this.state.values;
+          this.props.onDateRangeChanges(selectedStartAt, selectedEndAt);
+        }
+      }
+    );
   };
 
   onDateTimeChange = (value, name) => {
@@ -55,7 +59,10 @@ export default class SelectPeriod extends React.Component {
       value = dateValue.add(timeInUnix, 'seconds');
     } else {
       const timeInUnix = getTimeUnix(this.state.values[name]);
-      value = value.add(timeInUnix, 'seconds');
+      value = value
+        .clone()
+        .startOf('day')
+        .add(timeInUnix, 'seconds');
     }
 
     const target = { value, name };
@@ -94,7 +101,7 @@ export default class SelectPeriod extends React.Component {
         }
         const startTimeUnix = selectedStartAt.format('X');
         const endTimeUnix = selectedEndAt.format('X');
-        return [startTimeUnix, endTimeUnix];
+        return [Number(startTimeUnix), Number(endTimeUnix)];
     }
   };
 
@@ -126,7 +133,13 @@ export default class SelectPeriod extends React.Component {
   render() {
     const { selectedPeriod, withTime, ...defaults } = this.state.values;
 
-    const { avlblPeriodOptions = [], isCustomConfig } = this.props;
+    const {
+      avlblPeriodOptions = [],
+      isCustomConfig,
+      isFormDisabled,
+      dateRangeError,
+    } = this.props;
+
     return !isCustomConfig ? (
       <Input.Group class="InputGroup--inline">
         <div class="Input-content">
@@ -138,9 +151,11 @@ export default class SelectPeriod extends React.Component {
               class="Input--vTop"
               name="selectedPeriod"
               onChange={this.onChange}
+              disabled={isFormDisabled}
             />
-
-            <PredefinedPeriodDurations selectedPeriod={selectedPeriod} />
+            {!isFormDisabled && (
+              <PredefinedPeriodDurations selectedPeriod={selectedPeriod} />
+            )}
 
             {selectedPeriod === 'dateRange' && (
               <div class="m-t">
@@ -161,6 +176,10 @@ export default class SelectPeriod extends React.Component {
             withTime={withTime}
             defaults={defaults}
           />
+          {!!dateRangeError &&
+            selectedPeriod === 'dateRange' && (
+              <div class="m-t text-danger text-small">{dateRangeError}</div>
+            )}
         </div>
       </Input.Group>
     ) : (
@@ -316,7 +335,7 @@ function PredefinedPeriodDurations({ selectedPeriod }) {
   }
 
   return (
-    <div class="m-t">
+    <div className="m-t">
       <small class="text-warning">
         {fromDate} {toDate && ` to ${toDate}`}
       </small>
@@ -333,5 +352,16 @@ function getStartAndEndUnixTimeStampsForMonth(
     .startOf('month')
     .format('X');
 
-  return [firstDayOfLastMonthStartOfDayUnix, lastDayOfLastMonthEndOfDayUnix];
+  return [
+    Number(firstDayOfLastMonthStartOfDayUnix),
+    Number(lastDayOfLastMonthEndOfDayUnix),
+  ];
+}
+
+const dateRangeKeys = ['selectedStartAt', 'selectedEndAt'];
+function valuesRelatedToDateRange(name, value) {
+  return (
+    dateRangeKeys.includes(name) ||
+    (name === 'selectedPeriod' && value === 'dateRange')
+  );
 }

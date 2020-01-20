@@ -43,6 +43,7 @@ import {
     fetchRegistrationLink,
     cancelRegistrationLink,
     showNotification,
+    notifyCustomer,
     openModal,
     closeModal,
   }
@@ -92,10 +93,10 @@ export default class RegistrationLinkEntityContainer extends React.Component {
     let promises = [];
 
     if (notifyProps.email) {
-      promises.push(notifyCustomer(this.props.id, 'email'));
+      promises.push(this.props.notifyCustomer(this.props.id, 'email'));
     }
     if (notifyProps.sms) {
-      promises.push(notifyCustomer(this.props.id, 'sms'));
+      promises.push(this.props.notifyCustomer(this.props.id, 'sms'));
     }
 
     return Promise.all(promises)
@@ -177,13 +178,18 @@ export default class RegistrationLinkEntityContainer extends React.Component {
   };
 
   render() {
-    const { loading: isLoading, entity, error } = this.props;
+    const { loading: isLoading, entity, error } = this.props,
+      { subscription_registration = {} } = entity;
 
     const isSmsOrEmailSent =
         entity.sms_status === 'sent' || entity.email_status === 'sent',
       isIssued = entity.status === 'issued',
-      isTotalAmountPaid = entity.amount === entity.amount_paid,
-      isIssuedAndTotalAmountNotPaid = isIssued && !isTotalAmountPaid;
+      isCancelled = entity.status === 'cancelled',
+      isSubscriptionRegistrationCreated =
+        subscription_registration.status === 'created';
+
+    const isResendAndCancelledAllowed =
+      isSubscriptionRegistrationCreated && isIssued;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -195,7 +201,7 @@ export default class RegistrationLinkEntityContainer extends React.Component {
           <div class="panel panel-default SliderPanel RegistrationLinks--Details">
             <div class="panel-heading">
               {entity.id}
-              {isIssuedAndTotalAmountNotPaid && (
+              {isResendAndCancelledAllowed && (
                 <div class="btn-toolbar pull-right">
                   <button
                     onClick={this.openResendLinkModal}
@@ -219,7 +225,7 @@ export default class RegistrationLinkEntityContainer extends React.Component {
                     <EntityDetailRow label="Status">
                       <InvoiceStatusLabel status={entity.status} />
 
-                      {isIssuedAndTotalAmountNotPaid && (
+                      {isResendAndCancelledAllowed && (
                         <Button.Transparent
                           class="Button--Link cancel-link"
                           onClick={this.cancelRegistrationLink}
@@ -266,27 +272,28 @@ export default class RegistrationLinkEntityContainer extends React.Component {
                       <CustomerDetails customer={entity.customer_details} />
                     </EntityDetailRow>
 
-                    {this.isNACHMethod && (
-                      <EntityDetailRow label="NACH form">
-                        <NACHDetails
-                          registrationLinkId={entity.id}
-                          downloadSignedNACHFile={
-                            entity.is_nach_form_uploaded &&
-                            this.downloadSignedNACHFile
-                          }
-                          preFilledNachFileURL={
-                            entity.token &&
-                            entity.token.nach &&
-                            entity.token.nach.prefilled_form
-                          }
-                          trackClickUploadNACHForm={trackClickUploadNACHForm}
-                          trackClickDownloadNACHForm={
-                            trackClickDownloadNACHForm
-                          }
-                          trackClickViewNACHForm={trackClickViewNACHForm}
-                        />
-                      </EntityDetailRow>
-                    )}
+                    {this.isNACHMethod &&
+                      !isCancelled && (
+                        <EntityDetailRow label="NACH form">
+                          <NACHDetails
+                            registrationLinkId={entity.id}
+                            downloadSignedNACHFile={
+                              entity.is_nach_form_uploaded &&
+                              this.downloadSignedNACHFile
+                            }
+                            preFilledNachFileURL={
+                              entity.token &&
+                              entity.token.nach &&
+                              entity.token.nach.prefilled_form
+                            }
+                            trackClickUploadNACHForm={trackClickUploadNACHForm}
+                            trackClickDownloadNACHForm={
+                              trackClickDownloadNACHForm
+                            }
+                            trackClickViewNACHForm={trackClickViewNACHForm}
+                          />
+                        </EntityDetailRow>
+                      )}
 
                     {/* created at */}
                     <EntityDetailRow label="Created At">

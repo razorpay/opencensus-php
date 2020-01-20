@@ -3,6 +3,7 @@ import Input from 'common/new-ui/Input';
 export default ({
   startsAt,
   block,
+  checkoutDisplay,
   getFormElementValidations,
   getFormOnChangeHandler,
   endsAt,
@@ -26,7 +27,7 @@ export default ({
       description="Expiry date for offer"
       isInline
       validator={getFormElementValidations('ends_at')}
-      defaultValue={endsAt}
+      defaultValue={endsAt || ''}
       required
     />
     <Input.Select
@@ -51,6 +52,15 @@ export default ({
       placeholder="Max Usage of this offer: Example - 100 times"
       defaultValue={maxOfferUsage}
       onChange={getFormOnChangeHandler()}
+    />
+    <Input.Check
+      label={'Checkout Visibility'}
+      onChange={getFormOnChangeHandler()}
+      className={'Input--vTop'}
+      fieldLabel={'Offer available for all users on checkout.'}
+      //field has been renamed to allow gradual deprecation towards default_offer
+      name="default_offer"
+      defaultValue={checkoutDisplay}
     />
   </React.Fragment>
 );

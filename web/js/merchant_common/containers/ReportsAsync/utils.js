@@ -17,8 +17,25 @@ export const getStartAndEndUnixTimeStampsForDaysFrom = (
     .startOf('day')
     .format('X');
 
-  return [lastNthStartOfDayUnix, lastDayEndOfDayUnix];
+  return [Number(lastNthStartOfDayUnix), Number(lastDayEndOfDayUnix)];
 };
 
 export const extractExtensionFromTemplate = template =>
   ((template || {}).file_meta || {}).extension;
+
+const logProcessingStatuses = ['created', 'processing'];
+export const isLogInProgress = logStatus =>
+  logProcessingStatuses.includes(logStatus);
+
+export const getActualLogStatus = ({ status, fileId }) => {
+  switch (status) {
+    case 'created':
+      return status;
+    case 'processed':
+      return fileId ? 'ready-for-download' : 'no-data';
+    case 'failed':
+      return 'error';
+    default:
+      return null;
+  }
+};

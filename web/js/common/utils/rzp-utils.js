@@ -1119,3 +1119,24 @@ export const prevent = e => {
   e.preventDefault();
   e.stopPropagation();
 };
+
+export function handleNegativeBalanceLimit(balanceConfig, balance) {
+  if (balance >= 0) return false;
+
+  if (
+    balanceConfig.loading === true ||
+    balanceConfig.error ||
+    balanceConfig.data.items.length === 0
+  ) {
+    return false;
+  }
+
+  let { items } = balanceConfig.data;
+
+  const { negative_limit_auto, negative_limit_manual } = items[0];
+
+  let maxLimit = -Math.max(negative_limit_auto, negative_limit_manual);
+
+  if (balance > maxLimit) return false;
+  else return true;
+}
