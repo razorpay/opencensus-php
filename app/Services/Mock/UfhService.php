@@ -81,7 +81,7 @@ class UfhService extends BaseUfhClient
         ];
     }
 
-    public function getSignedUrl(string $fileId, array $params = [])
+    public function getSignedUrl(string $fileId, array $params = [], $merchantId = null)
     {
         return [
             'id'            => 'file_DczOEmU9U0FFsb',
