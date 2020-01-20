@@ -6,10 +6,10 @@ use App;
 use Response;
 use Exception;
 use ApiResponse;
-use RZP\Models\Feature\Constants;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -418,17 +418,17 @@ class Handler extends ExceptionHandler
 
         $orderId = null;
 
-        if(isset($data['payment_id']) === true)
+        if (isset($data['payment_id']) === true)
         {
             $paymentId = $data['payment_id'];
         }
 
-        if(isset($data['order_id']) === true)
+        if (isset($data['order_id']) === true)
         {
             $orderId = $data['order_id'];
         }
 
-        if($this->app['basicauth'] !== null and $this->app['basicauth']->getMerchant() !== null)
+        if (($this->app['basicauth'] !== null) and ($this->app['basicauth']->getMerchant() !== null))
         {
             $merchant = $this->app['basicauth']->getMerchant();
 

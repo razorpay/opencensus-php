@@ -2,11 +2,12 @@
 
 namespace RZP\Error;
 
+use App;
 use RZP\Exception;
 use Illuminate\Support;
-use RZP\Models\Feature\Constants;
 use RZP\Services\DowntimeMetric;
-use App;
+use RZP\Models\Feature\Constants;
+
 
 class Error extends Support\Fluent
 {
@@ -199,13 +200,13 @@ class Error extends Support\Fluent
     {
         $metadata = null;
 
-        if($isMetadataFeatureEnabled === true)
+        if ($isMetadataFeatureEnabled === true)
         {
-            if($paymentId !== null)
+            if ($paymentId !== null)
             {
                 $metadata['payment_id'] = $paymentId;
             }
-            if($orderId !== null)
+            if ($orderId !== null)
             {
                 $metadata['order_id'] = $orderId;
             }
@@ -361,13 +362,13 @@ class Error extends Support\Fluent
 
         $app = App::getFacadeRoot();
 
-        if($app['basicauth'] !== null and $app['basicauth']->getMerchant() !== null)
+        if (($app['basicauth'] !== null) and ($app['basicauth']->getMerchant() !== null))
         {
-            $merchant = $this->app['basicauth']->getMerchant();
+            $merchant = $app['basicauth']->getMerchant();
 
             $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
 
-            if($isMetadataFeatureEnabled === true)
+            if ($isMetadataFeatureEnabled === true)
             {
                 $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
             }
