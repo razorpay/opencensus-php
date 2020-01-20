@@ -42,6 +42,8 @@ class PayoutTest extends TestCase
     use WebhookTrait;
     use MocksDnsTrait;
 
+    private $checkerRoleUser;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
@@ -63,6 +65,11 @@ class PayoutTest extends TestCase
             ]);
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        // Create Checker Role User
+        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
+        $this->checkerRoleUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
+        $this->checkerRoleUser->roles()->attach($checkerRole);
     }
 
     public function liveSetUp()
@@ -2055,7 +2062,7 @@ class PayoutTest extends TestCase
     {
         $this->createPayoutWithWorkflowHavingPayoutRules();
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', '20000000000000');
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $this->startTest();
     }
