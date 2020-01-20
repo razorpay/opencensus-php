@@ -22,10 +22,6 @@ class Base extends FundAccountPayout\Base
     {
         try
         {
-            $this->setChannel($payout);
-
-            $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
-
             $this->createTransaction($payout);
 
             //
@@ -190,39 +186,5 @@ class Base extends FundAccountPayout\Base
             [
                 Admin\ConfigKey::LOW_BALANCE_RX_EMAIL => $lowBalanceEmailMerchantsConfig
             ]);
-    }
-
-    /**
-     * This function makes sure that we don't queue something that will fail when picked up for processing.
-     * Ideally, this logic should stay with FTS, but in that case merchants get a bad experience.
-     * TODO: Need to keep this check at FTS level itself
-     *
-     * @param $payout
-     * @param $ftaAccount
-     * @throws BadRequestException
-     */
-    protected function validateModeForChannelAndFundAccount($payout, $ftaAccount)
-    {
-        $destinationType = $ftaAccount->getEntity();
-
-        $channel = $payout->getChannel();
-
-        $mode = $payout->getMode();
-
-        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
-
-        if ($valid === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
-                null,
-                [
-                    'channel'           => $channel,
-                    'mode'              => $mode,
-                    'destination_type'  => $destinationType
-                ],
-                $mode . ' is not supported'
-            );
-        }
     }
 }
