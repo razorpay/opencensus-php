@@ -8,7 +8,6 @@ use Illuminate\Support;
 use RZP\Services\DowntimeMetric;
 use RZP\Models\Feature\Constants;
 
-
 class Error extends Support\Fluent
 {
      /** Error codes in which data needs to persist in response
