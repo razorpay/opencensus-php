@@ -362,11 +362,6 @@ class Core extends Base\Core
 
         $extractedMerchant = $extractedPaperMandateData[Entity::MERCHANT];
 
-        if (strtoupper($merchant->getName()) !== $extractedMerchant[Merchant\Entity::NAME])
-        {
-            $notMatching[] = Entity::MERCHANT . '.' . BankAccount\Entity::NAME;
-        }
-
         $extractedData[] = [
             self::KEY             => Entity::MERCHANT . '.' . BankAccount\Entity::NAME,
             self::EXPECTED_VALUE  => strtoupper($merchant->getName()),
@@ -383,19 +378,6 @@ class Core extends Base\Core
         $customer = $paperMandate->customer;
 
         $extractedCustomer = $extractedPaperMandateData[Entity::CUSTOMER];
-
-        if (($extractedCustomer[Entity::TERTIARY_SIGNATURE_PRESENT] === true) and
-            ($extractedCustomer[Entity::SECONDARY_SIGNATURE_PRESENT] === false))
-        {
-            throw new BadRequestValidationFailureException(
-                'tertiary signature can\'t be present without secondary signature',
-                Entity::SECONDARY_SIGNATURE_PRESENT,
-                [
-                    'paper_mandate'  => $paperMandate->toArrayPublic(),
-                    'extracted_data' => $extractedPaperMandateData,
-                ]
-            );
-        }
 
         if ($extractedCustomer[Entity::SIGNATURE_PRESENT] === false)
         {
