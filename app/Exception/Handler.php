@@ -6,7 +6,6 @@ use App;
 use Response;
 use Exception;
 use ApiResponse;
-use RZP\Models\Feature\Repository;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -424,25 +423,8 @@ class Handler extends ExceptionHandler
 
             $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
         }
-        else
-        {
-            if (isset($data['merchant_id']) === true)
-            {
-                $repo = new Repository();
 
-                $feature = $repo->findByEntityTypeEntityIdAndName(Constants::MERCHANT,
-                    $data['merchant_id'],
-                    Constants::ERROR_METADATA_RESPONSE);
-
-                if (empty($feature) === false)
-                {
-                    $isMetadataFeatureEnabled = true;
-                }
-                    $error->setMerchantId($data['merchant_id']);
-            }
-        }
-
-            $metadata = null;
+        $metadata = null;
 
         if ($isMetadataFeatureEnabled === true)
         {

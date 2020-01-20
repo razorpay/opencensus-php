@@ -252,8 +252,6 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testEnrollResponseWithOnlyErrorText()
     {
-        $this->fixtures->merchant->addFeatures(['error_metadata_response']);
-
         $this->mockServerContentFunction(function (& $content, $action)
         {
             if ($action === 'enroll')
