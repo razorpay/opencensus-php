@@ -500,13 +500,17 @@ class Core extends Base\Core
         $payout = $this->repo->transaction(
             function() use ($payout, $workflowAction, $approve, $action, $input)
             {
-                $userComment = $input[Workflow\Action\Checker\Entity::USER_COMMENT] ?? '';
+                $userComment = $input[Workflow\Action\Checker\Entity::USER_COMMENT] ?? null;
 
                 $actionCheckerCreateParams = [
                     Workflow\Action\Checker\Entity::ACTION_ID    => $workflowAction->getId(),
                     Workflow\Action\Checker\Entity::APPROVED     => ($approve === true) ? 1 : 0, // 1 = true
-                    Workflow\Action\Checker\Entity::USER_COMMENT => $userComment,
                 ];
+
+                if ($userComment !== null)
+                {
+                    $actionCheckerCreateParams[Workflow\Action\Checker\Entity::USER_COMMENT] = $userComment;
+                }
 
                 $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
 
