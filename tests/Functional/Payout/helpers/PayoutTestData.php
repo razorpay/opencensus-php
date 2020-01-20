@@ -2608,4 +2608,57 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testCreatingPendingPayoutsForRblWithUnsupportedModeChannelDestinationTypeCombo' => [
+        'request' => [
+            'url'     => '/payouts',
+            'method'  => 'POST',
+            'content' => [
+                'fund_account_id' => 'fa_D6XkDQaM3whg5v',
+                'amount'          => '100',
+                'mode'            => 'UPI',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'refund',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'RBL does not support UPI payouts to VPA',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+        ],
+    ],
+    'testCreatingPendingPayoutsForRblWithSupportedModeChannelDestinationTypeCombo' => [
+        'request' => [
+            'url'     => '/payouts',
+            'method'  => 'POST',
+            'content' => [
+                'fund_account_id' => 'fa_100000000000fa',
+                'amount'          => '1000000',
+                'mode'            => 'IMPS',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'refund',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'fund_account_id' => 'fa_100000000000fa',
+                'amount'          => 1000000,
+                'currency'        => 'INR',
+                'status'          => 'pending',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+            ],
+        ],
+    ],
 ];

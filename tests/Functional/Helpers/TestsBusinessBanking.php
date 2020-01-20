@@ -201,6 +201,20 @@ trait TestsBusinessBanking
             ]);
     }
 
+    protected function createVpaFundAccount(array $attributes = [])
+    {
+        $this->contact === null ? $this->createContact() : $this->contact ;
+
+        $defaultAttributes = [
+            'source_id'   => $this->contact->getId(),
+            'source_type' => 'contact',
+        ];
+
+        $attributes = array_merge($defaultAttributes, $attributes);
+
+        return $this->fixtures->fund_account->createVpa($attributes);
+    }
+
     protected function createFAVBankingPricingPlan()
     {
         $pricingPlan = [
@@ -234,5 +248,18 @@ trait TestsBusinessBanking
 
         $this->app->razorx->method('getCachedTreatment')
                           ->willReturn('off');
+    }
+
+    protected function createWorkflowFeature(array $attributes = [])
+    {
+        $defaultAttributes = [
+            'name'        => 'payout_workflows',
+            'entity_id'   => '10000000000000',
+            'entity_type' => 'merchant',
+        ];
+
+        $attributes = array_merge($defaultAttributes, $attributes);
+
+        return $this->fixtures->create('feature', $attributes);
     }
 }

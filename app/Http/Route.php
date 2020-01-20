@@ -400,6 +400,8 @@ final class Route
         'transaction_create_fees_breakup'          => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
         'transaction_bulk_update'                  => ['put',      'transactions/bulk',                              'TransactionController@updateMultipleTransactions'                  ],
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
+        'toggle_transaction_hold'                  => ['patch',    'transactions/hold',                              'TransactionController@toggleTransactionHold'                       ],
+        'toggle_transaction_release'               => ['patch',    'transactions/release',                           'TransactionController@toggleTransactionRelease'                    ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
@@ -2705,6 +2707,8 @@ final class Route
         'scrooge_set_merchant_mode_config',
         'scrooge_expire_merchant_mode_config',
         'scrooge_fetch_merchant_mode_configs',
+        'toggle_transaction_hold',
+        'toggle_transaction_release',
 
         'commissions_capture',
         'commissions_capture_by_partner',
@@ -3320,7 +3324,8 @@ final class Route
         'update_sr_level_global_config'             => '*',
         //'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
         'get_all_sr_level_global_config'            => '*',
-
+        'toggle_transaction_hold'                   => Permission::EDIT_MERCHANT_RISK_THRESHOLD,
+        'toggle_transaction_release'                => Permission::EDIT_MERCHANT_RISK_THRESHOLD,
         'register_offline_device'                   => '*',
     ];
 
