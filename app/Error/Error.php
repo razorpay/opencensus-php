@@ -357,10 +357,6 @@ class Error extends Support\Fluent
             {
                 $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
             }
-
-            s($merchant);
-            s($isMetadataFeatureEnabled);
-            s($error);
         }
 
         $error = $this->checkAndAddDataToErrorResp($error);
