@@ -18,28 +18,11 @@ class Service extends Base\Service
 
         Permission\Entity::verifyIdAndStripSignMultiple($input[Entity::PERMISSIONS]);
 
-        $orgId = $input[Entity::ORG_ID];
+        $this->validateIfPayoutWorkflow($input);
 
-        $permissions = $input[Entity::PERMISSIONS];
+        $merchant = $this->auth->getMerchant();
 
-        // Ensure that merchant id is also passed if create_payout permission is attached, otherwise not required
-        $createPayoutPerm = $this->repo
-                                 ->permission
-                                 ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, $orgId)
-                                 ->first();
-
-        $hasCreatePayoutPermission =  (in_array($createPayoutPerm, $permissions, true) === true);
-
-        if ($hasCreatePayoutPermission === true)
-        {
-            if (isset($input[Entity::MERCHANT_ID]) === false or empty($input[Entity::MERCHANT_ID]) === true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED);
-            }
-        }
-
-        $workflow = $this->core()->create($input);
+        $workflow = $this->core()->create($input, $merchant);
 
         return $this->convertDataToDashboardFormat(
             $workflow->toArrayPublic());
@@ -157,5 +140,29 @@ class Service extends Base\Service
         $data[Entity::LEVELS] = $levelData;
 
         return $data;
+    }
+
+    public function validateIfPayoutWorkflow($input)
+    {
+        $orgId = $input[Entity::ORG_ID];
+
+        $permissions = $input[Entity::PERMISSIONS];
+
+        // Ensure that merchant id is also passed if create_payout permission is attached, otherwise not required
+        $createPayoutPerm = $this->repo
+                                 ->permission
+                                 ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, $orgId)
+                                 ->first();
+
+        $hasCreatePayoutPermission =  (in_array($createPayoutPerm, $permissions, true) === true);
+
+        if ($hasCreatePayoutPermission === true)
+        {
+            if (empty($merchant) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED);
+            }
+        }
     }
 }

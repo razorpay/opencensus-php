@@ -21,10 +21,9 @@ class Repository extends Base\Repository
      * Gets payout amount rules for a single merchant
      *
      * @param string $merchantId
-     * @param array $relations
-     * @return array
+     * @return PublicCollection
      */
-    public function fetchWorkflowRulesForMerchant(string $merchantId, array $relations = [])
+    public function fetchWorkflowRulesForMerchant(string $merchantId)
     {
         return $this->newQuery()
                     ->merchantId($merchantId)
@@ -37,7 +36,7 @@ class Repository extends Base\Repository
      *
      * @param string $orgId
      * @param array $params
-     * @return Collection
+     * @return PublicCollection
      */
     public function getMerchantIdsForCreatePayoutWorkflowPermission(string $orgId, array $params)
     {

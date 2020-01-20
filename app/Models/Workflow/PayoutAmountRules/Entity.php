@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\PayoutAmountRules;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Workflow;
+use RZP\Models\Merchant;
 use RZP\Models\Workflow\Base;
 
 /**
@@ -88,6 +89,11 @@ class Entity extends Base\Entity
     public function workflow()
     {
         return $this->belongsTo(Workflow\Entity::class);
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
     }
 
     public function getCondition()
