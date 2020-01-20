@@ -5,8 +5,6 @@ namespace RZP\Tests\Functional;
 use Closure;
 use Requests;
 use RZP\Exception;
-use RZP\Exception\Handler;
-use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\Helpers\EntityFetchTrait;
 
 trait RequestResponseFlowTrait
