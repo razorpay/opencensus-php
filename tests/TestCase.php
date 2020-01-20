@@ -188,4 +188,14 @@ class TestCase extends IlluminateTestCase
     {
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED => 0]);
     }
+
+    public function enableNbPlusConfig()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED => 1]);
+    }
+
+    public function disableNbPlusConfig()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED => 0]);
+    }
 }

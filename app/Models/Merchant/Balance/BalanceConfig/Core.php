@@ -26,7 +26,10 @@ class Core extends Base\Core
 
     const NEGATIVE_BALANCE_FEATURE_DISPLAY_NAME     = 'Negative Balance Feature';
 
-    const NEGATIVE_BALANCE_DOCUMENTATION             = '';
+    const NEGATIVE_BALANCE_DOCUMENTATION             = [
+        'e-mandate'     => 'https://razorpay.com/docs/payment-gateway/balances/negative-balance-emandate/',
+        'refund_route'  => 'https://razorpay.com/docs/payment-gateway/balances/negative-balance-route/'
+    ];
 
     /**
      * Add BalanceConfig Entity for given Merchant $merchant
@@ -149,6 +152,10 @@ class Core extends Base\Core
      */
     private function edit($input, Entity $balanceConfig)
     {
+        $oldAutoLimit = $balanceConfig->getMaxNegativeLimitAuto();
+
+        $oldManualLimit = $balanceConfig->getMaxNegativeLimitManual();
+
         if (array_key_exists(Entity::NEGATIVE_TRANSACTION_FLOWS, $input) === true)
         {
             $flows = $input[Entity::NEGATIVE_TRANSACTION_FLOWS];
@@ -164,6 +171,18 @@ class Core extends Base\Core
         $balanceConfig->edit($input);
 
         $this->repo->saveOrFail($balanceConfig);
+
+        // send Negative Balance Feature Enabled mail, if previously balance config existed 
+        // but auto and manual limit in balance config were both zero and now they have been set to non-zero value.
+        if (($oldAutoLimit === 0) and
+            ($oldManualLimit === 0))
+        {
+            $balance = $this->repo->balance->find($balanceConfig->getBalanceId());
+
+            $merchant = $this->repo->merchant->find($balance->getMerchantId());
+
+            $this->sendNegativeBalanceFeatureEnabledMail($merchant, $balanceConfig);
+        }
 
         return $balanceConfig;
     }
@@ -210,10 +229,18 @@ class Core extends Base\Core
             return;
         }
 
-        $data['feature']       = self::NEGATIVE_BALANCE_FEATURE_DISPLAY_NAME;
-        $data['contact_name']  = $merchant->getName();
-        $data['contact_email'] = $merchant->getEmail();
-        $data['documentation'] = self::NEGATIVE_BALANCE_DOCUMENTATION;
+        //If transaction flows does not contain 'refund' then show E-Mandate Negative Balance documentation.
+        $flowDoc = array_key_exists('refund', $balanceConfig->getNegativeTransactionFlows()) === true ?
+                    self::NEGATIVE_BALANCE_DOCUMENTATION['refund_route'] :
+                    self::NEGATIVE_BALANCE_DOCUMENTATION['e-mandate'];
+
+        $data['feature']                             = self::NEGATIVE_BALANCE_FEATURE_DISPLAY_NAME;
+        $data['contact_name']                        = $merchant->getName();
+        $data['contact_email']                       = $merchant->getEmail();
+        $data['documentation']                       = $flowDoc;
+        $data[self::NEGATIVE_LIMIT_MANUAL]           = $balanceConfig->getMaxNegativeLimitManual();
+        $data[self::NEGATIVE_LIMIT_AUTO]             = $balanceConfig->getMaxNegativeLimitAuto();
+        $data[self::NEGATIVE_TRANSACTION_FLOWS]      = $balanceConfig->getNegativeTransactionFlows();
 
         $featureUpdateEmail = new FeatureEnabled($data);
 
@@ -225,6 +252,7 @@ class Core extends Base\Core
                 PublicEntity::MERCHANT_ID           => $merchant->getId(),
                 'mode'                              => $this->mode,
                 Feature\Entity::NEW_FEATURE         => self::NEGATIVE_BALANCE_FEATURE_DISPLAY_NAME,
+                PublicEntity::ID                    => $balanceConfig->getId(),
             ]);
     }
 }

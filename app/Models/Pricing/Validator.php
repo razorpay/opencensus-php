@@ -33,10 +33,10 @@ class Validator extends Base\Validator
         Entity::PROCURER                => 'sometimes|nullable|in:razorpay,merchant',
         Entity::PLAN_NAME               => 'sometimes',
         Entity::PAYMENT_METHOD          => 'required|string',
-        Entity::PAYMENT_METHOD_TYPE     => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
+        Entity::PAYMENT_METHOD_TYPE     => 'sometimes_if:payment_method,card,emandate,fund_transfer,nach|nullable',
         Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
-        Entity::PAYMENT_ISSUER          => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi,paylater|nullable|alpha|max:10',
+        Entity::PAYMENT_ISSUER          => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi,paylater,nach|nullable|alpha|max:10',
         Entity::EMI_DURATION            => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
         Entity::AUTH_TYPE               => 'sometimes_if:payment_method_type,debit|nullable|in:pin',
         Entity::INTERNATIONAL           => 'sometimes|in:0,1',
@@ -67,7 +67,7 @@ class Validator extends Base\Validator
         'addPlanRuleCard',
         'addPlanRuleNB',
         'addPlanRuleFundAccountValidation',
-        'addPlanRuleEmandate',
+        'addPlanRuleEmandateOrNach',
         'addPlanRulePaymentNetwork',
         'addPlanRuleInternational',
         'addPlanRuleAmountRange',
@@ -162,20 +162,23 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAddPlanRuleEmandate($input)
+    protected function validateAddPlanRuleEmandateOrNach($input)
     {
         if ((isset($input[Entity::PAYMENT_METHOD]) === true) and
-            ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE))
+            (
+                ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE) or
+                ($input[Entity::PAYMENT_METHOD] === Payment\Method::NACH)
+            ))
         {
             if (empty($input[Entity::PERCENT_RATE]) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Percentage rate pricing is not allowed for E-mandate');
+                    'Percentage rate pricing is not allowed for ' . $input[Entity::PAYMENT_METHOD]);
             }
 
             if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
             {
-                Payment\AuthType::validateAuthType($input[Entity::PAYMENT_METHOD_TYPE], Payment\Method::EMANDATE);
+                Payment\AuthType::validateAuthType($input[Entity::PAYMENT_METHOD_TYPE], $input[Entity::PAYMENT_METHOD]);
             }
 
             if (isset($input[Entity::PAYMENT_ISSUER]) === true)

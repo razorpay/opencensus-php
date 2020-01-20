@@ -31,7 +31,7 @@
             <tr>
               <td class="center">
                 <h1><center>
-                  <span style="color:#222">Razorpay | Your balance in account no. {{$account_number}} is negative with balance {{$balance}}.</span>
+                  <span style="color:#222">Razorpay | Your balance is negative with balance {{$balance}}.</span>
                 </center></h1>
               </td>
               <td class="expander"></td>
@@ -57,7 +57,6 @@
                         Dear Merchant,
 
                         Your account balance is negative. Kindly load funds to avoid any interruptions in service <br/>
-                        Account no :      {{$account_number}} <br/>
                         Account balance : {{$balance}}        <br/>
                         Balance Source:   {{$balance_source}} <br/>
                         <br/>

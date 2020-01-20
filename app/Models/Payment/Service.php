@@ -287,6 +287,8 @@ class Service extends Base\Service
 
             $response = $this->getResponseDataFromCache($payment);
 
+            (new Payment\Analytics\Service())->updatePaymentAnalyticsData($payment);
+
             if ($response !== null)
             {
                 return $response;
@@ -300,8 +302,6 @@ class Service extends Base\Service
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, $traceData);
 
             $this->cacheResponseData($payment, $response);
-
-            (new Payment\Analytics\Service())->updatePaymentAnalyticsData($payment);
 
             return $response;
         }

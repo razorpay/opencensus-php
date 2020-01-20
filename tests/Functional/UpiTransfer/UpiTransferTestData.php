@@ -29,7 +29,7 @@ return [
     ],
 
     'testProcessUpiTransferUnexpectedPayment' => [
-        'url'     => '/live/upi/callback/hdfc/upi_mindgate',
+        'url'     => '/test/upi/callback/hdfc/upi_mindgate',
         'method'  => 'post',
         'content' => [
             'pgMerchantId' => 'HDFCVPATEST',

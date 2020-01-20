@@ -72,13 +72,21 @@ class Validator extends Base\Validator
             $reserveType = ($input[Entity::TYPE] === Balance\Type::RESERVE_PRIMARY) or
                             ($input[Entity::TYPE] === Balance\Type::RESERVE_BANKING);
 
-            $reserveAmountInvalid = $input[Entity::AMOUNT] < self::MIN_RESERVE_BALANCE;
-
-            if (($reserveType === true) and
-                ($reserveAmountInvalid === true))
+            if ($reserveType === true)
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Reserve Balance Amount should be greater than or equal to '.self::MIN_RESERVE_BALANCE);
+                if (isset($input[Entity::AMOUNT]) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Amount should be passed for reserve balance.');
+                }
+
+                $reserveAmountInvalid = $input[Entity::AMOUNT] < self::MIN_RESERVE_BALANCE;
+
+                if ($reserveAmountInvalid === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Reserve Balance Amount should be greater than or equal to '.self::MIN_RESERVE_BALANCE);
+                }
             }
         }
     }

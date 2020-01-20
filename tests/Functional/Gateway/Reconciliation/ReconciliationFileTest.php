@@ -2127,7 +2127,7 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $this->overrideWorldlineBqrPayment($gatewayPayment);
 
-        $file = $this->writeToExcelFile($entries, 'vas_axis');
+        $file = $this->writeToExcelFile($entries, 'vas_axis', 'files/settlement', 'Settle Detail');
 
         // VasAxis is the recon gateway for this
         $this->runForFiles([$file], 'VasAxis');

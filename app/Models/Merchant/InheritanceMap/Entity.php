@@ -32,8 +32,6 @@ class Entity extends Base\PublicEntity
         self::PARENT_MERCHANT_ID,
     ];
 
-    protected $generateIdOnCreate = true;
-
     public function getParentMerchantId()
     {
         return $this->getAttribute(self::PARENT_MERCHANT_ID);

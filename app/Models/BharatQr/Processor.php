@@ -272,4 +272,24 @@ class Processor extends VirtualAccount\Processor
     {
         return $this->virtualAccount->qrCode;
     }
+
+    protected function setMerchant()
+    {
+        parent::setMerchant();
+
+        try
+        {
+            // We need to set merchant and key in basic auth as for the
+            // response signature generation, in case of Offline QR payment
+            $this->app['basicauth']->setMerchant($this->merchant);
+
+            $key = $this->repo->key->getFirstActiveKeyForMerchant($this->merchant->getId());
+
+            $this->app['basicauth']->authCreds->setKeyEntity($key);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+        }
+    }
 }

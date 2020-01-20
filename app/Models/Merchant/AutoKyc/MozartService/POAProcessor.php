@@ -1,16 +1,15 @@
 <?php
 
-namespace RZP\Models\Merchant\Detail\Verifiers;
+namespace RZP\Models\Merchant\AutoKyc\MozartService;
 
 use Requests;
 use RZP\Http\RequestHeader;
+use RZP\Models\Merchant\AutoKyc\Response;
 use RZP\Models\Merchant\Detail\Constants;
 
-class PoaVerifier extends AbstractVerifier
+class POAProcessor extends BaseProcessor
 {
-    protected $mockStatus = Constants::AADHAR_FRONT;
-
-    public function verifyDetails()
+    public function process(): Response
     {
         $signedUrl = $this->input[Constants::SIGNED_URL];
 
@@ -25,12 +24,12 @@ class PoaVerifier extends AbstractVerifier
             'method'  => Requests::POST,
             'content' => $content,
             'headers' => [
-                RequestHeader::CONTENT_TYPE  => 'application/json',
+                RequestHeader::CONTENT_TYPE => 'application/json',
             ]
         ];
 
-        $response = $this->createAndSendRequest($request);
+        [$response, $responseMetaData] = $this->createAndSendRequest($request);
 
-        return new PoaVerifierResponse($response);
+        return new POAProcessorResponse($response, $responseMetaData);
     }
 }

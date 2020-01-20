@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payout;
 
 use Mail;
+use Queue;
 use Config;
 
 use Carbon\Carbon;
@@ -369,38 +370,12 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
-    public function testCreateMerchantPayoutOnDemand()
-    {
-        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
-
-        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'yesbank']);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-
-        $payout = $this->getLastEntity('payout',true);
-
-        $txn = $this->getLastEntity('transaction',true);
-
-        $this->assertEquals('payout', $txn['type']);
-
-        $this->assertEquals(398, $txn['amount']);
-
-        $this->assertEquals(602, $txn['fee']);
-
-        $this->assertEquals(1000, $txn['debit']);
-
-        return $payout;
-    }
-
     public function testCreatePayoutForAmountLessThanMinFee()
     {
         // Minimum fee is INR 5, attempts and asserts success when creating payout for INR 1.
         $this->ba->privateAuth();
         $this->startTest();
     }
-
 
     public function testCreatePayoutForVpaFundAccountWithUnsupportedMode()
     {
@@ -918,86 +893,6 @@ class PayoutTest extends TestCase
         return $newPayout;
     }
 
-    public function testRetryMerchantOnDemandPayout()
-    {
-        $payout = $this->testCreateMerchantPayoutOnDemand();
-
-        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->fixtures->edit(
-            'payout',
-            $payout['id'],
-            [
-                'status' => Payout\Status::REVERSED
-            ]);
-
-        $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
-
-        $this->fixtures->edit(
-            'nodal_beneficiary',
-            $nodalBeneficiary['id'],
-            [
-                'updated_at' => $nodalBeneficiary['updated_at'] - 70,
-            ]);
-
-        $this->fixtures->edit(
-            'fund_transfer_attempt',
-            $payoutAttempt['id'],
-            [
-                'status' => Attempt\Status::FAILED
-            ]);
-
-        // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true);
-
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-
-        $this->retryPayout($payout['id']);
-
-        $newPayout = $this->getLastEntity('payout', true);
-
-        $newPayoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->assertEquals(Payout\Status::PROCESSED, $newPayout['status']);
-        $this->assertEquals(Attempt\Status::PROCESSED, $newPayoutAttempt['status']);
-
-        // Verify attempt entity
-        $this->assertEquals($newPayout['attempts'], 1);
-        $this->assertEquals($newPayout['id'], $newPayoutAttempt['source']);
-        $this->assertEquals($newPayout['merchant_id'], $newPayoutAttempt['merchant_id']);
-        $this->assertNull($newPayout['fund_account_id']);
-        $this->assertNotNull($newPayout['batch_fund_transfer_id']);
-        $this->assertNotNull($newPayoutAttempt['batch_fund_transfer_id']);
-        $this->assertEquals($newPayout['batch_fund_transfer_id'], $newPayoutAttempt['batch_fund_transfer_id']);
-        $this->assertEquals($payout['amount'], $newPayout['amount']);
-
-        // ----- End of testing payout retry for failed payouts ------ //
-
-        return $newPayout;
-    }
-
-    public function testCreateMerchantPayout()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateMerchantPayoutWithModulo()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateMerchantPayoutWithMinAmount()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-
     public function testCreatePayoutFundsOnHold()
     {
         $this->ba->privateAuth();
@@ -1184,50 +1079,6 @@ class PayoutTest extends TestCase
         }
 
         Carbon::setTestNow();
-    }
-
-    public function testCreateMerchantPayoutOnDemandOnLowBalance()
-    {
-        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
-
-        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 100]);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateMerchantPayoutOnHoldFunds()
-    {
-        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
-
-        $this->fixtures->base->editEntity('merchant', '10000000000000', ['hold_funds' => true]);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    public function testCreateMerchantPayoutOnMinAmount()
-    {
-        $this->fixtures->create('pricing:payout_pricing_plan');
-
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYz']);
-
-        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    public function testOnDemandPayoutFetchFees()
-    {
-        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
     }
 
     public function testSearchPayoutByTransactionId()
@@ -1647,6 +1498,8 @@ class PayoutTest extends TestCase
 
     public function testRxPayoutForSlaExpiry(): array
     {
+        Queue::fake();
+
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
@@ -1889,46 +1742,143 @@ class PayoutTest extends TestCase
 //        return $payout;
 //    }
 
-    public function testCreateMerchantPayoutOnDemandWithFtsRampFailure()
+    public function testCreatePayoutWithWrongFundAccountId()
     {
-        $this->mockRazorxTreatment();
-
-        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
-
-        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis2']);
-
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
 
         $this->startTest();
-
-        $fta = $this->getLastEntity('fund_transfer_attempt',true);
-
-        $txn = $this->getLastEntity('transaction',true);
-
-        $this->assertEquals('payout', $txn['type']);
-
-        $this->assertEquals(398, $txn['amount']);
-
-        $this->assertEquals(602, $txn['fee']);
-
-        $this->assertEquals(1000, $txn['debit']);
-
-        $this->assertEquals(0, $fta['is_fts']);
     }
 
-    public function testCreateMerchantPayoutOnDemandWithFtsRampSuccess()
+    public function testCreatePayoutIMPSMoreThanMaxAmount()
     {
-        $this->mockRazorxTreatment();
+        $balance = $this->getDbLastEntity('balance');
 
-        $this->testCreatePayout();
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
 
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
 
-        $fta = $this->getLastEntity('fund_transfer_attempt',true);
+    public function testCreatePayoutRTGSLessThanMinAmount()
+    {
+        $this->ba->privateAuth();
 
-        $this->assertEquals(1, $fta['is_fts']);
+        $this->startTest();
+    }
+
+    public function testCreatePayoutUPIMoreThanMaxAmount()
+    {
+        $contactId = $this->getDbLastEntity('contact')->getId();
+
+        $this->fixtures->create('fund_account:vpa', [
+            'id'            => '100000000003fa',
+            'source_type'   => 'contact',
+            'source_id'     => $contactId,
+        ]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testSearchPayoutByMode()
+    {
+        $payout = $this->testCreatePayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts?mode=' . $payout['mode'] . '&account_number=2224440041626905';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function testSearchPayoutByReferenceId()
+    {
+        $payout = $this->testCreatePayout();
+
+        $this->fixtures->edit('payout', $payout['id'], ['reference_id' => 'WckD']);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts?account_number=2224440041626905&reference_id=WckD';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $responsePayout = $response['items'][0];
+
+        $this->assertEquals($payout['id'], $responsePayout['id']);
+        $this->assertEquals($payout['mode'], $responsePayout['mode']);
+        $this->assertEquals($payout['fees'], $responsePayout['fees']);
+    }
+
+    public function testCreatePayoutInvalidCurrency()
+    {
+        $this->startTest();
+    }
+
+    public function testGetAllPayoutPurposes()
+    {
+        $this->startTest();
+    }
+
+    public function testAddCustomPayoutPurpose()
+    {
+        $this->startTest();
+    }
+
+    public function testAddCustomPayoutPurposeWithWrongPurposeType()
+    {
+        $this->startTest();
+    }
+
+    public function testAddCustomPayoutPurposeThatAlreadyExists()
+    {
+        $this->testAddCustomPayoutPurpose();
+
+        $this->startTest();
+    }
+
+    public function testAdd101CustomPayoutPurposes()
+    {
+        for ($count = 0; $count<100; $count++)
+        {
+            $this->addCustomPayoutPurpose('Give Bonus To Mehul '. $count, 'settlement');
+        }
+
+        $this->startTest();
+    }
+
+    protected function addCustomPayoutPurpose($purpose, $purposeType)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'        => $purpose,
+                'purpose_type'   => $purposeType,
+            ]
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->sendRequest($request);
     }
 
     public function testFiringOfWebhookOnUpdationOfUtr()
