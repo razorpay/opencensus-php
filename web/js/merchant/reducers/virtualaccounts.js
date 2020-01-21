@@ -17,7 +17,7 @@ const VIRTUAL_ACCOUNT_PAYMENTS_FETCH = 'VIRTUAL_ACCOUNT_PAYMENTS_FETCH';
 
 export const fetchVirtualAccounts = params => {
   if (!params.notes) {
-    // params.receiver_type = 'bank_account'; // TODO: To add receiver_type as 'bank_account' and 'vpa' once api supports.
+    params.receiver_type = 'bank_account,vpa';
   }
   return fetchAll(params, VirtualAccount, 'VIRTUAL_ACCOUNTS');
 };
