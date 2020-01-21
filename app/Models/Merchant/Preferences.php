@@ -124,6 +124,8 @@ class Preferences
     const MID_INST_ENG_AND_TECH_LKO = 'D88kPwDCDxbBu3';
     const MID_RBL_AGRI_LOAN         = 'DX4AnDB4Z9kzg0';
     const MID_RBL_INTERIM_PROCESS2  = 'DqPTv7SI18A7y8';
+    const MID_LENDING_KART          = 'DfLPWHXDWcfB2Y';
+    const MID_BFL                   = 'ChcYXdL7jtknMN';
 
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';

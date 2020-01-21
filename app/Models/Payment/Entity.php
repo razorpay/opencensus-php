@@ -33,6 +33,7 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\UpiTransfer;
 use RZP\Models\BankTransfer;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Payment\Processor\Wallet;
@@ -214,12 +215,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const API                               = 0;
     const CORE_PAYMENT_SERVICE              = 1;
     const CARD_PAYMENT_SERVICE              = 2;
+    const NB_PLUS_SERVICE                   = 3;
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
     const HOSTED_TIME_FORMAT                = 'j M Y';
 
     const UPI_PROVIDER                      = 'upi_provider';
+
+    // To identify GPay Card Payments
+    protected $application                  = null;
+
+    const ACCOUNT_ID                        = 'account_id';
 
     protected static $sign      = 'pay';
 
@@ -387,6 +394,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
+        self::ACCOUNT_ID,
     ];
 
     /**
@@ -451,6 +459,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
+        self::ACCOUNT_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -899,6 +908,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setInternational()
     {
+        if ($this->isGooglePayCard() === true)
+        {
+            return;
+        }
+
         $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
 
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
@@ -912,6 +926,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setBaseAmount(int $amount)
     {
         $this->setAttribute(self::BASE_AMOUNT, $amount);
+    }
+
+    public function setVpa(string $vpa)
+    {
+        $this->setAttribute(self::VPA, $vpa);
     }
 
     public function setAmountAuthorized()
@@ -1186,6 +1205,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
+    public function setApplication(string $applicationName)
+    {
+        $this->application = $applicationName;
+    }
+
     public function setAuthType($authType)
     {
         $this->setAttribute(self::AUTH_TYPE, $authType);
@@ -1264,6 +1288,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function enableCardPaymentService()
     {
         $this->setAttribute(self::CPS_ROUTE, 2);
+    }
+
+    public function enableNbPlusService()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 3);
     }
 
     public function setMethod(string $method)
@@ -1817,12 +1846,23 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::CARD_PAYMENT_SERVICE);
     }
 
+    public function isRoutedThroughNbPlus()
+    {
+        return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::NB_PLUS_SERVICE);
+    }
+
     public function isPushPaymentMethod()
     {
         return ($this->isBankTransfer() === true) or
                ($this->isBharatQr() === true) or
                ($this->isUpiTransfer() === true) or
                ($this->isUpi() === true);
+    }
+
+    public function isGooglePayCard()
+    {
+        return (($this->isCard()) and
+                ($this->application === 'google_pay'));
     }
 
     public function isBharatQr()
@@ -2246,6 +2286,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
+    }
+
+    public function getApplication()
+    {
+        return $this->application;
     }
 
     public function getTwoFactorAuth()
@@ -2756,6 +2801,31 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             unset($array[self::GATEWAY_PROVIDER]);
         }
+    }
+
+    public function setPublicAccountIdAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        /*
+         *  Set accounttId attribute if
+         * 1) we are in non privileged auth and payment merchant id is different from auth merchant id
+         */
+
+        if ($auth->isPrivilegeAuth() === true)
+        {
+            return;
+        }
+
+        if (($auth->getMerchant() === null) or
+            ($auth->getMerchant()->getId() === $this->getMerchantId()))
+        {
+            return;
+        }
+
+        $array[self::ACCOUNT_ID] = Account\Entity::getSignedId($array[self::MERCHANT_ID]);
     }
 
     public function associateTerminal($terminal)
@@ -3332,7 +3402,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function shouldRunFraudChecks()
     {
-        if ($this->isCard() === false)
+        if (($this->isCard() === false) or ($this->isGooglePayCard() === true))
         {
             return false;
         }
@@ -3484,6 +3554,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getPaymentResponseCacheKey(): string
     {
         return 'payment:response' . $this->getId() . '.cache';
+    }
+
+    public static function getTrackIdRequestKey(string $trackId): string
+    {
+        return 'track_id:request:'. $trackId . '.cache';
+    }
+
+    public static function getTrackIdResponseKey(string $trackId): string
+    {
+        return 'track_id:response:'. $trackId . '.cache';
     }
 
     public function getTransactionType()

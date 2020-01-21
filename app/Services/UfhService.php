@@ -196,9 +196,9 @@ class UfhService
         }
     }
 
-    public function getSignedUrl(string $fileId, array $params = [])
+    public function getSignedUrl(string $fileId, array $params = [], $merchantId = null)
     {
-        return $this->ufhClient->getSignedUrl($fileId, $params);
+        return $this->ufhClient->getSignedUrl($fileId, $params, $merchantId);
     }
 
     protected function validateResponse(array $res = null)

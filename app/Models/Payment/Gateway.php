@@ -219,6 +219,7 @@ class Gateway
 
     const MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS = [
         self::WORLDLINE,
+        self::HDFC,
     ];
 
     // TODO: Add gateway and gateway_acquirer map to fix
@@ -670,6 +671,7 @@ class Gateway
         Payment\Gateway::UPI_SBI,
         Payment\Gateway::NETBANKING_HDFC,
         Payment\Gateway::PAYSECURE,
+        Payment\Gateway::NETBANKING_KOTAK,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -695,6 +697,7 @@ class Gateway
         Payment\Gateway::NETBANKING_IBK         => 1576578600,
         Payment\Gateway::UPI_SBI                => 1576578600,
         Payment\Gateway::NETBANKING_HDFC        => 1577097000,
+        Payment\Gateway::NETBANKING_KOTAK       => 1578479400,
     ];
 
     public static $channels = [
@@ -1463,6 +1466,9 @@ class Gateway
         Gateway::WALLET_PHONEPE,
         Gateway::UPI_CITI,
         Gateway::UPI_JUSPAY,
+        // Cybersource does not make s2s callback, Google Pay makes s2s callback for payments
+        // that went through tokenization gateways.
+        Gateway::CYBERSOURCE,
     ];
 
     /**
@@ -1613,6 +1619,9 @@ class Gateway
         IFSC::CBIN => Gateway::NETBANKING_CBI,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        IFSC::CIUB => Gateway::NETBANKING_CUB,
+        IFSC::SIBL => Gateway::NETBANKING_SIB,
+        IFSC::YESB => Gateway::NETBANKING_YESB,
     ];
 
 
@@ -1626,6 +1635,13 @@ class Gateway
         Gateway::EBS,
         Gateway::PAYTM,
         Gateway::ATOM
+    ];
+
+    /**
+     * List of gateways which support tokenization.
+     */
+    public static $tokenizationGateways = [
+        Gateway::CYBERSOURCE,
     ];
 
     public static $emiBanks = [
@@ -1668,15 +1684,11 @@ class Gateway
     public static $gatewayAcquirerIfscMapping = [
         Gateway::CARD_FSS => [
             self::ACQUIRER_FSS => [
-                IFSC::UTIB,
                 IFSC::IOBA,
                 IFSC::ANDB,
                 IFSC::SYNB,
                 IFSC::SURY,
-                IFSC::UCBA,
-                IFSC::ICIC,
                 IFSC::CBIN,
-                IFSC::IDFB,
             ]
         ],
 
@@ -2351,6 +2363,15 @@ class Gateway
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
             self::PAYSECURE,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
+    public static function isNbPlusServiceGateway($gateway)
+    {
+        $gateways = [
+            self::ATOM
         ];
 
         return (in_array($gateway, $gateways, true));

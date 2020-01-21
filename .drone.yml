@@ -245,6 +245,49 @@ steps:
           - tag
           - pull_request
 
+  - name: feature_6_test_suite
+    pull: always
+    image: razorpay/onggi:php-7.2
+    depends_on:
+      - prepare_test
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Feature-6 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_feature_6
+      DB_AUTH_HOST: mysql4
+      DB_LIVE_DATABASE: api_live_feature_6
+      DB_LIVE_HOST: mysql4
+      DB_TEST_DATABASE: api_test_feature_6
+      DB_TEST_HOST: mysql4
+      DB_UPI_PAYMENTS_MOCKED: false
+      DB_UPI_PAYMENTS_LIVE_HOST: mysql4
+      DB_UPI_PAYMENTS_TEST_HOST: mysql4
+      SLAVE_DB_UPI_PAYMENTS_LIVE_HOST: mysql4
+      SLAVE_DB_UPI_PAYMENTS_TEST_HOST: mysql4
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_ENTITY_INDEX_PREFIX: testing_feature_6_
+      ES_ENTITY_TYPE_PREFIX: testing_feature_6_
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis5
+      REDIS_LABS_HOST: redis5
+      RZP_API:
+        from_secret: rzp_api
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
   - name: gateway_3_test_suite
     pull: always
     image: razorpay/onggi:php-7.2
@@ -397,7 +440,7 @@ steps:
           - tag
           - pull_request
 
-  - name: build-apache
+  - name: build-app
     pull: default
     image: plugins/docker
     settings:
@@ -417,6 +460,30 @@ steps:
         from_secret: git_token
       GIT_USERNAME:
         from_secret: git_username
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+      status:
+        - success
+
+  - name: build-checkout
+    pull: default
+    image: plugins/docker
+    settings:
+      build_args:
+        - "GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}"
+      repo: razorpay/api
+      tags: "checkout-${DRONE_COMMIT_SHA}"
+      dockerfile: Dockerfile.checkout
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
     when:
       event:
         include:
@@ -496,7 +563,8 @@ steps:
       SLACK_WEBHOOK:
         from_secret: slack_webhook
     depends_on:
-      - build-apache
+      - build-app
+      - build-checkout
       - build-openresty
     when:
       branch:
@@ -543,6 +611,22 @@ services:
       - /var/lib/mysql
     environment:
       MYSQL_DATABASE: api
+      MYSQL_ROOT_PASSWORD: root
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: mysql4
+    pull: default
+    image: mysql:5.7
+    tmpfs:
+      - /var/lib/mysql
+    environment:
+      MYSQL_DATABASE: payments_upi
       MYSQL_ROOT_PASSWORD: root
     when:
       event:

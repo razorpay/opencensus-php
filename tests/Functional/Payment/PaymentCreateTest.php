@@ -19,6 +19,7 @@ use RZP\Models\Payment\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Mail\Payment\Refunded as RefundedMail;
@@ -222,6 +223,82 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
+    public function testCreateGooglePayCardPayment()
+    {
+        $order = $this->fixtures->create('order');
+
+        $googlePayPaymentCreateRequestData = $this->testData['googlePayPaymentCreateRequestData'];
+
+        $checkoutId = UniqueIdEntity::generateUniqueIdWithCheckDigit();
+
+        $googlePayPaymentCreateRequestData['order_id'] = $order->getPublicId();
+
+        $googlePayPaymentCreateRequestData['amount']   = $order['amount'];
+
+        $googlePayPaymentCreateRequestData['_']['checkout_id'] = $checkoutId;
+
+        $this->fixtures->create(
+            'terminal',
+            [
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'cybersource',
+            ]
+            );
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::GOOGLE_PAY_CARDS]);
+
+        $response = $this->doAuthPayment($googlePayPaymentCreateRequestData);
+
+        $this->assertEquals($response['type'], 'application');
+
+        $this->assertEquals($response['application_name'], 'google_pay');
+
+        $this->assertEquals($response['request']['method'], 'sdk');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['authentication_gateway'], 'google_pay');
+    }
+
+    public function testCreateGooglePayCardS2SPayment()
+    {
+        $this->ba->privateAuth();
+
+        $order = $this->fixtures->create('order');
+
+        $googlePayPaymentCreateRequestData = $this->testData['googlePayPaymentCreateRequestData'];
+
+        $checkoutId = UniqueIdEntity::generateUniqueIdWithCheckDigit();
+
+        $googlePayPaymentCreateRequestData['order_id'] = $order->getPublicId();
+
+        $googlePayPaymentCreateRequestData['amount']   = $order['amount'];
+
+        $googlePayPaymentCreateRequestData['_']['checkout_id'] = $checkoutId;
+
+        $this->fixtures->create(
+            'terminal',
+            [
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'cybersource',
+            ]
+            );
+
+        $this->fixtures->merchant->addFeatures(['s2s', Feature\Constants::GOOGLE_PAY_CARDS]);
+
+        $response = $this->doS2SPrivateAuthPayment($googlePayPaymentCreateRequestData);
+
+        $this->assertEquals($response['type'], 'application');
+
+        $this->assertEquals($response['application_name'], 'google_pay');
+
+        $this->assertEquals($response['request']['method'], 'sdk');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['authentication_gateway'], 'google_pay');
+    }
+
     public function testCreateCardPaymentFailedWithRestrictionUpi()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -256,11 +333,11 @@ class PaymentCreateTest extends TestCase
 
     }
 
-    public function testCreateCardPaymentWithRestrictionNonUpi()
+    public function testCreateCardPaymentWithRestrictionNoUpi()
     {
         $payment = $this->getDefaultPaymentArray();
 
-        $order = $this->createOrder(['notes' => ['somekey' => 'some value', 'Pay_Mode' => 'NONUPI']]);
+        $order = $this->createOrder(['notes' => ['somekey' => 'some value', 'Pay_Mode' => 'NOUPI']]);
 
         $payment['amount'] = 50000;
 

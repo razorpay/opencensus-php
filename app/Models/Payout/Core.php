@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use App;
 use RZP\Exception;
 use RZP\Constants;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
@@ -70,10 +71,10 @@ class Core extends Base\Core
      * SOURCE: Merchant PG balance
      * TO: Merchant linked bank account (destination_id)
      *
+     * @param array $input
      * @param Merchant\Entity $merchant
-     * @param array           $input
-     *
      * @return mixed|null
+     * @throws Exception\BadRequestException
      */
     public function createPayoutToMerchant(array $input, Merchant\Entity $merchant): Entity
     {
@@ -339,9 +340,7 @@ class Core extends Base\Core
         // For non-Yesbank, we will not get public_failure_reason
         $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
 
-        $ftaBankStatusCode = $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null;
-
-        $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
+        $initialUtr = $payout->getUtr();
 
         $payout->setUtr($ftaData[Attempt\Constants::UTR]);
 
@@ -359,9 +358,26 @@ class Core extends Base\Core
             $payout->setMode($ftaData[Attempt\Constants::MODE]);
         }
 
-        $payout->setFailureReason($ftaFailureReason);
+        //
+        // We do not want to override the failure reason if it's already set.
+        // It could have been set in the `afterRecon` flow. In some cases, it's
+        // possible that `beforeRecon` gets called and then `afterRecon` gets
+        // called and then again `beforeRecon`. In `afterRecon`, if the failure
+        // reason gets set, we don't want to reset it to null in `beforeRecon` if
+        // the failure reason is empty in the 2nd `beforeRecon` call.
+        //
+        if (empty($ftaFailureReason) === false)
+        {
+            $payout->setFailureReason($ftaFailureReason);
+        }
 
         $this->repo->saveOrFail($payout);
+
+        if (($initialUtr === null) and
+            ($payout->getUtr() !== null))
+        {
+            $this->app->events->fire('api.payout.updated', [$payout]);
+        }
     }
 
     public function processDispatchForQueuedPayouts(Base\PublicCollection $queuedPayouts)
@@ -452,21 +468,21 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
-    public function approvePayout(Entity $payout): Entity
+    public function approvePayout(Entity $payout, array $input): Entity
     {
-        $payout = $this->processWorkflowActionOnPayout($payout, true);
+        $payout = $this->processWorkflowActionOnPayout($payout, true, $input);
 
         return $payout;
     }
 
-    public function rejectPayout(Entity $payout): Entity
+    public function rejectPayout(Entity $payout, array $input): Entity
     {
-        $payout = $this->processWorkflowActionOnPayout($payout, false);
+        $payout = $this->processWorkflowActionOnPayout($payout, false, $input);
 
         return $payout;
     }
 
-    protected function processWorkflowActionOnPayout(Entity $payout, bool $approve): Entity
+    protected function processWorkflowActionOnPayout(Entity $payout, bool $approve, array $input): Entity
     {
         /** @var Workflow\Action\Entity|null $workflowAction */
         $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
@@ -482,12 +498,19 @@ class Core extends Base\Core
         }
 
         $payout = $this->repo->transaction(
-            function() use ($payout, $workflowAction, $approve, $action)
+            function() use ($payout, $workflowAction, $approve, $action, $input)
             {
+                $userComment = $input[Workflow\Action\Checker\Entity::USER_COMMENT] ?? null;
+
                 $actionCheckerCreateParams = [
-                    Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
-                    Workflow\Action\Checker\Entity::APPROVED  => ($approve === true) ? 1 : 0, // 1 = true
+                    Workflow\Action\Checker\Entity::ACTION_ID    => $workflowAction->getId(),
+                    Workflow\Action\Checker\Entity::APPROVED     => ($approve === true) ? 1 : 0, // 1 = true
                 ];
+
+                if ($userComment !== null)
+                {
+                    $actionCheckerCreateParams[Workflow\Action\Checker\Entity::USER_COMMENT] = $userComment;
+                }
 
                 $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
 
@@ -1412,6 +1435,8 @@ class Core extends Base\Core
                 $payout->setStatus(Status::REJECTED);
 
                 $this->repo->saveOrFail($payout);
+
+                $this->app->events->fire('api.payout.rejected', [$payout]);
 
                 return $payout;
             },

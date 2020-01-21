@@ -184,7 +184,6 @@ return [
     'mock_worldline'              => env('WORLDLINE_MOCK'),
     'mock_mozart'                 => env('MOZART_MOCK'),
     'mock_upi_citi'               => env('UPI_CITI_MOCK'),
-
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
     'p2p_upi_axis' => [

@@ -40,6 +40,7 @@ class SubReconciliate extends Base\Core
     const BATCH_ID              = 'batch_id';
     const ATTEMPT_NUMBER        = 'attempt_number';
     const RECON_ENTITY_ID       = 'recon_entity_id';
+    const RECON_NET_AMOUNT      = 'recon_net_amount';
 
     /**
      * For few gateways, we do not get the RZP  payment/refund ID
@@ -286,6 +287,7 @@ class SubReconciliate extends Base\Core
         $row[self::BATCH_ID]                = '';
         $row[self::ATTEMPT_NUMBER]          = '';
         $row[self::RECON_ENTITY_ID]         = '';
+        $row[self::RECON_NET_AMOUNT]        = '';
 
         static::$reconOutputData[] = $row;
 
@@ -643,6 +645,11 @@ class SubReconciliate extends Base\Core
     protected function setAttemptsInOutput($attemptNumber)
     {
         static::$reconOutputData[static::$currentRowNumber][self::ATTEMPT_NUMBER] = $attemptNumber;
+    }
+
+    protected function setReconNetAmountInOutput(float $reconNetAmount)
+    {
+        static::$reconOutputData[static::$currentRowNumber][self::RECON_NET_AMOUNT] = $reconNetAmount;
     }
 
     /**

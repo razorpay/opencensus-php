@@ -64,6 +64,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::PAYPAL,
         RequestProcessor\Base::BAJAJFINSERV,
         RequestProcessor\Base::GETSIMPL,
+        RequestProcessor\Base::EMANDATE_AXIS
     ];
 
     /**
@@ -166,6 +167,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setMerchantIdInOutput($this->payment->getMerchantId());
 
+        $this->calculateAndSetNetAmountInOutputFile($row, $rowDetails);
+
         try
         {
             //
@@ -203,6 +206,26 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             throw $ex;
         }
+    }
+
+    /**
+     * Calculates Net amount from the MIS row and
+     * sets it in the output file
+     *
+     * @param array $row
+     * @param array $rowDetails
+     */
+    protected function calculateAndSetNetAmountInOutputFile(array $row, array $rowDetails)
+    {
+        $grossAmt = intval($this->getReconPaymentAmount($row));
+
+        $gatewayFee = intval($rowDetails[Base\Reconciliate::GATEWAY_FEE]);
+
+        $gst = intval($rowDetails[Base\Reconciliate::GATEWAY_SERVICE_TAX]);
+
+        $netAmount = ($grossAmt - ($gatewayFee + $gst)) / 100;
+
+        $this->setReconNetAmountInOutput($netAmount);
     }
 
     /**
@@ -315,6 +338,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         {
             $this->cardsPaymentServiceDispatch($rowDetails);
         }
+
+        if ($this->payment->isRoutedThroughNbPlus() === true)
+        {
+            $this->nbPlusPaymentServiceDispatch($rowDetails);
+        }
     }
 
     /**
@@ -346,6 +374,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'payment_id' => $this->payment->getId(),
             ]
         );
+    }
+
+    /**
+     * This method has to be implemented in child class
+     * as the parameters and the job may vary based on the gateway
+     * @param array $rowDetails
+     */
+    protected function nbPlusPaymentServiceDispatch(array $rowDetails)
+    {
+        return;
     }
 
     protected function validatePaymentDetails(array $row)

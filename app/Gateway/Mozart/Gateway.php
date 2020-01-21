@@ -101,17 +101,20 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::INTENT);
         }
 
-        switch ($this->terminal->getGatewayAcquirer())
+        if (is_null($this->terminal) === false)
         {
-            case Payment\Gateway::GETSIMPL:
+            switch ($this->terminal->getGatewayAcquirer())
+            {
+                case Payment\Gateway::GETSIMPL:
 
-                if(empty($input['simpltoken']) === true)
-                {
-                    $input['simpltoken'] = $this->fetchCacheData($input);
-                }
+                    if(empty($input['simpltoken']) === true)
+                    {
+                        $input['simpltoken'] = $this->fetchCacheData($input);
+                    }
 
-                $input['payment']['gateway'] = $input['payment']['wallet'];
-                break;
+                    $input['payment']['gateway'] = $input['payment']['wallet'];
+                    break;
+            }
         }
 
         $request = $this->getMozartRequestArray($input);
@@ -470,6 +473,33 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    public function decrypt(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = Action::DECRYPT;
+
+        $request = $this->getGooglePayCardsDecryptionMozartRequestArray($input);
+
+        $this->trace->info(
+            TraceCode::MOZART_SERVICE_REQUEST,
+            [
+                'url'      => $request['url'],
+                'gateway'  => $this->gateway,
+                'input'    => $request['content'],
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::MOZART_SERVICE_RESPONSE,
+            [
+                'gateway'  => $this->gateway,
+            ]);
+
+        return $response;
+    }
+
     public function disableTerminal(array $input)
     {
         parent::disableTerminal($input);
@@ -481,7 +511,7 @@ class Gateway extends Base\Gateway
             'url'       => $request['url'],
             'content'   => $request['content'],
         ];
-        
+
         $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_DISABLE_TERMINAL_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
@@ -502,7 +532,7 @@ class Gateway extends Base\Gateway
             'url'       => $request['url'],
             'content'   => $request['content'],
         ];
-        
+
         $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_ENABLE_TERMINAL_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
@@ -511,7 +541,6 @@ class Gateway extends Base\Gateway
 
         return $response;
     }
-
 
     public function immediateVerifyApplicable($input)
     {
@@ -559,7 +588,7 @@ class Gateway extends Base\Gateway
         switch ($gateway)
         {
             case Payment\Gateway::UPI_MINDGATE:
-                return json_decode($this->decrypt($input['payload']), true);
+                return json_decode($this->decryptForUpiMindgate($input['payload']), true);
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for processing mandate callback');
@@ -851,7 +880,7 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalOnboardingMozartRequestArray($input)
     {
-        if ( (isset($input['terminal']) === true) and 
+        if ( (isset($input['terminal']) === true) and
              (($input['terminal'] instanceof TerminalEntity) === true) )
         {
             $input['terminal'] = $input['terminal']->toArrayWithPassword();
@@ -862,6 +891,13 @@ class Gateway extends Base\Gateway
         $url = $this->getUrlForMozartRequest($input, 'onboarding');
 
         return $this->getAuthenticatedMozartRequestArray($url, $content);
+    }
+
+    protected function getGooglePayCardsDecryptionMozartRequestArray($input)
+    {
+        $url = $this->getUrlForMozartRequest($input, 'payments', Mode::LIVE);
+
+        return $this->getAuthenticatedMozartRequestArray($url, $input['content'], Mode::LIVE);
     }
 
     protected function getUrlForMozartRequest($input, $prefix, $mode = null)
@@ -1634,7 +1670,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function decrypt(string $cipherText)
+    public function decryptForUpiMindgate(string $cipherText)
     {
         return $this->getCipherInstance()
             ->decrypt($cipherText);

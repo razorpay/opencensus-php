@@ -33,18 +33,21 @@ class Activate extends Base\Core
     public function activate(Entity $merchant): Detail\Entity
     {
         //To be removed, added for trace purpose
-        $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, $merchant->toArray());
+        $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, $merchant->toArrayPublic());
 
         // Merchants who have been activated (instantly activated whitelisted merchants)
         if ($merchant->isActivated() === true)
         {
+            $this->trace->info(TraceCode::ALREADY_ACTIVATED, $merchant->toArrayPublic());
+
             return $this->markKycVerified($merchant);
         }
-
         //
         // For merchants who never went through the instant activations flow, and,
         // who went through the instant activations flow and got greylisted
         //
+        $this->trace->info(TraceCode::NOT_ACTIVATED, $merchant->toArrayPublic());
+
         return $this->activateAndMarkKycVerified($merchant);
     }
 
@@ -87,7 +90,7 @@ class Activate extends Base\Core
 
         $merchantCore = new Merchant\Core;
 
-        $merchantCore->activateInternationalIfApplicable($merchant, $merchantDetail);
+        $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
         $merchantBalance = $merchantCore->createBalance($merchant, 'live');
 
@@ -129,6 +132,7 @@ class Activate extends Base\Core
      * @return array
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
+     * @throws \Throwable
      */
     public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails): array
     {
@@ -142,7 +146,7 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
-        (new Merchant\Core)->activateInternationalIfApplicable($merchant, $merchantDetails);
+        (new Merchant\Core)->updateInternationalIfApplicable($merchant, $merchantDetails);
 
         $merchant->holdFunds();
 
@@ -216,7 +220,7 @@ class Activate extends Base\Core
 
         $merchantCore = new Merchant\Core;
 
-        $merchantCore->activateInternationalIfApplicable($merchant, $merchantDetail);
+        $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
         {

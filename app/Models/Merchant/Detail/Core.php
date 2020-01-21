@@ -23,6 +23,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
+use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
@@ -30,13 +31,14 @@ use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\AutoKyc\ServiceFactory;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
+use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
@@ -88,6 +90,8 @@ class Core extends Base\Core
         $this->repo->assertTransactionActive();
 
         $merchantDetails = $this->getMerchantDetails($merchant);
+
+        $this->autoUpdateMerchantActivationFlows($merchant, null, [Detail\Constants::INTERNATIONAL_ACTIVATION]);
 
         $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
 
@@ -253,9 +257,12 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      *
      * @param Merchant\Entity $partner
-     *
+     * @param array           $activationFlowTypes
      */
-    public function autoUpdateMerchantActivationFlows(Merchant\Entity $merchant, $partner = null)
+    public function autoUpdateMerchantActivationFlows(Merchant\Entity $merchant,
+                                                      Merchant\Entity $partner = null,
+                                                      array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS
+    )
     {
         $this->repo->assertTransactionActive();
 
@@ -269,9 +276,7 @@ class Core extends Base\Core
             return;
         }
 
-        $this->autoUpdateActivationFlow($merchant, $partner);
-
-        $this->autoUpdateInternationalActivationFlow($merchant, $partner);
+        $this->updateActivationFlows($merchant, $partner, $activationFlowTypes);
 
         $eventAttributes['activation_flow'] = $merchantDetails->getActivationFlow();
 
@@ -325,26 +330,11 @@ class Core extends Base\Core
             return;
         }
 
-        // if submerchant asked for international and partner wants to force international to greylist
-        if ((empty($partner) === false) and
-            ($merchantDetails->getBusinessInternational() === true) and
-            ($partner->forceGreyListInternational() === true))
-        {
-            $activationFlow = ActivationFlow::GREYLIST;
-        }
-        else
-        {
-            $subcategory = $merchantDetails->getBusinessSubcategory();
-            $category    = $merchantDetails->getBusinessCategory();
+        $internationalActivationFlow = (new Detail\InternationalCore)->getInternationalActivationFlow($merchant, $partner);
 
-            $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+        $merchantDetails->setInternationalActivationFlow($internationalActivationFlow);
 
-            $activationFlow = $subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION];
-        }
-
-        $merchantDetails->setInternationalActivationFlow($activationFlow);
-
-        $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions($activationFlow);
+        $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions($internationalActivationFlow);
 
         $this->trace->count(Metric::INTERNATIONAL_MERCHANT_ACTIVATION, $international_activation_metric_dimensions);
     }
@@ -480,7 +470,7 @@ class Core extends Base\Core
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      *
-     * @return Verifiers\PanVerifierResponse|null
+     * @return MozartService\PanVerifierResponse|null
      */
     protected function verifyPOIDetailsIfApplicable(Entity $merchantDetails, MErchant\Entity $merchant)
     {
@@ -498,22 +488,18 @@ class Core extends Base\Core
             return null;
         }
 
-        $input = [
-            DEConstants::PAN_NUMBER        => $merchantDetails->getPromoterPan(),
-            Document\Entity::DOCUMENT_TYPE => DEConstants::PROMOTER_PAN,
-        ];
 
         $response = null;
 
+        $verificationStatus = POIStatus::FAILED;
         try
         {
-            $verifier = FactoryVerifier::getPoiVerifier($input, $merchant);
+            $input = [
+                DEConstants::PAN_NUMBER        => $merchantDetails->getPromoterPan(),
+                DEConstants::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName()
+            ];
 
-            $response = $verifier->verifyDetails();
-
-            $response->setPanOwnerName($merchantDetails->getPromoterPanName());
-
-            $merchantDetails->setPoiVerificationStatus($response->getStatus());
+            $verificationStatus = (new AutoKyc\Core())->verifyPOI($merchantDetails, $input);
         }
         catch (\Throwable $e)
         {
@@ -521,8 +507,9 @@ class Core extends Base\Core
                                          null,
                                          TraceCode::MERCHANT_POI_VERIFICATION_FAILED);
 
-            $merchantDetails->setPoiVerificationStatus(POIStatus::FAILED);
         }
+
+        $merchantDetails->setPoiVerificationStatus($verificationStatus);
 
         $dimension = $this->fetchPoiMetricDimensions($merchantDetails);
 
@@ -1560,7 +1547,7 @@ class Core extends Base\Core
        *
       */
 
-    protected function fetchActivationMetricDimensions(string $label, array $extra = []): array
+    protected function fetchActivationMetricDimensions(string $label = null, array $extra = []): array
     {
         return $extra + [
                 Metric::ACTIVATION_FLOW => $label
@@ -1876,5 +1863,53 @@ class Core extends Base\Core
         $rejectionMail = new RejectionEmail($data, $org->toArray());
 
         Mail::queue($rejectionMail);
+    }
+
+    public function updateInternationalActivationFlow(Merchant\Entity $merchant, $international)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $internationalActivationFlow = ActivationFlow::BLACKLIST;
+
+        if ($international === 1)
+        {
+            $internationalActivationFlow = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
+                BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
+                $merchantDetail->getBusinessCategory(),
+                $merchantDetail->getBusinessSubcategory(),
+                ActivationFlow::BLACKLIST);
+        }
+
+        $merchantDetail->setInternationalActivationFlow($internationalActivationFlow);
+
+        $this->repo->saveOrFail($merchantDetail);
+    }
+
+
+    /**
+     * @param Merchant\Entity      $merchant
+     * @param Merchant\Entity|null $partner
+     * @param array                $activationFlowTypes
+     */
+    protected function updateActivationFlows(Merchant\Entity $merchant,
+                                             Merchant\Entity $partner = null,
+                                             array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS): void
+    {
+        foreach ($activationFlowTypes as $activationFlowType)
+        {
+            switch ($activationFlowType)
+            {
+                case Detail\Constants::ACTIVATION:
+
+                    $this->autoUpdateActivationFlow($merchant, $partner);
+
+                    break;
+                case Detail\Constants::INTERNATIONAL_ACTIVATION:
+
+                    $this->autoUpdateInternationalActivationFlow($merchant, $partner);
+
+                    break;
+            }
+        }
     }
 }

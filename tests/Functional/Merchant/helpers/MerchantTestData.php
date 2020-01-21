@@ -4858,11 +4858,34 @@ return [
             ],
         ],
         'response' => [
-            'content' => [
-                'international'     => true,
-                'convert_currency'  => false,
+            'content'     => [
+                'international'    => true,
+                'convert_currency' => false,
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testInternationalEnableForGreyList' => [
+        'request'   => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => true
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_INTERNATIONAL_STATUS_CHANGE_REQUEST,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_INTERNATIONAL_STATUS_CHANGE_REQUEST,
         ],
     ],
 
@@ -5494,5 +5517,89 @@ return [
                 ],
             ],
         ],
+    ],
+
+    'testMerchantInternationalDisableAction' => [
+        'request'  => [
+            'content' => [
+                'action' => 'disable_international'
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'merchant',
+                'international'   => false,
+                'merchant_detail' => [
+                    'international_activation_flow' => 'blacklist',
+                ]
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalEnableAction' => [
+        'request'  => [
+            'content' => [
+                'action' => 'enable_international'
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'merchant',
+                'international'   => true,
+                'merchant_detail' => [
+                    'international_activation_flow' => 'whitelist',
+                ]
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalDisableBulkEdit' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids' => [
+                    '10000000000000',
+                ],
+                'attributes'   => [
+                    'international'    => 0,
+                    'convert_currency' => 0,
+                ],
+            ],
+            'url'     => '/merchants/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 1,
+                'success' => 1,
+                'failed'  => 0,
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalEnableBulkEdit' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids' => [
+                    '10000000000000',
+                ],
+                'attributes'   => [
+                    'international'    => 1,
+                    'convert_currency' => 1,
+                ],
+            ],
+            'url'     => '/merchants/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 1,
+                'success' => 1,
+                'failed'  => 0,
+            ]
+        ]
     ],
 ];

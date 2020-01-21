@@ -64,7 +64,6 @@ class Service extends Base\Service
         foreach ($input as $item)
         {
             $idempotencyKey = $item['idempotency_key'];
-
             try
             {
                 $result = $this->repo->transactionOnLiveAndTest(function () use ($item, $idempotencyKey)

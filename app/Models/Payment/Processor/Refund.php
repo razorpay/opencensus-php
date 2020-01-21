@@ -2832,7 +2832,6 @@ trait Refund
             RefundEntity::GATEWAY        => $payment->getGateway(),
             RefundConstants::METHOD      => $payment->getMethod(),
             RefundConstants::AMOUNT      => $payment->getAmount(),
-            RefundConstants::MERCHANT_ID => $payment->getMerchantId(),
         ];
 
         if ($payment->getMethod() === Payment\Method::CARD)
@@ -2856,7 +2855,7 @@ trait Refund
             }
         }
 
-        $response = $this->app['scrooge']->instantRefundsDecisioningHelper($queryParams);
+        $response = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
 
         // If the mode is empty we are decisioning the speed to normal
         (empty($response[RefundConstants::MODE]) === false) ?
