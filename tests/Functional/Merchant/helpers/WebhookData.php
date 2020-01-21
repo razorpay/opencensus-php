@@ -1399,7 +1399,7 @@ return [
         ],
     ],
 
-    'testWebhookDeactivateFromStork' => [
+    'testWebhookDeactivate' => [
         'request' => [
             'url' => '',
             'content' => [
@@ -1412,4 +1412,10 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testWebhookDeactivateData' => [
+        'subject' => 'Razorpay | Webhook deactivated after 24 hours from last successful delivery for Test Merchant',
+        'mode' => 'test',
+        'url' => 'http://webhook.com/v1/dummy/route',
+    ]
 ];

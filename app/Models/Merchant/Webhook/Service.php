@@ -52,8 +52,13 @@ class Service extends Base\Service
         return $this->core()->webhookStorkMigrate($input);
     }
 
-    public function webhookDeactivateFromStork($id, $input)
+    /**
+     * @see Core::webhookDeactivate()
+     *
+     * @param string $id
+     */
+    public function webhookDeactivate(string $id)
     {
-        $this->core()->webhookDeactivateFromStork($id, $input);
+        $this->core()->webhookDeactivate($id);
     }
 }

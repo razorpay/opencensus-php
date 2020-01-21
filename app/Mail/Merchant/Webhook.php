@@ -74,7 +74,7 @@ class Webhook extends Mailable
 
         $data['date'] = date('d-M-Y H:m:s T');
 
-        if ($this->options['type'] !== 'deactivate_from_stork')
+        if ($this->options['type'] !== 'deactivate')
         {
 
             $data['error_message'] = $this->options['errorMessage'];
@@ -141,10 +141,6 @@ class Webhook extends Mailable
             $subject .= 'Webhook failed for ' . $subjectName;
         }
         else if ($this->options['type'] === 'deactivate')
-        {
-            $subject .= 'Webhook deactivated after 24 hours from last successful delivery for ' . $subjectName;
-        }
-        else if ($this->options['type'] === 'deactivate_from_stork')
         {
             $subject .= 'Webhook deactivated after 24 hours from last successful delivery for ' . $subjectName;
         }

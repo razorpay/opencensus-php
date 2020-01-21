@@ -183,22 +183,26 @@ class Core extends Base\Core
         return $summary;
     }
 
-    public function webhookDeactivateFromStork($id, $input)
+    /**
+     * Read webhook from id
+     * Then deactivate the webhook and sends a deactivation email to merchant.
+     * @param string $id
+     */
+    public function webhookDeactivate(string $id)
     {
-
         $webhook = $this->repo->webhook->findOrFailPublic($id);
 
         $this->disableWebhook($webhook);
 
         $options = [
-            'mode'         => $input['mode'],
-            'type'         => "deactivate_from_stork",
+            'mode'         => $this->mode,
+            'type'         => 'deactivate',
         ];
 
         $this->sendMail($webhook, $options);
     }
 
-    public function sendMail($webhook, $options)
+    public function sendMail(Entity $webhook, array $options)
     {
         $merchant = $webhook->merchant;
 
@@ -213,7 +217,7 @@ class Core extends Base\Core
 
         $webhookMail = new WebhookMail($webhook, $merchant, $options);
 
-        Mail::send($webhookMail);
+        Mail::queue($webhookMail);
     }
 
     protected function disableWebhook(Entity $webhook)

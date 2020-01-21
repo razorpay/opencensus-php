@@ -339,7 +339,7 @@ final class Route
         'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
         'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'MerchantController@postOAuthApplicationWebhook'                    ],
         'webhook_stork_migrate'                    => ['post',     'webhooks/migrate/stork',                         'WebhookController@webhookStorkMigrate'                             ],
-        'webhook_deactivate_from_stork'            => ['post',     'webhooks/deactivate/{id}',                       'WebhookController@webhookDeactivateFromStork'                      ],
+        'webhook_deactivate'                       => ['post',     'webhooks/{id}/deactivate',                       'WebhookController@webhookDeactivate'                               ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'merchant_replace_key'                     => ['put',      'keys/{id}',                                      'KeyController@putKeys'                                             ],
@@ -1773,7 +1773,7 @@ final class Route
         'mailing_list_remove_suspended_merchant',
         'transfer_process',
         'merchant_mtu_update',
-        'webhook_deactivate_from_stork',
+        'webhook_deactivate',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3417,7 +3417,7 @@ final class Route
             // Storks needs connected applications against a merchant to fan
             // out the same event to former entities as well.
             'merchant_get_app_access_mapping',
-            'webhook_deactivate_from_stork'
+            'webhook_deactivate'
         ],
 
         'mtu_lambda' => [

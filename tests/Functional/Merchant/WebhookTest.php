@@ -1707,13 +1707,15 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
-    public function testWebhookDeactivateFromStork()
+    public function testWebhookDeactivate()
     {
         Mail::fake();
 
-        $webhook=$this->createWebhook();
+        $this->createMerchantWebhook();
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/deactivate/'.$webhook['id'];
+        $webhook = $this->getLastEntity('webhook', false);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'] . '/deactivate';
 
         $this->startTest();
 
@@ -1722,9 +1724,19 @@ class WebhookTest extends TestCase
 
         $this->assertEquals($webhookExpected['active'],false);
 
-        // test mail sent
-        Mail::assertSent(WebhookMail::class);
+        $testData = $this->testData[__FUNCTION__.'Data'];
 
+        // test mail sent
+        Mail::assertQueued(WebhookMail::class, function ($mail) use ($testData)
+        {
+            $this->assertEquals($mail->viewData['url'], $testData['url']);
+
+            $this->assertEquals($mail->viewData['mode'], $testData['mode']);
+
+            $this->assertEquals($mail->viewData['subject'], $testData['subject']);
+
+            return ($mail->hasFrom('alerts@razorpay.com') and ($mail->hasTo('test@razorpay.com')));
+        });
     }
 
 
