@@ -4,7 +4,6 @@ import ModalHeader from 'common/ui/ModalHeader';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { Bar } from 'react-chartjs-2';
 import AsyncButton from 'react-async-button';
-import Amount from 'common/ui/Amount';
 import CreditPullAdditionalReport from './CreditPullAdditionalReport';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import CloseReasons from '../../components/CloseReasons';
@@ -176,7 +175,10 @@ export default class CreditPullSuccess extends Component {
               <h5>Need help?</h5>
               <div>
                 For any queries or assistance, please contact:&nbsp;
-                <a href="https://razorpay.com/support" target="_blank">
+                <a
+                  href="mailto:capital.support@razorpay.com?Subject=Loan%20eligibility%20follow%20up"
+                  target="_top"
+                >
                   Razorpay Support
                 </a>
               </div>
