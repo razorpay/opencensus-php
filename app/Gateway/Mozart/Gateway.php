@@ -495,7 +495,6 @@ class Gateway extends Base\Gateway
             TraceCode::MOZART_SERVICE_RESPONSE,
             [
                 'gateway'  => $this->gateway,
-                'output'   => $response,
             ]);
 
         return $response;
