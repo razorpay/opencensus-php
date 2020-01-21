@@ -31,6 +31,12 @@ class Validator extends Base\Validator
 
     const CALCULATE_ES_ON_DEMAND_FEES = 'calculate_es_on_demand_fees';
 
+    // The max payout amount allowed for merchant payouts is 80 L
+    const MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT = 800000000;
+
+    // The max payout amount allowed for merchant payouts on demand is 2 Cr
+    const MAX_LIMIT_MERCHANT_ON_DEMAND_PAYOUT_AMOUNT = 2000000000;
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -84,31 +90,34 @@ class Validator extends Base\Validator
         Entity::NARRATION       => 'sometimes|nullable|string|max:30|alpha_space_num',
     ];
 
+    // Both regular(type:default) and on demand(type:on_demand) payouts are validated through merchantPayoutRules.
     protected static $merchantPayoutRules = [
         Entity::PURPOSE         => 'required|string|max:30|in:payout',
         Entity::METHOD          => 'sometimes|string',
-        Entity::AMOUNT          => 'required|integer|max:800000000',
+        Entity::AMOUNT          => 'required|integer',
         Entity::CURRENCY        => 'required|size:3',
         Entity::TYPE            => 'required|string|max:30|in:default,on_demand',
         Entity::BALANCE_ID      => 'sometimes|filled|size:14',
     ];
 
+    // On calling merchant/payout merchantRules gets used for validation of input.
     protected static $merchantRules = [
         Entity::MERCHANT_ID    => 'required|string|size:14',
-        Entity::AMOUNT         => 'sometimes|integer|max:800000000',
+        Entity::AMOUNT         => 'sometimes|integer|max:' . self::MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT,
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',
         Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
     ];
 
+    // On calling merchant/payout/demand merchantPayoutOnDemandRules gets used for validation of input.
+    protected static $merchantPayoutOnDemandRules = [
+        Entity::AMOUNT   => 'required|integer|min:100|max:' . self::MAX_LIMIT_MERCHANT_ON_DEMAND_PAYOUT_AMOUNT,
+        Entity::CURRENCY => 'required|size:3',
+    ];
+
     protected static $createPurposeRules = [
         Entity::PURPOSE      => 'required|filled|string|max:30|alpha_dash_space',
         Entity::PURPOSE_TYPE => 'required|filled|string|in:refund,settlement',
-    ];
-
-    protected static $merchantPayoutOnDemandRules = [
-        Entity::AMOUNT   => 'required|integer|min:100',
-        Entity::CURRENCY => 'required|size:3',
     ];
 
     protected static $calculateEsOnDemandFeesRules = [
@@ -128,6 +137,11 @@ class Validator extends Base\Validator
         Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
     ];
 
+    // Both regular and on demand payouts are validated through the merchantPayoutValidators.
+    protected static $merchantPayoutValidators = [
+        'type_and_amount',
+    ];
+
     protected function validateMethod($attribute, $method)
     {
         Method::validateMethod($method);
@@ -138,11 +152,44 @@ class Validator extends Base\Validator
         PayoutMode::validateMode($value);
     }
 
+    protected function validateTypeAndAmount($input)
+    {
+
+        // We have different limits for both regular and on demand payouts. They need to be validated accordingly.
+        $type = $input[Entity::TYPE];
+
+        $amount = $input[Entity::AMOUNT];
+
+        // Validation in case of type 'on demand'
+        if (($type === Entity::ON_DEMAND) and
+            ($amount > self::MAX_LIMIT_MERCHANT_ON_DEMAND_PAYOUT_AMOUNT))
+        {
+            $message = 'The amount may not be greater than ' . self::MAX_LIMIT_MERCHANT_ON_DEMAND_PAYOUT_AMOUNT . '.';
+            throw new Exception\BadRequestValidationFailureException(
+                $message,
+                Entity::AMOUNT,
+                $amount
+            );
+        }
+
+        // Validation in case of type 'default'
+        if (($type === Entity::DEFAULT) and
+            ($amount > self::MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT))
+        {
+            $message = 'The amount may not be greater than ' . self::MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT . '.';
+            throw new Exception\BadRequestValidationFailureException(
+                $message,
+                Entity::AMOUNT,
+                $amount
+            );
+        }
+        // Noticed during dev that data field sent with the above calls to BadRequestValidationFailureException came out at other end (log/response) as null
+    }
+
     public function validateFundAccountMode($input)
     {
         /** @var Entity $payout */
         $payout = $this->entity;
-
         //
         // We use mode from the entity and not from the input, because
         // in case of UPI, we set the mode to UPI in modifiers (called in build).

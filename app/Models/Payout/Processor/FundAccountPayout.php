@@ -5,9 +5,14 @@ namespace RZP\Models\Payout\Processor;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Settlement\Channel;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class FundAccountPayout extends Base
@@ -60,12 +65,22 @@ class FundAccountPayout extends Base
         }
     }
 
+    /**
+     * run entity validations
+     *
+     * @param Payout\Entity $payout
+     * @param array         $input
+     *
+     * @throws BadRequestException
+     */
     protected function runEntityValidations(Payout\Entity $payout, array $input)
     {
         /** @var Payout\Validator $validator */
         $validator = $payout->getValidator();
 
         $validator->validateFundAccountMode($input);
+
+        $this->validateModeChannelAndDestinationType($payout);
     }
 
     protected function fireEventForPayoutStatus(Payout\Entity $payout)
@@ -99,5 +114,110 @@ class FundAccountPayout extends Base
                                                     $this->mode);
 
         return (strtolower($variant) === 'on');
+    }
+
+    public function getAccountTypeForFundTransfer(Payout\Entity $payout)
+    {
+        return $payout->balance->getAccountType() ?? AccountType::SHARED;
+    }
+
+    /**
+     * TODO: Currently there is no proper way to decide the channel through
+     * which the payout should be routed in case of shared accounts.
+     * Till the time we achieve this by Dynamic routing, we are doing
+     * a hack of using config key to store the MIDs for which
+     * channel for processing the payout should be CITI and ICICI.
+     * The precedence between ICICI and CITI is ICICI.
+     *
+     * @param $accountType
+     * @return string
+     */
+    protected function getChannelForFundTransfer($accountType, Payout\Entity $payout): string
+    {
+        if ($accountType === AccountType::DIRECT)
+        {
+            return $this->getChannelForDirectAccountFundTransfer($payout);
+        }
+
+        return $this->getChannelForSharedAccountFundTransfer($payout);
+    }
+
+    protected function getChannelForDirectAccountFundTransfer(Payout\Entity $payout)
+    {
+        return $payout->balance->getChannel();
+    }
+
+    protected function getChannelForSharedAccountFundTransfer(Payout\Entity $payout)
+    {
+        $merchant = $payout->merchant;
+
+        if ($this->checkIfChannelShouldBeIcici($merchant) === true)
+        {
+            return Channel::ICICI;
+        }
+
+        if ($this->checkIfChannelShouldBeCiti($merchant) === true)
+        {
+            return Channel::CITI;
+        }
+
+        return $payout->balance->getChannel() ?? Channel::YESBANK;
+    }
+
+    protected function checkIfChannelShouldBeIcici(Merchant\Entity $merchant): bool
+    {
+        $mid = $merchant->getId();
+
+        $iciciMids = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
+
+        return (in_array($mid, $iciciMids, true) === true);
+    }
+
+    protected function checkIfChannelShouldBeCiti(Merchant\Entity $merchant): bool
+    {
+        $mid = $merchant->getId();
+
+        $citiMids = (new AdminService)->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
+
+        return (in_array($mid, $citiMids, true) === true);
+    }
+
+    protected function validateModeChannelAndDestinationType(Payout\Entity $payout)
+    {
+        $accountType = $this->getAccountTypeForFundTransfer($payout);
+
+        $channel = $this->getChannelForFundTransfer($accountType,$payout);
+
+        $payout->setChannel($channel);
+
+        $mode = $payout->getMode();
+
+        $destinationType = $this->fundTransferDestination->getEntity();
+
+        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+
+        if ($valid === false)
+        {
+            if ($this->getAccountTypeForFundTransfer($payout) === AccountType::SHARED)
+            {
+                $errorMsg =  $mode . ' is not supported';
+            }
+
+            else
+            {
+                $errorMsg = strtoupper($channel) . ' does not support ' . $mode . ' payouts to ' . strtoupper($destinationType);
+            }
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+                null,
+                [
+                    'channel'           => $channel,
+                    'mode'              => $mode,
+                    'destination_type'  => $destinationType
+                ],
+                $errorMsg
+            );
+        }
     }
 }

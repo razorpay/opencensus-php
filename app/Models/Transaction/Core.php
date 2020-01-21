@@ -1635,4 +1635,44 @@ class Core extends Base\Core
             );
         }
     }
+
+    /**
+     * it will update the on_hold status of the transaction with respect to holdFlag
+     * @param array $transactionIds
+     * @param bool $holdFlag
+     * @return array
+     */
+    public function toggleTransactionOnHold(array $transactionIds, bool $holdFlag)
+    {
+        $failedTransactionUpdate = [];
+
+        foreach($transactionIds as $transactionId)
+        {
+            try
+            {
+                $this->repo->transaction(function() use ($transactionId, $holdFlag)
+                {
+                    $txn = $this->repo->transaction->lockForUpdate($transactionId);
+
+                    $txn->setOnHold($holdFlag);
+
+                    $this->repo->saveOrFail($txn);
+                });
+            }
+            catch(\Throwable $e)
+            {
+                $failedTransactionUpdate[] = $transactionId;
+
+                $this->trace->traceException(
+                    $e,
+                    Logger::ERROR,
+                    TraceCode::TOGGLE_TRANSACTION_UPDATE_FAILED,
+                    [
+                        'failed_transaction_id' => $transactionId,
+                    ]);
+            }
+        }
+
+        return $failedTransactionUpdate ;
+    }
 }

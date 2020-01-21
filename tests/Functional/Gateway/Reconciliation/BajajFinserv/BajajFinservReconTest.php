@@ -64,7 +64,7 @@ class BajajFinservReconTest extends TestCase
 
         $this->mockReconContentFunction(function (& $content) use ($payment_failure)
         {
-            if ($content['Dealer ID'] === $payment_failure['id'])
+            if ($content['order_id'] === $payment_failure['id'])
             {
                 $content = [];
             }
@@ -222,12 +222,10 @@ class BajajFinservReconTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'status'     => 'authorized',
-                'reference1' => '911082787695',
+                'status' => 'authorized',
             ],
             $payment
         );
-
         $gatewayEntity = $this->getDbEntity('mozart', ['payment_id' => $payment['id']]);
 
         $data = json_decode($gatewayEntity['raw'], true);
