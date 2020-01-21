@@ -15,11 +15,18 @@ class FileUploader extends Base\Core
      */
     protected $elfin;
 
-    public function __construct()
+    /**
+     * @property Entity $paperMandate
+     */
+    protected $paperMandate;
+
+    public function __construct(Entity $paperMandate)
     {
         parent::__construct();
 
         $this->elfin           = $this->app['elfin'];
+
+        $this->paperMandate    = $paperMandate;
     }
 
     const JPG_EXTENSION  = '.jpg';
@@ -38,9 +45,9 @@ class FileUploader extends Base\Core
 
     const FILE_ID = 'file_id';
 
-    public function saveCreatedMandateAndFileId(Entity $paperMandate, string $generatedMandateForm)
+    public function saveCreatedMandateAndFileId(string $generatedMandateForm)
     {
-        $fileName = $paperMandate->getPublicId() . self::PDF_EXTENSION;
+        $fileName = $this->paperMandate->getPublicId() . self::PDF_EXTENSION;
 
         $filePath = $this->storeFileInStorage($generatedMandateForm, $fileName);
 
@@ -49,9 +56,9 @@ class FileUploader extends Base\Core
         return $this->saveToUfh($uploadFile, self::GENERATED_IMAGE_FOLDER);
     }
 
-    public function uploadEnhancedForm(Entity $paperMandate, $image)
+    public function uploadEnhancedForm($image)
     {
-        $fileName = $paperMandate->getPublicId() . self::JPEG_EXTENSION;
+        $fileName = $this->paperMandate->getPublicId() . self::JPEG_EXTENSION;
 
         $filePath = $this->storeFileInStorage($image, $fileName);
 
@@ -80,18 +87,20 @@ class FileUploader extends Base\Core
         return $fileId;
     }
 
-    public function getSignedUrl($fileId)
+    public function getSignedUrl($fileId, $duration = 15)
     {
         $file = $this->app['ufh.service']->getSignedUrl(
-            'file_' . $fileId
+            'file_' . $fileId,
+            ['duration' => $duration],
+            $this->paperMandate->merchant->getId()
         );
 
         return $file['signed_url'];
     }
 
-    public function getSignedShortUrl($fileId)
+    public function getSignedShortUrl($fileId, $duration = 15)
     {
-        $signedUrl = $this->getSignedUrl($fileId);
+        $signedUrl = $this->getSignedUrl($fileId, $duration);
 
         return $this->elfin->shorten($signedUrl, ['ptype' => 'file'], false);
     }

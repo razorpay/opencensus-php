@@ -91,7 +91,7 @@ class Validator extends Base\Validator
         'subscription_card_change'      => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
         'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,5760|filled',
-        'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:20|filled',
+        'auth_type'                     => 'sometimes_if:method,emandate,card,emi,nach|string|max:20|filled',
         'preferred_auth'                => 'sometimes_if:method,card,emi|array|max:3|filled',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
@@ -104,6 +104,8 @@ class Validator extends Base\Validator
         'provider'                      => 'required_if:method,cardless_emi,paylater|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
+        'application'                   => 'sometimes|filled|string|in:google_pay',
+        'device'                        => 'sometimes',
     ];
 
     protected static $editAcquirerRules = [
@@ -564,6 +566,16 @@ class Validator extends Base\Validator
             return;
         }
 
+        /*
+         * Checking if the card payment is of Google Pay. If it is of Google Pay then there are no
+         * card details.
+         */
+        if (((isset($input['application'])) === true) and
+            ($input['application'] === 'google_pay'))
+        {
+            return;
+        }
+
         if ((isset($input['recurring']) === true) and
             ($input['recurring'] === '1') and
             (empty($input['token']) === false))
@@ -705,6 +717,14 @@ class Validator extends Base\Validator
 
     public function validateCardAndCvv(array $input)
     {
+        /*
+            No card details when the payment is for Google Pay for cards.
+        */
+        if ((isset($input['application']) === true) and ($input['application'] === 'google_pay'))
+        {
+            return;
+        }
+
         if (isset($input['card']) === false)
         {
             throw new Exception\BadRequestException(

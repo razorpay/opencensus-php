@@ -134,13 +134,31 @@ class Constants
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
+    const GOOGLE_PAY_CARDS                = 'google_pay_cards';
+
+    const ENACH_INTERMEDIATE              = 'enach_intermediate';
+    const SAVE_VPA                        = 'save_vpa';
+
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
+
+    const OFFLINE_PAYMENTS                = 'offline_payments';
+
+    /**
+     * If applied on partner merchant then all sub merchant settlement will be settled to partner
+     * this will be further aggregated and settled to partner merchant
+     */
+    const AGGREGATE_SETTLEMENT            = 'aggregate_settlement';
 
     /**
      * When adding submerchant, whether to set international activation flow to greylist
      * irrespective of merchant category and subcategory
      */
     const FORCE_GREYLIST_INTERNAT         = 'force_greylist_internat';
+
+    /**
+     * Skipping website and allowing international activation.
+     */
+    const SKIP_WEBSITE_INTERNAT         = 'skip_website_internat';
 
     /**
      * Flag to decide whether to show D2c credit score campaign announcement on merchant dashboard.
@@ -200,6 +218,18 @@ class Constants
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
     const ORDER_RECEIPT_UNIQUE            = 'order_receipt_unique';
 
+    /**
+     * Commission invoice will be generated only for those partners
+     * having this feature flag
+     */
+    const GENERATE_PARTNER_INVOICE        = 'generate_partner_invoice';
+
+    /**
+     * Feature flag to decide whether commission payout should happen
+     * manually via ops or automatically
+     */
+    const AUTOMATED_COMM_PAYOUT           = 'automated_comm_payout';
+
     // Payment authentication
     const ATM_PIN_AUTH                    = 'atm_pin_auth';
     const IVR                             = 'ivr';
@@ -255,12 +285,23 @@ class Constants
 
     const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
 
+    const BLOCK_OFFER_CREATION     = 'block_offer_creation';
+
+    const MULTIPLE_REDIRECTION_ONHOLD = 'multiple_redirection_onhold';
+  
+    const ERROR_METADATA_RESPONSE  = 'error_metadata_response';
+
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
      * to have a controlled roll out of x_pro might be removed going forward.
      */
     const X_PRO_INVITE  = 'x_pro_invite';
+
+    /*
+     * This flag will be used to skip some merchants from hitachi automatic onboarding
+     */
+    const SKIP_HITACHI_AUTO_ONBOARD  = 'skip_hitachi_auto_onboard';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -278,6 +319,7 @@ class Constants
         self::IRCTC_METHODS,
         self::GOOGLE_PAY_OMNICHANNEL,
         self::PHONEPE_INTENT,
+        self::SAVE_VPA,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -443,9 +485,21 @@ class Constants
         self::EXPOSE_FA_VALIDATION_UTR        => true,
         self::VALIDATE_MERCHANT_DOMAIN        => true,
         self::PARTNER_ACTIVATE_MERCHANT       => true,
+        self::GOOGLE_PAY_CARDS                => true,
         self::FORCE_GREYLIST_INTERNAT         => true,
+        self::SKIP_WEBSITE_INTERNAT           => true,
         self::SHOW_CREDIT_SCORE               => true,
         self::AGGREGATOR_OAUTH_CLIENT         => true,
+        self::AGGREGATE_SETTLEMENT            => true,
+        self::BLOCK_OFFER_CREATION            => true,
+        self::ENACH_INTERMEDIATE              => true,
+        self::SAVE_VPA                        => true,
+        self::GENERATE_PARTNER_INVOICE        => true,
+        self::AUTOMATED_COMM_PAYOUT           => true,
+        self::OFFLINE_PAYMENTS                => true,
+        self::ERROR_METADATA_RESPONSE         => true,
+        self::SKIP_HITACHI_AUTO_ONBOARD       => true,
+        self::MULTIPLE_REDIRECTION_ONHOLD     => true,
     ];
 
     // Entity type constants

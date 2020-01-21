@@ -13,6 +13,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Payment\Event;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -517,10 +518,13 @@ class Validator extends Base\Validator
         if ($merchants->count() > 0)
         {
             // throw exception if merchant by that email already exists
+            $description = PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS . $merchants->pluck(Entity::ID)->first();
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
                 Entity::EMAIL,
-                $merchants->pluck(Entity::ID)->toArray()
+                $merchants->pluck(Entity::ID)->toArray(),
+                $description
             );
         }
     }
@@ -1220,7 +1224,15 @@ class Validator extends Base\Validator
 
         if ($bankAccount === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+            // check partner bank account exists
+            $partner = (new Core)->getSettledToPartnersTypeOfMerchantIfExists($merchant);
+
+            $partnerbankAccountExits = (new Core)->isValidBankAccountForSettledToPartner($merchant, $partner);
+
+            if ($partnerbankAccountExits === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+            }
         }
     }
 
@@ -1352,7 +1364,56 @@ class Validator extends Base\Validator
                 PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
                 Entity::PARTNER_TYPE,
                 [$attribute => $value]);
+        }
+    }
 
+    public function validateBeforeEnablingInternationalByMerchant($merchant)
+    {
+        if ($merchant->isInternational() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_INTERNATIONAL);
+        }
+
+        $this->validateWebsite($merchant);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $internationalActivationFlow = $merchantDetails->getInternationalActivationFlow();
+
+        //
+        // @todo We need to remove this check once we implement feature request based international activation process
+        //
+        if ($internationalActivationFlow !== Detail\ActivationFlow::WHITELIST)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_INTERNATIONAL_STATUS_CHANGE_REQUEST,
+                Detail\Entity::INTERNATIONAL_ACTIVATION_FLOW,
+                [
+                    Detail\Entity::INTERNATIONAL_ACTIVATION_FLOW => $internationalActivationFlow
+                ]
+            );
+        }
+    }
+
+    /**
+     * Validates that merchant has a website
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateWebsite(Entity $merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        // Since website is not synced between merchant and merchant_detail,
+        // therefore checking for both
+        if ((empty($merchant->getWebsite()) === true) and
+            (empty($merchantDetails->getWebsite()) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET);
         }
     }
 }

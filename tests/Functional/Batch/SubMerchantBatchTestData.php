@@ -381,6 +381,37 @@ return [
         ],
     ],
 
+    'testProcessSubMerchantBatchForUnregisteredMerchants' => [
+        'request'  => [
+            'url'     => '/admin/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'   => 'sub_merchant',
+                'config' => [
+                    'partner_id'                => '10000000000000',
+                    'use_email_as_dummy'        => 0,
+                    'auto_submit'               => 1,
+                    'auto_activate'             => 1,
+                    'autofill_details'          => 1,
+                    'auto_enable_international' => 1,
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'sub_merchant',
+                'status'           => 'created',
+                'total_count'      => 1,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
     'testProcessSubMerchantBatchForActivateAlreadyExistingMerchant' => [
         'request'  => [
             'url'     => '/admin/batches',
@@ -564,5 +595,46 @@ return [
             Header::COMPANY_PAN              => 'JFKDU3829K',
             Header::COMPANY_PAN_NAME         => 'dsfdfsd',
         ],
+    ],
+
+    'UnregisteredEntries' => [
+        [
+            Header::MERCHANT_NAME            => 'SubMerchanttwo',
+            Header::MERCHANT_EMAIL           => 'merch2@razorpay.com',
+            Header::CONTACT_NAME             => 'merch',
+            Header::CONTACT_EMAIL            => 'merch2@razorpay.com',
+            Header::CONTACT_MOBILE           => '9302930212',
+            Header::TRANSACTION_REPORT_EMAIL => 'merch2@razorpay.com',
+            Header::ORGANIZATION_TYPE        => 2,
+            Header::BUSINESS_NAME            => 'sub merch business',
+            Header::BILLING_LABEL            => 'acme',
+            Header::INTERNATIONAL            => 0,
+            Header::PAYMENTS_FOR             => 'business',
+            Header::BUSINESS_MODEL           => 'acme',
+            Header::BUSINESS_CATEGORY        => 'financial_services',
+            Header::BUSINESS_SUB_CATEGORY    => 'lending',
+            Header::REGISTERED_ADDRESS       => 'acme',
+            Header::REGISTERED_CITY          => 'bangalore',
+            Header::REGISTERED_STATE         => 'karnataka',
+            Header::REGISTERED_PINCODE       => '849583',
+            Header::OPERATIONAL_ADDRESS      => 'acme',
+            Header::OPERATIONAL_CITY         => 'bangalore',
+            Header::OPERATIONAL_STATE        => 'karnataka',
+            Header::OPERATIONAL_PINCODE      => '930293',
+            Header::DOE                      => '1990-02-12',
+            Header::GSTIN                    => '22AAAAA0000A1Z6',
+            Header::PROMOTER_PAN             => 'KDOEK0930L',
+            Header::WEBSITE_URL              => 'http://www.test.com',
+            Header::PROMOTER_PAN_NAME        => 'sdfds',
+            Header::BANK_ACCOUNT_NUMBER      => '123456789099',
+            Header::BANK_BRANCH_IFSC         => 'HDFC0000056',
+            Header::BANK_ACCOUNT_NAME        => 'Mr merch',
+            Header::REFERENCE1               => 'service id',
+            Header::COMPANY_CIN              => 'qwer1234',
+            Header::COMPANY_PAN              => 'JFKDU3829K',
+            Header::COMPANY_PAN_NAME         => 'dsfdfsd',
+        ],
     ]
+
+
 ];

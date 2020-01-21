@@ -32,8 +32,10 @@ use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\FeeModel;
+use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Transaction\Processor as TransactionProcessor;
 
 class Core extends Base\Core
@@ -651,7 +653,7 @@ class Core extends Base\Core
         //
         $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
 
-        $transfer->getValidator()->validateMerchantBalanceForTransfer($merchantBalance);
+        $transfer->getValidator()->validateMerchantBalanceForTransfer($merchant, $merchantBalance);
 
         //
         // For transfers from a payment, if the source payment is not
@@ -803,6 +805,13 @@ class Core extends Base\Core
         return $txn;
     }
 
+    public function createFromSettlementTransfer(Settlement\Transfer\Entity $transfer)
+    {
+        list($txn, $feeSplit) = $this->createTransactionForSource($transfer);
+
+        return $txn;
+    }
+
     public function createFromPayout(Payout\Entity $payout)
     {
         $txn = new Transaction\Entity;
@@ -905,11 +914,51 @@ class Core extends Base\Core
 
         $txn->accountBalance()->associate($merchantBalance);
 
-        $merchantBalance->updateBalance($txn);
+        $mode = $this->mode ?? 'live';
+
+        $oldBalance = $merchantBalance->getBalance();
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $txn->merchant->getId(),
+            ]
+        );
+
+        $response = $this->app->razorx->getTreatment($txn->getMerchantId(),
+                                                     BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE,
+                                                     $mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $txn->merchant->getId(),
+                'response'      => $response
+            ]
+        );
+
+        $merchantBalance->updateBalance($txn, $response === 'on');
+
+        $newBalance = $merchantBalance->getBalance();
 
         $this->repo->balance->updateBalance($merchantBalance);
 
-        $txn->setBalance($merchantBalance->getBalance());
+        $txn->setBalance($merchantBalance->getBalance(), $response === 'on');
+
+        if ($response === 'on')
+        {
+            if ($newBalance < 0)
+            {
+                $dimensions = (new Balance\Metric)->getBalanceNegativeDimensions($this->merchant, $merchantBalance,
+                                                                                  $txn->getType());
+
+                $this->trace->count(Balance\Metric::BALANCE_NEGATIVE, $dimensions);
+            }
+
+            (new Balance\Core)->sendNegativeBalanceMailIfApplicable($this->merchant, $oldBalance, $newBalance,
+                                                        $merchantBalance->getType(), 'merchant balance',
+                                                        $txn->getType());
+        }
 
         return $txn;
     }
@@ -1062,7 +1111,7 @@ class Core extends Base\Core
         }
     }
 
-    public function updateRefundCredits(Transaction\Entity $txn)
+    public function updateRefundCredits(Transaction\Entity $txn, bool $negativeBalanceEnabled = false)
     {
         // While filling the txn fees and amount, we have not used fee credits.
         if ((($txn->isTypeRefund() === false) and
@@ -1080,20 +1129,32 @@ class Core extends Base\Core
 
         $refundCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::REFUND);
 
-        if ($refundCredits < $amount)
+        if ($negativeBalanceEnabled === false)
         {
-            throw new Exception\LogicException(
-                'Refund Credits should be higher or equal to the refund amount',
-                null,
-                [
-                    'transaction_id'    => $txn->getId(),
-                    'merchant_id'       => $merchantId,
-                    'refund_credits'    => $refundCredits,
-                    'amount'            => $amount,
-                ]);
-        }
+            if($refundCredits < $amount)
+            {
+                throw new Exception\LogicException(
+                    'Refund Credits should be higher or equal to the refund amount',
+                    null,
+                    [
+                        'transaction_id' => $txn->getId(),
+                        'merchant_id'    => $merchantId,
+                        'refund_credits' => $refundCredits,
+                        'amount'         => $amount,
+                    ]);
+            }
 
-        $merchantBalance->subtractRefundCredits($amount);
+            $merchantBalance->subtractRefundCredits($amount, $negativeBalanceEnabled);
+        }
+        else
+        {
+            $merchantBalance->subtractRefundCredits($amount, $negativeBalanceEnabled);
+
+            $newCredits = $this->merchantBalance->getRefundCredits();
+
+            (new Balance\Core)->sendNegativeBalanceMailIfApplicable($this->merchantBalance->merchant, $refundCredits, $newCredits,
+                $this->merchantBalance->getType(), 'refund credits', $this->txn->getType());
+        }
 
         //create a credit transaction for the same
         $this->createCreditTransaction($amount, $txn, Credits\Type::REFUND);
@@ -1216,6 +1277,26 @@ class Core extends Base\Core
 
     public function updateCredits(Transaction\Entity $txn, Base\PublicEntity $entity)
     {
+        $mode = $this->mode ?? 'live';
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $txn->merchant->getId(),
+            ]
+        );
+
+        $response = $this->app->razorx->getTreatment($txn->merchant->getId(),
+            BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE, $mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $txn->merchant->getId(),
+                'response'      => $response
+            ]
+        );
+
         if ($txn->isGratis() === true)
         {
             $this->updateAmountCredits($txn, $entity);
@@ -1226,7 +1307,7 @@ class Core extends Base\Core
         }
         else if ($txn->isRefundCredits() === true)
         {
-            $this->updateRefundCredits($txn);
+            $this->updateRefundCredits($txn, $response === 'on');
         }
     }
 
@@ -1493,11 +1574,31 @@ class Core extends Base\Core
 
         $processor->setMerchantBalanceLockForUpdate();
 
-        $processor->updateCredits();
+        $mode = $this->mode ?? 'live';
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $payment->merchant->getId(),
+            ]
+        );
+
+        $response = $this->app->razorx->getTreatment($payment->merchant->getId(),
+                                                    BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE, $mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $payment->merchant->getId(),
+                'response'      => $response
+            ]
+        );
+
+        $processor->updateCredits($response === 'on');
 
         $processor->updateBalances();
 
-        $txn->setBalance(null);
+        $txn->setBalance(null, $response === 'on');
 
         $txn->setBalanceUpdated(true);
 
@@ -1533,5 +1634,45 @@ class Core extends Base\Core
                 TraceCode::FAILED_TO_ENQUEUE_MERCHANT_FOR_SETTLEMENT
             );
         }
+    }
+
+    /**
+     * it will update the on_hold status of the transaction with respect to holdFlag
+     * @param array $transactionIds
+     * @param bool $holdFlag
+     * @return array
+     */
+    public function toggleTransactionOnHold(array $transactionIds, bool $holdFlag)
+    {
+        $failedTransactionUpdate = [];
+
+        foreach($transactionIds as $transactionId)
+        {
+            try
+            {
+                $this->repo->transaction(function() use ($transactionId, $holdFlag)
+                {
+                    $txn = $this->repo->transaction->lockForUpdate($transactionId);
+
+                    $txn->setOnHold($holdFlag);
+
+                    $this->repo->saveOrFail($txn);
+                });
+            }
+            catch(\Throwable $e)
+            {
+                $failedTransactionUpdate[] = $transactionId;
+
+                $this->trace->traceException(
+                    $e,
+                    Logger::ERROR,
+                    TraceCode::TOGGLE_TRANSACTION_UPDATE_FAILED,
+                    [
+                        'failed_transaction_id' => $transactionId,
+                    ]);
+            }
+        }
+
+        return $failedTransactionUpdate ;
     }
 }

@@ -90,7 +90,8 @@ class Service extends Base\Service
                         $item[Pricing\Entity::PAYMENT_METHOD],
                         $item[Pricing\Entity::PAYMENT_METHOD_TYPE],
                         $item[Pricing\Entity::PAYMENT_NETWORK],
-                        $item[Pricing\Entity::INTERNATIONAL])) === null)
+                        $item[Pricing\Entity::INTERNATIONAL],
+                        0)) === null)
                     {
                         if (($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($planId)) !== 1)
                         {

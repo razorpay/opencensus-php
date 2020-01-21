@@ -6,7 +6,6 @@ use Mail;
 use Excel;
 use Carbon\Carbon;
 
-use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
@@ -45,45 +44,11 @@ class NetbankingCubCombinedFileTest extends TestCase
 
         $refundEntity2 = $this->getDbLastEntity('refund');
 
-        $scroogeResponse = [
-            'code'     => 200,
-            'body'     => [
-                'data' => [
-                    [
-                        'id'          => $refundEntity1['id'],
-                        'amount'      => $refundEntity1['amount'],
-                        'base_amount' => $refundEntity1['base_amount'],
-                        'payment_id'  => $refundEntity1['payment_id'],
-                        'bank'        => $refundEntity1->payment['bank'],
-                        'gateway'     => $refundEntity1['gateway'],
-                        'currency'    => $refundEntity1['currency'],
-                        'method'      => $refundEntity1->payment['method'],
-                        'created_at'  => $refundEntity1['created_at'],
-                    ],
-                    [
-                        'id'          => $refundEntity2['id'],
-                        'amount'      => $refundEntity2['amount'],
-                        'base_amount' => $refundEntity2['base_amount'],
-                        'payment_id'  => $refundEntity2['payment_id'],
-                        'bank'        => $refundEntity2->payment['bank'],
-                        'gateway'     => $refundEntity2['gateway'],
-                        'currency'    => $refundEntity2['currency'],
-                        'method'      => $refundEntity2->payment['method'],
-                        'created_at'  => $refundEntity2['created_at'],
-                    ],
-                ],
-            ],
-        ];
+        // Netbanking CUB refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity1['is_scrooge']);
+        $this->assertEquals(1, $refundEntity2['is_scrooge']);
 
-        $scroogeMock = $this->getMockBuilder(Scrooge::class)
-                            ->setConstructorArgs([$this->app])
-                            ->setMethods(['getFileBasedRefunds'])
-                            ->getMock();
-
-        $this->app->instance('scrooge', $scroogeMock);
-
-        $this->app->scrooge->method('getFileBasedRefunds')
-                           ->willReturn($scroogeResponse);
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2]);
 
         $this->ba->adminAuth();
 
@@ -147,6 +112,12 @@ class NetbankingCubCombinedFileTest extends TestCase
                 $payment2);
 
             $this->assertCount(2, $mail->attachments);
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
 
             return true;
         });

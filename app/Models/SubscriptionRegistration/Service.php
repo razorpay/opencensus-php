@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
+use RZP\Http\RequestHeader;
 use RZP\Models\Customer\Token;
 use RZP\Jobs\TokenRegistrationAutoCharge;
 
@@ -48,7 +49,9 @@ class Service extends Base\Service
 
     public function createAuthLink(array $input): array
     {
-        $invoice = $this->core->createAuthLink($input, $this->merchant);
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
+
+        $invoice = $this->core->createAuthLink($input, $this->merchant,null, null, $batchId);
 
         return $invoice->toArrayPublic();
     }
@@ -279,6 +282,8 @@ class Service extends Base\Service
         $paymentInput[Payment\Entity::CONTACT]     = $customer->getContact();
 
         $paymentInput[Payment\Entity::EMAIL]       = $customer->getEmail();
+
+        $paymentInput[Payment\Entity::AUTH_TYPE]   = $subscriptionRegistration->getAuthType();
 
         $paymentService = new Payment\Service();
 

@@ -10,6 +10,9 @@ use RZP\Mail\PaymentLink\PaymentRequest;
 
 class Notifier extends Base\Core
 {
+    const SMS_WITH_AMOUNT_TEMPLATE    = 'sms.payment_page.with_amount';
+    const SMS_WITHOUT_AMOUNT_TEMPLATE = 'sms.payment_page.without_amount';
+
     /**
      * @var \RZP\Services\Raven
      */
@@ -123,17 +126,26 @@ class Notifier extends Base\Core
     {
         $merchant = $paymentLink->merchant;
 
+        $amount = $paymentLink->getAmountToSendSmsOrEmail();
+
+        $template = $this->getTemplateForSMS($amount);
+
         return [
             'receiver' => $contact,
             'source'   => "api.{$this->mode}.payment_link",
             // The template for invoice & payment_link is same, we are continuing to use the same for now
-            'template' => 'sms.invoice',
+            'template' => $template,
             'params'   => [
                 'merchant_name' => $merchant->getBillingLabel(),
-                'amount'        => amount_format_IN($paymentLink->getAmount()),
+                'amount'        => amount_format_IN($amount),
                 'invoice_link'  => $paymentLink->getShortUrl(),
                 'currency'      => $paymentLink->getCurrency(),
             ],
         ];
+    }
+
+    protected function getTemplateForSMS($amount = null)
+    {
+        return $amount === null ? self::SMS_WITHOUT_AMOUNT_TEMPLATE : self::SMS_WITH_AMOUNT_TEMPLATE;
     }
 }

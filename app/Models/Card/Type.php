@@ -55,4 +55,13 @@ class Type
 
         return $type . 'card';
     }
+
+    public static function getCardTypes():array
+    {
+        return [
+            self::CREDIT,
+            self::DEBIT,
+            self::PREPAID
+        ];
+    }
 }

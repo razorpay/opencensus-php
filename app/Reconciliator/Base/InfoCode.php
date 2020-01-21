@@ -58,6 +58,8 @@ class InfoCode
 
     const UNEXPECTED_PAYMENT                            = 'UNEXPECTED_PAYMENT';
 
+    const UNEXPECTED_REFUND                             = 'UNEXPECTED_REFUND';
+
     const VPA_MISMATCH                                  = 'VPA_MISMATCH';
 
     const RECON_UNEXPECTED_REFUND                       = 'RECON_UNEXPECTED_REFUND';
@@ -171,4 +173,16 @@ class InfoCode
     const CPS_RESPONSE_AUTHORIZATION_DATA               = 'CPS_RESPONSE_AUTHORIZATION_DATA';
 
     const PAYMENT_RECON_CPS_JOB_FAILURE_EXCEPTION       = 'PAYMENT_RECON_CPS_JOB_FAILURE_EXCEPTION';
+
+    const RECON_NBPLUS_JOB_DISPATCH                     = 'RECON_NBPLUS_JOB_DISPATCH';
+
+    const RECON_NBPLUS_QUEUE_DISPATCH                   = 'RECON_NBPLUS_QUEUE_DISPATCH';
+
+    const NBPLUS_DATA_MISMATCH                          = 'NBPLUS_DATA_MISMATCH';
+
+    const NBPLUS_DATA_ABSENT                            = 'NBPLUS_DATA_ABSENT';
+
+    const NBPLUS_RESPONSE_DATA                          = 'NBPLUS_RESPONSE_DATA';
+
+    const PAYMENT_RECON_NBPLUS_JOB_FAILURE_EXCEPTION    = 'PAYMENT_RECON_NBPLUS_JOB_FAILURE_EXCEPTION';
 }

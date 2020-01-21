@@ -3059,7 +3059,7 @@ class OtpPaymentTest extends TestCase
         self::assertTrue($this->otpFlow);
         self::assertEquals('authorized', $payment['status']);
         self::assertEquals('headless_otp', $payment['auth_type']);
-        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('paysecure', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
 
@@ -3303,7 +3303,7 @@ class OtpPaymentTest extends TestCase
         self::assertTrue($this->otpFlow);
         self::assertEquals('authorized', $payment['status']);
         self::assertEquals('headless_otp', $payment['auth_type']);
-        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('paysecure', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
 

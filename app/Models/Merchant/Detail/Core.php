@@ -23,6 +23,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
+use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
@@ -30,14 +31,17 @@ use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\AutoKyc\ServiceFactory;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
+use RZP\Mail\Merchant\Rejection as RejectionEmail;
+use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
+use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 
 class Core extends Base\Core
 {
@@ -86,6 +90,8 @@ class Core extends Base\Core
         $this->repo->assertTransactionActive();
 
         $merchantDetails = $this->getMerchantDetails($merchant);
+
+        $this->autoUpdateMerchantActivationFlows($merchant, null, [Detail\Constants::INTERNATIONAL_ACTIVATION]);
 
         $this->updatePoaVerificationStatusIfApplicable($merchantDetails, $merchant);
 
@@ -251,9 +257,12 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      *
      * @param Merchant\Entity $partner
-     *
+     * @param array           $activationFlowTypes
      */
-    public function autoUpdateMerchantActivationFlows(Merchant\Entity $merchant, $partner = null)
+    public function autoUpdateMerchantActivationFlows(Merchant\Entity $merchant,
+                                                      Merchant\Entity $partner = null,
+                                                      array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS
+    )
     {
         $this->repo->assertTransactionActive();
 
@@ -267,9 +276,7 @@ class Core extends Base\Core
             return;
         }
 
-        $this->autoUpdateActivationFlow($merchant, $partner);
-
-        $this->autoUpdateInternationalActivationFlow($merchant, $partner);
+        $this->updateActivationFlows($merchant, $partner, $activationFlowTypes);
 
         $eventAttributes['activation_flow'] = $merchantDetails->getActivationFlow();
 
@@ -323,26 +330,11 @@ class Core extends Base\Core
             return;
         }
 
-        // if submerchant asked for international and partner wants to force international to greylist
-        if ((empty($partner) === false) and
-            ($merchantDetails->getBusinessInternational() === true) and
-            ($partner->forceGreyListInternational() === true))
-        {
-            $activationFlow = ActivationFlow::GREYLIST;
-        }
-        else
-        {
-            $subcategory = $merchantDetails->getBusinessSubcategory();
-            $category    = $merchantDetails->getBusinessCategory();
+        $internationalActivationFlow = (new Detail\InternationalCore)->getInternationalActivationFlow($merchant, $partner);
 
-            $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+        $merchantDetails->setInternationalActivationFlow($internationalActivationFlow);
 
-            $activationFlow = $subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION];
-        }
-
-        $merchantDetails->setInternationalActivationFlow($activationFlow);
-
-        $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions($activationFlow);
+        $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions($internationalActivationFlow);
 
         $this->trace->count(Metric::INTERNATIONAL_MERCHANT_ACTIVATION, $international_activation_metric_dimensions);
     }
@@ -478,7 +470,7 @@ class Core extends Base\Core
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      *
-     * @return Verifiers\PanVerifierResponse|null
+     * @return MozartService\PanVerifierResponse|null
      */
     protected function verifyPOIDetailsIfApplicable(Entity $merchantDetails, MErchant\Entity $merchant)
     {
@@ -496,21 +488,18 @@ class Core extends Base\Core
             return null;
         }
 
-        $input = [
-            DEConstants::PAN_NUMBER => $merchantDetails->getPromoterPan(),
-        ];
 
         $response = null;
 
+        $verificationStatus = POIStatus::FAILED;
         try
         {
-            $verifier = FactoryVerifier::getPoiVerifier($input);
+            $input = [
+                DEConstants::PAN_NUMBER        => $merchantDetails->getPromoterPan(),
+                DEConstants::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName()
+            ];
 
-            $response = $verifier->verifyDetails();
-
-            $response->setPanOwnerName($merchantDetails->getPromoterPanName());
-
-            $merchantDetails->setPoiVerificationStatus($response->getStatus());
+            $verificationStatus = (new AutoKyc\Core())->verifyPOI($merchantDetails, $input);
         }
         catch (\Throwable $e)
         {
@@ -518,8 +507,9 @@ class Core extends Base\Core
                                          null,
                                          TraceCode::MERCHANT_POI_VERIFICATION_FAILED);
 
-            $merchantDetails->setPoiVerificationStatus(POIStatus::FAILED);
         }
+
+        $merchantDetails->setPoiVerificationStatus($verificationStatus);
 
         $dimension = $this->fetchPoiMetricDimensions($merchantDetails);
 
@@ -668,21 +658,34 @@ class Core extends Base\Core
      * Use with caution
      *
      * @param Merchant\Entity $merchant
+     *
+     * @throws \RZP\Exception\BadRequestException
      */
     public function saveDummyActivationFiles(Merchant\Entity $merchant)
     {
         $merchantDetails = $merchant->merchantDetail;
 
-        $params = [
-            Entity::ADDRESS_PROOF_URL    => '100000000Dummy',
-            Entity::BUSINESS_PAN_URL     => '100000000Dummy',
-            Entity::BUSINESS_PROOF_URL   => '100000000Dummy',
-            Entity::PROMOTER_ADDRESS_URL => '100000000Dummy',
-        ];
+        $requiredDocuments = $this->getRequireActivationDocuments($merchantDetails);
 
-        $merchantDetails->fill($params);
+        $params = [];
 
-        $this->repo->saveOrFail($merchantDetails);
+        foreach ($requiredDocuments as $requiredDocument)
+        {
+            $params[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
+        }
+
+        //
+        // Currently only for unregistered business we save documents in new table(Merchant documents) for
+        // other business type we still save document in merchant detail table and sync both tables .
+        //
+        if ($merchantDetails->isUnregisteredBusiness() === false)
+        {
+            $merchantDetails->fill($params);
+
+            $this->repo->saveOrFail($merchantDetails);
+        }
+
+        (new Document\Core)->storeInMerchantDocument($merchant, $params);
     }
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
@@ -990,10 +993,24 @@ class Core extends Base\Core
                     $oldMerchantDetails,
                     $newMerchantDetails,
                     $rejectionReasons);
+
+                $this->sendRejectionEmail($merchant);
             }
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
             {
+
+                //
+                // For Older merchant who are still in old flow ,
+                // kyc clarification will be empty in this case form should not get unlocked
+                //
+                if (empty($merchantDetails->getKycClarificationReasons()) === false)
+                {
+                    $merchantDetails->setLocked(false);
+
+                    $this->sendNeedsClarificationEmail($merchant);
+                }
+
                 $this->deactivateIfFlawedWebsite($merchant, $merchantDetails->getIssueFields());
             }
 
@@ -1017,7 +1034,7 @@ class Core extends Base\Core
             if (empty($status) === false)
             {
                 $eventPayload = [
-                    ApiEventSubscriber::MAIN => $merchantDetails->merchant,
+                    ApiEventSubscriber::MAIN => $merchant,
                 ];
 
                 $event = 'api.account.' . $status;
@@ -1038,6 +1055,37 @@ class Core extends Base\Core
                 $currentActivationStatus));
 
         return $merchantDetails;
+    }
+
+    /**
+     * @param $merchant
+     */
+    public function sendNeedsClarificationEmail(Merchant\Entity $merchant)
+    {
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $clarificationCore = New Detail\NeedsClarification\Core();
+
+        $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
+            $merchantDetail->getKycClarificationReasons());
+
+        $data = [
+            DEConstants::MERCHANT             => [
+                Merchant\Entity::NAME          => $merchant->getName(),
+                Merchant\Entity::BILLING_LABEL => $merchant->getBillingLabel(),
+                Merchant\Entity::EMAIL         => $merchant->getEmail(),
+                DEConstants::ORG               => [
+                    DEConstants::HOSTNAME => $org->getPrimaryHostName(),
+                ]
+            ],
+            DEConstants::CLARIFICATION_REASON => $clarificationReasons,
+        ];
+
+        $email = new ClarificationEmail($data, $org->toArray());
+
+        Mail::queue($email);
     }
 
     /**
@@ -1068,9 +1116,12 @@ class Core extends Base\Core
 
     /**
      * Triggers workflow when activation status is changed to rejected
+     *
      * @param Entity $oldMerchantDetails
      * @param Entity $newMerchantDetails
-     * @param array $rejectionReasons
+     * @param array  $rejectionReasons
+     *
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      */
     protected function triggerWorkflowForRejectionActivationStatusChange(
         Entity $oldMerchantDetails,
@@ -1496,7 +1547,7 @@ class Core extends Base\Core
        *
       */
 
-    protected function fetchActivationMetricDimensions(string $label, array $extra = []): array
+    protected function fetchActivationMetricDimensions(string $label = null, array $extra = []): array
     {
         return $extra + [
                 Metric::ACTIVATION_FLOW => $label
@@ -1568,8 +1619,15 @@ class Core extends Base\Core
             return;
         }
 
-        // if bank detail is already verified then skip penny testing
-        if ($merchantDetails->isBankDetailStatusVerified() === true)
+        //
+        // if bank detail is already attempted then skip penny testing and send to manual queue .
+        //
+        if ($merchantDetails->getBankDetailsVerificationStatus() !== null)
+        {
+            return;
+        }
+
+        if($this->shouldSkipBankAccountRegistration() == true)
         {
             return;
         }
@@ -1756,5 +1814,102 @@ class Core extends Base\Core
         }
 
         return $merchantDetailsInput;
+    }
+
+    /**
+     * Returns required document for L2 submission
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return array
+     */
+    private function getRequireActivationDocuments(Entity $merchantDetails): array
+    {
+        $response = $this->createResponse($merchantDetails);
+
+        $requiredFields = $response[DEConstants::VERIFICATION][DEConstants::REQUIRED_FIELDS] ?? [];
+
+        $requiredDocuments = [];
+
+        foreach ($requiredFields as $requiredField)
+        {
+            $documentFields = ValidationFields::getDocumentsRequired($requiredField);
+
+            if (empty($documentFields) === false)
+            {
+                $requiredDocuments = array_merge_recursive($requiredDocuments, $documentFields);
+            }
+        }
+
+        return $requiredDocuments;
+    }
+
+    public function sendRejectionEmail($merchant)
+    {
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+        $data = [
+            'name'  => $merchant->getName(),
+            'email' => $merchant->getEmail(),
+            'id'    => $merchant->getId(),
+        ];
+
+        // For marketplace accounts, send this email to the parent merchant
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $data['email'] = $merchant->parent->getEmail();
+        }
+
+        $rejectionMail = new RejectionEmail($data, $org->toArray());
+
+        Mail::queue($rejectionMail);
+    }
+
+    public function updateInternationalActivationFlow(Merchant\Entity $merchant, $international)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $internationalActivationFlow = ActivationFlow::BLACKLIST;
+
+        if ($international === 1)
+        {
+            $internationalActivationFlow = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
+                BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
+                $merchantDetail->getBusinessCategory(),
+                $merchantDetail->getBusinessSubcategory(),
+                ActivationFlow::BLACKLIST);
+        }
+
+        $merchantDetail->setInternationalActivationFlow($internationalActivationFlow);
+
+        $this->repo->saveOrFail($merchantDetail);
+    }
+
+
+    /**
+     * @param Merchant\Entity      $merchant
+     * @param Merchant\Entity|null $partner
+     * @param array                $activationFlowTypes
+     */
+    protected function updateActivationFlows(Merchant\Entity $merchant,
+                                             Merchant\Entity $partner = null,
+                                             array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS): void
+    {
+        foreach ($activationFlowTypes as $activationFlowType)
+        {
+            switch ($activationFlowType)
+            {
+                case Detail\Constants::ACTIVATION:
+
+                    $this->autoUpdateActivationFlow($merchant, $partner);
+
+                    break;
+                case Detail\Constants::INTERNATIONAL_ACTIVATION:
+
+                    $this->autoUpdateInternationalActivationFlow($merchant, $partner);
+
+                    break;
+            }
+        }
     }
 }

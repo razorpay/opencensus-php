@@ -140,7 +140,7 @@ class Service extends Base\Service
         {
             $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
-            $tokens = $this->core->fetchTokensByCustomer($app->customer);
+            $tokens = $this->core->fetchTokensByCustomer($app->customer, $this->merchant);
         }
 
         return $tokens->toArrayPublic();

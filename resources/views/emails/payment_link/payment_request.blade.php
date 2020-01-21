@@ -6,6 +6,10 @@
   @php
       $amountPayable = $payment_link['amount'];
       $headerLabel = $merchant['name'] . ' has sent you a payment request for ' . $payment_link['currency'] . ' ' . $payment_link['amount_formatted'];
+      if (empty($amountPayable) === true)
+      {
+        $headerLabel = $merchant['name'] . ' has sent you a payment request';
+      }
       $ctaLabel = 'PROCEED TO PAY';
       $ctaHref = $payment_link['short_url'];
   @endphp

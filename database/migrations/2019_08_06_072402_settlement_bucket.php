@@ -40,7 +40,7 @@ class SettlementBucket extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
-            $table->index(Entity::BUCKET_TIMESTAMP, Entity::COMPLETED);
+            $table->index(Entity::BUCKET_TIMESTAMP);
 
             $table->unique([Entity::MERCHANT_ID, Entity::BALANCE_TYPE, Entity::BUCKET_TIMESTAMP], self::UNIQUE_INDEX_NAME);
         });

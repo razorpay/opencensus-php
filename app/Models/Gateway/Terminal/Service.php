@@ -181,6 +181,12 @@ class Service extends Base\Service
 
     protected function shouldCreateTerminal(bool $checkFeatureEnabled, $merchantId)
     {
+        $isFunc = $this->app->environment(Environment::FUNC);
+        
+        if($isFunc === true){
+            return false;                                                         
+        }
+
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
         if ($isProduction === false)
@@ -311,5 +317,18 @@ class Service extends Base\Service
         );
         
         return $terminalOnboardingDetail->getStatus();
+    }
+
+    public function callGatewayForTerminalEnableOrDisable($terminal, $action)
+    {
+        $gateway = $terminal->gateway;
+
+        $gatewayProcessor = GatewayFactory::build($gateway);
+
+        $request = $gatewayProcessor->getGatewayRequestArrayForEnableOrDisable($terminal);
+
+        $response = $this->app['gateway']->call($gateway, $action, $request, $this->mode, $terminal);
+        
+        $gatewayProcessor->raiseExceptionIfEnableOrDisableFails($response, $action);           
     }
 }

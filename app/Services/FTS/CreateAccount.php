@@ -46,6 +46,10 @@ class CreateAccount extends Base
 
     protected $nodalBeneficiaryCore;
 
+    protected $channel;
+
+    protected $sourceAccountType;
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -77,6 +81,8 @@ class CreateAccount extends Base
         $this->accountType = $type;
 
         $this->status      = $status;
+
+        $this->channel     = null;
 
         if ($status !== null)
         {
@@ -197,9 +203,16 @@ class CreateAccount extends Base
      */
     public function getAccountDetails(BankAccount\Entity $ba):array
     {
+        $type = Constants::SAVING;
+
+        if (empty($this->sourceAccountType) === false)
+        {
+            $type = $this->sourceAccountType;
+        }
+
         return [
             Constants::IFSC_CODE                  => $ba->getIfscCode(),
-            Constants::ACCOUNT_TYPE               => $ba->getAccountType() ?? Constants::SAVING,
+            Constants::ACCOUNT_TYPE               => $ba->getAccountType() ?? $type,
             Constants::ACCOUNT_NUMBER             => $ba->getAccountNumber(),
             Constants::BENEFICIARY_NAME           => $ba->getBeneficiaryName(),
             Constants::BENEFICIARY_CITY           => $ba->getBeneficiaryCity(),
@@ -375,6 +388,11 @@ class CreateAccount extends Base
 
     protected function getDefaultChannelByProductAndAccountType()
     {
+        if(empty($this->channel) === false)
+        {
+            return $this->channel;
+        }
+
         if ($this->product === Product::PAYOUT)
         {
             if ($this->accountType === Constants::BANKING_ACCOUNT)
@@ -473,6 +491,10 @@ class CreateAccount extends Base
         {
             $this->initialize($input['id'], $input['type'], $input['product']);
 
+            $this->channel = $input['channel'];
+
+            $this->sourceAccountType = $input['sourceAccountType'];
+
             $response = $this->createFundAccount();
 
             if (empty($response[Constants::BODY][Constants::FUND_ACCOUNT_ID]) === true)
@@ -525,5 +547,10 @@ class CreateAccount extends Base
             parent::SOURCE_ACCOUNT_DELETE_URI,
             Requests::DELETE,
             $input);
+    }
+
+    public function getAccount()
+    {
+        return $this->account;
     }
 }

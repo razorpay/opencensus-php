@@ -42,12 +42,15 @@ use RZP\Constants\Entity;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
+use RZP\Models\PaymentsUpi;
 use RZP\Constants\Environment;
+use RZP\Models\Card\Network;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
@@ -59,7 +62,9 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Customer\GatewayToken;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
-
+use RZP\Gateway\Mozart\GetSimpl\Constants;
+use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 
 trait Authorize
 {
@@ -229,13 +234,36 @@ trait Authorize
             return null;
         }
 
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:238"
+            ]
+        );
+
         if ($this->canAuthorizeViaCps($payment) === true)
         {
+
             $request =  $this->authorizeViaCps($payment, $input, $gatewayInput);
+
+            $this->trace->info(
+                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+                [
+                    'line'      => "Models/Payment/Processor/Authorize.php:251"
+                ]
+            );
+
         }
         else
         {
             $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+
+            $this->trace->info(
+                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+                [
+                    'line'      => "Models/Payment/Processor/Authorize.php:263"
+                ]
+            );
         }
 
         if (($request !== null) and
@@ -288,6 +316,14 @@ trait Authorize
 
         $retry = false;
 
+        // Checking razorX flag for feedback loop here per paymentId
+        $razorXForDoppler = $this->app->doppler->checkRazorXForFeedbackLoop($payment->getId());
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:323"
+            ]
+        );
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -301,6 +337,11 @@ trait Authorize
         {
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
+            // Using Hitachi terminals for paysecure until we create new ones for paysecure.
+            if ($this->shouldCreatePaysecurePayment($payment, $input, $currentTerminal))
+            {
+                $currentTerminal[Terminal\Entity::GATEWAY] = Gateway::PAYSECURE;
+            }
             // Uncomment this to test with Sharp or any other terminal locally.
             // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
             $payment->associateTerminal($currentTerminal);
@@ -401,12 +442,7 @@ trait Authorize
 
                 $internalErrorCode = $e->getError()->getInternalErrorCode();
 
-                $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-                $variant  = $this->app->razorx->getTreatment($payment->getId(), 'api_hitting_doppler_service', $this->mode);
-
-                if (($isProduction === true) and
-                    (strtolower($variant) === 'on'))
+                if ($razorXForDoppler === true)
                 {
                     //TODO: Remove this later
                     try
@@ -477,6 +513,10 @@ trait Authorize
         {
             $request = $this->runAutoDebitFlow($payment, $gatewayInput);
         }
+        else if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
+        {
+            $request = $this->callGatewayFunction(Action::AUTHORIZE, $gatewayInput);
+        }
         else
         {
             $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
@@ -536,6 +576,10 @@ trait Authorize
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
     {
+        if ($payment->isGooglePayCard() === true)
+        {
+            return;
+        }
         // try calculating the fees, throws exception if fees is more than amount
         list($fee, $tax, $feesSplit) = $this->repo->useSlave(function () use ($payment)
         {
@@ -727,6 +771,22 @@ trait Authorize
         return $response;
     }
 
+    protected function getGooglePayCardPaymentCreatedResponse($request, $payment)
+    {
+        $this->repo->saveOrFail($payment);
+
+        $response = [
+            'version'               => 1,
+            'type'                  => 'application',
+            'application_name'      => 'google_pay',
+            'payment_id'            => $payment->getPublicId(),
+            'gateway'               => $this->getEncryptedGatewayText($payment->getGateway()),
+            'request'               => $request,
+        ];
+
+        return $response;
+    }
+
     protected function updateTwoFactorAuthForOneStepPayment()
     {
         $payment = $this->payment;
@@ -878,6 +938,11 @@ trait Authorize
 
         try
         {
+            // this is a temporary fix for irctc case, where a validation has to be done on supported method level,
+            // which will be stored in notes during order creation
+            // Slack Ref - https://razorpay.slack.com/archives/C2ZL6H76U/p1578388168053200
+            $this->validateOrderMethods($payment);
+
             $this->validateCardAndCvv($payment, $input);
 
             $this->validateRecurringIfApplicable($payment, $input);
@@ -901,6 +966,8 @@ trait Authorize
             $this->validateCardlessEmiIfApplicable($payment, $input);
 
             $this->validatePayLaterIfApplicable($payment, $input);
+
+            $this->validateApplicationIfApplicable($payment, $input);
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
@@ -938,8 +1005,40 @@ trait Authorize
         $this->validateContactAndProviderFromToken($payment, $input);
     }
 
+
+    protected function shouldSkipContactAndProviderValidation($input)
+    {
+        if (($input['provider'] === PayLater::ICICI and $input['method'] === Gateway::PAYLATER) or ($input['ott'] === Constants::GETSIMPLTOKEN))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    protected function validateApplicationIfApplicable(Payment\Entity $payment, $input)
+    {
+        if (isset($input['application']) === true)
+        {
+            switch($input['application'])
+            {
+                case 'google_pay':
+                    if ($payment->merchant->isFeatureEnabled(Feature\Constants::GOOGLE_PAY_CARDS) === false)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'Google Pay Cards not enabled for merchant.');
+                    }
+                    break;
+            }
+        }
+    }
+
     private function validateContactAndProviderFromToken(Payment\Entity $payment, $input)
     {
+        if ($this->shouldSkipContactAndProviderValidation($input) === true)
+        {
+            return;
+        }
+
         $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($input['ott']);
 
         $cardlessEmiData = $this->app['cache']->get($key);
@@ -1417,6 +1516,10 @@ trait Authorize
         {
             $this->validateRecurringForUpi($payment, $token, $input);
         }
+        else if ($payment->isNach() === true)
+        {
+            $this->validateRecurringForNach($payment, $token, $input);
+        }
 
         //
         // The first recurring will be on public auth for non-S2S enabled merchants.
@@ -1612,6 +1715,37 @@ trait Authorize
         $this->validateTokenExpiredAt($token);
     }
 
+    protected function validateRecurringForNach(Payment\Entity $payment,
+                                                Token\Entity $token,
+                                                array $input)
+    {
+        if ($payment->isRecurringTypeInitial() === true)
+        {
+            $this->validateInitialRecurringForNach($payment, $input);
+        }
+        else if ($payment->isRecurringTypeAuto() === true)
+        {
+            $this->validateAutoRecurringForNach($payment, $input);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Shouldn\'t have reached here.',
+                null,
+                [
+                    'payment'        => $payment->getId(),
+                    'recurring_type' => $payment->getRecurringType(),
+                    'auth_type'      => $payment->getAuthType()
+                ]);
+        }
+
+        $this->validateTokenRecurringStatus($token, $payment);
+
+        $this->validateTokenMaxAmount($token, $payment);
+
+        $this->validateTokenExpiredAt($token);
+    }
+
     protected function validateInitialRecurringForEmandate(Payment\Entity $payment, array $input)
     {
         if ((Payment\Gateway::isZeroRupeeFlowSupported($payment->getBank()) === true) and
@@ -1675,7 +1809,54 @@ trait Authorize
         }
     }
 
+    protected function validateInitialRecurringForNach(Payment\Entity $payment, array $input)
+    {
+        $authType = $payment->getAuthType();
+
+        if ($authType === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The auth_type field is required when method is ' . Method::NACH
+            );
+        }
+
+        $order = $payment->order;
+
+        if ($order !== null)
+        {
+            $subscriptionRegistration = $order->getTokenRegistration();
+
+            if ($subscriptionRegistration !== null)
+            {
+                if ($subscriptionRegistration->getAuthType() !== $authType)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'payment auth type is not same as order auth type'
+                    );
+                }
+            }
+        }
+    }
+
     protected function validateAutoRecurringForEmandate(Payment\Entity $payment, array $input)
+    {
+        if ($payment->getAmount() < 100)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The amount must be at least 100.',
+                'amount',
+                [
+                    'amount'            => $payment->getAmount(),
+                    'payment_id'        => $payment->getId(),
+                    'method'            => $payment->getMethod(),
+                    'auth_type'         => $payment->getAuthType(),
+                    'recurring_type'    => $payment->getRecurringType(),
+                    'bank'              => $payment->getBank(),
+                ]);
+        }
+    }
+
+    protected function validateAutoRecurringForNach(Payment\Entity $payment, array $input)
     {
         if ($payment->getAmount() < 100)
         {
@@ -1779,6 +1960,14 @@ trait Authorize
         $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
         $this->setPaymentRoutedThroughCpsIfApplicable($payment, $gatewayInput);
+
+
+        $this->trace->info(
+            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
+            [
+                'line'      => "Models/Payment/Processor/Authorize.php:1917"
+            ]
+        );
 
         $this->repo->saveOrFail($payment);
 
@@ -2137,6 +2326,12 @@ trait Authorize
 
     protected function runInternationalChecks(Payment\Entity $payment)
     {
+        //return if payment is of GPay Cards
+        if ($payment->isGooglePayCard() === true)
+        {
+            return;
+        }
+
         // return if method is not card or card is not international
         if (($payment->getMethod() !== Method::CARD) or
             ($payment->card->isInternational() === false))
@@ -3032,7 +3227,8 @@ trait Authorize
         }
 
         // No card saving, normal simple flow
-        if ($payment->isMethodCardOrEmi())
+        if ($payment->isMethodCardOrEmi() and
+            ($payment->isGooglePayCard() === false))
         {
             $payment->setSave(false);
 
@@ -3145,6 +3341,14 @@ trait Authorize
         {
             $payment->localToken()->associate($token);
         }
+        else if ($this->shouldSaveVpaForUpiPayments() === true)
+        {
+            $payment->localToken()->associate($token);
+
+            $vpa = $token->vpa;
+
+            $payment->setVpa($vpa->getAddress());
+        }
         else if ($payment->isNach() === true)
         {
             $payment->localToken()->associate($token);
@@ -3169,7 +3373,7 @@ trait Authorize
 
         $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
 
-        if ($payment->isMethodCardOrEmi() === true)
+        if (($payment->isMethodCardOrEmi() === true) and ($payment->isGooglePayCard() === false))
         {
             $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
 
@@ -3198,6 +3402,14 @@ trait Authorize
         else if ($payment->isUpiRecurring() === true)
         {
             $payment->globalToken()->associate($token);
+        }
+        else if ($this->shouldSaveVpaForUpiPayments() === true)
+        {
+            $payment->globalToken()->associate($token);
+
+            $vpa = $token->vpa;
+
+            $payment->setVpa($vpa->getAddress());
         }
     }
 
@@ -3251,7 +3463,7 @@ trait Authorize
         $token = null;
 
         // create local saved card and link to payment
-        if ($payment->isMethodCardOrEmi() === true)
+        if (($payment->isMethodCardOrEmi() === true) and ($payment->isGooglePayCard() === false))
         {
             $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant, $input);
 
@@ -3263,6 +3475,10 @@ trait Authorize
         else if ($payment->isEmandate() === true or $payment->isUpiRecurring() === true)
         {
             // save emandate bank locally for local customer
+            $token = $this->savePaymentMethod($customer, $payment, null, $input);
+        }
+        else if ($this->shouldSaveVpaForUpiPayments() === true)
+        {
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
         else if ($payment->isNach() === true)
@@ -3304,6 +3520,10 @@ trait Authorize
         else if ($payment->isEmandate() === true or $payment->isUpiRecurring() === true)
         {
             // save emandate bank token globally for global customer
+            $token = $this->savePaymentMethod($customer, $payment, null, $input);
+        }
+        else if ($this->shouldSaveVpaForUpiPayments() === true)
+        {
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
 
@@ -3356,9 +3576,13 @@ trait Authorize
 
             $tokenMaxAmount = null;
 
+            $tokenExpireBy  = null;
+
             if ($tokenRegistration !== null)
             {
                 $tokenMaxAmount = $tokenRegistration->getMaxAmount();
+
+                $tokenExpireBy  = $tokenRegistration->getExpireAt();
             }
 
             $saveMethodInput[Token\Entity::MAX_AMOUNT] =
@@ -3383,7 +3607,7 @@ trait Authorize
                 $input[Payment\Entity::AADHAAR]['vid'] ?? null;
 
             $saveMethodInput[Token\Entity::EXPIRED_AT] =
-                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
+                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? $tokenExpireBy;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -3400,6 +3624,8 @@ trait Authorize
             if ($tokenRegistration !== null)
             {
                 $saveMethodInput[Token\Entity::MAX_AMOUNT] = $tokenRegistration->getMaxAmount();
+
+                $saveMethodInput[Token\Entity::AUTH_TYPE]  = $payment->getAuthType();
 
                 $paperMandate = $tokenRegistration->paperMandate;
 
@@ -3421,10 +3647,13 @@ trait Authorize
                     }
 
                     $saveMethodInput[Token\Entity::TERMINAL_ID] = $paperMandate->getTerminalId();
+
+                    $saveMethodInput[Token\Entity::START_TIME]  = $paperMandate->getStartAt();
+
+                    $saveMethodInput[Token\Entity::EXPIRED_AT]  = $paperMandate->getEndAt();
                 }
             }
         }
-
         else if ($payment->isUpiRecurring() === true)
         {
             $saveMethodInput[Token\Entity::MAX_AMOUNT] =
@@ -3433,6 +3662,14 @@ trait Authorize
                                             $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
             $saveMethodInput[Token\Entity::START_TIME] =
                                             $input[Payment\Entity::RECURRING_TOKEN][Token\Entity::START_TIME] ?? null;
+        }
+        else if ($payment->isUpi() === true)
+        {
+            $saveMethodInput[Token\Entity::METHOD] = Payment\Method::UPI;
+
+            $vpa = $this->createVpaEntity($input);
+
+            $saveMethodInput[Token\Entity::VPA_ID] = $vpa[PaymentsUpi\Vpa\Entity::ID];
         }
 
         $token = null;
@@ -3604,6 +3841,10 @@ trait Authorize
             case $this->canRunOtpPaymentFlow($payment):
 
                 return $this->getOtpPaymentCreatedResponse($request, $payment);
+
+            case $this->canRunGooglePayCardPaymentFlow($payment):
+
+                return $this->getGooglePayCardPaymentCreatedResponse($request, $payment);
 
             default:
 
@@ -4082,14 +4323,14 @@ trait Authorize
 
         $order = $payment->order;
 
-        if ($order->isDiscountApplicable() === false)
+        $this->offer = $payment->getOffer();
+
+        if($payment->getOffer() === null)
         {
             return;
         }
 
-        $this->offer = $payment->getOffer();
-
-        if ($this->offer === null)
+        if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
         {
             return;
         }
@@ -4111,55 +4352,10 @@ trait Authorize
      */
     protected function postPaymentAuthorizePaymentLinkProcessing(Payment\Entity $payment)
     {
-        if ($payment->hasPaymentLink() === false)
-        {
-            return;
-        }
+        // We are moving this logic to apieventsubscriber after payment capture to update payment pge
+        // details. Edge cases like late auth can be handled better there. Also moving the logic out of core payment module
 
-        //
-        // If for some reason(e.g. multiple payment callback request) the payment here is found to be already captured
-        // we just return and don't execute further processing because that must have already happened during first
-        // successful request.
-        //
-        // Payment capture happens in a MUTEX. In case of multiple requests one is bound to fail (with e.g. another
-        // payment operation is in progress) and in case one is captured successfully, it will throw validation error
-        // saying 'payment is already captured'. In both cases our finally block below, for the 2nd request will attempt
-        // to refund the payment because it's an exception. In refund call as well, we have separate methods for
-        // refunding authorized and captured payment and so in both cases it will fail there. Additionally, a refund
-        // also requires the same lock and will fail if another capture operation is in progress.
-        //
-        if ($payment->hasBeenCaptured() === true)
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS_SKIPPED,
-                [
-                    'payment_id'      => $payment->getId(),
-                    'payment_status'  => $payment->getStatus(),
-                    'payment_link_id' => $payment->paymentLink->getId(),
-                ]);
-
-            return;
-        }
-
-        //
-        // If the merchant has the feature enabled, do not capture the payment. We expect the payment to
-        // remain in authorized state and then get auto refunded subsequently. This is a niche case, to be used
-        // primarily for demo payment pages created internally by Razorpay.
-        //
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PAYMENT_PAGES_NO_CAPTURE) === true)
-        {
-            return;
-        }
-
-        try
-        {
-            $this->autoCapturePayment($payment);
-        }
-        // Whether capture succeeds or fails, we let payment link's core take care of what to do (refer below method)
-        finally
-        {
-            (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
-        }
+        return;
     }
 
     protected function postPaymentAuthorizeSubscriptionRegistrationProcessing(Payment\Entity $payment)
@@ -4665,6 +4861,8 @@ trait Authorize
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RESPONSE_SENT, $payment);
 
+        $returnData = $this->addEmandateDisplayDetailsIfApplicable($returnData, $payment);
+
         return $returnData;
     }
 
@@ -4937,7 +5135,7 @@ trait Authorize
 
         // If the payment is card payment with headless browser flow then
         // we render the otp submission page to the user
-        if ($payment->isMethodCardOrEmi() === true)
+        if (($payment->isMethodCardOrEmi() === true) and ($payment->isGooglePayCard() === false))
         {
             if ($payment->card->iinRelation !== null)
             {
@@ -4994,6 +5192,13 @@ trait Authorize
         }
 
         $wallet = $payment->getWallet();
+
+        //Paylater ICICI has otp flow enabled
+        if (($payment->isPayLater() === true) and
+            ($wallet === PayLater::ICICI))
+        {
+            return true;
+        }
 
         // Only wallets have otp flow currently.
         // Plus, only power wallets support otp flow.
@@ -5130,6 +5335,16 @@ trait Authorize
         return false;
     }
 
+    protected function canRunGooglePayCardPaymentFlow($payment)
+    {
+        if ($payment->isGooglePayCard() === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function runAutoDebitFlow(Payment\Entity $payment, array $gatewayInput)
     {
         $this->trace->info(
@@ -5218,6 +5433,15 @@ trait Authorize
 
         return $cardData;
 
+    }
+
+    protected function createVpaEntity($input)
+    {
+        $vpaCore = new PaymentsUpi\Vpa\Core;
+
+        $vpa = $vpaCore->firstOrCreate($input);
+
+        return $vpa->toArray();
     }
 
     protected function setRzpVaultForPayment(array &$cardInput, bool $vault, Merchant\Entity $merchant, array $input = [])
@@ -5467,21 +5691,26 @@ trait Authorize
 
     protected function verifyCardEnabledInLive(Payment\Entity $payment)
     {
-        $card = $payment->card;
-
-        $merchantMethods = $this->methods;
-
         // Only check enabled or not on live mode
         if ($this->mode === Mode::TEST)
         {
             return;
         }
 
+        $merchantMethods = $this->methods;
+
         if ($merchantMethods->isCardEnabled() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENABLED_FOR_MERCHANT);
         }
+
+        if ($payment->isGooglePayCard() === true)
+        {
+            return;
+        }
+
+        $card = $payment->card;
 
         $type = $card->getType();
 
@@ -5549,9 +5778,61 @@ trait Authorize
     {
         // if not recurring, validate that card data and cvv in card data is present
         if (($payment->isRecurring() === false) and
-            ($payment->getTokenId() !== null))
+            ($payment->getTokenId() !== null) and
+            ($payment->getMethod() === Method::CARD))
         {
             $payment->getValidator()->validateCardAndCvv($input);
+        }
+    }
+
+    protected function validateOrderMethods(Payment\Entity $payment)
+    {
+        // list of irctc merchant_ids
+        $irctcMerchantIds = ['8byazTDARv4Io0', '90xVmQJTCEJ6GH', '9m4CChGex4ENkR', 'B3AFCVPnT82ehc', 'AEPXwjSlJJhfUl',
+            'AEsxERLbWiBuUG', '8YPFnW5UOM91H7', '8ST00QgEPT14cE'];
+
+        array_push($irctcMerchantIds, '10000000000000'); //for testing
+
+        $merchantId = $payment->getMerchantId();
+
+        if (in_array($merchantId, $irctcMerchantIds) === false)
+        {
+            return;
+        }
+
+        $order = $payment->order;
+
+        if(isset($order) === false)
+        {
+            return;
+        }
+
+        if (isset($order->getNotes()['Pay_Mode']) === false)
+        {
+            return;
+        }
+
+        $paymentMode = $order->getNotes()['Pay_Mode'];
+
+        $method = $payment->getMethod();
+
+        if ((($paymentMode === 'UPI') and ($method !== Payment\Method::UPI)) or
+            ($paymentMode === 'NOUPI') and (($method == Payment\Method::UPI)))
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_ORDER_METHOD_VALIDATION_FAILED,
+                [
+                    'paymentMode' => $paymentMode,
+                    'method'      => $method
+                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_FOR_ORDER,
+                null,
+                [
+                    'paymentMode' => $paymentMode,
+                    'method'      => $method
+                ]);
         }
     }
 
@@ -6065,6 +6346,11 @@ trait Authorize
             return false;
         }
 
+        if ($payment->isGooglePayCard() === true)
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -6273,6 +6559,8 @@ trait Authorize
 
                 unset($inputDetails['gatewayInput']);
 
+                $this->runFraudChecksIfApplicable($payment);
+
                 return $this->gatewayRelatedProcessing($payment, $inputDetails, $gatewayInput);
             },
             120,
@@ -6423,5 +6711,57 @@ trait Authorize
         }
 
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
+    }
+
+    protected function shouldCreatePaysecurePayment(Payment\Entity $payment, array $input, $currentTerminal)
+    {
+        return (!is_null($currentTerminal) and
+            ($currentTerminal[Terminal\Entity::GATEWAY] === Gateway::HITACHI) and
+            ($payment->card['network_code'] === Network::RUPAY));
+    }
+
+    /**
+     * Enach through NPCI has mandated that additional information has to be displayed
+     * when rendering the response page to the user.
+     * emandate_details contains this additional information. In this flow
+     * we open a different view based on the requirements set by NPCI after callback
+     *
+     * @param array $returnData
+     * @param array $gatewayData
+     * @param Payment\Entity $payment
+     * @return array
+     */
+    protected function addEmandateDisplayDetailsIfApplicable($returnData, Payment\Entity $payment): array
+    {
+        if ($payment->getGateway() !== Payment\Gateway::ENACH_NPCI_NETBANKING)
+        {
+            return $returnData;
+        }
+
+        $merchant = $payment->merchant;
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $terminal = $payment->terminal;
+
+        $config = $this->app['config']->get('gateway.enach_npci_netbanking');
+
+        $payment = $payment->toArray();
+
+        $mode = $this->mode;
+
+        $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail($payment['id'], GatewayAction::AUTHORIZE);
+
+        $returnData['emandate_details'] = enachNpciGateway::fetchEmandateDisplayDetails(
+                                                                               $payment,
+                                                                               $token,
+                                                                               $terminal,
+                                                                               $merchant,
+                                                                               $config,
+                                                                               $mode,
+                                                                               $gatewayPayment
+                                                                              );
+
+        return $returnData;
     }
 }

@@ -27,6 +27,7 @@ use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
+use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 
 class Core extends Base\Core
 {
@@ -426,6 +427,12 @@ class Core extends Base\Core
                 $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
             }
 
+            if (AttemptStatus::isValidStateTransition($fta->getStatus(), $input[Entity::STATUS]) === false) {
+                return [
+                    'message' => 'webhook update skipped due to invalid state transition',
+                ];
+            }
+
             $fta = $this->updateFtaWithInput($input, $fta);
 
             if (method_exists($fta->source, 'setFTSTransferId') === true)
@@ -582,18 +589,6 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
-
-            $slackData = [
-                'headLine'    => 'fta source processing failed',
-                'fta_id'      => $ftaData['fta_id'],
-                'status'      => $ftaData['fta_status'],
-                'source_id'   => $ftaData['source_id'],
-                'error'       => $e->getMessage(),
-            ];
-
-            $alerts = new Alerts();
-
-            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 
@@ -668,15 +663,6 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
-
-            $alerts = new Alerts();
-
-            $slackData = $ftaData + [
-                'headLine' => 'fta source processing failed',
-                'error'    => $e->getMessage(),
-            ];
-
-            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 
@@ -768,6 +754,10 @@ class Core extends Base\Core
             $fta->setRemarks($input[Entity::REMARKS]);
         }
 
+        if (empty($input[Entity::GATEWAY_REF_NO]) === false) {
+            $fta->setGatewayRefNo($input[Entity::GATEWAY_REF_NO]);
+        }
+
         return $fta;
     }
 
@@ -813,6 +803,13 @@ class Core extends Base\Core
         if (empty($source->getChannel()) === true)
         {
             return [false, Settlement\Channel::YESBANK];
+        }
+
+        if ((($source->getChannel() === Settlement\Channel::YESBANK) and
+             ($accountType === E::BANK_ACCOUNT)) and
+             ($this->isTestMode() === false))
+        {
+            return [true, $source->getChannel()];
         }
 
         $key = 'fts_payout_' . strtolower($accountType) . '_' . $source->getChannel() . '_' . $source->getMode();

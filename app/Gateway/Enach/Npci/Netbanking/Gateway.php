@@ -2,8 +2,9 @@
 
 namespace RZP\Gateway\Enach\Npci\Netbanking;
 
+use View;
+use Crypt;
 use Carbon\Carbon;
-
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
@@ -16,8 +17,11 @@ use RZP\Gateway\Enach\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
+use RZP\Constants\Environment;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Enach\Base\CategoryCode;
+use RZP\Models\Feature\Constants as Feature;
 
 class Gateway extends Base\Gateway
 {
@@ -118,11 +122,23 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ErrorCodes\NetbankingErrorCodes::getInternalErrorCode($gatewayPayment->getErrorCode());
 
+            $exceptionData = [
+                'emandate_details' => self::fetchEmandateDisplayDetails(
+                    $input['payment'],
+                    $input['token'],
+                    $input['terminal'],
+                    $input['merchant'],
+                    $this->config,
+                    $this->mode,
+                    $gatewayPayment
+                )
+            ];
+
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $gatewayPayment->getErrorCode(),
                 $gatewayPayment->getErrorMessage(),
-                $recurringData
+                $exceptionData
             );
         }
 
@@ -214,6 +230,10 @@ class Gateway extends Base\Gateway
         ];
 
         $this->traceGatewayPaymentRequest($dataToTrace, $input);
+
+        $request['method'] = 'direct';
+
+        $request['content'] = $this->getRequestContentAsView($request, $input);
 
         return $request;
     }
@@ -810,5 +830,120 @@ class Gateway extends Base\Gateway
         {
             $xml->addChild($key,$data[$key]);
         }
+    }
+
+
+    protected function getRequestContentAsView($request, $input)
+    {
+        if ($this->mock === true)
+        {
+            $request['url'] =  $this->route->getUrlWithPublicAuth(
+                'mock_emandate_payment',
+                ['authType' => 'netbanking']
+            );
+        }
+
+        $postFormData['type'] = 'first';
+
+        $postFormData['request'] = $request;
+
+        $postFormData['version'] = 1;
+
+        $postFormData['payment_id'] = $input['payment']['public_id'];
+
+        $postFormData['gateway'] = Crypt::encrypt($input['payment']['gateway'] . '__' . time());
+
+        $postFormData['amount'] = '0.00';
+
+        $postFormData['image'] = $input['merchant']->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
+
+        $postFormData['theme']['color'] = $input['merchant']->getBrandColorElseDefault();
+
+        $postFormData['name'] = $input['merchant']->getBillingLabel();
+
+        $postFormData['nobranding'] = $input['merchant']->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
+
+        $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
+
+        $postFormData['merchant_id'] = $input['merchant']->getId();
+
+        $postFormData['emandate_details'] = self::fetchEmandateDisplayDetails(
+                                                                              $input['payment'],
+                                                                              $input['token'],
+                                                                              $input['terminal'],
+                                                                              $input['merchant'],
+                                                                              $this->config,
+                                                                              $this->mode
+                                                                              );
+
+        return View::make('gateway.gatewayNachNbForm')->with('data', $postFormData)->render();
+    }
+
+    public static function fetchEmandateDisplayDetails(
+                                                       $payment,
+                                                       $token,
+                                                       $terminal,
+                                                       $merchant,
+                                                       $config,
+                                                       $mode = Mode::TEST,
+                                                       $gatewayPayment = null
+                                                      )
+    {
+        $bank = $payment['bank'];
+
+        if (in_array($bank, Payment\Processor\Netbanking::$inconsistentIfsc) === true)
+        {
+            $bank = array_search ($bank, Payment\Processor\Netbanking::$defaultInconsistentBankCodesMapping);
+        }
+
+        if (($terminal->getMerchantId() === Merchant\Account::DEMO_ACCOUNT) or ($mode === Mode::TEST))
+        {
+            $merchantName =  'Razorpay Software Pvt Ltd';
+        }
+        else
+        {
+            $merchantName = $merchant->getFilteredDba();
+        }
+
+        $startDate = Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('d/m/Y');
+        $endDate   = Carbon::createFromTimestamp($token->getExpiredAt(), Timezone::IST)->format('d/m/Y');
+
+        if ($mode === Mode::TEST)
+        {
+            $utilityCode = $config['test_merchant_id'];
+        }
+        else
+        {
+            $utilityCode = $terminal['gateway_merchant_id'];
+        }
+
+        $categoryDescription = str_limit(
+                                         CategoryCode::getCategoryDescriptionFromCode
+                                                (
+                                                    CategoryCode::getCategoryCodeFromMcc($terminal['category'])
+                                                ),
+                                   25,
+                                   '');
+
+        $displayDetails = [
+            'customer_name'      => str_limit($token->getBeneficiaryName(), 40, ''),
+            'bank'               => $bank,
+            'account_number'     => $token->getAccountNumber(),
+            'max_amount'         => number_format($token->getMaxAmount() / 100, 2, '.', ''),
+            'debit_type'         => 'Max Amount',
+            'mandate_start_date' => $startDate,
+            'mandate_end_date'   => $endDate,
+            'frequency'          => 'As & When Presented',
+            'corporate_name'     => str_limit($merchantName, 25, ''),
+            'utility_code'       => $utilityCode,
+            'purpose_text'       => $categoryDescription,
+        ];
+
+        if ($gatewayPayment !== null)
+        {
+            $displayDetails['reference_number'] = $gatewayPayment->getGatewayReferenceId();
+        }
+
+        return $displayDetails;
     }
 }

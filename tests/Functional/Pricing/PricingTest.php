@@ -262,7 +262,25 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingPlanNachRegistrationRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testAddPricingPlanEmandateDebitAadhaarRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanNachDebitRule()
     {
         $content = $this->createPricingPlan();
 
@@ -298,6 +316,34 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    /*
+     * in this test we create two merchants who are customer fee bearer
+     * and share a pricing plan. this pricing plan has all rules fee_bearer=customer
+     * we try to add a rule in which fee_bearer=platform
+     * we assert that that this addition of rule is not allowed
+     */
+    public function testAddPricingRuleWithFeeBearerMismatch()
+    {
+        $plan = $this->createPricingPlan();
+
+        $merchantAttributes = [
+            'fee_bearer'        => 'customer',
+            'pricing_plan_id'   => $plan['id'],
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $testData['request']['url'] = '/pricing/'. $plan['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest($testData);
+
+        $this->assertContains('Unable to add rule to plan', $response['error']['description']);
+    }
+
     public function testUpdatePricingPlanRule()
     {
         $content = $this->createPricingPlan2();
@@ -324,6 +370,31 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    /*
+     * in this test we create two merchants who are customer fee bearer
+     * and share a pricing plan. this pricing plan has all rules fee_bearer=customer
+     * we try to update a rule in which fee_bearer=platform
+     * we assert that that this addition of rule is not allowed
+     */
+    public function testUpdatePricingPlanFeeBearerMismatch()
+    {
+        $content = $this->createPricingPlan2(['fee_bearer' => 'customer']);
+
+        $merchantAttributes = [
+            'fee_bearer'        => 'customer',
+            'pricing_plan_id'   => $content['id'],
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule/' . $content['rules'][0]['id'];
+
+        $this->startTest($testData);
+
+
+    }
     /**
      * RZP admin will be able to update the pricing plan for SBI or any other organisation.
      * Here, we are testing the case where RZP admin is updating SBI pricing plan rule.

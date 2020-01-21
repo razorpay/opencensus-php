@@ -255,4 +255,37 @@ abstract class Terminal
                     ['json' => $json]);
         }
     }
+
+    protected function arrayToJson($array)
+    {
+        $encodedJson = json_encode($array, true);
+
+        $error = json_last_error();
+
+        switch ($error)
+        {
+            case JSON_ERROR_NONE:
+                return $encodedJson;
+
+            case JSON_ERROR_DEPTH:
+            case JSON_ERROR_STATE_MISMATCH:
+            case JSON_ERROR_CTRL_CHAR:
+            case JSON_ERROR_SYNTAX:
+            case JSON_ERROR_UTF8:
+            default:
+
+                $this->trace->error(
+                    TraceCode::GATEWAY_PAYMENT_ERROR,
+                    ['array' => $array,
+                     'error' => $error,
+                    ]);
+
+                throw new Exception\RuntimeException(
+                    'Failed to convert array to json',
+                    ['array' => $array],
+                    null,
+                    ErrorCode::SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON
+                    );
+        }
+    }
 }

@@ -43,6 +43,7 @@ class Entity
     const DISPUTE                   = 'dispute';
     const ADDRESS                   = 'address';
     const BALANCE                   = 'balance';
+    const BALANCE_CONFIG            = 'balance_config';
     const CREDITS                   = 'credits';
     const FEATURE                   = 'feature';
     const INVOICE                   = 'invoice';
@@ -75,6 +76,7 @@ class Entity
     const TRANSACTION               = 'transaction';
     const FEE_BREAKUP               = 'fee_breakup';
     const CREDITNOTE                = 'creditnote';
+    const PAYOUT_LINK               = 'payout_link';
     const PAYMENT_LINK              = 'payment_link';
     const PAYMENT_PAGE_ITEM         = 'payment_page_item';
     const GATEWAY_RULE              = 'gateway_rule';
@@ -111,8 +113,9 @@ class Entity
     const INVOICE_REMINDER           = 'invoice_reminder';
     const NODAL_BENEFICIARY          = 'nodal_beneficiary';
     const PAYMENT_ANALYTICS          = 'payment_analytics';
-    const SETTLEMENT_BUCKET         = 'settlement_bucket';
+    const SETTLEMENT_BUCKET          = 'settlement_bucket';
     const SETTLEMENT_DETAILS         = 'settlement_details';
+    const SETTLEMENT_TRANSFER        = 'settlement_transfer';
     const MERCHANT_PROMOTION         = 'merchant_promotion';
     const CREDIT_TRANSACTION         = 'credit_transaction';
     const MERCHANT_EMI_PLANS         = 'merchant_emi_plans';
@@ -121,6 +124,7 @@ class Entity
     const BATCH_FUND_TRANSFER        = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION       = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
+    const SETTLEMENT_DESTINATION     = 'settlement_destination';
     const BANKING_ACCOUNT_DETAIL     = 'banking_account_detail';
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registration';
@@ -128,6 +132,9 @@ class Entity
     const MERCHANT_DOCUMENT          = 'merchant_document';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_detail';
     const SUBSCRIPTION               = 'subscription';
+    const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
+    const COMMISSION_INVOICE         = 'commission_invoice';
+    const OFFLINE_DEVICE             = 'offline_device';
 
     const OPTIONS                    = 'options';
 
@@ -251,6 +258,8 @@ class Entity
     const UPI_AIRTEL             = 'upi_airtel';
     const GOOGLE_PAY             = 'google_pay';
     const WORLDLINE              = 'worldline';
+    const GETSIMPL               = 'getsimpl';
+    const PAYLATER_ICICI         = 'paylater_icici';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -306,7 +315,18 @@ class Entity
     const FTS_FUND_ACCOUNT               = 'fts.fund_accounts';
     const FTS_BENEFICIARY_STATUS         = 'fts.beneficiary_status';
 
+    const UFH_FILES                      = 'ufh.files';
+
     const COMMISSION = 'commission';
+
+
+    const PAYMENTS_NBPLUS_NETBANKING = 'payments_nbplus.netbanking';
+
+    // Service: Payments UPi
+    const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
+    const PAYMENTS_UPI_BANK_ACCOUNT     = 'payments_upi_bank_account';
+    const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'payments_upi_vpa_bank_account';
+
 
     /**
      * Defines a map of entites which are currently
@@ -362,6 +382,7 @@ class Entity
         self::SUBSCRIPTION,
         self::PAYMENT_LINK,
         self::OPTIONS,
+        self::PAYOUT_LINK
     ];
 
     /**
@@ -398,6 +419,7 @@ class Entity
         self::REFUND                    => \RZP\Models\Payment\Refund::class,
         self::REPORT                    => \RZP\Models\Report::class,
         self::BALANCE                   => \RZP\Models\Merchant\Balance::class,
+        self::BALANCE_CONFIG            => \RZP\Models\Merchant\Balance\BalanceConfig::class,
         self::CREDITS                   => \RZP\Models\Merchant\Credits::class,
         self::METHODS                   => \RZP\Models\Merchant\Methods::class,
         self::PRICING                   => \RZP\Models\Pricing::class,
@@ -421,6 +443,7 @@ class Entity
         self::BANK_ACCOUNT              => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION              => \RZP\Models\Plan\Subscription::class,
         self::PAYMENT_LINK              => \RZP\Models\PaymentLink::class,
+        self::PAYOUT_LINK               => \RZP\Models\PayoutLink::class,
         self::PAYMENT_PAGE_ITEM         => \RZP\Models\PaymentLink\PaymentPageItem::class,
         self::GATEWAY_TOKEN             => \RZP\Models\Customer\GatewayToken::class,
         self::ENTITY_ORIGIN             => \RZP\Models\EntityOrigin::class,
@@ -446,8 +469,11 @@ class Entity
         self::NODAL_STATEMENT           => \RZP\Models\Nodal\Statement::class,
         self::SETTLEMENT_DETAILS        => \RZP\Models\Settlement\Details::class,
         self::SETTLEMENT_BUCKET         => \RZP\Models\Settlement\Bucket::class,
+        self::SETTLEMENT_DESTINATION    => \RZP\Models\Settlement\Destination::class,
+        self::SETTLEMENT_TRANSFER       => \RZP\Models\Settlement\Transfer::class,
         self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,
+        self::MERCHANT_INHERITANCE_MAP  => \RZP\Models\Merchant\InheritanceMap::class,
         self::BATCH_FUND_TRANSFER       => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION      => \RZP\Models\Customer\Transaction::class,
         self::FUND_TRANSFER_ATTEMPT     => \RZP\Models\FundTransfer\Attempt::class,
@@ -464,6 +490,7 @@ class Entity
         self::D2C_BUREAU_REPORT         => \RZP\Models\D2cBureauReport::class,
         self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
+        self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
@@ -545,7 +572,7 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::MOZART                 => \RZP\Gateway\Mozart::class,
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
-        self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
+        self::GOOGLE_PAY             => \RZP\Gateway\GooglePay::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
@@ -553,6 +580,8 @@ class Entity
         self::UPI_CITI               => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
+        self::GETSIMPL               => \RZP\Gateway\Mozart::class,
+        self::PAYLATER_ICICI         => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,
@@ -592,8 +621,13 @@ class Entity
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
+        self::COMMISSION_INVOICE    => \RZP\Models\Partner\Commission\Invoice::class,
 
         self::OPTIONS               => \RZP\Models\Options::class,
+
+        self::PAYMENTS_UPI_VPA              => \RZP\Models\PaymentsUpi\Vpa::class,
+        self::PAYMENTS_UPI_BANK_ACCOUNT     => \RZP\Models\PaymentsUpi\BankAccount::class,
+        self::PAYMENTS_UPI_VPA_BANK_ACCOUNT => \RZP\Models\PaymentsUpi\Vpa\BankAccount::class
     ];
 
     protected static $repository = [
@@ -667,18 +701,20 @@ class Entity
         self::BATCH_FILE_STORE              => \RZP\Services\BatchMicroService::class,
         self::PAYMENTS_CARDS_AUTHENTICATION => \RZP\Services\CardPaymentService::class,
         self::PAYMENTS_CARDS_AUTHORIZATION  => \RZP\Services\CardPaymentService::class,
-        self::SUBSCRIPTIONS_SUBSCRIPTION   => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_ADDON          => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_PLAN           => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_CYCLE          => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_VERSION        => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\Service::class,
-        self::SUBSCRIPTIONS_TRANSACTION    => \RZP\Models\Plan\Subscription\Service::class,
-        self::STORK_WEBHOOK                => \RZP\Services\Stork::class,
-        self::FTS_TRANSFERS                => \RZP\Services\FTS\FtsAdminClient::class,
-        self::FTS_FUND_ACCOUNT             => \RZP\Services\FTS\FtsAdminClient::class,
-        self::FTS_BENEFICIARY_STATUS       => \RZP\Services\FTS\FtsAdminClient::class,
-        self::FTS_ATTEMPTS                 => \RZP\Services\FTS\FtsAdminClient::class,
+        self::SUBSCRIPTIONS_SUBSCRIPTION    => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_ADDON           => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_PLAN            => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_CYCLE           => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_VERSION         => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_UPDATE_REQUEST  => \RZP\Models\Plan\Subscription\Service::class,
+        self::SUBSCRIPTIONS_TRANSACTION     => \RZP\Models\Plan\Subscription\Service::class,
+        self::STORK_WEBHOOK                 => \RZP\Services\Stork::class,
+        self::FTS_TRANSFERS                 => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_FUND_ACCOUNT              => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_BENEFICIARY_STATUS        => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_ATTEMPTS                  => \RZP\Services\FTS\FtsAdminClient::class,
+        self::UFH_FILES                     => \RZP\Services\UfhClient::class,
+        self::PAYMENTS_NBPLUS_NETBANKING    => \RZP\Services\NbPlus\Netbanking::class,
     ];
 
     protected static $syncedInLiveAndTest = [

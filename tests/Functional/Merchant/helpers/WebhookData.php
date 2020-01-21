@@ -1328,7 +1328,7 @@ return [
                     'entity' => [
                         'entity'            => 'terminal',
                         'status'            => 'activated',
-                        'enabled'           =>  false,
+                        'enabled'           =>  true,
                     ],
                 ],
             ],

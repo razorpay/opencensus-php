@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\PayoutLink;
 use RZP\Models\FundAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout\Entity as Payout;
@@ -59,6 +60,9 @@ class CreatePayoutsTable extends Migration
                   ->nullable();
 
             $table->char(Payout::IDEMPOTENCY_KEY, Batch\Entity::IDEMPOTENCY_ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Payout::PAYOUT_LINK_ID, PayoutLink\Entity::ID_LENGTH)
                   ->nullable();
 
             $table->string(Payout::PURPOSE, 255);
@@ -198,6 +202,8 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::PURPOSE);
 
             $table->index(Payout::PURPOSE_TYPE);
+
+            $table->index(Payout::PAYOUT_LINK_ID);
 
             $table->foreign(Payout::BALANCE_ID)
                   ->references(Balance\Entity::ID)

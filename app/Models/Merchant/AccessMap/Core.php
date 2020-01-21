@@ -40,7 +40,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchantMapping);
 
-        $this->invalidateStorkCache($entityOwner);
+        $this->invalidateStorkCache($merchant);
 
         return $merchantMapping;
     }

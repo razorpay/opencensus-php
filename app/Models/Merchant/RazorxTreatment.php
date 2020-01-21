@@ -55,4 +55,10 @@ final class RazorxTreatment
 
     // Decides if payout.created webhook should be fired for the merchant
     const PAYOUTS_CREATED_WEBHOOK = 'payouts_created_webhook';
+
+    //Decides to hit KYC Service or Mozart for KYC verification
+    const KYC_SERVICE_VERIFICATION = 'kyc_service_verification';
+
+    // Decides if the Settlement UX changes are displayed to the merchant
+    const SETTLEMENT_UX_REVAMP = 'settlement_ux_revamp';
 }

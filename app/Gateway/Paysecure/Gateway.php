@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
@@ -20,6 +21,7 @@ use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
+    use Base\CardCacheTrait;
     use RequestHandlerTrait;
     use Base\AuthorizeFailed;
 
@@ -28,6 +30,8 @@ class Gateway extends Base\Gateway
     const CACHE_KEY = 'paysecure_%s_card_details';
 
     const MIGRATION_TIMESTAMP = 1575912600;
+
+    protected $secureCacheDriver;
 
     const GATEWAY_PAYSECURE_STAN = 'gateway_paysecure_stan';
 
@@ -73,6 +77,8 @@ class Gateway extends Base\Gateway
         {
             $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl';
         }
+
+        $this->secureCacheDriver = $this->getDriver($input);
     }
 
     /**
@@ -88,7 +94,11 @@ class Gateway extends Base\Gateway
 
         $this->handleFailure($checkBin2Response, 'checkbin2');
 
-        // We do not persist card details here, because Hitachi persists it anyways
+        //For Rupay transactions, store it ONLY if we're not storing card in vault
+        if (empty($input['card']['vault_token']) === true)
+        {
+            $this->persistCardDetailsTemporarily($input, false);
+        }
 
         // Redirect flow
         if ($checkBin2Response[Fields::IMPLEMENTS_REDIRECT] === Constants::VALUE_TRUE)
@@ -233,7 +243,34 @@ class Gateway extends Base\Gateway
 
         $verify = new Base\Verify($this->gateway, $input);
 
-        return $this->runPaymentVerifyFlow($verify);
+        try
+        {
+            return $this->runPaymentVerifyFlow($verify);
+        }
+        catch (Exception\PaymentVerificationException $e)
+        {
+            // If a terminal mode is purchase, we send the advice message during the processing of callback
+            // But, in the case of late authorized payments, this callback would not be processed and hence
+            // advice messages would not be sent
+            // Hence, in this case(ie, gatewaySuccess is true, but apiSuccess is false), during verify
+            // we need to send an advice message separately before throwing the exception to the api side
+            $verify = $e->getVerifyObject();
+
+            if (($verify->gatewaySuccess === true) and
+                ($verify->apiSuccess === false) and
+                ($this->input['terminal']['mode'] === Terminal\Mode::PURCHASE)
+            )
+            {
+                $this->app['gateway']->call(
+                    Payment\Gateway::HITACHI,
+                    Base\Action::ADVICE,
+                    $input,
+                    $this->mode);
+            }
+
+            throw $e;
+        }
+
     }
 
     protected function getPaymentToVerify(Verify $verify)
@@ -246,11 +283,56 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
+    public function capture(array $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYSECURE_CAPTURE_INITIATED,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $this->app['gateway']->call(
+            Payment\Gateway::HITACHI,
+            Action::CAPTURE,
+            $input,
+            $this->mode,
+            $this->terminal);
+    }
+
+    // Refund is handled by Hitachi as of now
     public function refund(array $input)
     {
-        parent::refund($input);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYSECURE_REFUND_INITIATED,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
 
-        return $this->callRefundGateway($input);
+        return $this->app['gateway']->call(
+            Payment\Gateway::HITACHI,
+            Action::REFUND,
+            $input,
+            $this->mode,
+            $this->terminal);
+    }
+
+    // Since refunds are via hitachi, verification should go via hitachi
+    public function verifyRefund(array $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYSECURE_VERIFY_REFUND_INITIATED,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $this->app['gateway']->call(
+            Payment\Gateway::HITACHI,
+            Action::VERIFY_REFUND,
+            $input,
+            $this->mode);
     }
 
     // ------------ Auth request helpers -----------------
@@ -392,6 +474,19 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        if (empty($verify->payment[Entity::GATEWAY_TRANSACTION_ID]) === true)
+        {
+            // Ideally verify fail cron wont pick up paysecure payments, because gateway error exception
+            // is thrown with action "authenticate". But, in case some error happens before the gateway error is thrown
+            // these payments would be moved to verify failed bucket.
+            // Here, it calls verify and if trans id is not set we send a payment verify exception with action finish
+            // so that these payments won't again be picked up for verify.
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                Payment\Verify\Action::FINISH);
+        }
+
         $response = $this->transactionStatus($verify->payment);
 
         $verify->setVerifyResponseContent($response);
@@ -427,7 +522,6 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    // @codingStandardsIgnoreStart
     protected function checkGatewaySuccess(Base\Verify $verify)
     {
         $verify->gatewaySuccess = false;
@@ -440,7 +534,6 @@ class Gateway extends Base\Gateway
             $verify->gatewaySuccess = true;
         }
     }
-    // @codingStandardsIgnoreEnd
 
     protected function saveVerifyContentIfNeeded($verify)
     {
