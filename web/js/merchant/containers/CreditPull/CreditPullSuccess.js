@@ -175,9 +175,9 @@ export default class CreditPullSuccess extends Component {
             <div className="d2c-support">
               <h5>Need help?</h5>
               <div>
-                For any queries or assistance, please contact:{' '}
-                <a href="mailto:support@razorpay.com" target="_top">
-                  support@razorpay.com
+                For any queries or assistance, please contact:&nbsp;
+                <a href="https://razorpay.com/support" target="_blank">
+                  Razorpay Support
                 </a>
               </div>
             </div>
