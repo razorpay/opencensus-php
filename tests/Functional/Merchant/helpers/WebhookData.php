@@ -1334,7 +1334,7 @@ return [
             ],
         ],
     ],
-    
+
     'testTerminalOnboardingCreationFailedWebhook' => [
         'request' => [
             'url'     => '/terminals/onboard/creation',
@@ -1362,7 +1362,7 @@ return [
                         'status'            => 'failed',
                         'enabled'           =>  false,
                         'error_code'        => 'SERVER_ERROR_TERMINAL_ONBOARDING_FAILED',
-                        'error_description' => 'Duplicate MVISAPAN', 
+                        'error_description' => 'Duplicate MVISAPAN',
                     ],
                 ],
             ],
@@ -1396,6 +1396,20 @@ return [
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testWebhookDeactivateFromStork' => [
+        'request' => [
+            'url' => '',
+            'content' => [
+                'mode' => 'test'
+            ],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
         ],
     ],
 ];

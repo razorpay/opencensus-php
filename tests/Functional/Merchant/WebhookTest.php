@@ -1707,6 +1707,27 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    public function testWebhookDeactivateFromStork()
+    {
+        Mail::fake();
+
+        $webhook=$this->createWebhook();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/deactivate/'.$webhook['id'];
+
+        $this->startTest();
+
+        // test webhook deactivate
+        $webhookExpected = $this->getEntityById('webhook',$webhook['id']);
+
+        $this->assertEquals($webhookExpected['active'],false);
+
+        // test mail sent
+        Mail::assertSent(WebhookMail::class);
+
+    }
+
+
     protected function createTransferEntity($payment, $account)
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 5;
