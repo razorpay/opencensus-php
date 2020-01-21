@@ -27,6 +27,6 @@ RUN cp dockerconf/default.conf dockerconf/mpm.conf /etc/apache2/conf.d/ && \
     composer dump-autoload -o && \
     php artisan optimize
 
-EXPOSE 8080
+EXPOSE 80
 
 ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.sh"]

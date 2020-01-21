@@ -17,7 +17,7 @@ RUN set -eux && \
     composer install --no-dev --no-interaction && \
     rm -rf /root/.composer && \
     composer clear-cache && \
-    php artisan rzp:write_routes_meta 
+    php artisan rzp:write_routes_meta
 
 
 FROM openresty/openresty:1.15.8.2-6-alpine-nosse42
@@ -56,6 +56,6 @@ COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/api.openre
 COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/routes_meta.lua /usr/local/openresty/nginx/lua/
 COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/entrypoint.openresty.sh /app/entrypoint.openresty.sh
 
-EXPOSE 80
+EXPOSE 8080
 
 ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/entrypoint.openresty.sh"]

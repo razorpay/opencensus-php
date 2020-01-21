@@ -18,7 +18,7 @@ log_format openresty-api escape=json
   '}';
 
 server {
-    listen 80;
+    listen 8080;
 
     {% set qa = ['perf', 'func','automation'] %}
     {% if env in qa  %}
@@ -37,7 +37,7 @@ server {
             lib.rate_limit_ngx(ngx)
         }
 
-        proxy_pass http://localhost:8080;
+        proxy_pass http://localhost:80;
     }
 
     location /status {
