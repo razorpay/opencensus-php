@@ -91,11 +91,15 @@ pipeline:
   deploy-s3-beta:
     image: node:9-alpine
     environment:
-        - AWS_CDN_BUCKET=betacdn
+        - AWS_CDN_BUCKET=rzp-1018-nonprod-betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
-        - CDN_DASHBOARD_URL=https://betacdn.razorpay.com/dashboard
-        - CDN_BASE_URL=https://betacdn.razorpay.com/
-    secrets: [AWS_KEY, AWS_SECRET]
+        - CDN_DASHBOARD_URL=https://betacdn.np.razorpay.in/dashboard
+        - CDN_BASE_URL=https://betacdn.np.razorpay.in/
+    secrets:
+        - source: STAGE_S3_AWS_KEY
+          target: AWS_KEY
+        - source: STAGE_S3_AWS_SECRET
+          target: AWS_SECRET
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -110,14 +114,14 @@ pipeline:
   deploy-s3-omega:
       image: node:9-alpine
       environment:
-          - AWS_CDN_BUCKET=betacdn
+          - AWS_CDN_BUCKET=rzp-1018-nonprod-betacdn
           - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
           - CDN_PATH=dashboard/omega
-      secrets: [AWS_KEY, AWS_SECRET]
-          # - source: STAGE_S3_AWS_KEY
-          #   target: AWS_KEY
-          # - source: STAGE_S3_AWS_SECRET
-          #   target: AWS_SECRET
+      secrets:
+        - source: STAGE_S3_AWS_KEY
+          target: AWS_KEY
+        - source: STAGE_S3_AWS_SECRET
+          target: AWS_SECRET
       commands:
           # Requirements for running s3sync.js
           - npm install multi-glob aws-sdk
@@ -132,10 +136,14 @@ pipeline:
   deploy-s3-delta:
     image: node:9-alpine
     environment:
-        - AWS_CDN_BUCKET=betacdn
+        - AWS_CDN_BUCKET=rzp-1018-nonprod-betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
         - CDN_PATH=dashboard/delta
-    secrets: [AWS_KEY, AWS_SECRET]
+    secrets:
+      - source: STAGE_S3_AWS_KEY
+        target: AWS_KEY
+      - source: STAGE_S3_AWS_SECRET
+        target: AWS_SECRET
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -153,7 +161,11 @@ pipeline:
         - AWS_CDN_BUCKET=betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
         - CDN_PATH=dashboard/charlie
-    secrets: [AWS_KEY, AWS_SECRET]
+    secrets:
+      - source: STAGE_S3_AWS_KEY
+        target: AWS_KEY
+      - source: STAGE_S3_AWS_SECRET
+        target: AWS_SECRET
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -168,10 +180,14 @@ pipeline:
   deploy-s3-echo:
     image: node:9-alpine
     environment:
-        - AWS_CDN_BUCKET=betacdn
+        - AWS_CDN_BUCKET=rzp-1018-nonprod-betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
         - CDN_PATH=dashboard/echo
-    secrets: [AWS_KEY, AWS_SECRET]
+    secrets:
+      - source: STAGE_S3_AWS_KEY
+        target: AWS_KEY
+      - source: STAGE_S3_AWS_SECRET
+        target: AWS_SECRET
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -186,11 +202,15 @@ pipeline:
   deploy-s3-zeta:
     image: node:9-alpine
     environment:
-        - AWS_CDN_BUCKET=betacdn
+        - AWS_CDN_BUCKET=rzp-1018-nonprod-betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
         - CDN_PATH=dashboard/zeta
         - CDN_DASHBOARD_URL=dashboard/zeta
-    secrets: [AWS_KEY, AWS_SECRET]
+    secrets:
+      - source: STAGE_S3_AWS_KEY
+        target: AWS_KEY
+      - source: STAGE_S3_AWS_SECRET
+        target: AWS_SECRET
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -205,10 +225,14 @@ pipeline:
   deploy-s3-qa-func:
     image: node:9-alpine
     environment:
-        - AWS_CDN_BUCKET=betacdn
+        - AWS_CDN_BUCKET=rzp-1018-nonprod-betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
         - CDN_PATH=dashboard/func
-    secrets: [AWS_KEY, AWS_SECRET]
+    secrets:
+      - source: STAGE_S3_AWS_KEY
+        target: AWS_KEY
+      - source: STAGE_S3_AWS_SECRET
+        target: AWS_SECRET
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
@@ -223,7 +247,7 @@ pipeline:
   deploy-s3-qa-func1:
     image: node:9-alpine
     environment:
-        - AWS_CDN_BUCKET=betacdn
+        - AWS_CDN_BUCKET=rzp-1018-nonprod-betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
         - CDN_PATH=dashboard/func1
     secrets: [AWS_KEY, AWS_SECRET]
@@ -241,10 +265,14 @@ pipeline:
   deploy-s3-qa-func2:
     image: node:9-alpine
     environment:
-        - AWS_CDN_BUCKET=betacdn
+        - AWS_CDN_BUCKET=rzp-1018-nonprod-betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
         - CDN_PATH=dashboard/func2
-    secrets: [AWS_KEY, AWS_SECRET]
+    secrets:
+      - source: STAGE_S3_AWS_KEY
+        target: AWS_KEY
+      - source: STAGE_S3_AWS_SECRET
+        target: AWS_SECRET
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
