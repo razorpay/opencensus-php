@@ -44,7 +44,14 @@ class Gateway extends Base\Gateway
         switch ($input['method'])
         {
             case Payment\Gateway::PAYLATER:
-                $input['payment']['gateway'] = $input['provider'];
+                if ($input['provider'] === Payment\Processor\PayLater::ICICI)
+                {
+                    $input['payment']['gateway'] = Payment\Gateway::PAYLATER_ICICI;
+                }
+                else
+                {
+                    $input['payment']['gateway'] = $input['provider'];
+                }
                 break;
         }
 
@@ -113,6 +120,10 @@ class Gateway extends Base\Gateway
                     }
 
                     $input['payment']['gateway'] = $input['payment']['wallet'];
+                    break;
+
+                case Payment\Processor\PayLater::ICICI:
+                    $input['payment']['gateway'] = Payment\Gateway::PAYLATER_ICICI;
                     break;
             }
         }
@@ -248,7 +259,46 @@ class Gateway extends Base\Gateway
 
     public function otpGenerate(array $input)
     {
-        return $this->authorize($input);
+        if (($input['payment']['gateway'] === Payment\Gateway::PAYLATER)
+            and ($input['payment']['method'] === Payment\Gateway::PAYLATER)
+            and ($input['payment']['wallet'] === Payment\Processor\PayLater::ICICI))
+        {
+            return $this->paylaterIciciOtpGenerate($input);
+        }
+        else
+        {
+            return $this->authorize($input);
+        }
+    }
+
+    public function paylaterIciciOtpGenerate(array $input)
+    {
+        parent::action($input, Action::AUTH_INIT);
+
+        $input['payment']['gateway'] = Payment\Gateway::PAYLATER_ICICI;
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url'    => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::AUTH_INIT_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->trace->info(
+            TraceCode::AUTH_INIT_RESPONSE,
+            [
+                'response' => $traceRes,
+            ]);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function mandateCreate($input)
@@ -350,7 +400,107 @@ class Gateway extends Base\Gateway
     {
         $this->verifyOtpAttempts($input['payment']);
 
-        return $this->callback($input);
+        if (($input['payment']['gateway'] === Payment\Gateway::PAYLATER)
+            and ($input['payment']['method'] === Payment\Gateway::PAYLATER)
+            and ($input['payment']['wallet'] === Payment\Processor\PayLater::ICICI))
+        {
+            return $this->paylaterIciciCallbackOtpSubmit($input);
+        }
+        else
+        {
+            return $this->callback($input);
+        }
+
+    }
+
+    public function paylaterIciciCallbackOtpSubmit(array $input)
+    {
+        parent::action($input,Action::AUTH_VERIFY);
+
+        $input['payment']['gateway'] = Payment\Gateway::PAYLATER_ICICI;
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url'    => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::AUTH_VERIFY_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->trace->info(
+            TraceCode::AUTH_VERIFY_RESPONSE,
+            [
+                'response' => $traceRes,
+            ]);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $callbackResponse = $this->getCallbackResponseData($input);
+
+        return $callbackResponse;
+    }
+
+    public function checkBalance(array $input)
+    {
+        if (($input['payment']['gateway'] === Payment\Gateway::PAYLATER)
+            and ($input['payment']['method'] === Payment\Gateway::PAYLATER)
+            and ($input['payment']['wallet'] === Payment\Processor\PayLater::ICICI))
+        {
+            $this->paylaterIciciCheckBalance($input);
+        }
+        else
+        {
+            parent::checkBalance($input);
+        }
+    }
+
+    public function paylaterIciciCheckBalance(array $input)
+    {
+        parent::action($input, Action::CHECK_BALANCE);
+
+        $input['payment']['gateway'] = Payment\Gateway::PAYLATER_ICICI;
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url'    => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::CHECK_BALANCE_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->trace->info(
+            TraceCode::CHECK_BALANCE_RESPONSE,
+            [
+                'response' => $traceRes,
+            ]);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $this->assertPaymentAmountWithBalance($input, $response);
+    }
+
+    public function debit(array $input)
+    {
+        if (($input['payment']['gateway'] === Payment\Gateway::PAYLATER) and
+            ($input['payment']['method'] === Payment\Gateway::PAYLATER) and
+            ($input['payment']['wallet'] === Payment\Processor\PayLater::ICICI))
+        {
+            $this->authorize($input);
+        }
+        else
+        {
+            parent::debit($input);
+        }
     }
 
     public function callback(array $input)
@@ -760,9 +910,16 @@ class Gateway extends Base\Gateway
             case Payment\Gateway::GETSIMPL:
                 $input['payment']['gateway'] = $input['payment']['wallet'];
                 break;
+            case Payment\Processor\PayLater::ICICI:
+                $input['payment']['gateway'] = Payment\Gateway::PAYLATER_ICICI;
+                break;
         }
 
         $verify = new Verify($this->gateway, $input);
+
+        $gatewayName = $input['payment']['gateway'];
+
+        $this->disableVerifyCronForGateway($gatewayName, $verify);
 
         return $this->runPaymentVerifyFlow($verify);
     }
@@ -1071,6 +1228,14 @@ class Gateway extends Base\Gateway
                 Action::REFUND          =>  Action::PAY_INIT,
                 Action::VERIFY          =>  Action::PAY_INIT,
                 Action::VERIFY_REFUND   =>  Action::REFUND,
+            ],
+            Payment\Gateway::PAYLATER_ICICI  =>  [
+                Action::CHECKACCOUNT    =>  null,
+                Action::AUTH_INIT       => Action::CHECKACCOUNT,
+                Action::AUTH_VERIFY     => Action::CHECKACCOUNT,
+                Action::CHECK_BALANCE   => Action::CHECKACCOUNT,
+                Action::PAY_INIT        => Action::CHECKACCOUNT,
+                Action::VERIFY          => Action::CHECKACCOUNT,
             ]
         ];
 
@@ -1185,6 +1350,15 @@ class Gateway extends Base\Gateway
                 Action::REFUND          =>  Action::AUTHORIZE,
                 Action::VERIFY          =>  Action::AUTHORIZE,
                 Action::VERIFY_REFUND   =>  Action::REFUND,
+            ],
+
+            Payment\Gateway::PAYLATER_ICICI  =>  [
+                Action::CHECKACCOUNT    => null,
+                Action::AUTH_INIT       => Action::CHECKACCOUNT,
+                Action::AUTH_VERIFY     => Action::CHECKACCOUNT,
+                Action::CHECK_BALANCE   => Action::CHECKACCOUNT,
+                Action::PAY_INIT        => Action::CHECKACCOUNT,
+                Action::VERIFY          => Action::CHECKACCOUNT,
             ]
         ];
 
@@ -1225,6 +1399,8 @@ class Gateway extends Base\Gateway
         unset($data['data']['_raw']);
 
         unset($data['_raw']);
+
+        unset($data['data']['account_number']);
 
         return $data;
     }
@@ -1394,6 +1570,32 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    protected function assertPaymentAmountWithBalance($input, $response)
+    {
+    //This function checks if the payment amount is greater than the available balance returned by mozart action check_balance
+
+            if (isset($response['data']['amount']) === true)
+            {
+                $paymentAmount = $input['payment']['amount'];
+                $balanceAmount = $response['data']['amount'];
+
+                if ($paymentAmount > $balanceAmount)
+                {
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+                        null,
+                        'Payment Amount should be less than available balance',
+                        ['paymentAmount' => $paymentAmount, 'balanceAmount' => $balanceAmount]
+                    );
+                }
+            }
+            else
+            {
+                throw new Exception\GatewayErrorException(
+                    'Amount should have been passed for assertion');
+            }
+    }
+
     protected function runCallbackValidationsIfApplicable($input, $response)
     {
         if ($this->shouldRunCallbackValidations($input['payment']['gateway']) === true)
@@ -1493,6 +1695,25 @@ class Gateway extends Base\Gateway
         {
             if (($verify->match === true) and
                 ($this->app['basicauth']->isCron() === true))
+            {
+                throw new Exception\PaymentVerificationException(
+                    $verify->getDataToTrace(),
+                    null,
+                    VerifyAction::FINISH
+                );
+            }
+        }
+    }
+
+    protected function disableVerifyCronForGateway($gateway, $verify)
+    {
+        $verifyDisabledGateways = [
+            Payment\Gateway::PAYLATER_ICICI,
+        ];
+
+        if (in_array($gateway, $verifyDisabledGateways, true) === true)
+        {
+            if ($this->app['basicauth']->isCron() === true)
             {
                 throw new Exception\PaymentVerificationException(
                     $verify->getDataToTrace(),

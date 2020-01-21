@@ -100,6 +100,20 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $mandateCreateObj, Action::AUTH_INIT);
     }
 
+    public function authVerify($input)
+    {
+        $authVerifyObj = new AuthVerifyData();
+
+        return $this->processMockResponse($input, $authVerifyObj, Action::AUTH_VERIFY);
+    }
+
+    public function checkBalance($input)
+    {
+        $checkBalanceObj = new CheckBalanceData();
+
+        return $this->processMockResponse($input, $checkBalanceObj, Action::CHECK_BALANCE);
+    }
+
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
