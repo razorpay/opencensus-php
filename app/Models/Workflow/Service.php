@@ -20,9 +20,7 @@ class Service extends Base\Service
 
         $this->validateIfPayoutWorkflow($input);
 
-        $merchant = $this->auth->getMerchant();
-
-        $workflow = $this->core()->create($input, $merchant);
+        $workflow = $this->core()->create($input, $this->merchant);
 
         return $this->convertDataToDashboardFormat(
             $workflow->toArrayPublic());
@@ -158,7 +156,7 @@ class Service extends Base\Service
 
         if ($hasCreatePayoutPermission === true)
         {
-            if (empty($merchant) === true)
+            if (empty($this->merchant) === true)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED);
