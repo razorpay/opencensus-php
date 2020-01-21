@@ -141,11 +141,11 @@ const trackIA = setTrackData({
   eventCategory: 'Dashboard - Instant Activations Activate Account',
 });
 
-export const trackL1FormSuccess = businessCategory => {
-  // businessCategory is blackist, whitelist and graylist
+export const trackL1FormSuccess = activationFlow => {
+  // activationFlow is blackist, whitelist and graylist
   trackIA({
     eventAction: 'Click - Activate Account (Success)',
-    eventLabel: businessCategory,
+    eventLabel: activationFlow,
   });
 };
 

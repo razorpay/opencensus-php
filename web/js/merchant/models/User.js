@@ -212,6 +212,7 @@ export default class User {
     return this.activation_status === 'needs_clarification';
   }
 
+  // KYC form submitted
   get isSubmitted() {
     return !!parseInt(this.submitted);
   }

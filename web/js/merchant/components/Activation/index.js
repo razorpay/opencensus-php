@@ -13,7 +13,9 @@ import {
   addDropShield,
   removeDropShield,
 } from 'merchant/components/File/Upload';
-import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics'; // fb, bing, linkedin, twitter
+import * as trackers from 'merchant/containers/Activation/ga_new';
+import * as activationUtils from './ActivationUtils';
 
 import mainFormTabsContent, {
   mainFormTabs,
@@ -25,10 +27,8 @@ import accountFormTabsContent, {
   accountFormFieldNamesMeta,
 } from './AccountActivationFormMap';
 import BingDataObj from 'common/utils/bingDataObj';
-import * as trackers from 'merchant/containers/Activation/ga_new';
 import RTracking from 'react-tracking';
 import L1FormFieldNames from './L1FormFieldNames';
-import { trackTnCClick } from 'merchant/containers/Activation/ga_new';
 import { updateSession } from 'merchant/reducers/session';
 import {
   showInstantActivationSuccessModal,
@@ -333,7 +333,7 @@ export default class ActivationWizard extends React.Component {
   componentDidMount() {
     addDropShield('.Activation--wizard');
 
-    if (!this.props.user.isAccepted) {
+    if (!this.props.user.isAccepted && activationUtils.isL1Completed(this)) {
       fireAnalyticsEvents({
         fbData: 'KYC_start',
         liData: 987420,
@@ -422,7 +422,7 @@ export default class ActivationWizard extends React.Component {
           clickSource: 'save',
         })
       );
-    const callBack =
+    let callBack =
       onAction &&
       function(result, error) {
         tracker();
@@ -432,6 +432,10 @@ export default class ActivationWizard extends React.Component {
           error,
         });
       };
+
+    if (!activationUtils.isL1Completed(this)) {
+      callBack = () => {};
+    }
 
     this.goto(null, callBack);
   };
@@ -444,7 +448,7 @@ export default class ActivationWizard extends React.Component {
           clickSource: 'save-next',
         })
       );
-    const callBack =
+    let callBack =
       onAction &&
       function(result, error) {
         tracker();
@@ -455,13 +459,17 @@ export default class ActivationWizard extends React.Component {
         });
       };
 
+    if (!activationUtils.isL1Completed(this)) {
+      callBack = () => {};
+    }
+
     this.goto(this.state.activeTab + 1, callBack);
   };
 
   prev = e => {
     const currenActiveTab = this.state.activeTab;
 
-    const callBack =
+    let callBack =
       onAction &&
       function(result, error) {
         onAction.trackBack({
@@ -470,6 +478,10 @@ export default class ActivationWizard extends React.Component {
           error,
         });
       };
+
+    if (!activationUtils.isL1Completed(this)) {
+      callBack = () => {};
+    }
 
     this.goto(this.state.activeTab - 1, callBack);
   };
@@ -483,7 +495,7 @@ export default class ActivationWizard extends React.Component {
           clickSource: mainFormTabs[tabId],
         })
       );
-    const callBack =
+    let callBack =
       onAction &&
       function(result, error) {
         onAction.trackTabClick(tabId); // Tracks current tab clicked
@@ -496,6 +508,10 @@ export default class ActivationWizard extends React.Component {
           });
         }
       };
+
+    if (!activationUtils.isL1Completed(this)) {
+      callBack = () => {};
+    }
 
     this.goto(tabId, callBack);
   };
@@ -1032,14 +1048,12 @@ export default class ActivationWizard extends React.Component {
         /**
          * Fire fb, bing, linkedin & twitter events
          */
-        fireAnalyticsEvents(
-          {
-            fbData: 'kyc_complete_all',
-            bingData: compAllData,
-            liData: 987452, //conversionId
-            twiData: 'o1ua7',
-          } //twitter
-        );
+        fireAnalyticsEvents({
+          fbData: 'kyc_complete_all',
+          bingData: compAllData,
+          liData: 987452,
+          twiData: 'o1ua7',
+        });
 
         let conversionId, txnId;
         if ('greylist' === data.data.activation_flow) {
@@ -1591,7 +1605,7 @@ export default class ActivationWizard extends React.Component {
                 className="text-primary"
                 target="_blank"
                 href="https://razorpay.com/terms/"
-                onClick={trackTnCClick}
+                onClick={onAction.trackTnCClick}
               >
                 Terms and Conditions
               </a>
@@ -1614,7 +1628,7 @@ export default class ActivationWizard extends React.Component {
                 }}
                 isFormLocked={isFormLocked}
                 isLinkedAccount={this.isLinkedAccountForm}
-                submitActvationForm={this.submitForm}
+                submitActivationForm={this.submitForm}
               />
             </main>
           )}
@@ -1943,7 +1957,7 @@ function isFieldValid(field, activation) {
 * Submit Form opens with backdrop inside Activation form's main content
 * - The activeTab keeps showing in the background
 * - @props
-*     {Function} submitActvationForm, call the submit form api
+*     {Function} submitActivationForm, call the submit form api
 * */
 class SubmitForm extends React.Component {
   state = {
@@ -1954,7 +1968,7 @@ class SubmitForm extends React.Component {
     if (!this.state.allowSubmit) {
       return;
     }
-    return this.props.submitActvationForm();
+    return this.props.submitActivationForm();
   };
 
   render() {
