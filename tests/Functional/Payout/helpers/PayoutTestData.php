@@ -222,8 +222,8 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
             'content' => [
-                'token'   => 'BUIj3m2Nx2VvVj',
-                'otp'     => '0007',
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
                 'user_comment' => 'Approving',
             ],
         ],
@@ -312,8 +312,8 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/reject',
             'content' => [
-                'token'   => 'BUIj3m2Nx2VvVj',
-                'otp'     => '1234',
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '1234',
                 'user_comment' => 'Rejecting',
             ],
         ],
