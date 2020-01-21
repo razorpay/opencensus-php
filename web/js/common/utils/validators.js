@@ -101,6 +101,8 @@ export function validatePANCard(value) {
 
 export function validateCompanyAB(value1 = '', value2 = '', isExpOn = false) {
   if (!isExpOn) return false;
+  value1 = value1 === null ? '' : value1;
+  value2 = value2 === null ? '' : value2;
   return value1.toLowerCase() === value2.toLowerCase()
     ? 'Company name cannot be same as Contact Name'
     : false;
