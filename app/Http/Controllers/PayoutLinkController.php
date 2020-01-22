@@ -123,7 +123,9 @@ class PayoutLinkController extends Controller
 
     public function pullPayoutStatus(string $payoutLinkId)
     {
-        return ApiResponse::json($this->service()->pullPayoutStatus($payoutLinkId));
+        $response =$this->service()->pullPayoutStatus($payoutLinkId);
+
+        return ApiResponse::json($response);
     }
 
     private function addCorsHeaders(& $response)

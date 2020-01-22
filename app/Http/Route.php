@@ -2246,7 +2246,7 @@ final class Route
 
         //balance configs
         'fetch_merchant_balance_configs',
-        'get_merchant_balance_config'
+        'get_merchant_balance_config',
     ];
 
     //

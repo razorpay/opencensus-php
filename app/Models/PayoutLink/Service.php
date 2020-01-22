@@ -66,14 +66,21 @@ class Service extends Base\Service
 
         if ($payout !== null)
         {
-            SourceUpdater::handleUpdateFromQueue($payout);
+            SourceUpdater::update($payout);
 
-            return 'Updated from payout : ' . $payout->getPublicId();
+            $response = [
+                'message'   => 'Update Success',
+                'payout_id' => $payout->getPublicId()
+            ];
         }
         else
         {
-          return 'No associated payouts';
+            $response = [
+                'message' => 'No associated payouts'
+            ];
         }
+
+        return $response;
     }
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input)
