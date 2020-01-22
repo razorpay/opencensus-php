@@ -3576,4 +3576,43 @@ class RefundTest extends TestCase
         $this->app->razorx->method('getTreatment')
             ->willReturn('on');
     }
+
+    public function testRazorxRefundRampOnFts()
+    {
+        list($payment, $order) = $this->tpvPayment();
+
+        $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
+
+        $this->enableRazorXTreatmentForRazorXRefund();
+
+        $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+
+        // Atom has been on boarded to Scrooge,
+        // Changing this since in scrooge flow it will remain in created until cron picks up FTA for processing
+        $this->assertEquals('created', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('icici', $fundTransferAttempt['channel']);
+
+        $this->assertEquals(1, $fundTransferAttempt['is_fts']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals('SBIN0010411', $bankAccount['ifsc_code']);
+
+        $this->assertEquals($order['account_number'], $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
+        $this->assertEquals('refund', $bankAccount['type']);
+    }
 }
