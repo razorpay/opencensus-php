@@ -13,7 +13,6 @@ use RZP\Services\Mozart;
 use RZP\Models\FundTransfer;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer\Mode;
-use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;

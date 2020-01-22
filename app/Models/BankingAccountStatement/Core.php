@@ -86,6 +86,8 @@ class Core extends Base\Core
                     $accountStatementDetails = $processor->fetchAccountStatementDetails($input);
 
                     $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant);
+
+                    $bankingAccount->balance->updateLastFetchedAt();
                 },
                 120,
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
@@ -101,8 +103,6 @@ class Core extends Base\Core
                     'message'       => $e->getMessage(),
                 ]);
         }
-
-        $bankingAccount->balance->updateLastFetchedAt();
 
         return ['processed' => true];
     }
