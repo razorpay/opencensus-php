@@ -10,7 +10,6 @@ import Alert from 'common/ui/Forms/Alert';
 import {
   getKeysSeparatedByPipe,
   isAddressValid,
-  isValidZipcodeCountryWise,
   isValidGSTIN,
 } from 'common/utils/rzp-utils';
 import { email, phone, validateGSTIN } from 'common/utils/validators';
@@ -255,24 +254,6 @@ export default class AddCustomer extends Component {
     });
   };
 
-  validateAddress = address => {
-    const zipcodeError = validateZipCode(address.country, address.zipcode);
-
-    if (zipcodeError) {
-      this.setState({
-        errors: [zipcodeError],
-      });
-
-      return;
-    }
-
-    if (this.state.errors && this.state.errors.length) {
-      this.setState({
-        errors: [],
-      });
-    }
-  };
-
   /**
    * Invoked when Billing Address is changed.
    * @param {Object} address
@@ -392,14 +373,10 @@ export default class AddCustomer extends Component {
       !(name || _email || contact),
 
       // Screen 2
-      !isAddressValid(editedBillingAddress, {
-        zipcode: isValidZipcodeCountryWise,
-      }),
+      !isAddressValid(editedBillingAddress),
 
       // Screen 3
-      !isAddressValid(editedShippingAddress, {
-        zipcode: isValidZipcodeCountryWise,
-      }),
+      !isAddressValid(editedShippingAddress),
     ];
 
     // Ask Address only when this is not an Edit Modal or the `add_customer_address` prop is true.
@@ -413,7 +390,6 @@ export default class AddCustomer extends Component {
     if (isInttCurrenciesEnabled) {
       extraProps = {
         countries: CountryNames,
-        maxLengthZipcode: 8,
       };
     }
 
@@ -556,7 +532,6 @@ export default class AddCustomer extends Component {
             address={editedBillingAddress}
             showDisabledCountry={true}
             hideCountry={!isInttCurrenciesEnabled}
-            validateAddress={this.validateAddress}
             {...extraProps}
           />
           <div class="row CustomerCreationModal__bottom">
@@ -649,7 +624,6 @@ export default class AddCustomer extends Component {
             address={editedShippingAddress}
             showDisabledCountry={true}
             hideCountry={!isInttCurrenciesEnabled}
-            validateAddress={this.validateAddress}
             {...extraProps}
           />
           <div class="row">
@@ -687,14 +661,6 @@ AddCustomer.defaultProps = {
   onSave: () => {},
   saveLabel: 'Save',
   showGSTN: true,
-};
-
-export const validateZipCode = (country, zipcode) => {
-  if (zipcode && country && !isValidZipcodeCountryWise(country, zipcode)) {
-    return 'Please enter a valid pin code for the selected country';
-  }
-
-  return null;
 };
 
 const CountryNames = Object.keys(Countries);

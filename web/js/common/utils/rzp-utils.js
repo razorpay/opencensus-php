@@ -741,33 +741,13 @@ export const getCountryPINcodeType = (country = '') => {
   }
 };
 
-export const isValidZipcodeCountryWise = (country = '', zipcode) => {
-  if (!country) {
-    return false;
-  }
-
-  const countryLowerCase = country.toLowerCase();
-
-  switch (countryLowerCase) {
-    case countries.IND: {
-      return zipcode.length === 6;
-    }
-    case countries.UK: {
-      return zipcode.length >= 6 && zipcode.length <= 8;
-    }
-    default: {
-      return zipcode.length <= 8 && zipcode.length >= 3;
-    }
-  }
-};
-
 /**
  * Checks the validity of an address.
- * Line1, City, State, Country, Zipcode are required fields in an address.
+ * Line1, City, State, Country are required fields in an address.
  * @param {Object} address
  * @return {Bool}
  */
-export const isAddressValid = (address, customValidator = {}) => {
+export const isAddressValid = address => {
   const allKeys = Boolean(
     address &&
       address.line1 &&
@@ -781,16 +761,13 @@ export const isAddressValid = (address, customValidator = {}) => {
     return false;
   }
 
-  const { line1, line2, city, state, country, zipcode } = address;
+  const { line1, line2, city, state, country } = address;
 
   const requiredFieldsLengthCheck = Boolean(
     line1.length >= 10 &&
       line1.length <= 255 &&
       city.length >= 2 &&
       city.length <= 32 &&
-      (customValidator.zipcode
-        ? customValidator.zipcode(country, zipcode)
-        : zipcode.length === 6) &&
       state.length >= 2 &&
       state.length <= 32 &&
       country.length >= 2 &&
