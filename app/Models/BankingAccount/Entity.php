@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccount;
 
 use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
@@ -97,8 +98,8 @@ class Entity extends Base\PublicEntity
 
     const DETAILS       = 'details';
 
-    //for rbl statement fetch time tracking
-    //using this to fetch statement of accounts in order
+    // For tracking Last statement fetch attempt for merchant
+    // This field is being used to schedule merchant next fetch using cron
     const LAST_STATEMENT_ATTEMPT_AT = 'last_statement_attempt_at';
 
     // Relation Constants

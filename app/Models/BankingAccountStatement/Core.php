@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccountStatement;
 use Mail;
 use File;
 use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -63,10 +64,7 @@ class Core extends Base\Core
                     'account_number' => $accountNumber,
                 ]);
 
-            //taking lock after taking trace info of request process
-            //returing processed true in finally because even if other worker is already fetching
-            //account statement for job, we need to remove this account number from queue
-
+            // Taking lock after taking trace info of request process
             $this->mutex = $this->app['api.mutex'];
 
             $this->mutex->acquireAndRelease(
@@ -93,7 +91,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
             );
         }
-        catch (BadRequestException $e)
+        catch ( Exception\BadRequestException $e)
         {
             $this->trace->error(
                 TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_FAILED,
@@ -595,21 +593,17 @@ class Core extends Base\Core
         }
     }
 
+    //
+    // 0. Trace the request here.
+    //
+    // 1. Fetch accountNumbers to process for that channel
+    // We will fetch accountNumbers per channel ascending order by last_statement_fetch_at
+    //
+    // Create and dispatch jobs to pull data for those MIDs
+    // Return accountNumbers dispatched for processing for the route response
+    //
     public function dispatchAccountNumberForChannel(string $channel, array $input)
     {
-        //
-        // 0. Trace the request here.
-        //
-        // 1. Fetch accountNumbers to process for that channel
-        // We will fetch accountNumbers per channel ascending order by last_statement_fetch_at
-        //
-        // Create and dispatch jobs to pull data for those MIDs
-        // Return accountNumbers dispatched for processing for the route response
-        //
-
-        // TODO: Need to move the limit number into config
-        // Limit will be set on the basis of cron frequency, 2 is set for every 12 mins
-        // to process total 10 accounts per hour
 
         $limit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT]);
 
@@ -633,8 +627,9 @@ class Core extends Base\Core
             ]);
 
         BankingAccountStatementJob::dispatch($this->mode,
-                                             [ 'channel' => $channel,
-                                               'accountNumber' => $accountNumber
+                                             [
+                                                 'channel' => $channel,
+                                                 'accountNumber' => $accountNumber
                                              ]);
     }
 }

@@ -109,6 +109,8 @@ class BankingAccountStatement extends Job
 
     /**
      * Setting queue config key based on bank channel. Specific channel accounts will be pushed to dedicated queues.
+     * Not using this function in current release, will need to use it in constructor when we enable statement fetch
+     * for different channels
      *
      * @param $channel
      */

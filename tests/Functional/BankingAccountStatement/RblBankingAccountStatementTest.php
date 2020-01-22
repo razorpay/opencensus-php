@@ -102,13 +102,9 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $this->ba->cronAuth();
 
-        $content = [
-        ];
-
         $request = [
             'url'       => '/banking_account_statement/process/rbl',
-            'method'    => 'POST',
-            'content'   => $content
+            'method'    => 'POST'
         ];
 
         $this->app['cache']->flush();
@@ -133,7 +129,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
 
-        $this->assertEquals($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT], null);
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $this->ba->cronAuth();
 
@@ -220,6 +216,10 @@ class RblBankingAccountStatementTest extends TestCase
 
         $basBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
 
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
         $this->ba->cronAuth();
 
         $this->startTest();
@@ -227,6 +227,10 @@ class RblBankingAccountStatementTest extends TestCase
         $basAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
 
         $this->assertEquals($basBeforeTest[BasEntity::ID], $basAfterTest[BasEntity::ID]);
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     /**
@@ -238,9 +242,17 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
         $this->ba->cronAuth();
 
         $this->startTest();
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
     }
 
     /**

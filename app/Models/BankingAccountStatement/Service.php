@@ -29,8 +29,8 @@ class Service extends Base\Service
 
     public function processAccountStatementForChannel(string $channel, array $input)
     {
-        $data = $this->core()->dispatchAccountNumberForChannel($channel, $input);
+        $accountNumbers = $this->core()->dispatchAccountNumberForChannel($channel, $input);
 
-        return $data;
+        return $accountNumbers;
     }
 }
