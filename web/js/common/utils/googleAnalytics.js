@@ -41,7 +41,7 @@ export const trackhubsContactUpdate = data => {
 
 /**
  * Common function to fire all events at once.
- * @param {Object} - fbData, bingData, liData(linkedin), twiData(twitter)
+ * @param {Object} - fbData, bingData, liData(linkedin), twiData(twitter), quoraData(Quora), redditData(Reddit)
  *
  * Check static dir for to understand track method format.
  * Refer https://docs.google.com/spreadsheets/d/1VIdNTDbvocP11Fltjhk55aHIgpYchUeCJgwnqElW3vY/edit#gid=0 for the values of specific events.
@@ -65,6 +65,18 @@ export const fireAnalyticsEvents = ({ ...data }) => {
     window.rzpAnalytics({
       name: 'linkedIn',
       value: event,
+    });
+  }
+  if (data.quoraData) {
+    window.rzpAnalytics({
+      name: 'quora',
+      event: data.quoraData,
+    });
+  }
+  if (data.redditData) {
+    window.rzpAnalytics({
+      name: 'reddit',
+      event: data.redditData,
     });
   }
   if (data.twiData) {

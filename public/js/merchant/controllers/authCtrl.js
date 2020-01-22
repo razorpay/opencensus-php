@@ -297,7 +297,7 @@ app
         });
 
         window.rzpAnalytics({
-          name: 'linkedIn',
+          name: 'twitter',
           value: {
             txn_id: 'o1u9x',
           },
@@ -321,6 +321,16 @@ app
             value: {
               conversionId: '1668332',
             },
+          });
+
+          window.rzpAnalytics({
+            name: 'quora',
+            event: 'signup_start',
+          });
+
+          window.rzpAnalytics({
+            name: 'reddit',
+            event: 'Lead',
           });
 
           window.rzpAnalytics({
@@ -542,6 +552,16 @@ app
             window.rzpAnalytics({
               name: 'facebook',
               event: 'signup_complete',
+            });
+
+            window.rzpAnalytics({
+              name: 'quora',
+              event: 'signup_complete',
+            });
+
+            window.rzpAnalytics({
+              name: 'reddit',
+              event: 'SignUp',
             });
 
             updateHubSpotContactProperty();
