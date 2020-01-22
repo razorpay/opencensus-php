@@ -41,6 +41,13 @@ class SourceUpdater
                          'expected_current_status' => $expectedCurrentStatus
                      ]);
 
+        $payoutLink = $payout->payoutLink;
+
+        if ($payoutLink === null)
+        {
+            return;
+        }
+
         PayoutSourceUpdaterJob::dispatch($mode,
                                          $payout->getPublicId(),
                                          $previousStatus,
