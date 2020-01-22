@@ -1341,6 +1341,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     }
 
+    public function setBatchId($batchId)
+    {
+        $this->setAttribute(self::BATCH_ID, $batchId);
+    }
+
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
@@ -3554,6 +3559,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getPaymentResponseCacheKey(): string
     {
         return 'payment:response' . $this->getId() . '.cache';
+    }
+
+    public static function getTrackIdRequestKey(string $trackId): string
+    {
+        return 'track_id:request:'. $trackId . '.cache';
+    }
+
+    public static function getTrackIdResponseKey(string $trackId): string
+    {
+        return 'track_id:response:'. $trackId . '.cache';
     }
 
     public function getTransactionType()

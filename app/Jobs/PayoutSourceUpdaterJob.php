@@ -71,7 +71,7 @@ class PayoutSourceUpdaterJob extends Job
                 return;
             }
 
-            SourceUpdater::handleUpdateFromQueue($payout, $this->previousPayoutStatus);
+            SourceUpdater::update($payout, $this->previousPayoutStatus);
         }
         catch (\Throwable $e)
         {
