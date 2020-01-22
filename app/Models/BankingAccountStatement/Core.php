@@ -91,7 +91,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
             );
         }
-        catch ( Exception\BadRequestException $e)
+        catch (Exception\BadRequestException $e)
         {
             $this->trace->error(
                 TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_FAILED,
@@ -628,7 +628,7 @@ class Core extends Base\Core
 
         BankingAccountStatementJob::dispatch($this->mode,
                                              [
-                                                 'channel' => $channel,
+                                                 'channel'       => $channel,
                                                  'accountNumber' => $accountNumber
                                              ]);
     }
