@@ -1341,6 +1341,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     }
 
+    public function setBatchId($batchId)
+    {
+        $this->setAttribute(self::BATCH_ID, $batchId);
+    }
+
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
