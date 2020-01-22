@@ -6,7 +6,6 @@ use App;
 use RZP\Exception;
 use Illuminate\Support;
 use RZP\Services\DowntimeMetric;
-use RZP\Models\Feature\Constants;
 
 class Error extends Support\Fluent
 {
@@ -38,6 +37,11 @@ class Error extends Support\Fluent
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_DESC    = 'gateway_error_desc';
     const METADATA              = 'metadata';
+    const CODE_DETAIL           = 'code_detail';
+    const FAILURE_TYPE          = 'failure_type';
+    const POINT_OF_FAILURE      = 'point_of_failure';
+    const FAILURE_STAGE         = 'failure_stage';
+    const NEXT_BEST_ACTION      = 'next_best_action';
 
     protected $attributes = array();
 
@@ -67,6 +71,8 @@ class Error extends Support\Fluent
         $this->setAction($code);
 
         $this->setAttribute(self::INTERNAL_ERROR_DESC, $internalDesc);
+
+        $this->setDetailedError($code);
     }
 
     public function appendToField(string $string)
@@ -198,6 +204,63 @@ class Error extends Support\Fluent
     public function setMetadata($metadata)
     {
         $this->setAttribute(self::METADATA, $metadata);
+    }
+
+    protected function setDetailedError($code)
+    {
+        $filePath = storage_path('files/errorcodes/error_code_detail.csv');
+
+        $file = fopen($filePath,"r");
+
+        $errorCodeMap = array();
+
+        $header = fgetcsv($file);
+
+        while ($row = fgetcsv($file))
+        {
+            $key = array_shift($row);
+
+            $errorCodeMap[$key] = $row;
+        }
+
+        if (array_key_exists($code, $errorCodeMap))
+        {
+            $this->setDesc($errorCodeMap[$code][0]);
+
+            $this->setCodeDetail($errorCodeMap[$code][1]);
+
+            $this->setFailureType($errorCodeMap[$code][2]);
+
+            $this->setPointOfFailure($errorCodeMap[$code][3]);
+
+            $this->setNextBestAction($errorCodeMap[$code][4]);
+        }
+
+    }
+
+    protected function setCodeDetail($codeDetail)
+    {
+        $this->setAttribute(self::CODE_DETAIL, $codeDetail);
+    }
+
+    protected function setFailureType($failureType)
+    {
+        $this->setAttribute(self::FAILURE_TYPE, $failureType);
+    }
+
+    protected function setPointOfFailure($pointOfFailure)
+    {
+        $this->setAttribute(self::POINT_OF_FAILURE, $pointOfFailure);
+    }
+
+    protected function setFailureStage($failureStage)
+    {
+        $this->setAttribute(self::FAILURE_STAGE, $failureStage);
+    }
+
+    protected function setNextBestAction($nextBestAction)
+    {
+        $this->setAttribute(self::NEXT_BEST_ACTION, $nextBestAction);
     }
 
     protected function getAttribute($attr)
@@ -343,24 +406,11 @@ class Error extends Support\Fluent
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
+            self::CODE_DETAIL       => $this->getAttribute(self::CODE_DETAIL),
+            self::METADATA          => $this->getAttribute(self::METADATA)
         );
 
-        $app = App::getFacadeRoot();
-
-        $isMetadataFeatureEnabled = false;
-
-        if (($app['basicauth'] !== null) and
-            ($app['basicauth']->getMerchant() !== null))
-        {
-                $merchant = $app['basicauth']->getMerchant();
-
-                $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
-        }
-
-        if ($isMetadataFeatureEnabled === true)
-        {
-            $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
-        }
+        s($error);
 
         $error = $this->checkAndAddDataToErrorResp($error);
 

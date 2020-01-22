@@ -386,7 +386,7 @@ class Handler extends ExceptionHandler
 
     protected function recoverableErrorResponse($debug, $exception = null)
     {
-        $this->setErrorMetadataIfApplicable($exception);
+        $this->setErrorMetadata($exception);
 
         $this->ifTestingThenRethrowException($exception);
 
@@ -397,7 +397,7 @@ class Handler extends ExceptionHandler
 
     protected function recoverableNachNbErrorResponse($debug, $exception = null)
     {
-        $this->setErrorMetadataIfApplicable($exception);
+        $this->setErrorMetadata($exception);
 
         $this->ifTestingThenRethrowException($exception);
 
@@ -408,38 +408,26 @@ class Handler extends ExceptionHandler
         return ApiResponse::generateNachNbErrorResponse($error, $data, $debug);
     }
 
-    protected function setErrorMetadataIfApplicable($exception)
+    protected function setErrorMetadata($exception)
     {
         $error = $exception->getError();
 
         $data = $exception->getData();
 
-        $isMetadataFeatureEnabled = false;
-
-        if (($this->app['basicauth'] !== null) and
-            $this->app['basicauth']->getMerchant() !== null)
-        {
-            $merchant = $this->app['basicauth']->getMerchant();
-
-            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
-        }
-
         $metadata = null;
 
-        if ($isMetadataFeatureEnabled === true)
+        if (isset($data['payment_id']) === true)
         {
-            if (isset($data['payment_id']) === true)
-            {
-                $metadata['payment_id'] = $data['payment_id'];
-            }
-            if (isset($data['order_id']) === true)
-            {
-                $metadata['order_id'] = $data['order_id'];
-            }
-
-            $error->setMetadata($metadata);
+            $metadata['payment_id'] = $data['payment_id'];
         }
+        if (isset($data['order_id']) === true)
+        {
+            $metadata['order_id'] = $data['order_id'];
+        }
+
+        $error->setMetadata($metadata);
     }
+
 
     protected function getExceptionData($exception)
     {
