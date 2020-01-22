@@ -27,6 +27,10 @@ class Service extends Base\Service
                              ->workflow_payout_amount_rules
                              ->fetch($input, $merchantId);
 
+        $amountRules = $amountRules->sortBy(Entity::MIN_AMOUNT);
+
+        $amountRules = $amountRules->values();
+
         return $amountRules->toArrayPublic();
     }
 

@@ -99,6 +99,7 @@ class Repository extends Base\Repository
                            ->where($workflowPermissionsPermissionId, '=', $permissionId);
                   })
               ->merchantId($merchantId)
+              ->orderBy(Entity::MIN_AMOUNT)
               ->whereNull(Entity::DELETED_AT);
 
         return $query->get();
