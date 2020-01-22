@@ -3059,6 +3059,10 @@ trait Authorize
 
             $merchantAutoRefundTime = $emandateAutoRefundTime;
         }
+        else if ($payment->isNach() === true)
+        {
+            $merchantAutoRefundTime = $currentTime + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH;
+        }
 
         $payment->setRefundAt($merchantAutoRefundTime);
     }
