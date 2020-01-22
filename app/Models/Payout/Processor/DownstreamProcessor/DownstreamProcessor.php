@@ -52,6 +52,11 @@ class DownstreamProcessor
 
             $channel = $this->payout->getChannel();
 
+            if (empty($channel) === true)
+            {
+                $channel = $this->getChannelForFundTransfer($accountType);
+            }
+
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
 
@@ -61,5 +66,62 @@ class DownstreamProcessor
     public function getAccountTypeForFundTransfer()
     {
         return $this->payout->balance->getAccountType() ?? AccountType::SHARED;
+    }
+
+    /**
+     * Adding for backward compatibility .
+     * Relevant Slack Thread : https://razorpay.slack.com/archives/CE4DMABE3/p1579599527095500
+     *
+     * @param $accountType
+     * @return string
+     */
+    protected function getChannelForFundTransfer($accountType): string
+    {
+        if ($accountType === AccountType::DIRECT)
+        {
+            return $this->getChannelForDirectAccountFundTransfer();
+        }
+
+        return $this->getChannelForSharedAccountFundTransfer();
+    }
+
+    protected function getChannelForDirectAccountFundTransfer()
+    {
+        return $this->payout->balance->getChannel();
+    }
+
+    protected function getChannelForSharedAccountFundTransfer()
+    {
+        $merchant = $this->payout->merchant;
+
+        if ($this->checkIfChannelShouldBeIcici($merchant) === true)
+        {
+            return Channel::ICICI;
+        }
+
+        if ($this->checkIfChannelShouldBeCiti($merchant) === true)
+        {
+            return Channel::CITI;
+        }
+
+        return $this->payout->balance->getChannel() ?? Channel::YESBANK;
+    }
+
+    protected function checkIfChannelShouldBeIcici(Merchant $merchant): bool
+    {
+        $mid = $merchant->getId();
+
+        $iciciMids = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
+
+        return (in_array($mid, $iciciMids, true) === true);
+    }
+
+    protected function checkIfChannelShouldBeCiti(Merchant $merchant): bool
+    {
+        $mid = $merchant->getId();
+
+        $citiMids = (new AdminService)->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
+
+        return (in_array($mid, $citiMids, true) === true);
     }
 }

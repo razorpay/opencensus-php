@@ -56,6 +56,8 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($data): array
     {
+        (new Validator)->validateInput('google_pay_card_authorization', $data);
+
         $response = $this->decryptData($data[RequestFields::TOKEN]);
 
         $data[RequestFields::TOKEN] = $response['data']['decryptedMessage'];
@@ -89,11 +91,13 @@ class Gateway extends Base\Gateway
             switch($status)
             {
                 case Payment\Status::CAPTURED:
-                    $response['STATUS'] = 'SUCCESS';
+                    $response['STATUS'] = 'CAPTURED';
                     break;
                 case Payment\Status::AUTHORIZED:
+                    $response['STATUS'] = 'SUCCESS';
+                    break;
                 case Payment\Status::CREATED:
-                    $response['STATUS'] = 'IN PROCESS';
+                    $response['STATUS'] = 'CREATED';
                     break;
                 case Payment\Status::FAILED:
                     $response['STATUS'] = 'FAILED';
@@ -169,10 +173,13 @@ class Gateway extends Base\Gateway
 
         $payment = (new Payment\Repository())->findOrFail($id);
 
-        if (($payment->getStatus() === Payment\Status::AUTHORIZED) or
-            ($payment->getStatus() === Payment\Status::CAPTURED))
+        if ($payment->getStatus() === Payment\Status::AUTHORIZED)
         {
             return ['status' => 'SUCCESS'];
+        }
+        else if ($payment->getStatus() === Payment\Status::CAPTURED)
+        {
+            return ['status' => 'CAPTURED'];
         }
 
         return ['status' => 'FAILED'];

@@ -1543,11 +1543,12 @@ class Entity extends Base\PublicEntity
             }
 
             $checkersData[] = [
-                'id'       => $checker['id'],
-                'user_id'  => $userData['id'],
-                'name'     => $userData['name'] ?? '',
-                'email'    => $userData['email'] ?? '',
-                'approved' => $checker['approved'],
+                'id'           => $checker['id'],
+                'user_id'      => $userData['id'],
+                'name'         => $userData['name'] ?? '',
+                'email'        => $userData['email'] ?? '',
+                'approved'     => $checker['approved'],
+                'user_comment' => $checker['user_comment'],
             ];
         }
 

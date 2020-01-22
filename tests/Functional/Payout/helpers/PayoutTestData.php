@@ -217,13 +217,28 @@ return [
         ],
     ],
 
-    'testApprovePayoutWithOtp' => [
+    'testApprovePayoutWithComment' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/approve',
             'content' => [
-                'token' => 'BUIj3m2Nx2VvVj',
-                'otp'   => '0007',
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testApprovePayoutWithoutComment' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token'   => 'BUIj3m2Nx2VvVj',
+                'otp'     => '0007',
             ],
         ],
         'response' => [
@@ -255,7 +270,26 @@ return [
         ],
     ],
 
-    'testApproveBulkPayoutWithOtp' => [
+    'testBulkApprovePayoutWithComment' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/approve/bulk',
+            'content' => [
+                'payout_ids'   => [],
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Bulk Approving'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 2,
+                'failed_ids'  => [],
+            ],
+        ],
+    ],
+
+    'testBulkApprovePayoutWithoutComment' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/approve/bulk',
@@ -273,23 +307,57 @@ return [
         ],
     ],
 
-    'testRejectPayout' => [
+    'testRejectPayoutWithComment' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/{id}/reject',
             'content' => [
-                'token' => 'BUIj3m2Nx2VvVj',
-                'otp'   => '1234',
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '1234',
+                'user_comment' => 'Rejecting',
             ],
         ],
         'response' => [
             'content' => [
-                'status' => 'pending',
+                'status' => 'rejected',
             ],
         ],
     ],
 
-    'testBulkRejectPayouts' => [
+    'testRejectPayoutWithoutComment' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/reject',
+            'content' => [
+                'token'   => 'BUIj3m2Nx2VvVj',
+                'otp'     => '1234',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'rejected',
+            ],
+        ],
+    ],
+
+    'testBulkRejectPayoutsWithComment' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/reject/bulk',
+            'content' => [
+                'payout_ids' => [],
+                'user_comment'    => 'Bulk Rejecting',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 2,
+                'failed_ids'  => [],
+            ],
+        ],
+    ],
+
+    'testBulkRejectPayoutsWithoutComment' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/reject/bulk',
@@ -847,6 +915,72 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+        ],
+    ],
+    'testCreateMerchantPayoutOnDemandAmountInCrores' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 2000000000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 1976399410,
+                'currency'    => 'INR',
+                'tax'         => 3600090,
+                'fees'        => 23600590,
+                'notes'       => []
+            ],
+        ],
+    ],
+    'testCreateMerchantPayoutOnDemandExceedAmountLimit' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 2000000100,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount may not be greater than 2000000000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testCreateMerchantPayoutExceedAmountLimit' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout',
+            'content' => [
+                'amount'   => 1000000000,
+                'merchant_id'   => '10000000000000'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount may not be greater than 800000000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
     'testCreateMerchantPayoutOnHoldFunds' => [

@@ -515,8 +515,9 @@ trait Callback
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
                 null,
                 [
-                    'payment_id' => $this->payment->getId(),
-                    'status' => $status
+                    'payment_id'  => $this->payment->getPublicId(),
+                    'order_id'    => $this->payment->getPublicOrderId(),
+                    'status'      => $status
                 ]);
         }
 
@@ -551,6 +552,9 @@ trait Callback
     protected function updatePaymentOnExceptionAndThrow($e)
     {
         $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+        $e->setData(['payment_id'  => $this->payment->getPublicId(),
+                     'order_id'    => $this->payment->getPublicOrderId()]);
 
         if (Error\Error::hasAction($internalErrorCode) === false)
         {

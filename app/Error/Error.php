@@ -2,9 +2,11 @@
 
 namespace RZP\Error;
 
+use App;
 use RZP\Exception;
 use Illuminate\Support;
 use RZP\Services\DowntimeMetric;
+use RZP\Models\Feature\Constants;
 
 class Error extends Support\Fluent
 {
@@ -35,6 +37,7 @@ class Error extends Support\Fluent
     const ACTION                = 'action';
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_DESC    = 'gateway_error_desc';
+    const METADATA              = 'metadata';
 
     protected $attributes = array();
 
@@ -92,10 +95,8 @@ class Error extends Support\Fluent
         // {
         //     throw new InvalidArgumentException($key . ' not defined');
         // }
-
         $this->attributes[$key] = $value;
     }
-
 
     public function isInvalidTerminalError()
     {
@@ -192,6 +193,11 @@ class Error extends Support\Fluent
     protected function setHttpStatusCode($code)
     {
         $this->setAttribute(self::HTTP_STATUS_CODE, $code);
+    }
+
+    public function setMetadata($metadata)
+    {
+        $this->setAttribute(self::METADATA, $metadata);
     }
 
     protected function getAttribute($attr)
@@ -339,6 +345,23 @@ class Error extends Support\Fluent
             self::DESCRIPTION       => $description,
         );
 
+        $app = App::getFacadeRoot();
+
+        $isMetadataFeatureEnabled = false;
+
+        if (($app['basicauth'] !== null) and
+            ($app['basicauth']->getMerchant() !== null))
+        {
+                $merchant = $app['basicauth']->getMerchant();
+
+                $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+        }
+
+        if ($isMetadataFeatureEnabled === true)
+        {
+            $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
+        }
+
         $error = $this->checkAndAddDataToErrorResp($error);
 
         $action = $this->getAttribute(self::ACTION);
@@ -383,6 +406,7 @@ class Error extends Support\Fluent
     public function toDebugArray()
     {
         $error = $this->checkAndAddDataToErrorResp($this->getAttributes());
+
         return array('error' => $error);
     }
 

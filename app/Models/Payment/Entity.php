@@ -3556,6 +3556,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return 'payment:response' . $this->getId() . '.cache';
     }
 
+    public static function getTrackIdRequestKey(string $trackId): string
+    {
+        return 'track_id:request:'. $trackId . '.cache';
+    }
+
+    public static function getTrackIdResponseKey(string $trackId): string
+    {
+        return 'track_id:response:'. $trackId . '.cache';
+    }
+
     public function getTransactionType()
     {
         if ($this->isRecurring() === true)

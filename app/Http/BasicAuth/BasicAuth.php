@@ -737,16 +737,14 @@ class BasicAuth
 
         $this->setKeylessPublicAuthAttributes($entityId);
 
-        // Sets the key instance if it exists, gets used in forming signature for payment authorize response
-        $key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
-
         $this->authCreds = new KeyAuthCreds($this->app);
 
-        $this->authCreds->setKeyEntity($key);
-
         $this->authCreds->setModeAndDbConnection($mode);
-
         $this->authCreds->setAndCheckMerchantActivatedForLive($merchant);
+
+        // Sets the key instance if it exists, gets used in forming signature for payment authorize response
+        $key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+        $this->authCreds->setKeyEntity($key);
 
         // Removes key_id from request if it existed with empty values
         $this->removeRequestKey(self::KEY_ID);
