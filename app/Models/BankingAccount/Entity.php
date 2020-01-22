@@ -7,7 +7,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
 
 /**
- * @property Merchant\Entity     $merchant
+ * @property Merchant\Entity            $merchant
+ * @property Merchant\Balance\Entity    $balance
  */
 class Entity extends Base\PublicEntity
 {
