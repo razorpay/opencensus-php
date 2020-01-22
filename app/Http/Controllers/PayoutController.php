@@ -44,7 +44,7 @@ class PayoutController extends Controller
 
     public function postRejectFundAccountPayout(string $id)
     {
-        $response = $this->service()->rejectFundAccountPayout($id);
+        $response = $this->service()->rejectFundAccountPayout($id, $this->input);
 
         return ApiResponse::json($response);
     }

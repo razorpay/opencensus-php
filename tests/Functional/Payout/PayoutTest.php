@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payout;
 
 use Mail;
+use Queue;
 use Config;
 
 use Carbon\Carbon;
@@ -19,6 +20,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
 use Illuminate\Support\Facades\Artisan;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Admin\Permission as AdminPermission;
@@ -27,18 +29,22 @@ use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PayoutTest extends TestCase
 {
     use PaymentTrait;
     use HeimdallTrait;
+    use WorkflowTrait;
     use SettlementTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use PayoutTrait;
     use WebhookTrait;
     use MocksDnsTrait;
+
+    private $checkerRoleUser;
 
     public function setUp()
     {
@@ -61,6 +67,11 @@ class PayoutTest extends TestCase
             ]);
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        // Create Checker Role User
+        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
+        $this->checkerRoleUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
+        $this->checkerRoleUser->roles()->attach($checkerRole);
     }
 
     public function liveSetUp()
@@ -389,27 +400,6 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    protected function createQueuedOrPendingPayout(array $attributes = [])
-    {
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payouts',
-            'content' => [
-                'account_number'        => $attributes["account_number"] ?? '2224440041626905',
-                'amount'                => $attributes["amount"] ?? 10000,
-                'currency'              => 'INR',
-                'purpose'               => 'refund',
-                'fund_account_id'       => 'fa_100000000000fa',
-                'mode'                  => 'NEFT',
-                'queue_if_low_balance'  => $attributes["queue_if_low_balance"] ?? 0,
-            ],
-        ];
-
-        $this->ba->privateAuth();
-
-        $this->sendRequest($request);
-    }
-
     public function testDashboardSummary()
     {
 
@@ -724,25 +714,70 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testApprovePayoutWithOtp()
+    public function testApprovePayoutWithComment()
     {
-        $this->markTestSkipped('Workflows test handling pending');
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
 
-        $payout = $this->testCreatePayout();
+        // Create pending payout with default workflow
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+                                'min_amount' => '0', 'max_amount' => '5000000']);
+        $payout = $this->createPayoutWithWorkflow($workflow);
+
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
-        $this->fixtures->edit(
-            'payout',
-            $payout['id'],
-            [
-                'status' => Payout\Status::PENDING,
-            ]);
+        $firstApprovalResponse = $this->startTest();
 
-        $this->ba->proxyAuth();
+        // Validating first approval response
+        $firstActionChecker = $this->getDbLastEntity('action_checker');
+        $this->assertEquals(2, $firstApprovalResponse['workflow_history']['current_level']);
+        $this->assertEquals('pending', $firstApprovalResponse['status']);
+        $this->assertEquals('Approving', $firstActionChecker['user_comment']);
+        $this->assertEquals(true, $firstActionChecker['approved']);
 
-        $this->startTest();
+        // Create Checker Role User for 2bd level of approval
+        $secondLevelRole = $this->getDbEntityById('role', Org::MAKER_ROLE);
+        $secondUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::MAKER_ROLE);
+        $secondUser->roles()->attach($secondLevelRole);
+
+        // Make Request to Approve pending payout for second level
+        $this->ba->proxyAuth('rzp_test_10000000000000', $secondUser->getId());
+        $secondApprovalResponse = $this->startTest();
+
+        // Validating second approval response
+        $secondActionChecker = $this->getDbLastEntity('action_checker');
+        $this->assertEquals(2, $secondApprovalResponse['workflow_history']['current_level']);
+        $this->assertEquals('processing', $secondApprovalResponse['status']);
+        $this->assertEquals('Approving', $secondActionChecker['user_comment']);
+        $this->assertEquals(true, $secondActionChecker['approved']);
+    }
+
+    public function testApprovePayoutWithoutComment()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        // Create pending payout with default workflow
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+                                'min_amount' => '0', 'max_amount' => '5000000']);
+        $payout = $this->createPayoutWithWorkflow($workflow);
+
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $approvalResponse = $this->startTest();
+
+        // Validating first approval response
+        $actionChecker = $this->getDbLastEntity('action_checker');
+        $this->assertEquals(2, $approvalResponse['workflow_history']['current_level']);
+        $this->assertEquals(true, $actionChecker['approved']);
     }
 
     public function testApprovePayoutWithInvalidOtp()
@@ -766,83 +801,149 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testApproveBulkPayoutWithOtp()
+    public function testBulkApprovePayoutWithComment()
     {
-        $this->markTestSkipped('Workflows test handling pending');
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
 
-        $payout1 = $this->testCreatePayout();
-        $payout2 = $this->testCreatePayout();
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+                                'min_amount' => '0', 'max_amount' => '5000000']);
+
+        $payout1 = $this->createPayoutWithWorkflow($workflow);
+        $payout2 = $this->createPayoutWithWorkflow($workflow);
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
-        $this->fixtures->edit(
-            'payout',
-            $payout1['id'],
-            [
-                'status' => Payout\Status::PENDING,
-            ]);
-
-        $this->fixtures->edit(
-            'payout',
-            $payout2['id'],
-            [
-                'status' => Payout\Status::PENDING,
-            ]);
-
-        $this->ba->proxyAuth();
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker');
+        $this->assertEquals(true, $actionChecker['approved']);
+        $this->assertEquals('Bulk Approving', $actionChecker['user_comment']);
     }
 
-    public function testRejectPayout()
+    public function testBulkApprovePayoutWithoutComment()
     {
-        $this->markTestSkipped('Workflows test handling pending');
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
 
-        $payout = $this->testCreatePayout();
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+                                'min_amount' => '0', 'max_amount' => '5000000']);
+
+        $payout1 = $this->createPayoutWithWorkflow($workflow);
+        $payout2 = $this->createPayoutWithWorkflow($workflow);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker');
+        $this->assertEquals(true, $actionChecker['approved']);
+        $this->assertEquals(null, $actionChecker['user_comment']);
+    }
+
+    public function testRejectPayoutWithComment()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+                                'min_amount' => '0', 'max_amount' => '5000000']);
+
+        $payout = $this->createPayoutWithWorkflow($workflow);
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
-        $this->fixtures->edit(
-            'payout',
-            $payout['id'],
-            [
-                'status' => Payout\Status::PENDING,
-            ]);
-
-        $this->ba->proxyAuth();
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker');
+
+        $this->assertEquals(false, $actionChecker['approved']);
+        $this->assertEquals('Rejecting', $actionChecker['user_comment']);
     }
 
-    public function testBulkRejectPayouts()
+    public function testRejectPayoutWithoutComment()
     {
-        $this->markTestSkipped('Workflows test handling pending');
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
 
-        $payout1 = $this->testCreatePayout();
-        $payout2 = $this->testCreatePayout();
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+                                'min_amount' => '0', 'max_amount' => '5000000']);
+
+        $payout = $this->createPayoutWithWorkflow($workflow);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker');
+
+        $this->assertEquals(false, $actionChecker['approved']);
+        $this->assertEquals(null, $actionChecker['user_comment']);
+    }
+
+    public function testBulkRejectPayoutsWithComment()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+                                'min_amount' => '0', 'max_amount' => '5000000']);
+
+        $payout1 = $this->createPayoutWithWorkflow($workflow);
+        $payout2 = $this->createPayoutWithWorkflow($workflow);
+
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
-        $this->fixtures->edit(
-            'payout',
-            $payout1['id'],
-            [
-                'status' => Payout\Status::PENDING,
-            ]);
-
-        $this->fixtures->edit(
-            'payout',
-            $payout2['id'],
-            [
-                'status' => Payout\Status::PENDING,
-            ]);
-
-        $this->ba->proxyAuth();
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker');
+        $this->assertEquals(false, $actionChecker['approved']);
+        $this->assertEquals('Bulk Rejecting', $actionChecker['user_comment']);
+    }
+
+    public function testBulkRejectPayoutsWithoutComment()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        $workflow = $this->getDbLastEntity('workflow');
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+                                'min_amount' => '0', 'max_amount' => '5000000']);
+
+        $payout1 = $this->createPayoutWithWorkflow($workflow);
+        $payout2 = $this->createPayoutWithWorkflow($workflow);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker');
+        $this->assertEquals(false, $actionChecker['approved']);
+        $this->assertEquals(null, $actionChecker['user_comment']);
     }
 
     public function testRetryPayout(): array
@@ -1497,6 +1598,8 @@ class PayoutTest extends TestCase
 
     public function testRxPayoutForSlaExpiry(): array
     {
+        Queue::fake();
+
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');

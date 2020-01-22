@@ -129,14 +129,26 @@ class Validator extends Base\Validator
                 $method);
         }
 
-        // Order support is not provided for Only UPI QR
-        if (($onlyUpi === true) and
-            (isset($input[Entity::ORDER_ID]) === true))
+        if ($onlyUpi === true)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER,
-                'receiver_qr_code_method',
-                $method);
+            // Order support is not provided for Only UPI QR
+            if (isset($input[Entity::ORDER_ID]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER,
+                    'receiver_qr_code_method',
+                    $method);
+            }
+            // Amount expected is required for UPI QR
+            if ((isset($input[Entity::AMOUNT_EXPECTED]) === false) and
+                // For more than one receivers, we will allow no amount_expected
+                (count($input[Entity::RECEIVERS][Entity::TYPES]) === 1))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Amount expected is required for UPI QR receivers',
+                    Entity::AMOUNT_EXPECTED,
+                    $input);
+            }
         }
     }
 

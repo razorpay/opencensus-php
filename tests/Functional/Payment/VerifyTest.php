@@ -843,7 +843,7 @@ class VerifyTest extends TestCase
         $payment = $this->fixtures->create('payment', []);
 
         $payment->setAuthenticationGateway('google_pay');
-        $payment->setStatus(Payment\Status::CAPTURED);
+        $payment->setStatus(Payment\Status::AUTHORIZED);
 
         (new Payment\Repository)->saveOrFail($payment);
 
