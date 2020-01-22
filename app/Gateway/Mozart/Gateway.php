@@ -905,14 +905,17 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        switch ($this->terminal->getGatewayAcquirer())
+        if ($input['payment']['gateway'] === Payment\Gateway::PAYLATER)
         {
-            case Payment\Gateway::GETSIMPL:
-                $input['payment']['gateway'] = $input['payment']['wallet'];
-                break;
-            case Payment\Processor\PayLater::ICICI:
-                $input['payment']['gateway'] = Payment\Gateway::PAYLATER_ICICI;
-                break;
+            switch ($this->terminal->getGatewayAcquirer())
+            {
+                case Payment\Gateway::GETSIMPL:
+                    $input['payment']['gateway'] = $input['payment']['wallet'];
+                    break;
+                case Payment\Processor\PayLater::ICICI:
+                    $input['payment']['gateway'] = Payment\Gateway::PAYLATER_ICICI;
+                    break;
+            }
         }
 
         $verify = new Verify($this->gateway, $input);
