@@ -54,6 +54,7 @@
           <exclude>./tests/Unit/</exclude>
           <exclude>./tests/Functional/Gateway/</exclude>
           <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
+          <exclude>./tests/Functional/PaymentsUpi</exclude>
       </testsuite>
       <testsuite name="Features-1 Test Suite">
           <directory>./tests/Functional/Currency/</directory>
@@ -109,6 +110,7 @@
       </testsuite>
       <testsuite name="Feature-6 Test Suite">
           <directory>./tests/Unit/PaymentsUpi</directory>
+          <directory>./tests/Functional/PaymentsUpi</directory>
       </testsuite>
       <testsuite name="Payment Test Suite">
           <directory>./tests/Functional/Payment/</directory>

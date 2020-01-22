@@ -150,8 +150,8 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($payoutLink);
 
-                $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus(Status::CANCELLED),
-                                         [$payoutLink]);
+               /* $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus(Status::CANCELLED),
+                                         [$payoutLink]);*/
 
                 return $payoutLink;
             },
@@ -262,8 +262,8 @@ class Core extends Base\Core
 
                         (new PayoutClient())->processPayout($payoutLink, $this->merchant, $mode);
 
-                        $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus(Status::PROCESSING),
-                                                 [$payoutLink]);
+                      /*  $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus(Status::PROCESSING),
+                                                 [$payoutLink]);*/
 
                         $this->trace->info(TraceCode::PAYOUT_LINK_INVALIDATING_REDIS_TOKEN,
                                            [
@@ -335,8 +335,8 @@ class Core extends Base\Core
 
                 if ($isDirty === true)
                 {
-                    $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus($nextPayoutLinkStatus),
-                                             [$payoutLink]);
+             /*       $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus($nextPayoutLinkStatus),
+                                             [$payoutLink]);*/
                 }
             },
             self::MUTEX_TIMEOUT,
@@ -387,8 +387,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payoutLink);
 
-        $this->app['events']->fire(Status::getWebhookEventCorrespondingToStatus(Status::ISSUED),
-                                   [$payoutLink]);
+       /* $this->app['events']->fire(Status::getWebhookEventCorrespondingToStatus(Status::ISSUED),
+                                   [$payoutLink]);*/
 
         return $payoutLink;
     }

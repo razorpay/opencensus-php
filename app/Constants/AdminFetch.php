@@ -2229,6 +2229,7 @@ class AdminFetch
                     Fetch::VALUES => [
                         'bank_account',
                         'qr_code',
+                        'vpa',
                     ],
                 ],
             ],

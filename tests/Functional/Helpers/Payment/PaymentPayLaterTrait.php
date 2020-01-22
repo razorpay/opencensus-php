@@ -44,6 +44,12 @@ trait PaymentPayLaterTrait
 
             return $this->makeRequestParent($request);
         }
+        elseif ($this->isOtpCallbackUrl($url))
+        {
+            $this->callbackUrl = $url;
+
+            return $this->makeOtpCallback($url);
+        }
         else
         {
             $dt = $this->getFormRequestFromResponse($response->getContent(), $url);

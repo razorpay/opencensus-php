@@ -43,7 +43,12 @@ class Core extends Base\Core
             {
                 $this->repo->saveOrFail($rule);
 
-                $this->app->smartRouting->createGatewayRule($rule->toArray());
+                $response = $this->app->smartRouting->createGatewayRule($rule->toArray());
+
+                if ($response === null)
+                {
+                    throw new Exception\RuntimeException('Router rule create failed', $rule->toArray());
+                }
             });
         }
         catch (\Throwable $e)
@@ -81,7 +86,13 @@ class Core extends Base\Core
             {
                 $this->repo->saveOrFail($rule);
 
-                $this->app->smartRouting->updateGatewayRule($rule->toArray());
+                $response = $this->app->smartRouting->updateGatewayRule($rule->toArray());
+
+                if ($response === null)
+                {
+                    throw new Exception\RuntimeException('Router rule update failed', $rule->toArray());
+                }
+
             });
         }
         catch (\Throwable $e)
@@ -109,7 +120,8 @@ class Core extends Base\Core
                                 ->gateway_rule
                                 ->fetchRulesForSearchCriteria($searchCriteria);
 
-        if ($input['payment']->isMethodCardOrEmi() === true)
+        if (($input['payment']->isMethodCardOrEmi() === true) and
+            ($input['payment']->isGooglePayCard() === false))
         {
             $iins = (array) $input['payment']->card->getIin();
 
@@ -127,17 +139,21 @@ class Core extends Base\Core
 
         $validAuths = $input['auths'];
 
-        $card = $payment->card;
-
         $searchCriteria = [
             Entity::METHOD        => $payment->getMethod(),
             Entity::MERCHANT_ID   => $merchant->getId(),
             Entity::GATEWAY       => $payment->terminal->getGateway(),
             Entity::AUTH_TYPE     => $validAuths,
-            Entity::NETWORK       => $card->getNetworkCode(),
-            Entity::ISSUER        => $card->getIssuer(),
             Entity::STEP          => Entity::AUTHENTICATION,
         ];
+
+        if ($payment->isGooglePayCard() === false)
+        {
+            $card = $payment->card;
+
+            $searchCriteria[Entity::NETWORK] = $card->getNetworkCode();
+            $searchCriteria[Entity::ISSUER]  = $card->getIssuer();
+        }
 
         $this->trace->info(TraceCode::AUTH_RULES_SEARCH_CRITERIA, $searchCriteria);
 
@@ -245,6 +261,11 @@ class Core extends Base\Core
         switch ($method)
         {
             case Payment\Method::CARD:
+
+                if ($payment->isGooglePayCard() === true)
+                {
+                    break;
+                }
 
                 $card = $payment->card;
 

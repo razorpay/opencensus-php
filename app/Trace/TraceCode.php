@@ -290,6 +290,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_TOKEN_MISMATCH                                = 'GATEWAY_TOKEN_MISMATCH';
     const CHECK_ACCOUNT_REQUEST                                 = 'CHECK_ACCOUNT_REQUEST';
     const CHECK_ACCOUNT_RESPONSE                                = 'CHECK_ACCOUNT_RESPONSE';
+    const AUTH_INIT_REQUEST                                     = 'AUTH_INIT_REQUEST';
+    const AUTH_INIT_RESPONSE                                    = 'AUTH_INIT_RESPONSE';
+    const AUTH_VERIFY_REQUEST                                   = 'AUTH_VERIFY_REQUEST';
+    const AUTH_VERIFY_RESPONSE                                  = 'AUTH_VERIFY_RESPONSE';
+    const CHECK_BALANCE_REQUEST                                 = 'CHECK_BALANCE_REQUEST';
+    const CHECK_BALANCE_RESPONSE                                = 'CHECK_BALANCE_RESPONSE';
     const FETCH_TOKEN_REQUEST                                   = 'FETCH_TOKEN_REQUEST';
     const FETCH_TOKEN_RESPONSE                                  = 'FETCH_TOKEN_RESPONSE';
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
@@ -655,6 +661,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SETTLEMENT_MERCHANT_ON_HOLD                           = 'SETTLEMENT_MERCHANT_ON_HOLD';
     const SETTLEMENT_MERCHANT_SKIPPED                           = 'SETTLEMENT_MERCHANT_SKIPPED';
+
+    const TOGGLE_TRANSACTION_HOLD                               = 'TOGGLE_TRANSACTION_HOLD';
+    const TOGGLE_TRANSACTION_RELEASE                            = 'TOGGLE_TRANSACTION_RELEASE';
+    const TOGGLE_TRANSACTION_COMPLETE                           = 'TOGGLE_TRANSACTION_COMPLETE';
+    const TOGGLE_TRANSACTION_UPDATE_FAILED                      = 'TOGGLE_TRANSACTION_UPDATE_FAILED';
 
     // Info trace code for when a request would have been throttled but didn't because it is mocked.
     const THROTTLE_REQUEST_THROTTLED_MOCK                       = 'THROTTLE_REQUEST_THROTTLED_MOCK';
@@ -1528,6 +1539,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_DOPPLER_INVALID_STATUS               = 'GATEWAY_DOWNTIME_DOPPLER_INVALID_STATUS';
     const GATEWAY_DOWNTIME_DOPPLER_INVALID_MESSAGE              = 'GATEWAY_DOWNTIME_DOPPLER_INVALID_MESSAGE';
     const GATEWAY_DOWNTIME_DOPPLER_INVALID_REASONCODE           = 'GATEWAY_DOWNTIME_DOPPLER_INVALID_REASONCODE';
+    const GATEWAY_DOWNTIME_DOPPLER_INVALID_TOKEN                = 'GATEWAY_DOWNTIME_DOPPLER_INVALID_TOKEN';
     const GATEWAY_DOWNTIME_DOPPLER_CREATE                       = 'GATEWAY_DOWNTIME_DOPPLER_CREATE';
     const GATEWAY_DOWNTIME_DOPPLER_EDIT                         = 'GATEWAY_DOWNTIME_DOPPLER_EDIT';
     const GATEWAY_DOWNTIME_DOPPLER_RESOLVE                      = 'GATEWAY_DOWNTIME_DOPPLER_RESOLVE';
@@ -2117,6 +2129,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST                 = 'PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST';
     const PAYMENT_SECOND_REDIRECT_TO_AUTHORIZE_REQUEST          = 'PAYMENT_SECOND_REDIRECT_TO_AUTHORIZE_REQUEST';
     const PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_PAYLOAD         = 'PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_PAYLOAD';
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_FIRST_REQUEST           = 'PAYMENT_REDIRECT_TO_AUTHORIZE_FIRST_REQUEST';
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_DUPLICATE_REQUEST       = 'PAYMENT_REDIRECT_TO_AUTHORIZE_DUPLICATE_REQUEST';
     const PAYMENT_REDIRECT_TO_AUTHORIZE_FAILURE                 = 'PAYMENT_REDIRECT_TO_AUTHORIZE_FAILURE';
     const PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT                 = 'PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT';
 
@@ -2491,6 +2505,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
+    const ALREADY_ACTIVATED                                     = 'ALREADY_ACTIVATED';
+    const NOT_ACTIVATED                                         = 'NOT_ACTIVATED';
+
     const MERCHANT_DEFAULT_GROUP_ATTACH                         = 'MERCHANT_DEFAULT_GROUP_ATTACH';
 
     //Balance Config
@@ -2672,7 +2689,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_MTU_UPDATE_FAILURE                           => 'Updating live by transaction failed for merchant ',
         self::MERCHANT_BALANCE_DEBIT_FAILURE                        => 'Not enough balance',
         self::MERCHANT_REFUND_CREDITS_DEBIT_FAILURE                 => 'Not enough refund credits',
-        self::NEGATIVE_BALANCE_BREACHED                              => 'Negative Balance has crossed the negative limit threshold',
+        self::NEGATIVE_BALANCE_BREACHED                             => 'Negative Balance has crossed the negative limit threshold',
         ];
 
     /**

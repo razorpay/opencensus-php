@@ -214,7 +214,7 @@ class Repository extends Base\Repository
          * Split queries into two (Fingerprint with Null, Fingerprint with empty) to fix query timeouts.
          */
 
-        $cardsWithNullFingerprint = $this->newQuery()
+        $cardsWithNullFingerprint = $this->newQueryWithConnection($this->getSlaveConnection())
             ->WhereNull(Entity::GLOBAL_FINGERPRINT)
             ->whereNotNull(Entity::VAULT_TOKEN)
             ->where(Entity::CREATED_AT, '<=', $timestamp)
@@ -222,7 +222,7 @@ class Repository extends Base\Repository
             ->limit($limit)
             ->get();
 
-        $cardsWithEmptyFingerprint = $this->newQuery()
+        $cardsWithEmptyFingerprint = $this->newQueryWithConnection($this->getSlaveConnection())
             ->Where(Entity::GLOBAL_FINGERPRINT, '=', '')
             ->whereNotNull(Entity::VAULT_TOKEN)
             ->where(Entity::CREATED_AT, '<=', $timestamp)

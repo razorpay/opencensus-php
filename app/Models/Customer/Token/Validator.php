@@ -24,6 +24,7 @@ class Validator extends Base\Validator
         Entity::METHOD              => 'required|in:card,emandate,wallet,nach,upi',
         Entity::CARD_ID             => 'required_only_if:method,card|alpha_num|size:14',
         Entity::BANK                => 'required_only_if:method,emandate,nach|custom',
+        Entity::VPA_ID              => 'required_only_if:method,upi|alpha_num|size:14',
         // We generate it if max_amount is not present and method is emandate or nach or upi
         Entity::MAX_AMOUNT          => 'sometimes_if:method,emandate,nach,upi',
         Entity::WALLET              => 'required_only_if:method,wallet|custom',

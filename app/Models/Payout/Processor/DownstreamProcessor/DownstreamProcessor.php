@@ -9,6 +9,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Payout\Processor\FundAccountPayout;
 
 class DownstreamProcessor
 {
@@ -49,7 +50,12 @@ class DownstreamProcessor
         {
             $accountType = $this->getAccountTypeForFundTransfer();
 
-            $channel = $this->getChannelForFundTransfer($accountType);
+            $channel = $this->payout->getChannel();
+
+            if (empty($channel) === true)
+            {
+                $channel = $this->getChannelForFundTransfer($accountType);
+            }
 
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
@@ -57,18 +63,14 @@ class DownstreamProcessor
         return new $subProcessor;
     }
 
-    protected function getAccountTypeForFundTransfer()
+    public function getAccountTypeForFundTransfer()
     {
         return $this->payout->balance->getAccountType() ?? AccountType::SHARED;
     }
 
     /**
-     * TODO: Currently there is no proper way to decide the channel through
-     * which the payout should be routed in case of shared accounts.
-     * Till the time we achieve this by Dynamic routing, we are doing
-     * a hack of using config key to store the MIDs for which
-     * channel for processing the payout should be CITI and ICICI.
-     * The precedence between ICICI and CITI is ICICI.
+     * Adding for backward compatibility .
+     * Relevant Slack Thread : https://razorpay.slack.com/archives/CE4DMABE3/p1579599527095500
      *
      * @param $accountType
      * @return string

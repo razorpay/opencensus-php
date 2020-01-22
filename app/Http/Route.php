@@ -400,6 +400,8 @@ final class Route
         'transaction_create_fees_breakup'          => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
         'transaction_bulk_update'                  => ['put',      'transactions/bulk',                              'TransactionController@updateMultipleTransactions'                  ],
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
+        'toggle_transaction_hold'                  => ['patch',    'transactions/hold',                              'TransactionController@toggleTransactionHold'                       ],
+        'toggle_transaction_release'               => ['patch',    'transactions/release',                           'TransactionController@toggleTransactionRelease'                    ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
@@ -669,6 +671,8 @@ final class Route
         'gateway_create_rule'                      => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                      => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
         'gateway_delete_rule'                      => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
+        'gateway_payment_verify_get'               => ['get',      'gateway/{gateway}/verify',                       'GatewayController@verifyPayment'                                   ],
+        'gateway_payment_verify_post'              => ['post',     'gateway/{gateway}/verify',                       'GatewayController@verifyPayment'                                   ],
         'gateway_file_create'                      => ['post',     'gateway/files',                                  'GatewayFileController@createGatewayFile'                           ],
         'gateway_file_retry'                       => ['post',     'gateway/files/{id}/retry',                       'GatewayFileController@retryGatewayFile'                            ],
         'gateway_file_acknowledge'                 => ['post',     'gateway/files/{id}/acknowledge',                 'GatewayFileController@acknowledgeGatewayFile'                      ],
@@ -2705,6 +2709,8 @@ final class Route
         'scrooge_set_merchant_mode_config',
         'scrooge_expire_merchant_mode_config',
         'scrooge_fetch_merchant_mode_configs',
+        'toggle_transaction_hold',
+        'toggle_transaction_release',
 
         'commissions_capture',
         'commissions_capture_by_partner',
@@ -3321,7 +3327,8 @@ final class Route
         'update_sr_level_global_config'             => '*',
         //'get_all_sr_level_global_config'            => Permission::LIST_DOWNTIME_CONFIG,
         'get_all_sr_level_global_config'            => '*',
-
+        'toggle_transaction_hold'                   => Permission::EDIT_MERCHANT_RISK_THRESHOLD,
+        'toggle_transaction_release'                => Permission::EDIT_MERCHANT_RISK_THRESHOLD,
         'register_offline_device'                   => '*',
     ];
 
@@ -3371,6 +3378,8 @@ final class Route
         'gateway_payment_callback_canara_post',
         'gateway_payment_callback_amazonpay',
         'gateway_payment_callback_amazonpay_post',
+        'gateway_payment_verify_get',
+        'gateway_payment_verify_post',
         'mailgun_webhook',
         'gateway_downtime_source_webhook',
         'checkout_onyx',
