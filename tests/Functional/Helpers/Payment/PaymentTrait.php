@@ -6,6 +6,7 @@ use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
+use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Constants\Shield as ShieldConstants;
 use Symfony\Component\DomCrawler\Crawler;
@@ -2529,5 +2530,18 @@ trait PaymentTrait
         $event = 'processed_to_file_init_event';
         $status = 'file_init';
         $this->scroogeUpdateRefundStatus($refund, $event, $status);
+    }
+
+    protected function enableRazorXTreatmentForRazorXRefund()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
     }
 }
