@@ -90,6 +90,8 @@
         ga('set', 'page', location.pathname + location.hash + location.search);
         ga('old.set', 'page', location.pathname + location.hash + location.search);
         analytics.track('ga', 'pageview');
+        analytics.track('reddit', 'PageVisit');
+        analytics.track('quora', 'ViewContent');
         try {
           var pendingAction = JSON.parse(analytics.utils.getCookie('pendingAction'));
           if (pendingAction && pendingAction.type === 'signup-form') {

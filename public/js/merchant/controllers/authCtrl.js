@@ -290,6 +290,16 @@ app
         });
 
         window.rzpAnalytics({
+          name: 'quora',
+          event: 'signup_start',
+        });
+
+        window.rzpAnalytics({
+          name: 'reddit',
+          event: 'Lead',
+        });
+
+        window.rzpAnalytics({
           name: 'linkedIn',
           value: {
             conversionId: '987388',
@@ -321,16 +331,6 @@ app
             value: {
               conversionId: '1668332',
             },
-          });
-
-          window.rzpAnalytics({
-            name: 'quora',
-            event: 'signup_start',
-          });
-
-          window.rzpAnalytics({
-            name: 'reddit',
-            event: 'Lead',
           });
 
           window.rzpAnalytics({
@@ -508,21 +508,6 @@ app
         invokeAdroll();
         invokeGtag();
         invokeBing();
-
-        // Fire linkedin Pixel.
-        var i = new Image();
-        i.src =
-          'https://dc.ads.linkedin.com/collect/?pid=155571&conversionId=391804&fmt=gif';
-
-        // Fire Quora pixel.
-        i = new Image();
-        i.src =
-          'https://q.quora.com/_/ad/95fbe5175071440aa52a87363dbba692/pixel?tag=ViewContent&noscript=1';
-
-        // Fire Twitter pixel
-        i = new Image();
-        i.src =
-          'https://analytics.twitter.com/i/adsct?txn_id=o1tr7&p_id=Twitter&tw_sale_amount=0&tw_order_quantity=0';
 
         if ($scope.coupon.val !== '' && $scope.coupon.status === 'success') {
           $scope.signup.merchantData.coupon_code = $scope.coupon.val;
