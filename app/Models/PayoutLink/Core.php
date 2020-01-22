@@ -46,7 +46,6 @@ class Core extends Base\Core
     const SUCCESS             = 'success';
     const MUTEX_TIMEOUT       = 60;
     const SLACK_CHANNEL_COLOR = 'danger';
-    const SLACK_CHANNEL       = 'x-apps-payout-links-alerts';
 
     protected $elfin;
 
@@ -162,7 +161,7 @@ class Core extends Base\Core
     public function pushSlackAlert(string $headline, array $message)
     {
         $settings = [
-            'channel' => self::SLACK_CHANNEL,
+            'channel' => $this->config->get('slack.channels.payout_links_alerts'),
             'color'   => self::SLACK_CHANNEL_COLOR
         ];
 
