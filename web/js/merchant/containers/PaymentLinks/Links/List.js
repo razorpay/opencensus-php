@@ -100,7 +100,9 @@ export default class PaymentLinksContainer extends ListContainer {
               </span>
             )}
 
-            <TakeATourButton feature={RZPFeatures.PL} />
+            {/*
+              <TakeATourButton feature={RZPFeatures.PL} />  // TODO: Re-enable it after few weeks, check [PAYAPPS-839] for full details
+            */}
 
             <DocsLink url="https://razorpay.com/docs/payment-links/" />
 
