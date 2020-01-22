@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Direct;
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
+use RZP\Models\BankingAccount;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
@@ -13,6 +16,8 @@ use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 class Base extends FundAccountPayout\Base
 {
+    const GATEWAY_BALANCE_LAST_FETCHED_AT_TIME_DIFF = 2; //in minutes
+
     public function process(Entity $payout, PublicEntity $ftaAccount)
     {
         $this->setChannel($payout);
@@ -36,7 +41,22 @@ class Base extends FundAccountPayout\Base
 
         $payoutAmount = $payout->getAmount();
 
-        $merchantBalance = $payout->balance->getBalance();
+        $merchantBankingAccount = $payout->bankingAccount;
+
+        $balanceLastFetchedAt = $merchantBankingAccount->getBalanceLastFetchedAt();
+
+        $nowTime = Carbon::now(Timezone::IST);
+
+        $diffTime = $nowTime->diffInMinutes(Carbon::createFromTimestamp($balanceLastFetchedAt, Timezone::IST));
+
+        if ($diffTime > self::GATEWAY_BALANCE_LAST_FETCHED_AT_TIME_DIFF)
+        {
+            (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
+                                        'channel' => $merchantBankingAccount->getChannel(),
+                                        ]);
+        }
+
+        $merchantBalance = $merchantBankingAccount->getTempBalance();
 
         $hasBalance = ($merchantBalance >= $payoutAmount);
 
