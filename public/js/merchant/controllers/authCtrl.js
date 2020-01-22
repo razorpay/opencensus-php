@@ -297,7 +297,7 @@ app
         });
 
         window.rzpAnalytics({
-          name: 'linkedIn',
+          name: 'twitter',
           value: {
             txn_id: 'o1u9x',
           },
@@ -321,6 +321,16 @@ app
             value: {
               conversionId: '1668332',
             },
+          });
+
+          window.rzpAnalytics({
+            name: 'quora',
+            event: 'signup_start',
+          });
+
+          window.rzpAnalytics({
+            name: 'reddit',
+            event: 'Lead',
           });
 
           window.rzpAnalytics({
@@ -507,7 +517,7 @@ app
         // Fire Quora pixel.
         i = new Image();
         i.src =
-          'https://q.quora.com/_/ad/0b40045f43e5492d916199b03c35aa48/pixel?tag=ViewContent&noscript=1';
+          'https://q.quora.com/_/ad/95fbe5175071440aa52a87363dbba692/pixel?tag=ViewContent&noscript=1';
 
         // Fire Twitter pixel
         i = new Image();
@@ -542,6 +552,16 @@ app
             window.rzpAnalytics({
               name: 'facebook',
               event: 'signup_complete',
+            });
+
+            window.rzpAnalytics({
+              name: 'quora',
+              event: 'signup_complete',
+            });
+
+            window.rzpAnalytics({
+              name: 'reddit',
+              event: 'SignUp',
             });
 
             updateHubSpotContactProperty();
