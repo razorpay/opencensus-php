@@ -33,7 +33,9 @@ import {
   trackListEvents,
   trackSearchAnalytics,
   trackClearAnalytics,
+  trackReferral,
 } from '../ga';
+import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { mediaWindowUrl } from './SocialShare';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 
@@ -381,7 +383,13 @@ export default class SubMerchantsList extends ListContainer {
                               <CustomClipboard value={this.state.referralUrl}>
                                 <button
                                   class="btn btn-primary pull-right m-l"
-                                  onClick={() => {}}
+                                  onClick={() => {
+                                    fireAnalyticsEvents({
+                                      fbData: 'partner_copy_link',
+                                      liData: 1764844,
+                                    });
+                                    trackReferral();
+                                  }}
                                 >
                                   <i class="i i-link line-height-9" /> Copy Link
                                 </button>
@@ -449,6 +457,13 @@ const ReferalBox = ({ closeModal, referralUrl, shareReferralOn }) => (
             style={{
               width: '100px',
               borderRadius: '0px 2px 2px 0px',
+            }}
+            onClick={() => {
+              fireAnalyticsEvents({
+                fbData: 'partner_copy_link',
+                liData: 1764844,
+              });
+              trackReferral();
             }}
           >
             Copy

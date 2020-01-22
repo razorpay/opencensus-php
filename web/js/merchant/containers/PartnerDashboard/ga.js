@@ -10,6 +10,13 @@ const trackSettings = setTrackData({
   eventCategory: eventCategory + 'Settings',
 });
 
+export function trackReferral(action) {
+  trackAffiliateAccounts({
+    eventAction: 'Share Referral Link - Affiliate Accounts',
+    eventLabel: 'Click on Copy',
+  });
+}
+
 export function trackListEvents(action) {
   trackAffiliateAccounts({
     eventAction: action + ' - Affiliate Accounts',
