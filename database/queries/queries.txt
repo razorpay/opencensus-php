@@ -5602,3 +5602,5 @@ ALTER TABLE disputes
     ADD COLUMN gateway_amount BIGINT UNSIGNED DEFAULT NULL AFTER base_currency,
     ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL AFTER gateway_amount;
 
+ALTER TABLE webhooks
+    ADD COLUMN events2 BIGINT DEFAULT NULL AFTER events;

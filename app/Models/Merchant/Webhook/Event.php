@@ -141,7 +141,7 @@ class Event
         self::ACCOUNT_REJECTED,
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
-
+        self::PAYOUT_LINK_ATTEMPTED,
     ];
 
     /**
@@ -217,7 +217,7 @@ class Event
         self::PAYOUT_LINK_ATTEMPTED
     ];
 
-    protected static $bitPosition = [
+    public static $bitPosition = [
         self::PAYMENT_AUTHORIZED                => 1,
         self::PAYMENT_FAILED                    => 2,
         self::PAYMENT_CAPTURED                  => 3,
@@ -278,6 +278,10 @@ class Event
         self::ACCOUNT_PAYMENTS_DISABLED         => 58,
         self::TRANSACTION_UPDATED               => 59,
         self::PAYOUT_UPDATED                    => 60,
+    ];
+
+    public static $bitPosition2 = [
+        self::PAYOUT_LINK_ATTEMPTED             => 1,
     ];
 
     /**
@@ -342,6 +346,8 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED          => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_DISABLED         => [Product::PRIMARY],
         self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
+        // TODO: change to banking after testing
+        self::PAYOUT_LINK_ATTEMPTED             => [Product::PRIMARY],
     ];
 
     /**
@@ -480,13 +486,21 @@ class Event
         return self::$launchedEvents;
     }
 
-    public static function getEnabledEvents($hex)
+    public static function getEnabledEvents($hex, array $bitPosition)
     {
         $events = [];
 
         foreach (self::$events as $event)
         {
-            $pos = self::$bitPosition[$event];
+            $pos = $bitPosition[$event] ?? null;
+
+            // If the event is present in the other bit position (we have two bit position arrays),
+            // it'll be taken care of in the next run with a different bitPosition set
+            if (empty($pos) === true)
+            {
+                continue;
+            }
+
             $value = ($hex >> ($pos - 1)) & 1;
 
             if ($value)
@@ -512,7 +526,8 @@ class Event
 
     public static function getBitPosition(string $event): int
     {
-        return self::$bitPosition[$event];
+        // The event could be either in the first bit position or the second.
+        return self::$bitPosition[$event] ?? self::$bitPosition2[$event];
     }
 
 
