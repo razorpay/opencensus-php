@@ -225,9 +225,9 @@ class WorkflowPayoutAmountRulesTest extends TestCase
             ]
         ];
 
-        $this->testData[__FUNCTION__]['response']['content']['items'][2]['workflow_id'] = $this->workflowIds[0];
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['workflow_id'] = $this->workflowIds[0];
         $this->testData[__FUNCTION__]['response']['content']['items'][1]['workflow_id'] = $this->workflowIds[1];
-        $this->testData[__FUNCTION__]['response']['content']['items'][0]['workflow_id'] = 'workflowId1000';
+        $this->testData[__FUNCTION__]['response']['content']['items'][2]['workflow_id'] = 'workflowId1000';
 
         $index = 0;
 
@@ -256,9 +256,9 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         // test above will fail, stating that the workflow payout rules have already been created.
         $entries = [
             [
-                'id'          => 3,
-                'min_amount'  => 1000,
-                'max_amount'  => null,
+                'id'          => 1,
+                'min_amount'  => 0,
+                'max_amount'  => 100
             ],
             [
                 'id'          => 2,
@@ -266,9 +266,9 @@ class WorkflowPayoutAmountRulesTest extends TestCase
                 'max_amount'  => 1000
             ],
             [
-                'id'          => 1,
-                'min_amount'  => 0,
-                'max_amount'  => 100
+                'id'          => 3,
+                'min_amount'  => 1000,
+                'max_amount'  => null,
             ]
         ];
 
