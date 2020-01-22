@@ -536,9 +536,12 @@ class Core extends Base\Core
 
         $channel = array_get($input, Entity::CHANNEL);
 
+        $merchantId = array_get($input, Entity::MERCHANT_ID);
+
         $gatewayProcessor = $this->getGatewayProcessorClass($channel);
 
-        $bankingAccount = $this->repo->banking_account->getBankingAccountOfMerchant($this->merchant, $input[Entity::CHANNEL]);
+        $bankingAccount = $this->repo->banking_account
+                                     ->getBankingAccountByMerchantIdAndChannel($merchantId, $channel);
 
         if ($bankingAccount === null)
         {
@@ -553,19 +556,16 @@ class Core extends Base\Core
 
         $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
 //TODO:// add migration
-        $updateRequest = [
+        $updateRequestParams = [
             Entity::TEMP_BALANCE            => $balance,
             Entity::BALANCE_LAST_FETCHED_AT => Carbon::now()->getTimestamp(),
         ];
 
         try
         {
-            $this->repo->transaction(function () use ($bankingAccount, $updateRequest)
-            {
-                $bankingAccount->update($updateRequest);
+            $bankingAccount->update($updateRequestParams);
 
-                $this->repo->saveOrFail($bankingAccount);
-            });
+            $this->repo->saveOrFail($bankingAccount);
         }
         catch (\Exception $ex)
         {
@@ -577,6 +577,16 @@ class Core extends Base\Core
                     'channel' => $channel,
                 ]);
         }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_SUCCEEDED,
+            [
+                Entity::CHANNEL        => $channel,
+                Entity::MERCHANT_ID    => $merchantId,
+                Entity::ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
+                Entity::TEMP_BALANCE   => $bankingAccount->getTempBalance(),
+            ]
+        );
 
         return ['success' => true];
     }

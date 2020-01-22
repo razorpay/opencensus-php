@@ -1328,8 +1328,6 @@ final class Route
         'banking_account_statement_generate'      => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                ],
         'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
 
-        'banking_account_balance_fetch_and_update' => ['post',    'banking_account/balance',                                   'BankingAccountController@fetchAndUpdateGatewayBalance'     ],
-
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
 
@@ -2181,7 +2179,6 @@ final class Route
         'fund_account_bulk_create',
         'bulk_contact_create',
         'banking_account_create',
-        'banking_account_balance_fetch_and_update',
         'merchant_partner_configs_fetch',
         'banking_accounts_list',
         'reports_monthly_banking_invoice',

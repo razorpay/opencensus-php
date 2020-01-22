@@ -78,4 +78,12 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->get();
     }
+
+    public function getBankingAccountByMerchantIdAndChannel($merchantId, string $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->first();
+    }
 }

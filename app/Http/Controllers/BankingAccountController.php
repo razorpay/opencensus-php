@@ -44,13 +44,4 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($response);
     }
-
-    public function fetchAndUpdateGatewayBalance()
-    {
-        $input = Request::all();
-
-        $response = $this->service()->fetchAndUpdateGatewayBalance($input);
-
-        return ApiResponse::json($response);
-    }
 }
