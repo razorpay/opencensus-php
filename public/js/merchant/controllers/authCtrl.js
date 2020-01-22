@@ -509,6 +509,20 @@ app
         invokeGtag();
         invokeBing();
 
+        window.rzpAnalytics({
+          name: 'twitter',
+          value: {
+            txn_id: 'o1tr7',
+          },
+        });
+
+        window.rzpAnalytics({
+          name: 'linkedIn',
+          value: {
+            conversionId: '391804',
+          },
+        });
+
         if ($scope.coupon.val !== '' && $scope.coupon.status === 'success') {
           $scope.signup.merchantData.coupon_code = $scope.coupon.val;
         }
