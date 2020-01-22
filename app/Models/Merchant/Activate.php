@@ -41,18 +41,21 @@ class Activate extends Base\Core
     public function activate(Entity $merchant): Detail\Entity
     {
         //To be removed, added for trace purpose
-        $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, $merchant->toArray());
+        $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, $merchant->toArrayPublic());
 
         // Merchants who have been activated (instantly activated whitelisted merchants)
         if ($merchant->isActivated() === true)
         {
+            $this->trace->info(TraceCode::ALREADY_ACTIVATED, $merchant->toArrayPublic());
+
             return $this->markKycVerified($merchant);
         }
-
         //
         // For merchants who never went through the instant activations flow, and,
         // who went through the instant activations flow and got greylisted
         //
+        $this->trace->info(TraceCode::NOT_ACTIVATED, $merchant->toArrayPublic());
+
         return $this->activateAndMarkKycVerified($merchant);
     }
 
@@ -96,9 +99,11 @@ class Activate extends Base\Core
 
         $merchantCore = new Merchant\Core;
 
-        $merchantCore->activateInternationalIfApplicable($merchant, $merchantDetail);
+        $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
-        $merchantCore->createBalance($merchant, 'live');
+        $merchantBalance = $merchantCore->createBalance($merchant, 'live');
+
+        $merchantCore->createBalanceConfig($merchantBalance, 'live');
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
         {
@@ -151,7 +156,7 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
-        (new Merchant\Core)->activateInternationalIfApplicable($merchant, $merchantDetails);
+        (new Merchant\Core)->updateInternationalIfApplicable($merchant, $merchantDetails);
 
         $merchant->holdFunds();
 
@@ -159,7 +164,9 @@ class Activate extends Base\Core
 
         $merchant->setActivationSource($originProduct);
 
-        (new Core)->createBalance($merchant, 'live');
+        $merchantBalance = (new Core)->createBalance($merchant, 'live');
+
+        (new Core)->createBalanceConfig($merchantBalance, 'live');
 
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED);
 
@@ -223,7 +230,7 @@ class Activate extends Base\Core
 
         $merchantCore = new Merchant\Core;
 
-        $merchantCore->activateInternationalIfApplicable($merchant, $merchantDetail);
+        $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
         {
@@ -331,7 +338,9 @@ class Activate extends Base\Core
         $merchant->activate();
 
         // Create the live mode balance entity for the merchant
-        (new Merchant\Core)->createBalance($merchant, Mode::LIVE);
+        $merchantBalance = (new Merchant\Core)->createBalance($merchant, Mode::LIVE);
+
+        (new Merchant\Core)->createBalanceConfig($merchantBalance, Mode::LIVE);
 
         $this->repo->saveOrFail($merchant);
 

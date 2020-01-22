@@ -428,7 +428,7 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedFssTerminal(array $attributes = [])
+    public function createSharedFssTerminal(array $attributes = [], $acquirer = 'barb')
     {
         $termId = \RZP\Models\Terminal\Shared::FSS_RAZORPAY_TERMINAL;
 
@@ -441,7 +441,7 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'FssBobDebit123',
             'gateway_terminal_password' => 'password',
             'gateway_secure_secret'     => '12345678',
-            'gateway_acquirer'          => 'barb',
+            'gateway_acquirer'          => $acquirer ?? 'barb',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -780,6 +780,28 @@ class Terminal extends Base
             'shared'                    =>  0,
             'paylater'                  =>  1,
             'gateway_merchant_id'       =>  'RazorpayGetsimpl',
+            'gateway_terminal_password' =>  'terminal_password',
+            'mode'                      =>  '2',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createPaylaterIciciTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+        $termId = \RZP\Models\Terminal\Shared::PAYLATER_ICICI_TERMINAL;
+
+        $defaultValues = [
+            'id'                        =>  $termId,
+            'merchant_id'               =>  $sharedMerchantAccount,
+            'gateway'                   =>  'paylater',
+            'gateway_acquirer'          =>  'icic',
+            'shared'                    =>  0,
+            'paylater'                  =>  1,
+            'gateway_merchant_id'       =>  'DUMMY_MERCHANT_ID',
             'gateway_terminal_password' =>  'terminal_password',
             'mode'                      =>  '2',
         ];
@@ -3383,8 +3405,8 @@ class Terminal extends Base
                 Type::NON_RECURRING => '1',
                 Type::UPI_TRANSFER  => '1',
             ],
-            'virtual_upi_root'            => 'rzp.',
-            'virtual_upi_merchant_prefix' => 'test.',
+            'virtual_upi_root'            => 'rzpy.',
+            'virtual_upi_merchant_prefix' => 'test000000',
             'virtual_upi_handle'          => 'hdfcbank',
         ];
 
@@ -3401,8 +3423,8 @@ class Terminal extends Base
                 Type::NON_RECURRING => '1',
                 Type::UPI_TRANSFER  => '1',
             ],
-            'virtual_upi_root'            => 'rzp.',
-            'virtual_upi_merchant_prefix' => 'pay.',
+            'virtual_upi_root'            => 'rzpy.',
+            'virtual_upi_merchant_prefix' => 'payto00000',
             'virtual_upi_handle'          => 'hdfcbank',
         ];
 
@@ -3419,10 +3441,33 @@ class Terminal extends Base
             'gateway'                    => Gateway::UPI_JUSPAY,
             'gateway_merchant_id'        => 'MERCHANTid',
             'gateway_merchant_id2'       => 'merchantid2',
-            'gateway_terminal_password'  => 'priv',
-            'gateway_terminal_password2' => 'pub',
+            'gateway_secure_secret'      => 'NotUsedAsOfNow',
             'vpa'                        => 'some@abfspay',
             'upi'                        =>  1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createUpiJuspayIntentTerminal(array $attributes = [])
+    {
+        $defaultValues  = [
+            'id'                            => Shared::UPI_JUSPAY_TERMINAL,
+            'gateway'                       => Gateway::UPI_JUSPAY,
+            'merchant_id'                   => '10000000000000',
+            'gateway_acquirer'              => 'axis',
+            'category'                      => '1234',
+            'gateway_merchant_id'           => 'MER0000000000111',
+            'gateway_merchant_id2'          => 'MERCHANNEL0000000000111',
+            'gateway_secure_secret'         => 'NotUsedAsOfNow',
+            'upi'                           => 1,
+            'vpa'                           => 'abcd@some',
+            'type'                          => [
+                Type::NON_RECURRING    => '1',
+                Type::PAY              => '1'
+            ]
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

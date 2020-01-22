@@ -6,8 +6,12 @@ use Request;
 
 use ApiResponse;
 
+use RZP\Models\OAuthToken;
+
 class OAuthTokenController extends Controller
 {
+    protected $service = OAuthToken\Service::class;
+
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
      */
@@ -58,5 +62,12 @@ class OAuthTokenController extends Controller
         $data = $this->authservice->revokeToken($id, $input, $merchantId);
 
         return ApiResponse::json($data);
+    }
+
+    public function create()
+    {
+        $entity = $this->service()->create();
+
+        return $entity;
     }
 }

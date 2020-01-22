@@ -53,6 +53,7 @@ use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
 
 class Service extends Base\Service
 {
@@ -312,6 +313,11 @@ class Service extends Base\Service
 
         $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $input)
         {
+            if (isset($input[Entity::INTERNATIONAL]) === true)
+            {
+                (new Detail\Core())->updateInternationalActivationFlow($merchant, $input[Entity::INTERNATIONAL]);
+            }
+
             $merchant = $this->core()->edit($merchant, $input);
 
             if (isset($input[Entity::FEE_BEARER]) === true)
@@ -505,7 +511,23 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId, $configList);
 
-        return $merchant->toArray();
+        $response = $merchant->toArray();
+
+        $response['settlement_ux_revamp'] = $this->shouldShowSettlementUxRevamp();
+
+        return $response;
+    }
+
+    public function shouldShowSettlementUxRevamp(): bool
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+            Merchant\RazorxTreatment::SETTLEMENT_UX_REVAMP,
+            $this->mode
+        );
+
+        $result = (strtolower($variant) === 'on');
+
+        return $result;
     }
 
     public function fetchBalance($merchantId = null)
@@ -563,7 +585,7 @@ class Service extends Base\Service
 
         $balance = $this->repo->balance->fetch($input, $merchantId);
 
-        return $balance->toArrayWithItems();
+        return $balance->toArrayPublic();
     }
 
     public function editAmountCredits($merchantId, $input)
@@ -1799,45 +1821,45 @@ class Service extends Base\Service
 
     public function enableScheduledEs(): array
     {
-        $this->repo->transactionOnLiveAndTest(function ()
+        $userRole = $this->repo
+                         ->merchant
+                         ->getMerchantUserMapping(
+                            $this->merchant->getId(),
+                            $this->user->getId(),
+                            null,
+                            Product::PRIMARY)
+                         ->pivot
+                         ->role;
+
+        if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER))
         {
-            $userRole = $this->repo
-                             ->merchant
-                             ->getMerchantUserMapping(
-                                 $this->merchant->getId(),
-                                 $this->user->getId(),
-                                 null,
-                                 Product::PRIMARY)
-                             ->pivot
-                             ->role;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+                                                    'role',
+                                                    $userRole);
+        }
 
-            if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER) and ($userRole !== User\Role::FINANCE))
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
-                                                        'role',
-                                                        $userRole);
-            }
+        $this->getScheduledEarlySettlementPricingForMerchant();
 
-            $this->getScheduledEarlySettlementPricingForMerchant();
+        $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
+                                                Schedule\Period::HOURLY,
+                                                1,
+                                                null,
+                                                0,
+                                                0,
+                                                ScheduleTask\Type::SETTLEMENT);
 
-            $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
+        if ($schedule === null)
+        {
+            throw new Exception\LogicException(
+                'Schedule for Scheduled Automatic settlement was not found.',
+                ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE
+            );
+        }
 
-            $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
-                                                    Schedule\Period::HOURLY,
-                                                    1,
-                                                    null,
-                                                    0,
-                                                    0,
-                                                    ScheduleTask\Type::SETTLEMENT);
+        $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
 
-            if ($schedule === null)
-            {
-                throw new Exception\LogicException(
-                    'Schedule for Scheduled Automatic settlement was not found.',
-                    ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE
-                );
-            }
-
+        $this->repo->transactionOnLiveAndTest(function () use($schedule, $scheduledTasks)
+        {
             foreach ($scheduledTasks as $scheduledTask)
             {
                 $input = [
@@ -2328,6 +2350,8 @@ class Service extends Base\Service
 
             // Merchant confirmed details
             $data['confirmed'] = $this->getMerchantConfirmed($merchant);
+
+            $data['balance_configs'] = (new BalanceConfigService)->getMerchantBalanceConfigs();
 
             // Fetch formatted merchant details.
             $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();

@@ -305,4 +305,136 @@ class ContactsTest extends TestCase
 
         return $this->runRequestResponseFlow($testdata);
     }
+
+    public function testDeactivateContact()
+    {
+        $this->testCreateContact();
+
+        $contact = $this->getLastEntity('contact');
+
+        $this->assertEquals($contact['active'], true);
+
+        $contactId = $contact['id'];
+
+        $request =  [
+            'content' => [
+                'active' => 0
+            ],
+            'url'     => '/contacts/' . $contactId,
+            'method'  => 'PATCH'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['active'], false);
+        $this->assertEquals($response['id'], $contactId);
+    }
+
+    public function testGetContactTypes()
+    {
+        $this->startTest();
+    }
+
+    public function testAddCustomContactType()
+    {
+        $this->startTest();
+    }
+
+    public function testAddCustomContactTypeThatAlreadyExists()
+    {
+        $this->testAddCustomContactType();
+
+        $this->startTest();
+    }
+
+    public function testAdd101CustomContactTypes()
+    {
+        for ($count = 0; $count < 100; $count++)
+        {
+            $request =  [
+                'content' => [
+                    'type' => 'Payout to Mehul '. $count
+                ],
+                'url'     => '/contacts/types',
+                'method'  => 'POST'
+            ];
+
+            $this->makeRequestAndGetContent($request);
+        }
+
+        $this->startTest();
+    }
+
+    public function testCreateBulkContactsMoreThanAllowedNumber()
+    {
+        $this->ba->batchAuth();
+
+        $content = [];
+
+        for ($count = 0 ; $count < 16 ; $count++)
+        {
+            $contentData = [
+                'fund'  => [
+                    'account_type'      => 'bank_account',
+                    'account_name'      => 'Sample rzp' . $count,
+                    'account_IFSC'      => 'SBIN0007106',
+                    'account_number'    => '123456789' . $count,
+                    'account_vpa'       => ''
+                ],
+                'contact'  => [
+                    'id'                => '',
+                    'type'              => 'vendor',
+                    'name'              => 'Test rzp' . $count,
+                    'email'             => 'sample@example' . $count . '.com',
+                    'mobile'            => '998899889' . $count,
+                    'reference_id'      => ''
+                ],
+                'notes'  => [
+                    'code'              => 'abc123',
+                    'place'             => 'Bangalore',
+                    'state'             => 'Karnataka'
+                ],
+                'idempotency_key'       => 'batch_abc' . $count
+            ];
+
+            array_push($content, $contentData);
+        }
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $this->testData[__FUNCTION__]['request']['content'] = $content;
+
+        $this->startTest();
+    }
+
+    public function testCreateBulkContactsInvalidName()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testCreateBulkContactsInvalidType()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
 }

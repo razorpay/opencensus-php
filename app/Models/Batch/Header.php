@@ -130,6 +130,12 @@ class Header
     const MPAN_RUPAY_PAN               =   'RPAN';
 
     //
+    // Parent config inheritance headers
+    //
+    const MERCHANT_CONFIG_INHERITANCE_PARENT_MERCHANT_ID = 'Parent Merchant Id';
+    const MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID        = 'Merchant Id';
+
+    //
     // Virtual Account Bulk Creation Headers
     //
     const VA_CUSTOMER_ID         = 'customer_id';
@@ -755,6 +761,9 @@ class Header
     const PRICING_RULE_PAYMENT_NETWORK     = 'payment_network';
     const PRICING_RULE_INTERNATIONAL       = 'international';
     const PRICING_RULE_PERCENT_RATE        = 'percent_rate';
+    const PRICING_RULE_AMOUNT_RANGE_ACTIVE = 'amount_range_active';
+    const PRICING_RULE_AMOUNT_RANGE_MIN    = 'amount_range_min';
+    const PRICING_RULE_AMOUNT_RANGE_MAX    = 'amount_range_max';
 
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
@@ -2387,6 +2396,9 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
+                self::PRICING_RULE_AMOUNT_RANGE_MIN,
+                self::PRICING_RULE_AMOUNT_RANGE_MAX,
             ],
             self::OUTPUT => [
                 self::PRICING_RULE_MERCHANT_ID,
@@ -2397,6 +2409,9 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
+                self::PRICING_RULE_AMOUNT_RANGE_MIN,
+                self::PRICING_RULE_AMOUNT_RANGE_MAX,
             ]
         ],
 
@@ -2413,6 +2428,17 @@ class Header
             ]
         ],
 
+        Type::MERCHANT_CONFIG_INHERITANCE => [
+            self::INPUT => [
+                self::MERCHANT_CONFIG_INHERITANCE_PARENT_MERCHANT_ID,
+                self::MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID,
+            ],
+            /*
+             * Input key is needed for header validation.
+             * Not adding output key here
+             * Reason is this batch is entirely migrated to batch micro service.
+             */
+        ],
     ];
 
     /**

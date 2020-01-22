@@ -49,6 +49,9 @@ class CreateWorldlineGateway extends Migration
             $table->string(Worldline::REF_NO)
                   ->nullable();
 
+            $table->string(Worldline::GATEWAY_UTR, 255)
+                  ->nullable();
+
             $table->string(Worldline::TRANSACTION_TYPE)
                   ->nullable();
 

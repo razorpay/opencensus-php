@@ -113,7 +113,7 @@ class ErrorCodeMapping
         'DUPLICATE_TXN_PENDING'          => 'Payout failed. Contact support for help.',
         'TXN_TIMEOUT'                    => 'Payout failed. Please reinitiate transfer after 30 min.',
         'TXN_REJECTED_BENE_BANK'         => 'Transaction not permitted to beneficiary account.',
-        'BANK_CBS_OFFLINE_FAILURE'       => 'Partner Bank is experiencing downtime. Reinitiate transfer after 30 min.',
+        'BANK_CBS_OFFLINE_FAILURE'       => 'NPCI or Beneficiary bank systems are offline. Reinitiate transfer after 30 min',
         'DORMANT_ACCOUNT'                => 'Beneficiary Account is Dormant. Please check with Beneficiary Bank.',
         'CLOSED_ACCOUNT'                 => 'Beneficiary Account is Closed. Please contact beneficiary bank.',
         'IMPS_NOT_ENABLED'               => 'IMPS is not enabled on Beneficiary Account',
@@ -149,6 +149,8 @@ class ErrorCodeMapping
         'NRE_ACCOUNT'                    => 'Beneficiary Account is NRE. Please check and retry.',
         'BENEFICIARY_NAME_MISMATCH'      => 'Beneficiary Name Mismatch. Please check and retry.',
         'INVALID_BENEFICIARY_ACCOUNT'    => 'Invalid Beneficiary Account. Please check and retry.',
+        'TECHNICAL_ERROR_FAILURE'        => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
+        'PBANK_BENE_NOT_REGISTERED'      => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
     ];
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)

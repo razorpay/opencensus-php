@@ -2,12 +2,16 @@
 
 namespace RZP\Models\Transfer;
 
+use function GuzzleHttp\Psr7\try_fopen;
+use Razorpay\Trace\TraceCode;
 use RZP\Base;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Transaction;
+use RZP\Models\Merchant\Balance;
 
 class Validator extends Base\Validator
 {
@@ -160,7 +164,8 @@ class Validator extends Base\Validator
 
         foreach ($orderTransfers as $orderTransfer)
         {
-            if ($orderTransfer->getStatus() === Status::CREATED or
+            if (($orderTransfer->getStatus() === Status::CREATED) or
+                ($orderTransfer->getStatus() === Status::PENDING) or
                 ($orderTransfer->getStatus() === Status::FAILED and $orderTransfer->getAttempts() < Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS))
             {
                 $orderTransferUnprocessedAmount += $orderTransfer->getAmount();
@@ -174,7 +179,8 @@ class Validator extends Base\Validator
                 Entity::AMOUNT,
                 [
                     'sum'           => $transferSum,
-                    'untransferred' => $payment->getAmountUntransferred()
+                    'untransferred' => $payment->getAmountUntransferred(),
+                    'unprocessed'   => $orderTransferUnprocessedAmount,
                 ]);
         }
     }
@@ -204,14 +210,29 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantBalanceForTransfer(Merchant\Balance\Entity $merchantBalance)
+    public function validateMerchantBalanceForTransfer(Merchant\Entity $merchant, Balance\Entity $merchantBalance)
     {
         $debit = $this->entity->transaction->getDebit();
 
-        if ($debit > $merchantBalance->getBalance())
+        try
         {
+            (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $debit,
+                                                        Transaction\Type::TRANSFER,
+                                                     Balance\Type::PRIMARY);
+        }
+        catch (\Exception $e)
+        {
+            if ($e->getCode() !== ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED)
+            {
+                $errorCode = ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE;
+            }
+            else
+            {
+                $errorCode = $e->getCode();
+            }
+            
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
+                $errorCode,
                 Entity::AMOUNT,
                 [
                     'debit_amount' => $debit,

@@ -37,9 +37,10 @@ abstract class Processor extends Base\Core
         $this->validator = new Validator;
     }
 
-    protected function getPaymentProcessor(): PaymentProcessor
+    protected function getPaymentProcessor(bool $forceCreate = false): PaymentProcessor
     {
-        if (isset($this->paymentProcessor) === false)
+        if ((isset($this->paymentProcessor) === false) or
+            ($forceCreate === true))
         {
             $this->paymentProcessor = new PaymentProcessor($this->merchant);
         }
@@ -196,6 +197,13 @@ abstract class Processor extends Base\Core
             $paymentArray[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
             $paymentArray[Payment\Entity::CONTACT]     = $customer->getContact();
             $paymentArray[Payment\Entity::EMAIL]       = $customer->getEmail();
+        }
+
+        if ($this->virtualAccount->hasOrder() === true)
+        {
+            $order = $this->virtualAccount->entity;
+
+            $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
         }
 
         return $paymentArray;

@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Service;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\InfoCode;
+use RZP\Reconciliator\Base\Constants;
 
 class CardsPaymentRecon extends Job
 {
@@ -30,7 +31,7 @@ class CardsPaymentRecon extends Job
         parent::handle();
 
         $request = [
-            'fields'        => Service::CPS_PARAMS,
+            'fields'        => Constants::CPS_PARAMS,
             'payment_ids'   => [$this->data['payment_id']],
         ];
 

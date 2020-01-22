@@ -43,6 +43,26 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function paylater_icici($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'ResponseCode'          => '000',
+                    'MobileNumber'          => '93884739457',
+                    'AppName'               => 'MerchantName',
+                    'TransactionIdentifier' => '3479278',
+                    '_raw'                  => '',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
+
     public function upi_juspay($entities)
     {
         $response = [
@@ -68,6 +88,18 @@ class PayInitData extends Base\Mock\Server
             'next' => [],
             'success' => true,
         ];
+
+        switch ($entities['payment']['description']) {
+            case 'intentPayment':
+                $response['data'] = [];
+                $response['next'] = [
+                   'redirect' => [
+                       'method' => 'post',
+                       "url" => "upi://pay?am=100.00&cu=INR&mc=5411&pa=some@abfspay&pn=merchantname&tn=PayviaRazorpay&tr=pay_someid"
+                   ]
+                ];
+             break;
+        }
         return $response;
     }
 

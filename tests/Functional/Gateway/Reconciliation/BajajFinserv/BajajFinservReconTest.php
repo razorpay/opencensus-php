@@ -54,17 +54,17 @@ class BajajFinservReconTest extends TestCase
         $card = $this->createCardEntity();
 
         // Payment marked as success in db and in recon
-        $payment_success = $this->createPaymentEntities($card);
+        $payment_success = $this->createPaymentEntities(1250001, $card);
 
         // Payment marked as failure in db, but moved to auth from recon
-        $payment_late_auth = $this->createPaymentEntities($card, 'failed');
+        $payment_late_auth = $this->createPaymentEntities(500000, $card, 'failed');
 
          // Payment marked as failure in db and missing in recon file
-        $payment_failure = $this->createPaymentEntities($card, 'failed');
+        $payment_failure = $this->createPaymentEntities(500000, $card, 'failed');
 
         $this->mockReconContentFunction(function (& $content) use ($payment_failure)
         {
-            if ($content['Dealer ID'] === $payment_failure['id'])
+            if ($content['order_id'] === $payment_failure['id'])
             {
                 $content = [];
             }
@@ -121,16 +121,16 @@ class BajajFinservReconTest extends TestCase
         return $card;
     }
 
-    protected function createPaymentEntities($card, $status = 'authorized')
+    protected function createPaymentEntities($amount, $card, $status = 'authorized')
     {
         $payment = $this->fixtures->create(
             'payment',
             [
                 'merchant_id'       => '10000000000000',
-                'amount'            => 500000,
+                'amount'            => $amount,
                 'method'            => 'emi',
                 'status'            => $status,
-                'amount_authorized' => 500000,
+                'amount_authorized' => $amount,
                 'card_id'           => $card['id'],
                 'emi_plan_id'       => '30111111111110',
                 'emi_subvention'    => 'customer',
@@ -145,7 +145,7 @@ class BajajFinservReconTest extends TestCase
                 [
                     'payment_id' => $payment['id'],
                     'action'     => 'authorize',
-                    'amount'     => 500000,
+                    'amount'     => $amount,
                     'gateway'    => 'bajajfinserv',
                     'raw'        => json_encode([
                         'DealID'           => 'CS905114097404',
@@ -179,7 +179,7 @@ class BajajFinservReconTest extends TestCase
                 [
                     'payment_id' => $payment['id'],
                     'action'     => 'authorize',
-                    'amount'     => 500000,
+                    'amount'     => $amount,
                     'gateway'    => 'bajajfinserv',
                     'raw'        => json_encode(
                         [
@@ -222,12 +222,10 @@ class BajajFinservReconTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'status'     => 'authorized',
-                'reference1' => '911082787695',
+                'status' => 'authorized',
             ],
             $payment
         );
-
         $gatewayEntity = $this->getDbEntity('mozart', ['payment_id' => $payment['id']]);
 
         $data = json_decode($gatewayEntity['raw'], true);

@@ -50,6 +50,27 @@ class Holidays
                 25 => 'Christmas',
             ],
         ],
+
+        2020 => [
+            4  => [
+                1  => 'Annual closing of banks',
+                10 => 'Good Friday',
+            ],
+            5  => [
+                25 => 'Ramzan Id (Id-Ul-Fitr) (Shawal-1)',
+            ],
+            8  => [
+                1  => 'Bakri ID (Id-Ul-Zuha)',
+                15 => 'Independence Day',
+            ],
+            10 => [
+                2  => 'Mahatma Gandhi Jayanti',
+                30 => 'Id-E-Milad (Milad-un-Nabi)/Baravafat/Lakshmi Puja',
+            ],
+            12 => [
+                25 => 'Christmas',
+            ],
+        ],
     ];
 
     /**

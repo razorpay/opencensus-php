@@ -318,6 +318,9 @@ class CreateMerchantDetailsTable extends Migration
 
             $table->integer(MerchantDetail::UPDATED_AT);
 
+            $table->char(MerchantDetail::KYC_ID, 14)
+                  ->nullable();
+
             $table->foreign(MerchantDetail::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

@@ -1815,6 +1815,37 @@ class Repository extends Base\Repository
         return null;
     }
 
+    public function determineLiveOrTestModeForEntityWithNotNullGateway($id, $gateway)
+    {
+        $obj = $this->connection(Mode::LIVE)->newQuery()->find($id);
+
+        if (($obj !== null) and
+            ($obj->getGateway() !== null))
+        {
+            return Mode::LIVE;
+        }
+
+        $obj = $this->connection(Mode::TEST)->newQuery()->find($id);
+
+        if (($obj !== null) and
+            ($obj->getGateway() !== null))
+        {
+            return Mode::TEST;
+        }
+
+        //
+        // We need to set connection to null
+        // because it will be set to test if the
+        // id is not found in any of the database.
+        // So even if the db connection is later set
+        // to live, query connection will be set to
+        // test.
+        //
+        $this->connection(null);
+
+        return null;
+    }
+
     public function fetchByIdandSubscriptionId(string $paymentId, string $subscriptionId)
     {
         Entity::verifyIdAndStripSign($paymentId);

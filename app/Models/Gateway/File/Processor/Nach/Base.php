@@ -88,4 +88,23 @@ abstract class Base extends Processor\Base
     {
         return number_format($amount / 100, 2, '.', '');
     }
+
+    protected function formatDataForMail($files)
+    {
+        $mailData = [
+            'files'     => [],
+        ];
+
+        foreach ($files as $file)
+        {
+            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+
+            $mailData['files'][] = [
+                'signed_url' => $signedUrl,
+                'file_name'  => $file->getLocation(),
+            ];
+        }
+
+        return $mailData;
+    }
 }

@@ -10,22 +10,25 @@ class Type
     /**
      * PG balance types.
      */
-    const PRIMARY        = 'primary';
-    const COMMISSION     = 'commission';
-    const FEE_CREDITS    = 'fee_credits';
-    const REFUND_CREDITS = 'refund_credits';
-    const AMOUNT_CREDITS = 'amount_credits';
+    const PRIMARY           = 'primary';
+    const COMMISSION        = 'commission';
+    const FEE_CREDITS       = 'fee_credits';
+    const REFUND_CREDITS    = 'refund_credits';
+    const AMOUNT_CREDITS    = 'amount_credits';
+    const RESERVE_PRIMARY   = 'reserve_primary';
 
     /**
      * Banking balance.
      */
-    const BANKING        = 'banking';
+    const BANKING           = 'banking';
+    const RESERVE_BANKING   = 'reserve_banking';
 
     public static $pgBalances = [
         self::PRIMARY,
         self::FEE_CREDITS,
         self::REFUND_CREDITS,
         self::AMOUNT_CREDITS,
+        self::RESERVE_PRIMARY,
     ];
 
     public static $settleableBalanceTypes = [

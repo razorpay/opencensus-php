@@ -3101,3 +3101,15 @@ insert into merchant_users values('9TNYKDWfwoisYQ','9TNYK5A5fJBMST','primary','o
 UPDATE terminals INNER JOIN merchants
     ON terminals.merchant_id = merchants.id
     SET terminals.org_id = merchants.org_id, status = 'activated';
+
+# RRN: can only be 12 char long thus masking, for mr just appending DUP(Duplicate)
+update upi set `npci_reference_id` = 'X35901846607', `merchant_reference` = 'DUP38d4c41268711eab3c0b53640a8c1c'
+    where payment_id = 'DwAVmsXQHRFJna' and action = 'authorize';
+update upi set `npci_reference_id` = 'X36133260735', `merchant_reference` = 'DUPPTM619dadf926bd4f0bbc1d06928c9ab3ca'
+    where payment_id = 'Dx5YqIyJDjwsWh' and action = 'authorize';
+update upi set `npci_reference_id` = 'X36412957012', `merchant_reference` = 'DUP2c6ce912ad211ea8016d9e823937d9'
+    where payment_id = 'DyKY3LGuQCnPfJ' and action = 'authorize';
+update upi set `npci_reference_id` = 'X36523463895', `merchant_reference` = 'DUPPTM8d0f47ea960248b99ebb91a0abf95c59'
+    where payment_id = 'DyueZQe2vr2Nky' and action = 'authorize';
+update upi set `npci_reference_id` = 'X00711965802', `merchant_reference` = 'DUP56d9641311411eaa8b93d65a0e6bad'
+    where payment_id = 'E1TxuNKXhYXVSl' and action = 'authorize';

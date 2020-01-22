@@ -35,4 +35,5 @@ class Category
     const PAYOUTS           			= 'payouts';
     const P2P             			    = 'p2p';
     const RENDERING_PREFERENCES         = 'rendering_preferences';
+    const DOWNTIME_CONFIG               = 'downtime_config';
 }

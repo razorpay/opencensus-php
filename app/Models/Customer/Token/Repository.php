@@ -28,7 +28,7 @@ class Repository extends Base\Repository
         Entity::RECURRING_STATUS    => 'sometimes|alpha|max:20',
     ];
 
-    public function getByCustomer($customer)
+    public function getByCustomer($customer, bool $withVpas = false)
     {
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
@@ -38,6 +38,7 @@ class Repository extends Base\Repository
                         $query->whereNull(Token\Entity::EXPIRED_AT)
                               ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
                     })
+                    ->withVpaTokens($withVpas)
                     ->orderBy(Token\Entity::CREATED_AT, 'desc')
                     ->orderBy(Token\Entity::ID, 'desc')
                     ->get();
@@ -149,17 +150,9 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->where(Token\Entity::MERCHANT_ID, '=', $merchantId)
-                      ->where(function($query)
-                      {
-                          $query->where(Token\Entity::RECURRING, '=', "1")
-                                ->orWhere(function($query)
-                                {
-                                    $query->where(Token\Entity::RECURRING, '=', "0")
-                                          ->whereIn(
-                                              Token\Entity::RECURRING_STATUS,
-                                              [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED, RecurringStatus::INITIATED]);
-                                });
-                      })
+                      ->whereIn(
+                          Token\Entity::RECURRING_STATUS,
+                          [RecurringStatus::CONFIRMED, RecurringStatus::REJECTED, RecurringStatus::INITIATED])
                       ->with('customer');
 
         $query = $this->buildFetchQuery($query, $input);

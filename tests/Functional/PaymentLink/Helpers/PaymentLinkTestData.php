@@ -7,56 +7,6 @@ use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 
 return [
-    'testCreatePaymentLink' => [
-        'request'  => [
-            'url'     => '/payment_links',
-            'method'  => 'post',
-            'content' => [
-                'receipt'       => '00000000000001',
-                'amount'        => 100000,
-                'currency'      => 'INR',
-                'title'         => 'Sample title',
-                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
-                'notes'         => [
-                    'sample_key' => 'Sample notes',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'user_id'       => User::MERCHANT_USER_ID,
-                'receipt'       => '00000000000001',
-                'amount'        => 100000,
-                'currency'      => 'INR',
-                'title'         => 'Sample title',
-                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
-                'notes'         => [
-                    'sample_key' => 'Sample notes',
-                ],
-                'payment_page_items' => [
-                     [
-                        'item' => [
-                            'name' =>  'amount',
-                            'description' => NULL,
-                            'amount' => 100000,
-                            'currency' => 'INR',
-                            'type' => 'payment_page',
-                        ],
-                        'mandatory' => TRUE,
-                        'image_url' => NULL,
-                        'stock' => NULL,
-                        'quantity_sold' => 0,
-                        'total_amount_paid' => 0,
-                        'min_purchase' => NULL,
-                        'max_purchase' => NULL,
-                        'min_amount' => NULL,
-                        'max_amount' => NULL,
-                    ]
-                ],
-            ],
-        ],
-    ],
-
     'testCreatePaymentLinkWithPaymentPageItem' => [
         'request'  => [
             'url'     => '/payment_links',
@@ -91,7 +41,7 @@ return [
             'content' => [
                 'user_id'       => User::MERCHANT_USER_ID,
                 'receipt'       => '00000000000001',
-                'amount'        => 100000,
+                'amount'        => NULL,
                 'currency'      => 'INR',
                 'title'         => 'Sample title',
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
@@ -227,7 +177,24 @@ return [
             'content' => [
                 'receipt'       => '00000000000001',
                 'title'         => 'Sample title',
-                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]'
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name' =>  'amount',
+                            'description' => NULL,
+                            'amount' => NULL,
+                            'currency' => 'INR',
+                        ],
+                        'mandatory' => TRUE,
+                        'image_url' => NULL,
+                        'stock' => NULL,
+                        'min_purchase' => NULL,
+                        'max_purchase' => NULL,
+                        'min_amount' => 100,
+                        'max_amount' => NULL,
+                    ]
+                ]
             ],
         ],
         'response' => [
@@ -268,7 +235,6 @@ return [
             'method'  => 'post',
             'content' => [
                 'receipt'       => '00000000000001',
-                'amount'        => 100000,
                 'currency'      => 'INR',
                 'expire_by'     => 1400000000,
                 'title'         => 'Sample title',
@@ -276,6 +242,23 @@ return [
                 'notes'         => [
                     'sample_key' => 'Sample notes',
                 ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name' =>  'amount',
+                            'description' => NULL,
+                            'amount' => NULL,
+                            'currency' => 'INR',
+                        ],
+                        'mandatory' => TRUE,
+                        'image_url' => NULL,
+                        'stock' => NULL,
+                        'min_purchase' => NULL,
+                        'max_purchase' => NULL,
+                        'min_amount' => 100,
+                        'max_amount' => NULL,
+                    ]
+                ]
             ],
         ],
         'response' => [
@@ -283,66 +266,6 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'expire_by should be at least 15 minutes after current time.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testCreatePaymentLinkWithMinAmountIntCurrency' => [
-        'request'  => [
-            'url'     => '/payment_links',
-            'method'  => 'post',
-            'content' => [
-                'receipt'       => '00000000000001',
-                'amount'        => 10,
-                'currency'      => 'USD',
-                'title'         => 'Sample title',
-                'description'   => 'Sample description',
-                'notes'         => [
-                    'sample_key' => 'Sample notes',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount must be atleast USD 0.50',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testCreatePaymentLinkWithTooLargeAmount' => [
-        'request'  => [
-            'url'     => '/payment_links',
-            'method'  => 'post',
-            'content' => [
-                'receipt'       => '00000000000001',
-                'amount'        => 50000001,
-                'currency'      => 'INR',
-                'title'         => 'Sample title',
-                'description'   => 'Sample description',
-                'notes'         => [
-                    'sample_key' => 'Sample notes',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'amount exceeds maximum payment amount allowed',
                 ],
             ],
             'status_code' => 400,
@@ -364,7 +287,7 @@ return [
                 'id'          => 'pl_100000000000pl',
                 'user_id'     => User::MERCHANT_USER_ID,
                 'receipt'     => '00000000000001',
-                'amount'      => 100000,
+                'amount'      => NULL,
                 'currency'    => 'INR',
                 'title'       => 'Sample title',
                 'description' => '{"value":[{"insert":"Sample description"}],"metaText":"Sample description"}',
@@ -387,41 +310,12 @@ return [
                         'id'          => 'pl_100000000000pl',
                         'user_id'     => User::MERCHANT_USER_ID,
                         'receipt'     => '00000000000001',
-                        'amount'      => 100000,
+                        'amount'      => NULL,
                         'currency'    => 'INR',
                         'title'       => 'Sample title',
                         'description' => '{"value":[{"insert":"Sample description"}],"metaText":"Sample description"}',
                         'notes'       => [],
                     ],
-                ],
-            ],
-        ],
-    ],
-
-    'testUpdatePaymentLink' => [
-        'request' => [
-            'url'     => '/payment_links/pl_100000000000pl',
-            'method'  => 'patch',
-            'content' => [
-                'receipt'       => '00000000000002',
-                'amount'        => 4000,
-                'title'         => 'Sample test title',
-                'description'   => '[{"insert":"Sample test description"},{"insert":"\\n"}]',
-                'notes'         => [
-                    'sample_key' => 'Sample test notes',
-                ],
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'id'            => 'pl_100000000000pl',
-                'receipt'       => '00000000000002',
-                'amount'        => 4000,
-                'currency'      => 'INR',
-                'title'         => 'Sample test title',
-                'description'   => '[{"insert":"Sample test description"},{"insert":"\\n"}]',
-                'notes'         => [
-                    'sample_key' => 'Sample test notes',
                 ],
             ],
         ],
@@ -521,36 +415,9 @@ return [
     'testPaymentLinkMakePaymentCustomerFeeBearer' => [
         // Used to assert payment link's attributes after payment in test
         'payment_link' => [
-            'times_paid'        => 1,
-            'total_amount_paid' => 12000,
+            'total_amount_paid' => 15000,
             'status'            => 'active',
             'status_reason'     => null,
-        ],
-    ],
-
-    'testPaymentLinkMakePaymentWithUserDefinedAmount' => [
-        // Used to assert payment link's attributes after payment in test
-        'payment_link' => [
-            'times_paid'        => 1,
-            'total_amount_paid' => 45000,
-            'status'            => 'active',
-            'status_reason'     => null,
-        ],
-    ],
-
-    'testPaymentLinkCompletePayments' => [
-        // Used to assert payment link's attributes after payment in test
-        'payment_link_after_payment_1' => [
-            'times_paid'        => 1,
-            'total_amount_paid' => 10100,
-            'status'            => 'active',
-            'status_reason'     => null,
-        ],
-        'payment_link_after_payment_2' => [
-            'times_paid'        => 2,
-            'total_amount_paid' => 20200,
-            'status'            => 'inactive',
-            'status_reason'     => 'completed',
         ],
     ],
 
