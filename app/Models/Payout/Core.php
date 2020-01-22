@@ -3,6 +3,8 @@
 namespace RZP\Models\Payout;
 
 use App;
+use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -23,11 +25,14 @@ use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Jobs\QueuedPayouts;
 use RZP\Models\Transaction;
+use RZP\Constants\Timezone;
+use RZP\Models\BankingAccount;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccountStatement;
+use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 /**
@@ -70,10 +75,10 @@ class Core extends Base\Core
      * SOURCE: Merchant PG balance
      * TO: Merchant linked bank account (destination_id)
      *
+     * @param array $input
      * @param Merchant\Entity $merchant
-     * @param array           $input
-     *
      * @return mixed|null
+     * @throws Exception\BadRequestException
      */
     public function createPayoutToMerchant(array $input, Merchant\Entity $merchant): Entity
     {
@@ -389,9 +394,34 @@ class Core extends Base\Core
         {
             // We get balance via payout since we would have already fetched balance entity
             // when fetching the payouts list. Avoiding an extra DB query here by doing this.
+
             $balanceEntity = $payouts->first()->balance;
 
-            $balanceAmount = $balanceEntity->getBalance();
+            if ($balanceEntity->getAccountType() === Merchant\Balance\AccountType::DIRECT)
+            {
+                $merchantBankingAccount = $balanceEntity->bankingAccount;
+
+                $balanceLastFetchedAt = $merchantBankingAccount->getBalanceLastFetchedAt();
+
+                $nowTime = Carbon::now(Timezone::IST);
+
+                $diffTime = $nowTime->diffInMinutes(Carbon::createFromTimestamp($balanceLastFetchedAt, Timezone::IST));
+
+                if ($diffTime > FundAccountPayout\Direct\Base::GATEWAY_BALANCE_LAST_FETCHED_AT_TIME_DIFF)
+                {
+                    (new BankingAccount\Core)->fetchAndUpdateGatewayBalance(
+                        [
+                            'channel' => $merchantBankingAccount->getChannel(),
+                        ]
+                    );
+                }
+
+                $balanceAmount = $merchantBankingAccount->getTempBalance();
+            }
+            else
+            {
+                $balanceAmount = $balanceEntity->getBalance();
+            }
 
             $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts);
 
