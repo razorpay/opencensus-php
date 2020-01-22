@@ -102,6 +102,8 @@ class Core extends Base\Core
                 ]);
         }
 
+        $bankingAccount->balance->updateLastFetchedAt();
+
         return ['processed' => true];
     }
 

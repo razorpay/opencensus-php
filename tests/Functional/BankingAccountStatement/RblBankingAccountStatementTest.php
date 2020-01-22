@@ -6,6 +6,7 @@ use Mail;
 use Queue;
 use Redis;
 use Mockery;
+use Carbon\Carbon;
 
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
@@ -14,6 +15,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
+use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -58,6 +60,10 @@ class RblBankingAccountStatementTest extends TestCase
             AccountType::DIRECT,
             Channel::RBL);
 
+        $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
+
+        $balanceId = $this->balance->getId();
+
         $this->fixtures->create('banking_account', [
             'account_number'        => '2224440041626905',
             'account_type'          => 'current',
@@ -66,9 +72,8 @@ class RblBankingAccountStatementTest extends TestCase
             'pincode'               => '1',
             'bank_reference_number' => '',
             'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $balanceId,
         ]);
-
-        $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
     }
 
     public function testRblXlsxStatementGeneration()
@@ -719,14 +724,15 @@ class RblBankingAccountStatementTest extends TestCase
             'data' => [
                 'PayGenRes' => [
                     'Body' => [
-                        'hasMoreData' => 'N'
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [],
                     ],
                     'Header' => [
                         'Approver_ID' => '',
                         'Corp_ID' => 'RAZORPAY',
-                        'Error_Cde' => '8504',
-                        'Error_Desc' => 'No record could be retrieved',
-                        'Status' => 'FAILED',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
                         'TranID' => '1'
                     ],
                     'Signature' => [
@@ -734,17 +740,11 @@ class RblBankingAccountStatementTest extends TestCase
                     ]
                 ]
             ],
-            'error' => [
-                'description' => 'No record could be retrieved',
-                'gateway_error_code' => '8504',
-                'gateway_error_description' => 'No record could be retrieved',
-                'gateway_status_code' => 200,
-                'internal_error_code' => 'NO_DATA_FOUND'
-            ],
+            'error' => null,
             'external_trace_id' => '',
             'mozart_id' => 'bk0u6h3c1osgdo154fh0',
             'next' => [],
-            'success' => false
+            'success' => true
         ];
 
         return $response;
@@ -904,5 +904,107 @@ class RblBankingAccountStatementTest extends TestCase
         $this->sendRequest($request);
 
         $this->ba->proxyAuth();
+    }
+
+    public function testLastFetchedAtWhenNewDataIsPresent()
+    {
+        $balanceId = $this->balance->getId();
+
+        // 1578044039 is the timestamp of Jan 3, 2020.
+        // Need to edit here as balance creation and update occur in test within the same second.
+        $this->fixtures->edit('balance', $balanceId, ['updated_at' => 1578044039]);
+
+        $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
+
+        $startTime = Carbon::now()->timestamp;
+
+        $this->testRblAccountStatementCase1();
+
+        $endTime = Carbon::now()->timestamp;
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        foreach ($response['items'] as $balance)
+        {
+            if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
+            {
+                $this->assertGreaterThanOrEqual($startTime, $balance['last_fetched_at']);
+                $this->assertLessThanOrEqual($endTime, $balance['last_fetched_at']);
+            }
+        }
+
+        $finalBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
+
+        // last_fetched_at and updated_at both change as there was new data
+        $this->assertNotEquals($initialBalance['updated_at'], $finalBalance['updated_at']);
+    }
+
+    public function testLastFetchedAtWhenNewDataIsNotPresent()
+    {
+        $balanceId = $this->balance->getId();
+
+        // 1578044039 is the timestamp of Jan 3, 2020.
+        // Need to edit here as balance creation and update occur in test within the same second.
+        $this->fixtures->edit('balance', $balanceId, ['updated_at' => 1578044039]);
+
+        $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
+
+        $startTime = Carbon::now()->timestamp;
+
+        $this->testRblAccountStatementCase2();
+
+        $endTime = Carbon::now()->timestamp;
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        foreach ($response['items'] as $balance)
+        {
+            if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
+            {
+                $this->assertGreaterThanOrEqual($startTime, $balance['last_fetched_at']);
+                $this->assertLessThanOrEqual($endTime, $balance['last_fetched_at']);
+            }
+        }
+
+        $finalBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
+
+        // last_fetched_at changed but updated_at remains same as there was no new data
+        $this->assertEquals($initialBalance['updated_at'], $finalBalance['updated_at']);
+    }
+
+
+    public function testLastFetchedAtEqualsBalanceUpdatedAtInitially()
+    {
+        $balanceId = $this->balance->getId();
+
+        // 1578044039 is the timestamp of Jan 3, 2020.
+        // Need to edit here as balance creation and update occur in test within the same second.
+        $this->fixtures->edit('balance', $balanceId, ['updated_at' => 1578044039]);
+
+        $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
+
+        $this->testRblAccountStatementCase3();
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $finalBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
+
+        foreach ($response['items'] as $balance)
+        {
+            if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
+            {
+                // Since, BAS wasn't fetched, last_fetched_at will be equal to balance's updated_at
+                $this->assertEquals($finalBalance['updated_at'], $balance['last_fetched_at']);
+            }
+        }
+
+        // updated_at remains same as BAS fetch failed
+        $this->assertEquals($initialBalance['updated_at'], $finalBalance['updated_at']);
     }
 }

@@ -62,46 +62,42 @@ class Gateway extends BaseProcessor
 
             try
             {
-                $bankResponse = $this->app->mozart->sendMozartRequest(
-                    self::MOZART_NAMESPACE,
-                    $this->getChannel(),
-                    self::MOZART_ACTION,
-                    $requestData);
+                $bankResponse = $this->app->mozart->sendMozartRequest(self::MOZART_NAMESPACE,
+                                                                      $this->getChannel(),
+                                                                      self::MOZART_ACTION,
+                                                                      $requestData);
 
                 $this->modifyBankResponse($bankResponse);
 
-            }
-            catch (Exception\GatewayErrorException $ex)
-            {
-                $responseError = $ex->getData();
-
-                if ((isset($responseError[Mozart::ERROR][Mozart::GATEWAY_ERROR_CODE]) === true) and
-                    ($responseError[Mozart::ERROR][Mozart::GATEWAY_ERROR_CODE] === self::RBL_NO_NEW_DATA))
-                {
-                    return [];
-                }
-
-                throw $ex;
+                $this->validateMozartResponse($bankResponse);
             }
             catch (\Throwable $ex)
             {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED,
-                    [
-                        Entity::ACCOUNT_NUMBER      => $this->accountNumber,
-                        Entity::CHANNEL             => $this->channel,
-                    ]);
+                if ($ex instanceof Exception\GatewayErrorException)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED,
+                        [
+                            Entity::ACCOUNT_NUMBER      => $this->accountNumber,
+                            Entity::CHANNEL             => $this->channel,
+                        ]);
+                }
+                if ($ex instanceof Exception\BadRequestValidationFailureException)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::BANKING_ACCOUNT_STATEMENT_INVALID_MOZART_RESPONSE,
+                        [
+                            Entity::ACCOUNT_NUMBER      => $this->accountNumber,
+                            Entity::CHANNEL             => $this->channel,
+                            RequestResponseFields::DATA => $bankResponse ?? [],
+                        ]);
+                }
 
-                return [];
-            }
-
-            $isValid = $this->validateMozartResponse($bankResponse);
-
-            if ($isValid === false)
-            {
-                return [];
+                throw $ex;
             }
 
             $formattedResponse = $this->getFormattedResponse($bankResponse['data']);

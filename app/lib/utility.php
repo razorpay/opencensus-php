@@ -907,10 +907,10 @@ if (!function_exists('mask_email'))
      * will get masked
      *
      * @param string $email
-     * @param float $percentage_to_mask
+     * @param float $percentageToMask
      * @return mixed|string
      */
-     function mask_email(string $email = null, float $percentage_to_mask = 0.7)
+     function mask_email(string $email = null, float $percentageToMask = 0.7)
     {
         $trace = App::getFacadeRoot()['trace'];
 
@@ -937,7 +937,7 @@ if (!function_exists('mask_email'))
 
             $emailLen = strlen($emailName);
 
-            $lengthToMask = ceil($emailLen * $percentage_to_mask);
+            $lengthToMask = ceil($emailLen * $percentageToMask);
 
             // replace the name except first 3 characters with *
             $maskedEmailName = substr($emailName, 0, $emailLen - $lengthToMask) .

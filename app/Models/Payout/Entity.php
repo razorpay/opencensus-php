@@ -857,9 +857,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
 
         // pushing a message in the queue to update the source for payout
-        $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
-        SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
+         SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
     }
 
     protected function setStatusAttribute($status)
