@@ -14,8 +14,8 @@ import Amount from 'common/ui/Amount';
 import debounce from 'common/utils/debounce';
 import PropTypes from 'prop-types';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { CLOSE_OPTIONS } from 'merchant/views/Settlements/data';
 import ModalCloseReasons from 'merchant/views/Settlements/components/Modals/ModalCloseReasons';
+import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 
 @connect(state => ({ user: state.session.user }), {
   closeModal,
@@ -33,6 +33,7 @@ export default class OndemandModal extends Component {
       closeClicked: false,
       errors: [],
       breakupShow: false,
+      openAutoModal: false,
       checkedBreakup: false,
       isLoadingBreakup: false,
       hasChangedAmount: false,
@@ -453,151 +454,160 @@ export default class OndemandModal extends Component {
     );
   };
 
+  renderPreTransaction = () => {
+    return (
+      <div className="onmdemand-modal">
+        <ModalHeader
+          class="header"
+          title="Instant Settlement"
+          onCloseClick={() => this.handleCloseModal('Close Modal Screen 1')}
+        />
+        <div className="modal-body">
+          <p>Settle to your bank account instantly.</p>
+          <br />
+          <p>
+            Upcoming Settlements follow the existing schedule.
+            <a
+              className="btn-link"
+              target="_blank"
+              href="http://razorpay.com/settlement"
+            >
+              {` `}Learn more
+            </a>
+          </p>
+          {this.state.errors && (
+            <div>
+              {this.state.errors.map((item, key) => {
+                return <Alert key={key} type="error" message={item} />;
+              })}
+            </div>
+          )}
+          <div className="overflow-box">
+            <div className="InputGroup Input Input--vTop">
+              <Input
+                label="Amount to settle now"
+                required={false}
+                addonBefore={
+                  <AmountTooltip
+                    currency={'INR'}
+                    parentQuerySelector=".Modal"
+                  />
+                }
+                autoFocus={true}
+                name="amount"
+                class="Input Input--Amount"
+                disabled={this.state.isSaving}
+                value={this.state.amount}
+                validator={this.validateAmount}
+                onChange={e => {
+                  this.handleChange(e);
+                }}
+              />
+            </div>
+            <div>
+              <span>
+                <div className="grey-border">
+                  <span>
+                    {this.state.isLoadingBreakup === false ? (
+                      this.state.validAmount ? (
+                        <div>
+                          <p> After Deduction : </p>
+                          <Amount
+                            parentQuerySelector=".onmdemand-modal"
+                            value={
+                              this.state.amount * 100 -
+                              this.state.instantFee -
+                              this.state.tax
+                            }
+                            currency={'INR'}
+                          />
+                        </div>
+                      ) : (
+                        <React.Fragment />
+                      )
+                    ) : (
+                      <div className="loader" />
+                    )}
+                  </span>
+                </div>
+              </span>
+            </div>
+          </div>
+          {this.breakup()}
+          <div className="border">
+            <p>
+              Early settlement applies to domestic settlements only. For
+              International, please{' '}
+            </p>
+            <a className="btn-link" onClick={this.openSupport}>
+              Contact support
+            </a>
+          </div>
+          <AsyncBtn.Primary
+            class="submit-btn"
+            disabled={
+              this.state.isSaving ||
+              !this.state.validAmount ||
+              this.state.isLoadingBreakup
+            }
+            pendingState="Requesting"
+            onClick={this.openConfirmSettlement}
+          >
+            Confirm
+          </AsyncBtn.Primary>
+        </div>
+      </div>
+    );
+  };
+
+  renderPostTransaction = () => {
+    return (
+      <div className="onmdemand-modal">
+        <ModalHeader
+          title={this.successModalHeader()}
+          onCloseClick={() => this.handleCloseModal('Close Modal Screen 2')}
+        />
+        <div className="modal-body">
+          <div className="overflow-box">
+            {this.breakup()}
+            <div className="help-block">
+              Your settlement has been initiated. Amounts up to 2 Lacs will be
+              settled instantly. All other amounts to be settled within 3
+              working hours{` `}
+              <i className="i i-info-circle" />
+              <Popover
+                align="right"
+                theme="dark"
+                parentQuerySelector=".onmdemand-modal"
+              >
+                <PopoverBody>
+                  Working hours are 9am - 6pm everyday except on Bank Holidays
+                </PopoverBody>
+              </Popover>
+            </div>
+          </div>
+
+          <ScheduledBanner fromWhere={'Early Settlement Modal'} />
+          <Button.Primary
+            class="close-btn"
+            onClick={() => this.handleCloseModal('Close Button')}
+          >
+            Close
+          </Button.Primary>
+        </div>
+      </div>
+    );
+  };
+
   render() {
     return (
       <div class="container-ondemand-modal">
         <React.Fragment>
           {!this.state.closeClicked ? (
             this.state.isSaved ? (
-              <div class="onmdemand-modal">
-                <ModalHeader
-                  title={this.successModalHeader()}
-                  onCloseClick={() =>
-                    this.handleCloseModal('Close Modal Screen 2')
-                  }
-                />
-                <div className="modal-body">
-                  <div className="overflow-box">
-                    {this.breakup()}
-                    <div className="help-block">
-                      Your settlement has been initiated. Amounts up to 2 Lacs
-                      will be settled instantly. All other amounts to be settled
-                      within 3 working hours{` `}
-                      <i className="i i-info-circle" />
-                      <Popover
-                        align="right"
-                        theme="dark"
-                        parentQuerySelector=".onmdemand-modal"
-                      >
-                        <PopoverBody>
-                          Working hours are 9am - 6pm everyday except on Bank
-                          Holidays
-                        </PopoverBody>
-                      </Popover>
-                    </div>
-                  </div>
-                  <Button.Primary
-                    class="close-btn"
-                    onClick={() => this.handleCloseModal('Close Button')}
-                  >
-                    Close
-                  </Button.Primary>
-                </div>
-              </div>
+              this.renderPostTransaction()
             ) : (
-              <div class="onmdemand-modal">
-                <ModalHeader
-                  class="header"
-                  title="Instant Settlement"
-                  onCloseClick={() =>
-                    this.handleCloseModal('Close Modal Screen 1')
-                  }
-                />
-                <div class="modal-body">
-                  <p>Settle to your bank account instantly.</p>
-                  <br />
-                  <p>
-                    Upcoming Settlements follow the existing schedule.
-                    <a
-                      class="btn-link"
-                      target="_blank"
-                      href="http://razorpay.com/settlement"
-                    >
-                      {` `}Learn more
-                    </a>
-                  </p>
-                  {this.state.errors && (
-                    <div>
-                      {this.state.errors.map((item, key) => {
-                        return <Alert key={key} type="error" message={item} />;
-                      })}
-                    </div>
-                  )}
-                  <div class="overflow-box">
-                    <div class="InputGroup Input Input--vTop">
-                      <Input
-                        label="Amount to settle now"
-                        required={false}
-                        addonBefore={
-                          <AmountTooltip
-                            currency={'INR'}
-                            parentQuerySelector=".Modal"
-                          />
-                        }
-                        autoFocus={true}
-                        name="amount"
-                        class="Input Input--Amount"
-                        disabled={this.state.isSaving}
-                        value={this.state.amount}
-                        validator={this.validateAmount}
-                        onChange={e => {
-                          this.handleChange(e);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <span>
-                        <div class="grey-border">
-                          <span>
-                            {this.state.isLoadingBreakup === false ? (
-                              this.state.validAmount ? (
-                                <div>
-                                  <p> After Deduction : </p>
-                                  <Amount
-                                    parentQuerySelector=".onmdemand-modal"
-                                    value={
-                                      this.state.amount * 100 -
-                                      this.state.instantFee -
-                                      this.state.tax
-                                    }
-                                    currency={'INR'}
-                                  />
-                                </div>
-                              ) : (
-                                <React.Fragment />
-                              )
-                            ) : (
-                              <div class="loader" />
-                            )}
-                          </span>
-                        </div>
-                      </span>
-                    </div>
-                  </div>
-                  {this.breakup()}
-                  <div class="border">
-                    <p>
-                      Early settlement applies to domestic settlements only. For
-                      International, please{' '}
-                    </p>
-                    <a class="btn-link" onClick={this.openSupport}>
-                      Contact support
-                    </a>
-                  </div>
-                  <AsyncBtn.Primary
-                    class="submit-btn"
-                    disabled={
-                      this.state.isSaving ||
-                      !this.state.validAmount ||
-                      this.state.isLoadingBreakup
-                    }
-                    pendingState="Requesting"
-                    onClick={this.openConfirmSettlement}
-                  >
-                    Confirm
-                  </AsyncBtn.Primary>
-                </div>
-              </div>
+              this.renderPreTransaction()
             )
           ) : (
             <ModalCloseReasons closeOrigin="OnDemand" />
