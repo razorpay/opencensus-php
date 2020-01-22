@@ -108,6 +108,7 @@ class Gateway
     const CARDLESS_EMI       = 'cardless_emi';
     const PAYLATER           = 'paylater';
     const GETSIMPL           = 'getsimpl';
+    const PAYLATER_ICICI     = 'paylater_icici';
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -172,7 +173,7 @@ class Gateway
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
-        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL],
+        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],

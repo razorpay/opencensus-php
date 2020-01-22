@@ -4,44 +4,6 @@
     <meta charset="UTF-8" />
     <title>Payout Link</title>
     <style>
-        @font-face {
-            font-family: 'Muli';
-            font-style: normal;
-            font-weight: 400;
-            src: local('Muli Regular'), local('Muli-Regular'),
-            url(https://fonts.gstatic.com/s/muli/v12/7Auwp_0qiz-afTLGLQjUwkQ.woff2)
-            format('woff2'),
-            url(/dist/assets/fonts/muli-v12-latin-regular.woff) format('woff')
-            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-            U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
-            U+FEFF, U+FFFD;
-        }
-        /* latin */
-        @font-face {
-            font-family: 'Muli';
-            font-style: normal;
-            font-weight: 600;
-            src: local('Muli SemiBold'), local('Muli-SemiBold'),
-            url(https://fonts.gstatic.com/s/muli/v12/7Au_p_0qiz-ade3iOCX2z24PMFk.woff2)
-            format('woff2'),
-            url(/dist/assets/fonts/muli-v12-latin-600.woff) format('woff');
-            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-            U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
-            U+FEFF, U+FFFD;
-        }
-        /* latin */
-        @font-face {
-            font-family: 'Muli';
-            font-style: normal;
-            font-weight: 700;
-            src: local('Muli Bold'), local('Muli-Bold'),
-            url(https://fonts.gstatic.com/s/muli/v12/7Au_p_0qiz-adYnjOCX2z24PMFk.woff2)
-            format('woff2'),
-            url(/dist/assets/fonts/muli-v12-latin-700.woff) format('woff');
-            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-            U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
-            U+FEFF, U+FFFD;
-        }
         body {
             margin: 0; padding:0;
         }
@@ -54,7 +16,7 @@
             width: 90%;
             margin: 0 auto;
             padding-top: 20vh;
-            font-family: "Muli"
+            font-family: 'Helvetica', 'Arial', sans-serif
         }
         .spinner {
             display: block;
@@ -171,10 +133,9 @@
         </h1>
         <div class="poweredBy"></div>
         <div class="securedFontContainer">
-            <span>Secured by </span>
             <img
-                    src="https://betacdn.razorpay.com/static/assets/razorpayx/logos/rx-dark-logo.png"
-                    style="width: 90px; margin-left: 3px;"
+                    src="https://cdn.razorpay.com/static/assets/razorpayx/payout-links/secured.svg"
+                    style="width: 149px; margin-left: 3px;"
             />
         </div>
     </div>

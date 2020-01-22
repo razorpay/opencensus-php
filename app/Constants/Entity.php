@@ -259,6 +259,7 @@ class Entity
     const GOOGLE_PAY             = 'google_pay';
     const WORLDLINE              = 'worldline';
     const GETSIMPL               = 'getsimpl';
+    const PAYLATER_ICICI         = 'paylater_icici';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -580,6 +581,7 @@ class Entity
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
         self::GETSIMPL               => \RZP\Gateway\Mozart::class,
+        self::PAYLATER_ICICI         => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,

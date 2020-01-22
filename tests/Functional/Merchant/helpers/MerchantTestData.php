@@ -5476,7 +5476,6 @@ return [
                 'items' => [
                     '0' => [
                         'id'                => '100def000def00',
-                        'merchant_id'       => '100ghi000ghi00',
                         'type'              => 'primary',
                         'currency'          => null,
                         'name'              => null,
@@ -5484,7 +5483,6 @@ return [
                     ],
                     '1' => [
                         'id'                => '100abc000abc00',
-                        'merchant_id'       => '100ghi000ghi00',
                         'type'              => 'banking',
                         'currency'          => 'INR',
                         'name'              => null,
@@ -5508,7 +5506,6 @@ return [
                 'items'  => [
                     '0' => [
                         'id'                => '100def000def00',
-                        'merchant_id'       => '100ghi000ghi00',
                         'type'              => 'primary',
                         'currency'          => null,
                         'name'              => null,

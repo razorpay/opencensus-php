@@ -68,7 +68,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::TO_ID, $merchant->getId())
                     ->where(Entity::TO_TYPE, E::MERCHANT)
-                    ->where(Entity::SOURCE_TYPE, E::PAYMENT)
                     ->merchantId($merchant->parent->getId())
                     ->findOrFailPublic($id);
     }
@@ -101,10 +100,12 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Query: SELECT DISTINCT `source_id` FROM `transfers` WHERE `source_type` = $sourceType AND `status` = 'pending' LIMIT $count
+     * Query: SELECT DISTINCT `source_id` FROM `transfers` WHERE `source_type` = $sourceType AND
+     * `status` = 'pending' LIMIT $count
      *
      * @param string $sourceType
      * @param int $count
+     *
      * @return mixed
      */
     public function fetchPendingTransfersToRetry(string $sourceType, int $count = 100)
@@ -121,10 +122,12 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Query: SELECT DISTINCT `source_id` FROM `transfers` WHERE `source_type` = $sourceType AND `status` = 'failed' AND `processed_at` < ? AND `attempts` < 4 LIMIT $count
+     * Query: SELECT DISTINCT `source_id` FROM `transfers` WHERE `source_type` = $sourceType AND
+     * `status` = 'failed' AND `processed_at` < ? AND `attempts` < 4 LIMIT $count
      *
      * @param string $sourceType
      * @param int $count
+     *
      * @return mixed
      */
     public function fetchFailedTransfersToRetry(string $sourceType, int $count = 100)

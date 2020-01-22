@@ -789,6 +789,28 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createPaylaterIciciTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+        $termId = \RZP\Models\Terminal\Shared::PAYLATER_ICICI_TERMINAL;
+
+        $defaultValues = [
+            'id'                        =>  $termId,
+            'merchant_id'               =>  $sharedMerchantAccount,
+            'gateway'                   =>  'paylater',
+            'gateway_acquirer'          =>  'icic',
+            'shared'                    =>  0,
+            'paylater'                  =>  1,
+            'gateway_merchant_id'       =>  'DUMMY_MERCHANT_ID',
+            'gateway_terminal_password' =>  'terminal_password',
+            'mode'                      =>  '2',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedMpesaTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::MPESA_RAZORPAY_TERMINAL;
