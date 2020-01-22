@@ -4858,11 +4858,34 @@ return [
             ],
         ],
         'response' => [
-            'content' => [
-                'international'     => true,
-                'convert_currency'  => false,
+            'content'     => [
+                'international'    => true,
+                'convert_currency' => false,
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testInternationalEnableForGreyList' => [
+        'request'   => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => true
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_INTERNATIONAL_STATUS_CHANGE_REQUEST,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_INTERNATIONAL_STATUS_CHANGE_REQUEST,
         ],
     ],
 

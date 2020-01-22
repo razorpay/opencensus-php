@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Customer;
+use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
 use RZP\Models\Customer\AppToken;
@@ -219,9 +220,22 @@ class Core extends Base\Core
      * @param $customer
      * @return mixed
      */
-    public function fetchTokensByCustomer($customer)
+    public function fetchTokensByCustomer($customer, $merchant = null)
     {
-        $tokens = $this->repo->token->getByCustomer($customer);
+        $withVpas = false;
+
+        // We will exclude VPAs tokens except of for this conditions
+        // 1. Feature SAVE_VPA is enabled for merchant.
+        // 2. We do not want this to be on shared merchant (Adding check Just In Case)
+        // 3.
+        if (($merchant instanceof Merchant\Entity) and
+            ($merchant->isShared() === false) and
+            ($merchant->shouldSaveVpa() === true))
+        {
+            $withVpas = true;
+        }
+
+        $tokens = $this->repo->token->getByCustomer($customer, $withVpas);
 
         return $tokens;
     }
@@ -562,6 +576,14 @@ class Core extends Base\Core
 
     protected function validateExistingTokenUpi($existingTokens, $newToken)
     {
+        foreach ($existingTokens as $token)
+        {
+            if ($token->getVpaId() === $newToken->getVpaId())
+            {
+                return $token;
+            }
+        }
+
         return null;
     }
 

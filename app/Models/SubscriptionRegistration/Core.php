@@ -610,11 +610,13 @@ class Core extends Base\Core
     {
         $result = [SubscriptionRegistrationConstants::SUCCESS => true];
 
-        $data   = (new PaperMandate\Core)->authenticate($subscriptionRegistration->paperMandate, $input);
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
+        $data   = (new PaperMandate\Core)->authenticate($paperMandate, $input);
 
         $fileId = $data[PaperMandate\Entity::UPLOADED_FILE_ID];
 
-        $signedUrl = (new PaperMandate\FileUploader)->getSignedUrl($fileId);
+        $signedUrl = (new PaperMandate\FileUploader($paperMandate))->getSignedUrl($fileId);
 
         $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
 
@@ -637,11 +639,13 @@ class Core extends Base\Core
     {
         $result = [SubscriptionRegistrationConstants::SUCCESS => true];
 
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
         $data   = (new PaperMandate\Core)->validate($subscriptionRegistration->paperMandate, $input);
 
         $fileId = $data[PaperMandate\Entity::UPLOADED_FILE_ID];
 
-        $signedUrl = (new PaperMandate\FileUploader)->getSignedUrl($fileId);
+        $signedUrl = (new PaperMandate\FileUploader($paperMandate))->getSignedUrl($fileId);
 
         $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
 

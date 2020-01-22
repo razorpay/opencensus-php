@@ -919,6 +919,10 @@ class VirtualAccountTest extends TestCase
         $this->createVirtualAccount([], true, null, false);
         $this->createVirtualAccount([], true, null, false);
         $this->createVirtualAccount([], true, null, true);
+        $this->createVirtualAccount([], true, null, false, true);
+
+        $response = $this->fetchVirtualAccountsForDashboard();
+        $this->assertEquals(4, $response['count']);
 
         $response = $this->fetchVirtualAccountsForDashboard([
             'receiver_type' => 'bank_account'
@@ -929,6 +933,16 @@ class VirtualAccountTest extends TestCase
             'receiver_type' => 'qr_code'
         ]);
         $this->assertEquals(1, $response['count']);
+
+        $response = $this->fetchVirtualAccountsForDashboard([
+            'receiver_type' => 'vpa'
+        ]);
+        $this->assertEquals(1, $response['count']);
+
+        $response = $this->fetchVirtualAccountsForDashboard([
+            'receiver_type' => 'bank_account,vpa'
+        ]);
+        $this->assertEquals(3, $response['count']);
     }
 
     public function testEditVirtualAccount()

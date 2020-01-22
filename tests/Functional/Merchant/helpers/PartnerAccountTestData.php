@@ -230,7 +230,7 @@ return [
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
-                    'international'  => true,
+                    'international'  => false,
                 ],
                 'settlement' => [
                     'fund_accounts' => [
@@ -332,7 +332,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS . '10000000000011',
                 ]
             ],
             'status_code' => 400,
@@ -602,7 +602,7 @@ return [
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
-                    'international'  => true,
+                    'international'  => false,
                 ],
                 'tnc'        => [
                     'accepted'   => 1,

@@ -1,13 +1,20 @@
 <?php
 
-namespace RZP\Models\Merchant\Detail\Verifiers;
+namespace RZP\Models\Merchant\AutoKyc\MozartService;
 
 use Requests_Response;
 use Requests_Exception;
 use RZP\Models\Merchant\Detail\Constants;
 
-class PoaVerifierMock extends PoaVerifier
+class POAProcessorMock extends POAProcessor
 {
+    protected $documentType = Constants::AADHAR_FRONT;
+
+    public function setDocumentType(string $status)
+    {
+        $this->documentType = $status;
+    }
+
     protected function getResponse(array $request)
     {
         $response = new Requests_Response();
@@ -16,7 +23,7 @@ class PoaVerifierMock extends PoaVerifier
 
         $response->status_code = 200;
 
-        switch ($this->mockStatus)
+        switch ($this->documentType)
         {
             case Constants::PASSPORT_FRONT:
                 $body = $this->getMozarPayloadForPassportOcr();

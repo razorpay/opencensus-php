@@ -255,4 +255,44 @@ class Customer extends Base
 
         return $this->fixtures->create('token', $attributes);
     }
+
+    public function createUpiPaymentsLocalCustomerToken($attributes = [])
+    {
+        $upiLocalTokenDefaultValues = [
+            'id'            => '1000000custupi',
+            'token'         => '10000upitoken',
+            'customer_id'   => '100000customer',
+            'method'        => 'upi',
+            'bank'          => null,
+            'wallet'        => null,
+            'recurring'     => false,
+            'vpa_id'        => '10000000000vpa',
+            'used_at'       => 10,
+            'created_at'    => 1500000002,
+        ];
+
+        $attributes = array_merge($upiLocalTokenDefaultValues, $attributes);
+
+        return $this->fixtures->create('token', $attributes);
+    }
+
+    public function createUpiPaymentsGlobalCustomerToken($attributes = [])
+    {
+        $upiGlobalTokenAttributes = [
+                'id'            => '100000custgupi',
+                'token'         => '10000gupitoken',
+                'customer_id'   => '10000gcustomer',
+                'merchant_id'   => '100000Razorpay',
+                'method'        => 'upi',
+                'vpa_id'        => '1000000000gupi',
+                'bank'          => null,
+                'wallet'        => null,
+                'used_at'       => 10,
+                'created_at'    => 1500000004,
+        ];
+
+        $attributes = array_merge($upiGlobalTokenAttributes, $attributes);
+
+        return $this->fixtures->create('token', $attributes);
+    }
 }

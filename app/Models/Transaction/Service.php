@@ -108,4 +108,73 @@ class Service extends Base\Service
                 ];
             });
     }
+
+    /**
+     * This Method is used to put the transaction on hold passed in the input
+     * @param array $input
+     * @return array
+     */
+    public function toggleTransactionHold(array $input)
+    {
+        (new Validator)->validateInput('toggle_transaction_hold', $input);
+
+        $this->trace->info(
+          TraceCode::TOGGLE_TRANSACTION_HOLD,
+          [
+                'transaction_ids' => $input['transaction_ids'],
+                'reason_for_hold' => $input['reason'],
+          ]);
+
+        return $this->toggleTransactionFlag($input['transaction_ids'], true);
+    }
+
+    /**
+     * This method is used to release the transactions passed in the input
+     * @param array $input
+     * @return array
+     */
+    public function toggleTransactionRelease(array $input)
+    {
+        (new Validator)->validateInput('toggle_transaction_release', $input);
+
+        $this->trace->info(
+            TraceCode::TOGGLE_TRANSACTION_RELEASE,
+            [
+                'transaction_ids' => $input['transaction_ids'],
+            ]);
+
+        return $this->toggleTransactionFlag($input['transaction_ids'], false);
+    }
+
+    /**
+     * This methods basically used to toggle the on_hold flag of the transaction Ids
+     * @param array $transactionIds
+     * @param bool $toggleFlag
+     * @return array
+     */
+    public function toggleTransactionFlag(array $transactionIds, bool $toggleFlag)
+    {
+        $requestCount = sizeof($transactionIds);
+
+        $failedTransactionUpdate = (new Transaction\Core)->toggleTransactionOnHold($transactionIds, $toggleFlag);
+
+        $failedCount = sizeof($failedTransactionUpdate);
+
+        $successCount = $requestCount - $failedCount;
+
+        $response = [
+            'total_requests'        => $requestCount,
+            'successfully_updated'  => $successCount,
+            'failed'                => $failedCount,
+        ];
+
+        $this->trace->info(
+            TraceCode::TOGGLE_TRANSACTION_COMPLETE,
+            [
+                'response'                      => $response,
+                'transactions_failed_to_update' => $failedTransactionUpdate,
+            ]);
+
+        return $response;
+    }
 }

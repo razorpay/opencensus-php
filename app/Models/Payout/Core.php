@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use App;
 use RZP\Exception;
 use RZP\Constants;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
@@ -70,10 +71,10 @@ class Core extends Base\Core
      * SOURCE: Merchant PG balance
      * TO: Merchant linked bank account (destination_id)
      *
+     * @param array $input
      * @param Merchant\Entity $merchant
-     * @param array           $input
-     *
      * @return mixed|null
+     * @throws Exception\BadRequestException
      */
     public function createPayoutToMerchant(array $input, Merchant\Entity $merchant): Entity
     {
@@ -467,21 +468,21 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
-    public function approvePayout(Entity $payout): Entity
+    public function approvePayout(Entity $payout, array $input): Entity
     {
-        $payout = $this->processWorkflowActionOnPayout($payout, true);
+        $payout = $this->processWorkflowActionOnPayout($payout, true, $input);
 
         return $payout;
     }
 
-    public function rejectPayout(Entity $payout): Entity
+    public function rejectPayout(Entity $payout, array $input): Entity
     {
-        $payout = $this->processWorkflowActionOnPayout($payout, false);
+        $payout = $this->processWorkflowActionOnPayout($payout, false, $input);
 
         return $payout;
     }
 
-    protected function processWorkflowActionOnPayout(Entity $payout, bool $approve): Entity
+    protected function processWorkflowActionOnPayout(Entity $payout, bool $approve, array $input): Entity
     {
         /** @var Workflow\Action\Entity|null $workflowAction */
         $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
@@ -497,12 +498,19 @@ class Core extends Base\Core
         }
 
         $payout = $this->repo->transaction(
-            function() use ($payout, $workflowAction, $approve, $action)
+            function() use ($payout, $workflowAction, $approve, $action, $input)
             {
+                $userComment = $input[Workflow\Action\Checker\Entity::USER_COMMENT] ?? null;
+
                 $actionCheckerCreateParams = [
-                    Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
-                    Workflow\Action\Checker\Entity::APPROVED  => ($approve === true) ? 1 : 0, // 1 = true
+                    Workflow\Action\Checker\Entity::ACTION_ID    => $workflowAction->getId(),
+                    Workflow\Action\Checker\Entity::APPROVED     => ($approve === true) ? 1 : 0, // 1 = true
                 ];
+
+                if ($userComment !== null)
+                {
+                    $actionCheckerCreateParams[Workflow\Action\Checker\Entity::USER_COMMENT] = $userComment;
+                }
 
                 $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
 
@@ -1427,6 +1435,8 @@ class Core extends Base\Core
                 $payout->setStatus(Status::REJECTED);
 
                 $this->repo->saveOrFail($payout);
+
+                $this->app->events->fire('api.payout.rejected', [$payout]);
 
                 return $payout;
             },

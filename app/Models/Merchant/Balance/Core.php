@@ -249,13 +249,35 @@ class Core extends Base\Core
 
         $balanceAmount = $balance->getBalance();
 
+        $this->trace->info(TraceCode::CHECK_MERCHANT_BALANCE,
+            [
+                'balance amount'   => $balanceAmount,
+                'debit amount'     => $amount
+            ]
+        );
+
         if ($balanceAmount + $amount >= 0)
         {
             return true;
         }
 
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $merchant->getId()
+            ]
+        );
+
         $response = $this->app->razorx->getTreatment($merchant->getId(), BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE,
                                                      $this->mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $merchant->getId(),
+                'response'      => $response
+            ]
+        );
 
         $errorData = [
             'merchant_balance'  => $balanceAmount,
@@ -312,13 +334,35 @@ class Core extends Base\Core
 
         $refundCredits = $balance->getRefundCredits();
 
+        $this->trace->info(TraceCode::CHECK_MERCHANT_BALANCE,
+            [
+                'refund credits'   => $refundCredits,
+                'debit amount'     => $amount
+            ]
+        );
+
         if ($refundCredits + $amount >= 0)
         {
             return true;
         }
 
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $merchant->getId()
+            ]
+        );
+
         $response = $this->app->razorx->getTreatment($merchant->getId(), BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE,
                                                      $this->mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $merchant->getId(),
+                'response'      => $response
+            ]
+        );
 
         $errorData = [
             'merchant_refund_credits'   => $refundCredits,
@@ -454,7 +498,9 @@ class Core extends Base\Core
                 }
             }
 
-            if ($thresholdBreached === false)
+            if (($thresholdBreached === false) and
+                ($oldBalance >= 0) and
+                ($newBalance < 0))
             {
                 $this->sendMailBalanceBecameNegative($merchant, $newBalance, $balanceSource);
             }
@@ -476,7 +522,6 @@ class Core extends Base\Core
             'percentage'            => $threshold,
             'max_negative_allowed'  => $maxNegativeAllowed,
             'balance_source'        => $balanceSource,
-            'account_number'        => $merchant->getRedactedAccountNumber(),
             'balance'                => $balance,
             'headers'                => MailTags::NEGATIVE_BALANCE_THRESHOLD_ALERT,
         ];
@@ -502,7 +547,6 @@ class Core extends Base\Core
             'merchant_id'           => $merchant->getId(),
             'merchant_name'         => $merchant->getName(),
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
-            'account_number'         =>$merchant->getRedactedAccountNumber(),
             'balance'               => $balance,
             'balance_source'        => $balanceSource,
             'headers'                => MailTags::BALANCE_NEGATIVE_ALERT,
@@ -522,7 +566,6 @@ class Core extends Base\Core
             'merchant_id'           => $merchant->getId(),
             'merchant_name'         => $merchant->getName(),
             'balance'               => $newBalance,
-            'account_number'        => $merchant->getRedactedAccountNumber(),
             'balance_source'        => $balanceSource,
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
             'headers'                => MailTags::BALANCE_POSITIVE_ALERT,

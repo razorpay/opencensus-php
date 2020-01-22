@@ -104,6 +104,7 @@ class Validator extends Base\Validator
         'provider'                      => 'required_if:method,cardless_emi,paylater|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
+        'application'                   => 'sometimes|filled|string|in:google_pay',
         'device'                        => 'sometimes',
     ];
 
@@ -565,6 +566,16 @@ class Validator extends Base\Validator
             return;
         }
 
+        /*
+         * Checking if the card payment is of Google Pay. If it is of Google Pay then there are no
+         * card details.
+         */
+        if (((isset($input['application'])) === true) and
+            ($input['application'] === 'google_pay'))
+        {
+            return;
+        }
+
         if ((isset($input['recurring']) === true) and
             ($input['recurring'] === '1') and
             (empty($input['token']) === false))
@@ -706,6 +717,14 @@ class Validator extends Base\Validator
 
     public function validateCardAndCvv(array $input)
     {
+        /*
+            No card details when the payment is for Google Pay for cards.
+        */
+        if ((isset($input['application']) === true) and ($input['application'] === 'google_pay'))
+        {
+            return;
+        }
+
         if (isset($input['card']) === false)
         {
             throw new Exception\BadRequestException(

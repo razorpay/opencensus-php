@@ -51,6 +51,11 @@ class GatewayDowntimeSorter extends Terminal\Sorter
             return $terminals;
         }
 
+        if ($this->input['payment']->getApplication() === Payment\Gateway::GOOGLE_PAY)
+        {
+            return $terminals;
+        }
+
         try
         {
             // @note: Temporarily setting verbose to true here

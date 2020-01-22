@@ -40,16 +40,30 @@ class CreateDisputesTable extends Migration
             $table->char(Dispute::TRANSACTION_ID, Transaction::ID_LENGTH)
                   ->nullable();
 
-            $table->integer(Dispute::AMOUNT)
+            $table->bigInteger(Dispute::AMOUNT)
                   ->unsigned();
 
             $table->char(Dispute::CURRENCY, Payment::CURRENCY_LENGTH);
 
-            $table->integer(Dispute::AMOUNT_DEDUCTED)
+            $table->bigInteger(Dispute::BASE_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->char(Dispute::BASE_CURRENCY, Payment::CURRENCY_LENGTH)
+                  ->nullable();
+
+            $table->bigInteger(Dispute::GATEWAY_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->char(Dispute::GATEWAY_CURRENCY, Payment::CURRENCY_LENGTH)
+                  ->nullable();
+
+            $table->bigInteger(Dispute::AMOUNT_DEDUCTED)
                   ->unsigned()
                   ->default(0);
 
-            $table->integer(Dispute::AMOUNT_REVERSED)
+            $table->bigInteger(Dispute::AMOUNT_REVERSED)
                   ->unsigned()
                   ->default(0);
 

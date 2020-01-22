@@ -71,6 +71,7 @@ class Parser extends Base\Core
     protected static $defaults = [
         Entity::PLATFORM_VERSION => null,
         Entity::PLATFORM         => null,
+        Entity::INTEGRATION      => null,
     ];
 
     protected function init()

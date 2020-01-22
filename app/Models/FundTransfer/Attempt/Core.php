@@ -589,18 +589,6 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
-
-            $slackData = [
-                'headLine'    => 'fta source processing failed',
-                'fta_id'      => $ftaData['fta_id'],
-                'status'      => $ftaData['fta_status'],
-                'source_id'   => $ftaData['source_id'],
-                'error'       => $e->getMessage(),
-            ];
-
-            $alerts = new Alerts();
-
-            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 
@@ -675,15 +663,6 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
-
-            $alerts = new Alerts();
-
-            $slackData = $ftaData + [
-                'headLine' => 'fta source processing failed',
-                'error'    => $e->getMessage(),
-            ];
-
-            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 
@@ -824,6 +803,13 @@ class Core extends Base\Core
         if (empty($source->getChannel()) === true)
         {
             return [false, Settlement\Channel::YESBANK];
+        }
+
+        if ((($source->getChannel() === Settlement\Channel::YESBANK) and
+             ($accountType === E::BANK_ACCOUNT)) and
+             ($this->isTestMode() === false))
+        {
+            return [true, $source->getChannel()];
         }
 
         $key = 'fts_payout_' . strtolower($accountType) . '_' . $source->getChannel() . '_' . $source->getMode();

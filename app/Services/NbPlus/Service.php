@@ -289,6 +289,12 @@ class Service
             $this->handleInternalServerErrors(ErrorCode::SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_FAILURE);
         }
 
+        // Gateway errors are handled in a different manner for the below two flows
+        if ($this->action === Action::VERIFY or $this->action === Action::AUTHORIZE_FAILED)
+        {
+            return;
+        }
+
         $errorCode = $error[Error::CAUSE][Error::MOZART_ERROR_CODE];
 
         $class = $this->getErrorClassFromErrorCode($errorCode);
@@ -301,10 +307,6 @@ class Service
 
             case ErrorClass::BAD_REQUEST:
                 $this->handleBadRequestErrors($errorCode);
-                break;
-
-            case ErrorClass::SERVER:
-                $this->handleInternalServerErrors($errorCode);
                 break;
 
             default:
