@@ -14,11 +14,12 @@
       setUser:noop, //Set a user one time
       defineEventModifiers:noop,//Extends to set custom event properties
       //Any modifiers
-      onbr:()=>window.rzpQ, 
+      onbr:()=>window.rzpQ,
       merchantActions:()=>window.rzpQ,
       productOnboarding: function() {
         return window.rzpQ;
-      }
+      },
+      reporting: () => window.rzpQ,
     };
 
     //Above code doesn't perform any function, can avoid application breakage if the library is
@@ -36,7 +37,7 @@
 
     if(window.analytics){
         analytics.init(
-          ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj'],
+          ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj', 'quora', 'reddit'],
           {
             ga: 'UA-53341507-2',
             fb: '697927486977350',
@@ -77,7 +78,11 @@
             {
                 propertyName:'event_group',
                 value:'merchant_actions'
-            }]
+            }],
+            reporting: [
+              { propertyName: 'event_type', value: 'reporting-events' },
+              { propertyName: 'event_group', value: 'reporting_events' },
+            ],
         });
 
         ga('create', 'UA-53341507-1', 'auto', 'old');
@@ -85,6 +90,8 @@
         ga('set', 'page', location.pathname + location.hash + location.search);
         ga('old.set', 'page', location.pathname + location.hash + location.search);
         analytics.track('ga', 'pageview');
+        analytics.track('reddit', 'PageVisit');
+        analytics.track('quora', 'ViewContent');
         try {
           var pendingAction = JSON.parse(analytics.utils.getCookie('pendingAction'));
           if (pendingAction && pendingAction.type === 'signup-form') {

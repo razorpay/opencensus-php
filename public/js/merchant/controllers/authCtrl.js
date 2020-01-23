@@ -290,6 +290,16 @@ app
         });
 
         window.rzpAnalytics({
+          name: 'quora',
+          event: 'signup_start',
+        });
+
+        window.rzpAnalytics({
+          name: 'reddit',
+          event: 'Lead',
+        });
+
+        window.rzpAnalytics({
           name: 'linkedIn',
           value: {
             conversionId: '987388',
@@ -297,7 +307,7 @@ app
         });
 
         window.rzpAnalytics({
-          name: 'linkedIn',
+          name: 'twitter',
           value: {
             txn_id: 'o1u9x',
           },
@@ -499,20 +509,19 @@ app
         invokeGtag();
         invokeBing();
 
-        // Fire linkedin Pixel.
-        var i = new Image();
-        i.src =
-          'https://dc.ads.linkedin.com/collect/?pid=155571&conversionId=391804&fmt=gif';
+        window.rzpAnalytics({
+          name: 'twitter',
+          value: {
+            txn_id: 'o1tr7',
+          },
+        });
 
-        // Fire Quora pixel.
-        i = new Image();
-        i.src =
-          'https://q.quora.com/_/ad/0b40045f43e5492d916199b03c35aa48/pixel?tag=ViewContent&noscript=1';
-
-        // Fire Twitter pixel
-        i = new Image();
-        i.src =
-          'https://analytics.twitter.com/i/adsct?txn_id=o1tr7&p_id=Twitter&tw_sale_amount=0&tw_order_quantity=0';
+        window.rzpAnalytics({
+          name: 'linkedIn',
+          value: {
+            conversionId: '391804',
+          },
+        });
 
         if ($scope.coupon.val !== '' && $scope.coupon.status === 'success') {
           $scope.signup.merchantData.coupon_code = $scope.coupon.val;
@@ -542,6 +551,16 @@ app
             window.rzpAnalytics({
               name: 'facebook',
               event: 'signup_complete',
+            });
+
+            window.rzpAnalytics({
+              name: 'quora',
+              event: 'signup_complete',
+            });
+
+            window.rzpAnalytics({
+              name: 'reddit',
+              event: 'SignUp',
             });
 
             updateHubSpotContactProperty();

@@ -13,7 +13,6 @@ import BatchUploads from 'merchant/views/Transactions/Refunds/BatchList';
 import OrdersList from 'merchant/views/Transactions/Orders/List';
 import DisputesList from 'merchant/views/Transactions/Disputes/List';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
-import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
 import Amount from 'common/ui/Amount';
@@ -91,10 +90,6 @@ export default class TransactionsContainer extends Component {
             <NavLink to="/orders">Orders</NavLink>
           </ShowWhen>
           <NavLink to="/disputes">Disputes</NavLink>
-          {this.props.user.isOndemandSettlementEnabled &&
-            this.props.user.isAllowedView('early_settlement') && (
-              <ScheduledBanner fromWhere="Transactions" />
-            )}
           {settlement_ux_revamp && no_settlement ? (
             <div class="text-right" style={{ width: '100%' }}>
               {no_settlement.caption}
@@ -144,7 +139,7 @@ export default class TransactionsContainer extends Component {
                 style={{ marginLeft: '5px' }}
                 onClick={() => {
                   this.props.openModal({
-                    size: 'regular',
+                    size: 'medium',
                     component: (
                       <SettlementDetail
                         settlementAmount={this.props.settlement_amount.data}
@@ -153,8 +148,9 @@ export default class TransactionsContainer extends Component {
                   });
 
                   window.rzpAnalytics({
-                    eventCategory: 'Dashboard - Settlement UI Revamp',
-                    eventAction: 'Click Know More - Transactions Page',
+                    eventCategory: 'Settlement Revamp',
+                    eventAction: 'Know more - Next Settlement',
+                    eventLabel: `Payments`,
                   });
                 }}
               >
@@ -172,7 +168,7 @@ export default class TransactionsContainer extends Component {
           <OnHoldBanner
             ctaOnClick={() => {
               this.props.openModal({
-                size: 'regular',
+                size: 'medium',
                 component: (
                   <SettlementDetail
                     settlementAmount={this.props.settlement_amount.data}
@@ -181,8 +177,9 @@ export default class TransactionsContainer extends Component {
               });
 
               window.rzpAnalytics({
-                eventCategory: 'Dashboard - Settlement UI Revamp',
-                eventAction: 'Click Know More(On Hold) - Transactions Page',
+                eventCategory: 'Settlement Revamp',
+                eventAction: 'View details - Funds on Hold',
+                eventLabel: `Payments`,
               });
             }}
           />

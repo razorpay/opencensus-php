@@ -17,7 +17,7 @@ export const getStartAndEndUnixTimeStampsForDaysFrom = (
     .startOf('day')
     .format('X');
 
-  return [lastNthStartOfDayUnix, lastDayEndOfDayUnix];
+  return [Number(lastNthStartOfDayUnix), Number(lastDayEndOfDayUnix)];
 };
 
 export const extractExtensionFromTemplate = template =>

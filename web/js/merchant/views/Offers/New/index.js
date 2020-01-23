@@ -448,6 +448,7 @@ export default class CreateOfferWizard extends React.Component {
       'flat_cashback',
       'min_amount',
       'percent_rate',
+      'max_order_amount',
     ];
     const dateFields = ['starts_at', 'ends_at'];
     const fieldsToBeDeletedIfFalsey = [
