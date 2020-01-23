@@ -32,7 +32,6 @@ import OndemandModal from 'merchant/views/Settlements/components/Modals/Ondemand
 import NegativeBalanceBanner from 'merchant/components/Announcement';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
-import ShowWhen from 'merchant/components/ShowWhen';
 import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
@@ -376,6 +375,37 @@ export default class SettlementsListContainer extends ListContainer {
                             currency={'INR'}
                             className={negativeBalanceClassName}
                           />
+                          {this.props.user.isOndemandSettlementEnabled &&
+                            this.props.user.isAllowedView(
+                              'early_settlement'
+                            ) && (
+                              <div className="box-left-pad10-inline">
+                                <Button.Primary
+                                  class="settle-btn"
+                                  onClick={this.showOndemandSettlementForm}
+                                  disabled={
+                                    current_balance.loading || balance < 100
+                                  }
+                                >
+                                  <i className="i i-early-settlement settle-now-early" />
+                                  Settle Now
+                                </Button.Primary>
+                              </div>
+                            )}
+                          {this.props.user.isAutomaticSettlementEnabled && (
+                            <>
+                              <i className="i i-early-settlement settle-current-icon">
+                                <Popover align="left" theme="dark">
+                                  <PopoverBody>
+                                    <span>
+                                      Early Settlment has been enabled with your
+                                      account.
+                                    </span>
+                                  </PopoverBody>
+                                </Popover>
+                              </i>
+                            </>
+                          )}
                         </span>
                         <br />
                         {settlement_ux_revamp &&
@@ -462,33 +492,6 @@ export default class SettlementsListContainer extends ListContainer {
                     </div>
                   </Fragment>
                 )}
-                {this.props.user.isAutomaticSettlementEnabled && (
-                  <>
-                    <i className="i i-early-settlement settle-current-icon">
-                      <Popover align="left" theme="dark">
-                        <PopoverBody>
-                          <span>
-                            Early Settlment has been enabled with your account.
-                          </span>
-                        </PopoverBody>
-                      </Popover>
-                    </i>
-                  </>
-                )}
-
-                {this.props.user.isOndemandSettlementEnabled &&
-                  this.props.user.isAllowedView('early_settlement') && (
-                    <div className="box-left-pad10-inline">
-                      <Button.Primary
-                        class="settle-btn"
-                        onClick={this.showOndemandSettlementForm}
-                        disabled={current_balance.loading || balance < 100}
-                      >
-                        <i className="i i-early-settlement settle-now-early" />
-                        Settle Now
-                      </Button.Primary>
-                    </div>
-                  )}
               </div>
 
               <div class="clearfix" />

@@ -13,7 +13,6 @@ import BatchUploads from 'merchant/views/Transactions/Refunds/BatchList';
 import OrdersList from 'merchant/views/Transactions/Orders/List';
 import DisputesList from 'merchant/views/Transactions/Disputes/List';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
-import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
 import Amount from 'common/ui/Amount';
@@ -91,11 +90,23 @@ export default class TransactionsContainer extends Component {
             <NavLink to="/orders">Orders</NavLink>
           </ShowWhen>
           <NavLink to="/disputes">Disputes</NavLink>
-          {this.props.user.isOndemandSettlementEnabled &&
-            this.props.user.isAllowedView('early_settlement') && (
-              <ScheduledBanner fromWhere="Transactions" />
-            )}
-
+          {settlement_ux_revamp && no_settlement ? (
+            <div class="text-right" style={{ width: '100%' }}>
+              {no_settlement.caption}
+              {no_settlement.reason && (
+                <React.Fragment>
+                  <div style={{ display: 'inline' }}>
+                    <i class="i i-info-circle" />
+                    <Popover theme="dark" align="left">
+                      <PopoverBody>
+                        <div>{no_settlement.reason}</div>
+                      </PopoverBody>
+                    </Popover>
+                  </div>
+                </React.Fragment>
+              )}
+            </div>
+          ) : null}
           {settlement_ux_revamp && !no_settlement && !nextSettlement ? (
             <div class="text-right" style={{ width: '100%' }}>
               <strong>

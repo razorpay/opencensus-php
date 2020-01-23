@@ -17,9 +17,7 @@ import CopyLink from 'merchant/components/CopyLink';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import Tooltip from 'common/ui/Tooltip';
-import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import ShowWhen from 'merchant/components/ShowWhen';
 
 import CustomerDetails from './CustomerDetails';
 import ReminderStepsDetails from './ReminderStepsDetails';
@@ -363,10 +361,6 @@ export default props => {
                     trackerFn={trackDetailViewEdits}
                   />
                 )}
-                {user.isOndemandSettlementEnabled &&
-                  user.isAllowedView('early_settlement') && (
-                    <ScheduledBanner fromWhere="Payment Pages" />
-                  )}
               </div>
             </div>
           </div>
