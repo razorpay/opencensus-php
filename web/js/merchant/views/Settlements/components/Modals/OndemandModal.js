@@ -33,7 +33,6 @@ export default class OndemandModal extends Component {
       closeClicked: false,
       errors: [],
       breakupShow: false,
-      openAutoModal: false,
       checkedBreakup: false,
       isLoadingBreakup: false,
       hasChangedAmount: false,
