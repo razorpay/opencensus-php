@@ -36,6 +36,7 @@ class PublicErrorDescription
 
     const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                 = 'Terminal disable failed on gateway';
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                  = 'Terminal enable failed on gateway';
+    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Card not enrolled';
 
     const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
