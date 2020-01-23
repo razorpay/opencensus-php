@@ -107,6 +107,10 @@ export default class TransactionsContainer extends Component {
               )}
             </div>
           ) : null}
+          {this.props.user.isOndemandSettlementEnabled &&
+            this.props.user.isAllowedView('early_settlement') && (
+              <ScheduledBanner fromWhere="Transactions" />
+            )}
           {settlement_ux_revamp && !no_settlement && !nextSettlement ? (
             <div class="text-right" style={{ width: '100%' }}>
               <strong>
