@@ -623,7 +623,9 @@ class PaymentCreateController extends Controller
             {
               return $this->generateOtpJson($data);
             }
-            elseif ($data['upi'] === true)
+            elseif ((array_key_exists('data', $data) === true) and
+                    ((array_key_exists('intent_url', $data['data']) === true) or
+                    (array_key_exists('vpa', $data['data']) === true)))
             {
                 return $this->generateUpiJson($data);
             }
