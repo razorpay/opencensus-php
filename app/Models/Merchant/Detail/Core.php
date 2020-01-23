@@ -125,11 +125,6 @@ class Core extends Base\Core
 
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
 
-        if ($statusToBeUpdated === Status::UNDER_REVIEW)
-        {
-            $this->sendL2FormSubmissionEmail($merchant);
-        }
-
         $activationStatusData = [
             Entity::ACTIVATION_STATUS => $statusToBeUpdated,
         ];
@@ -490,26 +485,6 @@ class Core extends Base\Core
         });
     }
 
-    protected function sendL2FormSubmissionEmail(Merchant\Entity $merchant)
-    {
-        $product = $this->app['basicauth']->getRequestOriginProduct();
-
-        if ($product === Product::BANKING)
-        {
-            $activationFlow = $merchant->merchantDetail->getActivationFlow();
-
-            if (($activationFlow === ActivationFlow::WHITELIST) and
-                ($merchant->hasBankingAccounts() === true))
-            {
-                Mail::queue(new L2SubmissionWhitelist($merchant->getId()));
-            }
-            else if ($activationFlow === ActivationFlow::GREYLIST)
-            {
-                Mail::queue(new L2SubmissionGreylist($merchant->getId()));
-            }
-        }
-    }
-
     /**
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
@@ -840,17 +815,36 @@ class Core extends Base\Core
 
     protected function merchantNotifyActivationSubmission(Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        $org = $merchant->org->toArray();
+        $product = $this->app['basicauth']->getRequestOriginProduct();
 
-        $org['hostname'] = $merchant->org->getPrimaryHostName();
+        if ($product === Product::BANKING)
+        {
+            $activationFlow = $merchant->merchantDetail->getActivationFlow();
 
-        $data = $merchantDetails->toArray();
+            if (($activationFlow === ActivationFlow::WHITELIST) and
+                ($merchant->hasBankingAccounts() === true))
+            {
+                Mail::queue(new L2SubmissionWhitelist($merchant->getId()));
+            }
+            else if ($activationFlow === ActivationFlow::GREYLIST)
+            {
+                Mail::queue(new L2SubmissionGreylist($merchant->getId()));
+            }
+        }
+        else
+        {
+            $org = $merchant->org->toArray();
 
-        $data[Constants::IS_WHITELISTED_ACTIVATION] = $merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST;
+            $org['hostname'] = $merchant->org->getPrimaryHostName();
 
-        $notifyMerchantMail = new NotifyMerchant($data, $org);
+            $data = $merchantDetails->toArray();
 
-        Mail::queue($notifyMerchantMail);
+            $data[Constants::IS_WHITELISTED_ACTIVATION] = $merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST;
+
+            $notifyMerchantMail = new NotifyMerchant($data, $org);
+
+            Mail::queue($notifyMerchantMail);
+        }
     }
 
     protected function adminNotifyActivationSubmission(Entity $merchantDetails)
