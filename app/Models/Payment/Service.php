@@ -400,7 +400,7 @@ class Service extends Base\Service
             return;
         }
 
-        $responseKey = Payment\Entity::getTrackIdResponse($trackId);
+        $responseKey = Payment\Entity::getTrackIdResponseKey($trackId);
 
         $this->app['cache']->put($key, $data, Processor\Processor::REDIRECT_CACHE_RESPONSE_TTL);
     }
