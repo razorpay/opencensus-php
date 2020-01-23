@@ -52,6 +52,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Activation Emails
     const INSTANT_ACTIVATION_NOTIFICATION                      =  'INSTANT_ACTIVATION_NOTIFICATION';
     const KYC_SUBMITTED_EMAIL                                  =  'KYC_SUBMITTED_EMAIL';
+    const ACTIVATION_CONFIRMATION_EMAIL                        =  'ACTIVATION_CONFIRMATION_EMAIL';
 
     // payout links
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';

@@ -25,6 +25,8 @@ class InstantActivation extends Mailable
 
     protected $bankingAccount;
 
+    protected $merchant;
+
     protected $merchantId;
 
     /**
@@ -38,11 +40,23 @@ class InstantActivation extends Mailable
         $this->merchantId = $merchantId;
     }
 
+    protected function getMerchant()
+    {
+        if ($this->merchant === null)
+        {
+            $repo = App::getFacadeRoot()['repo'];
+
+            $this->merchant = $repo->merchant->find($this->merchantId);
+        }
+
+        return $this->merchant;
+    }
+
     protected function getBankingAccount()
     {
         if (empty($this->bankingAccount) === true)
         {
-            $merchant = App::getFacadeRoot()['repo']->merchant->find($this->merchantId);
+            $merchant = $this->getMerchant();
 
             $this->bankingAccount = $merchant->bankingAccounts->first();
         }
@@ -76,7 +90,9 @@ class InstantActivation extends Mailable
     {
         $bankingAccount = $this->getBankingAccount();
 
-        $this->to($bankingAccount->getBeneficiaryEmail(),
+        $merchant = $this->getMerchant();
+
+        $this->to($merchant->getEmail(),
                   $bankingAccount->getBeneficiaryName());
 
         return $this;

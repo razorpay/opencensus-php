@@ -363,6 +363,12 @@ class Activate extends Base\Core
     {
         $product = $this->app['basicauth']->getRequestOriginProduct();
 
+        $this->trace->error(TraceCode::ACTIVATION_CONFIRMATION_EMAIL,
+                            [
+                                'merchant_id' => $merchant->getId(),
+                                'product'     => $product
+                            ]);
+
         if ($product === Product::PRIMARY)
         {
             $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();

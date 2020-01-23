@@ -3,10 +3,8 @@
 namespace RZP\Mail\Merchant\RazorpayX;
 
 use App;
-use RZP\Error\ErrorCode;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
-use RZP\Exception\BadRequestException;
 
 class AccountActivationConfirmation extends Mailable
 {
@@ -38,6 +36,8 @@ class AccountActivationConfirmation extends Mailable
 
     protected $merchantId;
 
+    protected $merchant;
+
     public function __construct(string $merchantId)
     {
         parent::__construct();
@@ -45,20 +45,28 @@ class AccountActivationConfirmation extends Mailable
         $this->merchantId = $merchantId;
     }
 
+    protected function getMerchant()
+    {
+        if ($this->merchant === null)
+        {
+            $repo = App::getFacadeRoot()['repo'];
+            
+            $this->merchant = $repo->merchant->find($this->merchantId);
+        }
+
+        return $this->merchant;
+    }
+
     protected function getBankingAccount()
     {
-        $app = App::getFacadeRoot();
-
-        $merchant = $app['repo']->merchant->find($this->merchantId);
-
-        $bankingAccounts = $merchant->bankingAccounts()->get();
+        $merchant = $this->getMerchant();
 
         // todo, need a better way to determine which banking account.
-        // right now, this is part of onboarding flow, and only a VA banking account will be present.
+        // right now, this is part of on-boarding flow, and only a VA banking account will be present.
         // hence index(0) will work. Going forward, in case there is a flow where
         // at the time of on-boarding the person has 2 active banking account,
         // then it will be tough to determine which banking account is being activated.
-        return $bankingAccounts[0];
+        return $merchant->bankingAccounts->first();
     }
 
     protected function addSender()
@@ -71,9 +79,9 @@ class AccountActivationConfirmation extends Mailable
 
     protected function addRecipients()
     {
-        $bankingAccount = $this->getBankingAccount();
+        $merchant = $this->getMerchant();
 
-        $this->to($bankingAccount->getBeneficiaryEmail());
+        $this->to($merchant->getEmail());
 
         return $this;
     }
