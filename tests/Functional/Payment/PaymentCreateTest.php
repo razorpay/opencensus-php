@@ -2256,8 +2256,6 @@ class PaymentCreateTest extends TestCase
 
         $content = $this->startTest();
 
-        s($content);
-
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
         $this->assertArrayHasKey('next', $content);
@@ -2294,7 +2292,6 @@ class PaymentCreateTest extends TestCase
         }, 'upi_icici');
 
         $content = $this->startTest();
-        s($content);
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
@@ -2311,8 +2308,7 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
 
     }
-
-
+    
     /*
      * /payments/create/json, netbanking payment
      */
