@@ -120,6 +120,11 @@ trait Authorize
 
         $this->updateTokenOnCreatedIfRequired($payment, $ret);
 
+        if ($payment->isUpi() === true)
+        {
+            $ret['upi'] = true;
+        }
+
         $data = [];
 
         // For those payments which does auth in a single step, we need to store the acquirer data

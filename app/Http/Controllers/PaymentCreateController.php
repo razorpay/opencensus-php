@@ -623,10 +623,43 @@ class PaymentCreateController extends Controller
             {
               return $this->generateOtpJson($data);
             }
+            elseif ($data['upi'] === true)
+            {
+                return $this->generateUpiJson($data);
+            }
         }
 
         return $data;
     }
+
+    protected function generateUpiJson($data)
+    {
+        $response = [];
+
+        $response['razorpay_payment_id'] = $data['payment_id'];
+
+        $next = [];
+
+        if ($data['type'] === 'intent')
+        {
+            array_push($next,
+                [
+                "action" => "intent",
+                "url"    => $data['data']['intent_url'],
+                ]);
+        }
+
+        array_push($next,
+            [
+                "action" => "poll",
+                "url"    => $data['request']['url'],
+            ]);
+
+        $response['next'] = $next;
+
+        return $response;
+    }
+
 
     protected function generateRedirectJson($data)
     {

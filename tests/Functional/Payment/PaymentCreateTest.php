@@ -2236,6 +2236,83 @@ class PaymentCreateTest extends TestCase
         $this->assertTrue($this->redirectToAuthorize);
     }
 
+    public function testPaymentS2SJsonPrivateAuthUPIIntent()
+    {
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $this->ba->privateAuth();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+        }, 'upi_icici');
+
+        $content = $this->startTest();
+
+        s($content);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $this->assertEquals('intent', $content['next'][0]['action']);
+
+        $this->assertEquals('poll', $content['next'][1]['action']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+    }
+
+    public function testPaymentS2SJsonPrivateAuthUPIVpa()
+    {
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $this->ba->privateAuth();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+        }, 'upi_icici');
+
+        $content = $this->startTest();
+        s($content);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $this->assertEquals('poll', $content['next'][0]['action']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+
+    }
+
+
     /*
      * /payments/create/json, netbanking payment
      */
