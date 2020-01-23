@@ -47,12 +47,6 @@ class InstantActivation extends Mailable
             $this->bankingAccount = $merchant->bankingAccounts->first();
         }
 
-        $trace = App::getFacadeRoot()['trace'];
-
-        $trace->info('RX-Instant Activation', [
-            'banking_account' => $this->bankingAccount->getPublicId()
-        ]);
-
         return $this->bankingAccount;
     }
 
