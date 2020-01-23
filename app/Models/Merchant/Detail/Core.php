@@ -817,10 +817,18 @@ class Core extends Base\Core
     {
         $product = $this->app['basicauth']->getRequestOriginProduct();
 
+        $activationFlow = $merchant->merchantDetail->getActivationFlow();
+        
+        $this->trace->info(TraceCode::KYC_SUBMITTED_EMAIL,
+                           [
+                               'merchant_id'         => $merchant->getPublicId(),
+                               'product'             => $product,
+                               'activation_flow'     => $activationFlow,
+                               'has_banking_account' => $merchant->hasBankingAccounts()
+                           ]);
+
         if ($product === Product::BANKING)
         {
-            $activationFlow = $merchant->merchantDetail->getActivationFlow();
-
             if (($activationFlow === ActivationFlow::WHITELIST) and
                 ($merchant->hasBankingAccounts() === true))
             {
