@@ -42,6 +42,8 @@ class ApiTraceProcessor
 
         $this->scrubCardNumberViaCcPay($record);
 
+        $this->overrideRequestAttributes($record);
+
         return $record;
     }
 
@@ -127,5 +129,22 @@ class ApiTraceProcessor
         });
 
         $record['context'] = $context;
+    }
+
+    /**
+     * So WebProcessor is pushed with request object available at the time as
+     * part of framework's first set of things i.e. registering service
+     * providers. After this http middleware are registered where
+     * Fideloper\Proxy\TrustProxies (library) verifies and attaches x-forwarded-
+     * headers of proxy server. That's it- tiny bad practice/miss causing issues.
+     *
+     * Refer: Razorpay\Trace\Processor\WebProcessor@getServerData.
+     *
+     * @param  array &$record
+     * @return void
+     */
+    protected function overrideRequestAttributes(array &$record)
+    {
+        $record['request']['url'] = $this->app->request->getUri();
     }
 }
