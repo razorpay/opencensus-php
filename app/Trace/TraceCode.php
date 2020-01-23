@@ -49,6 +49,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_BULK_FAILURE                          = 'PAYMENT_CAPTURE_BULK_FAILURE';
     const PAYMENT_ALREADY_CAPTURED                              = 'PAYMENT_ALREADY_CAPTURED';
 
+    // Activation Emails
+    const INSTANT_ACTIVATION_NOTIFICATION                      =  'INSTANT_ACTIVATION_NOTIFICATION';
+
     // payout links
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
     const PAYOUT_SOURCE_UPDATER_JOB_RELEASED                    = 'PAYOUT_SOURCE_UPDATER_JOB_RELEASED';

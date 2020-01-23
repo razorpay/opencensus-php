@@ -44,9 +44,7 @@ class InstantActivation extends Mailable
         {
             $merchant = App::getFacadeRoot()['repo']->merchant->find($this->merchantId);
 
-            $bankingAccounts = $merchant->bankingAccounts()->get();
-
-            $this->bankingAccount = $bankingAccounts[0];
+            $this->bankingAccount = $merchant->bankingAccounts->first();
         }
 
         return $this->bankingAccount;

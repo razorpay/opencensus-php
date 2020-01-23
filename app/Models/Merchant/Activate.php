@@ -408,6 +408,14 @@ class Activate extends Base\Core
 
         $activationSource = $merchant->getActivationSource();
 
+        $this->trace->info(TraceCode::INSTANT_ACTIVATION_NOTIFICATION,
+                           [
+                               'merchant_id'          => $merchant->getPublicId(),
+                               'activation_source'    => $activationSource,
+                               'has_banking_accounts' => $merchant->hasBankingAccounts()
+                           ]
+        );
+
         if (($activationSource === Product::BANKING) and
             ($merchant->hasBankingAccounts() === true))
         {
