@@ -388,9 +388,16 @@ class Handler extends ExceptionHandler
     {
         $this->setErrorMetadata($exception);
 
-        $this->ifTestingThenRethrowException($exception);
-
         $error = $exception->getError();
+
+        $data = $exception->getData();
+
+        if (isset($data['method']) === true)
+        {
+            $error->setDetailedError($error->getInternalErrorCode(), $data['method']);
+        }
+
+        $this->ifTestingThenRethrowException($exception);
 
         return ApiResponse::generateErrorResponse($error, $debug);
     }
@@ -399,11 +406,16 @@ class Handler extends ExceptionHandler
     {
         $this->setErrorMetadata($exception);
 
-        $this->ifTestingThenRethrowException($exception);
-
         $error = $exception->getError();
 
         $data = $exception->getData();
+
+        if (isset($data['method']) === true)
+        {
+            $error->setDetailedError($error->getInternalErrorCode(), $data['method']);
+        }
+
+        $this->ifTestingThenRethrowException($exception);
 
         return ApiResponse::generateNachNbErrorResponse($error, $data, $debug);
     }

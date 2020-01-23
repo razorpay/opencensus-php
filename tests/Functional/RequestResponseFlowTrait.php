@@ -39,7 +39,6 @@ trait RequestResponseFlowTrait
             $this->processAndAssertException($e, $data['exception']);
 
             $response = $e->generatePublicJsonResponse();
-            s($response);
         }
         catch (\Razorpay\OAuth\Exception\BaseException $e)
         {

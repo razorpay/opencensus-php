@@ -5,6 +5,7 @@ namespace RZP\Error;
 use App;
 use RZP\Exception;
 use Illuminate\Support;
+use RZP\Models\Payment\Method;
 use RZP\Services\DowntimeMetric;
 
 class Error extends Support\Fluent
@@ -43,6 +44,8 @@ class Error extends Support\Fluent
     const FAILURE_STAGE         = 'failure_stage';
     const NEXT_BEST_ACTION      = 'next_best_action';
 
+    const ERROR_CODE_MAP_PATH   = 'files/errorcodes/error_code_detail_%s.csv';
+
     protected $attributes = array();
 
     public function __construct(
@@ -71,8 +74,6 @@ class Error extends Support\Fluent
         $this->setAction($code);
 
         $this->setAttribute(self::INTERNAL_ERROR_DESC, $internalDesc);
-
-        $this->setDetailedError($code);
     }
 
     public function appendToField(string $string)
@@ -206,9 +207,9 @@ class Error extends Support\Fluent
         $this->setAttribute(self::METADATA, $metadata);
     }
 
-    protected function setDetailedError($code)
+    public function setDetailedError($code, $method)
     {
-        $filePath = storage_path('files/errorcodes/error_code_detail.csv');
+        $filePath = storage_path(sprintf(self::ERROR_CODE_MAP_PATH, $method));
 
         $file = fopen($filePath,"r");
 
@@ -235,7 +236,6 @@ class Error extends Support\Fluent
 
             $this->setNextBestAction($errorCodeMap[$code][4]);
         }
-
     }
 
     protected function setCodeDetail($codeDetail)
@@ -409,8 +409,6 @@ class Error extends Support\Fluent
             self::CODE_DETAIL       => $this->getAttribute(self::CODE_DETAIL),
             self::METADATA          => $this->getAttribute(self::METADATA)
         );
-
-        s($error);
 
         $error = $this->checkAndAddDataToErrorResp($error);
 
