@@ -395,12 +395,12 @@ class Service extends Base\Service
 
     protected function cacheResponseIfApplicable($trackId, $merchant, $data)
     {
-        if ($merchant->isFeatureEnabled(Feature\Constants::MULTIPLE_REDIRECTION_ONHOLD) === false)
+        if ($merchant->isFeatureEnabled(Feature\Constants::REDIRECTION_ONHOLD) === false)
         {
             return;
         }
 
-        $responseKey = Payment\Entity::getTrackIdResponse($trackId);
+        $responseKey = Payment\Entity::getTrackIdResponseKey($trackId);
 
         $this->app['cache']->put($key, $data, Processor\Processor::REDIRECT_CACHE_RESPONSE_TTL);
     }
@@ -478,7 +478,7 @@ class Service extends Base\Service
 
         $payment = $this->core->retrieveById($payload['payment_id']);
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::MULTIPLE_REDIRECTION_ONHOLD) === true)
+        if ($merchant->isFeatureEnabled(Feature\Constants::REDIRECTION_ONHOLD) === true)
         {
             $trackIdKey = Payment\Entity::getTrackIdRequestKey($id);
 

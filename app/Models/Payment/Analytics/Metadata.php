@@ -67,6 +67,8 @@ class Metadata
     const S2S           = 's2s';
     // No checkout: Our code, merchant not involved, for push payments only
     const PUSH          = 'push';
+    // Payment UI made for Legacy Browsers like IE 8
+    const LEGACYJS      = 'legacyjs';
 
     const LIBRARY_VALUES = [
         self::CHECKOUTJS    => 1,
@@ -75,6 +77,7 @@ class Metadata
         self::CUSTOM        => 4,
         self::DIRECT        => 5,
         self::PUSH          => 6,
+        self::LEGACYJS      => 7,
     ];
 
     // Browser values

@@ -967,7 +967,7 @@ class Core extends Base\Core
                 //
                 $clonedPayout->setShouldValidateAndUpdateBalancesFlag(false);
 
-                (new DownstreamProcessor('fund_account_payout', $clonedPayout))->processTransaction();
+                (new DownstreamProcessor('fund_account_payout', $clonedPayout, $this->mode))->processTransaction();
 
                 $dummyTransaction = $clonedPayout->transaction;
 

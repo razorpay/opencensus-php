@@ -5596,9 +5596,11 @@ ALTER TABLE payouts
    ADD COLUMN payout_link_id CHAR(14) DEFAULT NULL AFTER `idempotency_key`,
    ADD INDEX `payouts_payout_link_id_index` (`payout_link_id`);
 
+ALTER TABLE `upi_transfers`
+    ADD COLUMN `transaction_reference` VARCHAR (255) DEFAULT NULL;
+
 ALTER TABLE disputes
     ADD COLUMN base_amount BIGINT UNSIGNED DEFAULT NULL AFTER currency,
     ADD COLUMN base_currency CHAR(3) DEFAULT NULL AFTER base_amount,
     ADD COLUMN gateway_amount BIGINT UNSIGNED DEFAULT NULL AFTER base_currency,
     ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL AFTER gateway_amount;
-

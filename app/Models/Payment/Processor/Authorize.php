@@ -2346,6 +2346,14 @@ trait Authorize
 
     protected function runFraudChecksIfApplicable(Payment\Entity $payment)
     {
+
+        // We need to disable fraud checks for redirection payments before redirection hence this check. This will
+        // be later handled within payment service
+        if (($this->shouldRedirect($payment) === true) or ($this->shouldRedirectV2($payment, []) === true))
+        {
+            return;
+        }
+
         $fallbacktoV1Flow = false;
 
         try
@@ -3058,6 +3066,10 @@ trait Authorize
             $emandateAutoRefundTime = $currentTime + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
 
             $merchantAutoRefundTime = $emandateAutoRefundTime;
+        }
+        else if ($payment->isNach() === true)
+        {
+            $merchantAutoRefundTime = $currentTime + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH;
         }
 
         $payment->setRefundAt($merchantAutoRefundTime);

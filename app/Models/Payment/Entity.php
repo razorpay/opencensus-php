@@ -209,7 +209,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
     const BASE_CURRENCY                     = 'base_currency';
-    const PAYMENT_TIMEOUT_NACH              = 1296000;  // 15 Days
+    const PAYMENT_TIMEOUT_NACH              = 1728000;  // 20 Days
 
     // payment services
     const API                               = 0;
@@ -1339,6 +1339,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $this->setAttribute(self::FEE_BEARER, $feeBearer);
 
+    }
+
+    public function setBatchId($batchId)
+    {
+        $this->setAttribute(self::BATCH_ID, $batchId);
     }
 
     // ----------------------- Setters Ends-----------------------------------------

@@ -178,6 +178,8 @@ return array(
         // irctc alerts
         'ops_irctc'            => 'C971JT8JC',
 
+        'payout_links_alerts'  => 'CT0D3HTBR'
+
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

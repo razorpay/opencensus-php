@@ -170,6 +170,12 @@ class InvoiceReport extends BaseReport
 
             $amount = abs($entity->getAmount());
 
+            // this is to remove the line column with the 0 tax amount
+            if(($amount === 0) and ($tax === 0))
+            {
+                continue;
+            }
+
             // Current row
             $row = $this->getNewRow();
 
@@ -262,6 +268,14 @@ class InvoiceReport extends BaseReport
 
         $this->groupDataForSummaryByPageType(
             $this->creditNoteData, self::TAX_CREDIT_NOTE, self::TAX_CREDIT_NOTE, $summaryAmount);
+
+        //this is to throw error if the total merchant_invoice amount is 0
+        if ($summaryAmount === 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invoice not generated yet for merchant ' . $this->merchant->getId() .
+                ' for year ' . $this->year . ' and month ' . $this->month . ' since the amount is zero');
+        }
 
         // Add final row for the summary page
         $this->invoiceReport[self::SUMMARY][self::SUMMARY_TITLE][self::ROWS][] = [
