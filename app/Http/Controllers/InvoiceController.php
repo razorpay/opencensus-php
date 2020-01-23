@@ -261,7 +261,7 @@ class InvoiceController extends Controller
         //
         $data['request_params'] = Request::all();
 
-        $data['lumberjack_key'] = env('LUMBERJACK_STATIC_SECRET');
+        $data['lumberjack_key'] = env('LUMBERJACK_STATIC_KEY');
 
         return View::make($view)
                    ->with('data', $data);
@@ -343,7 +343,7 @@ class InvoiceController extends Controller
         //
         $data['request_params'] = Request::all();
 
-        $data['lumberjack_key'] = env('LUMBERJACK_STATIC_SECRET');
+        $data['lumberjack_key'] = env('LUMBERJACK_STATIC_KEY');
 
         return View::make($view)
             ->with('data', $data);
