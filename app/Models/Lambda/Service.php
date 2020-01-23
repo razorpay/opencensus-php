@@ -50,9 +50,9 @@ class Service extends Base\Service
 
         $batches = $this->mutex->acquireAndRelease(
             sprintf(self::MUTEX_RESOURCE, strtoupper($type)),
-            function () use ($input)
+            function () use ($input, $type)
             {
-                list($file, $locationType) = $this->getFileDetails($input);
+                list($file, $locationType) = $this->getFileDetails($input, $type);
 
                 return $this->createBatches($input, $file, $locationType);
             },
@@ -65,14 +65,21 @@ class Service extends Base\Service
         return $batches->toArrayPublic();
     }
 
-    protected function getFileDetails(array & $input)
+    protected function getFileDetails(array & $input, string $type)
     {
         if (isset($input['key']) === true)
         {
             // TODO: add validation for key
             $key = urldecode($input['key']);
 
-            $filePath = $this->getH2HFileFromAws($key, true);
+            if ($type === Batch\Type::NACH)
+            {
+                $filePath = $this->getH2HFileFromAws($key, true, 'sftp_bucket', 'ap-south-1');
+            }
+            else
+            {
+                $filePath = $this->getH2HFileFromAws($key, true);
+            }
 
             $file = new HttpFoundation\File\File($filePath);
 
