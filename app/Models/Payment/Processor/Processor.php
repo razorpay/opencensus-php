@@ -3048,6 +3048,10 @@ class Processor
         {
             $refundAt = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
         }
+        else if ($payment->isNach() === true)
+        {
+            $refundAt = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH;
+        }
 
         $this->trace->info(
             TraceCode::AUTO_CAPTURE_REFUND_DELAY,
