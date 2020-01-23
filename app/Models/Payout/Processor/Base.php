@@ -105,6 +105,7 @@ class Base extends BaseCore
 
             $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                            $payout,
+                                                           $this->mode,
                                                            $this->fundTransferDestination);
 
             $downstreamProcessor->process();
@@ -146,6 +147,7 @@ class Base extends BaseCore
 
                         $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                                        $payout,
+                                                                       $this->mode,
                                                                        $this->fundTransferDestination);
 
                         //
@@ -208,6 +210,7 @@ class Base extends BaseCore
 
                 $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                                $payout,
+                                                               $this->mode,
                                                                $this->fundTransferDestination);
 
                 $downstreamProcessor->process();

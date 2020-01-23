@@ -233,7 +233,10 @@ trait TestsBusinessBanking
         $this->fixtures->create('pricing', $pricingPlan);
     }
 
-    protected function mockRazorxTreatment()
+    protected function mockRazorxTreatment(string $channel = 'yesbank',
+                                           string $ftsEnabled = 'off',
+                                           string $webhookViaStork = 'off',
+                                           string $defaultBehaviour = 'off')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -244,10 +247,24 @@ trait TestsBusinessBanking
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
+                          ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use ($channel, $ftsEnabled, $defaultBehaviour)
+                {
+                    if (ends_with($feature, 'mode_payout_filter'))
+                    {
+                        return strtolower($channel);
+                    }
+
+                    if (starts_with($feature, 'fts_'))
+                    {
+                        return strtolower($ftsEnabled);
+                    }
+
+                    return strtolower($defaultBehaviour);
+                }));
 
         $this->app->razorx->method('getCachedTreatment')
-                          ->willReturn('off');
+                          ->willReturn(strtolower($webhookViaStork));
     }
 
     protected function createWorkflowFeature(array $attributes = [])
