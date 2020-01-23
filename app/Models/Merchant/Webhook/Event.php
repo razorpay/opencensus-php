@@ -445,6 +445,18 @@ class Event
         self::TERMINAL_FAILED                   => Feature\Constants::TERMINAL_ONBOARDING,
         self::PAYOUT_UPDATED                    => Feature\Constants::PAYOUT,
         self::PAYOUT_REJECTED                   => Feature\Constants::PAYOUT,
+        self::ACCOUNT_SUSPENDED                 => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_FUNDS_HOLD                => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_FUNDS_UNHOLD              => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_INTERNATIONAL_ENABLED     => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_INTERNATIONAL_DISABLED    => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_INSTANTLY_ACTIVATED       => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_UNDER_REVIEW              => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_NEEDS_CLARIFICATION       => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_ACTIVATED                 => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_REJECTED                  => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_PAYMENTS_ENABLED          => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_PAYMENTS_DISABLED         => Feature\Constants::SUBMERCHANT_ONBOARDING,
     ];
 
     /**

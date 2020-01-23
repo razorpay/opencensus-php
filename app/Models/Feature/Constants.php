@@ -287,6 +287,8 @@ class Constants
 
     const BLOCK_OFFER_CREATION     = 'block_offer_creation';
 
+    const REDIRECTION_ONHOLD       = 'redirection_onhold';
+
     const ERROR_METADATA_RESPONSE  = 'error_metadata_response';
 
     /*
@@ -497,6 +499,7 @@ class Constants
         self::OFFLINE_PAYMENTS                => true,
         self::ERROR_METADATA_RESPONSE         => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
+        self::REDIRECTION_ONHOLD              => true,
     ];
 
     // Entity type constants

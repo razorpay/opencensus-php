@@ -1005,6 +1005,16 @@ trait Authorize
         $this->validateContactAndProviderFromToken($payment, $input);
     }
 
+
+    protected function shouldSkipContactAndProviderValidation($input)
+    {
+        if (($input['provider'] === PayLater::ICICI and $input['method'] === Gateway::PAYLATER) or ($input['ott'] === Constants::GETSIMPLTOKEN))
+        {
+            return true;
+        }
+        return false;
+    }
+
     protected function validateApplicationIfApplicable(Payment\Entity $payment, $input)
     {
         if (isset($input['application']) === true)
@@ -1024,10 +1034,7 @@ trait Authorize
 
     private function validateContactAndProviderFromToken(Payment\Entity $payment, $input)
     {
-        //
-        // For simpl redirection flow OTT is dummy value
-        //
-        if($input['ott'] === Constants::GETSIMPLTOKEN)
+        if ($this->shouldSkipContactAndProviderValidation($input) === true)
         {
             return;
         }
@@ -2339,6 +2346,14 @@ trait Authorize
 
     protected function runFraudChecksIfApplicable(Payment\Entity $payment)
     {
+
+        // We need to disable fraud checks for redirection payments before redirection hence this check. This will
+        // be later handled within payment service
+        if (($this->shouldRedirect($payment) === true) or ($this->shouldRedirectV2($payment, []) === true))
+        {
+            return;
+        }
+
         $fallbacktoV1Flow = false;
 
         try
@@ -3051,6 +3066,10 @@ trait Authorize
             $emandateAutoRefundTime = $currentTime + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
 
             $merchantAutoRefundTime = $emandateAutoRefundTime;
+        }
+        else if ($payment->isNach() === true)
+        {
+            $merchantAutoRefundTime = $currentTime + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH;
         }
 
         $payment->setRefundAt($merchantAutoRefundTime);
@@ -5185,6 +5204,13 @@ trait Authorize
         }
 
         $wallet = $payment->getWallet();
+
+        //Paylater ICICI has otp flow enabled
+        if (($payment->isPayLater() === true) and
+            ($wallet === PayLater::ICICI))
+        {
+            return true;
+        }
 
         // Only wallets have otp flow currently.
         // Plus, only power wallets support otp flow.

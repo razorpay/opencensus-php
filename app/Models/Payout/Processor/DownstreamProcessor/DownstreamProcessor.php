@@ -2,26 +2,33 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
+use App;
+
 use RZP\Models\Payout\Entity;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
-use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\Admin\Service as AdminService;
-use RZP\Models\Payout\Processor\FundAccountPayout;
 
 class DownstreamProcessor
 {
+    protected $app;
+
     protected $type;
+
+    protected $mode;
 
     protected $payout;
 
     protected $ftaAccount;
 
-    public function __construct(string $type, Entity $payout, PublicEntity $ftaAccount = null)
+    public function __construct(string $type, Entity $payout, string $mode, PublicEntity $ftaAccount = null)
     {
+        $this->app = App::getFacadeRoot();
+
         $this->type = $type;
+
+        $this->mode = $mode;
 
         $this->payout = $payout;
 
@@ -52,6 +59,11 @@ class DownstreamProcessor
 
             $channel = $this->payout->getChannel();
 
+            if (empty($channel) === true)
+            {
+                $channel = $this->getChannelForFundTransfer($accountType);
+            }
+
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
 
@@ -61,5 +73,54 @@ class DownstreamProcessor
     public function getAccountTypeForFundTransfer()
     {
         return $this->payout->balance->getAccountType() ?? AccountType::SHARED;
+    }
+
+    /**
+     * Adding for backward compatibility .
+     * Relevant Slack Thread : https://razorpay.slack.com/archives/CE4DMABE3/p1579599527095500
+     *
+     * @param $accountType
+     *
+     * @return string
+     */
+    protected function getChannelForFundTransfer($accountType): string
+    {
+        if ($accountType === AccountType::DIRECT)
+        {
+            return $this->getChannelForDirectAccountFundTransfer();
+        }
+
+        return $this->getChannelForSharedAccountFundTransfer();
+    }
+
+    protected function getChannelForDirectAccountFundTransfer()
+    {
+        return $this->payout->balance->getChannel();
+    }
+
+    /*
+     * This channel selection DOESN'T handle channel preference, the one whose experiment would be created first
+     * would be preferred. So, its preferred to NOT have same  MIDs in 2 different experiments for the same behaviour.
+     */
+    protected function getChannelForSharedAccountFundTransfer()
+    {
+        $merchant = $this->payout->merchant;
+
+        $mode = $this->payout->getMode();
+
+        $razorxFeature = strtoupper(sprintf("%s_MODE_PAYOUT_FILTER", $mode));
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            constant(RazorxTreatment::class . '::' . $razorxFeature),
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'control')
+        {
+            return Channel::YESBANK;
+        }
+
+        return constant(Channel::class . '::' . strtoupper($variant));
     }
 }

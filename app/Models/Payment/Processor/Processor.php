@@ -665,6 +665,21 @@ class Processor
                 $input['contact'] = $payment['contact'];
                 break;
 
+            case PayLater::ICICI:
+                $gateway = Payment\Gateway::PAYLATER_ICICI;
+
+                $payment = $this->repo->transaction(function() use ($input, $payment)
+                {
+                    $payment = $this->createPaymentEntity($input, $payment);
+                    $payment->setBaseAmount($payment->getAmount());
+                    return $payment;
+                });
+
+                $input['payment'] = $payment->toArray();
+
+
+                break;
+
             default:
                 $gateway = Payment\Gateway::PAYLATER;
                 break;
@@ -1975,9 +1990,17 @@ class Processor
 
         $gateway = $this->payment->getGateway();
 
-        if(($gateway === Payment\Gateway::PAYLATER) and ($this->payment->getWallet() === Payment\Gateway::GETSIMPL))
+        if($gateway === Payment\Gateway::PAYLATER)
         {
-            $gateway = Payment\Gateway::GETSIMPL;
+            switch ($this->payment->getWallet())
+            {
+                case Payment\Gateway::GETSIMPL:
+                    $gateway = Payment\Gateway::GETSIMPL;
+                    break;
+                case PayLater::ICICI:
+                    $gateway = Payment\Gateway::PAYLATER_ICICI;
+                    break;
+            }
         }
 
         $gatewayData['terminal'] = $terminal;
@@ -3025,6 +3048,10 @@ class Processor
         {
             $refundAt = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
         }
+        else if ($payment->isNach() === true)
+        {
+            $refundAt = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH;
+        }
 
         $this->trace->info(
             TraceCode::AUTO_CAPTURE_REFUND_DELAY,
@@ -3581,6 +3608,9 @@ class Processor
                 //
                 $coproto = $this->preProcessGetSimplCoproto($response, $input, $payment, $merchant);
                 break;
+
+            case PayLater::ICICI:
+                return;
 
             default:
                 (new Customer\Raven)->sendOtp($input, $merchant);

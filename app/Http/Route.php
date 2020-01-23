@@ -865,6 +865,7 @@ final class Route
         'payout_links_verify_customer_otp_cors'    => ['options',      'payout-links/{x_entity_id}'
                                                                     . '/verify-customer-otp',                         'PayoutLinkController@allowCors'                                    ],
         'payout_links_cancel'                      => ['post',      'payout-links/{id}/cancel',                       'PayoutLinkController@cancel'                                       ],
+        'payout_update_pull_payout_status'         => ['post',      'payout-links/{id}/pullPayoutStatus',             'PayoutLinkController@pullPayoutStatus'                             ],
         'payout_links_customer_hosted_page'        => ['get',       'payout-links/{x_entity_id}/view',                'PayoutLinkController@viewHostedPage'                               ],
         // Below is a POST request, for reasons listed in the Controller
         'payout_links_added_fund_accounts'         => ['post',      'payout-links/{x_entity_id}/fund-accounts',       'PayoutLinkController@getFundAccountsOfContact'                     ],
@@ -1358,6 +1359,7 @@ final class Route
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
+        'bootstrap_key_cache'                     => ['post',     'throttle/bootstrap_key_cache',                              'ThrottleController@bootstrapKeyCache'                      ],
 
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
@@ -2253,6 +2255,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'payout_update_pull_payout_status',
         'payout_links_settings_post',
         'payout_links_settings_get',
         'add_additional_website',
@@ -2682,6 +2685,7 @@ final class Route
         // throttle settings routes
         'fetch_throttle_settings',
         'edit_throttle_settings',
+        'bootstrap_key_cache',
 
         // Excel Store routes
         'excel_store_list_pages',
@@ -2764,6 +2768,7 @@ final class Route
     ];
 
     public static $routePermission = [
+        'payout_update_pull_payout_status'         => '*',
         'merchant_activation_update_website_status'=> '*',
         'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         'add_additional_website'                   => '*',
@@ -3260,6 +3265,7 @@ final class Route
 
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
+        'bootstrap_key_cache'                      => Permission::EDIT_THROTTLE_SETTINGS,
 
         'excel_store_list_pages'                   => Permission::ACCESS_EXCEL_STORE,
         'excel_store_create_page'                  => Permission::ACCESS_EXCEL_STORE,
@@ -3731,6 +3737,7 @@ final class Route
             'partner_submerchant_map',
             'iin_batch_process_record',
             'pricing_add_plan_rule_bulk',
+            'subscription_registration_charge_token',
             'subscription_registration_create_links',
             'virtual_account_create',
             'oauth_token_create',
@@ -4366,6 +4373,11 @@ final class Route
     public function getApiRouteInCategory($category)
     {
         return array_intersect_key(self::$apiRoutes, array_flip(self::$$category));
+    }
+
+    public static function getApiRoutes(): array
+    {
+        return self::$apiRoutes;
     }
 
     public static function getApiRoute($name)

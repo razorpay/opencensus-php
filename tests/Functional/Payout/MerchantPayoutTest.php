@@ -241,7 +241,7 @@ class MerchantPayoutTest extends TestCase
 
     public function testCreateMerchantPayoutOnDemandWithFtsRampFailure()
     {
-        $this->mockRazorxTreatment();
+        $this->mockRazorxTreatment('yesbank','on');
 
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
@@ -268,7 +268,7 @@ class MerchantPayoutTest extends TestCase
 
     public function testCreateMerchantPayoutOnDemandWithFtsRampSuccess()
     {
-        $this->mockRazorxTreatment();
+        $this->mockRazorxTreatment('yesbank','on');
 
         $this->testCreatePayout();
 

@@ -967,6 +967,23 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+                'id'                    => '1n25ficipayltr',
+                'merchant_id'           => Account::SHARED_ACCOUNT,
+                'gateway'               => Gateway::PAYLATER,
+                'gateway_acquirer'      => 'icic',
+                'card'                  => '0',
+                'gateway_merchant_id'   => 'test_merchant_id',
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                'type'                  => 0,
+                'paylater'              => 1,
+                'mode'                  => 2,
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
                 'id'                    => '1n25f6uN5S1Z7c',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::HDFC,
