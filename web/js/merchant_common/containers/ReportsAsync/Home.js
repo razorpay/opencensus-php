@@ -13,6 +13,11 @@ export default class ReportHome extends React.PureComponent {
   componentDidMount() {
     this.props.fetchConfigs();
     this.props.fetchLogs({ count: 5 });
+
+    if (typeof window.hj === 'function') {
+      window.hj('trigger', 'report-async-started');
+      window.hj('tagRecording', ['report-async-started']);
+    }
   }
 
   onGenerateReport = payload => {
