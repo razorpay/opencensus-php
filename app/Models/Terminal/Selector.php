@@ -268,10 +268,7 @@ class Selector extends Base\Core
 
                 $merchant->methods->setDinersCard(0);
 
-                $this->trace->info(TraceCode::DISABLING_DINERS_FOR_MERCHANT, [
-                    'merchant_id' => $merchant->getId(),
-                    'reason'      => 'No terminal found',
-                ]);
+                $this->alertDinersDisabledForMerchant($merchant, $payment);
 
                 $this->repo->saveOrFail($merchant->methods);
 
@@ -877,5 +874,32 @@ class Selector extends Base\Core
         }
 
         return $terminalIds;
+    }
+
+    protected function alertDinersDisabledForMerchant(Merchant\Entity $merchant, $payment)
+    {
+        $alertArray = [
+            'merchant_id'           => $merchant->getId(),
+            'merchant_name'         => $merchant->getName(),
+            'payment_id'            => $payment[Entity::ID],
+            'payment_international' => $payment[Entity::INTERNATIONAL],
+            'network'               => 'DICL',
+            'reason'                => 'no terminal found',
+            'action_taken'          => 'diners club disabled for merchant'
+        ];
+
+        $this->trace->critical(TraceCode::DISABLING_DINERS_FOR_MERCHANT, $alertArray);
+
+        $message = 'Diners Club payment failed with no terminal found';
+
+        $this->app['slack']->queue(
+            $message,
+            $alertArray,
+            [
+                'channel'               => Config::get('slack.channels.pgob_alerts'),
+                'username'              => 'alerts',
+                'icon'                  => ':x:'
+            ]
+        );
     }
 }
