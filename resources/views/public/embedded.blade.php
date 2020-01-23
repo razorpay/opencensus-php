@@ -23,5 +23,4 @@
   </head>
   <body>
     @include('partials.loader')
-    <script src="https://checkout.razorpay.com/v1/razorpay.js"></script>
     <script src="{{ $script }}"></script>

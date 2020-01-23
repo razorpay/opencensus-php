@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use DB;
 use Mail;
 use Closure;
 use Mockery;
@@ -31,6 +32,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Http\Client\Common\Exception\ClientErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Base as BaseFixture;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMail;
 
@@ -566,29 +568,58 @@ class WebhookTest extends TestCase
 
     public function testWebhookEventWithExpressTranslationEnabled()
     {
-        $this->ba->privateAuth();
-
         $translatedWebhookBody = 'sample translated webhook body';
 
         $webhookSecret = 'sample_secret';
 
-        $this->createMerchantWebhook([
-            'events' => ['payment.captured' => "1"],
-            'secret' => $webhookSecret,
-        ]);
+        // mark as partner
+        $partnerId     = '100000Razorpay';
+        $client        = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $partnerId);
+        $submerchantId = '10000000000000';
 
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $submerchantId,
+                'entity_owner_id' => $partnerId,
+            ]
+        );
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TRANSLATE_WEBHOOK]);
+        $app = DB::Connection('auth')
+                 ->table('applications')
+                 ->orderBy('created_at', 'desc')
+                 ->first();
 
-        $this->mockExpressSendRequest(function ($path, $content) use ($translatedWebhookBody) {
+        // create partner webhook
+        $this->createMerchantWebhook(
+            [
+                'events'      => ['payment.authorized' => "1"],
+                'secret'      => $webhookSecret,
+                'entity_type' => 'application',
+                'entity_id'   => $app->id,
+            ]);
 
-            $response = new \Requests_Response();
+        // create setting for translation url
+        $this->ba->adminAuth();
+        $this->fixtures->edit('admin', 'RzrpySprAdmnId', ['allow_all_merchants' => 1]);
+        $this->ba->addAccountAuth($partnerId);
 
-            $response->body = $translatedWebhookBody;
+        $testData = $this->testData['createSettingsForWebhookTranslateUrl'];
 
-            $response->headers['request-id'] = '12345678';
+        $this->runRequestResponseFlow($testData);
 
-            return $response;
+        $this->ba->deleteAccountAuth();
+
+        $payment  = $this->getDefaultPaymentArray();
+
+        // mock mozart webhook translate and inferno requests
+        $this->mockMozartWebhookTranslateRequest(function ($path, $content) use ($translatedWebhookBody) {
+
+            return [
+                'content'   => $translatedWebhookBody,
+                'headers'   => ['request-id' => ['12345678']],
+            ];
         });
 
         $webhookFired = [];
@@ -600,16 +631,14 @@ class WebhookTest extends TestCase
             return $this->getStandardWebhookResponse();
         });
 
-        $payment = $this->getDefaultPaymentArray();
-
-        $this->doAuthAndCapturePayment($payment);
+        // make payment on submerchant
+        $this->doPartnerAuthPayment($payment, $client->getId(), $submerchantId);
 
         /*
          * these asserts cannot be inside the mockInfernoMakeRequest closure because
          * if assert fails, then exception is thrown. However, the exception is caught and not rethrown
          * by inferno. this leads to all assert failures failing silently.
          */
-
         $this->assertEquals($translatedWebhookBody, $webhookFired['content']);
 
         $this->assertEquals('12345678', $webhookFired['headers']['request-id'][0]);
@@ -630,7 +659,7 @@ class WebhookTest extends TestCase
 
         $this->createMerchantWebhook(['events' => ['payment.captured' => "1"]]);
 
-        $express = $this->mockExpressSendRequest(null, 0);
+        $this->mockMozartWebhookTranslateRequest(null, 0);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -847,54 +876,6 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
-    public function testWebhookDeactivationEmail()
-    {
-        $webhook = $this->createWebhook();
-        $inferno = $this->mockInferno();
-
-        $this->fixtures->edit(
-            'webhook',
-            $webhook['id'],
-            [
-                'last_successful_at' => (time() - (25 * 3600)),
-                'active' => 1
-            ]);
-
-        $inferno->shouldReceive('sendRequest')
-            ->once()
-            ->andReturn(true);
-
-        $inferno->shouldReceive('sendEmail')
-            ->with(Mockery::type('object'), 'deactivate')
-            ->once();
-
-        $this->doAuthPayment();
-    }
-
-    public function testWebhookDeactivationEmailWithDisableFalse()
-    {
-        $webhook = $this->createWebhook();
-        $inferno = $this->mockInferno();
-
-        $this->fixtures->edit(
-            'webhook',
-            $webhook['id'],
-            [
-                'last_successful_at' => (time() - (25 * 3600)),
-                'active' => 1,
-                'disable_on_failure' => 0,
-            ]);
-
-        $inferno->shouldReceive('sendRequest')
-            ->once()
-            ->andReturn(true);
-
-        $inferno->shouldNotHaveReceived('sendEmail');
-
-        $this->doAuthPayment();
-    }
-
-
     public function testExceptionOnWebhookFire()
     {
         $webhook = $this->createWebhook(['secret' => 'test_secret']);
@@ -917,25 +898,6 @@ class WebhookTest extends TestCase
                 ->andReturn(false);
 
         $this->doAuthPayment();
-    }
-
-    public function testWebhookDeactivation()
-    {
-        $webhook = $this->createWebhook();
-        $inferno = $this->mockInferno();
-
-        $this->fixtures->edit(
-            'webhook', $webhook['id'], ['last_successful_at' => (time() - (25 * 3600)), 'active' => 1]);
-
-        $inferno->shouldReceive('sendRequest')
-                ->once()
-                ->andReturn(true);
-
-        $this->doAuthPayment();
-
-        $webhook = $this->getLastEntity('webhook', true);
-
-        $this->assertEquals($webhook['active'], false);
     }
 
     public function testWebhookHittingTheDefinedRoute()
@@ -1463,7 +1425,7 @@ class WebhookTest extends TestCase
 
     public function testTerminalOnboardingVerificationWebhook()
     {
-        $this->app['config']->set('atos_terminal_onboarding_verification.case', "1");
+        $this->app['config']->set('worldline_terminal_onboarding_verification.case', "1");
 
         $subMerchant = $this->fixtures->create('merchant');
 
@@ -1512,7 +1474,7 @@ class WebhookTest extends TestCase
             [
                 'merchant_id' => $subMerchantId,
                 'enabled'     => false,
-                'gateway'     => 'atos',
+                'gateway'     => 'worldline',
                 'status'      => 'pending'
             ]);
 
@@ -1546,7 +1508,7 @@ class WebhookTest extends TestCase
 
     public function testTerminalOnboardingCreationFailedWebhook()
     {
-        $this->app['config']->set('atos_terminal_onboarding_creation.case', "5");
+        $this->app['config']->set('worldline_terminal_onboarding_creation.case', "5");
 
         $subMerchant = $this->fixtures->create('merchant');
 
@@ -1573,7 +1535,13 @@ class WebhookTest extends TestCase
                 'submitted'   => true,
                 'locked'      => true
             ]);
-
+        
+        (new BaseFixture)->createEntityInTestAndLive('merchant_detail', [
+            'merchant_id' => '10000000000000',
+            'submitted'   => true,
+            'business_registered_state' => 'KA',
+            'locked'      => true
+        ]);
 
         $this->fixtures->merchant->addFeatures(
             [Feature\Constants::TERMINAL_ONBOARDING],
@@ -1595,7 +1563,7 @@ class WebhookTest extends TestCase
             [
                 'merchant_id' => $subMerchantId,
                 'enabled'     => false,
-                'gateway'     => 'atos',
+                'gateway'     => 'worldline',
                 'status'      => 'created'
             ]);
 
@@ -1626,7 +1594,7 @@ class WebhookTest extends TestCase
 
     public function testTerminalOnboardingActivationFailedWebhook()
     {
-        $this->app['config']->set('atos_terminal_onboarding_verification.case', "2");
+        $this->app['config']->set('worldline_terminal_onboarding_verification.case', "2");
 
         $subMerchant = $this->fixtures->create('merchant');
 
@@ -1675,7 +1643,7 @@ class WebhookTest extends TestCase
             [
                 'merchant_id' => $subMerchantId,
                 'enabled'     => false,
-                'gateway'     => 'atos',
+                'gateway'     => 'worldline',
                 'status'      => 'pending'
             ]);
 

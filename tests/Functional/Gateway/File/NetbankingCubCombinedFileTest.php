@@ -11,11 +11,13 @@ use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mozart\NetbankingCub;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingCubCombinedFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $terminal;
 
@@ -36,7 +38,17 @@ class NetbankingCubCombinedFileTest extends TestCase
 
         list($payment1, $fullRefund) = $this->createRefund();
 
+        $refundEntity1 = $this->getDbLastEntity('refund');
+
         list($payment2, $partialRefund) = $this->createRefund(500);
+
+        $refundEntity2 = $this->getDbLastEntity('refund');
+
+        // Netbanking CUB refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity1['is_scrooge']);
+        $this->assertEquals(1, $refundEntity2['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2]);
 
         $this->ba->adminAuth();
 
@@ -100,6 +112,12 @@ class NetbankingCubCombinedFileTest extends TestCase
                 $payment2);
 
             $this->assertCount(2, $mail->attachments);
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
 
             return true;
         });

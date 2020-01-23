@@ -31,8 +31,11 @@ return [
         ],
         'response' => [
             'content' => [
-                "id"      => '%s',
-                "deleted" => true
+                'verification' => [
+                    'required_fields' => [
+                        'address_proof_url',
+                    ]
+                ],
             ]
         ]
     ],
@@ -173,6 +176,28 @@ return [
             'method'  => 'POST',
             'content' => [
                 'document_type' => ''
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'documents' => [
+                ],
+            ]
+        ]
+    ],
+
+    'testDocUploadAndCheckOcrStatusSuccess' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => ''
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
             ],
         ],
         'response' => [

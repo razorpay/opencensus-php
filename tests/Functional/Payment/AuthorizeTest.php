@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use Mail;
 use Cache;
 use Redis;
+use RZP\Models;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Services\RazorXClient;
@@ -599,6 +600,45 @@ class AuthorizeTest extends TestCase
         Mail::assertNotSent(PaymentFailedMail::class);
     }
 
+    public function testTimeoutOldPaymentsCustomTimeout()
+    {
+        /*
+         *  Test setup
+         *  Default timeout for all merchants defined is 9 minutes as defined in  constant PAYMENT_TIMEOUT_DEFAULT_OLD
+         * there are exceptions to this as defined in Payment\Entity\getTimeoutWindow, but for the purpose of this test
+         * they dont matter.
+         *
+         * Here we create a merchant whose custom timeout is 27 minutes.
+         *
+         * We create payment1 18 minutes ago and it should not be failed
+         * We create payment2 36 minutes ago and it should failed
+         */
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->edit('admin', 'RzrpySprAdmnId', ['allow_all_merchants' => 1]);
+        $this->ba->addAccountAuth('10000000000000');
+
+        $this->startTest();
+
+        $payment1 = $this->fixtures->create('payment:status_created', ['created_at' => time() - (18 * 60)]);
+        $payment2 = $this->fixtures->create('payment:status_created', ['created_at' => time() - (36 * 60)]);
+
+        $content = $this->timeoutOldPayment();
+
+        $this->assertEquals(1, $content['count']);
+
+        $this->assertEquals(
+            Models\Payment\Status::CREATED,
+            $this->getEntityById('payment', $payment1->getId(), true)['status']);
+
+        $this->assertEquals(
+            Models\Payment\Status::FAILED,
+            $this->getEntityById('payment', $payment2->getId(), true)['status']);
+
+    }
+
+
     public function testFailTimeoutOldPayments()
     {
         $payment = $this->fixtures->create(
@@ -674,7 +714,7 @@ class AuthorizeTest extends TestCase
         $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
-            'issuer'  => 'ICIC',
+            'issuer'  => 'CBIN',
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
@@ -685,6 +725,7 @@ class AuthorizeTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
         $payment['auth_type'] = 'pin';
+        $payment['bank'] = 'CBIN';
 
         $data = $this->testData[__FUNCTION__];
 
@@ -826,7 +867,7 @@ class AuthorizeTest extends TestCase
         $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
-            'issuer'  => 'ICIC',
+            'issuer'  => 'CBIN',
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
@@ -837,6 +878,7 @@ class AuthorizeTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
         $payment['preferred_auth'] = ['pin'];
+        $payment['bank']           = 'CBIN';
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
@@ -889,7 +931,7 @@ class AuthorizeTest extends TestCase
         $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
-            'issuer'  => 'ICIC',
+            'issuer'  => 'CBIN',
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
@@ -900,6 +942,7 @@ class AuthorizeTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
         $payment['preferred_auth'] = ['pin'];
+        $payment['bank']           = 'CBIN';
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
@@ -952,7 +995,7 @@ class AuthorizeTest extends TestCase
         $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
-            'issuer'  => 'ICIC',
+            'issuer'  => 'CBIN',
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
@@ -963,6 +1006,7 @@ class AuthorizeTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
         $payment['preferred_auth'] = 'pin';
+        $payment['bank']           = 'CBIN';
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 

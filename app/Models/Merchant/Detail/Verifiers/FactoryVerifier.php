@@ -4,19 +4,21 @@ namespace RZP\Models\Merchant\Detail\Verifiers;
 
 use App;
 
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail\Constants;
 
 class FactoryVerifier
 {
-    public static function getPoiVerifier(array $input)
+    public static function getPoiVerifier(array $input, Merchant\Entity $merchant)
     {
         $app = App::getFacadeRoot();
 
-        $mock = $app['config']['applications.mozart.mock'];
+        $mock = ($app['config']['applications.kyc.mock']
+                 or $app['config']['applications.mozart.mock']);
 
         if ($mock === true)
         {
-            $panVerifiedMock = new PanVerifierMock($input);
+            $panVerifiedMock = new PanVerifierMock($input, $merchant);
 
             // this config is not defined in application config , this is used in test case only
             $mockStatus = $app['config']['applications.mozart.pan_authentication'] ?? Constants::SUCCESS;
@@ -26,10 +28,10 @@ class FactoryVerifier
             return $panVerifiedMock;
         }
 
-        return new PanVerifier($input);
+        return new PanVerifier($input, $merchant);
     }
 
-    public static function getPoaVerifier(array $input)
+    public static function getPoaVerifier(array $input, Merchant\Entity $merchant)
     {
         $app = App::getFacadeRoot();
 
@@ -37,7 +39,7 @@ class FactoryVerifier
 
         if ($mock === true)
         {
-            $poaVerifiedMock = new PoaVerifierMock($input);
+            $poaVerifiedMock = new PoaVerifierMock($input, $merchant);
 
             // this config is not defined in application config , this is used in test case only
             $mockStatus = $app['config']['applications.mozart.poa_ocr_response_type'] ?? Constants::AADHAR_FRONT;
@@ -47,6 +49,6 @@ class FactoryVerifier
             return $poaVerifiedMock;
         }
 
-        return new PoaVerifier($input);
+        return new PoaVerifier($input, $merchant);
     }
 }

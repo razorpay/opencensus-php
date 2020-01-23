@@ -3,11 +3,14 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use Mail;
 use RZP\Constants;
 use Illuminate\Http\UploadedFile;
+use RZP\Mail\Merchant\Rejection;
 use RZP\Services\HubspotClient;
-use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Merchant\Detail\BusinessCategory;
@@ -21,12 +24,21 @@ use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
 /**
  * @group dns-sensitive
  */
-class MerchantDetailTest extends TestCase
+class MerchantDetailTest extends OAuthTestCase
 {
     use PaymentTrait;
     use HeimdallTrait;
     use MocksDnsTrait;
     use DbEntityFetchTrait;
+
+    const PARTNER                = 'partner';
+    const ACTIVATION             = 'activation';
+    const DEACTIVATION           = 'deactivation';
+    const DUMMY_APP_ID_1         = '8ckeirnw84ifke';
+    const DUMMY_APP_ID_2         = '10000RandomApp';
+    const DUMMY_APP_ID_3         = '11111RandomApp';
+    const DEFAULT_MERCHANT_ID    = '10000000000000';
+    const DEFAULT_SUBMERCHANT_ID = '10000000000009';
 
     public function setUp()
     {
@@ -248,9 +260,19 @@ class MerchantDetailTest extends TestCase
 
     public function testMerchantActivationStatus()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail');
+        Mail::fake();
 
-        $merchantId = $merchantDetail['merchant_id'];
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'http://abc.com';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['abc.com']]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website, 'issue_fields' => 'business_website']);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -267,6 +289,10 @@ class MerchantDetailTest extends TestCase
 
         $this->startTest();
 
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNotContains('abc.com', $merchant->getWhitelistedDomains());
+
         // needs_clarification to under_review
         $this->changeActivationStatusFromNeedsClarificationToUnderReview(
             $testData['request']['content'],
@@ -280,6 +306,15 @@ class MerchantDetailTest extends TestCase
             $testData['response']['content']);
 
         $this->startTest();
+
+        Mail::assertQueued(Rejection::class, function ($mail)
+        {
+            $this->assertEquals('emails.merchant.rejection_notification', $mail->view);
+
+            return true;
+        });
+
+
     }
 
     protected function changeActivationStatusFromUnderReviewToNeedsClarification(& $requestContent, & $responseContent)
@@ -291,6 +326,8 @@ class MerchantDetailTest extends TestCase
         $responseContent['activation_status'] = 'needs_clarification';
 
         $responseContent['clarification_mode'] = 'email';
+
+        $responseContent['locked']             = false;
     }
 
     protected function changeActivationStatusFromNeedsClarificationToUnderReview(& $requestContent, & $responseContent)
@@ -669,11 +706,38 @@ class MerchantDetailTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
-        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->mockHubSpotClient('trackPreSignupEvent');
 
         $this->startTest();
+    }
+
+    public function testPutPreSignupDetailsForUnregisteredBusiness()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            Entity::BUSINESS_TYPE => '11'
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantDetail[MerchantDetails::MERCHANT_ID], [], 'owner', 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                                                             'user_id'     => $user['id'],
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ], 'live');
+
+        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
+
+        $this->startTest();
+
+        $merchantDetail = $this->getDbEntity('merchant_detail',
+                                             [
+                                                 'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID]
+                                             ]);
+
+        $this->assertEquals($merchantDetail[Entity::CONTACT_NAME], $merchantDetail[Entity::BUSINESS_NAME]);
     }
 
     public function testPutPreSignupDetailsWithCouponCode()
@@ -950,6 +1014,37 @@ class MerchantDetailTest extends TestCase
         $this->assertEquals($merchantDetails->getBusinessName(), 'facebook');
     }
 
+    public function testStoreCaseInsensitiveDomain()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'http://abc.com';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['abc.com']]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNotContains('abc.com',$merchant->getWhitelistedDomains());
+        $this->assertContains('example.com',$merchant->getWhitelistedDomains());
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['business_website'] = '';
+        $testData['response']['content']['business_website'] = '';
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertEquals($merchant->getWhitelistedDomains(),[]);
+
+    }
+
     public function testFileUploadSyncInDetailAndDocumentTable()
     {
         $merchantId = "1cXSLlUU8V9sXl";
@@ -1072,6 +1167,175 @@ class MerchantDetailTest extends TestCase
         $merchantId = $merchantDetail['merchant_id'];
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testAdditionalWebsite()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$merchantId/websites";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertContains('example.com', $merchant->getWhitelistedDomains());
+    }
+
+    public function testPutPreSignUpDetailsWithReferralCode()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp();
+
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => self::DEFAULT_MERCHANT_ID,
+            'type'    => 'pricing',
+        ]);
+
+        $configAttributes = [
+            'default_plan_id' => self::DEFAULT_MERCHANT_ID,
+            'entity_id'       => $app->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
+
+        $referrerId = self::DEFAULT_MERCHANT_ID;
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->fixtures->create('referrals');
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId);
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $referredSubMerchantId
+                                               ], 'test')
+                                 ->toArray();
+
+        $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
+
+        $this->assertEquals($referredSubMerchant->tagNames(), array('Ref-' . $referrerId));
+
+        $this->assertEquals($referredSubMerchant->getPricingPlanId(), self::DEFAULT_MERCHANT_ID);
+
+        $this->assertSame($referredSubMerchantId, $merchantAcessMap['merchant_id']);
+
+        $this->assertSame($referrerId, $merchantAcessMap['entity_owner_id']);
+    }
+
+    public function testPutPreSignUpDetailsWithInvalidReferralCode()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $referredSubMerchant = $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->fixtures->create('referrals');
+
+        $this->ba->proxyAuth('rzp_live_' . $referredSubMerchantId);
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $referredSubMerchantId
+                                               ], 'live');
+
+        $this->assertSame(null, $merchantAcessMap);
+
+        $this->assertEmpty($referredSubMerchant->tagNames());
+    }
+
+    public function testGetMerchantDetailsWithBalanceConfigs()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'                => '100abc000abc00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'banking',
+            'currency'          => 'INR',
+            'name'              => null,
+            'balance'           => 0,
+            'credits'           => 0,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => '2224440041626905',
+            'account_type'      => null,
+            'channel'           => null,
+            'updated_at'        => 1
+        ];
+
+        $balanceData2 = [
+            'id'                => '100def000def00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'primary',
+            'currency'          => null,
+            'name'              => null,
+            'balance'           => 100000,
+            'credits'           => 50000,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => null,
+            'account_type'      => null,
+            'channel'           => 'shared',
+            'updated_at'        => 1
+        ];
+
+        $this->fixtures->create('balance',$balanceData1);
+
+        $this->fixtures->create('balance',$balanceData2);
+
+        $this->fixtures->create('balance_config',
+            [
+                'id'                            =>  '100yz000yz00yz',
+                'balance_id'                    =>  '100def000def00',
+                'type'                          =>  'primary',
+                'negative_transaction_flows'   =>  ['refund'],
+                'negative_limit_auto'           =>  5000000,
+                'negative_limit_manual'         =>  5000000
+            ]
+        );
+
+        $this->fixtures->create('balance_config',
+            [
+                'id'                            =>  '100ab000ab00ab',
+                'balance_id'                    =>  '100abc000abc00',
+                'type'                          =>  'banking',
+                'negative_transaction_flows'   =>  ['payout'],
+                'negative_limit_auto'           =>  5000000,
+                'negative_limit_manual'         =>  5000000
+            ]
+        );
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
 
         $this->startTest();
     }

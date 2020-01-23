@@ -6,30 +6,32 @@ use RZP\Exception;
 
 class Method
 {
-    const CARD          = 'card';
-    const NETBANKING    = 'netbanking';
-    const WALLET        = 'wallet';
-    const EMI           = 'emi';
-    const UPI           = 'upi';
-    const TRANSFER      = 'transfer';
-    const BANK_TRANSFER = 'bank_transfer';
-    const AEPS          = 'aeps';
-    const EMANDATE      = 'emandate';
-    const CARDLESS_EMI  = 'cardless_emi';
-    const PAYLATER      = 'paylater';
+    const CARD                  = 'card';
+    const NETBANKING            = 'netbanking';
+    const WALLET                = 'wallet';
+    const EMI                   = 'emi';
+    const UPI                   = 'upi';
+    const TRANSFER              = 'transfer';
+    const BANK_TRANSFER         = 'bank_transfer';
+    const AEPS                  = 'aeps';
+    const EMANDATE              = 'emandate';
+    const CARDLESS_EMI          = 'cardless_emi';
+    const PAYLATER              = 'paylater';
+    const NACH                  = 'nach';
 
     protected static $methods = [
-        self::CARD          => 'Card',
-        self::NETBANKING    => 'Net Banking',
-        self::WALLET        => 'Wallet',
-        self::UPI           => 'UPI',
-        self::AEPS          => 'AEPS',
-        self::EMI           => 'EMI',
-        self::TRANSFER      => 'Marketplace Transfer',
-        self::BANK_TRANSFER => 'Bank Transfer',
-        self::EMANDATE      => 'E-Mandate',
-        self::CARDLESS_EMI  => 'Cardless EMI',
-        self::PAYLATER      => 'Pay Later',
+        self::CARD                  => 'Card',
+        self::NETBANKING            => 'Net Banking',
+        self::WALLET                => 'Wallet',
+        self::UPI                   => 'UPI',
+        self::AEPS                  => 'AEPS',
+        self::EMI                   => 'EMI',
+        self::TRANSFER              => 'Marketplace Transfer',
+        self::BANK_TRANSFER         => 'Bank Transfer',
+        self::EMANDATE              => 'E-Mandate',
+        self::CARDLESS_EMI          => 'Cardless EMI',
+        self::PAYLATER              => 'Pay Later',
+        self::NACH                  => 'nach',
     ];
 
     protected static $nonEsAutomaticMethods = [
@@ -57,6 +59,8 @@ class Method
     public static $recurringMethods = [
         self::CARD,
         self::EMANDATE,
+        self::UPI,
+        self::NACH,
     ];
 
     protected static $asynchronous = [

@@ -35,6 +35,7 @@ class Entity extends Base\PublicEntity
         self::PROVIDER,
         self::SCORE,
         self::REPORT,
+        self::INTERESTED,
         self::CREATED_AT,
     ];
 
@@ -50,8 +51,13 @@ class Entity extends Base\PublicEntity
         self::PROVIDER,
         self::SCORE,
         self::REPORT,
+        self::INTERESTED,
         self::UFH_FILE_ID,
         self::CREATED_AT,
+    ];
+
+    protected $casts = [
+        self::INTERESTED     => 'bool',
     ];
 
     public function merchant()

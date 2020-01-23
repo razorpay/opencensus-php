@@ -27,19 +27,14 @@ class MerchantDocumentTest Extends TestCase
     {
         $merchantDocument = $this->fixtures->create('merchant_document');
 
+        $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000']);
+
         //request edited
         $request = $this->testData[__FUNCTION__]['request'];
 
         $request['url'] = sprintf($request['url'], 'doc_' . $merchantDocument['id']);
 
         $this->testData[__FUNCTION__]['request'] = $request;
-
-        //response edited
-        $response = $this->testData[__FUNCTION__]['response'];
-
-        $response['content']['id'] = sprintf($response['content']['id'], 'doc_' . $merchantDocument['id']);
-
-        $this->testData[__FUNCTION__]['response'] = $response;
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDocument['merchant_id']);
 
@@ -151,6 +146,54 @@ class MerchantDocumentTest Extends TestCase
         $this->startTest();
     }
 
+    public function testDocUploadAndCheckOcrStatusSuccess()
+    {
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000');
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'       => '10000000000000',
+                'promoter_pan_name' => 'ABCDE FGHIJ',
+                'business_type'     => 2,
+            ]);
+
+        $ocrResponseTypes = [
+            Constants::PASSPORT_FRONT,
+            Constants::AADHAR_FRONT,
+            Constants::VOTER_ID_FRONT,
+        ];
+
+        $documentType = Constants::VOTER_ID_FRONT;
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        foreach ($ocrResponseTypes as $ocrResponseType)
+        {
+            Config::set('applications.kyc.mock', true);
+            Config::set('applications.kya.poa_ocr_response_type', $ocrResponseType);
+
+            $testData = &$this->testData[__FUNCTION__];
+
+            $featureVariantMap = [
+                'non_registered_onboarding' => 'on',
+                'kyc_service_verification'  => 'on',
+            ];
+
+            $this->mockRazorXMultiFeature(__FUNCTION__, $featureVariantMap, 10000000000000);
+
+            $testData['request']['content']['document_type'] = $documentType;
+
+            $testData['response']['content']['documents'][$documentType] = [];
+
+            $response = $this->startTest($testData);
+
+            $merchantDocumentDb = $this->getDbEntityById('merchant_document', $response['documents'][$documentType][0]['id']);
+
+            $this->assertEquals($merchantDocumentDb['ocr_verify'], 'verified');
+        }
+    }
+
     public function testDocumentUploadAndCheckOcrVerificationStatusSuccess()
     {
         $this->ba->proxyAuth('rzp_test_' . '10000000000000');
@@ -167,6 +210,7 @@ class MerchantDocumentTest Extends TestCase
             Constants::PASSPORT_FRONT,
             Constants::AADHAR_FRONT,
             Constants::VOTER_ID_FRONT,
+            Constants::AADHAAR_FRONT_COMPLETE
         ];
 
         $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
@@ -331,5 +375,20 @@ class MerchantDocumentTest Extends TestCase
         $uniqueLocalId = RazorXClient::getLocalUniqueId('10000000000000', $featureName, Mode::TEST);
 
         $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
+    }
+
+    public function mockRazorXMultiFeature(string $functionName, array $featureVariantMap, $merchantId = '1cXSLlUU8V9sXl')
+    {
+        $testData = &$this->testData[$functionName];
+
+        $localIdVariantMap = [];
+
+        foreach ($featureVariantMap as $featureName => $variant)
+        {
+            $uniqueLocalId                     = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
+            $localIdVariantMap[$uniqueLocalId] = $variant;
+        }
+
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => json_encode($localIdVariantMap)];
     }
 }

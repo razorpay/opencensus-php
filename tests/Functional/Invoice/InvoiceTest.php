@@ -2,27 +2,26 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
+use Carbon\Carbon;
 use Mail;
 use Queue;
-use Carbon\Carbon;
-
-use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
-use RZP\Models\Invoice\Entity;
-use RZP\Tests\Traits\TestsMetrics;
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Base\UniqueIdEntity;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
-use RZP\Models\Feature\Constants as Features;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
-use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
+use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Invoice\Entity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsMetrics;
+use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 
 /**
  * @group dns-sensitive
@@ -174,6 +173,19 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceLinkWithAutoReminders()
+    {
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        Entity::verifyIdAndSilentlyStripSign($response['id']);
+
+        $reminderStatus = $this->getDbEntity('invoice_reminder', ['invoice_id' => $response['id']]);
+
+        $this->assertEquals('in_progress', $reminderStatus['reminder_status']);
+    }
+
     public function testCreateInvoiceWithDefinedDisplayName()
     {
         $merchantLabel = 'Awesome and Co';
@@ -288,12 +300,20 @@ class InvoiceTest extends TestCase
 
     public function testCreateLinkWithoutReceipt()
     {
-        $this->startTest();
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
 
         // Assert corresponding order.receipt = null
         $order = $this->getLastEntity('order', true);
 
         $this->assertNull($order['receipt']);
+
+        Entity::verifyIdAndSilentlyStripSign($response['id']);
+
+        $reminderStatus  = $this->getDbEntity('invoice_reminder', ['invoice_id' => $response['id']]);
+
+        $this->assertNull($reminderStatus);
     }
 
     public function testCreateLinkWithTooLargeAmount()
@@ -330,18 +350,13 @@ class InvoiceTest extends TestCase
 
     public function testCreateLinkReminderEnable()
     {
-        $this->startTest();
+        $response = $this->startTest();
 
-        $invoice = $this->getDbLastEntity('invoice');
+        Entity::verifyIdAndSilentlyStripSign($response['id']);
 
-        $id = $invoice['id'];
+        $invoiceReminder = $this->getDbEntity('invoice_reminder', ['invoice_id' => $response['id']]);
 
-        $id = Entity::stripDefaultSign($id);
-
-        $invoiceObj = $this->getDbEntityById('invoice', $id);
-
-        $this->assertNotNull($invoiceObj['reminder_id']);
-
+        $this->assertNotNull($invoiceReminder['reminder_id']);
     }
 
     public function testCreateLinkReminderDisable()
@@ -2766,7 +2781,13 @@ class InvoiceTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['invoice_partial_payments']);
 
-        $this->createWebhook(['events' => ['invoice.partially_paid' => '1', 'invoice.paid' => '1', 'order.paid' => '1']]);
+        $events = [
+            'invoice.partially_paid' => '1',
+            'invoice.paid'           => '1',
+            'order.paid'             => '1',
+        ];
+
+        $this->createWebhook(['events' => $events]);
 
         $order   = $this->createOrder(['partial_payment' => '1']);
         $invoice = $this->createIssuedInvoice(['partial_payment' => '1']);

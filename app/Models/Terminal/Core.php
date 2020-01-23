@@ -215,20 +215,17 @@ class Core extends Base\Core
     {
         $params = [Entity::MERCHANT_ID => $terminal->getMerchantId()];
 
-        $existingTerminals = $this->repo->terminal->getByParams($params);
+        $existingTerminals = $this->repo->terminal->getNonFailedByParams($params);
 
         $gateway = $terminal->getGateway();
-        
+
         //
         // Checks that existing terminals don't
         // have same gateway field as the new one
         //
         $terminal->getValidator()->validateExistingTerminalsCount($existingTerminals);
 
-        if (in_array($gateway, Gateway::MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS) === false)
-        {
-            $this->validateExistingTerminalGatewayMerchantId($terminal);
-        }
+        $this->validateExistingTerminalGatewayMerchantId($terminal, $gateway);
 
         $this->validateExistingMpan($terminal);
     }
@@ -400,14 +397,19 @@ class Core extends Base\Core
         return $this->getBanksForTerminal($terminal);
     }
 
-    protected function validateExistingTerminalGatewayMerchantId(Entity $terminal)
+    protected function validateExistingTerminalGatewayMerchantId(Entity $terminal, $gateway)
     {
         // Check no record with same 'gateway_merchant_id' exists
         $params = [
             Entity::GATEWAY                 => $terminal->getGateway(),
             Entity::GATEWAY_MERCHANT_ID     => $terminal->getGatewayMerchantId(),
-            Entity::GATEWAY_MERCHANT_ID2    => $terminal->getGatewayMerchantId2()
+            Entity::GATEWAY_MERCHANT_ID2    => $terminal->getGatewayMerchantId2(),
         ];
+
+        if (in_array($gateway, Gateway::MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS) === true)
+        {
+            $params[Entity::GATEWAY_TERMINAL_ID] = $terminal->getGatewayTerminalId();
+        }
 
         $this->checkIfExists($params, $terminal);
     }

@@ -4,24 +4,44 @@ namespace RZP\Gateway\Mozart;
 
 class Action
 {
-    const PAY_INIT          = 'pay_init';
-    const PAY_VERIFY        = 'pay_verify';
+    const CHECKACCOUNT          = 'check_account';
+    const PAY_INIT              = 'pay_init';
+    const PAY_VERIFY            = 'pay_verify';
+    const AUTH_INIT             = 'auth_init';
+    const AUTH_VERIFY           = 'auth_verify';
+    const CHECK_BALANCE         = 'check_balance';
 
-    const CAPTURE           = 'capture';
-    const REFUND            = 'refund';
-    const VERIFY            = 'verify';
-    const VERIFY_REFUND     = 'verify_refund';
+    const CAPTURE               = 'capture';
+    const REFUND                = 'refund';
+    const VERIFY                = 'verify';
+    const VERIFY_REFUND         = 'verify_refund';
 
-    const AUTHORIZE         = 'authorize';
+    const AUTHORIZE             = 'authorize';
 
-    const OMNI_PAY          = 'omni_pay';
+    const OMNI_PAY              = 'omni_pay';
 
-    const INTENT            = 'intent';
+    const INTENT                = 'intent';
 
     //action to fetch reconcile data in case of api based recon
-    const RECONCILE         = 'reconcile';
+    const RECONCILE             = 'reconcile';
 
-    const CREATE_TERMINAL   = 'create_terminal';
+    const CREATE_TERMINAL       = 'create_terminal';
 
-    const VERIFY_TERMINAL   = 'verify_terminal';
+    const VERIFY_TERMINAL       = 'verify_terminal';
+
+    const DISABLE_TERMINAL      = 'disable_terminal';
+
+    const ENABLE_TERMINAL       = 'enable_terminal';
+
+    const MANDATE_CREATE        = 'mandate_create';
+
+    const MANDATE_EXECUTE       = 'mandate_execute';
+
+    const MANDATE_UPDATE        = 'mandate_update';
+
+    const MANDATE_UPDATE_VERIFY = 'mandate_update_verify';
+
+    const MANDATE_CREATE_VERIFY = 'mandate_create_verify';
+
+    const DECRYPT               = 'decrypt';
 }

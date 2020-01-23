@@ -50,6 +50,7 @@ class CreateQuboleMerchantDetailsView extends Migration
             MerchantDetail::INTERNAL_NOTES,
             MerchantDetail::ISSUE_FIELDS,
             MerchantDetail::ISSUE_FIELDS_REASON,
+            MerchantDetail::LIVE_TRANSACTION_DONE,
             MerchantDetail::LOCKED,
             MerchantDetail::MARKETPLACE_ACTIVATION_STATUS,
             MerchantDetail::MERCHANT_ID,

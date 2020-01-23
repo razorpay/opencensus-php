@@ -6,7 +6,9 @@ use DB;
 use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Product;
+use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Batch;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
 use Razorpay\OAuth\Application;
@@ -174,6 +176,8 @@ class PartnerTest extends OAuthTestCase
         $this->assertTrue($merchant->isPartner());
 
         $this->assertEquals($merchant->getPartnerType(), Merchant\Constants::RESELLER);
+
+        $this->assertTrue($merchant->isFeatureEnabled(Feature\Constants::GENERATE_PARTNER_INVOICE));
     }
 
     public function testApprovingMarkAsPartnerWebsiteMissingMerchantRequest()
@@ -1500,6 +1504,8 @@ class PartnerTest extends OAuthTestCase
 
     public function testUpdatePartnerTypeAsResellerUsingProxyAuth()
     {
+        Mail::fake();
+
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
         $this->mockAuthServiceCreateApplication($merchant);
@@ -1513,10 +1519,14 @@ class PartnerTest extends OAuthTestCase
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
         $this->assertTrue($expectedPartner->isResellerPartner());
+
+        Mail::assertQueued(PartnerOnBoarded::class);
     }
 
     public function testUpdatePartnerTypeAsAggregatorUsingProxyAuth()
     {
+        Mail::fake();
+
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
         $this->mockAuthServiceCreateApplication($merchant);
@@ -1530,6 +1540,8 @@ class PartnerTest extends OAuthTestCase
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
         $this->assertTrue($expectedPartner->isAggregatorPartner());
+
+        Mail::assertQueued(PartnerOnBoarded::class);
     }
 
     public function testUpdatePartnerTypeUsingProxyAuthWithInvalidPartnerType()

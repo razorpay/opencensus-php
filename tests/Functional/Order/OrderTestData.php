@@ -50,7 +50,7 @@ return [
     'testCreateOrderForNonRegisteredBusinessMoreThanMaxAmount' => [
         'request'   => [
             'content' => [
-                'amount'   => 1000001,
+                'amount'   => 2500001,
                 'currency' => 'INR',
                 'receipt'  => 'rcptid42',
             ],
@@ -230,7 +230,7 @@ return [
             'method'    => 'POST',
             'url'       => '/orders',
         ],
-         'response' => [
+        'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
@@ -442,7 +442,7 @@ return [
             'method'    => 'POST',
             'url'       => '/orders',
         ],
-         'response' => [
+        'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
@@ -668,6 +668,7 @@ return [
                     'method'                => 'emandate',
                     'expire_at'             => 1880118306,
                     'first_payment_amount'  => 100,
+                    'auth_type'             => 'netbanking',
                     'bank_account' => [
                         'bank_name'          => 'HDFC Bank',
                         'ifsc_code'          => 'HDFC0001233',
@@ -705,95 +706,95 @@ return [
         ],
     ],
     'testTokenRegistrationOrderWithDifferentMethod' =>
-    [
-        'request' => [
-            'content' => [
-                'amount'         => 0,
-                'currency'       => 'INR',
-                'receipt'        => 'rcptid42',
-                'method'         => 'emandate',
-                'bank'           => 'UTIB',
-                'customer_id'    => 'cust_100000customer',
-                'token'          => [
-                    'method'                => 'card',
-                    'expire_at'             => 1880118306,
-                    'first_payment_amount'  => 100,
-                    'bank_account' => [
-                        'bank_name'          => 'HDFC Bank',
-                        'ifsc_code'          => 'HDFC0001233',
-                        'account_number'     => '123312563456',
-                        'account_type'       => 'savings',
-                        'beneficiary_name'   => 'test',
-                        'beneficiary_email'  => 'test@razorpay.com',
-                        'beneficiary_mobile' => '9999999999'
-                    ],
-                ]
+        [
+            'request' => [
+                'content' => [
+                    'amount'         => 0,
+                    'currency'       => 'INR',
+                    'receipt'        => 'rcptid42',
+                    'method'         => 'emandate',
+                    'bank'           => 'UTIB',
+                    'customer_id'    => 'cust_100000customer',
+                    'token'          => [
+                        'method'                => 'card',
+                        'expire_at'             => 1880118306,
+                        'first_payment_amount'  => 100,
+                        'bank_account' => [
+                            'bank_name'          => 'HDFC Bank',
+                            'ifsc_code'          => 'HDFC0001233',
+                            'account_number'     => '123312563456',
+                            'account_type'       => 'savings',
+                            'beneficiary_name'   => 'test',
+                            'beneficiary_email'  => 'test@razorpay.com',
+                            'beneficiary_mobile' => '9999999999'
+                        ],
+                    ]
+                ],
+                'method'    => 'POST',
+                'url'       => '/orders',
             ],
-            'method'    => 'POST',
-            'url'       => '/orders',
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'order method doesn\'t match with token method',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => 'RZP\Exception\BadRequestValidationFailureException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            ],
         ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'order method doesn\'t match with token method',
+    'testTokenRegistrationOrderWithoutMethod' =>
+        [
+            'request' => [
+                'content' => [
+                    'amount'         => 0,
+                    'currency'       => 'INR',
+                    'receipt'        => 'rcptid42',
+                    'method'         => 'emandate',
+                    'bank'           => 'UTIB',
+                    'customer_id'    => 'cust_100000customer',
+                    'token'          => [
+                        'expire_at'             => 1880118306,
+                        'first_payment_amount'  => 100,
+                        'bank_account' => [
+                            'bank_name'          => 'HDFC Bank',
+                            'ifsc_code'          => 'HDFC0001233',
+                            'account_number'     => '123312563456',
+                            'account_type'       => 'savings',
+                            'beneficiary_name'   => 'test',
+                            'beneficiary_email'  => 'test@razorpay.com',
+                            'beneficiary_mobile' => '9999999999'
+                        ],
+                    ]
+                ],
+                'method'    => 'POST',
+                'url'       => '/orders',
+            ],
+            'response' => [
+                'content' => [
+                    'amount'         => 0,
+                    'currency'       => 'INR',
+                    'receipt'        => 'rcptid42',
+                    'token'          =>   [
+                        'expire_at'             => 1880118306,
+                        'first_payment_amount'  => 100,
+                        'bank_account' => [
+                            'bank_name'          => 'HDFC Bank',
+                            'ifsc'          => 'HDFC0001233',
+                            'account_number'     => '123312563456',
+                            'account_type'       => 'savings',
+                            'name'   => 'test',
+                            'beneficiary_email'  => 'test@razorpay.com',
+                            'beneficiary_mobile' => '9999999999'
+                        ],
+                    ]
                 ],
             ],
-            'status_code' => 400,
         ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
-        ],
-    ],
-    'testTokenRegistrationOrderWithoutMethod' =>
-    [
-        'request' => [
-            'content' => [
-                'amount'         => 0,
-                'currency'       => 'INR',
-                'receipt'        => 'rcptid42',
-                'method'         => 'emandate',
-                'bank'           => 'UTIB',
-                'customer_id'    => 'cust_100000customer',
-                'token'          => [
-                    'expire_at'             => 1880118306,
-                    'first_payment_amount'  => 100,
-                    'bank_account' => [
-                        'bank_name'          => 'HDFC Bank',
-                        'ifsc_code'          => 'HDFC0001233',
-                        'account_number'     => '123312563456',
-                        'account_type'       => 'savings',
-                        'beneficiary_name'   => 'test',
-                        'beneficiary_email'  => 'test@razorpay.com',
-                        'beneficiary_mobile' => '9999999999'
-                    ],
-                ]
-            ],
-            'method'    => 'POST',
-            'url'       => '/orders',
-        ],
-        'response' => [
-            'content' => [
-                'amount'         => 0,
-                'currency'       => 'INR',
-                'receipt'        => 'rcptid42',
-                'token'          =>   [
-                    'expire_at'             => 1880118306,
-                    'first_payment_amount'  => 100,
-                    'bank_account' => [
-                        'bank_name'          => 'HDFC Bank',
-                        'ifsc'          => 'HDFC0001233',
-                        'account_number'     => '123312563456',
-                        'account_type'       => 'savings',
-                        'name'   => 'test',
-                        'beneficiary_email'  => 'test@razorpay.com',
-                        'beneficiary_mobile' => '9999999999'
-                    ],
-                ]
-            ],
-        ],
-    ],
     'testEmandateRegistrationOrderWithoutZeroRupee' => [
         'request' => [
             'content' => [
@@ -1028,6 +1029,21 @@ return [
         ],
     ],
 
+    'testPreferencesForOrderWithAuthType' => [
+        'request' => [
+            'content' => [],
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'auth_type' => 'netbanking',
+                ],
+            ],
+        ],
+    ],
+
     'testCreateOrderWithOffer' => [
         'request' => [
             'content' => [
@@ -1239,7 +1255,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'description' => 'Payment Method is not available for this Offer',
                 ],
             ],
             'status_code' => 400,
@@ -1255,7 +1271,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Offer applicable only on international cards.',
+                    'description' => 'Selected Card is not international but offer applied requires international card',
                 ],
             ],
             'status_code' => 400,
@@ -1271,7 +1287,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Custom error message',
+                    'description' => 'Offer not applicable on selected issuer',
                 ],
             ],
             'status_code' => 400,
@@ -1287,7 +1303,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Custom error message',
+                    'description' => 'Payment Method is not available for this Offer',
                 ],
             ],
             'status_code' => 400,
@@ -1303,7 +1319,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Custom error message',
+                    'description' => 'Selected card does not belong to offer iins',
                 ],
             ],
             'status_code' => 400,
@@ -1319,7 +1335,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                    'description' => PublicErrorDescription::OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED
                 ]
             ],
             'status_code' => 400
@@ -1335,7 +1351,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                    'description' => PublicErrorDescription::OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED
                 ]
             ],
             'status_code' => 400
@@ -1351,7 +1367,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                    'description' => PublicErrorDescription::OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED
                 ]
             ],
             'status_code' => 400

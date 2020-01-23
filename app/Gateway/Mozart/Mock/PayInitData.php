@@ -43,6 +43,66 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function paylater_icici($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'ResponseCode'          => '000',
+                    'MobileNumber'          => '93884739457',
+                    'AppName'               => 'MerchantName',
+                    'TransactionIdentifier' => '3479278',
+                    '_raw'                  => '',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
+
+    public function upi_juspay($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'customerVpa' => '8123715658@upi',
+                    'gatewayResponseCode' => '00',
+                    'gatewayResponseMessage' => 'Accepted Collect Request',
+                    'gatewayTransactionId' => 'BJJ3d0c077f39c454a...',
+                    'merchantChannelId' => 'MERCHANT',
+                    'merchantId' => 'MERCHANT',
+                    'merchantRequestId' => $entities['payment']['id'],
+                    'responseCode' => 'SUCCESS',
+                    'responseMessage' => 'SUCCESS',
+                    'transactionTimestamp' => '2017-06-30T17:43:40+05:30',
+                    'udfParameters' => '{}',
+                    '_raw' => '{"responseCode":"SUCCESS","responseMessage":"SUCCESS","payload":{"merchantId":"MERCHANT","merchantChannelId":"MERCHANTAPP","merchantRequestId":"HEYYOU45","customerVpa":"8123715658@upi","transactionTimestamp":"2017-06-30T17:43:40+05:30","gatewayTransactionId":"BJJ3d0c077f39c454a...","gatewayResponseCode":"00","gatewayResponseMessage":"Accepted Collect Request"},"udfParameters":"{}"}',
+                    'status' => 'collect_inititated',
+                ],
+            'error' => NULL,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id' => 'DUMMY_MOZART_ID',
+            'next' => [],
+            'success' => true,
+        ];
+
+        switch ($entities['payment']['description']) {
+            case 'intentPayment':
+                $response['data'] = [];
+                $response['next'] = [
+                   'redirect' => [
+                       'method' => 'post',
+                       "url" => "upi://pay?am=100.00&cu=INR&mc=5411&pa=some@abfspay&pn=merchantname&tn=PayviaRazorpay&tr=pay_someid"
+                   ]
+                ];
+             break;
+        }
+        return $response;
+    }
+
     public function wallet_phonepe($entities)
     {
         $this->gateway = $entities['payment']['gateway'];
@@ -243,6 +303,53 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function getsimpl($entities)
+    {
+        $response = [
+            'data' => [
+                'payment_id'    => $entities['payment']['public_id'],
+                '_raw'          => '{\"amount\":400,\"Http_status\":200,\"transaction_id\":\"05f7e47f-64d2-45e2-b8db-b09a7d112606\",\"success\":true,\"paymentId\":\"pg_payment_id15\"}',
+                'api_version'   => '4.0',
+                'data' => [
+                    'due_by' => [
+                        'due_by_in_time'  => '2019-09-20T23:59:59+05:30',
+                        'due_by_in_words' => '20 September, 2019'
+                    ],
+                    'transaction' => [
+                        'amount_in_paise'          => $entities['payment']['amount'],
+                        'billing_address'          => null,
+                        'delivered'                => true,
+                        'discount_amount_in_paise' => 0,
+                        'id'                       => '05f7e47f-64d2-45e2-b8db-b09a7d112606',
+                        'items' => [
+                            [
+                                'sku' => $entities['payment']['public_id']
+                            ]
+                        ],
+                        'metadata' => [
+                            'customer_id' => $entities['payment']['public_id'],
+                            'email'       => 'rzp@simpl.com'
+                        ],
+                        'order' => [
+                            'merchant_order_id' => $entities['payment']['public_id'],
+                        ],
+                        'shipping_address'         => null,
+                        'shipping_amount_in_paise' => 0,
+                        'status'                   => 'CLAIMED'
+                    ]
+                ],
+                'status'  => 'payment_successful',
+                'success' => true
+            ],
+            'error'             => null,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'next'              => [],
+            'success'           => true
+        ];
+
+        return $response;
+    }
+
     public function netbanking_sib($entities)
     {
         $url = $this->route->getUrlWithPublicAuth(
@@ -434,6 +541,43 @@ class PayInitData extends Base\Mock\Server
             'success'           => true,
             'mozart_id'         => 'DUMMY_MOZART_ID',
             'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
+    public function upi_mindgate($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'referenceNumber' => 'IFPO039F3940343',
+                    'pgMerchantId' => 'HDFC000006002278',
+                    'ref_url' => 'https://mer.invoice.com/upi/3ddsfsdg',
+                    'amount' => 200,
+                    'custRefNo' => '920515212270',
+                    'mandateStatus' => 'COMPLETED',
+                    'reqStatus' => 'S',
+                    'message' => 'Transaction success',
+                    'payerVPA' => 'testvpa@yesb',
+                    'payeeVPA' => 'india.uber@hdfcbank',
+                    'credAcc' => '01601200021634',
+                    'endDate' => '26 Jul 2019',
+                    'txnId' => 'HDF542de25ds56ad9896ac96cef89475623',
+                    'creditIFSC' => 'HDFC0000160',
+                    'mcc' => '4121',
+                    'startDate' => '24 Jul 2019',
+                    'isVerified' => false,
+                    'respCode' => 'MD200',
+                    'umn' => 'MER5cb6b2b0640caa3d93d190095c003@hdfcbank',
+                    'status' => 'mandate_execution_successful',
+                    '_raw' => '',
+                    ''
+                ],
+            'error' => null,
+            'success' => true,
+            'mozart_id' => '',
+            'external_trace_id' => '',
         ];
 
         return $response;

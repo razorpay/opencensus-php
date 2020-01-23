@@ -81,6 +81,26 @@ class VerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function paylater_icici($entities)
+    {
+        $response = [
+            'error'             => null,
+            'next'              => [],
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data' => [
+                '_raw'            => 'dummy_raw_value',
+                'bank_payment_id' => "0000000000",
+                'status'          => 'verification_successful',
+                'paymentId'       => $entities['payment']['id'],
+                'amount'          => $entities['payment']['amount']
+            ],
+        ];
+
+        return $response;
+    }
+
     public function netbanking_kvb($entities)
     {
         $response = [
@@ -244,7 +264,6 @@ class VerifyData extends Base\Mock\Server
                         '0' => [
                             'DEALID' => 'CS905114097404',
                             'ERRORDESCRIPTION' => 'TRANSACTION PERFORMED SUCCESSFULLY',
-                            'Key' => $entities['terminal']['gateway_secure_secret'],
                             'ORDERNO' => '104',
                             'REQUESTID' => '1234',
                             'RESPONSECODE' => '0'
@@ -256,9 +275,7 @@ class VerifyData extends Base\Mock\Server
                     'rescode' => '00',
                     'rqtype' => 'AUTH',
                     'status' => 'verification_successful',
-                    'valkey' => $entities['terminal']['gateway_secure_secret'],
                     'errdesc' => 'SUCCESS',
-                    'Key' => $entities['terminal']['gateway_secure_secret'],
                     '_raw' => '',
                 ],
             'error'             => null,
@@ -293,6 +310,49 @@ class VerifyData extends Base\Mock\Server
             'mozart_id' => '',
             'next' => [],
             'success' => true,
+        ];
+
+        return $response;
+    }
+
+    public static function getsimpl($entities)
+    {
+        $response = [
+            'data'=> [
+                '_raw'          => '{\"paymentId\":\"500\",\"amount\":120000,\"transaction_id\":\"60320846-5fdb-4d87-9d8a-10b992fdc593\",\"success\":true,\"Http_status\":200}',
+                'api_version'   => '4.0',
+                'data' => [
+                    'transaction'=> [
+                        'amount_in_paise'           => $entities['payment']['amount'],
+                        'billing_address'           => null,
+                        'delivered'                 => true,
+                        'discount_amount_in_paise'  => 0,
+                        'id'                        => $entities['gateway']['pay_init']['data']['transaction']['id'],
+                        'items' => [
+                            [
+                            'sku' => '500'
+                            ]
+                        ],
+                        'metadata' => [
+                            'customer_id'   => $entities['payment']['id'],
+                            'email'         => 'rzp@simpl.com'
+                        ],
+                        'order' => [
+                            'merchant_order_id' => $entities['payment']['id']
+                        ],
+                        'refunds'                   => [],
+                        'shipping_address'          => null,
+                        'shipping_amount_in_paise'  => 0,
+                        'status'                    => 'CLAIMED'
+                    ]
+                ],
+                'status'  => 'verify_successful',
+                'success' => true
+            ],
+            'error'             => null,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'next'              => [],
+            'success'           => true
         ];
 
         return $response;

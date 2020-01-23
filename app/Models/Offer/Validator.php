@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Emi;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -19,6 +20,8 @@ class Validator extends Base\Validator
     const CASHBACK_CRITERIA = 'cashback_criteria';
     const OFFER_PERIOD      = 'offer_period';
     const EMI_ISSUER        = 'emi_issuer';
+    const MERCHANT_CATEGORY = 'merchant_category';
+    const OFFER_FEATURE_BLOCK = 'offer_feature_block';
 
     const CASHBACK_CRITERIA_PARAMS = [
         Entity::PERCENT_RATE,
@@ -41,13 +44,18 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT   => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS    => 'filled|array',
         Entity::PROCESSING_TIME     => 'filled|integer',
-        Entity::TYPE                => 'filled|in:instant,deferred',
+        Entity::TYPE                => 'required|filled|in:instant,deferred,already_discounted',
         Entity::CHECKOUT_DISPLAY    => 'filled|boolean',
         Entity::STARTS_AT           => 'filled|epoch',
         Entity::ENDS_AT             => 'required|epoch',
         Entity::DISPLAY_TEXT        => 'filled|string|max:255',
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
         Entity::TERMS               => 'required|string',
+        Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer|min:1',
+        Entity::BLOCK               => 'required|boolean',
+        Entity::ACTIVE              => 'filled|boolean',
+        Entity::DEFAULT_OFFER       => 'filled|boolean',
+        Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
     ];
 
     protected static $createBulkRules = [
@@ -60,7 +68,7 @@ class Validator extends Base\Validator
         Entity::NAME                => 'sometimes|filled|string|max:50',
         Entity::PAYMENT_METHOD      => 'required|in:emi',
         Entity::ISSUER              => 'required_without:payment_network|filled',
-        Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX|filled',
+        Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX,BAJAJ|filled',
         Entity::EMI_SUBVENTION      => 'required|boolean|in:1',
         Entity::EMI_DURATIONS       => 'sometimes|array|custom',
         Entity::MIN_AMOUNT          => 'filled|integer|min:0',
@@ -71,6 +79,11 @@ class Validator extends Base\Validator
         Entity::DISPLAY_TEXT        => 'filled|string|max:255',
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
         Entity::TERMS               => 'required|string',
+        Entity::BLOCK               => 'required|boolean',
+        Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
+        Entity::DEFAULT_OFFER       => 'filled|boolean',
+        Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
+        Entity::TYPE                => 'required|in:instant,deferred,already_discounted',
     ];
 
     protected static $editRules = [
@@ -78,7 +91,7 @@ class Validator extends Base\Validator
         Entity::IINS               => 'filled|array',
         Entity::MAX_PAYMENT_COUNT  => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS   => 'filled|array',
-        Entity::ACTIVE             => 'filled|in:0',
+        Entity::ACTIVE             => 'filled',
         Entity::ENDS_AT            => 'filled|epoch',
         Entity::DISPLAY_TEXT       => 'filled|string|max:255',
         Entity::ERROR_MESSAGE      => 'filled|string|max:255',
@@ -86,6 +99,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
+        self::MERCHANT_CATEGORY,
+        self::OFFER_FEATURE_BLOCK,
         self::CASHBACK_CRITERIA,
         self::OFFER_PERIOD,
         Entity::PAYMENT_NETWORK,
@@ -394,6 +409,28 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid issuer name: '. $input[Entity::ISSUER]);
+        }
+    }
+
+    protected function validateMerchantCategory(array $input)
+    {
+        $isInsuranceCategory = $this->entity->merchant->isInsuranceCategory($this->entity->merchant->getCategory());
+
+        if($isInsuranceCategory === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Offer creation is not allowed for this Merchant category');
+        }
+    }
+
+    protected function validateOfferFeatureBlock(array $input)
+    {
+        $hasBlockingFeature = $this->entity->merchant->isFeatureEnabled(Constants::BLOCK_OFFER_CREATION);
+
+        if($hasBlockingFeature === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Offer creation is not allowed for Merchant');
         }
     }
 }

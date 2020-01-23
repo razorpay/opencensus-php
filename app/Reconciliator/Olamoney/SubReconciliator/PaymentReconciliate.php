@@ -101,8 +101,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'info_code' => Base\InfoCode::INCORRECT_DATE_FORMAT,
                     'message'   => 'Unable to parse settlement date -> ' . $ex->getMessage(),
+                    'date'      => $columnSettledAt,
                     'gateway'   => $this->gateway,
-                    'row'       => $row,
                 ]);
         }
 

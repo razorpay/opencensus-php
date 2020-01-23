@@ -3,9 +3,14 @@
 namespace RZP\Models\Payout\Processor;
 
 use RZP\Models\Payout;
+use RZP\Models\Contact;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
-use RZP\Models\Contact\Entity;
+use RZP\Models\Settlement\Channel;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -48,7 +53,7 @@ class FundAccountPayout extends Base
      */
     public function validateFundAccountContact(FundAccount\Entity $fundAccount)
     {
-        if ($fundAccount->getSourceType() !== Entity::CONTACT)
+        if ($fundAccount->getSourceType() !== Contact\Entity::CONTACT)
         {
             throw new BadRequestValidationFailureException(
                 'Payouts cannot be created for fund account without contact.',
@@ -59,11 +64,150 @@ class FundAccountPayout extends Base
         }
     }
 
+    /**
+     * run entity validations
+     *
+     * @param Payout\Entity $payout
+     * @param array         $input
+     *
+     * @throws BadRequestException
+     */
     protected function runEntityValidations(Payout\Entity $payout, array $input)
     {
         /** @var Payout\Validator $validator */
         $validator = $payout->getValidator();
 
         $validator->validateFundAccountMode($input);
+
+        $this->validateModeChannelAndDestinationType($payout);
+    }
+
+    protected function fireEventForPayoutStatus(Payout\Entity $payout)
+    {
+        if ($payout->isStatusQueued() === true)
+        {
+            $this->app->events->fire('api.payout.queued', [$payout]);
+        }
+        else if ($payout->isStatusPending() === true)
+        {
+            // TODO:: Add pending webhook trigger here
+        }
+        else
+        {
+            $shouldFirePayoutCreatedWebhook = $this->shouldFirePayoutCreatedWebhook($payout);
+
+            // TODO: Remove this after a week or two. JIRA: https://razorpay.atlassian.net/browse/RX-853
+            if ($shouldFirePayoutCreatedWebhook === true)
+            {
+                $this->app->events->fire('api.payout.created', [$payout]);
+            }
+
+            $this->app->events->fire('api.payout.initiated', [$payout]);
+        }
+    }
+
+    protected function shouldFirePayoutCreatedWebhook(Payout\Entity $payout)
+    {
+        $variant = $this->app->razorx->getTreatment($payout->getMerchantId(),
+                                                    Merchant\RazorxTreatment::PAYOUTS_CREATED_WEBHOOK,
+                                                    $this->mode);
+
+        return (strtolower($variant) === 'on');
+    }
+
+    public function getAccountTypeForFundTransfer(Payout\Entity $payout)
+    {
+        return $payout->balance->getAccountType() ?? AccountType::SHARED;
+    }
+
+    /**
+     * TODO: Currently there is no proper way to decide the channel through
+     * which the payout should be routed in case of shared accounts.
+     * Till the time we achieve this by Dynamic routing, we are doing
+     * a hack of using config key to store the MIDs for which
+     * channel for processing the payout should be CITI and ICICI.
+     * The precedence between ICICI and CITI is ICICI.
+     *
+     * @param $accountType
+     * @return string
+     */
+    protected function getChannelForFundTransfer($accountType, Payout\Entity $payout): string
+    {
+        if ($accountType === AccountType::DIRECT)
+        {
+            return $this->getChannelForDirectAccountFundTransfer($payout);
+        }
+
+        return $this->getChannelForSharedAccountFundTransfer($payout);
+    }
+
+    protected function getChannelForDirectAccountFundTransfer(Payout\Entity $payout)
+    {
+        return $payout->balance->getChannel();
+    }
+
+    /*
+     * This channel selection DOESN'T handle channel preference, the one whose experiment would be created first
+     * would be preferred. So, its preferred to NOT have same  MIDs in 2 different experiments for the same behaviour.
+     */
+    protected function getChannelForSharedAccountFundTransfer(Payout\Entity $payout)
+    {
+        $merchant = $payout->merchant;
+
+        $mode = $payout->getMode();
+
+        $razorxFeature = strtoupper(sprintf("%s_MODE_PAYOUT_FILTER", $mode));
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            constant(RazorxTreatment::class . '::' . $razorxFeature),
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'control')
+        {
+            return Channel::YESBANK;
+        }
+
+        return constant(Channel::class . '::' . strtoupper($variant));
+    }
+
+    protected function validateModeChannelAndDestinationType(Payout\Entity $payout)
+    {
+        $accountType = $this->getAccountTypeForFundTransfer($payout);
+
+        $channel = $this->getChannelForFundTransfer($accountType,$payout);
+
+        $payout->setChannel($channel);
+
+        $mode = $payout->getMode();
+
+        $destinationType = $this->fundTransferDestination->getEntity();
+
+        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+
+        if ($valid === false)
+        {
+            if ($this->getAccountTypeForFundTransfer($payout) === AccountType::SHARED)
+            {
+                $errorMsg =  $mode . ' is not supported';
+            }
+
+            else
+            {
+                $errorMsg = strtoupper($channel) . ' does not support ' . $mode . ' payouts to ' . strtoupper($destinationType);
+            }
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+                null,
+                [
+                    'channel'           => $channel,
+                    'mode'              => $mode,
+                    'destination_type'  => $destinationType
+                ],
+                $errorMsg
+            );
+        }
     }
 }

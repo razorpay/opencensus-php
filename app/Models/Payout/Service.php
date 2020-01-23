@@ -8,16 +8,19 @@ use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Models\Contact;
 use RZP\Models\Pricing;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Feature\Constants as Features;
-use RZP\Models\Contact\Service as ContactService;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
+use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 
 use Razorpay\Trace\Logger as Trace;
@@ -26,7 +29,15 @@ class Service extends Base\Service
 {
     use Base\Traits\ProcessAccountNumber;
 
-    protected $contactService;
+    /**
+     * @var FundAccountService
+     */
+    protected $fundAccountService;
+
+    /**
+     * @var ContactCore
+     */
+    protected $contactCore;
 
     public function __construct()
     {
@@ -34,7 +45,9 @@ class Service extends Base\Service
 
         $this->core = new Payout\Core;
 
-        $this->contactService = new ContactService;
+        $this->contactCore = new Contact\Core;
+
+        $this->fundAccountService = new FundAccountService;
     }
 
     public function fundAccountPayout(array $input): array
@@ -66,7 +79,7 @@ class Service extends Base\Service
 
         (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
 
-        $payout = (new Core)->approvePayout($payout);
+        $payout = (new Core)->approvePayout($payout, $input);
 
         return $payout->toArrayPublic();
     }
@@ -94,7 +107,7 @@ class Service extends Base\Service
         {
             try
             {
-                $payout = (new Core)->approvePayout($payout);
+                $payout = (new Core)->approvePayout($payout, $input);
             }
             catch (\Throwable $e)
             {
@@ -114,7 +127,7 @@ class Service extends Base\Service
         ];
     }
 
-    public function rejectFundAccountPayout(string $id): array
+    public function rejectFundAccountPayout(string $id, array $input): array
     {
         $this->trace->info(TraceCode::PAYOUT_REJECT_REQUEST, ['id' => $id]);
 
@@ -123,7 +136,7 @@ class Service extends Base\Service
 
         $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 
-        $payout = (new Core)->rejectPayout($payout);
+        $payout = (new Core)->rejectPayout($payout, $input);
 
         return $payout->toArrayPublic();
     }
@@ -147,7 +160,7 @@ class Service extends Base\Service
         {
             try
             {
-                $payout = (new Core)->rejectPayout($payout);
+                $payout = (new Core)->rejectPayout($payout, $input);
             }
             catch (\Throwable $e)
             {
@@ -373,6 +386,7 @@ class Service extends Base\Service
      * @param array $input
      *
      * @return array
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function createBulkPayout(array $input): array
     {
@@ -388,6 +402,10 @@ class Service extends Base\Service
 
         $validator->validateBatchId($batchId);
 
+        // if any merchant wants to skip duplicate check
+        // and unique create contact and fund account everytime
+        $createDuplicate = $this->shouldCreateDuplicateForFundAccountAndContact();
+
         foreach ($input as $item)
         {
             try
@@ -399,7 +417,8 @@ class Service extends Base\Service
                         'input'          => $item
                     ]);
 
-                $this->repo->transaction(function() use (& $item,
+                $this->repo->transaction(function() use ($createDuplicate,
+                                                         & $item,
                                                          & $payoutBatch,
                                                          & $batchId,
                                                          & $idempotencyKey,
@@ -409,47 +428,52 @@ class Service extends Base\Service
 
                     $validator->validateIdempotencyKey($idempotencyKey, $batchId);
 
-                    $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+                    $result = $this->repo->payout->fetchByIdempotentKey($item[Entity::IDEMPOTENCY_KEY],
+                                                                        $this->merchant->getId(),
+                                                                        $batchId);
 
-                    $fundAccount = null;
-
-                    //
-                    // Check if fund_id is present in input and exists in DB
-                    // If yes skip contact and fund_account creation step
-                    //
-                    if (empty($fundAccountId) === false)
+                    if ($result !== null)
                     {
-                        $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId,
-                                                                                            $this->merchant);
-                    }
+                        $this->trace->info(TraceCode::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY,
+                                            ['input' => $result->toArrayPublic(),
+                                             Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY]]);
 
-                    // If fund_account is null then, it is not created before
-                    if ($fundAccount === null)
-                    {
-                        $contact = $this->contactService->processEntryForContact($item,
-                                                                                 $idempotencyKey,
-                                                                                 $batchId);
-
-                        $fundAccount = $this->contactService->processEntryForContactsFundAccount($item,
-                                                                                                 $contact,
-                                                                                                 $idempotencyKey,
-                                                                                                 $batchId);
+                        $payoutBatch->push($result->toArrayPublic() +
+                            [Entity::IDEMPOTENCY_KEY => $result->getIdempotencyKey()]);
                     }
                     else
                     {
-                        // convert to array
-                        $fundAccount = $fundAccount->toArrayPublic();
+                        $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+
+                        $fundAccount = null;
+
+                        //
+                        // Check if fund_id is present in input and exists in DB
+                        // If yes skip contact and fund_account creation step
+                        //
+                        if (empty($fundAccountId) === false)
+                        {
+                            $fundAccount = $this->fundAccountService->checkFundAccountExistence($fundAccountId);
+                        }
+                        else
+                        {
+                            $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
+
+                            $fundAccount = $this->fundAccountService->createFundAcccount($item,
+                                $contact,
+                                $batchId,
+                                $createDuplicate);
+                        }
+
+                        $payout = $this->processEntryForPayoutForFundAccount($item,
+                                                                             $fundAccount,
+                                                                             $batchId
+                        );
+
+                        $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+
+                        $payoutBatch->push($payoutArr);
                     }
-
-                    $payout = $this->processEntryForPayoutForFundAccount($item,
-                                                                         $fundAccount,
-                                                                         $idempotencyKey,
-                                                                         $batchId
-                    );
-
-                    $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
-
-                    $payoutBatch->push($payoutArr);
                 });
 
             }
@@ -617,14 +641,25 @@ class Service extends Base\Service
     }
 
     protected function processEntryForPayoutForFundAccount(array $entry,
-                                                           array $fundAccount,
-                                                           string $idempotencyKey,
+                                                           FundAccount\Entity $fundAccount,
                                                            string $batchId): Entity
     {
-        $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount, $this->merchant);
+        $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount->toArrayPublic(), $this->merchant);
 
-        $input[Entity::IDEMPOTENCY_KEY] = $idempotencyKey;
+        return $this->core->createPayoutToFundAccount($input, $this->merchant, $batchId);
+    }
 
-        return $this->core->createPayoutToFundAccount($input, $this->merchant, null, $batchId);
+    // ToDo https://razorpay.atlassian.net/browse/RX-849
+    protected function shouldCreateDuplicateForFundAccountAndContact()
+    {
+        $merchant = $this->merchant;
+
+        $variant  = $this->app['razorx']->getTreatment($merchant->getId(),
+                                                       Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
+                                                       $this->mode);
+
+        $flag = ($variant === 'create_duplicate') ? true : false;
+
+        return $flag;
     }
 }

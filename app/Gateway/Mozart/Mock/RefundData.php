@@ -91,6 +91,28 @@ class RefundData extends Base\Mock\Server
         return $response;
     }
 
+    public static function getsimpl($entities)
+    {
+        $response = [
+            'data' => [
+                'api_version' => '4.0',
+                '_raw'        => '{\"data\":{\"transaction_id\":\"16e94d67-7e97-4744-b90c-8a9f534e744f\",\"refunded_transaction_id\":\"f2badf4d-528b-4c90-aad9-05c7ab716307\"},\"Http_status\":200,\"success\":true}',
+                'data' => [
+                    'refunded_transaction_id' => 'f2badf4d-528b-4c90-aad9-05c7ab716307',
+                    'transaction_id'          => $entities['gateway']['pay_init']['data']['transaction']['id']
+                ],
+                'status'  => 'refund_successful',
+                'success' => true
+            ],
+            'error'             => null,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'next'              => [],
+            'success'           => true
+        ];
+
+        return $response;
+    }
+
     public static function bajajfinserv($entities)
     {
         $response = [
@@ -109,6 +131,70 @@ class RefundData extends Base\Mock\Server
             'mozart_id'         => '',
             'external_trace_id' => '',
         ];
+
+        return $response;
+    }
+
+    public static function netbanking_scb($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    "_raw" => "{\"data\":{\"refund_id\":5621,\"transaction_id\":\"HDVISC1234\",\"merchant_order_id\":\"1234\",\"merchant_refund_id\": \"123456\",\"refund_reference_no\":\"RRN1234\"}}",
+        "merchant_order_id" => "1234",
+        "success_status" => "success",
+        "refund_id" => 5621,
+        "merchant_refund_id" => "123456",
+        "refund_reference_no" => "RRN1234",
+        "transaction_id" => "HDVISC1234",
+        "status" => "refund_successful"
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
+
+    public function upi_juspay($entities)
+    {
+        $response = [
+            'data' => [
+                    "_raw" => '{\"status\":\"SUCCESS\",\"responseCode\":\"SUCCESS\",\"responseMessage\":\"SUCCESS\",\"payload\":{\"merchantId\":\"MERCHANT\",\"merchantChannelId\":\"MERCHANTAPP\",\"merchantRequestId\":\"heyyourefund4\",\"transactionAmount\":\"20.00\",\"refundAmount\":\"19.00\",\"gatewayTransactionId\":\"Some transaction id\",\"gatewayResponseCode\":\"00\",\"gatewayResponseMessage\":\"Refund accepted successfully\"},\"udfParameters\":\"{}\"}',
+                    "gatewayResponseCode"       => "00",
+                    "gatewayResponseMessage"    => "Refund accepted successfully",
+                    "gatewayTransactionId"      => "Some transaction id",
+                    "merchantChannelId"         => "MERCHANTAPP",
+                    "merchantId"                => "MERCHANT",
+                    "merchantRequestId"         => "heyyourefund4",
+                    "refundAmount"              => "19.00",
+                    "responseCode"              => "SUCCESS",
+                    "responseMessage"           => "SUCCESS",
+                    "status"                    => "refund_initiated_successfully",
+                    "apiStatus"                 => "SUCCESS",
+                    "transactionAmount"         => $entities['payment']['amount']
+                ],
+                'error'             => null,
+                'success'           => true,
+                'mozart_id'         => '',
+                'external_trace_id' => '',
+        ];
+
+        switch ($entities['payment']['description']){
+            case 'failedRefund':
+                $response['success'] = false;
+                $response['data']['_raw'] = '{\"status\":\"SUCCESS\",\"responseCode\":\"SUCCESS\",\"responseMessage\":\"SUCCESS\",\"payload\":{\"merchantId\":\"MERCHANT\",\"merchantChannelId\":\"MERCHANTAPP\",\"merchantRequestId\":\"heyyourefund4\",\"transactionAmount\":\"20.00\",\"refundAmount\":\"19.00\",\"gatewayTransactionId\":\"Some transaction id\",\"gatewayResponseCode\":\"Else\",\"gatewayResponseMessage\":\"Refund initiation failed\"},\"udfParameters\":\"{}\"}';
+                $response['error']   = [
+                    "description"                  => "Transaction Failed",
+                    "gateway_error_code"           => "Else",
+                    "gateway_error_description"    => "Transaction Failed",
+                    "gateway_status_code"          => 200,
+                    "internal_error_code"          => "GATEWAY_ERROR_TRANSACTION_FAILED"
+                ];
+                break;
+        }
 
         return $response;
     }

@@ -24,6 +24,9 @@ class Entity extends Base\PublicEntity
     const DATA          = 'data';
     const CONTEXT       = 'context';
 
+    /********** Input Keys **********/
+    const VPAS          = 'vpas';
+
     /**
      * Generator for refreshed at
      * @return $this

@@ -141,8 +141,11 @@ class Gateway extends Base\Gateway
             ($message !== ''))
         {
             // Payment fails, throw exception
+
+            $internalErrorCode = \RZP\Gateway\Netbanking\Hdfc\ErrorCode::getHdfcNetbankingErrorCodes($message);
+
             throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
+                    $internalErrorCode,
                     '',
                     $message);
         }

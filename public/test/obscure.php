@@ -85,6 +85,7 @@ function disableEmptyInputs(form) {
                 <option value="upi">UPI</option>
                 <option value="emandate">E-Mandate</option>
                 <option value="cardless_emi">Cardless Emi</option>
+                <option value="paylater">PayLater</option>
             </select>
         </td>
     </tr>
@@ -152,6 +153,80 @@ function disableEmptyInputs(form) {
             </select>
         </td>
     </tr>
+<!--    "uncomment below for device parameters testing"-->
+    <tr>
+        <td colspan="40">Device Parameters </td>
+        <td>
+            <select name="device[is_roming]">
+                <option value="false" selected>False</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[carrier_network]">
+                <option value="Idea" selected>Idea</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[carrier_Id]">
+                <option value="hashed_String" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[device_Id]">
+                <option value="hashed_String" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[device_manufacturer]">
+                <option value="OnePlus" selected>OnePlus</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[device_model]">
+                <option value="ONEPLUS_A5000" selected>ONEPLUS_A5000</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[serial_number]">
+                <option value="hashed_String" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[ip_address]">
+                <option value="192.168.14.30" selected>192.168.14.30</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[wifi_ssid]">
+                <option value="hashed_String" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[android_id]">
+                <option value="hashed_String" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[installed_apps]">
+                <option value="s,v,g,t" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[advertising_id]">
+                <option value="250edd01-878f-4f49-b4ba-71b2681440a0" selected>250edd01-878f-4f49-b4ba-71b2681440a0</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[safety_net_cts_profile_match]">
+                <option value="true" selected>True</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[safety_net_basic_integrity]">
+                <option value="true" selected>True</option>
+            </select>
+        </td>
+    </tr>
     <tr>
         <td colspan="40">Select Provider </td>
         <td>
@@ -160,6 +235,8 @@ function disableEmptyInputs(form) {
                 <option value="earlysalary">Earlysalary</option>
                 <option value="flexmoney">Flexmoney</option>
                 <option value="epaylater">EPayLater</option>
+                <option value="getsimpl">Simpl</option>
+                <option value="icic">Icici Paylater</option>
                 <option value="bajajfinserv">Bajaj Finserv</option>
             </select>
         </td>
@@ -318,7 +395,12 @@ function disableEmptyInputs(form) {
 
 <form name ="refund" method="post" action="//<?=$private_url?>/payments/">
 <input type="text" id="refund_id" placeholder="Enter payment id to refund"/>
-<input type="text" id="amount" name="amount" value="100"/><input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
+<input type="text" id="amount" name="amount" value="100"/>
+<select name="speed">
+    <option value="normal">Normal</option>
+    <option value="optimum">Optimum</option>
+</select>
+<input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
 </form>
 </div>
 </div>

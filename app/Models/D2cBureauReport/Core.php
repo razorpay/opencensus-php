@@ -35,11 +35,11 @@ class Core extends Base\Core
         $mozartService = $this->app->mozart;
 
         $response = $mozartService->sendMozartRequest(self::MOZART_NAMESPACE,
-                                                            Provider::EXPERIAN,
-                                                            self::MOZART_GET_REPORT_ACTION,
-                                                            $request,
-                                                            Mozart::DEFAULT_MOZART_VERSION,
-                                                            true);
+                                                      Provider::EXPERIAN,
+                                                      self::MOZART_GET_REPORT_ACTION,
+                                                      $request,
+                                                      Mozart::DEFAULT_MOZART_VERSION,
+                                                      true);
 
         // Response contains 3 keys:
         // 1. score: credit score of owner.
@@ -79,6 +79,8 @@ class Core extends Base\Core
         switch ($provider)
         {
             case Provider::EXPERIAN:
+
+                $bureauDetailArray[D2cBureauDetail\Entity::ADDRESS] = preg_replace('/[^a-zA-Z0-9 ]+/', '', $bureauDetailArray[D2cBureauDetail\Entity::ADDRESS]);
 
                 $bureauDetailArray['buildingName'] = substr($bureauDetailArray[D2cBureauDetail\Entity::ADDRESS], 40, 40) ?: '';
 

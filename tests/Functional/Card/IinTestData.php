@@ -18,7 +18,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'       => 112333,
+                'iin'       => '112333',
                 'network'   => 'RuPay',
                 'type'      => 'debit',
                 'recurring' => false,
@@ -38,7 +38,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'       => 112333,
+                'iin'       => '112333',
                 'network'   => 'RuPay',
                 'type'      => 'debit',
                 'sub_type'  => 'consumer',
@@ -87,7 +87,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'       => 112333,
+                'iin'       => '112333',
                 'network'   => 'RuPay',
                 'type'      => 'debit',
                 'sub_type'  => 'consumer',
@@ -109,7 +109,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'       => 112333,
+                'iin'       => '112333',
                 'network'   => 'Visa',
                 'type'      => 'credit',
                 'sub_type'  => 'consumer',
@@ -131,7 +131,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'       => 112333,
+                'iin'       => '112333',
                 'network'   => 'RuPay',
                 'type'      => 'credit',
                 'sub_type'  => 'consumer',
@@ -150,7 +150,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'       => 112333,
+                'iin'       => '112333',
                 'network'   => 'RuPay',
                 'type'      => 'credit',
                 'sub_type'  => 'consumer',
@@ -299,7 +299,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'            => 112333,
+                'iin'            => '112333',
                 'network'        => 'RuPay',
                 'type'           => 'credit',
                 'country'        => 'IN',
@@ -334,7 +334,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'           => 607500,
+                'iin'           => '607500',
                 'category'      => 'STANDARD',
                 'network'       => 'RuPay',
                 'type'          => 'debit',
@@ -352,23 +352,23 @@ return [
             'method' => 'post',
             'content' => [
                 [
-                    'row'   => 'ABHY065000160726100060726199916S010101E&M01D356IN140513000000N'
+                    'row'   => 'ABHY065000160726100060726199916S010101E&M01D356IN140513000000N',
+                    'idempotent_id' => 'batch_abc123'
                 ]
             ],
         ],
         'response' => [
             'content' => [
-                [
-                    'iin'           => 607261,
-                    'category'      => null,
-                    'network'       => 'RuPay',
-                    'type'          => 'debit',
-                    'sub_type'      => 'consumer',
-                    'country'       => 'IN',
-                    'issuer'        => 'ABHY',
-                    'issuer_name'   => 'Abhyudaya Co-operative Bank',
-                ]
-            ]
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'batch_id'        => 'C0zv9I46W4wiOq',
+                        'idempotent_id'   => 'batch_abc123',
+                        'status'          => 1,
+                    ]
+                ],
+            ],
         ],
     ],
 
@@ -557,6 +557,20 @@ return [
     ],
 
     'testGetBulkFlows' => [
+        'request' => [
+            'url' => '/iins/list',
+            'method' => 'GET',
+            'content' => [
+                'flow' => 'otp',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetInnsListWithFeatures' => [
         'request' => [
             'url' => '/iins/list',
             'method' => 'GET',

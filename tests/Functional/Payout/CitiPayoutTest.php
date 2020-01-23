@@ -3,11 +3,9 @@
 namespace RZP\Tests\Functional\Payout;
 
 use RZP\Models\Payout;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt\Status;
-use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -26,6 +24,8 @@ class CitiPayoutTest extends TestCase
 
         parent::setUp();
 
+        $this->mockRazorxTreatment('citi');
+
         $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
 
         $this->fixtures->create(
@@ -40,11 +40,7 @@ class CitiPayoutTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
-        $merchantId = '10000000000000';
-
         $this->app['cache']->flush();
-
-        (new AdminService)->setConfigKeys([ConfigKey::CITI_CHANNEL_PAYOUT_MIDS => [$merchantId]]);
 
         $this->ba->privateAuth();
     }
@@ -223,6 +219,23 @@ class CitiPayoutTest extends TestCase
 
     public function testCreatePayoutWithModeNotSet()
     {
+        $this->startTest();
+    }
+
+    public function testCreateQueuedPayoutUnsupportedModeForCitiIcici()
+    {
+        $contactId = $this->getDbLastEntity('contact')->getId();
+
+        $this->fixtures->create('fund_account:vpa', [
+            'id'            => '100000000003fa',
+            'source_type'   => 'contact',
+            'source_id'     => $contactId,
+        ]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
+
         $this->startTest();
     }
 }

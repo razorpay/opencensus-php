@@ -3,17 +3,16 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Constants;
-use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
-use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
+use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
-use RZP\Models\Customer;
+use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Listeners\ApiEventSubscriber;
 
@@ -82,6 +81,7 @@ class Core extends Base\Core
         $this->validateMerchantForTransfer($merchant);
 
         $orderTransfers = [];
+
         if ($payment->hasOrder() === true)
         {
             $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $payment->getApiOrderId(), $this->merchant);
@@ -127,6 +127,9 @@ class Core extends Base\Core
             $to = $this->repo
                        ->account
                        ->findByPublicIdAndMerchant($accountId, $this->merchant);
+
+            // extracts linked account notes and validates.
+            $this->getLinkedAccountNotes($input);
 
             $transfer = $this->buildTransferEntity($order, $to, $input, $this->merchant);
 
@@ -252,11 +255,15 @@ class Core extends Base\Core
 
         $payment->setOnHoldUntil($transferOnHoldUntil);
 
-        $txn = (new Transaction\Core)->updateOnHoldToggle($payment);
+        $txnCore = new Transaction\Core;
+
+        $txn = $txnCore->updateOnHoldToggle($payment);
 
         $this->repo->saveOrFail($payment);
 
         $this->repo->saveOrFail($txn);
+
+        $txnCore->dispatchForSettlementBucketing($txn, $txn->getSettledAt());
     }
 
     /**
@@ -523,7 +530,7 @@ class Core extends Base\Core
 
         $this->merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
 
-        $transferStatus = [Status::CREATED, Status::FAILED];
+        $transferStatus = [Status::PENDING, Status::FAILED];
 
         $transfers = $this->repo
                           ->transfer
@@ -637,12 +644,21 @@ class Core extends Base\Core
 
     protected function getTransferData(Entity $transfer)
     {
+        $notes = [];
+
+        if (empty($transfer->getNotes()) === false)
+        {
+            $notes = $transfer->getNotes()->toArray();
+        }
+
         $input = [
-            ToType::ACCOUNT       => $transfer->getToId(),
-            Entity::AMOUNT        => $transfer->getAmount(),
-            Entity::CURRENCY      => $transfer->getCurrency(),
-            Entity::ON_HOLD       => $transfer->getOnHold(),
-            Entity::ON_HOLD_UNTIL => $transfer->getOnHoldUntil(),
+            ToType::ACCOUNT              => $transfer->getToId(),
+            Entity::AMOUNT               => $transfer->getAmount(),
+            Entity::CURRENCY             => $transfer->getCurrency(),
+            Entity::ON_HOLD              => $transfer->getOnHold(),
+            Entity::ON_HOLD_UNTIL        => $transfer->getOnHoldUntil(),
+            Entity::NOTES                => $notes,
+            Entity::LINKED_ACCOUNT_NOTES => $transfer->getLinkedAccountNotes(),
         ];
 
         $laNotes = $this->getLinkedAccountNotes($input);

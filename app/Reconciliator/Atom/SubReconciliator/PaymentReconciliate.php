@@ -8,6 +8,10 @@ use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
+use RZP\Jobs\NbPlusRecon\NetbankingRecon;
+use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Services\NbPlus\Netbanking as NetbankingService;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -30,7 +34,27 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     public function getGatewayPayment($paymentId)
     {
-        return $this->repo->atom->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
+        $gatewayPayment = null;
+
+        try
+        {
+            if ($this->payment->isRoutedThroughNbPlus() === false)
+            {
+                $gatewayPayment = $this->repo->atom->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
+            }
+        }
+        catch (DbQueryException $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'info_code'     => Base\InfoCode::GATEWAY_PAYMENT_ABSENT,
+                    'payment_id'    => $this->payment->getId(),
+                    'gateway'       => $this->gateway,
+                ]
+            );
+        }
+
+        return $gatewayPayment;
     }
 
     protected function getReconPaymentAmount(array $row)
@@ -162,10 +186,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getBaseAmount(),
@@ -178,5 +204,33 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         $gatewayPayment->setGatewayPaymentId($gatewayTransactionId);
+    }
+
+    protected function nbPlusPaymentServiceDispatch(array $rowDetails)
+    {
+        $data = [
+            'payment_id' => $this->payment->getId(),
+            'recon_params'     => [
+                NetbankingService::GATEWAY_TRANSACTION_ID => $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID] ?? null,
+                NetbankingService::BANK_TRANSACTION_ID    => $rowDetails[BaseReconciliate::REFERENCE_NUMBER] ?? null
+            ],
+            'gateway_params' => [
+                NetbankingService::GATEWAY_TRANSACTION_ID,
+                NetbankingService::BANK_TRANSACTION_ID
+            ],
+            'mode'       => $this->mode,
+            'gateway'    => $this->gateway,
+            'batch_id'   => $this->batch->getId(),
+        ];
+
+        NetbankingRecon::dispatch($data);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code'  => Base\InfoCode::RECON_NBPLUS_JOB_DISPATCH,
+                'payment_id' => $this->payment->getId(),
+            ]
+        );
     }
 }

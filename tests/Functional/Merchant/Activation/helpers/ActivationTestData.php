@@ -1226,6 +1226,70 @@ return [
         'status_code' => 200,
     ],
 
+    'testPostInstantActivationWithBalanceCreation' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 1,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'               => 'ABCDE0000Z',
+                'gstin'                      => null,
+                'p_gstin'                    => null,
+                'business_category'          => 'ecommerce',
+                'business_subcategory'       => 'fashion_and_lifestyle',
+                'archived'                   => 0,
+                'submitted_at'               => null,
+                'activation_status'          => 'instantly_activated',
+                'business_operation_address' => 'My Addres is somewhere',
+                'business_operation_state'   => 'KA',
+                'business_operation_city'    => 'Bengaluru',
+                'business_operation_pin'     => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+                'verification'               => [
+                    'status'              => 'disabled',
+                    'disabled_reason'     => 'required_fields',
+                    'required_fields'     => [
+                        'address_proof_url',
+                        'bank_account_name',
+                        'bank_account_number',
+                        'bank_branch_ifsc',
+                        'business_pan_url',
+                        'business_proof_url',
+                        'contact_mobile',
+                        'contact_name',
+                        'promoter_address_url',
+                    ],
+                    'activation_progress' => 57,
+                ],
+                'can_submit'                 => false,
+                'activated'                  => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'testInstantActivationForForUnRegisteredTORegisteredSwitch' => [
         'request'     => [
             'method'  => 'POST',
@@ -2095,6 +2159,28 @@ return [
         ],
     ],
 
+    'testReleaseFundsWithParntersBankAccount' => [
+        'request'   => [
+            'content' => [
+                'action' => 'release_funds'
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND,
+        ],
+    ],
+
     'testPostInstantActivationFetaureCheck' => [
         'request'     => [
             'method'  => 'POST',
@@ -2154,7 +2240,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2176,6 +2262,33 @@ return [
         'status_code' => 200,
     ],
 
+    'testWhitelistInternationalForRiskyBusinessType' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'insurance',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+                'business_website'     => 'https://example.com',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'                  => 'ABCDE0000Z',
+                'business_category'             => 'financial_services',
+                'business_subcategory'          => 'insurance',
+                'international_activation_flow' => 'greylist',
+                'international'                 => false,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'testWhitelistInternationalWithNoWebsite' => [
         'request'     => [
             'method'  => 'POST',
@@ -2186,7 +2299,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => '',
             ],
@@ -2218,7 +2331,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
             ],
         ],
@@ -2249,7 +2362,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://www.example.com',
             ],
@@ -2281,7 +2394,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2313,7 +2426,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2345,7 +2458,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2377,7 +2490,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2409,7 +2522,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2516,6 +2629,25 @@ return [
         ],
     ],
 
+    'testValidateNeedsClarificationStatusChange' => [
+        'request'  => [
+            'content' => [
+                'submit' => true
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+
+        ],
+        'response' => [
+            'content' => [
+                'submitted'         => true,
+                'activation_status' => 'under_review',
+                'can_submit'        => true,
+                'locked'            => true,
+            ],
+        ],
+    ],
+
     'testNeedsClarificationResponseForAdminAuth' => [
         'request'  => [
             'method' => 'GET',
@@ -2526,7 +2658,7 @@ return [
                 'contact_name'         => [
                     'reasons' => [
                         'provide_poc' => [
-                            'description' => 'Please provide a provide a POC that we can reach out to in case of issues associated with your account.',
+                            'description' => 'Please provide a POC that we can reach out to in case of issues associated with your account.',
                         ],
                     ],
                 ],
@@ -2541,20 +2673,6 @@ return [
                     'reasons' => [
                         'is_company_reg' => [
                             'description' => 'Is your company a registered entity?',
-                        ],
-                    ],
-                ],
-                'business_category'    => [
-                    'reasons' => [
-                        'services_offered' => [
-                            'description' => 'What are some of the services/products that are offered?',
-                        ],
-                    ],
-                ],
-                'business_subcategory' => [
-                    'reasons' => [
-                        'services_offered' => [
-                            'description' => 'What are some of the services/products that are offered?',
                         ],
                     ],
                 ],
@@ -2663,5 +2781,37 @@ return [
             ],
             'status_code' => 200,
         ]
-    ]
+    ],
+
+    'testBusinessWebsiteUpdate' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 1,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'activation_status' => 'instantly_activated',
+                'business_website'  => 'https://example.com',
+            ],
+        ],
+        'status_code' => 200,
+    ],
 ];

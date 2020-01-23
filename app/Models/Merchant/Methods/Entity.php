@@ -48,6 +48,7 @@ class Entity extends Base\PublicEntity
     const CARD_NETWORKS     = 'card_networks';
     const PHONEPE           = 'phonepe';
     const PAYPAL            = 'paypal';
+    const GOOGLE_PAY_CARDS  = 'google_pay_cards';
 
     const METHODS           = 'methods';
 
@@ -78,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::UPI,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -112,6 +114,7 @@ class Entity extends Base\PublicEntity
         self::UPI,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -146,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::UPI,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -161,6 +165,10 @@ class Entity extends Base\PublicEntity
         self::PAYPAL,
     ];
 
+    //
+    // If adding any default methods here, also add
+    // in $defaultPaymentMethodsForSubmerchantByPartner with default as false.
+    //
     protected $defaults = array(
         self::CARD_NETWORKS  => Network::DEFAULT_CARD_NETWORKS,
         self::AMEX           => false,
@@ -181,12 +189,45 @@ class Entity extends Base\PublicEntity
         self::UPI            => true,
         self::AEPS           => false,
         self::EMANDATE       => false,
+        self::NACH           => false,
         self::NETBANKING     => true,
         self::CREDIT_CARD    => true,
         self::DEBIT_CARD     => true,
         self::PREPAID_CARD   => true,
         self::CARD_SUBTYPE   => SubType::DEFAULT_CARD_SUBTYPE,
         self::BANK_TRANSFER  => true,
+        self::AMAZONPAY      => false,
+        self::CARDLESS_EMI   => false,
+        self::PAYLATER       => false,
+        self::PHONEPE        => false,
+        self::PAYPAL         => false,
+    );
+
+    public static $defaultPaymentMethodsForSubmerchantByPartner = array(
+        self::AMEX           => false,
+        self::PAYTM          => false,
+        self::MOBIKWIK       => false,
+        self::PAYZAPP        => false,
+        self::PAYUMONEY      => false,
+        self::AIRTELMONEY    => false,
+        self::OLAMONEY       => false,
+        self::FREECHARGE     => false,
+        self::JIOMONEY       => false,
+        self::SBIBUDDY       => false,
+        self::OPENWALLET     => false,
+        self::MPESA          => false,
+        self::DISABLED_BANKS => [],
+        self::EMI            => false,
+        self::UPI            => false,
+        self::AEPS           => false,
+        self::EMANDATE       => false,
+        self::NACH           => false,
+        self::NETBANKING     => false,
+        self::CREDIT_CARD    => false,
+        self::DEBIT_CARD     => false,
+        self::PREPAID_CARD   => false,
+        self::CARD_SUBTYPE   => SubType::DEFAULT_CARD_SUBTYPE,
+        self::BANK_TRANSFER  => false,
         self::AMAZONPAY      => false,
         self::CARDLESS_EMI   => false,
         self::PAYLATER       => false,
@@ -219,6 +260,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
+        self::NACH,
         self::NETBANKING,
         self::PAYTM,
         self::MOBIKWIK,
@@ -259,6 +301,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER => 'bool',
         self::AEPS          => 'bool',
         self::EMANDATE      => 'bool',
+        self::NACH          => 'bool',
         self::CARDLESS_EMI  => 'bool',
         self::PAYLATER      => 'bool',
         self::PHONEPE       => 'bool',
@@ -440,6 +483,11 @@ class Entity extends Base\PublicEntity
     public function isEmandateEnabled()
     {
         return $this->getAttribute(self::EMANDATE);
+    }
+
+    public function isNachEnabled()
+    {
+        return $this->getAttribute(self::NACH);
     }
 
     public function isCardlessEmiEnabled()

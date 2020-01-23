@@ -146,7 +146,7 @@
     </div>
 
     <div class="banner">
-      <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="28px" style="height: 28px; margin: 20px auto;display: block;">
+      <img src="https://cdn.razorpay.com/logo.png" id="logo" height="28px" style="height: 28px; margin: 20px auto;display: block;">
     </div>
 
     <form id="form" method="post"></form>
@@ -169,7 +169,14 @@
     var cancel_url = payment_base + '/cancel?key_id='+key_id;
     var callback_url = payment_base + '/redirect_callback?key_id='+key_id;
 
-    var $ =  document.getElementById.bind(document);
+    var $ =  function (id) {
+      return document.getElementById(id);
+    }
+    
+    if (!Date.now) {
+      Date.now = function () { return +new Date(); };
+    }
+
     var form = $('form');
     var CheckoutBridge = window.CheckoutBridge;
     var isIntentFlow = CheckoutBridge && data.type === 'intent';

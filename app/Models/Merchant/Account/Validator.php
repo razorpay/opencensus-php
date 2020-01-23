@@ -92,7 +92,7 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $accountAddressRules = [
-        Constants::TYPE          => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
+        Constants::TYPE          => 'required|string|custom:address_type',
         Constants::LINE1         => 'required|string|max:100',
         Constants::LINE2         => 'required|string',
         Constants::CITY          => 'required|string',
@@ -103,7 +103,7 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $editAccountAddressRules = [
-        Constants::TYPE          => 'required|string|in:' . Constants::REGISTERED . ',' . Constants::OPERATION,
+        Constants::TYPE          => 'required|string|custom:address_type',
         Constants::LINE1         => 'filled|string|max:100',
         Constants::LINE2         => 'filled|string',
         Constants::CITY          => 'filled|string',
@@ -211,6 +211,14 @@ class Validator extends Merchant\Validator
         $this->validateBrandInput($profileInput);
 
         $this->validateEmails($profileInput, 'edit');
+    }
+
+    protected function validateAddressType($attribute, $value)
+    {
+        if (in_array(strtolower($value), Constants::$validAddressTypes, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid address type: ' . $value);
+        }
     }
 
     protected function validateProfileInput(array $input)

@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\Gateway\Sharp;
 
 use Cache;
-use RZP\Tests\Functional\TestCase;
 use RZP\Exception;
+use RZP\Models\Feature;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class SharpGatewayTest extends TestCase
@@ -76,6 +78,35 @@ class SharpGatewayTest extends TestCase
         $this->assertNotNull($payment['acquirer_data']['upi_transaction_id']);
 
         $this->assertNotEmpty($payment['vpa']);
+    }
+
+    public function testGooglePayCardPayment()
+    {
+        $order = $this->fixtures->create('order');
+
+        $googlePayPaymentCreateRequestData = $this->testData['googlePayPaymentCreateRequestData'];
+
+        $checkoutId = UniqueIdEntity::generateUniqueIdWithCheckDigit();
+
+        $googlePayPaymentCreateRequestData['order_id'] = $order->getPublicId();
+
+        $googlePayPaymentCreateRequestData['amount']   = $order['amount'];
+
+        $googlePayPaymentCreateRequestData['_']['checkout_id'] = $checkoutId;
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::GOOGLE_PAY_CARDS]);
+
+        $response = $this->doAuthPayment($googlePayPaymentCreateRequestData);
+
+        $this->assertEquals($response['type'], 'application');
+
+        $this->assertEquals($response['application_name'], 'google_pay');
+
+        $this->assertEquals($response['request']['method'], 'sdk');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['authentication_gateway'], 'google_pay');
     }
 
     public function testIntentPayment()

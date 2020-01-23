@@ -14,15 +14,18 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
+use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Offer;
 
 trait Capture
 {
@@ -87,7 +90,7 @@ trait Capture
 
         $amount = $payment->getAmount();
 
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             $amount -= $payment->getFee();
         }
@@ -370,7 +373,7 @@ trait Capture
      */
     protected function modifyCaptureAmountForPaymentFee(Payment\Entity $payment, int & $captureAmount)
     {
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             $captureAmount = $captureAmount + $payment->getFee();
 
@@ -393,7 +396,12 @@ trait Capture
 
         $order = $payment->order;
 
-        if ($order->isDiscountApplicable() === false)
+        if($payment->getOffer() === null)
+        {
+            return;
+        }
+
+        if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
         {
             return;
         }
@@ -437,7 +445,9 @@ trait Capture
 
         $this->notifyPaymentCaptured();
 
-        (new Payment\Metric)->pushCapturedMetrics($this->payment);
+        // temporarily disabling metric push for "api_payment_captured_v1_bucket"
+        //
+        //(new Payment\Metric)->pushCapturedMetrics($this->payment);
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)
@@ -516,6 +526,8 @@ trait Capture
                 return (($ex instanceof Exception\GatewayTimeoutException) === true);
             case Payment\Gateway::HITACHI:
                 return ($payment->card->getNetworkCode() === Card\Network::RUPAY);
+            case Payment\Gateway::PAYSECURE:
+                return true;
         }
 
         return false;
@@ -808,7 +820,8 @@ trait Capture
         $payment = $this->payment;
 
         if (($payment->isBankTransfer() === false) and
-            ($payment->isBharatQr() === false))
+            ($payment->isBharatQr() === false) and
+            ($payment->isUpiTransfer() === false))
         {
             return;
         }
@@ -855,7 +868,7 @@ trait Capture
 
         $payment->setTax($txn->getTax());
 
-        if ($this->merchant->isFeeBearerCustomer() === false)
+        if ($payment->isFeeBearerCustomer() === false)
         {
             //set and fee values from txn
             $payment->setFee($txn->getFee());
@@ -1029,8 +1042,14 @@ trait Capture
                 return;
             }
 
+            $orderId = $payment->getApiOrderId();
+
+            $this->repo
+                 ->transfer
+                 ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+
             $input = [
-                'order_id'   => $payment->getApiOrderId(),
+                'order_id'   => $orderId,
                 'payment_id' => $payment->getId(),
                 'mode'       => $this->mode,
             ];
@@ -1160,8 +1179,7 @@ trait Capture
     {
         $discount = 0;
 
-        if (($order->isDiscountApplicable() === true) and
-            ($payment->discount !== null))
+        if($payment->discount !== null)
         {
             $discount = $payment->discount->getAmount();
         }
@@ -1274,16 +1292,6 @@ trait Capture
 
     public function shouldProcessOrderTransfer(Payment\Entity $payment)
     {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                    Merchant\RazorxTreatment::TRANSFERS_VIA_ORDER,
-                                                    $this->mode
-        );
-
-        if (strtolower($variant) !== 'on')
-        {
-            return false;
-        }
-
         if ($payment->isCaptured() !== true or
             $payment->hasOrder() !== true)
         {

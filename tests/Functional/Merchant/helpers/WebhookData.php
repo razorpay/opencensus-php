@@ -1328,7 +1328,7 @@ return [
                     'entity' => [
                         'entity'            => 'terminal',
                         'status'            => 'activated',
-                        'enabled'           =>  false,
+                        'enabled'           =>  true,
                     ],
                 ],
             ],
@@ -1417,5 +1417,20 @@ return [
         'subject' => 'Razorpay | Webhook deactivated after 24 hours from last successful delivery for Test Merchant',
         'mode' => 'test',
         'url' => 'http://webhook.com/v1/dummy/route',
-    ]
+    ],
+
+    'createSettingsForWebhookTranslateUrl' => [
+        'request'  => [
+            'url'     => '/settings/partner',
+            'method'  => 'post',
+            'content' => [
+                'translate_webhook_gateway'       => 'facebook',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
 ];

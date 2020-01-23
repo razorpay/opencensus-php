@@ -5,17 +5,17 @@ namespace RZP\Models\Invoice;
 use Mail;
 use Config;
 use Carbon\Carbon;
-
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
-use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Services\Reminders;
 use RZP\Constants\Timezone;
+use RZP\Services\Reminders;
+use RZP\Models\Invoice\Reminder;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Invoice as InvoiceMail;
 use RZP\Models\Merchant\Preferences;
-use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notifier extends Base\Core
 {
@@ -97,53 +97,89 @@ class Notifier extends Base\Core
     {
         $this->invoice->reload();
 
+        $reminderEntity = $this->repo->invoice_reminder->getByInvoiceId($this->invoice->getId());
+
         $merchantId = $this->invoice->getMerchantId();
 
-        if(($this->invoice->getReminderStatus() === ReminderStatus::PENDING) and
-            (empty($this->invoice->getReminderId()) === true))
+        if((empty($reminderEntity) === false) and
+            ($reminderEntity->getReminderStatus() === Reminder\Status::PENDING) and
+            (empty($reminderEntity->getReminderId()) === true))
         {
             $request = $this->getRemindersCreateReminderInput();
 
-            $response = $this->reminders->createReminder($request, $merchantId);
+            $response = [];
 
-            $this->setReminderResponse($response);
+            try {
+                $response = $this->reminders->createReminder($request, $merchantId);
+            }
+            catch (Exception\BadRequestException $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::REMINDERS_RESPONSE,
+                    [
+                        'data'        => $request,
+                        'merchant_id' => $merchantId,
+                    ]);
+            }
 
-            $this->repo->saveOrFail($this->invoice);
-
+            $this->setReminderResponse($response, $reminderEntity);
         }
-        elseif (($this->invoice->getReminderStatus() === ReminderStatus::PENDING) and
-                (empty($this->invoice->getReminderId()) === false))
+        elseif ((empty($reminderEntity) === false) and
+                ($reminderEntity->getReminderStatus() === Reminder\Status::PENDING) and
+                (empty($reminderEntity->getReminderId()) === false))
         {
-            $reminderId = $this->invoice->getReminderId();
+            $reminderId = $reminderEntity->getReminderId();
 
             $request = $this->getRemindersUpdateReminderInput();
 
-            $response = $this->reminders->updateReminder($request, $reminderId, $merchantId);
+            $response = [];
+
+            try {
+                $response = $this->reminders->updateReminder($request, $reminderId, $merchantId);
+            }
+            catch (Exception\BadRequestException $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::REMINDERS_RESPONSE,
+                    [
+                        'data'        => $request,
+                        'merchant_id' => $merchantId,
+                    ]);
+            }
 
             if(empty($response['id']) === true)
             {
                 return false;
             }
 
-            $this->invoice->setReminderStatus(ReminderStatus::IN_PROGRESS);
+            $reminderEntity->setReminderStatus(Reminder\Status::IN_PROGRESS);
 
-            $this->repo->saveOrFail($this->invoice);
+            $this->repo->saveOrFail($reminderEntity);
         }
+
         return true;
     }
 
-    public function setReminderResponse($response): bool
+    public function setReminderResponse($response, Reminder\Entity $reminder): bool
     {
         if(empty($response['id']) === false)
         {
-            $this->invoice->setReminderStatus(ReminderStatus::IN_PROGRESS);
-            $this->invoice->setReminderId($response['id']);
-            return true;
+            $reminder->setReminderStatus(Reminder\Status::IN_PROGRESS);
+
+            $reminder->setReminderId($response['id']);
+        }
+        else
+        {
+            $reminder->setReminderStatus(Reminder\Status::FAILED);
         }
 
-        $this->invoice->setReminderStatus(ReminderStatus::FAILED);
+        $this->repo->saveOrFail($reminder);
 
-        return false;
+        return true;
     }
 
     //  -------------------------------------------------------------------
@@ -413,20 +449,21 @@ class Notifier extends Base\Core
 
     protected function getRemindersCreateReminderInput(): array
     {
-        $reminder_data = [
+        $reminderData = [
             'issued_at' => $this->invoice->getIssuedAt(),
         ];
 
-        if( $this->invoice->getExpireBy() !== null)
+        if($this->invoice->getExpireBy() !== null)
         {
-            $reminder_data['expire_by'] = $this->invoice->getExpireBy();
+            $reminderData['expire_by'] = $this->invoice->getExpireBy();
+            unset($reminderData['issued_at']);
         }
 
         $request = [
             'namespace'     => 'payment_link',
             'entity_id'     => $this->invoice->getId(),
             'entity_type'   => $this->invoice->getEntityName(),
-            'reminder_data' => $reminder_data,
+            'reminder_data' => $reminderData,
             'callback_url'  => $this->getCallbackUrlForReminder(),
         ];
 
@@ -445,6 +482,7 @@ class Notifier extends Base\Core
         if(empty($expireBy) === false)
         {
             $reminderData['expire_by'] = $expireBy;
+            unset($reminderData['issued_at']);
         }
 
         $request = [
@@ -541,7 +579,7 @@ class Notifier extends Base\Core
 
         $expireBy = $this->invoice->getExpireBy();
 
-        if(empty($expireBy) === false)
+        if (empty($expireBy) === false)
         {
             $expireBy = Carbon::createFromTimestamp($expireBy, Timezone::IST)->format('d/m/Y');
         }
@@ -621,6 +659,7 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_INDIABULLS_FINANCE:
+                $sender = 'IDHANI';
                 $template = 'sms.custom_invoice.indiabull_custom';
                 $params = [
                     'amount'        => $this->invoice->getAmount() / 100,
@@ -724,6 +763,52 @@ class Notifier extends Base\Core
                 ];
 
                 break;
+            case Preferences::MID_BOB_2:
+                $sender = 'BOBFIN';
+                $template = 'sms.custom_invoice.bob_2';
+                $params = [
+                    'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+            case Preferences::MID_BOB_3:
+                $sender = 'BOBFIN';
+                $template = 'sms.custom_invoice.bob_3';
+                $params = [
+                    'receipt'       => $receipt,
+                    'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+            case Preferences::MID_BAGIC:
+                $sender = 'BAGICZ';
+                $template = 'sms.custom_invoice.bagic_pl';
+                $params = [
+                    'invoice_link'  => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_AGRI_LOAN:
+                $template = 'sms.custom_invoice.rbl_agri_loan';
+                $sender   = 'RBLBNK';
+                $params = [
+                    'receipt'       => $receipt,
+                    'amount'        => $this->invoice->getAmount() / 100,
+                    'invoice_link'  => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_LENDING_KART:
+                $sender = 'LDKART';
+
+                break;
+
+            case Preferences::MID_BFL:
+                $sender = 'SPRCRD';
+
+                break;
 
         }
 
@@ -746,10 +831,33 @@ class Notifier extends Base\Core
 
         $receipt = $this->invoice->getReceipt();
 
-        if ($merchant->getId() === Preferences::MID_RBL_RETAIL_ASSETS)
+        if ($merchant->getId() === Preferences::MID_RBL_RETAIL_ASSETS or
+            $merchant->getId() === Preferences::MID_RBL_INTERIM_PROCESS2)
         {
             $receipt = $this->invoice->getNotes()['loan_number'] ?? $receipt;
         }
+
+        $subscriptionRegistration = $this->invoice->entity;
+
+        if ($subscriptionRegistration->isMethodCard() === true)
+        {
+            $template = 'sms.custom_invoice.subr_card';
+        }
+
+        if ($subscriptionRegistration->isMethodEmandate() === true)
+        {
+            $template = 'sms.custom_invoice.subr_emandate';
+        }
+
+        $merchantName = $merchant->getBillingLabel();
+
+        $merchantName = substr($merchantName, 0, 30);
+
+        $params   = [
+            'merchant_name' => $merchantName,
+            'invoice_link'  => $this->invoice->getShortUrl(),
+            'amount'        => $this->invoice->getAmount() / 100,
+        ];
 
         $invoiceLink = $this->invoice->getShortUrl();
 
@@ -770,6 +878,7 @@ class Notifier extends Base\Core
 
             case Preferences::MID_INDIABULLS_FINANCE:
 
+                $sender = 'IDHANI';
                 $template = 'sms.custom_invoice.indiabulls_finance';
                 $params   = [
                     'receipt'      => $receipt,
@@ -790,6 +899,57 @@ class Notifier extends Base\Core
                     'rejection_reason' => $notes['rejection_reason'] ?? '',
                     'rejection_date'   => $notes['rejection_date'] ?? '',
                 ];
+
+                break;
+
+            case Preferences::MID_BAGIC:
+
+                $template = 'sms.custom_invoice.bagic_sub';
+
+                $sender = 'BAGICZ';
+
+                $params = [
+                    'invoice_link'    => $invoiceLink
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_INTERIM_PROCESS2:
+
+                $subscriptionRegistration = $this->invoice->entity;
+
+                if ($subscriptionRegistration->isMethodCard() === true)
+                {
+                    $template = 'sms.custom_invoice.subr_card';
+
+                    $merchantName = $merchant->getBillingLabel();
+
+                    $merchantName = substr($merchantName, 0, 30);
+
+                    $params   = [
+                        'merchant_name' => $merchantName,
+                        'invoice_link'  => $this->invoice->getShortUrl(),
+                        'amount'        => $this->invoice->getAmount() / 100,
+                    ];
+                }
+
+                if ($subscriptionRegistration->isMethodEmandate() === true)
+                {
+                    $sender = 'RBLBNK';
+
+                    $template = 'sms.custom_invoice.rbl_interim_process2';
+
+                    $params = [
+                        'receipt'           => $receipt,
+                        'invoice_link'      => $invoiceLink,
+                    ];
+                }
+
+                break;
+
+            case Preferences::MID_LENDING_KART:
+
+                $sender = 'LDKART';
 
                 break;
 

@@ -1,17 +1,8 @@
 FROM razorpay/armory:wkhtmltopdf-v182 as wkhtmltopdf
 
-FROM razorpay/onggi:php-7.2-apache
-
-# Hack to load php gnu-libiconv.so
-# https://github.com/docker-library/php/issues/240#issuecomment-327992638
-RUN apk add --allow-untrusted --no-cache \
-    --repository http://dl-4.alpinelinux.org/alpine/latest-stable/community gnu-libiconv && \
-    apk add --allow-untrusted --no-cache libxrender libx11-dev fontconfig zlib-dev \
-    ca-certificates glib ttf-freefont dbus p7zip php7-sockets php7-mysqlnd wkhtmltopdf
+FROM razorpay/onggi:php-7.2-apache-api
 
 COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
-
-ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
 VOLUME ['/app']
 

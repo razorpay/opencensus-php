@@ -41,6 +41,8 @@ class BatchHelper
             PayoutModel\Entity::REFERENCE_ID    => $entry[self::PAYOUT][self::REFERENCE_ID],
             // Notes is optional.
             PayoutModel\Entity::NOTES           => $entry[self::NOTES] ?? [],
+            PayoutModel\Entity::IDEMPOTENCY_KEY => $entry[Entity::IDEMPOTENCY_KEY],
+
         ];
 
         $input[PayoutModel\Entity::NOTES] = self::formatNotesInput($input[PayoutModel\Entity::NOTES]);

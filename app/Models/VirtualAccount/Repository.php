@@ -15,14 +15,15 @@ class Repository extends Base\Repository
 
     protected function addQueryParamReceiverType(BuilderEx $query, array $params)
     {
-        if ($params[Entity::RECEIVER_TYPE] === Receiver::BANK_ACCOUNT)
+        $receiverTypes = explode(',', $params[Entity::RECEIVER_TYPE]);
+
+        $query->where(function ($query) use ($receiverTypes)
         {
-            $query->whereNotNull(Entity::BANK_ACCOUNT_ID);
-        }
-        else if ($params[Entity::RECEIVER_TYPE] === Receiver::QR_CODE)
-        {
-            $query->whereNotNull(Entity::QR_CODE_ID);
-        }
+            foreach ($receiverTypes as $receiverType)
+            {
+                $query->orWhereNotNull($receiverType . '_id');
+            }
+        });
     }
 
     public function getActiveVirtualAccountFromBalanceId(string $balanceId)
@@ -110,4 +111,13 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function getActiveVirtualAccountFromVpaId(string $vpaId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->where(Entity::VPA_ID, '=', $vpaId)
+                    ->first();
+    }
+
 }

@@ -55,8 +55,8 @@ class CreateOffers extends Migration
             $table->tinyInteger(Offer::CHECKOUT_DISPLAY)
                     ->default(0);
 
-            $table->string(Offer::TYPE, 15)
-                  ->default(Offer::DEFERRED);
+            $table->string(Offer::TYPE, 20)
+                  ->default(Offer::INSTANT);
 
             $table->integer(Offer::PERCENT_RATE)
                   ->nullable();
@@ -77,6 +77,15 @@ class CreateOffers extends Migration
                   ->nullable();
 
             $table->integer(Offer::MAX_PAYMENT_COUNT)
+                  ->nullable();
+
+            $table->integer(Offer::MAX_OFFER_USAGE)
+                  ->nullable();
+
+            $table->integer(Offer::CURRENT_OFFER_USAGE)
+                  ->nullable();
+
+            $table->integer(Offer::MAX_ORDER_AMOUNT)
                   ->nullable();
 
             $table->text(Offer::LINKED_OFFER_IDS)
@@ -116,6 +125,9 @@ class CreateOffers extends Migration
             $table->index(Offer::ACTIVE);
 
             $table->index(Offer::CHECKOUT_DISPLAY);
+
+            $table->tinyInteger(Offer::DEFAULT_OFFER)
+                  ->default(0);
 
             $table->foreign(Offer::MERCHANT_ID)
                   ->references(Merchant::ID)

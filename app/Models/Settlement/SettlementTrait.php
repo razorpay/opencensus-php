@@ -18,6 +18,8 @@ use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Constants\Entity as EntityConstant;
+use RZP\Models\FundTransfer\Attempt\Purpose;
 use RZP\Models\Settlement\Merchant as SetlMerchant;
 use RZP\Constants\SettlementChannelMedium as Medium;
 
@@ -50,7 +52,7 @@ trait SettlementTrait
      * @param Merchant\Entity $merchant
      * @return bool
      */
-    protected function isMerchantSettlementAllowed(Merchant\Entity $merchant): bool
+    public function isMerchantSettlementAllowed(Merchant\Entity $merchant): array
     {
         // process settlement only for activated merchants
         if ($merchant->isSuspended() === true)
@@ -61,7 +63,13 @@ trait SettlementTrait
                     'reason' => 'merchant is not active',
                 ]);
 
-            return false;
+            return [
+                false,
+                [
+                    'caption' => 'Settlement is not enabled',
+                    'reason'  => 'Only active merchants can get settlements',
+                ]
+            ];
         }
 
         // Do not proceed further if merchant funds are on hold
@@ -73,10 +81,36 @@ trait SettlementTrait
                     'reason' => 'merchant funds are on hold',
                 ]);
 
-            return false;
+            return [
+                false,
+                [
+                    'caption' => 'Settlements are on hold',
+                    'reason'  => $merchant->getHoldFundsReason(),
+                ]
+            ];
         }
 
         $merchantSettleToPartner = (new Merchant\Core)->getPartnerBankAccountIdsForSubmerchants([$merchant->getId()]);
+
+        if ($this->skipSpecificMerchants($merchant) === true)
+        {
+            return [
+                false,
+                [
+                    'caption' => 'Settlement will be skipped',
+                    'reason'  => 'Settlements skipped based on merchant preference',
+                ]
+            ];
+        }
+
+        $destinationMerchantId = $this->settlementToPartner($merchant->getId());
+
+        $isAggregateSettlement = (bool) $destinationMerchantId;
+
+        if($isAggregateSettlement === true)
+        {
+            return [true, []];
+        }
 
         if (isset($merchantSettleToPartner[$merchant->getId()]) === true)
         {
@@ -89,7 +123,7 @@ trait SettlementTrait
             $bankAccount = $merchant->bankAccount;
         }
 
-        // Do not proceed if merchant does not have active bank account
+        // Do not proceed if merchant does not have active bank account and the merchant is not settling to the partner.
         if ($bankAccount === null)
         {
             $this->traceMerchantSettlementSkip(
@@ -98,12 +132,13 @@ trait SettlementTrait
                     'reason' => 'merchant doesnt have a active bank account registered',
                 ]);
 
-            return false;
-        }
-
-        if ($this->skipSpecificMerchants($merchant) === true)
-        {
-            return false;
+            return [
+                false,
+                [
+                    'caption' => 'Settlement will be skipped',
+                    'reason'  => 'Merchant doesnt have a active bank account registered',
+                ]
+            ];
         }
 
         $channel = $merchant->getChannel();
@@ -117,7 +152,7 @@ trait SettlementTrait
         if (($this->env !== Environment::TESTING) and
             (in_array($channel, $allowedChannelFor24x7Settlement, true) === true))
         {
-            return true;
+            return [true, []];
         }
 
         $today = Carbon::today(Timezone::IST);
@@ -140,10 +175,19 @@ trait SettlementTrait
                     'bank_account_created' => $createdAt,
                 ]);
 
-            return false;
+            return [
+                false,
+                [
+                    'caption' => 'There won\'t be any settlement',
+                    'reason'  => 'Bank account created yesterday. bank account was created/updated at '
+                        . $createdAt
+                        . '. It would require a day (except bank holidays)'
+                        . ' to register the same with our banking partners'
+                ]
+            ];
         }
 
-        return true;
+        return [true, []];
     }
 
     /**
@@ -669,6 +713,7 @@ trait SettlementTrait
                 [
                     'balance_id'   => $balance->getId(),
                     'balance_type' => $balance->getType(),
+                    'balance'      => $balance->getBalance(),
                     'merchant'     => $merchant->getId(),
                     'setlAmount'   => $setlAmount,
                     'reason'       => 'settlement amount less than 1rs or greater than balance',
@@ -679,10 +724,14 @@ trait SettlementTrait
 
         try
         {
-            list($setl, $bankTransferAtpt) = $this->settleForMerchant(
-                $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner, $balance, $params);
+            list($setl, $transferAttempt) =
+                $this->repo->transaction(function () use($merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee,
+                                                        $tax, $merchantSettleToPartner, $balance, $params){
+                 return $this->settleForMerchant($merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax,
+                                                   $merchantSettleToPartner, $balance, $params);
+            });
 
-            if(($setl !== null) and ($bankTransferAtpt !== null))
+            if(($setl !== null) and ($transferAttempt !== null))
             {
                 $transactionCount = $txns->count();
 
@@ -703,11 +752,23 @@ trait SettlementTrait
                 $medium = in_array($channel, Channel::getApiBasedChannels(), true) ?
                     Medium::API : Medium::FILE;
 
+                $destination = $this->repo
+                                    ->settlement_destination
+                                    ->fetchActiveDestination($setl->getId());
+
+                $destinationType = null;
+
+                if($destination !==null)
+                {
+                    $destinationType = $destination->getDestinationType();
+                }
+
                 $customProperties += [
-                    'fund_transfer_attempt_id'                => $bankTransferAtpt->getId(),
-                    'fund_transfer_attempt_mode'              => $bankTransferAtpt->getMode(),
+                    'fund_transfer_attempt_id'                => $transferAttempt->getId(),
+                    'fund_transfer_attempt_mode'              => $transferAttempt->getMode(),
                     'fund_transfer_attempt_medium'            => $medium,
-                    'fund_transfer_attempt_purpose'           => $bankTransferAtpt->getPurpose(),
+                    'fund_transfer_attempt_purpose'           => Purpose::SETTLEMENT,
+                    'destination_type'                        => $destinationType,
                 ];
 
                 $this->app['diag']->trackSettlementEvent(
@@ -717,7 +778,7 @@ trait SettlementTrait
                     $customProperties);
             }
 
-            return [$setl, $bankTransferAtpt];
+            return [$setl, $transferAttempt];
         }
         catch (\Exception $exception)
         {
@@ -868,42 +929,62 @@ trait SettlementTrait
     {
         $settlement = null;
 
-        $bankTransferAtpt = null;
+        $transferAttempt = null;
 
         $mutexResource = sprintf(PayoutCore::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
-            function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $bankTransferAtpt,
+            function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $transferAttempt,
                  $merchantSettleToPartner, $balance, $params) {
                 try
                 {
-                    // create settlement and attempt
-                    $merchantSettler = new SetlMerchant(
-                        $merchant,
-                        $channel,
-                        $this->repo,
-                        $this->isDebugEnabled(),
-                        $merchantSettleToPartner);
+                        $destinationMerchantId = $this->settlementToPartner($merchant->getId());
 
-                    $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
+                        $isAggregateSettlement = (bool) $destinationMerchantId;
 
-                    $this->traceSettlementDelayOfTransactions($setlTxns);
+                        // create settlement and attempt
+                        $merchantSettler = new SetlMerchant(
+                            $merchant,
+                            $channel,
+                            $this->repo,
+                            $this->isDebugEnabled(),
+                            $merchantSettleToPartner,
+                            $isAggregateSettlement);
 
-                    $settlement = $merchantSettler->settle(
-                        $setlTxns,
-                        $setlAmount,
-                        $setlFee,
-                        $setlApiFee,
-                        $tax,
-                        $this->setlTime,
-                        $setlDetailAmounts,
-                        $merchantSettleToPartner,
-                        $balance);
+                        $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
-                    $merchantSettler->createTransaction($settlement);
+                        $this->traceSettlementDelayOfTransactions($setlTxns);
 
-                    $bankTransferAtpt = $merchantSettler->createSettlementAttempt($merchantSettleToPartner, $params);
+                        $settlement = $merchantSettler->settle(
+                            $setlTxns,
+                            $setlAmount,
+                            $setlFee,
+                            $setlApiFee,
+                            $tax,
+                            $this->setlTime,
+                            $setlDetailAmounts,
+                            $merchantSettleToPartner,
+                            $balance);
+
+                        $merchantSettler->createTransaction($settlement);
+
+                        $transferAttempt = null;
+
+                        if ($destinationMerchantId !== null)
+                        {
+
+                            $transferAttempt = (new Transfer\Core)->transfer(
+                                $settlement,
+                                $destinationMerchantId,
+                                $balance->getType());
+                        }
+                        else
+                        {
+                            $transferAttempt = $merchantSettler->createSettlementAttempt($merchantSettleToPartner, $params);
+                        }
+
+                        return [$settlement, $transferAttempt];
                 }
                 catch (\Exception $ex)
                 {
@@ -916,13 +997,6 @@ trait SettlementTrait
                     if ($settlement !== null)
                     {
                         $traceData['settlement_id'] = $settlement->getId();
-
-                        //
-                        // Mark it failed anyway, so that it can be retried
-                        //
-                        $settlement->setStatus(Status::FAILED);
-
-                        $this->repo->saveOrFail($settlement);
                     }
 
                     $this->trace->traceException(
@@ -932,10 +1006,8 @@ trait SettlementTrait
                         $traceData);
 
                     (new SlackNotification)->send('setl_skipped', $traceData, $ex);
-                }
-                finally
-                {
-                    return [$settlement, $bankTransferAtpt];
+
+                    throw $ex;
                 }
             },
             PayoutCore::PAYOUT_MUTEX_LOCK_TIMEOUT,
@@ -1237,5 +1309,46 @@ trait SettlementTrait
         );
 
         return $filterGroupedTxns;
+    }
+
+    /**
+     * given partner Id if the settlement has to be aggregated at parent level
+     * it'll give the merchant ID if there is any mapping found else will return null
+     * In case of multiple partner map it'll give null
+     *
+     * @param string $merchantId
+     *
+     * @return string|null
+     */
+    protected function settlementToPartner(string $merchantId)
+    {
+        $merchantList = $this->repo
+                             ->merchant_access_map
+                             ->fetchAffiliatedPartnersForSubmerchant($merchantId);
+
+        //
+        // if the list is empty then there is not partner to settle to
+        // if there are multiple partners then we ignore this
+        // currently this is specific to phonePe use case.
+        //
+        if (($merchantList->isEmpty() === true) or ($merchantList->count() > 1))
+        {
+            return null;
+        }
+
+        $parentMerchantID = $merchantList->first()
+                                         ->getEntityOwnerId();
+
+        //
+        // check if the parent is enabled with aggregate settlement feature
+        //
+        $feature = $this->repo
+                        ->feature
+                        ->findByEntityTypeEntityIdAndName(
+                            EntityConstant::MERCHANT,
+                            $parentMerchantID,
+                            Feature\Constants::AGGREGATE_SETTLEMENT);
+
+        return ($feature === null) ? null : $parentMerchantID;
     }
 }

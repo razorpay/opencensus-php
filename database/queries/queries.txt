@@ -1,22 +1,22 @@
-Alter table cards
-    add merchant_id varchar(14) after id;
+ALTER TABLE cards
+    ADD merchant_id varchar(14) after id;
 
-alter table merchant_documents
-    modify file_store_id char(14) NULL;
+ALTER TABLE merchant_documents
+    MODIFY file_store_id char(14) NULL;
 
 ALTER TABLE merchant_documents
     ADD INDEX (`file_store_id`);
 
-update cards, payments
-    set cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
+UPDATE cards, payments
+    SET cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
 
 ALTER TABLE cards MODIFY COLUMN merchant_id VARCHAR(14) NOT NULL,
     ADD CONSTRAINT cards_merchant_id_foreign FOREIGN KEY(merchant_id)
     REFERENCES merchants(id) ON DELETE RESTRICT;
 ALTER TABLE `cards` ADD INDEX `cards_network_index` (`network`);
 
-alter table transactions
-    add channel VARCHAR(8) NOT NULL after escrow_balance;
+ALTER TABLE transactions
+    ADD channel VARCHAR(8) NOT NULL after escrow_balance;
 ALTER TABLE transactions
     ADD INDEX transactions_channel_index (`channel`);
 
@@ -2411,7 +2411,8 @@ UPDATE hdfc
 
 UPDATE hdfc
     SET gateway_payment_id = gateway_transaction_id
-    WHERE gateway_payment_id IS NULL AND created_at <= 1502841600 AND action IN ('1', '4');
+    WHERE gateway_payment_id IS NULL AND created_at
+    = 1502841600 AND action IN ('1', '4');
 
 # Adding index on payments.updated_at, payments.captured_at
 # Useful for analytics queries
@@ -5375,6 +5376,7 @@ ALTER TABLE merchant_details
     ADD COLUMN `poa_verification_status` varchar(30) DEFAULT NULL AFTER `poi_verification_status`,
     ADD COLUMN `bank_details_verification_status` varchar(30) DEFAULT NULL AFTER `poa_verification_status`;
 
+
 ALTER TABLE merchant_details
 add column `kyc_clarification_reasons` JSON NULL,
 add column `kyc_additional_details` JSON NULL;
@@ -5412,6 +5414,14 @@ ALTER TABLE settlement_bucket
     ADD COLUMN balance_type char(14) DEFAULT 'primary' AFTER `merchant_id`,
     DROP INDEX `settlement_bucket_merchant_id_bucket_timestamp_unique`,
     ADD INDEX `settlement_bucket_m_id_balance_type_bucket_timestamp_index` (`merchant_id`,`balance_type`,`bucket_timestamp`);
+
+ALTER TABLE offers
+    ADD COLUMN max_offer_usage int(11) DEFAULT NULL;
+    ADD COLUMN current_offer_usage int(11) DEFAULT NULL;
+
+# adds fee_bearer column for payments (renaming the existing column 'reference12')
+ALTER TABLE payments
+    CHANGE COLUMN reference12 fee_bearer BIGINT;
 
 ALTER TABLE merchant_invoice
     MODIFY COLUMN invoice_number varchar(255) NOT NULL,
@@ -5495,6 +5505,19 @@ ALTER TABLE `p2p_concerns`
 
 -- P2P - Adding Indices
 
+ALTER TABLE `iins`
+    ADD COLUMN `product_code` VARCHAR(255) DEFAULT NULL AFTER `sub_type`;
+
+---Virtual VPA----
+
+ALTER TABLE `terminals`
+  ADD COLUMN `virtual_upi_root` VARCHAR(20) NULL DEFAULT NULL after `ifsc_code`,
+  ADD COLUMN `virtual_upi_merchant_prefix` VARCHAR(20) NULL DEFAULT NULL  after `virtual_upi_root`,
+  ADD COLUMN `virtual_upi_handle` VARCHAR(20) NULL DEFAULT NULL after `virtual_upi_merchant_prefix`;
+
+ALTER TABLE `virtual_accounts`
+  CHANGE COLUMN`vpa` `vpa_id` VARCHAR(14) NULL DEFAULT NULL;
+
 ALTER TABLE fund_account_validations
     CHANGE COLUMN currency currency CHAR(3) NULL;
 
@@ -5508,3 +5531,76 @@ ALTER TABLE `mozart`
 
 ALTER TABLE `terminals`
     ADD INDEX `terminals_bank_transfer_index` (`bank_transfer`);
+
+ALTER TABLE `tokens`
+    ADD COLUMN `start_time` INTEGER UNSIGNED DEFAULT NULL AFTER `recurring_failure_reason`;
+
+ALTER TABLE banking_account_statement
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER type,
+    ADD INDEX banking_account_statement_utr_index (utr);
+
+ALTER TABLE external
+    ADD COLUMN deleted_at INT UNSIGNED DEFAULT NULL AFTER updated_at,
+    ADD INDEX external_deleted_at_index (deleted_at);
+
+ALTER TABLE partner_configs
+    ADD COLUMN `default_payment_methods` JSON NULL AFTER `commissions_enabled`;
+
+ALTER TABLE gateway_downtimes
+    Add COLUMN psp VARCHAR(255) DEFAULT NULL AFTER method;
+
+ALTER TABLE merchant_details
+    ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN gateway_ref_no varchar(255) DEFAULT NULL,
+    ADD UNIQUE INDEX fund_transfer_attempts_gateway_ref_no_unique (gateway_ref_no);
+
+ALTER TABLE `transfers`
+    ADD INDEX `transfers_source_id_index` (`source_id`),
+    ADD INDEX `transfers_source_type_status_index` (`source_type`, `status`);
+
+// Already ran on production.
+ALTER TABLE `terminals`
+    CHANGE `gateway_secure_secret` `gateway_secure_secret` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL,
+    CHANGE `gateway_secure_secret2` `gateway_secure_secret2` TEXT CHARACTER SET utf8 COLLATE utf8_bin NULL;
+
+ALTER TABLE worldline
+	ADD COLUMN gateway_utr VARCHAR(255) DEFAULT NULL AFTER ref_no;
+
+ALTER TABLE `vpas`
+    ADD COLUMN `deleted_at` INTEGER DEFAULT NULL AFTER `updated_at`;
+
+ALTER TABLE `action_checker`
+    ADD COLUMN `user_comment` VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE offers
+    ADD COLUMN default_offer bool DEFAULT 0,
+    ADD COLUMN max_order_amount int(11) DEFAULT NULL,
+    MODIFY type VARCHAR(20);
+
+// For saved vpas.
+ALTER TABLE `tokens`
+    ADD COLUMN `vpa_id` varchar(14) NULL DEFAULT NULL;
+
+ALTER TABLE `merchant_documents`
+    ADD COLUMN `source` enum('API', 'UFH') NOT NULL DEFAULT 'API' ;
+
+ALTER TABLE pricing
+     MODIFY COLUMN amount_range_min BIGINT(20) unsigned DEFAULT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN kyc_id char(14) DEFAULT NULL ;
+
+ALTER TABLE payouts
+   ADD COLUMN payout_link_id CHAR(14) DEFAULT NULL AFTER `idempotency_key`,
+   ADD INDEX `payouts_payout_link_id_index` (`payout_link_id`);
+
+ALTER TABLE `upi_transfers`
+    ADD COLUMN `transaction_reference` VARCHAR (255) DEFAULT NULL;
+
+ALTER TABLE disputes
+    ADD COLUMN base_amount BIGINT UNSIGNED DEFAULT NULL AFTER currency,
+    ADD COLUMN base_currency CHAR(3) DEFAULT NULL AFTER base_amount,
+    ADD COLUMN gateway_amount BIGINT UNSIGNED DEFAULT NULL AFTER base_currency,
+    ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL AFTER gateway_amount;

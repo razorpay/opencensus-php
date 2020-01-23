@@ -24,7 +24,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::FIRST_NAME          => 'sometimes|string|max:255',
         Entity::LAST_NAME           => 'sometimes|string|max:255',
-        Entity::DATE_OF_BIRTH       => 'sometimes|',
+        Entity::DATE_OF_BIRTH       => 'sometimes|date_format:Y-m-d|before:today',
         Entity::GENDER              => 'sometimes|in:male,female',
         Entity::CONTACT_MOBILE      => 'sometimes|max:15',
         Entity::EMAIL               => 'sometimes|email',

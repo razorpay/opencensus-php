@@ -151,6 +151,9 @@ return [
             ],
             Permission::EDIT_MERCHANT_FEATURES              => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
+
+            Permission::EDIT_MERCHANT_WEBSITE_DETAIL        => '',
+
             Permission::EDIT_IIN_RULE                       => '',
             Permission::EDIT_IIN_RULE_BULK                  => [
                 'description' => 'Bulk Edit IIN Rule',
@@ -798,6 +801,24 @@ return [
             Permission::P2P_MANAGE_MERCHANT => [
                 'description'   => 'Allows to manage merchant setup',
                 'assignable'    => true,
+            ],
+        ],
+
+        PermissionCategory::RENDERING_PREFERENCES => [
+            Permission::MANAGE_RENDERING_PREFERENCES => [
+                'description' => 'Manage rendering preferences from admin dashboard',
+                'assignable'  => true
+            ]
+        ],
+
+        PermissionCategory::DOWNTIME_CONFIG => [
+            Permission::UPDATE_DOWNTIME_CONFIG => [
+                'description'   => 'Update Downtime Configuration',
+                'assignable'    => true
+            ],
+            Permission::LIST_DOWNTIME_CONFIG => [
+                'description'   => 'List Downtime Configuration',
+                'assignable'    => true
             ],
         ],
     ],

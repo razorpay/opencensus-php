@@ -505,6 +505,79 @@ class TransactionTest extends TestCase
         $this->assertEquals($oldBalance['balance']+ ($payment['amount'] - $payment['fee']), $balance['balance']);
     }
 
+    public function testTransactionHold()
+    {
+        $transaction = $this->fixtures->create('transaction', ['merchant_id' => '10000000000000']);
+
+        $request = [
+            'content' => [
+                'transaction_ids' => [$transaction->getId()],
+                'reason'          => 'Faulty Transaction',
+            ],
+            'url' => '/transactions/hold',
+            'method' => 'PATCH',
+        ];
+
+        $this->ba->adminAuth();
+
+        $result = $this->makeRequestAndGetContent($request);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($txn['on_hold']);
+
+        $this->assertEquals(1, $result['total_requests']);
+
+        $this->assertEquals(1, $result['successfully_updated']);
+
+        $this->assertEquals(0, $result['failed']);
+
+    }
+
+    public function testTransactionRelease()
+    {
+        $transaction = $this->fixtures->create('transaction', ['merchant_id' => '10000000000000']);
+
+        $request = [
+            'content' => [
+                'transaction_ids' => [$transaction->getId()],
+                'reason'          => 'Faulty Transaction',
+            ],
+            'url' => '/transactions/hold',
+            'method' => 'PATCH',
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($txn['on_hold']);
+
+        $request2 = [
+            'content' => [
+                'transaction_ids' => [$transaction->getId()],
+            ],
+            'url' => '/transactions/release',
+            'method' => 'PATCH',
+        ];
+
+        $this->ba->adminAuth();
+
+        $result = $this->makeRequestAndGetContent($request2);
+
+        $txn2 = $this->getLastEntity('transaction', true);
+
+        $this->assertFalse($txn2['on_hold']);
+
+        $this->assertEquals(1, $result['total_requests']);
+
+        $this->assertEquals(1, $result['successfully_updated']);
+
+        $this->assertEquals(0, $result['failed']);
+    }
+
     protected function createMultipleTransactions()
     {
         $payments = $this->fixtures->times(5)->create(

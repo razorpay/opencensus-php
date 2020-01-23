@@ -31,6 +31,7 @@ trait WebhookTrait
 
         $times = 0;
 
+        $with = [];
         // 1st argument of fire method is a job class of type Jobs\Webhook
         $arg1Callback = function ($job)
         {

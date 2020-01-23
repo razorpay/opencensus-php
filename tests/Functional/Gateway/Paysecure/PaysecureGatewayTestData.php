@@ -35,6 +35,21 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
         ],
     ],
+    'testInititiate2CardEnrollmentError' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_CARD_NOT_ENROLLED,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_CARD_NOT_ENROLLED,
+        ],
+    ],
     'testInititiateFailure' => [
         'response' => [
             'content' => [
@@ -125,8 +140,22 @@ return [
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         ],
     ],
-
-    'testVerifyFailedPayment' => [
+    'testVerifyMissingCallbackPayment' => [
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\PaymentVerificationException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+    'testVerifyAuthTimeoutPayment' => [
         'response'  => [
             'content'     => [
                 'error' => [

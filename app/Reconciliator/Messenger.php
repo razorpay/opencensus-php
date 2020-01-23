@@ -5,6 +5,7 @@ namespace RZP\Reconciliator;
 use App;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base\InfoCode;
+use RZP\Reconciliator\RequestProcessor\Base as RPBase;
 
 class Messenger
 {
@@ -69,8 +70,9 @@ class Messenger
     {
         $flag = false;
 
-        if ((isset($data[self::TRACE_CODE]) === true)                 and
-            ($data[self::TRACE_CODE] === TraceCode::RECON_INFO_ALERT) and
+        if ((isset($data[self::TRACE_CODE]) === true)                    and
+            (($data[self::TRACE_CODE] === TraceCode::RECON_INFO_ALERT)     or
+            ($data[self::TRACE_CODE] === TraceCode::RECON_CRITICAL_ALERT)) and
             (isset($data[self::INFO_CODE]) === true))
         {
             switch ($data[self::INFO_CODE])
@@ -86,6 +88,27 @@ class Messenger
                         {
                             $flag = true;
                         }
+                    }
+
+                    // Temporarily disabling slack alert for Olamoney as
+                    // we are getting too many alerts. Will enable once
+                    // the issue is fixed.
+                    if ($data[RPBase::GATEWAY] === RPBase::OLAMONEY)
+                    {
+                        $flag = true;
+                    }
+                    break;
+
+                case InfoCode::MIS_FILE_PAYMENT_FAILED:
+                    //Disabling slack alert for VirtualAccYesBank,
+                    //as trans_status column now contains "pending credit"
+                    //for some rows, which get marked as recon failure.
+                    //Have been getting many alerts of this sort, so
+                    //scheduling mail for this, and removing alerts.
+                    if ((isset($data[RPBase::GATEWAY]) === true)            and
+                        ($data[RPBase::GATEWAY] === RPBase::VIRTUAL_ACC_YESBANK))
+                    {
+                        $flag = true;
                     }
             }
         }

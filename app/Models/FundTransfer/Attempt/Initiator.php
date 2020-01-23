@@ -76,9 +76,17 @@ class Initiator extends Base\Core
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, $input[Entity::PURPOSE], $input[Entity::SOURCE_TYPE]);
 
-        $limit = $this->getLimitForChannel($channel) ?? self::DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT;
+        // Default timeout to be used for file based channels.
+        $mutexTimeout = self::REQUEST_TIMEOUT;
 
-        $mutexTimeout = $limit * self::REQUEST_TIMEOUT;
+        $apiChannels = Channel::getApiBasedChannels();
+
+        if (in_array($channel, $apiChannels, true) === true)
+        {
+            $limit = $this->getLimitForChannel($channel) ?? self::DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT;
+
+            $mutexTimeout = $limit * self::REQUEST_TIMEOUT;
+        }
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
@@ -141,11 +149,19 @@ class Initiator extends Base\Core
 
             $data[$channel] = [];
 
+            $forceFlag = false;
+
+            if ((isset($input[Constants::IGNORE_TIME_LIMIT]) === true) and
+                ($input[Constants::IGNORE_TIME_LIMIT] === '1'))
+            {
+                $forceFlag = true;
+            }
+
             // Since yesbank fund transfer with purpose settlement need Beneficiary
             // Registration and verification, they will go via queue.
             if (($channel === Channel::YESBANK) and ($purpose == Type::SETTLEMENT))
             {
-                $response = $this->dispatchTransfers($channel, $attempts);
+                $response = $this->dispatchTransfers($channel, $attempts, $forceFlag);
             }
             else
             {
@@ -159,7 +175,7 @@ class Initiator extends Base\Core
     }
 
     public function processFundTransferAttempts(
-        string $channel, Base\PublicCollection $attempts): array
+        string $channel, Base\PublicCollection $attempts, bool $forceFlag = false): array
     {
         $count = $attempts->count();
 
@@ -179,38 +195,47 @@ class Initiator extends Base\Core
         $medium = (in_array($channel, Channel::getApiBasedChannels(), true) === true) ?
             Medium::API : Medium::FILE;
 
+        $customProperties = [
+            'channel'                       => $channel,
+            'fund_transfer_attempt_count'   => $count,
+            'fund_transfer_attempt_purpose' => $purpose,
+            'fund_transfer_attempt_medium'  => $medium,
+        ];
+
+        $this->raiseSettlementEvent(
+            EventCode::BATCH_FUND_TRANSFER_CREATION_INITIATED,
+            null,
+            null,
+            $customProperties);
+
         try
         {
-            $customProperties = [
-                'channel'                       => $channel,
-                'fund_transfer_attempt_count'   => $count,
-                'fund_transfer_attempt_purpose' => $purpose,
-                'fund_transfer_attempt_medium'  => $medium,
-            ];
-
-            $this->raiseSettlementEvent(
-                EventCode::BATCH_FUND_TRANSFER_CREATION_INITIATED,
-                null,
-                null,
-                $customProperties);
-
-            list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
-                $attempts,
-                function(PublicCollection $collection) use ($purpose, $channel)
-                {
-                    $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
-
-                    return [
-                        (new $class($purpose))->initiateTransfer($collection),
-                        $collection
-                    ];
-                });
-
             $allowedChannels = Channel::getApiBasedChannels();
+
+            $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+
+            $attemptInitiator = new $class($purpose);
 
             if (in_array($channel, $allowedChannels, true) === true)
             {
+                list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
+                    $attempts,
+                    function(PublicCollection $collection) use ($purpose, $channel, $forceFlag, $attemptInitiator)
+                    {
+                        return [
+                            $attemptInitiator->initiateTransfer($collection, $forceFlag),
+                            $collection
+                        ];
+                    });
+
                 $this->dispatchForReconAndStatusCheck($attemptedFTAs);
+            }
+            else
+            {
+                // File based channels to use a timeout of 30 sec
+                $response = $attemptInitiator->initiateTransfer($attempts, $forceFlag);
+
+                $attemptedFTAs = $attempts;
             }
 
             $data += $response;
@@ -223,12 +248,12 @@ class Initiator extends Base\Core
                 (new SlackNotification)->send('setl_initiate', $slackData);
             }
 
-            if(empty($attemptedFTAs) === false)
+            if($attemptedFTAs->isEmpty() === false)
             {
                 $this->raiseBatchFtaCreatedEvent($channel, $attemptedFTAs, $purpose, $medium);
             }
         }
-        catch (\Exception $exception)
+        catch (\Throwable $exception)
         {
             $customProperties = [
                 'channel'                       => $channel,
@@ -243,6 +268,19 @@ class Initiator extends Base\Core
                 $exception,
                 $customProperties);
 
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_FAILED,
+                [
+                    'channel'                       => $channel,
+                    'fund_transfer_attempt_count'   => $count,
+                    'fund_transfer_attempt_purpose' => $purpose,
+                    'fund_transfer_attempt_medium'  => $medium,
+                ]
+               );
+
+            throw  $exception;
         }
 
         return $data;
@@ -508,8 +546,9 @@ class Initiator extends Base\Core
      *
      * @param Entity $fta
      * @param        $channel
+     * @param        $forceFlag
      */
-    public function initFundTransferOnChannel(Entity $fta, $channel)
+    public function initFundTransferOnChannel(Entity $fta, $channel, bool $forceFlag = false)
     {
         $data = [
             'fta_id'  => $fta->getId(),
@@ -521,7 +560,7 @@ class Initiator extends Base\Core
 
         $attempts = (new PublicCollection)->push($fta);
 
-        $response = $this->processFundTransferAttempts($channel, $attempts);
+        $response = $this->processFundTransferAttempts($channel, $attempts, $forceFlag);
 
         $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data + $response);
     }
@@ -586,9 +625,10 @@ class Initiator extends Base\Core
      * Takes a list of attempt ids and dispatches to the queue
      * @param string $channel
      * @param PublicCollection $attempts
+     * @param forceFlag
      * @return array
      */
-    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts): array
+    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts, bool $forceFlag = false): array
     {
         $attemptIds = $attempts->pluck(Entity::ID);
 
@@ -611,7 +651,7 @@ class Initiator extends Base\Core
                         'data'    => $info
                     ]);
 
-                FundTransfer::dispatch($this->mode, $id);
+                FundTransfer::dispatch($this->mode, $id, $forceFlag);
 
                 $successCount ++;
 
@@ -707,26 +747,6 @@ class Initiator extends Base\Core
     {
         try
         {
-            if ($fta->shouldUseGateway() === true)
-            {
-                return false;
-            }
-
-            $redis = $this->app['redis']->connection();
-
-            $ftsChannelMode = $redis->HGET(ConfigKey::FTS_CHANNELS, $fta->getChannel());
-
-            if (empty($ftsChannelMode) === true)
-            {
-                $this->trace->info(
-                    TraceCode::FTS_INVALID_CHANNEL,
-                    [
-                        'channel' => $fta->getChannel(),
-                    ]);
-
-                return false;
-            }
-
             FtsFundTransfer::dispatch($this->mode, $fta->getId());
 
             $this->trace->info(
@@ -873,7 +893,7 @@ class Initiator extends Base\Core
 
         return $response;
     }
-  
+
     protected function raiseSettlementEvent(array $eventDetails,
                                             Settlement\Entity $settlement = null,
                                             \Throwable $exception = null,
@@ -886,7 +906,7 @@ class Initiator extends Base\Core
             $exception,
             $customProperties);
     }
-    
+
     // This will return the mode which are unsupported due to being outside of timing window.
     // The time uses minimum Start Timing of all banks supported for razorpayX payouts and
     // maximum ending timing. Since Nodal account class for each channel has its own timing

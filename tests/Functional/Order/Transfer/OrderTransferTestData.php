@@ -16,6 +16,12 @@ return [
                         'account'  => 'acc_10000000000001',
                         'amount'   => '50000',
                         'currency' => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
                     ],
                 ],
             ],
@@ -29,6 +35,12 @@ return [
                         'recipient' => 'acc_10000000000001',
                         'amount'    => 50000,
                         'currency'  => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
                     ],
                 ],
             ],
@@ -119,6 +131,7 @@ return [
             ],
         ],
     ],
+
     'testProcessOrderTransfersPartialPayment' => [
         'request'   => [
             'method'  => 'POST',
@@ -148,6 +161,28 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCronProcessPendingOrderTransfers' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/transfers/process_pending',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
+
+    'testCronProcessFailedOrderTransfers' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/transfers/process_failed',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
         ],
     ],
 ];

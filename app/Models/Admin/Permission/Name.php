@@ -158,6 +158,7 @@ class Name
     const CREATE_PERMISSION                   = 'create_permission';
     const EDIT_PERMISSION                     = 'edit_permission';
     const REMINDER_OPERATION                  = 'reminder_operation';
+    const GATEWAY_PVT                         = 'gateway_pvt';
     // @todo
     // Rename delete_merchant_features to delete_features as features
     // have now been extended to applications as well.
@@ -249,6 +250,9 @@ class Name
     const USER_ACCOUNT_LOCK_UNLOCK            = 'user_account_lock_unlock';
     const UPDATE_USER_CONTACT_MOBILE          = 'update_user_contact_mobile';
     const FTS_TRANSFER_ATTEMPT_BULK_UPDATE    = 'fts_transfer_attempt_bulk_update';
+    const MANAGE_RENDERING_PREFERENCES  	  = 'manage_rendering_preferences';
+    const UPDATE_DOWNTIME_CONFIG              = 'update_downtime_config';
+    const LIST_DOWNTIME_CONFIG                = 'list_downtime_config';
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
@@ -260,6 +264,8 @@ class Name
     const STORK_WRITE_OPERATION               = 'stork_write_operation';
     // Permissions for P2P Service
     const P2P_MANAGE_MERCHANT                 = 'p2p_manage_merchant';
+
+    const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
@@ -278,7 +284,6 @@ class Name
         Merchant\Action::FORCE_ACTIVATE                     => self::EDIT_MERCHANT_FORCE_ACTIVATION,
         Merchant\Action::SET_RECEIPT_EMAIL_EVENT_AUTHORIZED => self::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT,
         Merchant\Action::SET_RECEIPT_EMAIL_EVENT_CAPTURED   => self::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT
-
     ];
 
     /**

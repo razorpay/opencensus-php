@@ -63,7 +63,7 @@ return [
                 'email' => 'test@localhost.com',
             ],
             'url'     => '/merchants',
-            'method'  => 'POST'
+            'method'  => 'POST',
         ],
         'response' => [
             'content' => [
@@ -434,6 +434,27 @@ return [
                 ],
                 'dashboard_access' => true,
                 'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantByAggregatorWithDefaultPaymentMethods' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'   => 'NewSubmerchant',
+                'name' => 'Submerchant',
+                'email' => 'testsub@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => 'acc_NewSubmerchant',
+                'name'            => 'Submerchant',
+                // Email is same as the test merchant
+                'email'           => 'testsub@razorpay.com',
+                'pricing_plan_id' => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
             ],
         ],
     ],
@@ -1016,4 +1037,22 @@ return [
         ],
     ],
 
+    'testBalanceConfigInTestAfterCreatedMerchant' => [
+        'request'  => [
+            'url'    => '/balance_configs',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    '0' => [
+                        'type'                          => 'primary',
+                        'negative_limit_auto'          => 0,
+                        'negative_limit_manual'        => 0,
+                        'negative_transaction_flows'   => ['payment']
+                    ]
+                ]
+            ]
+        ]
+    ],
 ];

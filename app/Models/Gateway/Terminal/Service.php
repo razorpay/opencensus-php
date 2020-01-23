@@ -13,6 +13,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\TerminalOnboardingDetail;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Entity as Merchant;
 
 class Service extends Base\Service
@@ -104,7 +105,7 @@ class Service extends Base\Service
                 try
                 {
                     $terminalData = $this->app['gateway']->call($gateway,
-                        Terminal::MERCHANT_ONBOARD,
+                        Constants::MERCHANT_ONBOARD,
                         $gatewayData,
                         $this->mode);
 
@@ -180,6 +181,12 @@ class Service extends Base\Service
 
     protected function shouldCreateTerminal(bool $checkFeatureEnabled, $merchantId)
     {
+        $isFunc = $this->app->environment(Environment::FUNC);
+        
+        if($isFunc === true){
+            return false;                                                         
+        }
+
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
         if ($isProduction === false)
@@ -238,7 +245,7 @@ class Service extends Base\Service
 
         $request = $gatewayProcessor->getGatewayRequestArrayForCreation($terminal);
 
-        $response = $this->app['gateway']->call($gateway, 'create_terminal', $request, $this->mode, $terminal);
+        $response = $this->app['gateway']->call($gateway, Constants::CREATE_TERMINAL, $request, $this->mode, $terminal);
 
         $gatewayProcessor->updateTerminalDetailsBasedOnCreationResponse($response, $terminal);
     }
@@ -291,7 +298,7 @@ class Service extends Base\Service
 
                 try
                 {
-                    $response = $this->app['gateway']->call($gateway, 'verify_terminal', $request, $this->mode, $terminal);
+                    $response = $this->app['gateway']->call($gateway, Constants::VERIFY_TERMINAL, $request, $this->mode, $terminal);
 
                     $gatewayProcessor->updateTerminalDetailsBasedOnVerifyResponse($response, $terminal);
                 }
@@ -310,5 +317,18 @@ class Service extends Base\Service
         );
         
         return $terminalOnboardingDetail->getStatus();
+    }
+
+    public function callGatewayForTerminalEnableOrDisable($terminal, $action)
+    {
+        $gateway = $terminal->gateway;
+
+        $gatewayProcessor = GatewayFactory::build($gateway);
+
+        $request = $gatewayProcessor->getGatewayRequestArrayForEnableOrDisable($terminal);
+
+        $response = $this->app['gateway']->call($gateway, $action, $request, $this->mode, $terminal);
+        
+        $gatewayProcessor->raiseExceptionIfEnableOrDisableFails($response, $action);           
     }
 }

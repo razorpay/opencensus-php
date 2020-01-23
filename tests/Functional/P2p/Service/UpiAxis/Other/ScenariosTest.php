@@ -274,4 +274,61 @@ class ScenariosTest extends TestCase
 
         $this->assertSame($newBankAcc->getPublicId(), $response['bank_account']['id']);
     }
+
+    public function testRelinkBankAccount()
+    {
+        $deviceHelper = $this->getDeviceHelper();
+
+        $vpaHelper = $this->getVpaHelper();
+
+        $baHelper  = $this->getBankAccountHelper();
+
+        $vpaId = $this->fixtures->vpa->getPublicId();
+
+        $newBa = $this->fixtures->createBankAccount([
+            'gateway_data' => [
+                'referenceId' => $vpaId,
+            ]
+        ]);
+
+        $baId  = $newBa->getPublicId();
+
+        $response = $vpaHelper->assignBankAccount($vpaId, $baId);
+
+        $this->assertSame($baId, $response['bank_account']['id']);
+
+        $this->setDeviceTokenExpiryValidation(true);
+
+        $this->withFailureResponse($baHelper, function ($error)
+        {
+            $this->assertArraySubset([
+                'action' => 'initiateGetToken',
+            ], $error);
+        });
+
+        // Will Throw exception
+        $baHelper->initiateFetchBalance($baId);
+
+        $request = $deviceHelper->initiateGetToken([
+            Fields::SDK => [
+                Fields::SIM_ID  => '0',
+            ]
+        ]);
+
+        $deviceHelper->getToken($request['callback'],
+            [
+                Fields::SDK => [
+                    Fields::STATUS                  => 'SUCCESS',
+                    Fields::IS_DEVICE_BOUND         => 'true',
+                    Fields::IS_DEVICE_ACTIVATED     => 'true',
+                    Fields::DEVICE_FINGERPRINT      => '61F275C82A0AECC4788FA',
+                ],
+            ]);
+
+        $baHelper->expectFailureInResponse(false);
+
+        $response = $baHelper->initiateFetchBalance($baId);
+
+        $this->assertSame($vpaId, $response['request']['content']['accountReferenceId']);
+    }
 }

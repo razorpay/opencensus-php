@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Contact;
 
+use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 
 /**
  * Class Core
@@ -17,8 +18,8 @@ class Core extends Base\Core
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        Batch\Entity $batch = null,
-        string $batchId = null): Entity
+        string $batchId = null,
+        bool $createDuplicate = false): Entity
     {
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
 
@@ -30,7 +31,30 @@ class Core extends Base\Core
 
             if ($result !== null)
             {
+                $this->trace->info(TraceCode::CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY,
+                                   [
+                                       'input' => $result->toArrayPublic(),
+                                       Entity::IDEMPOTENCY_KEY => $input[Entity::IDEMPOTENCY_KEY]
+                                   ]);
+
                 return $result;
+            }
+        }
+
+        if ($createDuplicate === false)
+        {
+            $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
+
+            if ($contact !== null)
+            {
+                $this->trace->info(
+                    TraceCode::DUPLICATE_CONTACT_FOUND,
+                    [
+                        Entity::ID         => $contact->getId(),
+                        Entity::BATCH_ID   => $batchId,
+                    ]);
+
+                return $contact;
             }
         }
 
@@ -38,11 +62,19 @@ class Core extends Base\Core
 
         $contact->merchant()->associate($merchant);
 
-        $batchId ? ($contact->setBatchId($batchId)) : ($contact->batch()->associate($batch));
+        if (empty($batchId) === false)
+        {
+            $contact->setBatchId($batchId);
+        }
 
         $this->setTypeIfApplicable($contact, $input);
 
         $this->repo->saveOrFail($contact);
+
+        $this->trace->info(TraceCode::CONTACT_CREATED,
+            [
+                Constants\Entity::CONTACT => $contact->getId(),
+            ]);
 
         return $contact;
     }
@@ -82,6 +114,27 @@ class Core extends Base\Core
         }
 
         (new Type)->setTypeForContact($contact, $type);
+    }
+
+    public function processEntryForContact(
+        array $entry,
+        string $batchId,
+        bool $createDuplicate)
+    {
+        $contact = $entry[ContactBatchHelper::CONTACT];
+
+        $contactId = (isset($contact[ContactBatchHelper::ID]) === true) ? $contact[ContactBatchHelper::ID] : null;
+
+        if (empty($contactId) === false)
+        {
+            return $this->repo->contact->findByPublicIdAndMerchant($contactId, $this->merchant);
+        }
+
+        $input = ContactBatchHelper::getContactInput($entry);
+
+        $contact = $this->create($input, $this->merchant, $batchId, $createDuplicate);
+
+        return $contact;
     }
 
     public function fetch($id, $merchant, $input = [])

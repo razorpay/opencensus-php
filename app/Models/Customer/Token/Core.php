@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Customer;
+use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
 use RZP\Models\Customer\AppToken;
@@ -219,9 +220,22 @@ class Core extends Base\Core
      * @param $customer
      * @return mixed
      */
-    public function fetchTokensByCustomer($customer)
+    public function fetchTokensByCustomer($customer, $merchant = null)
     {
-        $tokens = $this->repo->token->getByCustomer($customer);
+        $withVpas = false;
+
+        // We will exclude VPAs tokens except of for this conditions
+        // 1. Feature SAVE_VPA is enabled for merchant.
+        // 2. We do not want this to be on shared merchant (Adding check Just In Case)
+        // 3.
+        if (($merchant instanceof Merchant\Entity) and
+            ($merchant->isShared() === false) and
+            ($merchant->shouldSaveVpa() === true))
+        {
+            $withVpas = true;
+        }
+
+        $tokens = $this->repo->token->getByCustomer($customer, $withVpas);
 
         return $tokens;
     }
@@ -305,6 +319,85 @@ class Core extends Base\Core
             //
             // Not all netbanking recurring have a gateway token.
             // However, if a second recurring payment is attempted without a gateway token,
+            // we throw an exception or handle the case appropriately in the child gateway class.
+            //
+            if (empty($gatewayData[Entity::GATEWAY_TOKEN]) === false)
+            {
+                $gatewayToken = $gatewayData[Entity::GATEWAY_TOKEN];
+
+                $token->setGatewayToken($gatewayToken);
+            }
+        }
+        else if ($gatewayRecurringStatus === RecurringStatus::REJECTED)
+        {
+            if (empty($gatewayData[Entity::RECURRING_FAILURE_REASON]) === true)
+            {
+                //
+                // If it's rejected, there must always be a reason.
+                //
+
+                $this->trace->critical(
+                    TraceCode::GATEWAY_RECURRING_REJECTED_WITHOUT_REASON,
+                    [
+                        'token'        => $token->toArray(),
+                        'gateway_data' => $gatewayData
+                    ]);
+
+                return;
+            }
+
+            $token->setRecurringFailureReason($gatewayData[Entity::RECURRING_FAILURE_REASON]);
+        }
+    }
+
+    public function updateTokenForUpi(Entity $token, array $gatewayData)
+    {
+        $token->setRecurringStatus($gatewayData['recurring_status']);
+
+        if ($gatewayData['recurring_status'] === RecurringStatus::CONFIRMED)
+        {
+            $token->setRecurring(true);
+        }
+
+        $this->repo->saveOrFail($token);
+    }
+
+    public function updateTokenFromNachGatewayData(Entity $token, array $gatewayData)
+    {
+        if (empty($gatewayData[Entity::RECURRING_STATUS]) === false)
+        {
+            $gatewayRecurringStatus = $gatewayData[Entity::RECURRING_STATUS];
+
+            $token->setRecurringStatus($gatewayRecurringStatus);
+        }
+        else
+        {
+            //
+            // The recurring status should always be set for token update.
+            //
+            $this->trace->critical(
+                TraceCode::GATEWAY_RECURRING_STATUS_NOT_SET,
+                [
+                    'token'        => $token->toArray(),
+                    'gateway_data' => $gatewayData
+                ]);
+
+            return;
+        }
+
+        if (empty($gatewayData[Entity::ACKNOWLEDGED_AT]) === false)
+        {
+            $acknowledgedAt = $gatewayData[Entity::ACKNOWLEDGED_AT];
+
+            $token->setAcknowledgedAt($acknowledgedAt);
+        }
+
+        if ($gatewayRecurringStatus === RecurringStatus::CONFIRMED)
+        {
+            $token->setRecurring(true);
+
+            //
+            // If a second recurring payment is attempted without a gateway token,
             // we throw an exception or handle the case appropriately in the child gateway class.
             //
             if (empty($gatewayData[Entity::GATEWAY_TOKEN]) === false)
@@ -481,6 +574,24 @@ class Core extends Base\Core
         return null;
     }
 
+    protected function validateExistingTokenUpi($existingTokens, $newToken)
+    {
+        foreach ($existingTokens as $token)
+        {
+            if ($token->getVpaId() === $newToken->getVpaId())
+            {
+                return $token;
+            }
+        }
+
+        return null;
+    }
+
+    protected function validateExistingTokenNach($existingTokens, $newToken)
+    {
+        return null;
+    }
+
     protected function getCardInputForDirectToken(array & $input)
     {
         $cardInput = array_pull($input, Entity::CARD);
@@ -494,5 +605,34 @@ class Core extends Base\Core
         $cardInput[Card\Entity::CVV] = Card\Entity::getDummyCvv($network);
 
         return $cardInput;
+    }
+
+    public function validateUpiTokenForUpdate(Token\Entity $token)
+    {
+        $this->validateExpiryTimeForUpiTokenUpdate($token);
+
+        $this->validateRecurringStatusForUpiTokenUpdate($token);
+    }
+
+    protected function validateExpiryTimeForUpiTokenUpdate(Token\Entity $token)
+    {
+        $currentTimestamp = $token->freshTimestamp();
+
+        $expireTimestamp = $token->getExpiredAt();
+
+        if ($currentTimestamp > $expireTimestamp)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UPDATE_EXPIRED_TOKEN);
+        }
+    }
+
+    protected function validateRecurringStatusForUpiTokenUpdate(Token\Entity $token)
+    {
+        $tokenStatus = $token->getRecurringStatus();
+
+        if ($tokenStatus !== RecurringStatus::CONFIRMED)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UPDATE_NOT_CONFIRMED_TOKEN);
+        }
     }
 }

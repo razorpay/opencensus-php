@@ -16,7 +16,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     public function getPaymentId(array $row)
     {
-        return $row[Constants::GATEWAY_REFERENCE_NUMBER] ?? null;
+        return trim($row[Constants::GATEWAY_REFERENCE_NUMBER] ?? null);
     }
 
     protected function getGatewayTransactionId(array $row)
@@ -93,10 +93,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Gateway Transaction ID (reference1) in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getAmount(),

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
@@ -10,6 +11,7 @@ class PaymentMarketplaceTransferTest extends TestCase
 {
     use PaymentTrait;
     use TransferTrait;
+    const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
     public function setUp()
     {
@@ -179,5 +181,69 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $newMarketBalance = $this->getAccountBalance('10000000000000');
         $this->assertEquals(50000, $oldMarketBalance - $newMarketBalance);
+    }
+
+    public function testTransferForMerchantCustomerFeeBearer()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->fixtures->pricing->editAllPricingPlanRules(self::STANDARD_PRICING_PLAN_ID,['fee_bearer' => FeeBearer::CUSTOMER]);
+
+        $transfers[0] = [
+            'account'  => 'acc_10000000000001',
+            'amount'   => $this->payment['amount'],
+            'currency' => 'INR',
+        ];
+
+        $content  = $this->transferPayment($this->payment['id'], $transfers);
+
+        $expected = [
+            'count' => 1,
+            'items' => [
+                [
+                    'source'    => $this->payment['id'],
+                    'recipient' => 'acc_10000000000001',
+                ],
+            ]
+        ];
+        $this->assertArraySelectiveEquals($expected, $content);
+    }
+
+    public function testTransferForSubMerchantCustomerFeeBearer()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->enableConvenienceFeeModel('10000000000001');
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
+
+        $transfers[0] = [
+            'account'  => 'acc_10000000000001',
+            'amount'   => $this->payment['amount'],
+            'currency' => 'INR',
+        ];
+
+        $content  = $this->transferPayment($this->payment['id'], $transfers);
+
+        $expected = [
+            'count' => 1,
+            'items' => [
+                [
+                    'source'    => $this->payment['id'],
+                    'recipient' => 'acc_10000000000001',
+                ],
+            ]
+        ];
+        $this->assertArraySelectiveEquals($expected, $content);
     }
 }

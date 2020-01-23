@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\P2p\Base;
 
+use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Models\P2p\Base\Libraries\Context;
@@ -46,6 +47,11 @@ class Gateway extends Base\Gateway
     public function getHandlePrefix()
     {
         return $this->context->handlePrefix();
+    }
+
+    public function getCurrentTimestamp(): int
+    {
+        return Carbon::now()->getTimestamp();
     }
 
     public function setActionAndInput(string $action, ArrayBag $input)

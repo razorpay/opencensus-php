@@ -14,6 +14,7 @@ use RZP\Constants\Entity;
 use RZP\Models\Payment;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
+use RZP\Reconciliator\Base\InfoCode;
 
 class CardPaymentService
 {
@@ -34,6 +35,7 @@ class CardPaymentService
     const INPUT     = 'input';
     const DATA      = 'data';
     const ERROR     = 'error';
+    const AUTHORIZE = 'authorize';
 
     // admin path
     const ADMIN_PATH = 'admin/entities/';
@@ -46,6 +48,7 @@ class CardPaymentService
     protected $action;
     protected $gateway;
     protected $input;
+    protected $app;
 
     public function __construct()
     {
@@ -76,6 +79,23 @@ class CardPaymentService
         $request = new Requests_Session($baseUrl, $defaultHeaders, [], $defaultOptions);
 
         return $request;
+    }
+
+    public function fetchAuthorizationData(array $input)
+    {
+        $request = [
+            'url'     => $this->getBaseUrl() . 'entities/authorization',
+            'method'  => 'POST',
+            'content' => $input,
+            'headers' => [
+                'task_id'       => $this->app['request']->getTaskId(),
+                'request_id'    => $this->app['request']->getId(),
+            ],
+        ];
+
+        $response = $this->sendRawRequest($request);
+
+        return $this->jsonToArray($response->body);
     }
 
     protected function getBaseUrl(): string
@@ -142,6 +162,43 @@ class CardPaymentService
         return $response;
     }
 
+
+    public function authorizeAcrossTerminals(Payment\Entity $payment, array $gatewayInput, array $terminals)
+    {
+        $input = [];
+
+        $input = $gatewayInput;
+
+        $input['terminals'] = [];
+
+        foreach ($terminals as $terminal)
+        {
+            $terminalInput = [];
+
+            $terminalInput = $terminal->toArrayWithPassword();
+
+
+            if ((empty($input['authentication_terminals']) === false) and
+                (empty($input['authentication_terminals'][$terminal->getId()]) === false))
+            {
+                $terminalInput['auth'] = $input['authentication_terminals'][$terminal->getId()];
+            }
+
+            $input['terminals'][] = $terminalInput;
+        }
+
+        unset($input['authentication_terminals']);
+
+        $content = [
+            self::INPUT   => $input
+        ];
+
+
+        $response = $this->sendRequest('POST', self::AUTHORIZE , $content);
+
+        return $response;
+    }
+
     public function fetchMultiple(string $entityName, array $input)
     {
         $path = self::ADMIN_PATH . $entityName;
@@ -188,6 +245,18 @@ class CardPaymentService
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
+
+
+        if (empty($request['content'][self::INPUT]['terminals']) === false)
+        {
+            foreach ($request['content'][self::INPUT]['terminals'] as $index => $terminal)
+            {
+                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
+                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
+                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_SECURE_SECRET]);
+                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
+            }
+        }
 
         $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_REQUEST, $request);
     }
@@ -246,25 +315,18 @@ class CardPaymentService
         $code = $response->status_code;
 
         $responseBody = $this->jsonToArray($response->body);
+        $responseBody['success'] = false;
 
         if ($this->isSuccessResponse($code, $responseBody))
         {
+            $responseBody['success'] = true;
             if ($this->action === Action::VERIFY)
             {
                 return $this->processVerifyResponse($responseBody);
             }
-
-            if ($method === 'POST')
-            {
-                return $responseBody[self::DATA];
-            }
-
-            return $responseBody;
         }
-        else
-        {
-            $this->checkForErrors($responseBody);
-        }
+
+        return $responseBody;
     }
 
     protected function traceResponse($response)
@@ -300,7 +362,7 @@ class CardPaymentService
 
     protected function isSuccessResponse($code, $responseBody)
     {
-        if (($code === 200) and (empty($responseBody[self::ERROR]) === true))
+        if ($code === 200)
         {
             return true;
         }
@@ -394,8 +456,19 @@ class CardPaymentService
 
     // ----------------------- Error ---------------------------------------------
 
-    protected function checkForErrors($response)
+    public function checkForErrors($response)
     {
+        if ((empty($response['success']) === false) and
+            ($response['success'] === true))
+        {
+            return;
+        }
+
+        if (empty($response[self::ERROR]) === true)
+        {
+            return;
+        }
+
         $errorCode = $response[self::ERROR]['internal_error_code'];
 
         $class = $this->getErrorClassFromErrorCode($errorCode);
@@ -403,11 +476,11 @@ class CardPaymentService
         switch ($class)
         {
             case ErrorClass::GATEWAY:
-                $this->handleGatewayErrors($response[self::ERROR]);
+                $this->handleGatewayErrors($response[self::ERROR], $response);
                 break;
 
             case ErrorClass::BAD_REQUEST:
-                $this->handleBadRequestErrors($response[self::ERROR]);
+                $this->handleBadRequestErrors($response[self::ERROR], $response);
                 break;
 
             case ErrorClass::SERVER:
@@ -434,7 +507,7 @@ class CardPaymentService
         return $class;
     }
 
-    protected function handleGatewayErrors(array $error)
+    protected function handleGatewayErrors(array $error, array $response)
     {
         $errorCode = $error['internal_error_code'];
 
@@ -457,11 +530,11 @@ class CardPaymentService
         }
     }
 
-    protected function handleBadRequestErrors(array $error)
+    protected function handleBadRequestErrors(array $error, array $response)
     {
         $errorCode = $error['internal_error_code'];
 
-        $data = $error['data'] ?? null;
+        $data = $response['data'] ?? null;
 
         $description = $error['description'] ?? null;
 
@@ -471,9 +544,18 @@ class CardPaymentService
                 ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION);
         }
 
+        if ($errorCode == ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+                null,
+                $data
+            );
+        }
+
         if (empty($error['gateway_error_code']) === false)
         {
-            $this->handleGatewayErrors($error);
+            $this->handleGatewayErrors($error, $response);
         }
         else
         {

@@ -21,8 +21,8 @@
             <tr>
                 <td>
                     <b>Issued To:</b><br/>
-                    @isset ($issued_to['billing_label'])
-                    {{{$issued_to['billing_label']}}} [{{{$issued_to['merchant_id']}}}]<br>
+                    @isset ($issued_to['name'])
+                    {{{$issued_to['name']}}} [{{{$issued_to['merchant_id']}}}]<br>
                     @endisset
                     @if ($issued_to['address'])
                         {{{$issued_to['address']}}}<br/>

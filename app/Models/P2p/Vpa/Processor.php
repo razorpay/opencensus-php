@@ -3,10 +3,12 @@
 namespace RZP\Models\P2p\Vpa;
 
 use RZP\Exception;
+use RZP\Events\P2p;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\BankAccount;
 use RZP\Models\P2p\Transaction;
+use RZP\Models\P2p\Device\DeviceToken;
 use RZP\Exception\P2p\BadRequestException;
 
 /**
@@ -86,8 +88,12 @@ class Processor extends Base\Processor
                 $this->core->assignBankAccount($vpa, $bankAccount);
             }
 
+            $this->handleDeviceTokenIfApplicable();
+
             return $vpa;
         });
+
+        $this->app['events']->fire(new P2p\VpaCreated($this->context(), $vpa));
 
         return $vpa->toArrayPublic();
     }
@@ -117,6 +123,8 @@ class Processor extends Base\Processor
         $bankAccount = (new BankAccount\Core)->fetch($this->input->get(Entity::BANK_ACCOUNT)[Entity::ID]);
 
         $this->core->assignBankAccount($vpa, $bankAccount);
+
+        $this->handleDeviceTokenIfApplicable();
 
         return $vpa->toArrayPublic();
     }
@@ -255,6 +263,18 @@ class Processor extends Base\Processor
             throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [
                 Entity::USERNAME    => $username,
             ]);
+        }
+    }
+
+    protected function handleDeviceTokenIfApplicable()
+    {
+        if ($this->input->has(DeviceToken\Entity::DEVICE_TOKEN))
+        {
+            $id = $this->input->get(DeviceToken\Entity::DEVICE_TOKEN)[DeviceToken\Entity::ID];
+
+            $core = (new DeviceToken\Core);
+            $deviceToken = $core->fetch($id);
+            $core->update($deviceToken, $this->input->get(DeviceToken\Entity::DEVICE_TOKEN));
         }
     }
 }

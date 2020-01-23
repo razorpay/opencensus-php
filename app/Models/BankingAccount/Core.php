@@ -17,6 +17,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
+use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
@@ -89,6 +90,44 @@ class Core extends Base\Core
             $bankingAccountInput,
             $virtualAccount->merchant,
             $virtualAccount->balance);
+    }
+
+    /**
+     * This email is sent to ops to notify them about the interest merchant has shown in
+     * X Pro plan, currently that is RBL current account
+     *
+     * @param Entity $bankingAccount
+     */
+    public function notifyOpsAboutProActivation(Entity $bankingAccount)
+    {
+        try
+        {
+            $mailer = new XProActivation($bankingAccount->toArray());
+
+            Mail::queue($mailer);
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_X_PRO_ACTIVATION_NOTIFICATION,
+                [
+                    'banking_account_id' => $bankingAccount->getId(),
+                    'merchant_id'        => $bankingAccount->merchant->getId(),
+                    'status'             => $bankingAccount->getStatus(),
+                    'message'            => 'Mail Sent'
+                ]);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_X_PRO_ACTIVATION_NOTIFICATION_FAILED,
+                [
+                    'banking_account_id' => $bankingAccount->getId(),
+                    'merchant_id'        => $bankingAccount->merchant->getId(),
+                    'status'             => $bankingAccount->getStatus(),
+                    'error'              => $e->getMessage(),
+                ]);
+        }
     }
 
     public function notifyMerchantAboutUpdatedStatus(Entity $bankingAccount)
@@ -333,7 +372,7 @@ class Core extends Base\Core
 
     public function getBankingAccountEntity(string $id)
     {
-        return $this->repo->banking_account->findOrFailPublic($id);
+        return $this->repo->banking_account->find($id);
     }
 
     public function addServiceablePincodes(array $pincodes, string $channel)

@@ -281,6 +281,16 @@ final class RequestContext
         return ($this->internalAppName === "dashboard_guest");
     }
 
+    public function isAuthFlowTypeKey(): bool
+    {
+        return $this->authFlowType === BasicAuth::KEY;
+    }
+
+    public function isAuthTypePrivate(): bool
+    {
+        return $this->auth === Type::PRIVATE_AUTH;
+    }
+
     /**
      * Protected Methods
      */
@@ -448,7 +458,8 @@ final class RequestContext
 
     protected function setAdditionalVarsForPrivateAuth()
     {
-        $isPrivateRoute = in_array($this->route, Route::$private, true);
+        $isPrivateRoute = (in_array($this->route, Route::$private, true) or
+                          (in_array($this->route, P2pRoute::$private, true)));
         $isProxyRoute   = in_array($this->route, Route::$proxy, true);
 
         // In case of proxy auth(even for private routes), internal app is dashboard and the same needs to be set
