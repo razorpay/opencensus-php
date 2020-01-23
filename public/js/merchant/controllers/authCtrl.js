@@ -291,7 +291,7 @@ app
 
         window.rzpAnalytics({
           name: 'quora',
-          event: 'signup_start',
+          event: 'GenerateLead',
         });
 
         window.rzpAnalytics({
