@@ -5,9 +5,7 @@ namespace RZP\Tests\Functional\Payout;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -42,12 +40,7 @@ class RblPayoutTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000, 'direct', 'rbl');
 
-        $merchantId = '10000000000000';
-
         $this->app['cache']->flush();
-
-        (new AdminService)->setConfigKeys([ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS => [$merchantId]]);
-        (new AdminService)->setConfigKeys([ConfigKey::CITI_CHANNEL_PAYOUT_MIDS => [$merchantId]]);
 
         $this->ba->privateAuth();
     }

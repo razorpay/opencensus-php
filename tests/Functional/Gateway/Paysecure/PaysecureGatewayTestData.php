@@ -35,6 +35,21 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
         ],
     ],
+    'testInititiate2CardEnrollmentError' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_CARD_NOT_ENROLLED,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_CARD_NOT_ENROLLED,
+        ],
+    ],
     'testInititiateFailure' => [
         'response' => [
             'content' => [

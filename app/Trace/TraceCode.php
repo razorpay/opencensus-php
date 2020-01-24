@@ -419,6 +419,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const THROTTLE_REQUEST_THROTTLED                            = 'THROTTLE_REQUEST_THROTTLED';
     const THROTTLE_REQUEST_BLOCKED                              = 'THROTTLE_REQUEST_BLOCKED';
     const THROTTLE_SETTINGS_MISSING                             = 'THROTTLE_SETTINGS_MISSING';
+    const BOOTSTRAP_KEY_CACHE_SUMMARY                           = 'BOOTSTRAP_KEY_CACHE_SUMMARY';
 
     const GATEWAY_DOWNTIME_ERROR_CODE                           = 'GATEWAY_DOWNTIME_ERROR_CODE';
     const GATEWAY_DOWNTIME_THROTTLE_SETTINGS_MISSING            = 'GATEWAY_DOWNTIME_THROTTLE_SETTINGS_MISSING';
@@ -2167,6 +2168,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_CREATE_ACCOUNT_INVALID_ID                         = 'FTS_CREATE_ACCOUNT_INVALID_ID';
     const FTS_FUND_TRANSFER_NOT_ALLOWED                         = 'FTS_FUND_TRANSFER_NOT_ALLOWED';
     const FTS_REGISTER_ACCOUNT_COMPLETE                         = 'FTS_REGISTER_ACCOUNT_COMPLETE';
+    const FTS_TRANSFER_STATUS_FETCH_FAILED                      = 'FTS_TRANSFER_STATUS_FETCH_FAILED';
     const FTS_UPDATE_FUND_TRANSFER_ATTEMPT                      = 'FTS_UPDATE_FUND_TRANSFER_ATTEMPT';
     const FTS_FUND_TRANSFER_JOB_DISPATCHED                      = 'FTS_FUND_TRANSFER_JOB_DISPATCHED';
     const FTS_FUND_TRANSFER_DISPATCH_FAILED                     = 'FTS_FUND_TRANSFER_DISPATCH_FAILED';
