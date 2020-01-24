@@ -361,15 +361,35 @@ class Activate extends Base\Core
      */
     public function sendActivationEmail($merchant)
     {
-        $product = $this->app['basicauth']->getRequestOriginProduct();
+        //
+        // In order to distinguish between RX merchant and PG Merchant, we cannot use getRequestOriginProduct, because
+        // this activation happens from Admin Dashboard, in which case the OriginProduct will always be Primary.
+        // Hence we will check if the Merchant has business_banking enabled, we will send the RX email, else the default PG email
+        //
 
-        $this->trace->error(TraceCode::ACTIVATION_CONFIRMATION_EMAIL,
+        $isBusinessBankingEnabled = $merchant->isBusinessBankingEnabled();
+
+        $this->trace->info(TraceCode::ACTIVATION_CONFIRMATION_EMAIL,
                             [
-                                'merchant_id' => $merchant->getId(),
-                                'product'     => $product
+                                'merchant_id'                 => $merchant->getId(),
+                                'is_business_banking_enabled' => $isBusinessBankingEnabled
                             ]);
 
-        if ($product === Product::PRIMARY)
+        if ($isBusinessBankingEnabled === true)
+        {
+            if ($merchant->hasBankingAccounts() === false)
+            {
+                $this->trace->error(TraceCode::NO_ASSOCIATED_BANKING_ACCOUNT,
+                                    [
+                                        'merchant_id' => $merchant->getId()
+                                    ]);
+            }
+            else
+            {
+                Mail::queue(new AccountActivationConfirmation($merchant->getId()));
+            }
+        }
+        else
         {
             $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
@@ -401,10 +421,6 @@ class Activate extends Base\Core
             $activationMail = new ActivationMail($data, $org->toArray());
 
             Mail::queue($activationMail);
-        }
-        else if ($product === Product::BANKING)
-        {
-            $this->sendRazorPayXMerchantActivationNotification($merchant);
         }
     }
 
@@ -520,21 +536,6 @@ class Activate extends Base\Core
         }
 
         return $merchant;
-    }
-
-    protected function sendRazorPayXMerchantActivationNotification(Entity $merchant)
-    {
-        if ($merchant->hasBankingAccounts() === false)
-        {
-            $this->trace->error(TraceCode::NO_ASSOCIATED_BANKING_ACCOUNT,
-                                [
-                                    'merchant_id' => $merchant->getId()
-                                ]);
-        }
-        else
-        {
-            Mail::queue(new AccountActivationConfirmation($merchant->getId()));
-        }
     }
 
     /**
