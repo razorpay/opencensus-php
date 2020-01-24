@@ -633,6 +633,11 @@ class Constants
             'display_name'  => 'D2C Credit score campaign',
             'documentation' => '',
         ],
+        self::SKIP_WORKFLOWS_FOR_API         => [
+            'feature'       => self::SKIP_WORKFLOWS_FOR_API,
+            'display_name'  => 'Razorpay X - Skip workflows for API requests',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -650,6 +655,7 @@ class Constants
         self::VIRTUAL_ACCOUNTS,
         self::ES_AUTOMATIC,
         self::SHOW_CREDIT_SCORE,
+        self::SKIP_WORKFLOWS_FOR_API
     ];
 
     /*
