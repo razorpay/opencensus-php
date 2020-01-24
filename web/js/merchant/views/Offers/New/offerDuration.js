@@ -62,5 +62,16 @@ export default ({
       name="default_offer"
       defaultValue={checkoutDisplay}
     />
+    <p className="offers-api-note">
+      If you aren't using Woocommerce, Magento or Shopify plugin, you'll need to
+      integrate the{' '}
+      <a
+        target="_blank"
+        href={'https://razorpay.com/docs/payment-gateway/orders/'}
+      >
+        Orders API
+      </a>{' '}
+      for this feature to work.
+    </p>
   </React.Fragment>
 );
