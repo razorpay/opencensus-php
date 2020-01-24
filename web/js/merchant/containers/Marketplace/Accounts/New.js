@@ -73,7 +73,7 @@ export default class AddAccount extends Component {
     this.props.tracking.trackEvent(
       window.rzpQ
         .routeActions()
-        .initiated('route.linked_account.add_account.started')
+        .interaction('route.linked_account.add_account.started')
     );
   }
 
