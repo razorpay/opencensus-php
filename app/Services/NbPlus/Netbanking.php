@@ -121,7 +121,7 @@ class Netbanking extends Service
 
     protected function checkGatewaySuccess(Verify &$verify)
     {
-        $verify->gatewaySuccess = $verify->verifyResponseContent[Response::GATEWAY_STATUS];
+        $verify->gatewaySuccess = $verify->verifyResponseContent[Response::GATEWAY_STATUS] ?? false;
     }
 
     // ----------------------- Authorize Failed ---------------------------------------------

@@ -23,6 +23,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
+use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
@@ -30,13 +31,14 @@ use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\AutoKyc\ServiceFactory;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
+use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
@@ -468,7 +470,7 @@ class Core extends Base\Core
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      *
-     * @return Verifiers\PanVerifierResponse|null
+     * @return MozartService\PanVerifierResponse|null
      */
     protected function verifyPOIDetailsIfApplicable(Entity $merchantDetails, MErchant\Entity $merchant)
     {
@@ -486,22 +488,18 @@ class Core extends Base\Core
             return null;
         }
 
-        $input = [
-            DEConstants::PAN_NUMBER        => $merchantDetails->getPromoterPan(),
-            Document\Entity::DOCUMENT_TYPE => DEConstants::PROMOTER_PAN,
-        ];
 
         $response = null;
 
+        $verificationStatus = POIStatus::FAILED;
         try
         {
-            $verifier = FactoryVerifier::getPoiVerifier($input, $merchant);
+            $input = [
+                DEConstants::PAN_NUMBER        => $merchantDetails->getPromoterPan(),
+                DEConstants::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName()
+            ];
 
-            $response = $verifier->verifyDetails();
-
-            $response->setPanOwnerName($merchantDetails->getPromoterPanName());
-
-            $merchantDetails->setPoiVerificationStatus($response->getStatus());
+            $verificationStatus = (new AutoKyc\Core())->verifyPOI($merchantDetails, $input);
         }
         catch (\Throwable $e)
         {
@@ -509,8 +507,9 @@ class Core extends Base\Core
                                          null,
                                          TraceCode::MERCHANT_POI_VERIFICATION_FAILED);
 
-            $merchantDetails->setPoiVerificationStatus(POIStatus::FAILED);
         }
+
+        $merchantDetails->setPoiVerificationStatus($verificationStatus);
 
         $dimension = $this->fetchPoiMetricDimensions($merchantDetails);
 

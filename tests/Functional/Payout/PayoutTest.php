@@ -21,6 +21,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
 use Illuminate\Support\Facades\Artisan;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Admin\Permission as AdminPermission;
@@ -41,6 +42,8 @@ class PayoutTest extends TestCase
     use PayoutTrait;
     use WebhookTrait;
     use MocksDnsTrait;
+
+    private $checkerRoleUser;
 
     public function setUp()
     {
@@ -63,6 +66,11 @@ class PayoutTest extends TestCase
             ]);
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        // Create Checker Role User
+        $checkerRole = $this->getDbEntityById('role', Org::CHECKER_ROLE);
+        $this->checkerRoleUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], Org::CHECKER_ROLE);
+        $this->checkerRoleUser->roles()->attach($checkerRole);
     }
 
     public function liveSetUp()
@@ -2055,7 +2063,7 @@ class PayoutTest extends TestCase
     {
         $this->createPayoutWithWorkflowHavingPayoutRules();
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
         $this->startTest();
     }
