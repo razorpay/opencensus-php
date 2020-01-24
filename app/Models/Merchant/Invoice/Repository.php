@@ -98,9 +98,9 @@ class Repository extends Base\Repository
      *
      * @param int $year
      * @param int $month
-     * @return Base\PublicCollection
+     * @return array
      */
-    public function verify(int $year, int $month): Base\PublicCollection
+    public function verify(int $year, int $month)
     {
         $endOfMonth = Carbon::create($year, $month, 1, 0, 0, 0, Timezone::IST)->endOfMonth();
 
@@ -127,14 +127,19 @@ class Repository extends Base\Repository
 
         $activeMerchants = $this->repo->merchant->getQueryForActiveMerchants();
 
-        return $activeMerchants->where($activatedAt, '<=', $endOfMonth->getTimestamp())
-                               ->whereNotIn($merchantId, Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS)
-                               ->where(function ($query) use ($parentId)
-                               {
-                                   $query->whereNotIn($parentId, Merchant\Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
-                                         ->orWhereNull($parentId);
-                               })
-                               ->whereNotIn($merchantId, $invoiceCreatedMerchantIds)
-                               ->get();
+        $totalActiveMerchants = $activeMerchants->get()
+                                                ->count();
+
+        $invoiceCreationFailedMerchantIds = $activeMerchants->where($activatedAt, '<=', $endOfMonth->getTimestamp())
+                                           ->whereNotIn($merchantId, Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS)
+                                           ->where(function ($query) use ($parentId)
+                                           {
+                                               $query->whereNotIn($parentId, Merchant\Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
+                                                     ->orWhereNull($parentId);
+                                           })
+                                           ->whereNotIn($merchantId, $invoiceCreatedMerchantIds)
+                                           ->get();
+
+        return [$invoiceCreationFailedMerchantIds, $totalActiveMerchants];
     }
 }
