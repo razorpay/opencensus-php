@@ -7,6 +7,8 @@ import List from 'merchant/views/Offers/List';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
+import DocsLink from 'merchant/components/DocsLink';
+
 @RTracking(() => window.rzpQ.component('OfferIndex'))
 export default class OfferIndex extends Component {
   render() {
@@ -25,6 +27,7 @@ export default class OfferIndex extends Component {
               <div className="content-wrapper">
                 <HeaderAction>
                   <div className="btn-toolbar pull-right">
+                    <DocsLink url="https://razorpay.com/docs/offers/" />
                     <ShowWhen
                       additionalCondition={user =>
                         (this.props.mode !== 'live' || !user.isRejected) &&
