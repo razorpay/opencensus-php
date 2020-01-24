@@ -612,8 +612,6 @@ class PaymentCreateController extends Controller
 
     protected function processCoprotoJsonData($data)
     {
-        $this->trace->info(TraceCode::ERROR_EXCEPTION, $data);
-
         if (isset($data['request']) === true)
         {
             if (($data['type'] === 'first') and
@@ -625,9 +623,8 @@ class PaymentCreateController extends Controller
             {
               return $this->generateOtpJson($data);
             }
-            elseif ((array_key_exists('data', $data) === true) and
-                    ((array_key_exists('intent_url', $data['data']) === true) or
-                    (array_key_exists('vpa', $data['data']) === true)))
+            elseif (($data['type'] === 'intent') or
+                    ($data['type'] === 'async'))
             {
                 return $this->generateUpiJson($data);
             }
