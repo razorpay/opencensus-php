@@ -57,7 +57,7 @@ export default ({
       />
       <p className="offers-api-note">
         If you aren't using Woocommerce, Magento or Shopify plugin, you'll need
-        to integrate Offers API for this feature to work
+        to integrate Offers API for this feature to work.
       </p>
     </React.Fragment>
   );
