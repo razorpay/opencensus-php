@@ -1,0 +1,2 @@
+internal_error_code,error_description,code_detail,failure_type,point_of_failure,next_best_action,failure_stage
+BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,The request is missing one or more fields,Server Error,Technical,Razorpay,Non actionable,Initiation
