@@ -44,6 +44,7 @@ class Error extends Support\Fluent
     const FAILURE_STAGE         = 'failure_stage';
     const NEXT_BEST_ACTION      = 'next_best_action';
     const PAYMENT_METHOD        = 'payment_method';
+    const RECOVERABLE           = 'recoverable';
 
     const ERROR_CODE_MAP_PATH   = 'files/errorcodes/error_code_detail_%s.csv';
 
@@ -227,39 +228,45 @@ class Error extends Support\Fluent
 
             $errorCodeMap = array();
 
-            $file = null;
+            $handle = fopen($filePath,"r");
 
-            try
+            if ($handle !== false)
             {
-                $file = fopen($filePath,"r");
-
-                $header = fgetcsv($file);
-
-                while ($row = fgetcsv($file))
+                try
                 {
-                    $key = array_shift($row);
+                    $header = fgetcsv($handle);
 
-                    $errorCodeMap[$key] = $row;
+                    while ($row = fgetcsv($handle))
+                    {
+                        $key = array_shift($row);
+
+                        $errorCodeMap[$key] = $row;
+                    }
                 }
+                catch (\Exception $exception)
+                {
+                    $this->trace->info(TraceCode::FILE_OPERATION_FAILED, ['payment_method' => $method]);
+                }
+                finally
+                {
+                    fclose($handle);
+                }
+                if (array_key_exists($code, $errorCodeMap))
+                {
+                    $this->setDesc($errorCodeMap[$code][0]);
 
-                fclose($file);
-            }
-            catch (\Exception $exception)
-            {
-                $this->trace->info(TraceCode::FILE_OPERATION_FAILED, ['payment_method' => $method]);
-            }
+                    $this->setCodeDetail($errorCodeMap[$code][1]);
 
-            if (array_key_exists($code, $errorCodeMap))
-            {
-                $this->setDesc($errorCodeMap[$code][0]);
+                    $this->setFailureType($errorCodeMap[$code][2]);
 
-                $this->setCodeDetail($errorCodeMap[$code][1]);
+                    $this->setPointOfFailure($errorCodeMap[$code][3]);
 
-                $this->setFailureType($errorCodeMap[$code][2]);
+                    $this->setNextBestAction($errorCodeMap[$code][4]);
 
-                $this->setPointOfFailure($errorCodeMap[$code][3]);
+                    $this->setFailureStage($errorCodeMap[$code][5]);
 
-                $this->setNextBestAction($errorCodeMap[$code][4]);
+                    $this->setRecoverable($errorCodeMap[$code][6]);
+                }
             }
         }
     }
@@ -287,6 +294,11 @@ class Error extends Support\Fluent
     protected function setNextBestAction($nextBestAction)
     {
         $this->setAttribute(self::NEXT_BEST_ACTION, $nextBestAction);
+    }
+
+    protected function setRecoverable($recoverable)
+    {
+        $this->setAttribute(self::RECOVERABLE, $recoverable);
     }
 
     protected function getAttribute($attr)
