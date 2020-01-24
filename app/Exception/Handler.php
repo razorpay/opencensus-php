@@ -394,7 +394,7 @@ class Handler extends ExceptionHandler
 
         if (isset($data['method']) === true)
         {
-            $error->setDetailedError($error->getInternalErrorCode(), $data['method']);
+            $error->setPaymentMethod($data['method']);
         }
 
         $this->ifTestingThenRethrowException($exception);
@@ -412,7 +412,7 @@ class Handler extends ExceptionHandler
 
         if (isset($data['method']) === true)
         {
-            $error->setDetailedError($error->getInternalErrorCode(), $data['method']);
+            $error->setPaymentMethod($data['method']);
         }
 
         $this->ifTestingThenRethrowException($exception);

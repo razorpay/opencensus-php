@@ -2,6 +2,7 @@
 
 namespace RZP\Error;
 
+use App;
 use RZP\Exception;
 use Illuminate\Support;
 use RZP\Trace\TraceCode;
@@ -42,6 +43,7 @@ class Error extends Support\Fluent
     const POINT_OF_FAILURE      = 'point_of_failure';
     const FAILURE_STAGE         = 'failure_stage';
     const NEXT_BEST_ACTION      = 'next_best_action';
+    const PAYMENT_METHOD        = 'payment_method';
 
     const ERROR_CODE_MAP_PATH   = 'files/errorcodes/error_code_detail_%s.csv';
 
@@ -79,6 +81,8 @@ class Error extends Support\Fluent
         $this->setAction($code);
 
         $this->setAttribute(self::INTERNAL_ERROR_DESC, $internalDesc);
+
+        $this->setDetailedError($this->getInternalErrorCode(), $this->getAttribute(self::PAYMENT_METHOD));
     }
 
     public function appendToField(string $string)
@@ -210,6 +214,11 @@ class Error extends Support\Fluent
     public function setMetadata($metadata)
     {
         $this->setAttribute(self::METADATA, $metadata);
+    }
+
+    public function setPaymentMethod($paymentMethod)
+    {
+        $this->setAttribute(self::PAYMENT_METHOD, $paymentMethod);
     }
 
     public function setDetailedError($code, $method)
