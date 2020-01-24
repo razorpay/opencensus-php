@@ -276,6 +276,12 @@ export default class ActivationWizard extends React.Component {
           redditData: 'AddToWishlist',
         }); //fb = false, bing, linkedin, twitter, quora, reddit events are fired
 
+        this.props.sendEventsForSubMerchantView(
+          window.rzpQ
+            .routeActions()
+            .success('route.linked_account.activate_account.business_details')
+        );
+
         return this.props.history.replace(`/`);
       })
       .catch(err => {

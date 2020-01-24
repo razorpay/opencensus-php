@@ -12,11 +12,15 @@
       failed: noop, //A failure occured
       push: noop, //Explicitly push as custom event to the queue
       setUser:noop, //Set a user one time
+      interaction: noop,
       defineEventModifiers:noop,//Extends to set custom event properties
       //Any modifiers
       onbr:()=>window.rzpQ,
       merchantActions:()=>window.rzpQ,
       productOnboarding: function() {
+        return window.rzpQ;
+      },
+      routeActions: function() {
         return window.rzpQ;
       },
       reporting: () => window.rzpQ,
@@ -35,7 +39,7 @@
     var disableEventEmitters = '{{$env}}'==='dev' ? true : false; //If true events will not be emitted to LJ and PROM
     var appEnvironment = window.location.hostname == "dashboard.razorpay.com" ? 'prod' : 'stage';
 
-    if(window.analytics){
+    if (window.analytics) {
         analytics.init(
           ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj', 'quora', 'reddit'],
           {
@@ -46,7 +50,7 @@
           },
           isLocal,
           appEnvironment,
-          disableEventEmitters
+          disableEventEmitters,
         );
 
          // Init old key as well
@@ -78,11 +82,22 @@
             {
                 propertyName:'event_group',
                 value:'merchant_actions'
-            }],
-            reporting: [
-              { propertyName: 'event_type', value: 'reporting-events' },
-              { propertyName: 'event_group', value: 'reporting_events' },
-            ],
+            }
+          ],
+          'routeActions': [
+            {
+              propertyName:'event_type',
+              value:'route'
+            },
+            {
+              propertyName:'event_group',
+              value:'route'
+            }
+          ],
+          reporting: [
+            { propertyName: 'event_type', value: 'reporting-events' },
+            { propertyName: 'event_group', value: 'reporting_events' },
+          ],
         });
 
         ga('create', 'UA-53341507-1', 'auto', 'old');

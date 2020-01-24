@@ -385,6 +385,12 @@ export default class ActivationContainer extends React.Component {
 
   componentDidMount() {
     this.handleUIUpdate();
+
+    this.props.sendEventsForSubMerchantView(
+      window.rzpQ
+        .routeActions()
+        .initiated('route.linked_account.activate_account.bank_account_details')
+    );
   }
 
   componentWillUnmount() {
