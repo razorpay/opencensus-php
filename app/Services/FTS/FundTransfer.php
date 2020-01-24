@@ -15,6 +15,7 @@ use RZP\Models\Bank\IFSC as IFSC;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Vpa\Core as VPACore;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankAccount\Core as BankAccountCore;
@@ -804,5 +805,99 @@ class FundTransfer extends Base
             parent::FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS,
             Requests::POST,
             $input);
+    }
+
+    public function getBulkStatus(array $input)
+    {
+        (new Validator)->validateInput('fetch_transfer_status', $input);
+
+        try
+        {
+            $attempts = $this->FTACore->getAttemptsFromIds($input['fta_ids']);
+
+            $ftsTransferIds = $this->getFtsTransferIdFromAttempts($attempts);
+
+            $response  = $this->createAndSendRequest(
+                parent::FUND_TRANSFER_ATTEMPTS_STATUS_FETCH,
+                Requests::GET,
+                [ 'id' => $ftsTransferIds ])['body']['transfers'];
+
+            $data = $this->extractFtsResponse($response);
+
+            return $this->combineStatusForApiAndFTS($attempts, $data);
+
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::FTS_TRANSFER_STATUS_FETCH_FAILED,
+                [
+                    'input' => $input,
+                ]);
+        }
+
+        return [];
+    }
+
+    protected function getFtsTransferIdFromAttempts(PublicCollection  $attempts)
+    {
+        $ftsTransferIds = [];
+
+        foreach ($attempts as $attempt)
+        {
+            $ftsTransferId = $attempt->getFtsTransferId();
+
+            $ftsTransferIds[] = $ftsTransferId;
+        }
+
+        return implode("," ,$ftsTransferIds);
+    }
+
+    protected function extractFtsResponse(array $response)
+    {
+        $result = [];
+
+        foreach ($response as $val)
+        {
+
+          $result[$val['id']] = $val['status'];
+        }
+
+        return $result;
+    }
+
+    protected function combineStatusForApiAndFTS(PublicCollection $attempts, array $response)
+    {
+        $responseData = [];
+
+        $ftsFetchedIds = array_keys($response);
+
+        foreach ($attempts as $attempt)
+        {
+            $ftsTransferId = $attempt->getFtsTransferId();
+
+            $ftsTransferStatus = '';
+
+            $source = $attempt->source;
+
+            if (array_key_exists($ftsTransferId, $ftsFetchedIds) === true)
+            {
+                $ftsTransferStatus = $response[ $ftsTransferId ];
+            }
+
+            $responseData[$attempt->getId()] = [
+                'fta_status'          => $attempt->getStatus(),
+                'source_id'           => $attempt->getSourceId(),
+                'source_type'         => $attempt->getSourceType(),
+                'source_status'       => $source->getStatus(),
+                'gateway_ref_no'      => $attempt->getGatewayRefNo(),
+                'fts_transfer_id'     => $ftsTransferId,
+                'fts_transfer_status' => $ftsTransferStatus,
+            ];
+        }
+
+        return $responseData;
     }
 }

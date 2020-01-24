@@ -2600,4 +2600,27 @@ class PaymentCreateTest extends TestCase
 
     }
     // end tests for fee_bearer attribute of pricing plans and merchant
+
+    public function testOrderStatusForUpiPaymentWithFlatCashbackOffer()
+    {
+        $offer = $this->fixtures->create("offer",['type' => 'instant', 'payment_method' => 'upi', 'flat_cashback'=>'100', 'min_amount'=>'200']);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true, 'notes' => ['somekey' => 'some value', 'Pay_Mode' => 'UPI'], 'amount' => '500', 'payment_capture' => '1'
+        ]);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['amount'] = 500;
+
+        $payment['order_id'] = 'order_'.$order->getId();
+
+        $this->doAuthPayment($payment);
+
+        $lastOrder =  $this->getLastEntity('order',true);
+
+        $this->assertEquals('paid', $lastOrder['status']);
+    }
 }

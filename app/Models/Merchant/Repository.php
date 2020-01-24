@@ -55,6 +55,7 @@ class Repository extends Base\Repository
         Entity::FEE_MODEL               => 'sometimes|in:prepaid,postpaid',
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
+        Entity::EXTERNAL_ID             => 'sometimes|string',
     ];
 
     protected $adminFetchParamRules = [

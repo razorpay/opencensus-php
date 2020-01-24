@@ -194,6 +194,9 @@ class CreateMerchants extends Migration
             $table->text(Merchant::PARTNERSHIP_URL)
                   ->nullable();
 
+            $table->string(Merchant::EXTERNAL_ID)
+                  ->nullable();
+
             $table->integer(Merchant::CREATED_AT);
 
             $table->integer(Merchant::UPDATED_AT);
@@ -210,6 +213,7 @@ class CreateMerchants extends Migration
             $table->index(Merchant::RISK_RATING);
             $table->index(Merchant::EMAIL);
             $table->index(Merchant::AUTO_REFUND_DELAY);
+            $table->index(Merchant::EXTERNAL_ID);
             $table->index(Merchant::CREATED_AT);
             $table->index(Merchant::UPDATED_AT);
         });

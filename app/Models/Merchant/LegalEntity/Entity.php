@@ -10,6 +10,7 @@ class Entity extends Base\PublicEntity
     // this is the same as category in merchants table
     const MCC                  = 'mcc';
 
+    const EXTERNAL_ID          = 'external_id';
     const BUSINESS_TYPE        = 'business_type';
     const BUSINESS_CATEGORY    = 'business_category';
     const BUSINESS_SUBCATEGORY = 'business_subcategory';
@@ -21,6 +22,7 @@ class Entity extends Base\PublicEntity
         self::MCC,
         self::BUSINESS_CATEGORY,
         self::BUSINESS_SUBCATEGORY,
+        self::EXTERNAL_ID,
     ];
 
     protected $public = [
@@ -28,6 +30,7 @@ class Entity extends Base\PublicEntity
         self::MCC,
         self::BUSINESS_CATEGORY,
         self::BUSINESS_SUBCATEGORY,
+        self::EXTERNAL_ID,
     ];
 
     protected $casts = [
@@ -58,6 +61,11 @@ class Entity extends Base\PublicEntity
     public function getBusinessSubcategory()
     {
         return $this->getAttribute(self::BUSINESS_SUBCATEGORY);
+    }
+
+    public function getExternalId()
+    {
+        return $this->getAttribute(self::EXTERNAL_ID);
     }
 
     public function getMcc()
