@@ -81,8 +81,6 @@ class Error extends Support\Fluent
         $this->setAction($code);
 
         $this->setAttribute(self::INTERNAL_ERROR_DESC, $internalDesc);
-
-        $this->setDetailedError($this->getInternalErrorCode(), $this->getAttribute(self::PAYMENT_METHOD));
     }
 
     public function appendToField(string $string)
@@ -248,8 +246,7 @@ class Error extends Support\Fluent
             }
             catch (\Exception $exception)
             {
-                $this->trace->info(TraceCode::FILE_OPERATION_FAILED,
-                    sprintf("Error code mapping file not found for payment method: %s", $method));
+                $this->trace->info(TraceCode::FILE_OPERATION_FAILED, ['payment_method' => $method]);
             }
 
             if (array_key_exists($code, $errorCodeMap))
@@ -430,6 +427,8 @@ class Error extends Support\Fluent
 
     public function toPublicArray($isPublicRoute = false)
     {
+        $this->setDetailedError($this->getInternalErrorCode(), $this->getAttribute(self::PAYMENT_METHOD));
+
         $description = $isPublicRoute ? $this->getCustomerDescription() : $this->getDescription();
 
         $error = array(
@@ -482,6 +481,8 @@ class Error extends Support\Fluent
 
     public function toDebugArray()
     {
+        $this->setDetailedError($this->getInternalErrorCode(), $this->getAttribute(self::PAYMENT_METHOD));
+
         $error = $this->checkAndAddDataToErrorResp($this->getAttributes());
 
         return array('error' => $error);
