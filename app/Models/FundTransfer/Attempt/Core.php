@@ -815,37 +815,20 @@ class Core extends Base\Core
             return [false, Settlement\Channel::YESBANK];
         }
 
-        if ((($source->getChannel() === Settlement\Channel::YESBANK) and
-             ($accountType === E::BANK_ACCOUNT)) and
-             ($this->isTestMode() === false))
+        if ($this->isLiveMode() === true)
         {
-            return [true, $source->getChannel()];
+            if ($source->isBalanceTypeBanking() === true)
+            {
+                return [true, $source->getChannel()];
+            }
+
+            if ($source->getChannel() === Settlement\Channel::YESBANK)
+            {
+                return [true, $source->getChannel()];
+            }
         }
 
-        $key = 'fts_payout_' . strtolower($accountType) . '_' . $source->getChannel() . '_' . $source->getMode();
-
-        $this->trace->info(TraceCode::FTA_PAYOUT_RAMP_INIT, ['key' => $key]);
-
-        $rampOnFts  = $this->app->razorx->getTreatment(
-            $source->getMerchantId(),
-            $key,
-            $this->mode
-        );
-
-        $this->trace->info(TraceCode::FTA_PAYOUT_RAMP_COMPLETE, [
-            'key'         => $key,
-            'mode'        => $this->mode,
-            'ramp_status' => $rampOnFts,
-        ]);
-
-        if ((strtolower($rampOnFts) === 'on') and ($source->isBalanceTypeBanking() === true))
-        {
-            return [true, $source->getChannel()];
-        }
-
-        $isFTS = (in_array($source->getChannel(), Settlement\Channel::getFtsSupportedPayoutChannels(), true) === true)? true: false;
-
-        return [$isFTS, $source->getChannel()];
+        return [false, Settlement\Channel::YESBANK];
     }
 
     protected function getChannelForRefund(Entity $fta,
