@@ -32,9 +32,6 @@ class Activate extends Base\Core
      */
     public function activate(Entity $merchant): Detail\Entity
     {
-        //To be removed, added for trace purpose
-        $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, $merchant->toArrayPublic());
-
         // Merchants who have been activated (instantly activated whitelisted merchants)
         if ($merchant->isActivated() === true)
         {
@@ -76,6 +73,8 @@ class Activate extends Base\Core
         $merchant->enableReceiptEmails();
 
         $merchant->activate();
+
+        $merchant->releaseFunds();
 
         // making sure that merchant's has_key_access is set to true when website is set.
         if ((empty($merchantDetail->getWebsite()) === false) and
