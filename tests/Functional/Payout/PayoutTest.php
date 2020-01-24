@@ -14,7 +14,6 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Feature\Constants;
-use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
@@ -1985,7 +1984,7 @@ class PayoutTest extends TestCase
     {
         $this->setupMockDns();
 
-        $this->mockRazorxTreatment();
+        $this->mockRazorxTreatment('yesbank', 'on', 'off', 'off');
 
         $this->testCreatePayout();
 
@@ -2054,7 +2053,7 @@ class PayoutTest extends TestCase
     {
         $this->setupMockDns();
 
-        $this->mockRazorxTreatment();
+        $this->mockRazorxTreatment('yesbank', 'on', 'off', 'off');
 
         $this->testCreatePayout();
 

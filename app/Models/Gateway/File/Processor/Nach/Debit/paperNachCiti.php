@@ -33,6 +33,7 @@ class PaperNachCiti extends Debit\Base
     const STEP              = 'debit';
     const REFERENCE_PREFIX  = 'CTTATAAIAA';
     const GATEWAY           = Payment\Gateway::NACH_CITI;
+    const USER_NAME         = 'CTRAZORPAY';
     const FILE_METADATA     = [
         'gid'   => '10000',
         'uid'   => '10006',
@@ -313,7 +314,7 @@ class PaperNachCiti extends Debit\Base
         $fieldLength = FieldsLength::BENEFICIARY_ACCOUNT_HOLDER_NAME;
         $accountName = $this->getPaddedValue($accountName, $fieldLength, ' ', STR_PAD_RIGHT);
 
-        $userName = $token->terminal->getGatewayMerchantId2();
+        $userName = self::USER_NAME;
         $fieldLength = FieldsLength::USER_NAME;
         $userName = $this->getPaddedValue($userName, $fieldLength, ' ', STR_PAD_RIGHT);
 
