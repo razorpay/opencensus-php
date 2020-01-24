@@ -36,6 +36,7 @@ class PublicErrorDescription
 
     const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                 = 'Terminal disable failed on gateway';
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                  = 'Terminal enable failed on gateway';
+    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Card not enrolled';
 
     const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
@@ -230,6 +231,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
     const BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS                             = 'Merchant email already exists for account - ';
     const BAD_REQUEST_MERCHANT_INVALID_MCC_CODE                                 = 'Invalid mcc code';
+    const BAD_REQUEST_DUPLICATE_EXTERNAL_ID                                     = 'External Id already exists';
     const BAD_REQUEST_INVALID_POA_VERIFICATION_STATUS_CHANGE                    = 'Invalid poa verification status change ';
     const BAD_REQUEST_INVALID_BANK_DETAIL_VERIFICATION_STATUS_CHANGE            = 'Invalid bank detail verification status change';
     const BAD_REQUEST_ACCOUNT_REGISTRATION_ADDRESS_REQUIRED                     = 'Registered address is required';

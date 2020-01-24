@@ -958,4 +958,9 @@ class Core extends Base\Core
 
         return false;
     }
+
+    public function getAttemptsFromIds(array $ftaIds)
+    {
+        return $this->repo->fund_transfer_attempt->fetchFtsAttemptUsingId($ftaIds);
+    }
 }

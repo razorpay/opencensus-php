@@ -901,6 +901,12 @@ class AdminFetch
                 ],
             ],
 
+            Entity::WORKFLOW_ACTION => [
+                'entity_id' => [
+                    Fetch::LABEL => 'Entity Id',
+                ],
+            ],
+
             Entity::CONTACT => [
                 'email'           => [],
                 'name'            => [],
@@ -1384,6 +1390,12 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
+            Entity::LEGAL_ENTITY => [
+                'external_id' => [
+                    Fetch::LABEL  => 'External ID',
+                ],
+            ],
+
             Entity::KEY => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
@@ -1515,6 +1527,9 @@ class AdminFetch
                         '4',
                         '5',
                     ],
+                ],
+                'external_id' => [
+                    Fetch::LABEL  => 'External ID',
                 ],
             ],
 
@@ -2206,6 +2221,10 @@ class AdminFetch
                     Fetch::LABEL  => 'Email',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+            ],
+
+            Entity::MERCHANT_REQUEST => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
             Entity::VIRTUAL_ACCOUNT => [

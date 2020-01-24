@@ -8,11 +8,10 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\Admin\Service as AdminService;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class FundAccountPayout extends Base
@@ -147,39 +146,30 @@ class FundAccountPayout extends Base
         return $payout->balance->getChannel();
     }
 
+    /*
+     * This channel selection DOESN'T handle channel preference, the one whose experiment would be created first
+     * would be preferred. So, its preferred to NOT have same  MIDs in 2 different experiments for the same behaviour.
+     */
     protected function getChannelForSharedAccountFundTransfer(Payout\Entity $payout)
     {
         $merchant = $payout->merchant;
 
-        if ($this->checkIfChannelShouldBeIcici($merchant) === true)
+        $mode = $payout->getMode();
+
+        $razorxFeature = strtoupper(sprintf("%s_MODE_PAYOUT_FILTER", $mode));
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            constant(RazorxTreatment::class . '::' . $razorxFeature),
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'control')
         {
-            return Channel::ICICI;
+            return Channel::YESBANK;
         }
 
-        if ($this->checkIfChannelShouldBeCiti($merchant) === true)
-        {
-            return Channel::CITI;
-        }
-
-        return $payout->balance->getChannel() ?? Channel::YESBANK;
-    }
-
-    protected function checkIfChannelShouldBeIcici(Merchant\Entity $merchant): bool
-    {
-        $mid = $merchant->getId();
-
-        $iciciMids = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
-
-        return (in_array($mid, $iciciMids, true) === true);
-    }
-
-    protected function checkIfChannelShouldBeCiti(Merchant\Entity $merchant): bool
-    {
-        $mid = $merchant->getId();
-
-        $citiMids = (new AdminService)->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
-
-        return (in_array($mid, $citiMids, true) === true);
+        return constant(Channel::class . '::' . strtoupper($variant));
     }
 
     protected function validateModeChannelAndDestinationType(Payout\Entity $payout)

@@ -232,6 +232,8 @@ class EmandateDebitReconciliate extends PaymentReconciliate
             //
             $processor->processAuth($this->payment);
 
+            $this->paymentTransaction = $this->payment->reload()->transaction;
+
             $this->persistReconciledAt($this->payment);
         }
         else
