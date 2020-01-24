@@ -320,7 +320,7 @@ class HyperVerge extends Base\Core
 
         $input[self::IFSCCode] = $bankAccount->getIfscCode();
 
-        $input[self::ACCOUNT_NUMBER] = $bankAccount->getAccountNumber();
+        $input[self::ACCOUNT_NUMBER] = stringify($bankAccount->getAccountNumber());
 
         if (empty($bankAccount->getBeneficiaryName()) === false)
         {
