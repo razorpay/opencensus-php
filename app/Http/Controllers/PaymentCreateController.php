@@ -612,6 +612,8 @@ class PaymentCreateController extends Controller
 
     protected function processCoprotoJsonData($data)
     {
+        $this->trace->info(TraceCode::ERROR_EXCEPTION, $data);
+
         if (isset($data['request']) === true)
         {
             if (($data['type'] === 'first') and
