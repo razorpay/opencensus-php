@@ -213,15 +213,28 @@ class Error extends Support\Fluent
 
         $file = fopen($filePath,"r");
 
+        if ($file === false)
+        {
+            throw new Exception\RuntimeException(
+                'Unable to open file . ' . $filePath);
+        }
+
         $errorCodeMap = array();
 
         $header = fgetcsv($file);
 
-        while ($row = fgetcsv($file))
+        try
         {
-            $key = array_shift($row);
+            while ($row = fgetcsv($file))
+            {
+                $key = array_shift($row);
 
-            $errorCodeMap[$key] = $row;
+                $errorCodeMap[$key] = $row;
+            }
+        }
+        finally
+        {
+            fclose($file);
         }
 
         if (array_key_exists($code, $errorCodeMap))
