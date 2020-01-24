@@ -4,6 +4,7 @@ namespace RZP\Error;
 
 use RZP\Exception;
 use Illuminate\Support;
+use RZP\Trace\TraceCode;
 use RZP\Services\DowntimeMetric;
 
 class Error extends Support\Fluent
@@ -46,6 +47,8 @@ class Error extends Support\Fluent
 
     protected $attributes = array();
 
+    protected $trace;
+
     public function __construct(
         $code,
         $desc = null,
@@ -53,6 +56,10 @@ class Error extends Support\Fluent
         $data = null)
     {
         $this->fill($code, $desc, $field, $data);
+
+        $app = App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
     }
 
     public function fill($code, $desc = null, $field = null, $data = null, $internalDesc = null)
@@ -230,7 +237,8 @@ class Error extends Support\Fluent
         }
         catch (\Exception $exception)
         {
-
+            $this->trace->info(TraceCode::FILE_OPERATION_FAILED,
+                sprintf("Error code mapping file not found for payment method: %s", $method));
         }
 
         if (array_key_exists($code, $errorCodeMap))
