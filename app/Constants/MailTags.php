@@ -183,6 +183,9 @@ class MailTags
     const BALANCE_NEGATIVE_ALERT                        = 'balance_negative_alert';
     const BALANCE_POSITIVE_ALERT                        = 'balance_positve_alert';
 
+    //Merchant Invoice tags
+    const MERCHANT_INVOICE_EXECUTION_SUMMARY            = 'merchant_invoice_execution_summary';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags
