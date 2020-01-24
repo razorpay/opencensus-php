@@ -223,44 +223,47 @@ class Error extends Support\Fluent
 
     public function setDetailedError($code, $method)
     {
-        $filePath = storage_path(sprintf(self::ERROR_CODE_MAP_PATH, $method));
-
-        $errorCodeMap = array();
-
-        $file = null;
-
-        try
+        if (isset($method) === true)
         {
-            $file = fopen($filePath,"r");
+            $filePath = storage_path(sprintf(self::ERROR_CODE_MAP_PATH, $method));
 
-            $header = fgetcsv($file);
+            $errorCodeMap = array();
 
-            while ($row = fgetcsv($file))
+            $file = null;
+
+            try
             {
-                $key = array_shift($row);
+                $file = fopen($filePath,"r");
 
-                $errorCodeMap[$key] = $row;
+                $header = fgetcsv($file);
+
+                while ($row = fgetcsv($file))
+                {
+                    $key = array_shift($row);
+
+                    $errorCodeMap[$key] = $row;
+                }
+
+                fclose($file);
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->info(TraceCode::FILE_OPERATION_FAILED,
+                    sprintf("Error code mapping file not found for payment method: %s", $method));
             }
 
-            fclose($file);
-        }
-        catch (\Exception $exception)
-        {
-            $this->trace->info(TraceCode::FILE_OPERATION_FAILED,
-                sprintf("Error code mapping file not found for payment method: %s", $method));
-        }
+            if (array_key_exists($code, $errorCodeMap))
+            {
+                $this->setDesc($errorCodeMap[$code][0]);
 
-        if (array_key_exists($code, $errorCodeMap))
-        {
-            $this->setDesc($errorCodeMap[$code][0]);
+                $this->setCodeDetail($errorCodeMap[$code][1]);
 
-            $this->setCodeDetail($errorCodeMap[$code][1]);
+                $this->setFailureType($errorCodeMap[$code][2]);
 
-            $this->setFailureType($errorCodeMap[$code][2]);
+                $this->setPointOfFailure($errorCodeMap[$code][3]);
 
-            $this->setPointOfFailure($errorCodeMap[$code][3]);
-
-            $this->setNextBestAction($errorCodeMap[$code][4]);
+                $this->setNextBestAction($errorCodeMap[$code][4]);
+            }
         }
     }
 
