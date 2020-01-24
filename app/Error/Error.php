@@ -2,10 +2,8 @@
 
 namespace RZP\Error;
 
-use App;
 use RZP\Exception;
 use Illuminate\Support;
-use RZP\Models\Payment\Method;
 use RZP\Services\DowntimeMetric;
 
 class Error extends Support\Fluent
@@ -211,30 +209,28 @@ class Error extends Support\Fluent
     {
         $filePath = storage_path(sprintf(self::ERROR_CODE_MAP_PATH, $method));
 
-        $file = fopen($filePath,"r");
-
-        if ($file === false)
-        {
-            throw new Exception\RuntimeException(
-                'Unable to open file . ' . $filePath);
-        }
-
         $errorCodeMap = array();
 
-        $header = fgetcsv($file);
+        $file = null;
 
         try
         {
+            $file = fopen($filePath,"r");
+
+            $header = fgetcsv($file);
+
             while ($row = fgetcsv($file))
             {
                 $key = array_shift($row);
 
                 $errorCodeMap[$key] = $row;
             }
-        }
-        finally
-        {
+
             fclose($file);
+        }
+        catch (\Exception $exception)
+        {
+
         }
 
         if (array_key_exists($code, $errorCodeMap))
