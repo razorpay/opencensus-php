@@ -10,7 +10,6 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
-use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Gateway;
 use RZP\Jobs\TerminalOnboardingCreateJob;
@@ -52,8 +51,6 @@ class Service extends Base\Service
                 'submerchant_id' => $submerchant->getId(),
                 'input'          => $input,
             ]);
-        
-        $this->verifySubMerchantShouldBeActivated($submerchant);
 
         $this->verifyPartnerTerminalOnboardingAccess();
 
@@ -312,16 +309,5 @@ class Service extends Base\Service
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
-    }
-
-    protected function verifySubMerchantShouldBeActivated(Merchant\Entity $submerchant)
-    {
-        if ($submerchant->isActivated() === true)
-        {
-            return;
-        }
-        
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED);
     }
 }
