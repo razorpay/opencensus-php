@@ -819,8 +819,15 @@ class Entity extends Base\PublicEntity
     public function activate()
     {
         $this->setAttribute(self::ACTIVATED, true);
-        $this->setAttribute(self::LIVE, true);
+        $this->liveEnable();
         $this->setAttribute(self::ACTIVATED_AT, time());
+    }
+
+    public function deactivate()
+    {
+        $this->setAttribute(self::ACTIVATED, false);
+        $this->liveDisable();
+        $this->holdFunds();
     }
 
     /**

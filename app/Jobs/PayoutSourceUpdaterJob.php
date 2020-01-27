@@ -62,8 +62,8 @@ class PayoutSourceUpdaterJob extends Job
 
             if ($this->expectedCurrentStatus !== $payout->getStatus())
             {
-                (new Core())->pushSlackAlert(TraceCode::PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS,
-                                             $context);
+//                (new Core())->pushSlackAlert(TraceCode::PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS,
+//                                             $context);
 
                 $this->trace->warning(TraceCode::PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS,
                                       $context);

@@ -1041,6 +1041,8 @@ class Core extends Base\Core
                     $newMerchantDetails,
                     $rejectionReasons);
 
+                $merchant->deactivate();
+
                 $this->sendRejectionEmail($merchant);
             }
 
