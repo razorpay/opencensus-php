@@ -3,8 +3,8 @@
 namespace RZP\Models\BankingAccount\State;
 
 use RZP\Models\Base;
-use RZP\Models\Base\PublicEntity;
 use RZP\Models\BankingAccount;
+use RZP\Models\Base\PublicEntity;
 
 class Core extends Base\Core
 {

@@ -337,7 +337,11 @@ class BankingAccountTest extends TestCase
 
     public function testActivateFailedDueToMissingData()
     {
-        $this->ba->proxyAuth();
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
         $this->createBankingAccount();
 
