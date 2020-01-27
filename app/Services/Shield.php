@@ -285,6 +285,6 @@ class Shield
             $product = ShieldConstants::PRODUCT_PAYMENT_CAW;
         }
 
-        return $product
+        return $product;
     }
 }
