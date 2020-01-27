@@ -612,6 +612,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
     }
+    public function isDisplayParentPaymentId(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::DISPLAY_LA_PARENT_PAYMENT_ID);
+    }
 
     public function isAxisExpressPayEnabled(): bool
     {

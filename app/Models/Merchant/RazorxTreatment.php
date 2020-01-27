@@ -76,4 +76,7 @@ final class RazorxTreatment
 
     // Decides payout channel based on IFT mode
     const IFT_MODE_PAYOUT_FILTER = 'ift_mode_payout_filter';
+
+    // Display Parent Payment Id
+    const DISPLAY_PARENT_PAYMENT_ID = 'display_parent_payment_id';
 }

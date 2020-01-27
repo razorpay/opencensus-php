@@ -62,6 +62,7 @@ class Entity extends Base\PublicEntity
 
     // Append attributes
     const RECIPIENT_DETAILS = 'recipient_details';
+    const PARENT_PAYMENT_ID = 'parent_payment_id';
 
     protected static $sign = 'trf';
 
@@ -138,6 +139,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::ENTITY,
         self::LINKED_ACCOUNT_NOTES,
+        self::PARENT_PAYMENT_ID,
     ];
 
     protected $appends = [
@@ -499,6 +501,42 @@ class Entity extends Base\PublicEntity
         $details = $account->setVisible($accountAttributes)->toArray();
 
         return $details;
+    }
+
+    /** unset the ParentPaymentId attribute based on the feature flag.
+     *
+     * @param array $attributes
+     */
+    public function setPublicParentPaymentIdAttribute(array &$attributes)
+    {
+        $merchant = $this->merchant;
+
+        if($merchant->isDisplayParentPaymentId() == false)
+        {
+            unset($attributes[self::PARENT_PAYMENT_ID]);
+        }
+    }
+
+    /** GetParent PaymentId based on the sourceType
+     *
+     * @return string
+     */
+    public function getParentPaymentIdAttribute(): string
+    {
+        $transferSourceType = $this->getSourceType();
+
+        $parentPaymentId = "";
+
+        if($transferSourceType === E::ORDER)
+        {
+            $parentPaymentId = $this->source->payments()->whereIn('status', ['captured','refunded'])->first()->getId();
+        }
+        else if($transferSourceType === E::PAYMENT)
+        {
+            $parentPaymentId = $this->getSourceId();
+        }
+
+        return $parentPaymentId;
     }
 
     public function setPublicRecipientDetailsAttribute(array & $attributes)
