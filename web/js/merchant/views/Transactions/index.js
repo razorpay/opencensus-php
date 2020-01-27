@@ -51,6 +51,8 @@ export default class TransactionsContainer extends Component {
 
     const { settlement_ux_revamp } = this.props.config;
 
+    const pathname = this.props.location.pathname;
+
     return (
       <tabbed-container>
         <header id="transactions-header" class="flex">
@@ -90,7 +92,7 @@ export default class TransactionsContainer extends Component {
             <NavLink to="/orders">Orders</NavLink>
           </ShowWhen>
           <NavLink to="/disputes">Disputes</NavLink>
-          {settlement_ux_revamp && no_settlement ? (
+          {settlement_ux_revamp && no_settlement && pathname !== '/disputes' ? (
             <div class="text-right" style={{ width: '100%' }}>
               {no_settlement.caption}
               {no_settlement.reason && (
@@ -107,7 +109,10 @@ export default class TransactionsContainer extends Component {
               )}
             </div>
           ) : null}
-          {settlement_ux_revamp && !no_settlement && !nextSettlement ? (
+          {settlement_ux_revamp &&
+          !no_settlement &&
+          !nextSettlement &&
+          pathname !== '/disputes' ? (
             <div class="text-right" style={{ width: '100%' }}>
               <strong>
                 <Amount
