@@ -98,17 +98,22 @@ export default class App extends Component {
     // localizing mode for each merchant so that different modes can be maintained
     // across logins/merchants
     if (oldModeValue) {
-      Object.keys(window.rzp_user.merchants).forEach(merchantId => {
-        LocalStorageService.setItem(
-          `${oldModeToken}--${merchantId}`,
-          oldModeValue
-        );
-      });
+      window.rzp_user &&
+        Object.keys(window.rzp_user.merchants).forEach(merchantId => {
+          LocalStorageService.setItem(
+            `${oldModeToken}--${merchantId}`,
+            oldModeValue
+          );
+        });
 
       LocalStorageService.removeItem(oldModeToken);
     }
 
-    this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
+    this.modeToken = null;
+
+    if (window.rzp_user) {
+      this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
+    }
 
     this.state = {
       isLoading: true,
@@ -280,7 +285,7 @@ export default class App extends Component {
   };
 
   fetchUser() {
-    let user = new User(window.rzp_user);
+    let user = window.rzp_user ? new User(window.rzp_user) : null;
 
     if (user) {
       this.props.updateSession({ user });
