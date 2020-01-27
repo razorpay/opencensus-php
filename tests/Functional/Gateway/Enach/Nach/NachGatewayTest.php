@@ -36,6 +36,25 @@ class NachGatewayTest extends TestCase
         (new Terminal)->createNachTerminal();
     }
 
+    public function testNachDebitRefund()
+    {
+        $this->testGatewayFileDebitBankResponseSuccess();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+
+        $this->assertEquals('initiated', $refund['status']);
+
+        $this->assertTrue(empty($refund['bank_account_id']) === false);
+    }
+
     public function testGatewayFileRegister()
     {
         $this->createDummyRegisterToken();
