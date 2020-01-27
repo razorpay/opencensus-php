@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Payment;
+use RZP\Models\Pricing\Fee;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
@@ -181,6 +182,7 @@ class Service extends Base\Service
 
     public function mdrAdjustment(array $input)
     {
+        return  $this->processMdrAdjustmentRow($input);
         $response = new Base\PublicCollection();
 
         foreach ($input as $row)
@@ -195,13 +197,13 @@ class Service extends Base\Service
 
     protected function processMdrAdjustmentRow(array $input)
     {
+        $paymentId = $input['payment_id'];
+
+        $merchantId = $input['merchant_id'];
+
+        $transactionId = $input['transaction_id'];
         try
         {
-            $paymentId = $input['payment_id'];
-
-            $merchantId = $input['merchant_id'];
-
-            $transactionId = $input['transaction_id'];
 
             $payment = $this->repo->payment->findOrFail($paymentId);
 
@@ -214,9 +216,9 @@ class Service extends Base\Service
             }
             [$oldFee, $oldTax] = [$transaction->getFee(), $transaction->getTax()];
 
-            $pricingFee = new Pricing\Fee;
+            $pricingFee = new Fee;
 
-            $pricingFee->merchant = $payment->merchant;
+            $pricingFee->setMerchant($payment->merchant);
 
             [$newFee, $newTax] = $pricingFee->calculateMerchantFees($payment);
 
@@ -234,7 +236,7 @@ class Service extends Base\Service
                 'errorDescription'  => '',
             ];
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $response = [
                 Entity::MERCHANT_ID => $merchantId,

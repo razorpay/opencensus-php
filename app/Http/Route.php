@@ -1449,9 +1449,11 @@ final class Route
         'offline_qr_poll_test_order_status'       => ['get',       't/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusTest'                  ],
         'offline_qr_poll_live_order_status'       => ['get',       'l/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusLive'                  ],
 
+        'mdr_adjustment'                          => ['post',      'mdr_adjustment',                                            'TransactionController@mdrAdjustment'                     ],
     ];
 
     public static $public = [
+        'mdr_adjustment',
         'checkout',
         'payment_create',
         'payment_create_checkout',
