@@ -353,6 +353,7 @@ final class Route
         'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
         'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'MerchantController@postOAuthApplicationWebhook'                    ],
         'webhook_stork_migrate'                    => ['post',     'webhooks/migrate/stork',                         'WebhookController@webhookStorkMigrate'                             ],
+        'webhook_deactivate'                       => ['post',     'webhooks/{id}/deactivate',                       'WebhookController@webhookDeactivate'                               ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'merchant_replace_key'                     => ['put',      'keys/{id}',                                      'KeyController@putKeys'                                             ],
@@ -1945,6 +1946,7 @@ final class Route
         'transfer_pending_process',
         'transfer_failed_process',
         'merchant_mtu_update',
+        'webhook_deactivate',
         'transaction_settled_data_fix',
     ];
 
@@ -3751,6 +3753,7 @@ final class Route
             // Storks needs connected applications against a merchant to fan
             // out the same event to former entities as well.
             'merchant_get_app_access_mapping',
+            'webhook_deactivate'
         ],
 
         'mtu_lambda' => [
