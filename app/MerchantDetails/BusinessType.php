@@ -20,6 +20,8 @@ class BusinessType
     const INDIVIDUAL             = 'individual';
     const NOT_YET_REGISTERED     = 'not_yet_registered';
 
+    const REGISTERED_BUSINESS_TYPES = ['1', '3', '4', '5', '6', '7', '8', '9', '10', '12'];
+
     protected static $typeIndexMap = [
         self::INDIVIDUAL             => 2,
         self::NOT_YET_REGISTERED     => 11,

@@ -161,6 +161,16 @@ class Service extends Base\Service
                     $isUserEligible = in_array("on", $value);
 
                     break;
+
+                case 'business_type':
+
+                    $businessType = $user[$key];
+
+                    if (isset($businessType) === false)
+                    {
+                        return false;
+                    }
+                    $isUserEligible = in_array($businessType, $value, true);
             }
 
             if ($isUserEligible === false)

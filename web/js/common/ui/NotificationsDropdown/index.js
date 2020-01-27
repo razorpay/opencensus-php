@@ -294,10 +294,7 @@ const NotificationCard = ({
             return (
               <a
                 key={idx}
-                class={classList(
-                  'btn',
-                  btn.type === 'button' ? 'btn-primary' : 'btn-link'
-                )}
+                class={classList('btn', getButtonClass(btn.type))}
                 onClick={e => {
                   trackAnnouncement(
                     ga ? ga.action : title,
@@ -317,6 +314,15 @@ const NotificationCard = ({
       </div>
     </div>
   );
+};
+
+const BUTTON_CLASSES = {
+  button: 'btn-primary',
+  'primary-inverted': 'btn-primary--invert',
+};
+
+const getButtonClass = type => {
+  return !!BUTTON_CLASSES[type] ? BUTTON_CLASSES[type] : 'btn-link';
 };
 
 const iconMap = {
