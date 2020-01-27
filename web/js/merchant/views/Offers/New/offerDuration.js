@@ -1,6 +1,6 @@
 import Input from 'common/new-ui/Input';
 
-const LINK_TO_DOCS = 'https://razorpay.com/docs/payment-gateway/orders/;';
+const LINK_TO_DOCS = 'https://razorpay.com/docs/payment-gateway/orders/';
 
 export default ({
   startsAt,
