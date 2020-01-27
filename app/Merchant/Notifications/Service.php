@@ -164,13 +164,16 @@ class Service extends Base\Service
 
                 case 'business_type':
 
-                    $businessType = $user[$key];
-
-                    if (isset($businessType) === false)
+                    if (isset($user[$key]) === false)
                     {
                         return false;
                     }
+
+                    $businessType = $user[$key];
+
                     $isUserEligible = in_array($businessType, $value, true);
+
+                    break;
             }
 
             if ($isUserEligible === false)
