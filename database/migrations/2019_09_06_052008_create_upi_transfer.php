@@ -58,6 +58,9 @@ class CreateUpiTransfer extends Migration
             $table->string(UpiTransfer::PROVIDER_REFERENCE_ID)
                   ->nullable();
 
+            $table->string(UpiTransfer::TRANSACTION_REFERENCE)
+                  ->nullable();
+
             $table->string(UpiTransfer::TRANSACTION_TIME)
                   ->nullable();
 

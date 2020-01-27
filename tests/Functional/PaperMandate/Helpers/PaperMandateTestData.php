@@ -233,29 +233,6 @@ return [
         ]
     ],
 
-    'testAuthenticatePaperMandateWithTertiarySignaturePresentWithoutSecondary' => [
-        'request' => [
-            'content' => [
-                'auth_link_id' => 'inv_1000000invoice',
-            ],
-            'method'    => 'POST',
-            'url'       => '/token.registration/paper_mandate/authenticate',
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'tertiary signature can\'t be present without secondary signature',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
-        ],
-    ],
-
     'hyperVergeExtractNACHOutput' => array (
         'type' => 'nach',
         'details' =>

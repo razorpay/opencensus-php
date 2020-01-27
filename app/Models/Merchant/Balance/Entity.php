@@ -2,11 +2,15 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
+use RZP\Models\Settings;
+use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Currency\Currency;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 /**
  * Class Entity
@@ -46,6 +50,9 @@ class Entity extends Base\PublicEntity
     // Additional input keys
     const BALANCE_ID     = 'balance_id';
 
+    // Used by RazorpayX Current Accounts to store when was the Banking Account Statement last fetched at
+    const LAST_FETCHED_AT = 'last_fetched_at';
+
     protected $fillable = [
         self::ID,
         self::TYPE,
@@ -75,11 +82,11 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE,
         self::CHANNEL,
         self::UPDATED_AT,
+        self::LAST_FETCHED_AT,
     ];
 
     protected $public = [
         self::ID,
-        self::MERCHANT_ID,
         self::TYPE,
         self::CURRENCY,
         self::NAME,
@@ -91,6 +98,11 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE,
         self::CHANNEL,
         self::UPDATED_AT,
+        self::LAST_FETCHED_AT,
+    ];
+
+    protected $appends = [
+        self::LAST_FETCHED_AT
     ];
 
     protected $entity = 'balance';
@@ -106,6 +118,10 @@ class Entity extends Base\PublicEntity
         self::FEE_CREDITS    => 'integer',
         self::REFUND_CREDITS => 'integer',
         self::BALANCE        => 'integer',
+    ];
+
+    protected $dates = [
+        self::LAST_FETCHED_AT
     ];
 
     protected function addAmount($amount)
@@ -360,5 +376,42 @@ class Entity extends Base\PublicEntity
     public function balanceConfigs()
     {
         return $this->hasMany(BalanceConfig\Entity::class);
+    }
+
+    public function getLastFetchedAtAttribute()
+    {
+        if (($this->getType() === Type::BANKING) and
+            ($this->getAccountType() === AccountType::DIRECT))
+        {
+            // getLastFetchedAt() returns a sting in case there is a corresponding entry in the DB. It returns an empty
+            // dictionary in case RBL BAS fetch cron hasn't run and there is no corresponding entry, in that case we
+            // return the balance entity's updatedAt as the last_fetched_at.
+
+            if (($this->getLastFetchedAt() instanceof Dictionary) and
+                (empty($this->getLastFetchedAt()->key()) === true))
+            {
+                return $this->getUpdatedAt();
+            }
+
+            return $this->getLastFetchedAt();
+        }
+    }
+
+    public function updateLastFetchedAt()
+    {
+        $this->getSettingsAccessor()
+            ->upsert(self::LAST_FETCHED_AT, Carbon::now(Timezone::IST)->getTimestamp())
+            ->save();
+    }
+
+    protected function getLastFetchedAt()
+    {
+        return $this->getSettingsAccessor()
+                    ->get(self::LAST_FETCHED_AT);
+    }
+
+    protected function getSettingsAccessor(): Settings\Accessor
+    {
+        return Settings\Accessor::for($this, Settings\Module::BALANCE);
     }
 }

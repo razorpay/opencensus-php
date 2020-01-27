@@ -199,6 +199,13 @@ abstract class Processor extends Base\Core
             $paymentArray[Payment\Entity::EMAIL]       = $customer->getEmail();
         }
 
+        if ($this->virtualAccount->hasOrder() === true)
+        {
+            $order = $this->virtualAccount->entity;
+
+            $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
+        }
+
         return $paymentArray;
     }
 

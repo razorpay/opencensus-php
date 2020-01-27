@@ -273,6 +273,17 @@ class Doppler
         return $options;
     }
 
+    public function setAuth()
+    {
+        $key = $this->config['key'];
+
+        $secret = $this->config['secret'];
+
+        $apiKey = base64_encode($key.":".$secret);
+
+        return "basic ".$apiKey;
+    }
+
     public function sendRequest(string $method, string $path, string $content)
     {
         $url = $this->getUrl() . $path;
@@ -281,15 +292,11 @@ class Doppler
 
         $headers[self::X_RAZORPAY_TASKID_HEADER] = $this->app['request']->getTaskId();
 
-        $authentication = [
-            $this->config['key'],
-            $this->config['secret'],
-        ];
+        $headers['Authorization'] = $this->setAuth();
 
         $options = [
             'connect_timeout' => self::CONNECT_TIMEOUT,
             'timeout' => self::REQUEST_TIMEOUT,
-            'auth'    => $authentication,
         ];
 
         $request = [
@@ -300,7 +307,7 @@ class Doppler
             'headers'   => $headers,
         ];
 
-        $this->trace->info(TraceCode::DOPPLER_SERVICE_SUCCESS_RATE_REQUEST, $request);
+        $this->trace->info(TraceCode::DOPPLER_SERVICE_SUCCESS_RATE_REQUEST, $request['content']);
 
         $response = $this->sendRawRequest($request);
 

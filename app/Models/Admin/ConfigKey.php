@@ -60,8 +60,8 @@ class ConfigKey
 
     const CARD_PAYMENT_SERVICE_ENABLED          = self::PREFIX . 'card_payment_service_enabled';
 
-    const CITI_CHANNEL_PAYOUT_MIDS              = self::PREFIX . 'citi_channel_payout_mids';
-    const ICICI_CHANNEL_PAYOUT_MIDS             = self::PREFIX . 'icici_channel_payout_mids';
+    const NB_PLUS_SERVICE_ENABLED               = self::PREFIX . 'nb_plus_service_enabled';
+
     // Atos and Worldline are same, key on redis is atos
     const WORLDLINE_TID_RANGE_LIST              = self::PREFIX . 'atos_tid_range_list';
 
@@ -106,8 +106,7 @@ class ConfigKey
         self::FTS_PAYOUT_CARD,
         self::FTS_PAYOUT_BANK_ACCOUNT,
         self::CARD_PAYMENT_SERVICE_ENABLED,
-        self::CITI_CHANNEL_PAYOUT_MIDS,
-        self::ICICI_CHANNEL_PAYOUT_MIDS,
+        self::NB_PLUS_SERVICE_ENABLED,
         self::LOW_BALANCE_RX_EMAIL
     ];
 

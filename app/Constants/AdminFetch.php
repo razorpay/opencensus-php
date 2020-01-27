@@ -276,6 +276,10 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
+
+            
+            Entity::PAYMENTS_NBPLUS_NETBANKING => [],
+
             Entity::PAYMENTS_CARDS_AUTHORIZATION  => [
                 'payment_id'   => Fetch::FIELD_PAYMENT_ID,
                 'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
@@ -306,6 +310,7 @@ class AdminFetch
                     ],
                 ],
             ],
+
             Entity::SUBSCRIPTIONS_SUBSCRIPTION => [
                 'auth_attempts' => [
                     Fetch::LABEL  => 'Auth Attempts',
@@ -406,6 +411,10 @@ class AdminFetch
                 'transfer_id'       => [
                     Fetch::LABEL        => 'Transfer Id',
                     Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'gateway_ref_no' => [
+                    Fetch::LABEL  => 'Gateway Ref No',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
             Entity::FTS_FUND_ACCOUNT => [],
@@ -892,6 +901,12 @@ class AdminFetch
                 ],
             ],
 
+            Entity::WORKFLOW_ACTION => [
+                'entity_id' => [
+                    Fetch::LABEL => 'Entity Id',
+                ],
+            ],
+
             Entity::CONTACT => [
                 'email'           => [],
                 'name'            => [],
@@ -1178,6 +1193,10 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => Channel::getChannels()
                 ],
+                'gateway_ref_no' => [
+                    Fetch::LABEL  => 'Gateway Ref No',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::GATEWAY_DOWNTIME => [
@@ -1371,6 +1390,12 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
+            Entity::LEGAL_ENTITY => [
+                'external_id' => [
+                    Fetch::LABEL  => 'External ID',
+                ],
+            ],
+
             Entity::KEY => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
@@ -1502,6 +1527,9 @@ class AdminFetch
                         '4',
                         '5',
                     ],
+                ],
+                'external_id' => [
+                    Fetch::LABEL  => 'External ID',
                 ],
             ],
 
@@ -2195,6 +2223,10 @@ class AdminFetch
                 ],
             ],
 
+            Entity::MERCHANT_REQUEST => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::VIRTUAL_ACCOUNT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'balance_id' => Fetch::FIELD_BALANCE_ID,
@@ -2216,6 +2248,7 @@ class AdminFetch
                     Fetch::VALUES => [
                         'bank_account',
                         'qr_code',
+                        'vpa',
                     ],
                 ],
             ],

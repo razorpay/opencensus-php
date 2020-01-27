@@ -64,6 +64,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::PAYPAL,
         RequestProcessor\Base::BAJAJFINSERV,
         RequestProcessor\Base::GETSIMPL,
+        RequestProcessor\Base::EMANDATE_AXIS
     ];
 
     /**
@@ -337,6 +338,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         {
             $this->cardsPaymentServiceDispatch($rowDetails);
         }
+
+        if ($this->payment->isRoutedThroughNbPlus() === true)
+        {
+            $this->nbPlusPaymentServiceDispatch($rowDetails);
+        }
     }
 
     /**
@@ -368,6 +374,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'payment_id' => $this->payment->getId(),
             ]
         );
+    }
+
+    /**
+     * This method has to be implemented in child class
+     * as the parameters and the job may vary based on the gateway
+     * @param array $rowDetails
+     */
+    protected function nbPlusPaymentServiceDispatch(array $rowDetails)
+    {
+        return;
     }
 
     protected function validatePaymentDetails(array $row)

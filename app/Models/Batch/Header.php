@@ -303,22 +303,24 @@ class Header
     //
     // SBI Emandate Debit Response File Headers
     //
-    const SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER   = SbiEMDebitHeadings::SERIAL_NUMBER;
-    const SBI_EM_DEBIT_EMANDATE_TYPE            = SbiEMDebitHeadings::EMANDATE_TYPE;
-    const SBI_EM_DEBIT_UMRN                     = SbiEMDebitHeadings::UMRN;
-    const SBI_EM_DEBIT_SCHEME_NAME              = SbiEMDebitHeadings::SCHEME_NAME;
-    const SBI_EM_DEBIT_SUB_SCHEME_NAME          = SbiEMDebitHeadings::SUB_SCHEME_NAME;
-    const SBI_EM_DEBIT_MANDATE_HOLDER_NAME      = SbiEMDebitHeadings::MANDATE_HOLDER_NAME_RESP;
-    const SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER     = SbiEMDebitHeadings::DEBIT_ACC_NO;
-    const SBI_EM_DEBIT_DEBIT_BANK_IFSC          = SbiEMDebitHeadings::DEBIT_BANK_IFSC;
-    const SBI_EM_DEBIT_DEBIT_DATE               = SbiEMDebitHeadings::DEBIT_DATE_RESP;
-    const SBI_EM_DEBIT_AMOUNT                   = SbiEMDebitHeadings::AMOUNT;
-    const SBI_EM_DEBIT_JOURNAL_NUMBER           = SbiEMDebitHeadings::JOURNAL_NUMBER;
-    const SBI_EM_DEBIT_PROCESSING_DATE          = SbiEMDebitHeadings::PROCESSING_DATE;
-    const SBI_EM_DEBIT_CUSTOMER_REF_NO          = SbiEMDebitHeadings::CUSTOMER_REF_NO;
-    const SBI_EM_DEBIT_DEBIT_STATUS             = SbiEMDebitHeadings::DEBIT_STATUS;
-    const SBI_EM_DEBIT_CREDIT_STATUS            = SbiEMDebitHeadings::CREDIT_STATUS;
-    const SBI_EM_DEBIT_REASON                   = SbiEMDebitHeadings::REASON;
+    const SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER    = SbiEMDebitHeadings::SERIAL_NUMBER;
+    const SBI_EM_DEBIT_UMRN                      = SbiEMDebitHeadings::UMRN;
+    const SBI_EM_DEBIT_CUSTOMER_CODE             = SbiEMDebitHeadings::CUSTOMER_CODE;
+    const SBI_EM_DEBIT_CUSTOMER_NAME             = SbiEMDebitHeadings::CUSTOMER_NAME;
+    const SBI_EM_DEBIT_TRANSACTION_INPUT_CHANNEL = SbiEMDebitHeadings::TRANSACTION_INPUT_CHANNEL;
+    const SBI_EM_DEBIT_FILE_NAME                 = SbiEMDebitHeadings::FILE_NAME;
+    const SBI_EM_DEBIT_CUSTOMER_REF_NO           = SbiEMDebitHeadings::CUSTOMER_REF_NO;
+    const SBI_EM_DEBIT_MANDATE_HOLDER_NAME       = SbiEMDebitHeadings::MANDATE_HOLDER_NAME;
+    const SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER      = SbiEMDebitHeadings::MANDATE_HOLDER_ACCOUNT_NO;
+    const SBI_EM_DEBIT_DEBIT_BANK_IFSC           = SbiEMDebitHeadings::DEBIT_BANK_IFSC;
+    const SBI_EM_DEBIT_DEBIT_DATE                = SbiEMDebitHeadings::DEBIT_DATE_RESP;
+    const SBI_EM_DEBIT_AMOUNT                    = SbiEMDebitHeadings::AMOUNT;
+    const SBI_EM_DEBIT_JOURNAL_NUMBER            = SbiEMDebitHeadings::JOURNAL_NUMBER;
+    const SBI_EM_DEBIT_PROCESSING_DATE           = SbiEMDebitHeadings::PROCESSING_DATE;
+    const SBI_EM_DEBIT_DEBIT_STATUS              = SbiEMDebitHeadings::DEBIT_STATUS;
+    const SBI_EM_DEBIT_CREDIT_STATUS             = SbiEMDebitHeadings::CREDIT_STATUS;
+    const SBI_EM_DEBIT_REASON                    = SbiEMDebitHeadings::REASON;
+    const SBI_EM_DEBIT_CREDIT_DATE               = SbiEMDebitHeadings::CREDIT_DATE;
 
     //
     // AXIS Emandate Debit Response File Headers
@@ -761,6 +763,9 @@ class Header
     const PRICING_RULE_PAYMENT_NETWORK     = 'payment_network';
     const PRICING_RULE_INTERNATIONAL       = 'international';
     const PRICING_RULE_PERCENT_RATE        = 'percent_rate';
+    const PRICING_RULE_AMOUNT_RANGE_ACTIVE = 'amount_range_active';
+    const PRICING_RULE_AMOUNT_RANGE_MIN    = 'amount_range_min';
+    const PRICING_RULE_AMOUNT_RANGE_MAX    = 'amount_range_max';
 
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
@@ -1498,10 +1503,12 @@ class Header
         'emandate_debit_sbi' => [
             self::INPUT => [
                 self::SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER,
-                self::SBI_EM_DEBIT_EMANDATE_TYPE,
                 self::SBI_EM_DEBIT_UMRN,
-                self::SBI_EM_DEBIT_SCHEME_NAME,
-                self::SBI_EM_DEBIT_SUB_SCHEME_NAME,
+                self::SBI_EM_DEBIT_CUSTOMER_CODE,
+                self::SBI_EM_DEBIT_CUSTOMER_NAME,
+                self::SBI_EM_DEBIT_TRANSACTION_INPUT_CHANNEL,
+                self::SBI_EM_DEBIT_FILE_NAME,
+                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_MANDATE_HOLDER_NAME,
                 self::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER,
                 self::SBI_EM_DEBIT_DEBIT_BANK_IFSC,
@@ -1509,17 +1516,20 @@ class Header
                 self::SBI_EM_DEBIT_AMOUNT,
                 self::SBI_EM_DEBIT_JOURNAL_NUMBER,
                 self::SBI_EM_DEBIT_PROCESSING_DATE,
-                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_DEBIT_STATUS,
                 self::SBI_EM_DEBIT_CREDIT_STATUS,
                 self::SBI_EM_DEBIT_REASON,
+                self::SBI_EM_DEBIT_CREDIT_DATE,
             ],
             self::OUTPUT => [
                 self::SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER,
-                self::SBI_EM_DEBIT_EMANDATE_TYPE,
                 self::SBI_EM_DEBIT_UMRN,
-                self::SBI_EM_DEBIT_SCHEME_NAME,
-                self::SBI_EM_DEBIT_SUB_SCHEME_NAME,
+                self::SBI_EM_DEBIT_UMRN,
+                self::SBI_EM_DEBIT_CUSTOMER_CODE,
+                self::SBI_EM_DEBIT_CUSTOMER_NAME,
+                self::SBI_EM_DEBIT_TRANSACTION_INPUT_CHANNEL,
+                self::SBI_EM_DEBIT_FILE_NAME,
+                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_MANDATE_HOLDER_NAME,
                 self::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER,
                 self::SBI_EM_DEBIT_DEBIT_BANK_IFSC,
@@ -1527,10 +1537,10 @@ class Header
                 self::SBI_EM_DEBIT_AMOUNT,
                 self::SBI_EM_DEBIT_JOURNAL_NUMBER,
                 self::SBI_EM_DEBIT_PROCESSING_DATE,
-                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_DEBIT_STATUS,
                 self::SBI_EM_DEBIT_CREDIT_STATUS,
                 self::SBI_EM_DEBIT_REASON,
+                self::SBI_EM_DEBIT_CREDIT_DATE,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
@@ -2393,6 +2403,9 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
+                self::PRICING_RULE_AMOUNT_RANGE_MIN,
+                self::PRICING_RULE_AMOUNT_RANGE_MAX,
             ],
             self::OUTPUT => [
                 self::PRICING_RULE_MERCHANT_ID,
@@ -2403,6 +2416,9 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
+                self::PRICING_RULE_AMOUNT_RANGE_MIN,
+                self::PRICING_RULE_AMOUNT_RANGE_MAX,
             ]
         ],
 

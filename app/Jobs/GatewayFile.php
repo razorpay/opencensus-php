@@ -18,7 +18,7 @@ class GatewayFile extends Job
     protected $mode;
 
     // time (in seconds) after which the job is killed.
-    public $timeout = 900;
+    public $timeout = 1500;
 
     public function __construct(string $gatewayFileId, string $mode)
     {

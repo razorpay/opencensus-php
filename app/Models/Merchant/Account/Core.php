@@ -286,13 +286,6 @@ class Core extends Merchant\Core
 
         $subMerchant->fill($subMerchantInput);
 
-        if (empty($input[Constants::LEGAL_ENTITY_ID]) === false)
-        {
-            $legalEntity = $this->repo->legal_entity->findOrFailPublic($input[Constants::LEGAL_ENTITY_ID]);
-
-            $subMerchant->legalEntity()->associate($legalEntity);
-        }
-
         $this->repo->saveOrFail($subMerchant);
 
         return $subMerchant;

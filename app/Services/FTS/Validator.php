@@ -22,4 +22,9 @@ class Validator extends Base\Validator
     protected static $deleteSourceAccountRules = [
         'source_account_id'  => 'filled|required|integer'
     ];
+
+    protected static $fetchTransferStatusRules = [
+        'fta_ids'   => 'required|array|min:1,max:100',
+        'fta_ids.*' => 'required|string|filled|size:14'
+    ];
 }

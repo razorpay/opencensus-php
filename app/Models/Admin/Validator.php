@@ -63,6 +63,7 @@ class Validator extends Base\Validator
         ConfigKey::CURL_INFO_LOG_VERBOSE              => 'filled|boolean',
         ConfigKey::HITACHI_NEW_URL_ENABLED            => 'filled|boolean',
         ConfigKey::CARD_PAYMENT_SERVICE_ENABLED       => 'filled|boolean',
+        ConfigKey::NB_PLUS_SERVICE_ENABLED            => 'filled|boolean',
         ConfigKey::PAYSECURE_BLACKLISTED_MCCS         => 'filled|array',
         ConfigKey::RX_SLA_FOR_IMPS_PAYOUT             => 'filled|integer',
         ConfigKey::FTS_PAYOUT_VPA                     => 'filled|string',
@@ -72,8 +73,6 @@ class Validator extends Base\Validator
 
         ConfigKey::WORLDLINE_TID_RANGE_LIST           => 'filled|array',
         ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',
-        ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS          => 'filled|array',
-        ConfigKey::CITI_CHANNEL_PAYOUT_MIDS           => 'filled|array',
 
         ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
     ];

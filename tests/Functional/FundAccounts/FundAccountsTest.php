@@ -550,4 +550,78 @@ class FundAccountsTest extends TestCase
 
         $this->startTest($data);
     }
+
+    public function testCreateFundAccountInvalidAccountType()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountFromInactiveCustomer()
+    {
+        $this->fixtures->create('customer', ['id' => '1000facustomer', 'active' => 0]);
+
+        $this->startTest();
+    }
+
+    public function testCreateCardFundAccountFeatureS2SNotEnabled()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->removeFeatures(['s2s']);
+
+        $this->startTest();
+    }
+
+    public function testCreateCardFundAccountFeaturePayoutToCardsNotEnabled()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->removeFeatures(['payout_to_cards']);
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountCard()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountWithoutName()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountWithInvalidBankAccountNumber()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
 }

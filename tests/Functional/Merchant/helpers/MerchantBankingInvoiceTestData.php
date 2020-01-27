@@ -129,8 +129,8 @@ return [
             'method'  => 'GET',
             'url'     => '/merchants/banking/invoices',
             'content' => [
-                'month' => 7,
-                'year'  => 2019,
+                'month'       => 7,
+                'year'        => 2019,
                 ],
             ],
         'response' => [
@@ -156,13 +156,33 @@ return [
             ],
         ],
     ],
+    'testFetchMultipleBankingInvoicesWhenMonthIsGivenWithoutYear' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchants/banking/invoices',
+            'content' => [
+                'month'       => 7,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only month not allowed . Year should be sent with month or only year can be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
     'testFetchMultipleBankingInvoicesGivenAccountNumber' => [
         'request'  => [
             'method'  => 'GET',
             'url'     => '/merchants/banking/invoices',
             'content' => [
-                'month'          => 7,
-                'year'           => 2019,
                 'account_number' => '1234567',
             ],
         ],
@@ -261,6 +281,99 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
+        ],
+    ],
+    'testMerchantInvoiceFetchFromAdminDashboardWhenMonthIsGivenWithYearAndMerchantId' => [
+        'rx_transactions' => [
+            'month'       => 7,
+            'year'        => 2019,
+            'merchant_id' => '10000000000000',
+            'amount'      => 500,
+            'tax'         => 90,
+        ],
+    ],
+    'testMerchantInvoiceFetchFromAdminDashboardWhenMonthIsGivenWithoutYearButWithMerchantId' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/merchant_invoice',
+            'content' => [
+                'month'       => 7,
+                'merchant_id' => '10000000000000',
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Year and merchant_id should be sent with month or only year can be sent with merchant_id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+    'testMerchantInvoiceFetchFromAdminDashboardWhenMonthIsGivenWithoutYearAndMerchantId' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/merchant_invoice',
+            'content' => [
+                'month' => 7,
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Year and merchant_id should be sent with month or only year can be sent with merchant_id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+    'testMerchantInvoiceFetchFromAdminDashboardWhenYearIsGivenWithMerchantId' => [
+        'rx_transactions'      => [
+            'year'        => 2019,
+            'merchant_id' => '10000000000000',
+            'amount'      => 500,
+            'tax'         => 90,
+        ],
+    ],
+    'testMerchantInvoiceFetchFromAdminDashboardWhenYearIsGivenWithoutMerchantId' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/merchant_invoice',
+            'content' => [
+                'year' => 2019,
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only year not allowed . Year should be sent with merchant_id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
 ];

@@ -430,4 +430,23 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY
         ],
     ],
+
+    'googlePayPaymentCreateRequestData' => [
+        'contact'       => '9876543210',
+        'email'         => 'abc@gmail.com',
+        'currency'      => 'INR',
+        'method'        => 'card',
+        'application'   => 'google_pay',
+        '_'             => [
+            'checkout_id'           => 'BY486x1wJh2nFj',
+            'os'                    => 'android',
+            'package_name'          => 'com.oyo.consumer',
+            'platform'              => 'mobile_sdk',
+            'cellular_network_type' => '4G',
+            'data_network_type'     => 'cellular',
+            'locale'                => 'en-',
+            'library'               => 'custom',
+            'library_version'       => '3.6.0'
+        ],
+    ]
 ];

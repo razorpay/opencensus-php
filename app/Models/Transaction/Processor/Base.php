@@ -324,8 +324,23 @@ abstract class Base extends BaseCore
     {
         $mode = $this->mode ?? 'live';
 
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $this->merchantBalance->merchant->getId(),
+            ]
+        );
+
         $response = $this->app->razorx->getTreatment($this->merchantBalance->merchant->getId(),
                                             BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE, $mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $this->merchantBalance->merchant->getId(),
+                'response'      => $response
+            ]
+        );
 
         if($this->txn->isGratis() === true)
         {
@@ -599,8 +614,23 @@ abstract class Base extends BaseCore
     {
         $mode = $this->mode ?? 'live';
 
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $this->merchantBalance->merchant->getId(),
+            ]
+        );
+
         $response = $this->app->razorx->getTreatment($this->merchantBalance->merchant->getId(),
                                                         BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE, $mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $this->merchantBalance->merchant->getId(),
+                'response'      => $response
+            ]
+        );
 
         $oldBalance = $this->merchantBalance->getBalance();
 

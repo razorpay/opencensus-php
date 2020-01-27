@@ -270,7 +270,13 @@ class Core extends Base\Core
 
         $fundTransferAttempt->source()->associate($source);
 
-        list($isFTS, $channel) = $this->getChannelForTransfer($source, $fundTransferAttempt->getSourceType(), $accountType, $card);
+        if (($source->getEntity() === Constants\Entity::REFUND) and
+            (isset($values[AttemptConstants::MODE]) === true))
+        {
+            $fundTransferAttempt->setMode($values[AttemptConstants::MODE]);
+        }
+
+        list($isFTS, $channel) = $this->getChannelForTransfer($fundTransferAttempt, $accountType, $card);
 
         $defaultValues = [
             Entity::INITIATE_AT => Carbon::now(Timezone::IST)->getTimestamp(),
@@ -589,18 +595,6 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
-
-            $slackData = [
-                'headLine'    => 'fta source processing failed',
-                'fta_id'      => $ftaData['fta_id'],
-                'status'      => $ftaData['fta_status'],
-                'source_id'   => $ftaData['source_id'],
-                'error'       => $e->getMessage(),
-            ];
-
-            $alerts = new Alerts();
-
-            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 
@@ -675,15 +669,6 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
-
-            $alerts = new Alerts();
-
-            $slackData = $ftaData + [
-                'headLine' => 'fta source processing failed',
-                'error'    => $e->getMessage(),
-            ];
-
-            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 
@@ -775,6 +760,10 @@ class Core extends Base\Core
             $fta->setRemarks($input[Entity::REMARKS]);
         }
 
+        if (empty($input[Entity::GATEWAY_REF_NO]) === false) {
+            $fta->setGatewayRefNo($input[Entity::GATEWAY_REF_NO]);
+        }
+
         return $fta;
     }
 
@@ -797,29 +786,40 @@ class Core extends Base\Core
      * TODO: refactor this section so that we don't have to use `shouldUseGateway` and `getChannelForTransfer`
      *
      * @param Base\PublicEntity $source
-     * @param string $sourceType
+     * @param Entity $fta
      * @param string $accountType
      * @param CardEntity|null $card
      * @return array
      * @throws LogicException
      */
-    protected function getChannelForTransfer(Base\PublicEntity $source, string $sourceType, string $accountType, CardEntity $card = null): array
+    protected function getChannelForTransfer(Entity $fta, string $accountType, CardEntity $card = null): array
     {
+        $sourceType = $fta->getSourceType();
+
         $method = 'getChannelFor' . studly_case($sourceType);
 
         if (method_exists($this, $method) === true)
         {
-            return $this->{$method}($source, $accountType, $card);
+            return $this->{$method}($fta, $accountType, $card);
         }
 
         throw new LogicException('Invalid Source Type for Channel');
     }
 
-    protected function getChannelForPayout(Base\PublicEntity $source, string $accountType, CardEntity $card = null)
+    protected function getChannelForPayout(Entity $fta, string $accountType, CardEntity $card = null)
     {
+        $source = $fta->source;
+
         if (empty($source->getChannel()) === true)
         {
             return [false, Settlement\Channel::YESBANK];
+        }
+
+        if ((($source->getChannel() === Settlement\Channel::YESBANK) and
+             ($accountType === E::BANK_ACCOUNT)) and
+             ($this->isTestMode() === false))
+        {
+            return [true, $source->getChannel()];
         }
 
         $key = 'fts_payout_' . strtolower($accountType) . '_' . $source->getChannel() . '_' . $source->getMode();
@@ -848,8 +848,14 @@ class Core extends Base\Core
         return [$isFTS, $source->getChannel()];
     }
 
-    protected function getChannelForRefund(Base\PublicEntity $source, string $accountType, CardEntity $card = null)
+    protected function getChannelForRefund(Entity $fta,
+                                           string $accountType,
+                                           CardEntity $card = null): array
     {
+        $source = $fta->source;
+
+        $key = 'fts_refund_' . strtolower($accountType);
+
         $iin = null;
 
         if (empty($card) === false)
@@ -862,31 +868,56 @@ class Core extends Base\Core
             $issuer = $iin->getIssuer();
 
             $networkCode = $iin->getNetworkCode();
-
-            $supportedModes = Mode::getSupportedModes($issuer, $networkCode);
-
-            // Checking specifically for IMPS as IMPS refund should be sent to ICICI channel FTS
-            if ((in_array(Mode::IMPS, $supportedModes, true) === false) or
-                (in_array(Mode::UPI, $supportedModes, true) === true))
-            {
-                return [false, Settlement\Channel::YESBANK];
-            }
         }
 
-        $rampingEnabled = $this->getRampingStatus($source);
+        $this->trace->info(TraceCode::FTA_REFUND_RAMP_INIT, ['key' => $key]);
 
-        if ($rampingEnabled === true)
+        $rampOnFts = $this->app->razorx->getTreatment(
+            $source->getMerchantId(),
+            $key,
+            $this->mode
+        );
+
+        $this->trace->info(TraceCode::FTA_REFUND_RAMP_COMPLETE,
+            [
+                'key'           => $key,
+                'mode'          => $this->mode,
+                'ramp_status'   => $rampOnFts,
+            ]);
+
+        $amount = $source->getAmount();
+
+        $mode = $fta->getMode();
+
+        if (strtolower($rampOnFts) === 'on')
         {
-            return [true, Settlement\Channel::ICICI];
+            //TODO: need to update this when icici supports modes other than IMPS also.
+            if ((empty($mode) === true) or ($mode === Mode::IMPS)) {
+
+                if (($accountType === Constants\Entity::CARD) and
+                    ($amount <= AttemptConstants::MAX_IMPS_AMOUNT) and
+                    (in_array(Mode::IMPS, Mode::getSupportedModes($issuer, $networkCode)))) {
+                    return [true, Settlement\Channel::ICICI];
+                }
+
+                if (($accountType === Constants\Entity::BANK_ACCOUNT) and
+                    ($amount <= AttemptConstants::MAX_IMPS_AMOUNT)) {
+                    return [true, Settlement\Channel::ICICI];
+                }
+            }
+
+            return [true, Settlement\Channel::YESBANK];
         }
 
         return [false, Settlement\Channel::YESBANK];
     }
 
-    protected function getChannelForFundAccountValidation(Base\PublicEntity $source,
+    protected function getChannelForFundAccountValidation(Entity $fta,
                                                           string $accountType,
                                                           CardEntity $card = null): array
     {
+        $source = $fta->source;
+
         $key = 'fts_penny_testing_' . strtolower($accountType);
 
         $this->trace->info(TraceCode::FTA_PENNY_TESTING_RAMP_INIT, ['key' => $key]);
@@ -926,5 +957,10 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function getAttemptsFromIds(array $ftaIds)
+    {
+        return $this->repo->fund_transfer_attempt->fetchFtsAttemptUsingId($ftaIds);
     }
 }

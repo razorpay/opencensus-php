@@ -57,20 +57,38 @@ class Throttler
      */
     protected $settings;
 
+    /**
+     * @var boolean
+     */
+    protected $runningUnitTests;
+
     public function __construct()
     {
         /** @var $app Application */
         $app = App::getFacadeRoot();
 
-        $this->config = $app['config']->get('throttle');
-        $this->trace  = $app['trace'];
-        $this->reqCtx = $app['request.ctx'];
+        $this->config           = $app['config']->get('throttle');
+        $this->trace            = $app['trace'];
+        $this->reqCtx           = $app['request.ctx'];
+        $this->runningUnitTests = $app->runningUnitTests();
     }
 
     public function throttle()
     {
         // For local and test env, we skip basis local configuration
         if ($this->config['skip'] === true)
+        {
+            return;
+        }
+        $instanceType = env('INSTANCE_TYPE');
+        // Update: Now for private/proxy requests we do throttling at nginx
+        // layer itself and hence must not repeat here. Keeping this flow in
+        // unit tests still. Not sure.
+        //Adding canary instance type check to make prod in sanity
+        if ($instanceType === "canary" and
+            ($this->reqCtx->isAuthFlowTypeKey() and
+            $this->reqCtx->isAuthTypePrivate() and
+            ($this->runningUnitTests === false)))
         {
             return;
         }

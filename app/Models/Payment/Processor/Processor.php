@@ -47,6 +47,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Transfer\Core as TransferCore;
+use RZP\Services\NbPlus as NbPlusPaymentService;
 
 use Razorpay\Trace\Logger as Trace;
 
@@ -70,6 +71,7 @@ class Processor
     use CardCacheTrait;
     use UpiRecurring;
     use CardPaymentService;
+    use NbPlusService;
 
 
     /**
@@ -151,6 +153,7 @@ class Processor
      */
     const CPS_FEATURE_FLAG_PREFIX               = 'cps_gateway_routing';
     const CARD_PAYMENTS_PREFIX                  = 'card_payments_gateway_routing';
+    const NB_PLUS_PAYMENTS_PREFIX               = 'nb_plus_payments_gateway_routing';
     const CARD_PAYMENTS_AUTHORIZE_ALL_TERMINALS = 'card_payments_authorize_all_terminals';
     /**
      * 3D Secure international feature flag
@@ -662,6 +665,21 @@ class Processor
                 $input['contact'] = $payment['contact'];
                 break;
 
+            case PayLater::ICICI:
+                $gateway = Payment\Gateway::PAYLATER_ICICI;
+
+                $payment = $this->repo->transaction(function() use ($input, $payment)
+                {
+                    $payment = $this->createPaymentEntity($input, $payment);
+                    $payment->setBaseAmount($payment->getAmount());
+                    return $payment;
+                });
+
+                $input['payment'] = $payment->toArray();
+
+
+                break;
+
             default:
                 $gateway = Payment\Gateway::PAYLATER;
                 break;
@@ -885,7 +903,13 @@ class Processor
             return;
         }
 
-        if ((isset($input['_']['flow']) === false) or ($input['_']['flow'] === Payment\Flow::COLLECT))
+        /***
+         * For collect payments, we need the vpa. However, in case of saved vpa, we dont get the vpa directly. We get
+         * the token linked to the vpa entity in the request. Therefore adding a check here that either the vpa should
+         * be present or token should be present.
+         */
+        if (((isset($input['_']['flow']) === false) or ($input['_']['flow'] === Payment\Flow::COLLECT))
+            and (isset($input['token']) === false))
         {
             $missing[] = 'vpa';
         }
@@ -996,14 +1020,12 @@ class Processor
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
-
         if ($payment->getFeeBearer() === Merchant\FeeBearer::PLATFORM)
         {
             $fee = 0;
 
             $tax = 0;
         }
-
 
         $data = [
             'originalAmount'  => $input['amount'],
@@ -1088,11 +1110,14 @@ class Processor
     /**
      * This method sets the flag that this payment should be processed via
      * Core payment service
+     * @param $payment
+     * @param $gatewayInput
      */
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
-        // Check if payment is card
-        if ($payment->isMethod(Payment\Method::CARD) === false)
+        $method = $payment->getMethod();
+
+        if (in_array($method, [Payment\Method::CARD, Payment\Method::NETBANKING], true) === false)
         {
             $payment->disableCpsRoute();
 
@@ -1104,6 +1129,16 @@ class Processor
             $this->handleCardPaymentServiceGateways($payment, $gatewayInput);
 
             if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
+            {
+                return;
+            }
+        }
+
+        if (Payment\Gateway::isNbPlusServiceGateway($payment->getGateway()) === true)
+        {
+            $this->handleNbPlusServiceGateways($payment, $gatewayInput);
+
+            if ($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE)
             {
                 return;
             }
@@ -1144,9 +1179,24 @@ class Processor
         }
     }
 
+    protected function handleNbPlusServiceGateways(Payment\Entity $payment, $gatewayInput)
+    {
+        if ($this->isNbPlusServiceConfigEnabled() === true)
+        {
+            $variant = $this->getRazorxVariant($payment, self::NB_PLUS_PAYMENTS_PREFIX);
+
+            $this->setPaymentService($payment, $variant);
+        }
+    }
+
     protected function isCardPaymentServiceConfigEnabled(): bool
     {
         return (bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED, false);
+    }
+
+    protected function isNbPlusServiceConfigEnabled(): bool
+    {
+        return (bool) Admin\ConfigKey::get(Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED, false);
     }
 
     protected function getRazorxVariant(Payment\Entity $payment, $prefix)
@@ -1160,15 +1210,21 @@ class Processor
 
         $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
 
-        $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
+        $traceData = [
             'payment_id'             => $payment->getId(),
             'merchant_id'            => $payment->getMerchantId(),
             'gateway'                => $payment->getGateway(),
-            'authentication_gateway' => $payment->getAuthenticationGateway(),
-            'auth_type'              => $payment->getAuthType() ?? AuthType::_3DS,
             'feature_flag'           => $featureFlag,
             'razorx_variant'         => $variant,
-        ]);
+        ];
+
+        if ($prefix !== self::NB_PLUS_PAYMENTS_PREFIX)
+        {
+            $traceData['authentication_gateway'] = $payment->getAuthenticationGateway();
+            $traceData['auth_type']              = $payment->getAuthType() ?? AuthType::_3DS;
+        }
+
+        $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, $traceData);
 
         return $variant;
     }
@@ -1187,6 +1243,11 @@ class Processor
             case 'cardps':
 
                 $payment->enableCardPaymentService();
+
+                break;
+            case 'nbplusps':
+
+                $payment->enableNbPlusService();
 
                 break;
             default:
@@ -1929,9 +1990,17 @@ class Processor
 
         $gateway = $this->payment->getGateway();
 
-        if(($gateway === Payment\Gateway::PAYLATER) and ($this->payment->getWallet() === Payment\Gateway::GETSIMPL))
+        if($gateway === Payment\Gateway::PAYLATER)
         {
-            $gateway = Payment\Gateway::GETSIMPL;
+            switch ($this->payment->getWallet())
+            {
+                case Payment\Gateway::GETSIMPL:
+                    $gateway = Payment\Gateway::GETSIMPL;
+                    break;
+                case PayLater::ICICI:
+                    $gateway = Payment\Gateway::PAYLATER_ICICI;
+                    break;
+            }
         }
 
         $gatewayData['terminal'] = $terminal;
@@ -1995,6 +2064,20 @@ class Processor
                 return;
             }
         }
+        else if ($this->isRoutedThroughNbPlusService($action, $gatewayData) === true)
+        {
+            if ($this->isNbPlusServiceConfigEnabled() === true)
+            {
+                $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::NB_PLUS_SERVICE;
+            }
+
+            // netbanking flow doesn't have any debit action
+            // TODO: handle when migrating wallets flow
+            if ($action === Action::DEBIT)
+            {
+                return;
+            }
+        }
 
         $gatewayData['merchant_detail'] = $this->repo->merchant_detail->fetchForMerchant($this->payment->merchant);
 
@@ -2020,6 +2103,8 @@ class Processor
 
                     case Payment\Entity::CARD_PAYMENT_SERVICE:
                         return $this->callCpsAction($this->payment, $gateway, $action, $gatewayData);
+                    case Payment\Entity::NB_PLUS_SERVICE:
+                        return $this->callNbPlusServiceAction($this->payment, $gateway, $action, $gatewayData);
 
                 }
             }
@@ -2119,6 +2204,24 @@ class Processor
         return false;
     }
 
+    public function isRoutedThroughNbPlusService($action, $input): bool
+    {
+        /**
+         * This checks if the current request has to be routed to
+         * nb plus service or not. We are setting this flag(`cps_route`)
+         * for new payments based on variant returned by RazorX.
+         */
+        if ((is_array($input) === true) and
+            (isset($input[E::PAYMENT]) === true) and
+            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === Payment\Entity::NB_PLUS_SERVICE) and
+            (in_array($action, NbPlusPaymentService\Action::SUPPORTED_ACTIONS) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function persistCardDetails($gatewayName, $action, &$input)
     {
         $action = snake_case($action);
@@ -2127,7 +2230,7 @@ class Processor
         {
             $this->persistCardDetailsTemporarily($input);
         }
-        else if ($action === Action::CALLBACK)
+        else if ($action === Action::CALLBACK or $action === Action::CAPTURE)
         {
             $this->setCardNumberAndCvv($input);
         }
@@ -2177,6 +2280,8 @@ class Processor
         $this->validateBankTransferDetailsIfApplicable($payment);
 
         $this->validateAndSetInvoiceDetailsIfApplicable($payment);
+
+        $this->setApplicationIfApplicable($payment, $input);
 
         $metadata = $payment->getMetadata();
 
@@ -2622,6 +2727,14 @@ class Processor
         return $this;
     }
 
+    protected function setApplicationIfApplicable(Payment\Entity $payment, $input)
+    {
+        if (isset($input['application']) === true)
+        {
+            $payment->setApplication($input['application']);
+        }
+    }
+
     public function setRazorXDopplerProperty(bool $razorXFlag): Processor
     {
         $this->razorXFlagForDoppler = $razorXFlag;
@@ -2934,6 +3047,10 @@ class Processor
         if ($payment->isEmandate() === true)
         {
             $refundAt = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
+        }
+        else if ($payment->isNach() === true)
+        {
+            $refundAt = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH;
         }
 
         $this->trace->info(
@@ -3492,6 +3609,9 @@ class Processor
                 $coproto = $this->preProcessGetSimplCoproto($response, $input, $payment, $merchant);
                 break;
 
+            case PayLater::ICICI:
+                return;
+
             default:
                 (new Customer\Raven)->sendOtp($input, $merchant);
                 $coproto = $this->preProcessPaylaterCoproto($payment, $input, $merchant);
@@ -3536,13 +3656,13 @@ class Processor
             $url = $response['next']['redirect']['url'];
 
             $coproto = [
-                'type'      => 'first',
-                'version'   => 1,
-                'payment_id'=> $payment->getPublicId(),
-                'method'    => 'paylater',
-                'gateway'   => 'getsimpl',
-                'amount'    => $payment->getFormattedAmount(),
-                'request' => [
+                'type'       => 'first',
+                'version'    => 1,
+                'payment_id' => $payment->getPublicId(),
+                'method'     => 'paylater',
+                'gateway'    => 'getsimpl',
+                'amount'     => $payment->getFormattedAmount(),
+                'request'    => [
                     'url'     => $url,
                     'method'  => 'redirect',
                     'content' => $input,
@@ -3564,5 +3684,8 @@ class Processor
         }
     }
 
-
+    protected function shouldSaveVpaForUpiPayments():bool
+    {
+        return (($this->payment->isUpi() === true) and ($this->merchant->shouldSaveVpa() === true));
+    }
 }

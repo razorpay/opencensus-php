@@ -31,6 +31,9 @@ class Entity extends Base\PublicEntity
     // NPCI reference number
     const NPCI_REFERENCE_ID = 'npci_reference_id';
 
+    // Transaction reference number
+    const TRANSACTION_REFERENCE = 'transaction_reference';
+
     // Indicates whether the upi transfer corresponds
     // to an active virtual account on our side. If
     // false, this transfer will need to be refunded
@@ -97,7 +100,7 @@ class Entity extends Base\PublicEntity
         self::PAYER_ACCOUNT,
         self::PAYER_IFSC,
         self::PAYMENT_ID,
-        self::BANK_REFERENCE,
+        self::NPCI_REFERENCE_ID,
         self::VIRTUAL_ACCOUNT_ID,
     ];
 
@@ -112,13 +115,6 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMOUNT   => 'int',
         self::EXPECTED => 'bool',
-    ];
-
-    protected $hidden = [
-        self::BANK_REFERENCE,
-        self::PAYER_BANK,
-        self::PAYER_IFSC,
-        self::PAYER_ACCOUNT,
     ];
 
     // ----------------------- Relations -----------------------
@@ -192,5 +188,10 @@ class Entity extends Base\PublicEntity
     public function isExpected()
     {
         return $this->getAttribute(self::EXPECTED);
+    }
+
+    public function getBankReference()
+    {
+        return $this->getAttribute(self::PROVIDER_REFERENCE_ID);
     }
 }

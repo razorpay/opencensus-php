@@ -714,7 +714,7 @@ class AuthorizeTest extends TestCase
         $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
-            'issuer'  => 'ICIC',
+            'issuer'  => 'CBIN',
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
@@ -725,6 +725,7 @@ class AuthorizeTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
         $payment['auth_type'] = 'pin';
+        $payment['bank'] = 'CBIN';
 
         $data = $this->testData[__FUNCTION__];
 
@@ -866,7 +867,7 @@ class AuthorizeTest extends TestCase
         $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
-            'issuer'  => 'ICIC',
+            'issuer'  => 'CBIN',
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
@@ -877,6 +878,7 @@ class AuthorizeTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
         $payment['preferred_auth'] = ['pin'];
+        $payment['bank']           = 'CBIN';
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
@@ -929,7 +931,7 @@ class AuthorizeTest extends TestCase
         $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
-            'issuer'  => 'ICIC',
+            'issuer'  => 'CBIN',
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
@@ -940,6 +942,7 @@ class AuthorizeTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
         $payment['preferred_auth'] = ['pin'];
+        $payment['bank']           = 'CBIN';
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
@@ -992,7 +995,7 @@ class AuthorizeTest extends TestCase
         $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
-            'issuer'  => 'ICIC',
+            'issuer'  => 'CBIN',
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
@@ -1003,6 +1006,7 @@ class AuthorizeTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
         $payment['preferred_auth'] = 'pin';
+        $payment['bank']           = 'CBIN';
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 

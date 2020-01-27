@@ -71,7 +71,7 @@ class Validator extends Base\Validator
     {
         if ($initiator->isLinkedAccount() === true)
         {
-            if ($transfer->getSourceType() !== E::PAYMENT)
+            if (($transfer->getSourceType() !== E::PAYMENT) and ($transfer->getSourceType() !== E::ORDER))
             {
                 throw new Exception\LogicException(
                     'Refund to customer attempted by Linked Account ' . $initiator->getId() . ' on invalid transfer source_type - ' . $transfer->getSourceType(),

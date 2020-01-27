@@ -440,7 +440,7 @@ steps:
           - tag
           - pull_request
 
-  - name: build
+  - name: build-app
     pull: default
     image: plugins/docker
     settings:
@@ -451,6 +451,61 @@ steps:
         - GIT_USERNAME
       repo: razorpay/api
       tags: "${DRONE_COMMIT_SHA}"
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      GIT_TOKEN:
+        from_secret: git_token
+      GIT_USERNAME:
+        from_secret: git_username
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+      status:
+        - success
+
+  - name: build-checkout
+    pull: default
+    image: plugins/docker
+    settings:
+      build_args:
+        - "GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}"
+      repo: razorpay/api
+      tags: "checkout-${DRONE_COMMIT_SHA}"
+      dockerfile: Dockerfile.checkout
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+      status:
+        - success
+
+  - name: build-openresty
+    pull: default
+    image: plugins/docker
+    settings:
+      build_args:
+        - "GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}"
+      build_args_from_env:
+        - GIT_TOKEN
+        - GIT_USERNAME
+      repo: razorpay/api
+      tags: "openresty-${DRONE_COMMIT_SHA}"
+      dockerfile: Dockerfile.openresty
     environment:
       DOCKER_PASSWORD:
         from_secret: docker_password
@@ -508,7 +563,9 @@ steps:
       SLACK_WEBHOOK:
         from_secret: slack_webhook
     depends_on:
-      - build
+      - build-app
+      - build-checkout
+      - build-openresty
     when:
       branch:
         - master

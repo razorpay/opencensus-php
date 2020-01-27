@@ -13,7 +13,10 @@ trait GatewayTrait
 
         if (is_array($request) and (isset($request['method']) === true))
         {
-            $this->putMockPaymentGatewayUrl($request, $route);
+            if (($request['method'] === 'sdk') === false)
+            {
+                $this->putMockPaymentGatewayUrl($request, $route);
+            }
         }
 
         return $request;
