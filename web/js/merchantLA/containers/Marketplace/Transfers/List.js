@@ -8,6 +8,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 import { fetchTransfers as fetchAll } from 'merchantLA/reducers/collection';
 import {
   transferId,
+  parentPaymentId,
   amount,
   createdAt,
   settlementStatus,
@@ -71,7 +72,14 @@ const helperCues = {
   },
 };
 
-@connect(state => state.transfers, { fetchAll })
+@connect(
+  state => ({
+    ...state.transfers,
+    isShowParentPaymentIdEnabled:
+      state.session.user.isShowParentPaymentIdEnabled,
+  }),
+  { fetchAll }
+)
 export default class TransfersListContainer extends ListContainer {
   onSearchAnalytics = params => {
     const { pathname } = this.props.location;
@@ -98,6 +106,17 @@ export default class TransfersListContainer extends ListContainer {
   };
 
   render() {
+    const columns = this.props.isShowParentPaymentIdEnabled
+      ? [
+          transferId,
+          parentPaymentId,
+          amount,
+          createdAt,
+          settlementStatus,
+          helperCues,
+        ]
+      : [transferId, amount, createdAt, settlementStatus, helperCues];
+
     return (
       <div class="transfers-list">
         <tabbed-container>
@@ -113,17 +132,14 @@ export default class TransfersListContainer extends ListContainer {
                 onSubmit={this.search}
                 onSearchAnalytics={this.onSearchAnalytics}
                 onClearAnalytics={this.onClearAnalytics}
+                isShowParentPaymentIdEnabled={
+                  this.props.isShowParentPaymentIdEnabled
+                }
               />
 
               <DataTable
                 title="Transfers"
-                columns={[
-                  transferId,
-                  amount,
-                  createdAt,
-                  settlementStatus,
-                  helperCues,
-                ]}
+                columns={columns}
                 count={this.state.count}
                 skip={this.state.skip}
                 paginate={this.paginate}
