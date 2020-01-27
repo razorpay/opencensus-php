@@ -1,5 +1,7 @@
 import Input from 'common/new-ui/Input';
 
+const LINK_TO_DOCS = 'https://razorpay.com/docs/payment-gateway/orders/;';
+
 export default ({
   startsAt,
   block,
@@ -65,10 +67,7 @@ export default ({
     <p className="offers-api-note">
       If you aren't using Woocommerce, Magento or Shopify plugin, you'll need to
       integrate the{' '}
-      <a
-        target="_blank"
-        href={'https://razorpay.com/docs/payment-gateway/orders/'}
-      >
+      <a target="_blank" href={LINK_TO_DOCS}>
         Orders API
       </a>{' '}
       for this feature to work.
