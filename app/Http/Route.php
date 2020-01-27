@@ -1453,7 +1453,6 @@ final class Route
     ];
 
     public static $public = [
-        'mdr_adjustment',
         'checkout',
         'payment_create',
         'payment_create_checkout',
@@ -1787,6 +1786,7 @@ final class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'merchant_inheritance_parent_set_bulk',
+        'mdr_adjustment',
         'pricing_add_plan_rule_bulk',
         'admin_lead_verify',
         'admin_authentication',
@@ -3322,6 +3322,8 @@ final class Route
         'merchant_inheritance_parent_set_bulk'               =>  '*',
         'merchant_inheritance_parent_delete'                 =>  '*',
 
+        'mdr_adjustment'                                     => '*',
+
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
 
@@ -3747,6 +3749,7 @@ final class Route
             'virtual_account_create',
             'oauth_token_create',
             'merchant_inheritance_parent_set_bulk',
+            'mdr_adjustment',
         ],
 
         'stork' => [

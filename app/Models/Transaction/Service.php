@@ -182,7 +182,7 @@ class Service extends Base\Service
 
     public function mdrAdjustment(array $input)
     {
-        return  $this->processMdrAdjustmentRow($input);
+
         $response = new Base\PublicCollection();
 
         foreach ($input as $row)
@@ -234,6 +234,8 @@ class Service extends Base\Service
                 'delta_tax'         => $newTax - $oldTax,
                 'success'           => true,
                 'errorDescription'  => '',
+                'idempotency_key'   => $input['idempotency_key'],
+
             ];
         }
         catch (\Throwable $e)
@@ -243,7 +245,13 @@ class Service extends Base\Service
                 'transaction_id'    => $transactionId,
                 'payment_id'        => $paymentId,
                 'success'           => false,
-                'errorDescription'  => $e->getMessage(),
+                'error'  => [
+                    'code'        => 'asdf',
+                    'description' => $e->getMessage(),
+                    ],
+                'idempotency_key'   => $input['idempotency_key'],
+                'http_status_code'  => 500,
+
             ];
         }
 

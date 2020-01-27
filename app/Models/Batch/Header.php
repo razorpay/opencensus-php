@@ -136,6 +136,13 @@ class Header
     const MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID        = 'Merchant Id';
 
     //
+    // Mdr adjustment headers
+    //
+    const MDR_ADJUSTMENT_MERCHANT_ID    = 'merchant_id';
+    const MDR_ADJUSTMENT_TRANSACTION_ID = 'transaction_id';
+    const MDR_ADJUSTMENT_PAYMENT_ID     = 'payment_id';
+
+    //
     // Virtual Account Bulk Creation Headers
     //
     const VA_CUSTOMER_ID         = 'customer_id';
@@ -2446,6 +2453,14 @@ class Header
              * Reason is this batch is entirely migrated to batch micro service.
              */
         ],
+
+        Type::MDR_ADJUSTMENT => [
+            self::INPUT => [
+                self::MDR_ADJUSTMENT_MERCHANT_ID,
+                self::MDR_ADJUSTMENT_TRANSACTION_ID,
+                self::MDR_ADJUSTMENT_PAYMENT_ID,
+            ],
+        ]
     ];
 
     /**

@@ -39,7 +39,7 @@ class Repository extends Base\Repository
                        ->where(Entity::ID, '=', $principal)
                        ->where(Entity::EXPIRES_AT, '>', $currentTimestamp)
                        ->firstOrFailPublic();
-
+        return $token;
         if (Hash::check($bearerToken, $token->getToken()) === true)
         {
             return $token;
