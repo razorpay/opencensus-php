@@ -2356,6 +2356,8 @@ class Service extends Base\Service
             // Fetch formatted merchant details.
             $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
 
+            $data['is_inheritance_parent']  =  $merchant->isInheritanceParent();
+
             $data['tags'] = $merchant->tagNames();
         }
 
