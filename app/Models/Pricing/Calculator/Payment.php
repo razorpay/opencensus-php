@@ -458,7 +458,7 @@ class Payment extends Base
 
         $payment = $this->entity;
         // this is an side effect that is unavoidable.
-        $payment->setFeeBearer($feeBearer);
+        // $payment->setFeeBearer($feeBearer);
 
     }
 

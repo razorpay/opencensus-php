@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Jobs\MdrFixJob;
 use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Payment;
 use RZP\Models\Pricing\Fee;
@@ -182,21 +183,13 @@ class Service extends Base\Service
 
     public function mdrAdjustment(array $input)
     {
-        return  $this->processMdrAdjustmentRow($input);
-        $response = new Base\PublicCollection();
-
-        foreach ($input as $row)
-        {
-            $rowResponse = $this->processMdrAdjustmentRow($row);
-
-            $response->push($rowResponse);
-        }
-
-        return $response->toArrayWithItems();
+        MdrFixJob::dispatch($this->mode, $input);
+        return ['success' => true];
     }
 
-    protected function processMdrAdjustmentRow(array $input)
+    public function processMdrAdjustmentRow(array $input)
     {
+        $this->trace->info(TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES, ['foo'=>'bar']);
         $paymentId = $input['payment_id'];
 
         $merchantId = $input['merchant_id'];
