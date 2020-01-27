@@ -398,7 +398,7 @@ class Gateway
 
         $this->action = Action::DISABLE_TERMINAL;
     }
-    
+
     public function debit(array $input)
     {
         $this->input = $input;
@@ -1323,7 +1323,7 @@ class Gateway
 
         $type = strtoupper($type);
 
-        if (($this->env === 'func') and
+        if (($this->env === 'func' or $this->env === 'automation') and
             (isset($this->externalMockDomain) === true))
         {
             return $this->getExternalMockUrl($type);

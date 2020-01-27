@@ -45,9 +45,9 @@ use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Merchant\Webhook\Stork;
-use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
@@ -1821,45 +1821,45 @@ class Service extends Base\Service
 
     public function enableScheduledEs(): array
     {
-        $this->repo->transactionOnLiveAndTest(function ()
+        $userRole = $this->repo
+                         ->merchant
+                         ->getMerchantUserMapping(
+                            $this->merchant->getId(),
+                            $this->user->getId(),
+                            null,
+                            Product::PRIMARY)
+                         ->pivot
+                         ->role;
+
+        if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER))
         {
-            $userRole = $this->repo
-                             ->merchant
-                             ->getMerchantUserMapping(
-                                 $this->merchant->getId(),
-                                 $this->user->getId(),
-                                 null,
-                                 Product::PRIMARY)
-                             ->pivot
-                             ->role;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+                                                    'role',
+                                                    $userRole);
+        }
 
-            if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER) and ($userRole !== User\Role::FINANCE))
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
-                                                        'role',
-                                                        $userRole);
-            }
+        $this->getScheduledEarlySettlementPricingForMerchant();
 
-            $this->getScheduledEarlySettlementPricingForMerchant();
+        $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
+                                                Schedule\Period::HOURLY,
+                                                1,
+                                                null,
+                                                0,
+                                                0,
+                                                ScheduleTask\Type::SETTLEMENT);
 
-            $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
+        if ($schedule === null)
+        {
+            throw new Exception\LogicException(
+                'Schedule for Scheduled Automatic settlement was not found.',
+                ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE
+            );
+        }
 
-            $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
-                                                    Schedule\Period::HOURLY,
-                                                    1,
-                                                    null,
-                                                    0,
-                                                    0,
-                                                    ScheduleTask\Type::SETTLEMENT);
+        $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
 
-            if ($schedule === null)
-            {
-                throw new Exception\LogicException(
-                    'Schedule for Scheduled Automatic settlement was not found.',
-                    ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE
-                );
-            }
-
+        $this->repo->transactionOnLiveAndTest(function () use($schedule, $scheduledTasks)
+        {
             foreach ($scheduledTasks as $scheduledTask)
             {
                 $input = [

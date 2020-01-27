@@ -1,17 +1,24 @@
 <?php
 
-namespace RZP\Models\Merchant\Detail\Verifiers;
+namespace RZP\Models\Merchant\AutoKyc\MozartService;
 
-class PoaVerifierResponse
+use RZP\Models\Merchant\Detail\Constants;
+
+class POAProcessorResponse extends BaseResponse
 {
-    /**
-     * @var array
-     */
-    protected $response;
 
-    public function __construct(array $response)
+    public function getResponseData(): array
     {
-        $this->response = $response;
+        $this->validateResponse();
+
+        $data = parent::getResponseData();
+
+        $extractedData = [
+            Constants::NAME    => $this->getOcrName(),
+            Constants::SUCCESS => $this->isPOAVerifierResponseSuccess(),
+        ];
+
+        return array_merge($data, $extractedData);
     }
 
     public function getOcrName()
@@ -23,11 +30,11 @@ class PoaVerifierResponse
 
     public function isPOAVerifierResponseSuccess()
     {
-        if (empty($this->response) === true)
+        if (empty($this->responseBody) === true)
         {
             return false;
         }
-        $response = flatten_array($this->response);
+        $response = flatten_array($this->responseBody);
 
         return (isset ($response['success']) and ($response['success'] === true)) and
                ((isset($response['data.content.response.statusCode']) === true) and
@@ -41,7 +48,7 @@ class PoaVerifierResponse
      */
     private function parseResponseAndGetNameFromOCR()
     {
-        $responseFromOCR = $this->response;
+        $responseFromOCR = $this->responseBody;
 
         if ($this->isPOAVerifierResponseSuccess() === false)
         {

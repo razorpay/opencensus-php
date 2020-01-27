@@ -4812,21 +4812,36 @@ class MerchantTest extends TestCase
 
     public function testInternationalEnable()
     {
-        // Mock Razorx
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('On');
-
         $merchantDetailsData = [
-            'business_category'     => 'not_for_profit',
-            'business_subcategory'  => 'educational',
-            'activation_status'     => 'activated',
+            'business_category'             => 'ecommerce',
+            'business_subcategory'          => 'arts_and_collectibles',
+            'international_activation_flow' => 'whitelist',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantData = [
+            'international'     => 0,
+            'activated'         => 1,
+            'convert_currency'  => null,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testInternationalEnableForGreyList()
+    {
+        $merchantDetailsData = [
+            'business_category'             => 'not_for_profit',
+            'business_subcategory'          => 'educational',
+            'activation_status'             => 'activated',
+            'international_activation_flow' => 'greylist',
         ];
 
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
@@ -5578,7 +5593,7 @@ class MerchantTest extends TestCase
 
         $this->app->make(Factory::class)->load($factoryPath);
 
-        $subMerchant = $this->fixtures->create('merchant');
+        $subMerchant = $this->fixtures->merchant->createEntityInTestAndLive('merchant');
 
         $subMerchantId = $subMerchant->getId();
 
@@ -5591,7 +5606,7 @@ class MerchantTest extends TestCase
             'entity_owner_id' => '10000000000000',
         ];
 
-        $this->fixtures->create('merchant_access_map', $accessMapData);
+        $this->fixtures->merchant_access_map->createEntityInTestAndLive('merchant_access_map', $accessMapData);
 
         return $subMerchantId;
     }

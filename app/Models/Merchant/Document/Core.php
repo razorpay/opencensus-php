@@ -6,13 +6,15 @@ use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\AutoKyc;
 use RZP\Exception\BadRequestException;
 use RZP\Models\FileStore\Core as FileStoreCore;
-use RZP\Models\Merchant\Detail\Verifiers\FactoryVerifier;
+use RZP\Models\Merchant\AutoKyc\Verifiers\POAVerifier;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
-use RZP\Models\Merchant\Detail\Verifiers\PoaVerifierResponse;
+use RZP\Models\Merchant\AutoKyc\MozartService\ProcessorFactoryImpl;
 
 class Core extends Base\Core
 {
@@ -38,6 +40,8 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      * @param array           $params
      * @param Entity|null     $inputDocument
+     *
+     * @throws BadRequestException
      */
     public function storeInMerchantDocument(Merchant\Entity $merchant, array $params, Entity $inputDocument = null)
     {
@@ -218,57 +222,39 @@ class Core extends Base\Core
             return;
         }
 
-        $ocrResponse = $this->performOcr($document);
+        $ocrResponse = $this->performOcr($document, $merchantDetails);
 
-        $ocrDetails = $this->extractDetailFromOcrResponse($ocrResponse);
+        $ocrDetails = $ocrResponse != null ? $ocrResponse->getResponseData() : [];
 
-        $promoterPanName = $merchantDetails->getPromoterPanName();
+        (new AutoKyc\Events())->sendServiceVerifierEvents($ocrDetails);
 
-        $ocrMatchingPercentage = 0;
+        $pOAVerifier = new POAVerifier($merchantDetails->getPromoterPanName(),
+                                       $ocrDetails);
 
-        if ((empty($ocrDetails[Constants::NAME]) === false) and
-            empty($promoterPanName) === false)
-        {
-            $ocrMatchingPercentage = get_similar_text_percent($promoterPanName, $ocrDetails[Constants::NAME]);
-        }
+        $verificationData = $pOAVerifier->verify();
+
+        $document->setOcrVerify($verificationData[Detail\Constants::DOCUMENT_VERIFICATION_STATUS]);
 
         $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_OCR_PERFORMED_TOTAL,
                             [
                                 Entity::DOCUMENT_TYPE => $document->getDocumentType()
                             ]);
 
-        $this->setOcrVerificationStatus($document, $ocrMatchingPercentage);
-
         $this->pushEventsForOCRVerification($merchant,
                                             $ocrDetails,
                                             $document,
-                                            $ocrMatchingPercentage,
-                                            $promoterPanName);
-    }
-
-
-    protected function extractDetailFromOcrResponse(PoaVerifierResponse $ocrResponse = null): array
-    {
-        if ((empty($ocrResponse) === true) or
-            (($ocrResponse instanceof Detail\Verifiers\PoaVerifierResponse) === false))
-        {
-            return [];
-        }
-
-        $ocrDetails = [
-            Constants::NAME    => $ocrResponse->getOcrName(),
-            Constants::SUCCESS => $ocrResponse->isPOAVerifierResponseSuccess(),
-        ];
-
-        return $ocrDetails;
+                                            $verificationData[Detail\Constants::OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME],
+                                            $merchantDetails->getPromoterPanName());
     }
 
     /**
-     * @param Entity $document
+     * @param Entity        $document
      *
-     * @return null|PoaVerifierResponse
+     * @param Detail\Entity $merchantDetails
+     *
+     * @return null|AutoKyc\Response
      */
-    protected function performOcr(Entity $document)
+    protected function performOcr(Entity $document, Merchant\Detail\Entity $merchantDetails)
     {
         $signedUrl = (new FileStoreCore)->getSignedUrl(
             $document->getFileStoreId(),
@@ -276,15 +262,18 @@ class Core extends Base\Core
         );
 
         $input = [
-            DetailConstant::SIGNED_URL => $signedUrl,
-            Entity::DOCUMENT_TYPE      => $document->getDocumentType(),
+            DetailConstant::SIGNED_URL                  => $signedUrl,
+            Merchant\Detail\Constants::ENTITY_ID        => $document->getMerchantId(),
+            Merchant\Detail\Constants::DOCUMENT_TYPE    => $this->mapToKycDocType($document->getDocumentType()),
+            Merchant\Detail\Constants::DOCUMENT_FILE_ID => $document->getFileStoreId(),
+            Merchant\Detail\Constants::KYC_ID           => $merchantDetails->getKycId(),
         ];
 
         try
         {
-            $verifier = FactoryVerifier::getPoaVerifier($input, $this->merchant);
+            $processor = ProcessorFactoryImpl::getPOAProcessor($input);
 
-            return $verifier->verifyDetails();
+            return $processor->process();
         }
         catch (\Throwable $exception)
         {
@@ -301,15 +290,22 @@ class Core extends Base\Core
         }
     }
 
-    protected function setOcrVerificationStatus(Entity $document, $percent)
+    protected function mapToKycDocType(string $document_type): ?string
     {
-        $ocrVerifiedStatus = OcrVerificationStatus::FAILED;
-
-        if ($percent >= OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD)
+        if ($document_type === Type::AADHAR_BACK or $document_type === Type::AADHAR_FRONT)
         {
-            $ocrVerifiedStatus = OcrVerificationStatus::VERIFIED;
+            return Type::AADHAAR;
         }
-        $document->setOcrVerify($ocrVerifiedStatus);
+        if ($document_type === Type::PASSPORT_BACK or $document_type === Type::PASSPORT_FRONT)
+        {
+            return Type::PASSPORT;
+        }
+        if ($document_type === Type::VOTER_ID_BACK or $document_type === Type::VOTER_ID_FRONT)
+        {
+            return Type::VOTERS_ID;
+        }
+
+        return null;
     }
 
     protected function pushEventsAndMetrics(Merchant\Entity $merchant, array $input)

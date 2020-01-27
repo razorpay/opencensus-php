@@ -20,6 +20,20 @@ class Helper
             $data[Merchant\Entity::EMAIL] = $input[Constants::EMAIL];
         }
 
+        if (empty($input[Constants::EXTERNAL_ID]) === false)
+        {
+            $data[Merchant\Entity::EXTERNAL_ID] = $input[Constants::EXTERNAL_ID];
+        }
+
+        if (empty($input[Constants::LEGAL_ENTITY_ID]) === false)
+        {
+            $data[Merchant\Entity::LEGAL_ENTITY_ID] = $input[Constants::LEGAL_ENTITY_ID];
+        }
+        else if (empty($input[Constants::LEGAL_EXTERNAL_ID]) === false)
+        {
+            $data[Merchant\Entity::LEGAL_EXTERNAL_ID] = $input[Constants::LEGAL_EXTERNAL_ID];
+        }
+
         return $data;
     }
 
@@ -241,16 +255,33 @@ class Helper
      */
     public static function modifyAccountInput(array $input): array
     {
-        if (empty($input[Constants::PROFILE][Constants::ADDRESSES]) === true)
+        if (empty($input[Constants::PROFILE][Constants::ADDRESSES]) === false)
         {
-            return $input;
+            foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $key => $address)
+            {
+                $type = strtolower($input[Constants::PROFILE][Constants::ADDRESSES][$key][Constants::TYPE]);
+
+                $input[Constants::PROFILE][Constants::ADDRESSES][$key][Constants::TYPE] = $type;
+            }
         }
 
-        foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $key => $address)
+        // convert email to lowercase
+        if (empty($input[Constants::EMAIL]) === false)
         {
-            $type = strtolower($input[Constants::PROFILE][Constants::ADDRESSES][$key][Constants::TYPE]);
+            $input[Constants::EMAIL] = mb_strtolower($input[Constants::EMAIL]);
+        }
 
-            $input[Constants::PROFILE][Constants::ADDRESSES][$key][Constants::TYPE] = $type;
+        if (empty($input[Constants::LEGAL_EXTERNAL_ID]) === false)
+        {
+            $legalEntity = app('repo')->legal_entity->fetchByExternalId($input[Constants::LEGAL_EXTERNAL_ID]);
+
+            // if its a valid legal entity passed and it already exists
+            if (empty($legalEntity) === false)
+            {
+                $input[Constants::LEGAL_ENTITY_ID] = $legalEntity->getId();
+
+                unset($input[Constants::LEGAL_EXTERNAL_ID]);
+            }
         }
 
         return $input;

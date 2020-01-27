@@ -230,7 +230,7 @@ return [
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
-                    'international'  => true,
+                    'international'  => false,
                 ],
                 'settlement' => [
                     'fund_accounts' => [
@@ -332,7 +332,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS . '10000000000011',
                 ]
             ],
             'status_code' => 400,
@@ -602,7 +602,7 @@ return [
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
-                    'international'  => true,
+                    'international'  => false,
                 ],
                 'tnc'        => [
                     'accepted'   => 1,
@@ -949,6 +949,8 @@ return [
                 'business_entity' => 'llp',
                 'managed'         => 1,
                 'email'           => 'testcreateAccountAAA@razorpay.com',
+                'external_id'     => 'FBUniqueExternalId',
+                'legal_external_id' => 'FBLegalExternalId',
                 'notes'           => [
                     'business_details' => 'This is a test business',
                     'key2'             => 'value2',
@@ -1085,6 +1087,8 @@ return [
                 ],
                 'business_entity' => 'llp',
                 'email'           => 'testcreateaccountaaa@razorpay.com',
+                'external_id'     => 'FBUniqueExternalId',
+                'legal_external_id' => 'FBLegalExternalId',
                 'contact_info' => [
                     'name'  => 'contact name',
                     'email' => 'contactemail@gmail.com',
@@ -1235,6 +1239,106 @@ return [
                     'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
                 ],
             ],
+        ],
+    ],
+
+    'testFetchAllAccountWithKycNotHandled' => [
+        'request' => [
+            'url' => '/accounts',
+            'method' => 'GET',
+            'content' => [
+                'external_id' => 'FBUniqueExternalId',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'business_entity' => 'llp',
+                    'external_id'     => 'FBUniqueExternalId',
+                    'contact_info' => [
+                        'name'  => 'contact name',
+                        'email' => 'contactemail@gmail.com',
+                        'phone' => '9999999999',
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateAccountWithKycNotHandledAndDuplicateExternalId' => [
+        'request'  => [
+            'url'     => '/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'entity'          => 'account',
+                'business_entity' => 'ngo',
+                'external_id'     => 'FBUniqueExternalId',
+                'contact_info' => [
+                    'name'  => 'contact name',
+                    'email' => 'contactemail@gmail.com',
+                    'phone' => '9999999999',
+                ],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'          => 'registered',
+                            'line1'         => 'registered',
+                            'line2'         => 'near Jamnalal Police Stn',
+                            'city'          => 'BENGALURU',
+                            'state'         => 'KARNATAKA',
+                            'pin'           => '560032',
+                            'country'       => 'India',
+                        ],
+                    ],
+                    'name'              => 'Ratnalal Jewellers',
+                    'mcc'               => 8398,
+                    'billing_label'     => 'Ratnalal',
+                    'identification'    => [
+                        [
+                            'type'                  => 'company_pan',
+                            'identification_number' => 'apsdf1234a',
+                        ],
+                    ],
+                    'owner_info' => [
+                        'name'           => 'owner name',
+                        'identification' => [
+                            [
+                                'type'                  => 'owner_pan',
+                                'identification_number' => 'asdfg1234a',
+                            ],
+                        ],
+                    ],
+                ],
+                'settlement' => [
+                    'fund_accounts'    => [
+                        [
+                            'bank_account' => [
+                                'name'           => 'Ratnalal Account Name',
+                                'account_number' => '1200012391',
+                                'ifsc'           => 'ICIC0000031',
+                            ],
+                        ],
+                    ],
+                ],
+                'settings' => [
+                    'payment' => [
+                        'international' => true,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_DUPLICATE_EXTERNAL_ID,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_EXTERNAL_ID,
         ],
     ],
 
@@ -1565,6 +1669,7 @@ return [
                     'email' => 'contactemail@gmail.com',
                     'phone' => '9999999999',
                 ],
+                'legal_external_id' => 'FBLegalExternalId',
                 'profile'         => [
                     'addresses' => [
                         [

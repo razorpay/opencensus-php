@@ -47,4 +47,12 @@ class FTSController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function getBulkStatus()
+    {
+        $response = $this->app['fts_fund_transfer']->getBulkStatus($this->input);
+
+        return ApiResponse::json($response);
+    }
+
 }

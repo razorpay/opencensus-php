@@ -9,7 +9,8 @@ use RZP\Models\BankingAccount\State;
 use RZP\Models\Base\PublicCollection;
 
 /**
- * @property Merchant\Entity     $merchant
+ * @property Merchant\Entity            $merchant
+ * @property Merchant\Balance\Entity    $balance
  */
 class Entity extends Base\PublicEntity
 {

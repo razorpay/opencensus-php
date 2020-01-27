@@ -9,6 +9,7 @@ class TransactionFilter extends Terminal\Filter
     protected $properties = [
         'gateway',
         'capability',
+        'google_pay',
     ];
 
     public function gatewayFilter($terminal)
@@ -38,5 +39,22 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return ($payment->terminal->getCapability() === $terminal['capability']);
+    }
+
+    public function googlePayFilter($terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->isGooglePayCard() === true)
+        {
+            if ($terminal['authentication_gateway'] === 'google_pay')
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        return true;
     }
 }

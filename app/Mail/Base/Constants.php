@@ -40,6 +40,8 @@ class Constants
     const NACH                    = 'nach';
     const PARTNER_ON_BOARDING     = 'partner_on_boarding';
     const RAZORPAY_HELP_DESK      = 'help_desk';
+    const TECH_SETTLEMENTS        = 'tech_settlements';
+    const FINANCE                 = 'finance';
 
     const PARTNER_ON_BOARDING_REPLY = 'partner_on_boarding_reply';
 
@@ -79,6 +81,8 @@ class Constants
         self::PARTNER_ON_BOARDING       => 'partnercommunication@razorpay.com',
         self::PARTNER_ON_BOARDING_REPLY => 'kzgpFWFVZU@razorpay.com',
         self::RAZORPAY_HELP_DESK        => 'helpdesk@razorpay.com',
+        self::TECH_SETTLEMENTS          => 'tech.settlements@razorpay.com',
+        self::FINANCE                   => 'finance@razorpay.com',
     ];
 
     const HEADERS = [

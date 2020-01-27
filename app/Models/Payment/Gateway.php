@@ -108,6 +108,7 @@ class Gateway
     const CARDLESS_EMI       = 'cardless_emi';
     const PAYLATER           = 'paylater';
     const GETSIMPL           = 'getsimpl';
+    const PAYLATER_ICICI     = 'paylater_icici';
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -172,7 +173,7 @@ class Gateway
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
-        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL],
+        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
@@ -219,6 +220,7 @@ class Gateway
 
     const MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS = [
         self::WORLDLINE,
+        self::HDFC,
     ];
 
     // TODO: Add gateway and gateway_acquirer map to fix
@@ -1465,6 +1467,9 @@ class Gateway
         Gateway::WALLET_PHONEPE,
         Gateway::UPI_CITI,
         Gateway::UPI_JUSPAY,
+        // Cybersource does not make s2s callback, Google Pay makes s2s callback for payments
+        // that went through tokenization gateways.
+        Gateway::CYBERSOURCE,
     ];
 
     /**
@@ -1615,6 +1620,9 @@ class Gateway
         IFSC::CBIN => Gateway::NETBANKING_CBI,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+        IFSC::CIUB => Gateway::NETBANKING_CUB,
+        IFSC::SIBL => Gateway::NETBANKING_SIB,
+        IFSC::YESB => Gateway::NETBANKING_YESB,
     ];
 
 
@@ -1628,6 +1636,13 @@ class Gateway
         Gateway::EBS,
         Gateway::PAYTM,
         Gateway::ATOM
+    ];
+
+    /**
+     * List of gateways which support tokenization.
+     */
+    public static $tokenizationGateways = [
+        Gateway::CYBERSOURCE,
     ];
 
     public static $emiBanks = [
@@ -1670,12 +1685,10 @@ class Gateway
     public static $gatewayAcquirerIfscMapping = [
         Gateway::CARD_FSS => [
             self::ACQUIRER_FSS => [
-                IFSC::UTIB,
                 IFSC::IOBA,
                 IFSC::ANDB,
                 IFSC::SYNB,
                 IFSC::SURY,
-                IFSC::ICIC,
                 IFSC::CBIN,
             ]
         ],

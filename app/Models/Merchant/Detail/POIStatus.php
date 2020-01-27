@@ -23,4 +23,6 @@ class POIStatus
      * When external service input detail is not correct
      */
     const INCORRECT_DETAILS = 'incorrect_details';
+
+    const POI_VERIFICATION_THRESHOLD = 100.0;
 }
