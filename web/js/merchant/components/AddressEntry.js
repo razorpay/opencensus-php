@@ -4,11 +4,6 @@ import { PowerSelect } from 'react-power-select';
 
 import State from 'merchant/models/State';
 
-import {
-  getCountryPINcodeType,
-  isValidZipcodeCountryWise,
-} from 'common/utils/rzp-utils';
-
 /**
  * Finds a state from the states-list by it's name.
  * @param {Array} states
@@ -140,23 +135,10 @@ export default class AddressEntry extends React.Component {
     let s = {};
     s[fieldName] = event.target.value;
 
-    // Zipcode can be of 6 chars at most.
-    if (fieldName === 'zipcode') {
-      if (s[fieldName]) {
-        s[fieldName] = s[fieldName].slice(0, this.props.maxLengthZipcode);
-      }
-    }
-
     // Update state and invoke onChange.
     this.setState(s, () => {
       this.onChange();
     });
-  };
-
-  handleAddress = type => () => {
-    if (this.state[type].length < 2) return;
-
-    this.props.validateAddress(this.state);
   };
 
   render() {
@@ -216,10 +198,7 @@ export default class AddressEntry extends React.Component {
               value={zipcode}
               placeholder="PIN Code"
               class="form-control input-number-no-arrows"
-              type={getCountryPINcodeType(country)}
               onChange={this.onFieldChangeClosure('zipcode')}
-              onKeyDown={this.handleAddress('zipcode')}
-              onBlur={this.handleAddress('zipcode')}
               autoComplete="postal-code"
             />
           </div>
@@ -260,8 +239,6 @@ export default class AddressEntry extends React.Component {
                 selected={country}
                 options={countries}
                 onChange={this.updateCountry}
-                onKeyDown={this.handleAddress('country')}
-                onBlur={this.handleAddress('zipcode')}
                 autoComplete="country"
               />
             </div>
@@ -299,5 +276,4 @@ AddressEntry.defaultProps = {
   hideCountry: false,
   onChange: () => {},
   showDisabledCountry: false,
-  maxLengthZipcode: 6,
 };
