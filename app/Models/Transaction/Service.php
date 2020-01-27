@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction;
 
 use RZP\Constants;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FundAccount\Validation\Core;
@@ -174,6 +175,75 @@ class Service extends Base\Service
                 'response'                      => $response,
                 'transactions_failed_to_update' => $failedTransactionUpdate,
             ]);
+
+        return $response;
+    }
+
+    public function mdrAdjustment(array $input)
+    {
+        $response = new Base\PublicCollection();
+
+        foreach ($input as $row)
+        {
+            $rowResponse = $this->processMdrAdjustmentRow($row);
+
+            $response->push($rowResponse);
+        }
+
+        return $response->toArrayWithItems();
+    }
+
+    protected function processMdrAdjustmentRow(array $input)
+    {
+        try
+        {
+            $paymentId = $input['payment_id'];
+
+            $merchantId = $input['merchant_id'];
+
+            $transactionId = $input['transaction_id'];
+
+            $payment = $this->repo->payment->findOrFail($paymentId);
+
+            $transaction = $this->repo->transaction->findOrFail($transactionId);
+
+            if (($payment->getMerchantId() !== $merchantId) or
+                ($transaction->getMerchantId() !== $merchantId))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            }
+            [$oldFee, $oldTax] = [$transaction->getFee(), $transaction->getTax()];
+
+            $pricingFee = new Pricing\Fee;
+
+            $pricingFee->merchant = $payment->merchant;
+
+            [$newFee, $newTax] = $pricingFee->calculateMerchantFees($payment);
+
+            $response = [
+                Entity::MERCHANT_ID => $merchantId,
+                'transaction_id'    => $transactionId,
+                'payment_id'        => $paymentId,
+                'old_fee'           => $oldFee,
+                'old_tax'           => $oldTax,
+                'new_fee'           => $newFee,
+                'new_tax'           => $newTax,
+                'delta_fee'         => $newFee - $oldFee,
+                'delta_tax'         => $newTax - $oldTax,
+                'success'           => true,
+                'errorDescription'  => '',
+            ];
+        }
+        catch (\Exception $e)
+        {
+            $response = [
+                Entity::MERCHANT_ID => $merchantId,
+                'transaction_id'    => $transactionId,
+                'payment_id'        => $paymentId,
+                'success'           => false,
+                'errorDescription'  => $e->getMessage(),
+            ];
+        }
 
         return $response;
     }
