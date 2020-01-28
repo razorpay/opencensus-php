@@ -62,7 +62,25 @@ class Base extends BaseProcessor
      * @var bool
      * For gateways onboarded on scrooge - we will fetch the refunds from scrooge.
      */
-    protected $fetchRefundsFromScrooge;
+    protected $fetchRefundsFromScrooge = false;
+
+    /**
+     * Resetting all the global variables before use -
+     * since this is being used as a singleton class
+     *
+     * @return BaseProcessor|void
+     */
+    public function resetFileProcessorAttributes()
+    {
+        $this->fetchFromScroogeCount = 500;
+        $this->scroogeRefunds = [];
+        $this->scroogeRefundPaymentIds = [];
+        $this->scroogeMaxAttempts = 1;
+        $this->queryLimit = 50000;
+        $this->fetchRefundsFromScrooge = false;
+
+        parent::resetFileProcessorAttributes();
+    }
 
     public function fetchEntities(): PublicCollection
     {
