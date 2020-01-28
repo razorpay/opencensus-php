@@ -46,7 +46,7 @@ class Error extends Support\Fluent
     const PAYMENT_METHOD        = 'payment_method';
     const RECOVERABLE           = 'recoverable';
 
-    const ERROR_CODE_MAP_PATH   = 'files/errorcodes/error_code_detail_%s.csv';
+    const ERROR_CODE_MAP_FILE_PATH   = 'files/errorcodes/error_code_detail_%s.csv';
 
     protected $attributes = array();
 
@@ -222,52 +222,62 @@ class Error extends Support\Fluent
 
     public function setDetailedError($code, $method)
     {
-        if (isset($method) === true)
+        if (isset($method) === false)
         {
-            $filePath = storage_path(sprintf(self::ERROR_CODE_MAP_PATH, $method));
+            return;
+        }
 
-            if (file_exists($filePath) === true)
+        $filePath = storage_path(sprintf(self::ERROR_CODE_MAP_FILE_PATH, $method));
+
+        if (file_exists($filePath) === false)
+        {
+            return;
+        }
+
+        $handle = fopen($filePath,"r");
+
+        if ($handle === false)
+        {
+            return;
+        }
+
+        $errorCodeMap = array();
+
+        try
+        {
+            $header = fgetcsv($handle);
+
+            while ($row = fgetcsv($handle))
             {
-                $errorCodeMap = array();
+                $key = array_shift($row);
 
-                $handle = fopen($filePath,"r");
-
-                try
-                {
-                    $header = fgetcsv($handle);
-
-                    while ($row = fgetcsv($handle))
-                    {
-                        $key = array_shift($row);
-
-                        $errorCodeMap[$key] = $row;
-                    }
-                }
-                catch (\Exception $exception)
-                {
-                    $this->trace->info(TraceCode::FILE_OPERATION_FAILED, ['payment_method' => $method]);
-                }
-                finally
-                {
-                    fclose($handle);
-                }
-                if (array_key_exists($code, $errorCodeMap))
-                {
-                    $this->setDesc($errorCodeMap[$code][0]);
-
-                    $this->setCodeDetail($errorCodeMap[$code][1]);
-
-                    $this->setFailureType($errorCodeMap[$code][2]);
-
-                    $this->setPointOfFailure($errorCodeMap[$code][3]);
-
-                    $this->setNextBestAction($errorCodeMap[$code][4]);
-
-                    $this->setFailureStage($errorCodeMap[$code][5]);
-
-                    $this->setRecoverable($errorCodeMap[$code][6]);
-                }
+                $errorCodeMap[$key] = $row;
             }
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->info(TraceCode::FILE_OPERATION_FAILED, ['payment_method' => $method]);
+        }
+        finally
+        {
+            fclose($handle);
+        }
+
+        if (array_key_exists($code, $errorCodeMap))
+        {
+            $this->setDesc($errorCodeMap[$code][0]);
+
+            $this->setCodeDetail($errorCodeMap[$code][1]);
+
+            $this->setFailureType($errorCodeMap[$code][2]);
+
+            $this->setPointOfFailure($errorCodeMap[$code][3]);
+
+            $this->setNextBestAction($errorCodeMap[$code][4]);
+
+            $this->setFailureStage($errorCodeMap[$code][5]);
+
+            $this->setRecoverable($errorCodeMap[$code][6]);
         }
     }
 
