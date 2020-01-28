@@ -2414,7 +2414,8 @@ trait Refund
         if (($payment->isBankTransfer() === true) or
             ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
             ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
-            ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA]) === true))
+            ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA]) === true) or
+            ($this->isPaymentNachAndNachRefundGateway($payment) === true))
         {
             return true;
         }
@@ -2425,6 +2426,17 @@ trait Refund
     protected function isPaymentEmandateAndEmandateRefundGateway(Payment\Entity $payment): bool
     {
         if (($payment->isEmandate() === true) and
+            (in_array($payment->getGateway(), Payment\Gateway::BANK_TRANSFER_REFUND_GATEWAYS, true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isPaymentNachAndNachRefundGateway(Payment\Entity $payment): bool
+    {
+        if (($payment->isNach() === true) and
             (in_array($payment->getGateway(), Payment\Gateway::BANK_TRANSFER_REFUND_GATEWAYS, true) === true))
         {
             return true;
@@ -2688,11 +2700,10 @@ trait Refund
 
             $input = (new Order\Core)->getAccountForRefund($order);
         }
-        else if ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true)
+        else if (($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
+            ($this->isPaymentNachAndNachRefundGateway($payment) === true))
         {
-            $customer = $payment->customer;
-            $customerName = preg_replace('/[^a-zA-Z0-9 ]+/', '', $customer->getName());
-            $customerName = substr($customerName, 0, 35);
+            $customerName = $this->getFormattedCustomerNameFromPayment($payment);
 
             $token = $payment->getGlobalOrLocalTokenEntity();
 
@@ -2710,6 +2721,20 @@ trait Refund
         }
 
         return $input;
+    }
+
+    protected function getFormattedCustomerNameFromPayment(Payment\Entity $payment)
+    {
+        $customer = $payment->customer;
+
+        if ($customer === null)
+        {
+            return null;
+        }
+
+        $customerName = preg_replace('/[^a-zA-Z0-9 ]+/', '', $customer->getName());
+
+        return substr($customerName, 0, 35);
     }
 
     protected function getVpaInput(Payment\Entity $payment, array $data = [])

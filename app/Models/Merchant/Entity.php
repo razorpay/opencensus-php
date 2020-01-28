@@ -612,6 +612,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
     }
+    public function isDisplayParentPaymentId(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::DISPLAY_LA_PARENT_PAYMENT_ID);
+    }
 
     public function isAxisExpressPayEnabled(): bool
     {
@@ -1655,6 +1659,13 @@ class Entity extends Base\PublicEntity
     public function isPartner(): bool
     {
         return $this->isAttributeNotNull(self::PARTNER_TYPE);
+    }
+
+    public function isInheritanceParent(): bool
+    {
+        $inheritanceMap = (new InheritanceMap\Repository)->getInheritanceMapByParentMerchantId($this->getId());
+
+        return (sizeof($inheritanceMap) !== 0);
     }
 
     public function isFullyManagedPartner(): bool

@@ -886,6 +886,7 @@ class Gateway
         self::NETBANKING_AXIS,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_SBI,
+        self::NACH_CITI,
     ];
 
     /**

@@ -23,4 +23,13 @@ class Repository extends Base\Repository
                     ->where($merchantId, '=', $mid)
                     ->FirstorFail();
     }
+
+    public function getInheritanceMapByParentMerchantId($parentMid)
+    {
+        $parentMerchantId = $this->dbColumn(Entity::PARENT_MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->where($parentMerchantId, '=', $parentMid)
+                    ->get();
+    }
 }
