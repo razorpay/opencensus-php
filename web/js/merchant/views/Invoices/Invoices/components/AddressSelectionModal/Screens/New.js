@@ -10,12 +10,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { fetchStates } from 'merchant/reducers/states';
 import AddressEntry from 'merchant/components/AddressEntry.js';
 import PropTypes from 'prop-types';
-import { validateZipCode } from 'merchant/views/Customers/New';
-import {
-  isAddressValid,
-  isValidZipcodeCountryWise,
-  capitalize,
-} from 'common/utils/rzp-utils';
+import { isAddressValid, capitalize } from 'common/utils/rzp-utils';
 import { track } from '../../../../ga';
 import Countries from 'merchant/helpers/countries.json';
 
@@ -208,24 +203,6 @@ export default class New extends Component {
     });
   };
 
-  validateAddress = address => {
-    const zipcodeError = validateZipCode(address.country, address.zipcode);
-
-    if (zipcodeError) {
-      this.setState({
-        errors: [zipcodeError],
-      });
-
-      return;
-    }
-
-    if (this.state.errors && this.state.errors.length) {
-      this.setState({
-        errors: [],
-      });
-    }
-  };
-
   render() {
     const {
       header,
@@ -243,16 +220,13 @@ export default class New extends Component {
     const { states, editedAddress } = this.state;
 
     // Boolean that determines if the address is valid or not.
-    const invalid = !isAddressValid(editedAddress, {
-      zipcode: isValidZipcodeCountryWise,
-    });
+    const invalid = !isAddressValid(editedAddress);
 
     let extraProps = {};
 
     if (isInttCurrenciesEnabled) {
       extraProps = {
         countries: CountryNames,
-        maxLengthZipcode: 8,
       };
     }
 
@@ -290,7 +264,6 @@ export default class New extends Component {
               showDisabledCountry={true}
               hideCountry={!isInttCurrenciesEnabled}
               trackSelectCountry={trackSelectCountry}
-              validateAddress={this.validateAddress}
               {...extraProps}
             />
 

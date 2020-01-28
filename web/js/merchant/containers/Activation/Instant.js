@@ -272,8 +272,16 @@ export default class ActivationWizard extends React.Component {
           bingData: data,
           liData: 987404,
           twiData: 'o1ua0',
+          quoraData: 'AddToWishlist',
+          redditData: 'AddToWishlist',
           fbData: 'activation_complete_success',
-        });
+        }); //fb = false, bing, linkedin, twitter, quora, reddit events are fired
+
+        this.props.sendEventsForSubMerchantView(
+          window.rzpQ
+            .routeActions()
+            .success('route.linked_account.activate_account.business_details')
+        );
 
         return this.props.history.replace(`/`);
       })

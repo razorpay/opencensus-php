@@ -246,10 +246,10 @@ export const objectDiff = (oldObj = {}, newObj = {}) => {
 };
 
 /*
-  * Convert the object to url query string
-  * Don't allow undefined, null and empty string as values
-  * Note: It doesn't handle nested object
-*/
+ * Convert the object to url query string
+ * Don't allow undefined, null and empty string as values
+ * Note: It doesn't handle nested object
+ */
 export const stringifyQueryParams = params => {
   let queryString;
   let queryElements = [];
@@ -272,7 +272,7 @@ export const stringifyQueryParams = params => {
  * Convert the location into query params object
  * Usually, passing url = this.props.location.search
  * Use Case: utilize to populate filter form
-*/
+ */
 export const getURLQueryParams = (url = document.location.hash) => {
   let search = url.split('?')[1];
   let params = {};
@@ -421,7 +421,7 @@ export const getPercentage = (divident, divisor) => {
   let value = 0;
 
   if (divident) {
-    value = getFixedNumber(divisor / divident * 100);
+    value = getFixedNumber((divisor / divident) * 100);
   }
 
   return Number(value);
@@ -466,7 +466,7 @@ export const getEMI = (principle, length, rate) => {
 
   var multiplier = Math.pow(1 + rate, length);
 
-  return parseInt(principle * rate * multiplier / (multiplier - 1), 10);
+  return parseInt((principle * rate * multiplier) / (multiplier - 1), 10);
 };
 
 export const arrayToCsv = array => {
@@ -741,33 +741,13 @@ export const getCountryPINcodeType = (country = '') => {
   }
 };
 
-export const isValidZipcodeCountryWise = (country = '', zipcode) => {
-  if (!country) {
-    return false;
-  }
-
-  const countryLowerCase = country.toLowerCase();
-
-  switch (countryLowerCase) {
-    case countries.IND: {
-      return zipcode.length === 6;
-    }
-    case countries.UK: {
-      return zipcode.length >= 6 && zipcode.length <= 8;
-    }
-    default: {
-      return zipcode.length <= 8 && zipcode.length >= 3;
-    }
-  }
-};
-
 /**
  * Checks the validity of an address.
- * Line1, City, State, Country, Zipcode are required fields in an address.
+ * Line1, City, State, Country are required fields in an address.
  * @param {Object} address
  * @return {Bool}
  */
-export const isAddressValid = (address, customValidator = {}) => {
+export const isAddressValid = address => {
   const allKeys = Boolean(
     address &&
       address.line1 &&
@@ -781,16 +761,13 @@ export const isAddressValid = (address, customValidator = {}) => {
     return false;
   }
 
-  const { line1, line2, city, state, country, zipcode } = address;
+  const { line1, line2, city, state, country } = address;
 
   const requiredFieldsLengthCheck = Boolean(
     line1.length >= 10 &&
       line1.length <= 255 &&
       city.length >= 2 &&
       city.length <= 32 &&
-      (customValidator.zipcode
-        ? customValidator.zipcode(country, zipcode)
-        : zipcode.length === 6) &&
       state.length >= 2 &&
       state.length <= 32 &&
       country.length >= 2 &&
@@ -915,11 +892,11 @@ export const loadImage = (src, onLoad, onError) => {
 };
 
 /*
-* Reference: https://github.com/facebook/react/issues/10135#issuecomment-314441175
-*
-* This is helper fn. as a work around for dispatching manual events on native elements.
-*
-* */
+ * Reference: https://github.com/facebook/react/issues/10135#issuecomment-314441175
+ *
+ * This is helper fn. as a work around for dispatching manual events on native elements.
+ *
+ * */
 export function setNativeValue(element, value) {
   const valueSetter = Object.getOwnPropertyDescriptor(element, 'value').set;
   const prototype = Object.getPrototypeOf(element);

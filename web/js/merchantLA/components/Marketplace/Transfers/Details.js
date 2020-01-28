@@ -1,5 +1,6 @@
 import AsyncButton from 'react-async-button';
 import { Component } from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 
@@ -55,6 +56,9 @@ const SettlementText = ({ data, transfer }) => {
   );
 };
 
+@connect(state => ({
+  isShowParentPaymentIdEnabled: state.session.user.isShowParentPaymentIdEnabled,
+}))
 export default class TransferDetails extends Component {
   state = { ...initialState };
 
@@ -64,7 +68,9 @@ export default class TransferDetails extends Component {
     initialState = {
       ...initialState,
       onHold: (transfer.on_hold
-        ? transfer.on_hold_until ? 'on_hold_until' : 'on_hold'
+        ? transfer.on_hold_until
+          ? 'on_hold_until'
+          : 'on_hold'
         : false
       ).toString(),
       holdUntil: transfer.on_hold_until,
@@ -85,6 +91,7 @@ export default class TransferDetails extends Component {
       onClose,
       parentAccountName,
       showRefundToCustomer,
+      isShowParentPaymentIdEnabled,
     } = this.props;
 
     const nextWorkingDate = nextWorkingDay(
@@ -123,6 +130,12 @@ export default class TransferDetails extends Component {
                     <b>{parentAccountName}</b>
                   </Definition>
                 </EntityDetailRow>
+
+                {isShowParentPaymentIdEnabled && (
+                  <EntityDetailRow label="Parent Payment Id">
+                    {transfer.parent_payment_id}
+                  </EntityDetailRow>
+                )}
 
                 <EntityDetailRow label="Amount">
                   <Amount

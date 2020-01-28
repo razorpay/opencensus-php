@@ -105,6 +105,16 @@
 
                     break;
                 }
+                case 'quora': {
+                    if (!checkAnalytics(data)) return;
+                    analytics.track('quora', data.event, data.value);
+                    break;
+                }
+                case 'reddit': {
+                    if (!checkAnalytics(data)) return;
+                    analytics.track('reddit', data.event);
+                    break;
+                }
                 case 'linkedIn': {
                     if (!checkAnalytics(data)) return;
                     analytics.track('linkedin', '', data.value);

@@ -1047,13 +1047,15 @@ export default class ActivationWizard extends React.Component {
         let compAllData = new BingDataObj('kycform', 'complete', 'all', 1);
 
         /**
-         * Fire fb, bing, linkedin & twitter events
+         * Fire fb, bing, linkedin, quora, reddit & twitter events
          */
         fireAnalyticsEvents({
           fbData: 'kyc_complete_all',
           bingData: compAllData,
           liData: 987452,
           twiData: 'o1ua7',
+          quoraData: 'AddToCart',
+          redditData: 'AddToCart',
         });
 
         let conversionId, txnId;

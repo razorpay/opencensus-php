@@ -13,7 +13,6 @@ import BatchUploads from 'merchant/views/Transactions/Refunds/BatchList';
 import OrdersList from 'merchant/views/Transactions/Orders/List';
 import DisputesList from 'merchant/views/Transactions/Disputes/List';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
-import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBanner';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
 import Amount from 'common/ui/Amount';
@@ -51,6 +50,8 @@ export default class TransactionsContainer extends Component {
     const { no_settlement } = this.props.settlement_amount.data;
 
     const { settlement_ux_revamp } = this.props.config;
+
+    const pathname = this.props.location.pathname;
 
     return (
       <tabbed-container>
@@ -91,11 +92,7 @@ export default class TransactionsContainer extends Component {
             <NavLink to="/orders">Orders</NavLink>
           </ShowWhen>
           <NavLink to="/disputes">Disputes</NavLink>
-          {this.props.user.isOndemandSettlementEnabled &&
-            this.props.user.isAllowedView('early_settlement') && (
-              <ScheduledBanner fromWhere="Transactions" />
-            )}
-          {settlement_ux_revamp && no_settlement ? (
+          {settlement_ux_revamp && no_settlement && pathname !== '/disputes' ? (
             <div class="text-right" style={{ width: '100%' }}>
               {no_settlement.caption}
               {no_settlement.reason && (
@@ -112,7 +109,10 @@ export default class TransactionsContainer extends Component {
               )}
             </div>
           ) : null}
-          {settlement_ux_revamp && !no_settlement && !nextSettlement ? (
+          {settlement_ux_revamp &&
+          !no_settlement &&
+          !nextSettlement &&
+          pathname !== '/disputes' ? (
             <div class="text-right" style={{ width: '100%' }}>
               <strong>
                 <Amount

@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 import { Field, reduxForm, formValueSelector, change } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'common/ui/Forms/InputField';
@@ -39,6 +40,7 @@ const selector = formValueSelector('newAccount');
     account: true,
   },
 })
+@RTracking(() => window.rzpQ.component('AddAccount'))
 export default class AddAccount extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -67,6 +69,14 @@ export default class AddAccount extends Component {
     }
   }
 
+  componentDidMount() {
+    this.props.tracking.trackEvent(
+      window.rzpQ
+        .routeActions()
+        .interaction('route.linked_account.add_account.started')
+    );
+  }
+
   save = props => {
     const { accountData } = this.props;
     let requestData = { ...props };
@@ -82,6 +92,12 @@ export default class AddAccount extends Component {
     if (typeof requestData.allow_reversals !== 'undefined') {
       requestData.allow_reversals = !!requestData.allow_reversals;
     }
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.routeActions().initiated('route.linked_account.add_account', {
+        source: 'merchant_dashboard',
+      })
+    );
 
     return reqFunc(requestData)
       .then(account => {
@@ -164,6 +180,14 @@ export default class AddAccount extends Component {
     }
   };
 
+  closeModal = () => {
+    this.props.closeModal();
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.routeActions().dropped('route.linked_account.add_account')
+    );
+  };
+
   render() {
     const {
       handleSubmit,
@@ -184,7 +208,7 @@ export default class AddAccount extends Component {
       <div class="accounts-edit-new">
         <ModalHeader
           title={!!accountData ? 'Edit Account' : 'Add Account'}
-          onCloseClick={this.props.closeModal}
+          onCloseClick={this.closeModal}
         />
 
         <div class="modal-body">

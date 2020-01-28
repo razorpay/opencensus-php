@@ -13,6 +13,11 @@ export default class ReportHome extends React.PureComponent {
   componentDidMount() {
     this.props.fetchConfigs();
     this.props.fetchLogs({ count: 5 });
+
+    if (typeof window.hj === 'function') {
+      window.hj('trigger', 'report-async-started');
+      window.hj('tagRecording', ['report-async-started']);
+    }
   }
 
   onGenerateReport = payload => {
@@ -33,13 +38,14 @@ export default class ReportHome extends React.PureComponent {
             type: 'error',
             message: (
               <>
-                {data.error} See more details on this error{' '}
+                {error} See more details on this error{' '}
                 <NavLink
                   to="https://razorpay.com/docs/payment-gateway/dashboard-guide/reports/"
                   target="_blank"
                 >
                   here
-                </NavLink>.
+                </NavLink>
+                .
               </>
             ),
             closeTimeout: 5000,

@@ -2,6 +2,8 @@
 
 namespace App\Merchant\Notifications;
 
+use App\MerchantDetails;
+
 class Constants
 {
     const NOTIFICATIONS = [
@@ -184,6 +186,28 @@ class Constants
                 'features'  => ['show_credit_score'],
                 'role'  => ['owner'],
             ],
+        ],
+        [
+            'title'       => 'Introducing RazorpayX',
+            'description' => 'Vendor and customer payouts are now just a click away with RazorpayX',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/razorpayx.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Login Now',
+                    'url'   => 'https://x.razorpay.com',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Learn More',
+                    'url'   => 'https://razorpay.com/x/payouts/',
+                ],
+            ],
+            'start_ts'    => 1580099400,
+            'end_ts'      => 1580495399,
+            'filters'     => [
+                'business_type' => MerchantDetails\BusinessType::REGISTERED_BUSINESS_TYPES,
+            ]
         ],
     ];
 

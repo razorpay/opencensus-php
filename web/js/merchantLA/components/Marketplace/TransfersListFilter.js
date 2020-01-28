@@ -9,6 +9,17 @@ export default props => {
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
+      {props.isShowParentPaymentIdEnabled && (
+        <div class="form-group list-filter-item">
+          <label>Parent Payment Id</label>
+          <Field
+            name="parent_payment_id"
+            component="input"
+            class="form-control input-sm"
+          />
+        </div>
+      )}
+
       <div class="form-group list-filter-item count">
         <label>Count</label>
         <Field

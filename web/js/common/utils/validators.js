@@ -17,9 +17,9 @@ export const isUrlLenient = url => {
 };
 
 /*
-* Regex to allow development urls like localhost:8000, localhost, anything that user can put in url.
-* It doesn't allow strange urls like ...., etc. which are not allowed in url in general
-* */
+ * Regex to allow development urls like localhost:8000, localhost, anything that user can put in url.
+ * It doesn't allow strange urls like ...., etc. which are not allowed in url in general
+ * */
 export const flexibleDevUrl = url => {
   url = url || '';
 
@@ -101,6 +101,8 @@ export function validatePANCard(value) {
 
 export function validateCompanyAB(value1 = '', value2 = '', isExpOn = false) {
   if (!isExpOn) return false;
+  value1 = value1 === null ? '' : value1;
+  value2 = value2 === null ? '' : value2;
   return value1.toLowerCase() === value2.toLowerCase()
     ? 'Company name cannot be same as Contact Name'
     : false;
@@ -109,7 +111,7 @@ export function validateCompanyAB(value1 = '', value2 = '', isExpOn = false) {
 export function validatePANCardUnregBiz(value) {
   if (validatePANCard(value)) {
     return validatePANCard(value);
-  } else if (value && (value[3] !== 'P' && value[3] !== 'p')) {
+  } else if (value && value[3] !== 'P' && value[3] !== 'p') {
     return "The PAN entered is a business PAN. If you are a registered business, please change your business type in the 'Business Overview' tab.";
   }
 }
