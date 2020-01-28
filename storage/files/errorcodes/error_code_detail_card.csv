@@ -98,7 +98,7 @@ BAD_REQUEST_CARD_FROZEN,Card frozen,Invalid card,Business,Issuer,Retry with anot
 BAD_REQUEST_CARD_INACTIVE,Card inactive,Invalid card,Business,Issuer,Retry with another card,Authorization,D
 BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID,Invalid card type,Invalid card,Business,Issuer,Retry with another card,Authorization,N
 BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,Payment blocked for possible fraud,Risk Declined,Business,Issuer,Retry with another card,Authorization,N
-BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,Payment blocked for possible fraud,Risk Declined,Business,Issuer,Retry with another card,Authorization,N
+BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,Payment processing failed by bank due to risk,Risk Declined,Business,Issuer,Retry with another card,Authorization,N
 GATEWAY_ERROR_ENSTAGE_ERROR,Enstage error,Unknown Failure,Technical,Issuer,Non actionable,,N
 BAD_REQUEST_PAYMENT_FAILED,Payment Failed,Unknown Failure,Technical,Gateway,Non actionable,,N
 BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED,Recurring payments not supported for merchant,Incorrect payment details,Technical,Merchant,Post failure Communication to merchant,Initiation,N

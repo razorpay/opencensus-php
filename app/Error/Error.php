@@ -226,12 +226,12 @@ class Error extends Support\Fluent
         {
             $filePath = storage_path(sprintf(self::ERROR_CODE_MAP_PATH, $method));
 
-            $errorCodeMap = array();
-
-            $handle = fopen($filePath,"r");
-
-            if ($handle !== false)
+            if (file_exists($filePath) === true)
             {
+                $errorCodeMap = array();
+
+                $handle = fopen($filePath,"r");
+
                 try
                 {
                     $header = fgetcsv($handle);

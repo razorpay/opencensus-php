@@ -285,6 +285,20 @@ class HdfcGatewayAuthTest extends TestCase
 
     }
 
+    public function testDetailedErrorResponseForCard()
+    {
+        $this->hdfcPaymentMockResultCode('DENIED BY RISK', 'authorize');
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('metadata', $content['error']);
+
+        $this->assertArrayHasKey('payment_id', $content['error']['metadata']);
+
+        $this->assertArrayHasKey('code_detail', $content['error']);
+
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
