@@ -3,21 +3,25 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
-use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
+use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
 use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
+use RZP\Mail\Merchant\RazorpayX\InstantActivation as RazorpayXInstantActivationMail;
 
 class Activate extends Base\Core
 {
@@ -26,9 +30,13 @@ class Activate extends Base\Core
     /**
      * This function is used for activating merchant
      *
-     * @param Entity        $merchant
+     * @param Entity $merchant
      *
      * @return Detail\Entity
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     * @throws Throwable
      */
     public function activate(Entity $merchant): Detail\Entity
     {
@@ -52,8 +60,9 @@ class Activate extends Base\Core
      * @param Entity        $merchant
      *
      * @return Detail\Entity
+     *
      * @throws Exception\BadRequestException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function activateAndMarkKycVerified(Entity $merchant): Detail\Entity
     {
@@ -103,7 +112,7 @@ class Activate extends Base\Core
 
             $this->repo->saveOrFail($merchantDetail);
 
-            if($merchant->isActivated() === true)
+            if ($merchant->isActivated() === true)
             {
                 $merchantCore->addMerchantEmailToMailingList($merchant);
             }
@@ -125,13 +134,14 @@ class Activate extends Base\Core
     }
 
     /**
-     * @param Entity        $merchant
+     * @param Entity $merchant
      * @param Detail\Entity $merchantDetails
      *
      * @return array
+     *
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails): array
     {
@@ -173,7 +183,7 @@ class Activate extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
-        if($merchant->isActivated() === true)
+        if ($merchant->isActivated() === true)
         {
             (new Merchant\Core)->addMerchantEmailToMailingList($merchant);
         }
@@ -195,7 +205,7 @@ class Activate extends Base\Core
      * @return Detail\Entity
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function markKycVerified(Entity $merchant): Detail\Entity
     {
@@ -229,7 +239,7 @@ class Activate extends Base\Core
 
             $this->repo->saveOrFail($merchantDetail);
 
-            if($merchant->isActivated() === true)
+            if ($merchant->isActivated() === true)
             {
                 $merchantCore->addMerchantEmailToMailingList($merchant);
             }
@@ -350,59 +360,110 @@ class Activate extends Base\Core
      */
     public function sendActivationEmail($merchant)
     {
-        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+        //
+        // In order to distinguish between RX merchant and PG Merchant, we cannot use getRequestOriginProduct, because
+        // this activation happens from Admin Dashboard, in which case the OriginProduct will always be Primary.
+        // Hence we will check if the Merchant has business_banking enabled, we will send the RX email, else the default PG email
+        //
 
-        $is_whitelist_activation = $merchant->merchantDetail->getActivationFlow() === ActivationFlow::WHITELIST;
+        $isBusinessBankingEnabled = $merchant->isBusinessBankingEnabled();
 
-        $data = [
-            'merchant' => [
-                'name'                               => $merchant->getName(),
-                'website'                            => $merchant->getWebsite(),
-                'billing_label'                      => $merchant->getBillingLabel(),
-                'email'                              => $merchant->getEmail(),
-                'activation_source'                  => $merchant->getActivationSource(),
-                Constants::IS_WHITELISTED_ACTIVATION => $is_whitelist_activation,
-                'org'                                => [
-                    'business_name' => $org->getBusinessName(),
-                    'custom_code'   => $org->getCustomCode(),
-                ],
-            ],
-        ];
+        $this->trace->info(TraceCode::ACTIVATION_CONFIRMATION_EMAIL,
+                            [
+                                'merchant_id'                 => $merchant->getId(),
+                                'is_business_banking_enabled' => $isBusinessBankingEnabled
+                            ]);
 
-        $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
-
-        // For marketplace accounts, send this email to the parent merchant
-        if ($merchant->isLinkedAccount() === true)
+        if ($isBusinessBankingEnabled === true)
         {
-            $data['merchant']['email'] = $merchant->parent->getEmail();
+            if ($merchant->hasBankingAccounts() === false)
+            {
+                $this->trace->error(TraceCode::NO_ASSOCIATED_BANKING_ACCOUNT,
+                                    [
+                                        'merchant_id' => $merchant->getId()
+                                    ]);
+            }
+            else
+            {
+                Mail::queue(new AccountActivationConfirmation($merchant->getId()));
+            }
         }
+        else
+        {
+            $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
-        $activationMail = new ActivationMail($data, $org->toArray());
+            $is_whitelist_activation = $merchant->merchantDetail->getActivationFlow() === ActivationFlow::WHITELIST;
 
-        Mail::queue($activationMail);
+            $data = [
+                'merchant' => [
+                    'name'                               => $merchant->getName(),
+                    'website'                            => $merchant->getWebsite(),
+                    'billing_label'                      => $merchant->getBillingLabel(),
+                    'email'                              => $merchant->getEmail(),
+                    'activation_source'                  => $merchant->getActivationSource(),
+                    Constants::IS_WHITELISTED_ACTIVATION => $is_whitelist_activation,
+                    'org'                                => [
+                        'business_name' => $org->getBusinessName(),
+                        'custom_code'   => $org->getCustomCode(),
+                    ],
+                ],
+            ];
+
+            $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
+
+            // For marketplace accounts, send this email to the parent merchant
+            if ($merchant->isLinkedAccount() === true)
+            {
+                $data['merchant']['email'] = $merchant->parent->getEmail();
+            }
+
+            $activationMail = new ActivationMail($data, $org->toArray());
+
+            Mail::queue($activationMail);
+        }
     }
 
     public function notifyMerchantForInstantActivation(Entity $merchant)
     {
-        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+        $instantActivationMail = null;
 
-        $data = [
-            'merchant' => [
-                Entity::NAME              => $merchant->getName(),
-                Entity::BILLING_LABEL     => $merchant->getBillingLabel(),
-                Entity::EMAIL             => $merchant->getEmail(),
-                Entity::ACTIVATION_SOURCE => $merchant->getActivationSource(),
-                Entity::BUSINESS_BANKING  => $merchant->isBusinessBankingEnabled(),
-                'org'                     => [
-                    OrgEntity::BUSINESS_NAME => $org->getBusinessName(),
-                    OrgEntity::CUSTOM_CODE   => $org->getCustomCode(),
+        $activationSource = $merchant->getActivationSource();
+
+        $this->trace->info(TraceCode::INSTANT_ACTIVATION_NOTIFICATION,
+                           [
+                               'merchant_id'          => $merchant->getPublicId(),
+                               'activation_source'    => $activationSource,
+                               'has_banking_accounts' => $merchant->hasBankingAccounts()
+                           ]
+        );
+
+        if (($activationSource === Product::BANKING) and
+            ($merchant->hasBankingAccounts() === true))
+        {
+            $instantActivationMail = new RazorpayXInstantActivationMail($merchant->getId());
+        }
+        else
+        {
+            $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+            $data = [
+                'merchant' => [
+                    Entity::NAME              => $merchant->getName(),
+                    Entity::BILLING_LABEL     => $merchant->getBillingLabel(),
+                    Entity::EMAIL             => $merchant->getEmail(),
+                    Entity::ACTIVATION_SOURCE => $merchant->getActivationSource(),
+                    Entity::BUSINESS_BANKING  => $merchant->isBusinessBankingEnabled(),
+                    'org'                     => [
+                        OrgEntity::BUSINESS_NAME => $org->getBusinessName(),
+                        OrgEntity::CUSTOM_CODE   => $org->getCustomCode(),
+                    ],
                 ],
-            ],
-        ];
+            ];
 
-        $data['merchant']['org'][HostNameEntity::HOSTNAME] = $org->getPrimaryHostName();
+            $data['merchant']['org'][HostNameEntity::HOSTNAME] = $org->getPrimaryHostName();
 
-        $instantActivationMail = new InstantActivationMail($data, $org->toArray());
+            $instantActivationMail = new InstantActivationMail($data, $org->toArray());
+        }
 
         Mail::queue($instantActivationMail);
     }
@@ -436,8 +497,8 @@ class Activate extends Base\Core
             // This endpoint could be hit from test mode as well, depending which this merchant has been read from
             // corresponding connection. Because this entity is synced between both connection, setting connection
             // to live mode is same as fetching merchant of same id from live connection. We need to do this
-            // because in subsequent steps we do things like $merchant->sharedBankingBalance which we expect in this flow
-            // to query in live connection.
+            // because in subsequent steps we do things like $merchant->sharedBankingBalance which we expect
+            // in this flow to query in live connection.
             //
             $merchant->setConnection($liveMode);
 

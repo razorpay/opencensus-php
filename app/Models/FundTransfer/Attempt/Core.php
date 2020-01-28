@@ -74,7 +74,7 @@ class Core extends Base\Core
         array $values = [],
         $instantDispatch = false): Entity
     {
-        $fundTransferAttempt = $this->create($source, $values,E::CARD, $card);
+        $fundTransferAttempt = $this->create($source, $values, E::CARD, $card);
 
         // TODO: Make this polymorphic instead of having bankAccount, vpa and card separately
         $fundTransferAttempt->card()->associate($card);

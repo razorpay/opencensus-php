@@ -15,13 +15,22 @@ class Repository extends Base\Repository
     protected $entity = 'merchant_inheritance_map';
 
 
-    public function fetchInheritanceMapByMerchantId($mid)
+    public function findInheritanceMapByMerchantId($mid)
     {
         $merchantId = $this->dbColumn(Entity::MERCHANT_ID);
 
         return $this->newQuery()
                     ->where($merchantId, '=', $mid)
-                    ->FirstorFail();
+                    ->first();
+    }
+
+    public function findInheritanceMapByMerchantIdOrFailPublic($mid)
+    {
+        $merchantId = $this->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->where($merchantId, '=', $mid)
+                    ->firstOrFailPublic();
     }
 
     public function getInheritanceMapByParentMerchantId($parentMid)

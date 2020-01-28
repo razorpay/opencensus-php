@@ -40,4 +40,9 @@ class DeviceVerificationCompleted extends Event implements ShouldQueue
             ],
         ];
     }
+
+    public function getReminderPayload()
+    {
+        return;
+    }
 }

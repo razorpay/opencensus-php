@@ -5463,6 +5463,19 @@ class MerchantTest extends TestCase
         $this->assertEquals($res['parent_merchant_id'], '10000000000000');
     }
 
+    public function testGetInheritanceParentIfNotPresent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $this->expectException(BadRequestException::class);
+
+        $this->startTest();
+    }
+
     public function testDeleteInheritanceParent()
     {
         $this->ba->adminAuth();
@@ -5491,6 +5504,25 @@ class MerchantTest extends TestCase
         $merchantInheritanceMap = $this->getLastEntity('merchant_inheritance_map', true);
 
         $this->assertNull($merchantInheritanceMap);
+    }
+
+    public function testDeleteInheritanceParentIfNotPresent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND);
+
+        $this->expectExceptionMessage(
+            'No db records found.');
+
+        $this->startTest();
     }
 
     public function testGetBalances()

@@ -56,4 +56,9 @@ class TransactionCreated extends Event implements ShouldQueue
             ];
         }
     }
+
+    public function getReminderPayload()
+    {
+        return;
+    }
 }

@@ -28,6 +28,8 @@ class Action extends Base\Action
     const DEREGISTER_SUCCESS               = 'deregisterSuccess';
     const DEREGISTER_FAILURE               = 'deregisterFailure';
 
+    const DEVICE_COOLDOWN_COMPLETED        = 'deviceCooldownCompleted';
+
     const UPDATE_WITH_ACTION               = 'update_with_action';
 
     const RESTORE_DEVICE                   = 'restore_device';

@@ -1386,6 +1386,7 @@ final class Route
         'p2p_admin_add_handle'                    => ['post',     'p2p/handles',                                               'P2p\VpaController@createHandle'],
         'p2p_admin_update_handle'                 => ['put',      'p2p/handles/{code}',                                        'P2p\VpaController@updateHandle'],
         'p2p_admin_manage_banks'                  => ['post',     'p2p/banks/bulk/manage',                                     'P2p\BankAccountController@manageBulkBanks'],
+        'p2p_reminder_send'                       => ['post',     'p2p/reminders/send/{handle}/{entity}/{id}/{action}',        'P2p\UpiController@sendReminder'],
 
         // Mpan related routes
         'mpans_issue'                             => ['post',     'mpans/issue',                                               'MpanController@issueMpans'],
@@ -1861,6 +1862,7 @@ final class Route
         'scrooge_verify_refund_call',
         'refund_fetch_status',
         'reminder_send',
+        'p2p_reminder_send',
         'scrooge_entities',
         'fund_transfer_attempt_modes',
         'schedule_migration',
@@ -3732,7 +3734,8 @@ final class Route
         ],
 
         'reminders' => [
-            'reminder_send'
+            'reminder_send',
+            'p2p_reminder_send'
         ],
 
         'batch' => [

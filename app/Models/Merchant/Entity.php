@@ -1270,6 +1270,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany(BankingAccount\Entity::class);
     }
 
+    public function hasBankingAccounts()
+    {
+        return ($this->bankingAccounts->count() > 0);
+    }
+
     public function activeBankingAccounts()
     {
         return $this->bankingAccounts()

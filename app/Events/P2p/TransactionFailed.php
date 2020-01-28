@@ -27,4 +27,9 @@ class TransactionFailed extends Event implements ShouldQueue
     {
         return;
     }
+
+    public function getReminderPayload()
+    {
+        return;
+    }
 }

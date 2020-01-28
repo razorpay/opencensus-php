@@ -620,6 +620,11 @@ class Constants
             'display_name'  => 'Allow Refunds From Linked Accounts',
             'documentation' => '',
         ],
+        self::DISPLAY_LA_PARENT_PAYMENT_ID    => [
+            'feature'       => self::DISPLAY_LA_PARENT_PAYMENT_ID,
+            'display_name'  => 'display parent paymentId for transfers',
+            'documentation' => '',
+        ],
         self::PAYOUT_TO_CARDS           => [
             'feature'       => self::PAYOUT_TO_CARDS,
             'display_name'  => 'Payout to cards',

@@ -49,6 +49,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_BULK_FAILURE                          = 'PAYMENT_CAPTURE_BULK_FAILURE';
     const PAYMENT_ALREADY_CAPTURED                              = 'PAYMENT_ALREADY_CAPTURED';
 
+    // Activation Emails
+    const INSTANT_ACTIVATION_NOTIFICATION                      =  'INSTANT_ACTIVATION_NOTIFICATION';
+    const KYC_SUBMITTED_EMAIL                                  =  'KYC_SUBMITTED_EMAIL';
+    const ACTIVATION_CONFIRMATION_EMAIL                        =  'ACTIVATION_CONFIRMATION_EMAIL';
+
     // payout links
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
     const PAYOUT_SOURCE_UPDATER_JOB_RELEASED                    = 'PAYOUT_SOURCE_UPDATER_JOB_RELEASED';
@@ -1885,6 +1890,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_TRANSFER_RECON_EMAIL_FAILED                      = 'FUND_TRANSFER_RECON_EMAIL_FAILED';
     const FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED              = 'FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED';
 
+    const NO_ASSOCIATED_BANKING_ACCOUNT                         = 'NO_ASSOCIATED_BANKING_ACCOUNT';
+
+
     // Subscription service
     const SUBSCRIPTION_SERVICE_REQUEST                          = 'SUBSCRIPTION_SERVICE_REQUEST';
     const PAYMENT_MDR_UPDATE_ERROR                              = 'PAYMENT_MDR_UPDATE_ERROR';
@@ -2243,6 +2251,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_GATEWAY_RESPONSE                                  = 'P2P_GATEWAY_RESPONSE';
     const P2P_MANAGE_REQUEST                                    = 'P2P_MANAGE_REQUEST';
     const P2P_MANAGE_RESPONSE                                   = 'P2P_MANAGE_RESPONSE';
+    const P2P_REMINDER_CALLBACK                                 = 'P2P_REMINDER_CALLBACK';
 
     const SUBSCRIPTION_PAYMENT_NOTIFY                           = 'SUBSCRIPTION_PAYMENT_NOTIFY';
 
