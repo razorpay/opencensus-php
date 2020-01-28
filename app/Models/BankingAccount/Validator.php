@@ -161,7 +161,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $fetchGatewayBalanceRules = [
-        Entity::CHANNEL => 'required|string',
+        Entity::CHANNEL     => 'required|string',
         Entity::MERCHANT_ID => 'required|string',
     ];
 
