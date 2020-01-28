@@ -227,6 +227,8 @@ class Header
     const CITI_NACH_REGISTER_STATUS                        = CitiNachRegisterHeadings::STATUS;
     const CITI_NACH_REGISTER_REMARKS                       = CitiNachRegisterHeadings::REMARKS;
     const CITI_NACH_REGISTER_UMRN                          = CitiNachRegisterHeadings::UMRN;
+    const CITI_NACH_REGISTER_LOT                           = CitiNachRegisterHeadings::LOT;
+    const CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE       = CitiNachRegisterHeadings::SOFT_COPY_RECEIVED_DATE;
     //
     // Citi Nach Debit Response File Headers
     //
@@ -1692,6 +1694,8 @@ class Header
                 self::CITI_NACH_REGISTER_BANK_NAME,
                 self::CITI_NACH_REGISTER_BANK_IFSC,
                 self::CITI_NACH_REGISTER_AMOUNT,
+                self::CITI_NACH_REGISTER_LOT,
+                self::CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE,
                 self::CITI_NACH_REGISTER_STATUS,
                 self::CITI_NACH_REGISTER_REMARKS,
                 self::CITI_NACH_REGISTER_UMRN,
@@ -1710,6 +1714,8 @@ class Header
                 self::CITI_NACH_REGISTER_BANK_NAME,
                 self::CITI_NACH_REGISTER_BANK_IFSC,
                 self::CITI_NACH_REGISTER_AMOUNT,
+                self::CITI_NACH_REGISTER_LOT,
+                self::CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE,
                 self::CITI_NACH_REGISTER_STATUS,
                 self::CITI_NACH_REGISTER_REMARKS,
                 self::CITI_NACH_REGISTER_UMRN,
