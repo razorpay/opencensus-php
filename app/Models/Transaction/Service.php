@@ -202,6 +202,13 @@ class Service extends Base\Service
         $merchantId = $input['merchant_id'];
 
         $transactionId = $input['transaction_id'];
+
+        $response = [
+            Entity::MERCHANT_ID => $merchantId,
+            'transaction_id'    => $transactionId,
+            'payment_id'        => $paymentId,
+            'idempotency_key'   => $input['idempotency_key'],
+        ];
         try
         {
 
@@ -222,37 +229,38 @@ class Service extends Base\Service
 
             [$newFee, $newTax] = $pricingFee->calculateMerchantFees($payment);
 
-            $response = [
-                Entity::MERCHANT_ID => $merchantId,
-                'transaction_id'    => $transactionId,
-                'payment_id'        => $paymentId,
-                'old_fee'           => $oldFee,
-                'old_tax'           => $oldTax,
-                'new_fee'           => $newFee,
-                'new_tax'           => $newTax,
-                'delta_fee'         => $newFee - $oldFee,
-                'delta_tax'         => $newTax - $oldTax,
-                'success'           => true,
-                'errorDescription'  => '',
-                'idempotency_key'   => $input['idempotency_key'],
+            $response['old_fee']           = $oldFee;
+            $response['old_tax']           = $oldTax;
+            $response['new_fee']           = $newFee;
+            $response['new_tax']           = $newTax;
+            $response['delta_fee']         = $newFee - $oldFee;
+            $response['delta_tax']         = $newTax - $oldTax;
+            $response['success']           = true;
+            $response['errorDescription']  = '';
 
+
+        }
+        catch (Exception\BaseException $e)
+        {
+            $response['success'] = false;
+            $response['http_status_code'] = $e->getError()->getHttpStatusCode();
+            $response['error'] =  [
+                'code'        => $e->getError(),
+                'description' => $e->getMessage(),
             ];
         }
         catch (\Throwable $e)
         {
-            $response = [
-                Entity::MERCHANT_ID => $merchantId,
-                'transaction_id'    => $transactionId,
-                'payment_id'        => $paymentId,
-                'success'           => false,
-                'error'  => [
-                    'code'        => 'asdf',
-                    'description' => $e->getMessage(),
-                    ],
-                'idempotency_key'   => $input['idempotency_key'],
-                'http_status_code'  => 500,
 
-            ];
+
+            $response['success'] = false;
+            $response['error'] =  [
+                'code'        => 'Server error',
+                'description' => $e->getMessage(),
+                ];
+            $response['http_status_code'] =   500;
+
+
         }
 
         return $response;
