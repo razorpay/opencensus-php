@@ -1463,6 +1463,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_FEATURE_UPDATE                               = 'MERCHANT_FEATURE_UPDATE';
     const FEATURE_MULTI_ASSIGN_REQUEST                          = 'FEATURE_MULTI_ASSIGN_REQUEST';
     const FEATURE_MULTI_REMOVE_REQUEST                          = 'FEATURE_MULTI_REMOVE_REQUEST';
+    const FEATURE_ENABLE_EARLY_SETTLEMENT_MAIL_FAILED           = 'FEATURE_ENABLE_EARLY_SETTLEMENT_MAIL_FAILED';
 
     const MERCHANT_TAGS_BULK_REQUEST                            = 'MERCHANT_TAGS_BULK_REQUEST';
     const MERCHANT_TAGS_BULK_EXCEPTION                          = 'MERCHANT_TAGS_BULK_EXCEPTION';
