@@ -815,20 +815,12 @@ class Core extends Base\Core
             return [false, Settlement\Channel::YESBANK];
         }
 
-        if ($this->isLiveMode() === true)
+        if (($source->isBalanceTypeBanking() === true) or ($source->getChannel() === Settlement\Channel::YESBANK))
         {
-            if ($source->isBalanceTypeBanking() === true)
-            {
-                return [true, $source->getChannel()];
-            }
-
-            if ($source->getChannel() === Settlement\Channel::YESBANK)
-            {
-                return [true, $source->getChannel()];
-            }
+            return [true, $source->getChannel()];
         }
 
-        return [false, Settlement\Channel::YESBANK];
+        return [false, $source->getChannel()];
     }
 
     protected function getChannelForRefund(Entity $fta,

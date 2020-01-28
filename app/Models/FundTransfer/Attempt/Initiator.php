@@ -747,6 +747,11 @@ class Initiator extends Base\Core
     {
         try
         {
+            if ($this->isTestMode() === true)
+            {
+                return true;
+            }
+
             FtsFundTransfer::dispatch($this->mode, $fta->getId());
 
             $this->trace->info(
