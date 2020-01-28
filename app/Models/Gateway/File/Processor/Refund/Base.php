@@ -15,6 +15,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -28,7 +29,7 @@ class Base extends BaseProcessor
      *
      * @var int
      */
-    protected $fetchFromScroogeCount = 500;
+    protected $fetchFromScroogeCount = Constants::FETCH_FROM_SCROOGE_COUNT;
 
     /**
      * For gateways onboarded on scrooge - we will fetch the refunds from scrooge, these will be populated here
@@ -49,14 +50,14 @@ class Base extends BaseProcessor
      *
      * @var int
      */
-    protected $scroogeMaxAttempts = 1;
+    protected $scroogeMaxAttempts = Constants::SCROOGE_MAX_ATTEMPTS;
 
     /**
      * Being used to store the number of elements that can be passed in the fetch query
      *
      * @var int
      */
-    protected $queryLimit = 50000;
+    protected $queryLimit = Constants::QUERY_LIMIT;
 
     /**
      * @var bool
@@ -72,11 +73,11 @@ class Base extends BaseProcessor
      */
     public function resetFileProcessorAttributes()
     {
-        $this->fetchFromScroogeCount = 500;
-        $this->scroogeRefunds = [];
+        $this->queryLimit              = Constants::QUERY_LIMIT;
+        $this->scroogeRefunds          = [];
+        $this->scroogeMaxAttempts      = Constants::SCROOGE_MAX_ATTEMPTS;
+        $this->fetchFromScroogeCount   = Constants::FETCH_FROM_SCROOGE_COUNT;
         $this->scroogeRefundPaymentIds = [];
-        $this->scroogeMaxAttempts = 1;
-        $this->queryLimit = 50000;
         $this->fetchRefundsFromScrooge = false;
 
         parent::resetFileProcessorAttributes();
