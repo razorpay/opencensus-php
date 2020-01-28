@@ -152,6 +152,7 @@ class Base extends BaseProcessor
      * @param  PublicCollection $entities
      *
      * @return array
+     * @throws GatewayFileException
      */
     public function generateData(PublicCollection $entities)
     {
@@ -226,6 +227,22 @@ class Base extends BaseProcessor
             }
 
             $data = $this->addGatewayEntitiesToData($data, $entities);
+        }
+
+        //
+        // Adding checks to ensure refunds are in expected date range - if not throwing exception
+        //
+        $refundCreatedAtRange = array_column(array_column($data, 'refund'), 'created_at');
+
+        if ((max($refundCreatedAtRange) > $this->gatewayFile->getEnd()) or
+            (min($refundCreatedAtRange) < $this->gatewayFile->getBegin()))
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_LOGICAL_ERROR_REFUNDS_OUT_OF_RANGE,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ]
+            );
         }
 
         return $data;
@@ -408,8 +425,9 @@ class Base extends BaseProcessor
     }
 
     /**
-     * @param $from
-     * @param $to
+     * @param int $from
+     * @param int $to
+     * @param array $refundIds
      * @throws GatewayFileException
      */
     protected function populateScroogeRefunds(int $from, int $to, $refundIds = [])
@@ -440,7 +458,8 @@ class Base extends BaseProcessor
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_FETCHING_FROM_SCROOGE,
                 [
                     'id' => $this->gatewayFile->getId(),
-                ]);
+                ]
+            );
         }
 
         $this->scroogeRefunds = array_merge($this->scroogeRefunds, $refunds);
