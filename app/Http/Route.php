@@ -1135,6 +1135,7 @@ final class Route
         'account_create'                           => ['post',     'accounts',                                       'AccountController@createAccount'                                   ],
         'account_list'                             => ['get',      'accounts',                                       'AccountController@listAccounts'                                    ],
         'account_fetch'                            => ['get',      'accounts/{id}',                                  'AccountController@fetchAccount'                                    ],
+        'account_fetch_by_external_id'             => ['get',      'accounts/external/{id}',                         'AccountController@fetchByExternalId'                               ],
         'account_edit'                             => ['patch',    'accounts/{id}',                                  'AccountController@editAccount'                                     ],
         'account_action'                           => ['patch',    'accounts/{id}/{action}',                         'AccountController@performAction'                                   ],
 
@@ -1760,6 +1761,7 @@ final class Route
         'account_create',
         'account_list',
         'account_fetch',
+        'account_fetch_by_external_id',
         'account_edit',
         'account_action',
         'subscription_registration_auto_charge',
@@ -2003,6 +2005,7 @@ final class Route
         'account_fetch',
         'account_edit',
         'account_action',
+        'account_fetch_by_external_id',
         'merchant_activation_status_partner',
         'merchant_activation_update_partner',
 
@@ -3873,6 +3876,7 @@ final class Route
         'account_create'                       => [Feature::SUBMERCHANT_ONBOARDING],
         'account_list'                         => [Feature::SUBMERCHANT_ONBOARDING],
         'account_fetch'                        => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_fetch_by_external_id'         => [Feature::SUBMERCHANT_ONBOARDING],
         'account_edit'                         => [Feature::SUBMERCHANT_ONBOARDING],
         'account_action'                       => [Feature::SUBMERCHANT_ONBOARDING],
         'merchant_activation_update_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],

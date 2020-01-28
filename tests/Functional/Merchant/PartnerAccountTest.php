@@ -334,6 +334,23 @@ class PartnerAccountTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testFetchAccountByExternalId()
+    {
+        $this->setUpPartnerWithKycNotHandled();
+
+        $testData = $this->testData['testCreateAccountCompletelyFilledRequestWithKycNotHandled'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testFetchAccountByInvalidExternalId'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testCreateAccountWithKycNotHandledAndDuplicateExternalId()
     {
         $this->setUpPartnerWithKycNotHandled();

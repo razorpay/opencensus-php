@@ -1265,6 +1265,45 @@ return [
         ],
     ],
 
+    'testFetchAccountByExternalId' => [
+        'request' => [
+            'url' => '/accounts/external/FBUniqueExternalId',
+            'method' => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'business_entity' => 'llp',
+                'external_id'     => 'FBUniqueExternalId',
+                'contact_info' => [
+                    'name'  => 'contact name',
+                    'email' => 'contactemail@gmail.com',
+                    'phone' => '9999999999',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchAccountByInvalidExternalId' => [
+        'request' => [
+            'url' => '/accounts/external/FBInvalidExternalId',
+            'method' => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ],
+    ],
+
     'testCreateAccountWithKycNotHandledAndDuplicateExternalId' => [
         'request'  => [
             'url'     => '/accounts',

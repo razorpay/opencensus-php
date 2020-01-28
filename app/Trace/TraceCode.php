@@ -1885,6 +1885,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_WEBHOOK_TRANSLATION                           = 'PARTNER_WEBHOOK_TRANSLATION';
     const PARTNER_DEFAULT_PAYMENT_METHODS_TO_SUBMERCHANT        = 'PARTNER_DEFAULT_PAYMENT_METHODS_TO_SUBMERCHANT';
     const PARTNER_FETCH_SUBMERCHANTS                            = 'PARTNER_FETCH_SUBMERCHANTS';
+    const PARTNER_CONFIG_CREATED                                = 'PARTNER_CONFIG_CREATED';
+    const PARTNER_CONFIG_EDITED                                 = 'PARTNER_CONFIG_EDITED';
 
     const FEE_CREDITS_THRESHOLD_ALERT                           = 'FEE_CREDITS_THRESHOLD_ALERT';
 
