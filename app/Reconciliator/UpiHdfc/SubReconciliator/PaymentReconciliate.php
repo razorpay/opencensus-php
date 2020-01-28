@@ -125,6 +125,16 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
         else
         {
+            $upiTransfer = $this->repo->upi_transfer->findByNpciReferenceId($rrn);
+
+            if ($upiTransfer !== null)
+            {
+                $paymentId = $upiTransfer->payment->getId();
+            }
+        }
+
+        if ($paymentId === null)
+        {
             $paymentId = $this->createPayment($rrn, $gatewayPaymentId, $row);
         }
 
