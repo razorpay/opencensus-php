@@ -5452,6 +5452,18 @@ return [
         ],
     ],
 
+    'testGetInheritanceParentIfNotPresent'     =>  [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 400,
+        ],
+    ],
+
     'testDeleteInheritanceParent'     =>  [
         'request'   => [
             'method'    => 'DELETE',
@@ -5461,6 +5473,18 @@ return [
             'content'   => [
             ],
             'status_code'           => 200,
+        ],
+    ],
+
+    'testDeleteInheritanceParentIfNotPresent'     =>  [
+        'request'   => [
+            'method'    => 'DELETE',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 400,
         ],
     ],
 
