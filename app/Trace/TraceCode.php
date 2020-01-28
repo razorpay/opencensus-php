@@ -1707,6 +1707,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CONTACT_DELETE_REQUEST                                = 'CONTACT_DELETE_REQUEST';
     const DUPLICATE_CONTACT_FOUND                               = 'DUPLICATE_CONTACT_FOUND';
     const CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY      = 'CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY';
+    const RZP_FEES_CONTACT_CREATE_REQUEST                       = 'RZP_FEES_CONTACT_CREATE_REQUEST';
 
     //trace codes for merchant document CRUD
     const DOCUMENT_CREATE_REQUEST                               = 'DOCUMENT_CREATE_REQUEST';
@@ -1718,6 +1719,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_UPDATE_REQUEST                           = 'FUND_ACCOUNT_UPDATE_REQUEST';
     const FUND_ACCOUNT_DELETE_REQUEST                           = 'FUND_ACCOUNT_DELETE_REQUEST';
     const DUPLICATE_FUND_ACCOUNT_FOUND                          = 'DUPLICATE_FUND_ACCOUNT_FOUND';
+    const RZP_FEES_FUND_ACCOUNT_CREATE_REQUEST                  = 'RZP_FEES_FUND_ACCOUNT_CREATE_REQUEST';
+
     // Trace codes for Fund Account Validation
     const FUND_ACCOUNT_VALIDATION_REQUEST                       = 'FUND_ACCOUNT_VALIDATION_REQUEST';
     const BENEFICIARY_NAME_NOT_PRESENT                          = 'BENEFICIARY_NAME_NOT_PRESENT';

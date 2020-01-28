@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Models\Contact;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccount\Entity;
@@ -298,6 +299,29 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('activated', $logs['items'][1]['status']);
 
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+
+        $contact = $this->getDbLastEntity('contact')->toArray();
+
+        $this->assertEquals($contact['type'], Contact\Type::RZP_FEES);
+        $this->assertEquals($contact['active'], true);
+        $this->assertEquals($contact['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($contact['name'],  config('banking_account.razorpayx_fee_details.name'));
+
+        $fundAccount = $this->getDbLastEntity('fund_account')->toArray();
+
+        $this->assertEquals($fundAccount['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($fundAccount['source_type'], 'contact');
+        $this->assertEquals($fundAccount['source_id'], $contact['id']);
+        $this->assertEquals($fundAccount['active'], true);
+
+        $account = $this->getDbLastEntity('bank_account')->toArray();
+
+        $this->assertEquals($account['account_number'], config('banking_account.razorpayx_fee_details.account_number'));
+        $this->assertEquals($account['name'], config('banking_account.razorpayx_fee_details.name'));
+        $this->assertEquals($account['ifsc'], config('banking_account.razorpayx_fee_details.ifsc'));
+        $this->assertEquals($account['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($account['entity_id'], $contact['id']);
     }
 
     public function testActivateFailedDueToFtsFailure()

@@ -2150,4 +2150,30 @@ class PayoutTest extends TestCase
 
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
     }
+
+    public function testAddCustomPurposeRZPFees()
+    {
+        $this->startTest();
+    }
+
+    public function testCancelRZPFeesPayout()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout->getId(), [
+            'status'    => 'queued',
+            'purpose'   => 'rzp_fees',
+        ]);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/' . $payout->getPublicId() .'/cancel';
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
 }
