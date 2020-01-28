@@ -62,7 +62,7 @@ export default class User {
   }
 
   get isShowParentPaymentIdEnabled() {
-    return this.isFeatureEnabled('display_parent_payment_id');
+    return this.features.indexOf('display_parent_payment_id') >= 0;
   }
 
   /* Check if the tag exists */
