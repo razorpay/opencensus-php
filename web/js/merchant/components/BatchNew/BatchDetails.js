@@ -11,6 +11,10 @@ export default function BatchDetails({ renderDetails, ...props }) {
       ? `${batch.name.substr(0, 24)}...`
       : batch.name;
 
+  if (typeof downloadReportText === 'function') {
+    downloadReportText = downloadReportText(props);
+  }
+
   return (
     <div class="content-wrapper content-sm txn-details batch-details">
       {isLoading ? (
