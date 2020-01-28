@@ -46,7 +46,7 @@ class Error extends Support\Fluent
     const PAYMENT_METHOD        = 'payment_method';
     const RECOVERABLE           = 'recoverable';
 
-    const ERROR_CODE_MAP_FILE_PATH   = 'files/errorcodes/error_code_detail_%s.csv';
+    const ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_code_detail_%s.csv';
 
     protected $attributes = array();
 
@@ -227,7 +227,7 @@ class Error extends Support\Fluent
             return;
         }
 
-        $filePath = storage_path(sprintf(self::ERROR_CODE_MAP_FILE_PATH, $method));
+        $filePath = storage_path(sprintf(self::ERROR_CODE_FILE_PATH, $method));
 
         if (file_exists($filePath) === false)
         {
