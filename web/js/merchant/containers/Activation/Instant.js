@@ -272,7 +272,7 @@ export default class ActivationWizard extends React.Component {
           bingData: data,
           liData: 987404,
           twiData: 'o1ua0',
-          quoraData: 'activation_complete_success',
+          quoraData: 'AddToWishlist',
           redditData: 'AddToWishlist',
         }); //fb = false, bing, linkedin, twitter, quora, reddit events are fired
 

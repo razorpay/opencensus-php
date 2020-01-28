@@ -277,7 +277,7 @@ export default class App extends Component {
         fireAnalyticsEvents({
           fbData: 'live_mtu_audience',
           liData: 1668436,
-          quoraData: 'live_mtu_audience',
+          quoraData: 'Purchase',
           redditData: 'Purchase',
         });
         break;

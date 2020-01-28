@@ -1037,7 +1037,7 @@ export default class ActivationWizard extends React.Component {
           bingData: compAllData,
           liData: 987452, //conversionId
           twiData: 'o1ua7', //twitter
-          quoraData: 'kyc_complete_all',
+          quoraData: 'AddToCart',
           redditData: 'AddToCart',
         });
 

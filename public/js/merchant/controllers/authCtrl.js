@@ -555,7 +555,7 @@ app
 
             window.rzpAnalytics({
               name: 'quora',
-              event: 'signup_complete',
+              event: 'CompleteRegistration',
             });
 
             window.rzpAnalytics({
