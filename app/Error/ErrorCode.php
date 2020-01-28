@@ -757,6 +757,7 @@ class ErrorCode
     const BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS                          = 'BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS';
 
     const BAD_REQUEST_URL_NOT_FOUND                                                 = 'BAD_REQUEST_URL_NOT_FOUND';
+
     const BAD_REQUEST_ROUTE_DISABLED                                                = 'BAD_REQUEST_ROUTE_DISABLED';
     const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY                                         = 'BAD_REQUEST_NOTES_SHOULD_BE_ARRAY';
     const BAD_REQUEST_NOTES_TOO_MANY_KEYS                                           = 'BAD_REQUEST_NOTES_TOO_MANY_KEYS';
