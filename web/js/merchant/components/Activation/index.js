@@ -60,15 +60,15 @@ import QueryString from 'query-string';
 import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
 
 /*
-*             Main-form        LA-form
-* Submited      E F ~S        ~E ~F ~S
-* Activated     E F ~S        ~E ~F ~S
-* Locked      ~E ~F ~S        ~E ~F ~S (Takes priority)
-*
-* E = Can edit
-* F = Footer
-* S = Show 'submit form' (view,) tab and button
-* */
+ *             Main-form        LA-form
+ * Submited      E F ~S        ~E ~F ~S
+ * Activated     E F ~S        ~E ~F ~S
+ * Locked      ~E ~F ~S        ~E ~F ~S (Takes priority)
+ *
+ * E = Can edit
+ * F = Footer
+ * S = Show 'submit form' (view,) tab and button
+ * */
 
 let onAction = trackers;
 
@@ -310,9 +310,9 @@ export default class ActivationWizard extends React.Component {
       }
     };
     /*
-    * All document fields in activation form to have same footprint.
-    * Adding onChange listener to all document upload fields.
-    * */
+     * All document fields in activation form to have same footprint.
+     * Adding onChange listener to all document upload fields.
+     * */
 
     DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(prepareFileFields);
@@ -334,6 +334,7 @@ export default class ActivationWizard extends React.Component {
     addDropShield('.Activation--wizard');
 
     if (!this.props.user.isAccepted && activationUtils.isL1Completed(this)) {
+      trackers.trackKYCFormOpen();
       fireAnalyticsEvents({
         fbData: 'KYC_start',
         liData: 987420,
@@ -671,9 +672,9 @@ export default class ActivationWizard extends React.Component {
         }
 
         /*
-        * We're not doing any change on dirty, if it's SAME tab.
-        * Bcoz, for 1 api-errored field, all other fields must be retained for Saving again.
-        * */
+         * We're not doing any change on dirty, if it's SAME tab.
+         * Bcoz, for 1 api-errored field, all other fields must be retained for Saving again.
+         * */
 
         this.setState({
           isSaving: LOADING.ERROR,
@@ -726,17 +727,17 @@ export default class ActivationWizard extends React.Component {
   };
 
   /*
-  * Fn. to keep _name fields(FE-only fields) in sync with updated values(props.data) on tab change.
-  * + Checking/Unchecking/Changing _name FE fields will remain as it is throughout(in state). But changing them might not always save data.
-  * + Example: Changing 'has_gstin' from 1 -> 0 (not have-> have) but value is not filled, then tab change won't save anything. So next time, tab is selected, radio box must display as per saved value, not last state value.
-  * + Example: If `same_address` ticked but values not saved due to some reason.
-  * */
+   * Fn. to keep _name fields(FE-only fields) in sync with updated values(props.data) on tab change.
+   * + Checking/Unchecking/Changing _name FE fields will remain as it is throughout(in state). But changing them might not always save data.
+   * + Example: Changing 'has_gstin' from 1 -> 0 (not have-> have) but value is not filled, then tab change won't save anything. So next time, tab is selected, radio box must display as per saved value, not last state value.
+   * + Example: If `same_address` ticked but values not saved due to some reason.
+   * */
   updateFEOnlyValues() {
     // Step 1:
     /*
-    *  Don't update FE-only values like has_gstin / has_url, cuz Input.
-    *  Radio is not externally controlled, so updating state will just update has_gstin and has_url but not the Radio buttons' view and state.
-    * */
+     *  Don't update FE-only values like has_gstin / has_url, cuz Input.
+     *  Radio is not externally controlled, so updating state will just update has_gstin and has_url but not the Radio buttons' view and state.
+     * */
 
     // Step 2:
     this.setState({
@@ -817,9 +818,9 @@ export default class ActivationWizard extends React.Component {
   }
 
   /*
-  * Handle Account No. re-enter match before saving.
-  * It mimicks loader used for API to handle cases if tab is changed.
-  * */
+   * Handle Account No. re-enter match before saving.
+   * It mimicks loader used for API to handle cases if tab is changed.
+   * */
   handleBankAccountMismatch(isTabSwitched) {
     if (isTabSwitched) {
       const latestDirty = { ...this.state.dirty };
@@ -1157,9 +1158,9 @@ export default class ActivationWizard extends React.Component {
   };
 
   /*
-  * Fadeout based loader text.
-  * Default delay = 7 sec
-  * */
+   * Fadeout based loader text.
+   * Default delay = 7 sec
+   * */
   removeLoader = delay => {
     this.loaderTimeout = setTimeout(() => {
       this.setState({ isSaving: LOADING.INITIAL });
@@ -1175,9 +1176,9 @@ export default class ActivationWizard extends React.Component {
     const { data } = this.props;
 
     /*
-    * Step 1: These 4 fields are directly filled on user's behalf,
-    * And marked dirty to be sent on click of Save
-    * */
+     * Step 1: These 4 fields are directly filled on user's behalf,
+     * And marked dirty to be sent on click of Save
+     * */
     if (stateName === 'same_address' && target.checked) {
       // Checking the box, sets the ALL operation fields also dirty.
       sideEffectFieldsToUpdate['business_operation_address'] =
@@ -1236,12 +1237,10 @@ export default class ActivationWizard extends React.Component {
             // Input fields are uncontrolled, so needs to be updated directly. Updating dependent field visible in view.
             document.querySelector(
               `.form-container [name=${cityField}]`
-            ).value =
-              data.city;
+            ).value = data.city;
             document.querySelector(
               `.form-container [name=${stateField}]`
-            ).value =
-              data.state_code;
+            ).value = data.state_code;
 
             this.setState({
               dirty: {
@@ -1327,10 +1326,10 @@ export default class ActivationWizard extends React.Component {
   }
 
   /*
-  * Toggles backdrop submit layer
-  * - By default is opens the submit layer.
-  * - Closes the layer if false passed explicitly
-  * */
+   * Toggles backdrop submit layer
+   * - By default is opens the submit layer.
+   * - Closes the layer if false passed explicitly
+   * */
   toggleSubmitLayer = e => {
     if (!this.isAllTabsValid()) {
       return; // Now allowed to go to submit form unless all tabs are valid
@@ -1491,12 +1490,11 @@ export default class ActivationWizard extends React.Component {
           </main-title>
 
           {/* Alert: For linked account if activated */}
-          {this.isLinkedAccountForm &&
-            isFormActivated && (
-              <Alert.Info iconBefore="i-done-all">
-                The account has been activated
-              </Alert.Info>
-            )}
+          {this.isLinkedAccountForm && isFormActivated && (
+            <Alert.Info iconBefore="i-done-all">
+              The account has been activated
+            </Alert.Info>
+          )}
 
           {/* Alerts: for MAIN activation form */}
           {do {
@@ -1614,24 +1612,20 @@ export default class ActivationWizard extends React.Component {
         </main>
 
         {/* Submit form overlay view, Lock check not necessary here. Just ensured, 'Submit Form' checkbox must be disabled if locked */}
-        {!isFormSubmitted &&
-          this.state.showSubmitLayer && (
-            <main
-              class={classList(
-                'overlay-container',
-                isFormLocked && 'main--full'
-              )}
-            >
-              <SubmitForm
-                closeActivationForm={() => {
-                  this.goto(FORM_TABS.length - 1);
-                }}
-                isFormLocked={isFormLocked}
-                isLinkedAccount={this.isLinkedAccountForm}
-                submitActivationForm={this.submitForm}
-              />
-            </main>
-          )}
+        {!isFormSubmitted && this.state.showSubmitLayer && (
+          <main
+            class={classList('overlay-container', isFormLocked && 'main--full')}
+          >
+            <SubmitForm
+              closeActivationForm={() => {
+                this.goto(FORM_TABS.length - 1);
+              }}
+              isFormLocked={isFormLocked}
+              isLinkedAccount={this.isLinkedAccountForm}
+              submitActivationForm={this.submitForm}
+            />
+          </main>
+        )}
 
         {/* Form Footer, to show actions btns / saving state */}
         {!isFormLocked && (
@@ -1661,19 +1655,16 @@ export default class ActivationWizard extends React.Component {
                   ))}
 
                 {/* Action Button 3 */}
-                {isLastTab &&
-                  activeTab == BUSINESS_DETAILS_STEP && (
-                    <AsyncBtn.Primary
-                      disabled={!this.canSubmitL1Form || this.state.callingAPI}
-                      onClick={this.submitL1}
-                      pendingState={
-                        this.isUnregBiz ? 'Verifying' : 'Submitting'
-                      }
-                      name={'submit-and-verify'}
-                    >
-                      {this.isUnregBiz ? 'Submit and Verify' : 'Submit'}
-                    </AsyncBtn.Primary>
-                  )}
+                {isLastTab && activeTab == BUSINESS_DETAILS_STEP && (
+                  <AsyncBtn.Primary
+                    disabled={!this.canSubmitL1Form || this.state.callingAPI}
+                    onClick={this.submitL1}
+                    pendingState={this.isUnregBiz ? 'Verifying' : 'Submitting'}
+                    name={'submit-and-verify'}
+                  >
+                    {this.isUnregBiz ? 'Submit and Verify' : 'Submit'}
+                  </AsyncBtn.Primary>
+                )}
 
                 {/* Action Button 4 */}
                 {isLastTab &&
@@ -1720,19 +1711,18 @@ export default class ActivationWizard extends React.Component {
     if (i === NEEDS_CLARIFICATION_STEP) {
       return false;
     }
-    return FORM_TABS_CONTENT[i].every(
-      c =>
-        Array.isArray(c)
-          ? c.every(d => isFieldValid(d, this))
-          : isFieldValid(c, this)
+    return FORM_TABS_CONTENT[i].every(c =>
+      Array.isArray(c)
+        ? c.every(d => isFieldValid(d, this))
+        : isFieldValid(c, this)
     );
   }
 }
 
 /*
-* Component for showing step saving loader in footer
-* @prop {Boolean or null} isSaving - Current status of Loader
-* */
+ * Component for showing step saving loader in footer
+ * @prop {Boolean or null} isSaving - Current status of Loader
+ * */
 function Loader({ isSaving, defaultMsg }) {
   if (isSaving === LOADING.INITIAL) {
     return <span class="Loader" />;
@@ -1814,8 +1804,8 @@ function ActivationField(field) {
   if (rest.name) {
     key = rest.name;
     /*
-    * Dirty data is priority as user can switch tabs fast before api success, so dirty would have latest FE data but props not
-    * */
+     * Dirty data is priority as user can switch tabs fast before api success, so dirty would have latest FE data but props not
+     * */
     if (this.isOnKYCTab()) {
       defaultValue = this.state.dirty[key] || null;
     } else {
@@ -1885,18 +1875,16 @@ function ActivationField(field) {
   }
   return (
     <>
-      {this.isOnKYCTab() &&
-        rest.reasons &&
-        rest.reasons.length > 0 && (
-          <div className="ndc-reasons">
-            {rest.reasons.map((r, i) => (
-              <div key={i}>
-                <i class="i i-info-circle" />
-                <div>{r}</div>
-              </div>
-            ))}
-          </div>
-        )}
+      {this.isOnKYCTab() && rest.reasons && rest.reasons.length > 0 && (
+        <div className="ndc-reasons">
+          {rest.reasons.map((r, i) => (
+            <div key={i}>
+              <i class="i i-info-circle" />
+              <div>{r}</div>
+            </div>
+          ))}
+        </div>
+      )}
       <Component
         key={key}
         data-name={_name}
@@ -1954,11 +1942,11 @@ function isFieldValid(field, activation) {
 }
 
 /*
-* Submit Form opens with backdrop inside Activation form's main content
-* - The activeTab keeps showing in the background
-* - @props
-*     {Function} submitActivationForm, call the submit form api
-* */
+ * Submit Form opens with backdrop inside Activation form's main content
+ * - The activeTab keeps showing in the background
+ * - @props
+ *     {Function} submitActivationForm, call the submit form api
+ * */
 class SubmitForm extends React.Component {
   state = {
     allowSubmit: false, // Check if checkbox is ticked

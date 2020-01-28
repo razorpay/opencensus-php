@@ -27,8 +27,6 @@ function _pipeActionWithType(action, result) {
 
 /* Utility to create eventLabel based on  api response and event. */
 function _pipeLabelWithError(label, result, error) {
-  let eventLabel = label;
-
   if (result === false) {
     // Error case
     label = label + '| ' + JSON.stringify(error);
@@ -50,6 +48,13 @@ export const trackSubmitFormTabClick = () => {
   track({
     eventAction: 'Click - Activation Tab',
     eventLabel: 'Submit Form',
+  });
+};
+
+/* Track 'submit KYC' click from dashboard/my account in activation form */
+export const trackKYCFormOpen = () => {
+  track({
+    eventAction: 'Click - Open',
   });
 };
 

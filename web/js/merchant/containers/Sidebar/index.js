@@ -148,7 +148,7 @@ export default class Sidebar extends Component {
       ? trackGoToConfig(showInstantActivation)
       : trackGoToActivation(
           showInstantActivation &&
-            (!user.instantActivation.isL1Submitted ? 'L1 Form' : 'KYC Form')
+            (user.instantActivation.isL1Submitted ? 'KYC Form' : 'L1 Form')
         );
   };
 
@@ -267,7 +267,8 @@ class PartnerSidebar extends Component {
         <MainNavLinkGroup
           title={
             <>
-              <i class="i i-partner text-primary" />Partner
+              <i class="i i-partner text-primary" />
+              Partner
             </>
           }
           onToggleClick={this.toggle('partnerOpen')}
@@ -279,7 +280,8 @@ class PartnerSidebar extends Component {
         <MainNavLinkGroup
           title={
             <>
-              <i class="i i-products text-success" />Products
+              <i class="i i-products text-success" />
+              Products
             </>
           }
           onToggleClick={this.toggle('merchantOpen')}

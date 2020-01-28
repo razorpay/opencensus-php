@@ -48,7 +48,8 @@ function L1FormSuccess(props) {
     bingData: data,
     liData: 987404,
     twiData: 'o1ua0',
-  }); //fb = false, bing, linkedin, twitter
+    fbData: 'activation_complete_success',
+  });
 }
 
 function L1FormError() {

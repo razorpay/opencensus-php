@@ -5,6 +5,7 @@ import RTracking from 'react-tracking';
 import Announcement from 'merchant/components/Announcement';
 
 import { activationDuration } from 'merchant/helpers/data';
+import { trackGoToActivationFromError } from '../../../containers/Home/ga';
 
 @RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
 export default class InstantActivationAnnouncements extends Component {
@@ -85,9 +86,10 @@ export default class InstantActivationAnnouncements extends Component {
                 to="/activation"
                 onClick={() => {
                   this.trackEvent('nav_review_details');
+                  trackGoToActivationFromError();
                 }}
               >
-                Review details
+                Review Details
               </Link>
             </React.Fragment>
           );
@@ -118,7 +120,9 @@ export default class InstantActivationAnnouncements extends Component {
               out to you seeking more information. Please check your email for
               details.
               <span class="big-dot-separator" />
-              <Link to="/activation">Review details</Link>
+              <Link to="/activation" onClick={trackGoToActivationFromError}>
+                Review Details
+              </Link>
             </React.Fragment>
           );
         }
@@ -131,9 +135,7 @@ export default class InstantActivationAnnouncements extends Component {
       <Announcement
         title={title}
         theme={theme}
-        bannerKey={`announcement-banner-${user.activation_status}-${
-          user.current
-        }`}
+        bannerKey={`announcement-banner-${user.activation_status}-${user.current}`}
         canBeClosed={user.isAccepted}
       >
         {content}

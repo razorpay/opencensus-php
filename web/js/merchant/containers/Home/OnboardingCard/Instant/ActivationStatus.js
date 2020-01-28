@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { activationDuration } from 'merchant/helpers/data';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
+import { trackGoToActivationFromError } from '../../ga';
 import RTracking from 'react-tracking';
 
 const initialState = {
@@ -104,6 +105,7 @@ export default class ActivationCard extends Component {
                         clickSource: 'Dashboard_CTA',
                       })
                     );
+                    trackGoToActivationFromError();
                   }}
                 >
                   Review Details
