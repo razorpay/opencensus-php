@@ -77,6 +77,8 @@ class Validator extends Base\Validator
         ConfigKey::CITI_CHANNEL_PAYOUT_MIDS           => 'filled|array',
 
         ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
+
+        ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 'filled|integer',
     ];
 
     protected static $setRedisKeysRules = [

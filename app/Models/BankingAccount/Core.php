@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 
 use Razorpay\IFSC\Bank;
+use RZP\Models\Admin\ConfigKey;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
@@ -20,6 +21,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Mail\BankingAccount\XProActivation;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Jobs\BankingAccountGatewayBalanceUpdateJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
@@ -711,7 +713,8 @@ class Core extends Base\Core
         $channel = array_get($input, Entity::CHANNEL);
 
 //TODO://add config key for rate limit
-        $limit = 10;
+        $limit = (int) (new AdminService)->getConfigKey(
+                                ['key' => ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);
 
         $merchantIds = $this->repo->banking_account->getLimitedMerchantIdsByChannelOrderedByBalanceLastFetchedAt($channel, $limit);
 
