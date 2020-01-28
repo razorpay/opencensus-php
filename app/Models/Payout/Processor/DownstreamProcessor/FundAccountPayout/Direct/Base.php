@@ -52,7 +52,8 @@ class Base extends FundAccountPayout\Base
         if ($diffTime > self::GATEWAY_BALANCE_LAST_FETCHED_AT_TIME_DIFF)
         {
             (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
-                                        'channel' => $merchantBankingAccount->getChannel(),
+                                        Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
+                                        Entity::MERCHANT_ID => $this->merchant->getId(),
                                         ]);
         }
 

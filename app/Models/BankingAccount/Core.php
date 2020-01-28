@@ -20,6 +20,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Mail\BankingAccount\XProActivation;
+use RZP\Jobs\BankingAccountGatewayBalanceUpdateJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
@@ -536,9 +537,13 @@ class Core extends Base\Core
 
         $channel = array_get($input, Entity::CHANNEL);
 
+        $merchantId = array_get($input, Entity::MERCHANT_ID);
+
         $gatewayProcessor = $this->getGatewayProcessorClass($channel);
 
-        $bankingAccount = $this->repo->banking_account->getBankingAccountOfMerchant($this->merchant, $input[Entity::CHANNEL]);
+        $bankingAccount = $this->repo->banking_account
+                                     ->getBankingAccountByMerchantIdAndChannel($merchantId,
+                                                                               $channel);
 
         if ($bankingAccount === null)
         {
@@ -553,19 +558,16 @@ class Core extends Base\Core
 
         $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
 //TODO:// add migration
-        $updateRequest = [
+        $updateRequestParams = [
             Entity::TEMP_BALANCE            => $balance,
             Entity::BALANCE_LAST_FETCHED_AT => Carbon::now()->getTimestamp(),
         ];
 
         try
         {
-            $this->repo->transaction(function () use ($bankingAccount, $updateRequest)
-            {
-                $bankingAccount->update($updateRequest);
+            $bankingAccount->update($updateRequestParams);
 
-                $this->repo->saveOrFail($bankingAccount);
-            });
+            $this->repo->saveOrFail($bankingAccount);
         }
         catch (\Exception $ex)
         {
@@ -577,6 +579,16 @@ class Core extends Base\Core
                     'channel' => $channel,
                 ]);
         }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_SUCCEEDED,
+            [
+                Entity::CHANNEL        => $channel,
+                Entity::MERCHANT_ID    => $merchantId,
+                Entity::ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
+                Entity::TEMP_BALANCE   => $bankingAccount->getTempBalance(),
+            ]
+        );
 
         return ['success' => true];
     }
@@ -686,5 +698,44 @@ class Core extends Base\Core
     protected function redactSecrets(array $input)
     {
         unset($input[Entity::PASSWORD]);
+    }
+
+    public function dispatchGatewayBalanceUpdateForMerchants($input)
+    {
+        $validator = new Validator();
+
+        $validator->validateInput(Validator::DISPATCH_GATEWAY_BALANCE, $input);
+
+        $validator->validateChannelForFetchingGatewayBalance($input);
+
+        $channel = array_get($input, Entity::CHANNEL);
+
+//TODO://add config key for rate limit
+        $limit = 10;
+
+        $merchantIds = $this->repo->banking_account->getLimitedMerchantIdsByChannelOrderedByBalanceLastFetchedAt($channel, $limit);
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $this->dispatchGatewayBalanceUpdateJob($channel, $merchantId);
+        }
+
+        return $merchantIds;
+    }
+
+    protected function dispatchGatewayBalanceUpdateJob(string $channel, $merchantId)
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_DISPATCH_GATEWAY_BALANCE_UPDATE_JOB_REQUEST,
+            [
+                Entity::CHANNEL     => $channel,
+                Entity::MERCHANT_ID => $merchantId,
+            ]);
+
+        BankingAccountGatewayBalanceUpdateJob::dispatch($this->mode,
+                                                        [
+                                                            Entity::CHANNEL     => $channel,
+                                                            Entity::MERCHANT_ID => $merchantId,
+                                                        ]);
     }
 }

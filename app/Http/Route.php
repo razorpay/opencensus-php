@@ -1320,6 +1320,8 @@ final class Route
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
+        'banking_account_gateway_balance_fetch'
+        . '_and_update'                           => ['put',      'banking_accounts/gateway/{channel}/balance',                'BankingAccountController@processGatewayBalanceUpdate'      ],
         'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
         'banking_account_webhook_account_info'
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
@@ -1327,8 +1329,6 @@ final class Route
         'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
         'banking_account_statement_generate'      => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                ],
         'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
-
-        'banking_account_balance_fetch_and_update' => ['post',    'banking_account/balance',                                   'BankingAccountController@fetchAndUpdateGatewayBalance'     ],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -2181,7 +2181,6 @@ final class Route
         'fund_account_bulk_create',
         'bulk_contact_create',
         'banking_account_create',
-        'banking_account_balance_fetch_and_update',
         'merchant_partner_configs_fetch',
         'banking_accounts_list',
         'reports_monthly_banking_invoice',
@@ -3553,6 +3552,7 @@ final class Route
             'banking_account_statement_process_cron',
             'create_merchant_options_admin',
             'transaction_settled_data_fix',
+            'banking_account_gateway_balance_fetch_and_update'
         ],
 
         'subscriptions' => [

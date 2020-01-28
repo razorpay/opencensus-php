@@ -162,15 +162,11 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchAndUpdateGatewayBalance(array $input)
+    public function processGatewayBalanceUpdate(array $input)
     {
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST,
-            [
-                'input'   => $input,
-            ]);
+        //TODO: add comments;
 
-        $response = $this->core->fetchAndUpdateGatewayBalance($input);
+        $response = $this->core->dispatchGatewayBalanceUpdateForMerchants($input);
 
         return $response;
     }
