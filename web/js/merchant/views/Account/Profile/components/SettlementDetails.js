@@ -7,6 +7,7 @@ import {
   fetchSchedule,
   fetchHolidayList,
 } from 'merchant/reducers/settlements/details';
+import { fetchCurrentBalance } from 'merchant/reducers/home';
 
 @connect(
   state => ({
@@ -18,12 +19,14 @@ import {
     openModal,
     fetchHolidayList,
     fetchSchedule,
+    fetchCurrentBalance,
   }
 )
 export default class SettlementDetails extends Component {
   componentDidMount() {
     this.props.fetchSchedule();
     this.props.fetchHolidayList();
+    this.props.fetchCurrentBalance();
   }
 
   viewSettlementSchedule = () => {
@@ -56,7 +59,10 @@ export default class SettlementDetails extends Component {
           <div class="list-group-item">
             <span>Current Balance</span>
             <span>
-              <Amount value={current_balance.data.balance} currency={'INR'} />
+              <Amount
+                value={Math.abs(current_balance.data.balance)}
+                currency={'INR'}
+              />
             </span>
           </div>
         </div>
