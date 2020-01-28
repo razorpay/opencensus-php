@@ -74,7 +74,7 @@ class Core extends Base\Core
         array $values = [],
         $instantDispatch = false): Entity
     {
-        $fundTransferAttempt = $this->create($source, $values,E::CARD, $card);
+        $fundTransferAttempt = $this->create($source, $values, E::CARD, $card);
 
         // TODO: Make this polymorphic instead of having bankAccount, vpa and card separately
         $fundTransferAttempt->card()->associate($card);
@@ -957,5 +957,10 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function getAttemptsFromIds(array $ftaIds)
+    {
+        return $this->repo->fund_transfer_attempt->fetchFtsAttemptUsingId($ftaIds);
     }
 }

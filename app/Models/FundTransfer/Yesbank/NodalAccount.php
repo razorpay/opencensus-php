@@ -63,7 +63,6 @@ class NodalAccount extends NodalBase\NodalAccount
             // Also, for other banks, settlements itself won't be even
             // initiated on non-working days/hours
             //
-
             if ($forceFlag === false)
             {
                 $isTransferAllowedToday = $this->isTransferAllowedToday($attempt);

@@ -14,7 +14,6 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Feature\Constants;
-use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
@@ -1985,7 +1984,7 @@ class PayoutTest extends TestCase
     {
         $this->setupMockDns();
 
-        $this->mockRazorxTreatment();
+        $this->mockRazorxTreatment('yesbank', 'on', 'off', 'off');
 
         $this->testCreatePayout();
 
@@ -2054,7 +2053,7 @@ class PayoutTest extends TestCase
     {
         $this->setupMockDns();
 
-        $this->mockRazorxTreatment();
+        $this->mockRazorxTreatment('yesbank', 'on', 'off', 'off');
 
         $this->testCreatePayout();
 
@@ -2151,4 +2150,30 @@ class PayoutTest extends TestCase
 
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
     }
+
+    public function testAddCustomPurposeRZPFees()
+    {
+        $this->startTest();
+    }
+
+    public function testCancelRZPFeesPayout()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout->getId(), [
+            'status'    => 'queued',
+            'purpose'   => 'rzp_fees',
+        ]);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/' . $payout->getPublicId() .'/cancel';
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
 }

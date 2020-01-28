@@ -142,6 +142,12 @@ final class Constants
 
     const RTGS_REVISED_CUTOFF_MINUTE_MAX = 30;
 
+    const NEFT_CUTOFF_HOUR_MIN           = 8;
+
+    const NEFT_CUTOFF_HOUR_MAX           = 18;
+
+    const NEFT_CUTOFF_MINUTE_MAX         = 15;
+
     const BENEFICIARY_STATUS             = 'beneficiary_status';
 
     const COMPLETED                      = 'COMPLETED';

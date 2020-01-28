@@ -48,6 +48,8 @@ class Core extends Base\Core
         'ByWbZS28NK9CeG' => false,
         'BREsAWr9hzga0n' => false,
         'Ba2to8xoI5kO2x' => false,
+        'Cc057xzfWMnyBn' => false,
+        'DafY7CuC98D8mK' => false,
     ];
 
     /**

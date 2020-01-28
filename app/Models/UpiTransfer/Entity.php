@@ -31,6 +31,9 @@ class Entity extends Base\PublicEntity
     // NPCI reference number
     const NPCI_REFERENCE_ID = 'npci_reference_id';
 
+    // Transaction reference number
+    const TRANSACTION_REFERENCE = 'transaction_reference';
+
     // Indicates whether the upi transfer corresponds
     // to an active virtual account on our side. If
     // false, this transfer will need to be refunded

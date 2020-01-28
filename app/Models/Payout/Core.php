@@ -28,6 +28,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -452,6 +453,17 @@ class Core extends Base\Core
 
     public function cancelPayout(Entity $payout): Entity
     {
+        // If Payout has purpose 'rzp_fees' we won't allow merchant to cancel that
+        if (Purpose::isInInternal($payout->getPurpose()) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                ]);
+        }
+
         return $this->mutex->acquireAndRelease(
                 $payout->getId(),
                 function() use ($payout)
@@ -967,7 +979,7 @@ class Core extends Base\Core
                 //
                 $clonedPayout->setShouldValidateAndUpdateBalancesFlag(false);
 
-                (new DownstreamProcessor('fund_account_payout', $clonedPayout))->processTransaction();
+                (new DownstreamProcessor('fund_account_payout', $clonedPayout, $this->mode))->processTransaction();
 
                 $dummyTransaction = $clonedPayout->transaction;
 

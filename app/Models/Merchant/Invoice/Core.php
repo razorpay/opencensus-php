@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Merchant\Invoice;
 
-use File;
-
 use App;
+use File;
+use Mail;
 
 use Carbon\Carbon;
+use Monolog\Logger;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -14,19 +15,23 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
-use RZP\Services\UfhService;
 use RZP\Base\RuntimeManager;
+use RZP\Services\UfhService;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Report\Types\BankingInvoiceReport;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Mail\Report\RazorpayX\MerchantBankingInvoice;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Merchant\Preferences as MerchantPreferences;
 use RZP\Jobs\MerchantInvoiceCorrection as MerchantInvoiceCorrectionJob;
+use RZP\Mail\Merchant\MerchantInvoiceExecutionReport as MerchantInvoiceExecutionReport;
 
 class Core extends Base\Core
 {
+    use FileHandlerTrait;
+
     const STORE_TYPE = 'file';
 
     const DASHBOARD_FILE_URL = '%sufh/file/%s';
@@ -401,10 +406,11 @@ class Core extends Base\Core
      *
      * @param int $year
      * @param int $month
+     * @return array
      */
     public function verify(int $year, int $month): array
     {
-        $result = $this->repo->merchant_invoice->verify($year, $month);
+        [$result, $activeMerchants] = $this->repo->merchant_invoice->verify($year, $month);
 
         if ($result->isEmpty() === true)
         {
@@ -415,7 +421,7 @@ class Core extends Base\Core
             TraceCode::MERCHANT_INVOICE_CREATION_SKIPPED,
             [
                 'count'        => $result->count(),
-                'merchant_ids' => $result->toArray(),
+                'merchant_ids' => $result->getIds(),
             ]);
 
         (new SlackNotification)->send(
@@ -426,6 +432,46 @@ class Core extends Base\Core
             null,
             $result->count());
 
-        return $result->toArray();
+        $merchantIds = [];
+
+        $result->each(
+            function($merchant) use (& $merchantIds)
+            {
+                $merchantIds[] = [ 'Merchant_id' => $merchant->getId()];
+            });
+
+        $totalInvoiceCreated = $activeMerchants - $result->count();
+
+        try
+        {
+            $fileName = $this->createCsvFile($merchantIds, 'merchant_invoice_summary_' . $month . '_' . $year,
+                                        null, 'files/report');
+
+            $data = [
+                'month'                    => $month,
+                'year'                     => $year,
+                'total_merchants'          => $activeMerchants,
+                'total_invoice_created'    => $totalInvoiceCreated,
+                'total_invoice_skipped'    => $result->count(),
+                'attachment'               => $fileName,
+            ];
+
+            $email = new MerchantInvoiceExecutionReport($data);
+
+            Mail::send($email);
+
+            unlink($fileName);
+
+            return $result->getIds();
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR
+            );
+
+            throw $e;
+        }
     }
 }

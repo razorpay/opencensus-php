@@ -509,9 +509,9 @@ class Core extends Base\Core
                     $input[Entity::CONTACT_MOBILE] : $user->getContactMobile();
 
         return [
-            Entity::ACTION      =>  'second_factor_auth',
-            'receiver'          =>  $contact,
-            'unique_id'         =>  $user->getId(),
+            Entity::ACTION => 'second_factor_auth',
+            'receiver'     => $contact,
+            'unique_id'    => $user->getId(),
         ];
     }
 
@@ -720,17 +720,19 @@ class Core extends Base\Core
 
         $role = $input[Entity::ROLE];
 
+        $product = $input[Entity::PRODUCT] ?? $this->app['basicauth']->getRequestOriginProduct();
+
         $mappingParams = [
             'role'       => $role,
+            'updated_at' => $currentTimestamp,
             'created_at' => $currentTimestamp,
-            'updated_at' => $currentTimestamp
         ];
 
         $merchantId = $input[Entity::MERCHANT_ID];
 
         $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 
-        $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams], false);
+        $this->repo->sync($user, $product . 'Merchants', [$merchantId => $mappingParams], false);
 
         if (BankingRole::isWorkflowRole($role) === true)
         {

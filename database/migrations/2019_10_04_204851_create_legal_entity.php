@@ -31,6 +31,11 @@ class CreateLegalEntity extends Migration
             $table->string(LegalEntity::BUSINESS_SUBCATEGORY)
                   ->nullable();
 
+            $table->string(LegalEntity::EXTERNAL_ID)
+                  ->nullable();
+
+            $table->index(LegalEntity::EXTERNAL_ID);
+
             $table->integer(LegalEntity::CREATED_AT);
 
             $table->integer(LegalEntity::UPDATED_AT);

@@ -207,7 +207,15 @@ class Service extends Base\Service
 
             $requestOriginProduct = $this->auth->getRequestOriginProduct();
 
-            $confirmationMail = new UserMail\AccountVerification($user, $org, $requestOriginProduct);
+            // confirmation mail for RazorpayX is different. Handling it here based on the OriginProduct
+            if ($requestOriginProduct === Product::BANKING)
+            {
+                $confirmationMail = new UserMail\RazorpayX\AccountVerification($user->getId());
+            }
+            else
+            {
+                $confirmationMail = new UserMail\AccountVerification($user, $org, $requestOriginProduct);
+            }
 
             Mail::queue($confirmationMail);
         }

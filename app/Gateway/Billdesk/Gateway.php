@@ -361,7 +361,10 @@ class Gateway extends Base\Gateway
         $applicable = false;
         $success = null;
 
-        if ($gatewayRefundEntity === null)
+        // temporary fix: do not run this for payments done through nbplus service
+        // once new service is live, refunds will go through scrooge
+        if (($gatewayRefundEntity === null) and
+            ($input['payment'][Payment\Entity::CPS_ROUTE] === Payment\Entity::API))
         {
             $applicable = true;
 

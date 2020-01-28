@@ -3228,6 +3228,73 @@ class RefundTest extends TestCase
         $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
     }
 
+    public function testInstantRefundSuccessfulSetFtaInitiateAt()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        // Adding IMPS pricing as well to assert that the extra pricing rule is not affecting those refunds
+        // without a mode decisioned
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        // Sunday
+        Carbon::setTestNow(Carbon::createFromTimestamp(1578810600));
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            ['speed' => 'optimum', 'is_fta' => true, 'mode_requested' => 'NEFT']
+        );
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+
+        // Monday 8:15 AM
+        $this->assertEquals(1578883500, $fta['initiate_at']);
+    }
+
     //Negative Balance Tests
     public function testRefundWithZeroBalance()
     {

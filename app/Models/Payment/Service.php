@@ -293,6 +293,8 @@ class Service extends Base\Service
         {
             list($merchant, $payment) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
 
+            $this->markFirstRequestIfApplicable($merchant, $id);
+
             $response = $this->getResponseDataFromCache($payment);
 
             (new Payment\Analytics\Service())->updatePaymentAnalyticsData($payment);
@@ -332,9 +334,9 @@ class Service extends Base\Service
 
     protected function checkMultipleRedirectionAndReturnResponse(string $trackId)
     {
-        $key = Payment\Entity::getTrackIdRequestKey($trackId);
+        $trackIdKey = Payment\Entity::getTrackIdRequestKey($trackId);
 
-        $data = $this->app['cache']->get($key);
+        $data = $this->app['cache']->get($trackIdKey);
 
         if (empty($data) === true)
         {
@@ -343,21 +345,28 @@ class Service extends Base\Service
 
         $responseKey = Payment\Entity::getTrackIdResponseKey($trackId);
 
+
+        $this->trace->info(TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_ONHOLD,
+        [
+            'track_id' => $trackId
+        ]);
+
         // we wait for 5 seconds, every second, we check cache whether the first request got processed or not. if it's processed we return the response.
         $delay = 1;
         do
         {
             // usleep works on microsec. delay is in millisec so multiply by 1000
-            usleep(1000);
+            usleep(1000000);
 
             $data = $this->app['cache']->get($responseKey);
 
             if (empty($data) === false)
             {
+                $this->setRequiredDetailsGetMerchantAndPaymentId($trackId);
                 return $data;
             }
 
-            $data = $this->app['cache']->get($key);
+            $data = $this->app['cache']->get($trackIdKey);
 
             if (empty($data) === true)
             {
@@ -400,9 +409,9 @@ class Service extends Base\Service
             return;
         }
 
-        $responseKey = Payment\Entity::getTrackIdResponse($trackId);
+        $responseKey = Payment\Entity::getTrackIdResponseKey($trackId);
 
-        $this->app['cache']->put($key, $data, Processor\Processor::REDIRECT_CACHE_RESPONSE_TTL);
+        $this->app['cache']->put($responseKey, $data, Processor\Processor::REDIRECT_CACHE_RESPONSE_TTL);
     }
 
     protected function cachePaysecureResponseDataIfApplicable($payment, $data)
@@ -478,28 +487,32 @@ class Service extends Base\Service
 
         $payment = $this->core->retrieveById($payload['payment_id']);
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::REDIRECTION_ONHOLD) === true)
-        {
-            $trackIdKey = Payment\Entity::getTrackIdRequestKey($id);
-
-            // this code is for marking that we have recieved the first request.
-            // TTL is for 10 seconds, if we receive subsequent request before this key
-            // expires we hold that thread and wait for the first request response.
-            // hold that thread to wait for 5 sec and check the first request response.
-             $this->trace->info(
-                TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_PAYLOAD,
-                [
-                    "track_id" => $id,
-                ]
-             );
-
-            // put method multiplies $ttl with 60 hence, 0.17 * 60 = 9.6 sec
-            $this->app['cache']->put($trackIdKey, $trackIdKey, 0.17);
-        }
-
         return [$merchant, $payment];
     }
 
+    public function markFirstRequestIfApplicable($merchant, $trackId)
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::REDIRECTION_ONHOLD) === false)
+        {
+            return;
+        }
+
+        $trackIdKey = Payment\Entity::getTrackIdRequestKey($trackId);
+
+        // this code is for marking that we have recieved the first request.
+        // TTL is for 10 seconds, if we receive subsequent request before this key
+        // expires we hold that thread and wait for the first request response.
+        // hold that thread to wait for 5 sec and check the first request response.
+         $this->trace->info(
+            TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_FIRST_REQUEST,
+            [
+                "track_id" => $trackId,
+            ]
+         );
+
+        // put method multiplies $ttl with 60 hence, 0.17 * 60 = 9.6 sec
+        $this->app['cache']->put($trackIdKey, $trackIdKey, 0.17);
+    }
     public function forceAuthorizeFailed($id, $input)
     {
         $payment = $this->core->retrieveById($id);

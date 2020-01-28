@@ -49,6 +49,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_BULK_FAILURE                          = 'PAYMENT_CAPTURE_BULK_FAILURE';
     const PAYMENT_ALREADY_CAPTURED                              = 'PAYMENT_ALREADY_CAPTURED';
 
+    // Activation Emails
+    const INSTANT_ACTIVATION_NOTIFICATION                      =  'INSTANT_ACTIVATION_NOTIFICATION';
+    const KYC_SUBMITTED_EMAIL                                  =  'KYC_SUBMITTED_EMAIL';
+    const ACTIVATION_CONFIRMATION_EMAIL                        =  'ACTIVATION_CONFIRMATION_EMAIL';
+
     // payout links
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
     const PAYOUT_SOURCE_UPDATER_JOB_RELEASED                    = 'PAYOUT_SOURCE_UPDATER_JOB_RELEASED';
@@ -419,6 +424,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const THROTTLE_REQUEST_THROTTLED                            = 'THROTTLE_REQUEST_THROTTLED';
     const THROTTLE_REQUEST_BLOCKED                              = 'THROTTLE_REQUEST_BLOCKED';
     const THROTTLE_SETTINGS_MISSING                             = 'THROTTLE_SETTINGS_MISSING';
+    const BOOTSTRAP_KEY_CACHE_SUMMARY                           = 'BOOTSTRAP_KEY_CACHE_SUMMARY';
 
     const GATEWAY_DOWNTIME_ERROR_CODE                           = 'GATEWAY_DOWNTIME_ERROR_CODE';
     const GATEWAY_DOWNTIME_THROTTLE_SETTINGS_MISSING            = 'GATEWAY_DOWNTIME_THROTTLE_SETTINGS_MISSING';
@@ -1457,6 +1463,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_FEATURE_UPDATE                               = 'MERCHANT_FEATURE_UPDATE';
     const FEATURE_MULTI_ASSIGN_REQUEST                          = 'FEATURE_MULTI_ASSIGN_REQUEST';
     const FEATURE_MULTI_REMOVE_REQUEST                          = 'FEATURE_MULTI_REMOVE_REQUEST';
+    const FEATURE_ENABLE_EARLY_SETTLEMENT_MAIL_FAILED           = 'FEATURE_ENABLE_EARLY_SETTLEMENT_MAIL_FAILED';
 
     const MERCHANT_TAGS_BULK_REQUEST                            = 'MERCHANT_TAGS_BULK_REQUEST';
     const MERCHANT_TAGS_BULK_EXCEPTION                          = 'MERCHANT_TAGS_BULK_EXCEPTION';
@@ -1700,6 +1707,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CONTACT_DELETE_REQUEST                                = 'CONTACT_DELETE_REQUEST';
     const DUPLICATE_CONTACT_FOUND                               = 'DUPLICATE_CONTACT_FOUND';
     const CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY      = 'CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY';
+    const RZP_FEES_CONTACT_CREATE_REQUEST                       = 'RZP_FEES_CONTACT_CREATE_REQUEST';
 
     //trace codes for merchant document CRUD
     const DOCUMENT_CREATE_REQUEST                               = 'DOCUMENT_CREATE_REQUEST';
@@ -1711,6 +1719,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_UPDATE_REQUEST                           = 'FUND_ACCOUNT_UPDATE_REQUEST';
     const FUND_ACCOUNT_DELETE_REQUEST                           = 'FUND_ACCOUNT_DELETE_REQUEST';
     const DUPLICATE_FUND_ACCOUNT_FOUND                          = 'DUPLICATE_FUND_ACCOUNT_FOUND';
+    const RZP_FEES_FUND_ACCOUNT_CREATE_REQUEST                  = 'RZP_FEES_FUND_ACCOUNT_CREATE_REQUEST';
+
     // Trace codes for Fund Account Validation
     const FUND_ACCOUNT_VALIDATION_REQUEST                       = 'FUND_ACCOUNT_VALIDATION_REQUEST';
     const BENEFICIARY_NAME_NOT_PRESENT                          = 'BENEFICIARY_NAME_NOT_PRESENT';
@@ -1875,6 +1885,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_WEBHOOK_TRANSLATION                           = 'PARTNER_WEBHOOK_TRANSLATION';
     const PARTNER_DEFAULT_PAYMENT_METHODS_TO_SUBMERCHANT        = 'PARTNER_DEFAULT_PAYMENT_METHODS_TO_SUBMERCHANT';
     const PARTNER_FETCH_SUBMERCHANTS                            = 'PARTNER_FETCH_SUBMERCHANTS';
+    const PARTNER_CONFIG_CREATED                                = 'PARTNER_CONFIG_CREATED';
+    const PARTNER_CONFIG_EDITED                                 = 'PARTNER_CONFIG_EDITED';
 
     const FEE_CREDITS_THRESHOLD_ALERT                           = 'FEE_CREDITS_THRESHOLD_ALERT';
 
@@ -1883,6 +1895,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FUND_TRANSFER_RECON_EMAIL_FAILED                      = 'FUND_TRANSFER_RECON_EMAIL_FAILED';
     const FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED              = 'FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED';
+
+    const NO_ASSOCIATED_BANKING_ACCOUNT                         = 'NO_ASSOCIATED_BANKING_ACCOUNT';
+
 
     // Subscription service
     const SUBSCRIPTION_SERVICE_REQUEST                          = 'SUBSCRIPTION_SERVICE_REQUEST';
@@ -2134,6 +2149,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_REDIRECT_TO_AUTHORIZE_FIRST_REQUEST           = 'PAYMENT_REDIRECT_TO_AUTHORIZE_FIRST_REQUEST';
     const PAYMENT_REDIRECT_TO_AUTHORIZE_DUPLICATE_REQUEST       = 'PAYMENT_REDIRECT_TO_AUTHORIZE_DUPLICATE_REQUEST';
     const PAYMENT_REDIRECT_TO_AUTHORIZE_FAILURE                 = 'PAYMENT_REDIRECT_TO_AUTHORIZE_FAILURE';
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_ONHOLD          = 'PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_ONHOLD';
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_FIRST_REQUEST   = 'PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_FIRST_REQUEST';
     const PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT                 = 'PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT';
 
     const CARD_DETOKENIZE_MIGRATION_REQUEST                     = 'CARD_DETOKENIZE_MIGRATION_REQUEST';
@@ -2167,6 +2184,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_CREATE_ACCOUNT_INVALID_ID                         = 'FTS_CREATE_ACCOUNT_INVALID_ID';
     const FTS_FUND_TRANSFER_NOT_ALLOWED                         = 'FTS_FUND_TRANSFER_NOT_ALLOWED';
     const FTS_REGISTER_ACCOUNT_COMPLETE                         = 'FTS_REGISTER_ACCOUNT_COMPLETE';
+    const FTS_TRANSFER_STATUS_FETCH_FAILED                      = 'FTS_TRANSFER_STATUS_FETCH_FAILED';
     const FTS_UPDATE_FUND_TRANSFER_ATTEMPT                      = 'FTS_UPDATE_FUND_TRANSFER_ATTEMPT';
     const FTS_FUND_TRANSFER_JOB_DISPATCHED                      = 'FTS_FUND_TRANSFER_JOB_DISPATCHED';
     const FTS_FUND_TRANSFER_DISPATCH_FAILED                     = 'FTS_FUND_TRANSFER_DISPATCH_FAILED';
@@ -2239,6 +2257,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_GATEWAY_RESPONSE                                  = 'P2P_GATEWAY_RESPONSE';
     const P2P_MANAGE_REQUEST                                    = 'P2P_MANAGE_REQUEST';
     const P2P_MANAGE_RESPONSE                                   = 'P2P_MANAGE_RESPONSE';
+    const P2P_REMINDER_CALLBACK                                 = 'P2P_REMINDER_CALLBACK';
 
     const SUBSCRIPTION_PAYMENT_NOTIFY                           = 'SUBSCRIPTION_PAYMENT_NOTIFY';
 
@@ -2339,6 +2358,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_RESPONSE      = 'BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_RESPONSE';
     const BANKING_ACCOUNT_VALIDATE_STATUS_FOR_UPDATE            = 'BANKING_ACCOUNT_VALIDATE_STATUS_FOR_UPDATE';
     const BANKING_ACCOUNT_STATUS_TO_INTERNAL_STATUS_CHECK       = 'BANKING_ACCOUNT_STATUS_TO_INTERNAL_STATUS_CHECK';
+    const BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS              = 'BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS';
+    const BANKING_ACCOUNT_VIEW_ACTIVATION_STATUS_CHANGE_LOG     = 'BANKING_ACCOUNT_VIEW_ACTIVATION_STATUS_CHANGE_LOG';
 
     // Banking Account Statement
     const BANKING_ACCOUNT_STATEMENT_UNEXPECTED_VALUE            = 'BANKING_ACCOUNT_STATEMENT_UNEXPECTED_VALUE';
@@ -2539,7 +2560,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CHECK_MERCHANT_BALANCE                                 = 'CHECK_MERCHANT_BALANCE';
     const CHECK_MERCHANT_REFUND_CREDITS                          = 'CHECK_MERCHANT_REFUND_CREDITS';
-   
+
     const TRACE_FOR_INCREASED_RESPONSE_TIMES                    = 'TRACE_FOR_INCREASED_RESPONSE_TIMES';
 
     const TRACE_REQUEST_METRIC                                  = 'TRACE_REQUEST_METRIC';
