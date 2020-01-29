@@ -44,6 +44,8 @@ abstract class Base extends Core
         $this->refundCore = new Refund\Core;
 
         $this->increaseAllowedSystemLimits();
+
+        $this->resetFileProcessorAttributes();
     }
 
     protected function increaseAllowedSystemLimits()
@@ -132,6 +134,11 @@ abstract class Base extends Core
     {
         $this->gatewayFile = $gatewayFile;
 
+        return $this;
+    }
+
+    public function resetFileProcessorAttributes()
+    {
         return $this;
     }
 

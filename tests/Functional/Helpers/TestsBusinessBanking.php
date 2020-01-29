@@ -144,24 +144,26 @@ trait TestsBusinessBanking
         $this->bankAccount    = $bankAccount;
     }
 
-    protected function createPayout()
+    protected function createPayout(array $extraPayoutParams = [])
     {
         $this->createContact();
 
         $this->createFundAccount();
 
-        $this->payout = $this->fixtures->create(
-            'payout',
-            [
-                'purpose'           => 'refund',
-                'fund_account_id'   => $this->fundAccount['id'],
-                'notes'             => [
-                    'abc' => 'xyz',
-                ],
-                'amount'            => 1000,
-                'currency'          => 'INR',
-                'balance_id'        => $this->bankingBalance->getId(),
-            ]);
+        $payoutParams = [
+            'purpose'           => 'refund',
+            'fund_account_id'   => $this->fundAccount['id'],
+            'notes'             => [
+                'abc' => 'xyz',
+            ],
+            'amount'            => 1000,
+            'currency'          => 'INR',
+            'balance_id'        => $this->bankingBalance->getId(),
+        ];
+
+        $payoutParams = array_merge($payoutParams, $extraPayoutParams);
+
+        $this->payout = $this->fixtures->create('payout', $payoutParams);
 
         $this->transaction = $this->getDbLastEntity('transaction');
     }
