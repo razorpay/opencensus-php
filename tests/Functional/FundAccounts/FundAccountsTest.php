@@ -624,4 +624,26 @@ class FundAccountsTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testCreateFundAccountForRZPFeesContact()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'rzp_fees']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateFundAccountForRZPFeesContact()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $this->fixtures->edit('contact', 'cont_1000000contact', ['type' => 'rzp_fees']);
+
+        $fundAccount = $this->getLastEntity('fund_account');
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/fund_accounts/' . $fundAccount['id'];
+
+        $this->startTest();
+    }
 }

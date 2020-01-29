@@ -886,6 +886,7 @@ class Gateway
         self::NETBANKING_AXIS,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_SBI,
+        self::NACH_CITI,
     ];
 
     /**
@@ -1623,6 +1624,7 @@ class Gateway
         IFSC::CIUB => Gateway::NETBANKING_CUB,
         IFSC::SIBL => Gateway::NETBANKING_SIB,
         IFSC::YESB => Gateway::NETBANKING_YESB,
+        IFSC::KVBL => Gateway::NETBANKING_KVB,
     ];
 
 

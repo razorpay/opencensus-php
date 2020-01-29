@@ -287,6 +287,11 @@ class Constants
 
     const BLOCK_OFFER_CREATION     = 'block_offer_creation';
 
+    /*
+     * this is used for displaying the parent payment id for linked accounts in Route
+     */
+    const DISPLAY_LA_PARENT_PAYMENT_ID = 'display_parent_payment_id';
+
     const REDIRECTION_ONHOLD       = 'redirection_onhold';
 
     const ERROR_METADATA_RESPONSE  = 'error_metadata_response';
@@ -499,6 +504,7 @@ class Constants
         self::OFFLINE_PAYMENTS                => true,
         self::ERROR_METADATA_RESPONSE         => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
+        self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
     ];
 
@@ -612,6 +618,11 @@ class Constants
         self::ALLOW_REVERSALS_FROM_LA    => [
             'feature'       => self::ALLOW_REVERSALS_FROM_LA,
             'display_name'  => 'Allow Refunds From Linked Accounts',
+            'documentation' => '',
+        ],
+        self::DISPLAY_LA_PARENT_PAYMENT_ID    => [
+            'feature'       => self::DISPLAY_LA_PARENT_PAYMENT_ID,
+            'display_name'  => 'display parent paymentId for transfers',
             'documentation' => '',
         ],
         self::PAYOUT_TO_CARDS           => [

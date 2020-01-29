@@ -90,6 +90,13 @@ class AccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchByExternalId(string $externalId)
+    {
+        $response = $this->service()->fetchAccountByExternalId($externalId);
+
+        return ApiResponse::json($response);
+    }
+
     public function editAccount(string $accountId)
     {
         $input = Request::all();

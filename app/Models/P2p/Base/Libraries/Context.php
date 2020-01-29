@@ -149,6 +149,12 @@ class Context extends ArrayObject
             $this->type = self::APPLICATION;
         }
 
+        // For internal service calls
+        if($basicAuth->getAuthType() === Type::PRIVILEGE_AUTH)
+        {
+            $this->type = self::APPLICATION;
+        }
+
         // Note:: We are not putting application as instance variable
         // to ensure that context is independent of application container.
         $this->registerServices();

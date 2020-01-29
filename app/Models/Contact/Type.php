@@ -19,6 +19,7 @@ final class Type
     const EMPLOYEE = 'employee';
     const VENDOR   = 'vendor';
     const SELF     = 'self';
+    const RZP_FEES = 'rzp_fees';
 
     // Settings module key
     const TYPES = 'types';
@@ -30,9 +31,18 @@ final class Type
         self::SELF,
     ];
 
+    public static $internal = [
+        self::RZP_FEES,
+    ];
+
     public static function isInDefaults(string $type): bool
     {
         return (in_array($type, self::$defaults, true) === true);
+    }
+
+    public static function isInInternal(string $type = null): bool
+    {
+        return (in_array($type, self::$internal, true) === true);
     }
 
     public function setTypeForContact(Entity $contact, string $type)
@@ -62,6 +72,21 @@ final class Type
         // If not found anywhere, throw an exception.
         // We expect type to be defined before being used.
         //
+        throw new BadRequestValidationFailureException(
+            'Invalid type: ' . $type,
+            Entity::TYPE,
+            ['contact_id' => $contact->getId()]);
+    }
+
+    public function setTypeForInternalContact(Entity $contact, string $type)
+    {
+        if (self::isInInternal($type) === true)
+        {
+            $contact->setType($type);
+
+            return;
+        }
+
         throw new BadRequestValidationFailureException(
             'Invalid type: ' . $type,
             Entity::TYPE,
@@ -101,6 +126,15 @@ final class Type
                 "You have reached the maximum limit ($maxTypes) of custom contact types that can be created.",
                 Entity::TYPE);
         }
+
+        // If type is 'rzp_fees' we won't allow adding it as a custom type
+        if (self::isInInternal($type) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                "Type '$type' is an internal contact type used by Razorpay and cannot be added.",
+                Entity::TYPE);
+        }
+
 
         if ((self::isInDefaults(strtolower($type))) or
             (array_search_ci($type, $allCustomKeys) !== false))

@@ -138,7 +138,7 @@ class Table
     const ROLE                  = 'roles';
     const PERMISSION            = 'permissions';
     const PERMISSION_MAP        = 'permission_map';
-    const GROUP                 = 'groups';
+    const GROUP                 = 'org_groups';
     const ADMIN                 = 'admins';
     const GROUP_MAP             = 'group_map';
     const MERCHANT_MAP          = 'merchant_map';
@@ -222,6 +222,7 @@ class Table
     const BANKING_ACCOUNT                 = 'banking_accounts';
     const BANKING_ACCOUNT_DETAIL          = 'banking_account_details';
     const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
+    const BANKING_ACCOUNT_STATE           = 'banking_account_state';
 
     // P2P Service Tables
     const P2P_DEVICE            = 'p2p_devices';

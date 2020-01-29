@@ -57,6 +57,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
  * @property Emi\Entity             $emiPlan
+ * @property Customer\Entity        $customer
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {

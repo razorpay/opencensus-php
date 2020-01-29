@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Mail\Invitation\Invite as InvitationMail;
+use RZP\Mail\Invitation\Razorpayx\Invite as RazorpayXInvitationMail;
 
 class Core extends Base\Core
 {
@@ -244,14 +245,7 @@ class Core extends Base\Core
 
     protected function sendEmail(Entity $invitation, string $senderName)
     {
-        $data = [
-            'sender_name' => $senderName,
-            'email'       => $invitation->getEmail(),
-            'name'        => $this->merchant->getName(),
-            'token'       => $invitation->getToken(),
-            'user_id'     => $invitation->getUserId(),
-            'product'     => $invitation->getProduct(),
-        ];
+        $product = $invitation->getProduct();
 
         $this->trace->info(
             TraceCode::INVITATION_EMAIL,
@@ -261,11 +255,29 @@ class Core extends Base\Core
                 'email'         => $invitation->getEmail(),
                 'name'          => $this->merchant->getName(),
                 'user_id'       => $invitation->getUserId(),
-                'product'     => $invitation->getProduct(),
+                'product'       => $product,
             ]);
 
-        $invitationMail = new InvitationMail($data);
+        if ($product === Product::PRIMARY)
+        {
+            $data = [
+                'sender_name' => $senderName,
+                'email'       => $invitation->getEmail(),
+                'name'        => $this->merchant->getName(),
+                'token'       => $invitation->getToken(),
+                'user_id'     => $invitation->getUserId(),
+                'product'     => $product,
+            ];
 
-        Mail::queue($invitationMail);
+            $invitationMail = new InvitationMail($data);
+
+            Mail::queue($invitationMail);
+        }
+        elseif ($product === Product::BANKING)
+        {
+            $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName);
+
+            Mail::queue($inviteMailer);
+        }
     }
 }
