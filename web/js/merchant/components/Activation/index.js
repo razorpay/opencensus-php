@@ -49,7 +49,7 @@ import {
 } from 'common/utils/validators';
 
 import {
-  L1FormSuccess,
+  handleInstantActivationSuccess,
   L1FormError,
   updateHubSpotContactsProperties,
   UNREGISTERED_TYPES,
@@ -959,7 +959,7 @@ export default class ActivationWizard extends React.Component {
         tracking,
       };
 
-      L1FormSuccess(props);
+      handleInstantActivationSuccess(props);
       this.saveCurrentTab();
 
       this.setState({ callingAPI: false }, () => {
