@@ -1095,7 +1095,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid emi durations given 7, 5'
+                    'description' => 'Invalid emi durations given 3, 7, 5'
                 ]
             ],
             'status_code' => 400,

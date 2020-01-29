@@ -382,6 +382,11 @@ class Validator extends Base\Validator
 
     protected function validateEmiDurations(array $input)
     {
+        if (isset($input[Entity::EMI_DURATIONS]) === false)
+        {
+            return;
+        }
+        
         $emiRepo = new Emi\Repository();
 
         $validDurations = [];
