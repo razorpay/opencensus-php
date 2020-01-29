@@ -3,13 +3,13 @@
 namespace RZP\Models\Transaction;
 
 use RZP\Constants;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Payment;
-use RZP\Models\Pricing\Fee;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
@@ -235,6 +235,7 @@ class Service extends Base\Service
             $response['new_tax']           = $newTax;
             $response['delta_fee']         = $newFee - $oldFee;
             $response['delta_tax']         = $newTax - $oldTax;
+            $response['debit_less_than_2k'] = $payment->getBaseAmount() < 2000 * 100 ? true : false;
             $response['success']           = true;
             $response['errorDescription']  = '';
 
