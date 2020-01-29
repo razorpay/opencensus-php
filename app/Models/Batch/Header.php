@@ -138,9 +138,7 @@ class Header
     //
     // Mdr adjustment headers
     //
-    const MDR_ADJUSTMENT_MERCHANT_ID    = 'merchant_id';
     const MDR_ADJUSTMENT_TRANSACTION_ID = 'transaction_id';
-    const MDR_ADJUSTMENT_PAYMENT_ID     = 'payment_id';
 
     //
     // Virtual Account Bulk Creation Headers
