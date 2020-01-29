@@ -39,45 +39,50 @@ class Constants
     const CAPITAL_SUPPORT         = 'capital_support';
     const NACH                    = 'nach';
     const PARTNER_ON_BOARDING     = 'partner_on_boarding';
+    const RAZORPAY_HELP_DESK      = 'help_desk';
+    const TECH_SETTLEMENTS        = 'tech_settlements';
+    const FINANCE                 = 'finance';
 
     const PARTNER_ON_BOARDING_REPLY = 'partner_on_boarding_reply';
 
     const MAIL_ADDRESSES = [
-        self::SUPPORT                 => 'support@razorpay.com',
-        self::X_SUPPORT               => 'x.support@razorpay.com',
-        self::SCORECARD               => 'scorecard@razorpay.com',
-        self::REFUNDS                 => 'refunds@razorpay.com',
-        self::SETTLEMENTS             => 'settlements@razorpay.com',
-        self::INVOICES                => 'invoices@razorpay.com',
-        self::SUBSCRIPTIONS           => 'subscriptions@razorpay.com',
-        self::NOTIFICATIONS           => 'notifications@razorpay.com',
-        self::REPORTS                 => 'reports@razorpay.com',
-        self::CARE                    => 'care@razorpay.com',
-        self::ERRORS                  => 'errors@razorpay.com',
-        self::DEVELOPERS              => 'developers@razorpay.com',
-        self::ALERTS                  => 'alerts@razorpay.com',
-        self::EMI                     => 'emifiles@razorpay.com',
-        self::ADMIN                   => 'admin@razorpay.com',
-        self::ACTIVATION              => 'activationsteam@razorpay.com',
-        self::IRCTC                   => 'support@razorpay.com',
-        self::EMANDATE                => 'emandate@razorpay.com',
-        self::DISPUTES                => 'disputes@razorpay.com',
-        self::NOREPLY                 => 'no-reply@razorpay.com',
-        self::RECON                   => 'pgrecon@razorpay.com',
-        self::SETTLEMENT_ALERTS       => 'settlement.alerts@razorpay.com',
-        self::CREDITS_ALERTS          => 'credit.alerts@razorpay.com',
-        self::FRESHDESK               => 'rzr05py08emsp@razorpay.com',
-        self::PARTNERSHIPS            => 'partnerships@razorpay.com',
-        self::APPROVALS_OAUTH         => 'approvals.oauth@razorpay.com',
-        self::BANK_DISPUTE_FILE       => 'chargebacks@razorpay.com',
-        self::MERCHANT_ONBOARDING     => 'support@razorpay.com',
-        self::LINKED_ACCOUNT_REVERSAL => 'refunds@razorpay.com',
-        self::GATEWAY_POD             => 'pod.gateway@razorpay.com',
-        self::CAPITAL_SUPPORT         => 'capital.support@razorpay.com',
-        self::NACH                    => 'nach@razorpay.com',
-        self::PARTNER_ON_BOARDING     => 'partnercommunication@razorpay.com',
-
+        self::SUPPORT                   => 'support@razorpay.com',
+        self::X_SUPPORT                 => 'x.support@razorpay.com',
+        self::SCORECARD                 => 'scorecard@razorpay.com',
+        self::REFUNDS                   => 'refunds@razorpay.com',
+        self::SETTLEMENTS               => 'settlements@razorpay.com',
+        self::INVOICES                  => 'invoices@razorpay.com',
+        self::SUBSCRIPTIONS             => 'subscriptions@razorpay.com',
+        self::NOTIFICATIONS             => 'notifications@razorpay.com',
+        self::REPORTS                   => 'reports@razorpay.com',
+        self::CARE                      => 'care@razorpay.com',
+        self::ERRORS                    => 'errors@razorpay.com',
+        self::DEVELOPERS                => 'developers@razorpay.com',
+        self::ALERTS                    => 'alerts@razorpay.com',
+        self::EMI                       => 'emifiles@razorpay.com',
+        self::ADMIN                     => 'admin@razorpay.com',
+        self::ACTIVATION                => 'activationsteam@razorpay.com',
+        self::IRCTC                     => 'support@razorpay.com',
+        self::EMANDATE                  => 'emandate@razorpay.com',
+        self::DISPUTES                  => 'disputes@razorpay.com',
+        self::NOREPLY                   => 'no-reply@razorpay.com',
+        self::RECON                     => 'pgrecon@razorpay.com',
+        self::SETTLEMENT_ALERTS         => 'settlement.alerts@razorpay.com',
+        self::CREDITS_ALERTS            => 'credit.alerts@razorpay.com',
+        self::FRESHDESK                 => 'rzr05py08emsp@razorpay.com',
+        self::PARTNERSHIPS              => 'partnerships@razorpay.com',
+        self::APPROVALS_OAUTH           => 'approvals.oauth@razorpay.com',
+        self::BANK_DISPUTE_FILE         => 'chargebacks@razorpay.com',
+        self::MERCHANT_ONBOARDING       => 'support@razorpay.com',
+        self::LINKED_ACCOUNT_REVERSAL   => 'refunds@razorpay.com',
+        self::GATEWAY_POD               => 'pod.gateway@razorpay.com',
+        self::CAPITAL_SUPPORT           => 'capital.support@razorpay.com',
+        self::NACH                      => 'nach@razorpay.com',
+        self::PARTNER_ON_BOARDING       => 'partnercommunication@razorpay.com',
         self::PARTNER_ON_BOARDING_REPLY => 'kzgpFWFVZU@razorpay.com',
+        self::RAZORPAY_HELP_DESK        => 'helpdesk@razorpay.com',
+        self::TECH_SETTLEMENTS          => 'tech.settlements@razorpay.com',
+        self::FINANCE                   => 'finance@razorpay.com',
     ];
 
     const HEADERS = [
@@ -107,5 +112,6 @@ class Constants
         self::PARTNER_ON_BOARDING     => 'Razorpay Partner Program',
         self::CAPITAL_SUPPORT         => 'Razorpay Capital',
         self::NACH                    => 'Razorpay Nach',
+        self::RAZORPAY_HELP_DESK      => 'Team Razorpay'
     ];
 }

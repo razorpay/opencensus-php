@@ -56,16 +56,17 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant,
         Batch\Entity $batch = null,
-        Order\Entity $order = null): Invoice\Entity
+        Order\Entity $order = null,
+        string $batchId = null): Invoice\Entity
     {
         $invoice = $this->repo->transaction(
-            function() use ($input, $merchant, $batch, $order)
+            function() use ($input, $merchant, $batch, $order, $batchId)
             {
                 $customer = $this->createCustomer($input, $merchant);
 
                 $subscriptionRegistration = $this->createSubscriptionRegistration($input, $merchant, $customer);
 
-                $invoice = $this->createInvoice($input, $merchant, $subscriptionRegistration, $batch, $order);
+                $invoice = $this->createInvoice($input, $merchant, $subscriptionRegistration, $batch, $order, $batchId);
 
                 return $invoice;
             }
@@ -81,7 +82,7 @@ class Core extends Base\Core
     public function createAuthLinkForOrder(array $tokenRegistrationInput, Order\Entity $order, Customer\Entity $customer)
     {
         $this->populateAuthLinkParamsFromOrder($tokenRegistrationInput, $order);
-        $this->populateInvoiceParamsFromOrder($tokenRegistrationInput, $order);
+        $this->populateInvoiceParamsFromOrderAndCustomer($tokenRegistrationInput, $order, $customer);
 
         $invoice = $this->repo->transaction(
             function() use ($tokenRegistrationInput, $order, $customer)
@@ -97,7 +98,7 @@ class Core extends Base\Core
         $tokenRegistration = $invoice->entity;
 
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
-        
+
         return $invoice;
     }
 
@@ -108,7 +109,7 @@ class Core extends Base\Core
         $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::METHOD] = $order->getMethod();
     }
 
-    private function populateInvoiceParamsFromOrder(array & $input, Order\Entity $order)
+    private function populateInvoiceParamsFromOrderAndCustomer(array & $input, Order\Entity $order, Customer\Entity $customer)
     {
         $input[Invoice\Entity::TYPE] = Invoice\Type::LINK;
 
@@ -131,6 +132,8 @@ class Core extends Base\Core
         $input[Invoice\Entity::CURRENCY] = $order->getCurrency();
 
         $input[Invoice\Entity::AMOUNT] = $order->getAmount();
+
+        $input[Invoice\Entity::CUSTOMER_ID] = $customer->getPublicId();
     }
 
     public function createSubscriptionRegistration(array & $input, Merchant\Entity $merchant, Customer\Entity $customer)
@@ -179,11 +182,6 @@ class Core extends Base\Core
             $this->setBankAccountEntity($subscriptionRegistration, $bankAccount);
         }
 
-        if (empty($bankName) === false)
-        {
-            $subscriptionRegistration->setBank($bankName);
-        }
-
         if (empty($paperMandateInput) === false)
         {
             $maxAmount = $subscriptionRegistration->getMaxAmount();
@@ -196,6 +194,11 @@ class Core extends Base\Core
             $paperMandate = (new PaperMandate\Core)->create($paperMandateInput, $customer);
 
             $this->setPaperMandateEntity($subscriptionRegistration, $paperMandate);
+        }
+
+        if (empty($bankName) === false)
+        {
+            $subscriptionRegistration->setBank($bankName);
         }
 
         return $subscriptionRegistration;
@@ -258,7 +261,8 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Entity $subscriptionRegistration,
         Batch\Entity $batch = null,
-        Order\Entity $order = null): Invoice\Entity
+        Order\Entity $order = null,
+        String $batchId = null): Invoice\Entity
     {
         $invoiceCore = new Invoice\Core();
 
@@ -268,7 +272,7 @@ class Core extends Base\Core
             null,
             $batch,
             $subscriptionRegistration,
-            null,
+            $batchId,
             $order);
 
         return $invoice;
@@ -312,7 +316,7 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subr);
     }
 
-    public function chargeToken(string $id, array $input, Merchant\Entity $merchant)
+    public function chargeToken(string $id, array $input, Merchant\Entity $merchant, String $batchId = null)
     {
         $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
 
@@ -359,6 +363,7 @@ class Core extends Base\Core
             Payment\Entity::CUSTOMER_ID => $customer->getPublicId(),
             Payment\Entity::ORDER_ID    => $order->getPublicId(),
             Payment\Entity::RECURRING   => '1',
+            Payment\Entity::NOTES       => $input[Payment\Entity::NOTES] ?? []
         ];
 
         $this->trace->info(
@@ -372,7 +377,18 @@ class Core extends Base\Core
 
         $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
-        return $paymentProcessor->process($paymentInput);
+        $paymentData =  $paymentProcessor->process($paymentInput);
+
+        if(empty($batchId) === false)
+        {
+            $payment = $paymentProcessor->getPayment();
+
+            $payment->setBatchId($batchId);
+
+            $this->repo->save($payment);
+        }
+
+        return $paymentData;
     }
 
     public function getUploadedFileUrlByPaymentForNachMethod(Payment\Entity $payment)
@@ -606,11 +622,13 @@ class Core extends Base\Core
     {
         $result = [SubscriptionRegistrationConstants::SUCCESS => true];
 
-        $data   = (new PaperMandate\Core)->authenticate($subscriptionRegistration->paperMandate, $input);
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
+        $data   = (new PaperMandate\Core)->authenticate($paperMandate, $input);
 
         $fileId = $data[PaperMandate\Entity::UPLOADED_FILE_ID];
 
-        $signedUrl = (new PaperMandate\FileUploader)->getSignedUrl($fileId);
+        $signedUrl = (new PaperMandate\FileUploader($paperMandate))->getSignedUrl($fileId);
 
         $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
 
@@ -633,11 +651,13 @@ class Core extends Base\Core
     {
         $result = [SubscriptionRegistrationConstants::SUCCESS => true];
 
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
         $data   = (new PaperMandate\Core)->validate($subscriptionRegistration->paperMandate, $input);
 
         $fileId = $data[PaperMandate\Entity::UPLOADED_FILE_ID];
 
-        $signedUrl = (new PaperMandate\FileUploader)->getSignedUrl($fileId);
+        $signedUrl = (new PaperMandate\FileUploader($paperMandate))->getSignedUrl($fileId);
 
         $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
 

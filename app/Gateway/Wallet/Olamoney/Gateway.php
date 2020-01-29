@@ -64,9 +64,48 @@ class Gateway extends Base\Gateway
         $this->version = $terminal['gateway_merchant_id2'];
     }
 
+    public function eligibility(array $input)
+    {
+        $request = $this->getEligibilityRequest($input);
+
+        $traceContent = $request;
+
+        $traceContent['headers'] = '';
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ELLIGIBILITY_REQUEST,
+            [
+                'request' => $traceContent,
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->parseResponseBody($response);
+
+        $this->traceGatewayPaymentResponse(
+            $content,
+            $input,
+            TraceCode::GATEWAY_ELLIGIBILITY_RESPONSE
+        );
+
+        $status = $content[ResponseFields::ELIGIBILITY][ResponseFields::STATUS_CODE];
+
+        if (in_array($status, ResponseCode::$eligible , true) != true)
+        {
+            $errorCode = ResponseCode::getApiErrorCode($status);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status
+            );
+        }
+    }
+
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        $this->eligibility($input);
 
         if ($this->version !== 'v2')
         {
@@ -208,6 +247,8 @@ class Gateway extends Base\Gateway
     public function otpGenerate(array $input)
     {
         $this->action($input, Action::OTP_GENERATE);
+
+        $this->eligibility($input);
 
         $request = $this->getOtpGenerateRequestArray($input);
 
@@ -471,6 +512,54 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['refund']['payment_id'],
                 'refund_id'  => $input['refund']['id'],
             ]]);
+    }
+
+    protected function getEligibilityRequest(array $input)
+    {
+        $amount       = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $contact      = $this->getFormattedContact($input['payment']['contact']);
+        $billingLabel = $this->getDynamicMerchantName($input['merchant']);
+
+        $hashFields = [
+            RequestFields::MOBILE                   =>  $contact,
+            RequestFields::EMAIL                    =>  'NA',
+            RequestFields::FIRST_NAME               =>  'NA',
+            RequestFields::LAST_NAME                =>  'NA',
+            RequestFields::AMOUNT                   =>  $amount,
+            RequestFields::SOURCE                   =>  $billingLabel,
+            RequestFields::UNIQUE_ELIGIBILITY_ID    =>  $input['payment']['id'],
+        ];
+
+        $hashValue = $this->getHashForEligibility($hashFields);
+
+        $userInfo = [
+            RequestFields::MOBILE_NUMBER    => $contact,
+            RequestFields::EMAIL            => 'NA',
+            RequestFields::FIRST_NAME       => 'NA',
+            RequestFields::LAST_NAME        => 'NA',
+        ];
+
+        $transactionDetails = [
+            RequestFields::AMOUNT       => $amount,
+            RequestFields::DENOMINATION => 'rupee',
+            RequestFields::CURRENCY     => $input['payment']['currency'],
+        ];
+
+        $queryArray = [
+            RequestFields::USER_INFO             => $userInfo,
+            RequestFields::TRANSACTION_DETAILS   => $transactionDetails,
+            RequestFields::SOURCE                => $billingLabel,
+            RequestFields::HASH                  => $hashValue,
+            RequestFields::UNIQUE_ELIGIBILITY_ID => $input['payment']['id'],
+        ];
+
+        $content = json_encode($queryArray);
+
+        $request = $this->getStandardRequestArray($content,'post', "ELIGIBILITY");
+
+        $request['headers'] = $this->getRequestHeaders();
+
+        return $request;
     }
 
     protected function getDebitRequestArray(array $input)
@@ -1158,6 +1247,23 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY,
             RequestFields::AMOUNT,
             RequestFields::USER_ACCESS_TOKEN,
+        ];
+
+        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
+
+        return $this->getHashOfArray($orderedData);
+    }
+
+    protected function getHashForEligibility(array $content)
+    {
+        $fieldsInOrder = [
+            RequestFields::MOBILE,
+            RequestFields::EMAIL,
+            RequestFields::FIRST_NAME,
+            RequestFields::LAST_NAME,
+            RequestFields::AMOUNT,
+            RequestFields::SOURCE,
+            RequestFields::UNIQUE_ELIGIBILITY_ID,
         ];
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);

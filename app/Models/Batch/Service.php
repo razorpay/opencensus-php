@@ -23,7 +23,8 @@ class Service extends Base\Service
 
     private function validateBatchTypeForUserRole($input)
     {
-        if ($this->auth->isProxyAuth() === true)
+        if (($this->auth->isProxyAuth() === true) and
+            (empty($this->auth->getAdmin()) === true))
         {
             $mode = $this->mode ?? 'live';
 
@@ -43,12 +44,33 @@ class Service extends Base\Service
 
         $fetchResult = $this->core()->fetchWithSettings($input, $this->merchant);
 
-        if (isset($input['type']) and ($this->app->batchService->isMigratingBatchType($input['type']) === true))
+        $input['types'] = $this->validateBatchTypes($input);
+
+        if ((isset($input['type']) and
+            ($this->app->batchService->isMigratingBatchType($input['type']) === true)) or
+            (empty($input['types']) === false))
         {
             $fetchResult = $this->app->batchService->getBatchesFromBatchServiceAndMerge($fetchResult, $input, $this->merchant);
         }
 
         return $fetchResult;
+    }
+
+    public function validateBatchTypes($input): array
+    {
+        if(isset($input['types']) == false)
+        {
+            return [];
+        }
+        $types = [];
+        foreach ($input['types'] as $type)
+        {
+            if($this->app->batchService->isMigratingBatchType($type)===true)
+            {
+                array_push($types, $type);
+            }
+        }
+        return $types;
     }
 
     public function getBatchById(string $id): array

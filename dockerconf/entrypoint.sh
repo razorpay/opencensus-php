@@ -27,7 +27,6 @@ configure(){
   $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
   echo "copying apache config"
   cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
-
   ## Enable newrelic only for prod and perf
   if [[ "${APP_MODE}" == "prod" ]] || [[ "${APP_MODE}" == "perf" ]]; then
     $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "dockerconf/newrelic.ini.j2"
@@ -53,11 +52,15 @@ configure_dark(){
     echo "CORE_PAYMENT_SERVICE_TEST_URL=\"https://cps-dark-test.razorpay.com/v1/\"" >> ./environment/.env.production
     echo "CARD_PAYMENT_SERVICE_LIVE_URL=\"https://payments-card-dark.razorpay.com/v1/\"" >> ./environment/.env.production
     echo "CARD_PAYMENT_SERVICE_TEST_URL=\"https://payments-card-test-dark.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "NBPLUS_PAYMENT_SERVICE_LIVE_URL=\"https://payments-nbplus-dark.razorpay.com/\"" >> ./environment/.env.production
+    echo "NBPLUS_PAYMENT_SERVICE_TEST_URL=\"https://payments-nbplus-test-dark.razorpay.com/\"" >> ./environment/.env.production
 }
 
 run_migration_job(){
     cd /app
     php artisan migrate --database=live_migration --force && php artisan migrate --database=test_migration --force
+    php artisan migrate --database=payments_upi_live --path=database/migrations/payments_upi --force
+    php artisan migrate --database=payments_upi_test --path=database/migrations/payments_upi --force
 }
 
 start_apache(){

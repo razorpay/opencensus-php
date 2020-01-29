@@ -7,6 +7,7 @@ use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Constants\IndianStates;
+use RZP\Models\Merchant\AutoKyc;
 
 /**
  * Class Entity
@@ -15,7 +16,7 @@ use RZP\Constants\IndianStates;
  *
  * @package RZP\Models\Merchant\Detail
  */
-class Entity extends Base\PublicEntity
+class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 {
     const MERCHANT_ID                        = 'merchant_id';
     const CONTACT_NAME                       = 'contact_name';
@@ -27,6 +28,8 @@ class Entity extends Base\PublicEntity
     const BUSINESS_DESCRIPTION               = 'business_description';
     const BUSINESS_DBA                       = 'business_dba';
     const BUSINESS_WEBSITE                   = 'business_website';
+    const ADDITIONAL_WEBSITES                = 'additional_websites';
+    const ADDITIONAL_WEBSITE                 = 'additional_website';
     const BUSINESS_INTERNATIONAL             = 'business_international';
     const BUSINESS_PAYMENTDETAILS            = 'business_paymentdetails';
     const BUSINESS_MODEL                     = 'business_model';
@@ -129,6 +132,7 @@ class Entity extends Base\PublicEntity
     const KYC_ADDITIONAL_DETAILS             = 'kyc_additional_details';
     const CLARIFICATION_REASONS              = 'clarification_reasons';
     const ADDITIONAL_DETAILS                 = 'additional_details';
+    const KYC_ID                             = 'kyc_id';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING                     = 'fields_pending';
@@ -243,6 +247,7 @@ class Entity extends Base\PublicEntity
         self::KYC_ADDITIONAL_DETAILS,
         self::BANK_DETAILS_VERIFICATION_STATUS,
         self::POA_VERIFICATION_STATUS,
+        self::ADDITIONAL_WEBSITES,
     ];
 
     protected $public = [
@@ -340,6 +345,7 @@ class Entity extends Base\PublicEntity
         self::LIVE_TRANSACTION_DONE,
         self::KYC_CLARIFICATION_REASONS,
         self::KYC_ADDITIONAL_DETAILS,
+        self::ADDITIONAL_WEBSITES,
     ];
 
     protected $defaults = [
@@ -347,6 +353,7 @@ class Entity extends Base\PublicEntity
         self::ACTIVATION_PROGRESS => 0,
         self::GSTIN               => null,
         self::P_GSTIN             => null,
+        self::ADDITIONAL_WEBSITES => [],
     ];
 
     protected $casts = [
@@ -355,7 +362,8 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_INTERNATIONAL    => 'bool',
         self::ACTIVATION_PROGRESS       => 'int',
         self::KYC_CLARIFICATION_REASONS => 'array',
-        self::KYC_ADDITIONAL_DETAILS    => 'array'
+        self::KYC_ADDITIONAL_DETAILS    => 'array',
+        self::ADDITIONAL_WEBSITES       => 'array',
     ];
 
     const UPLOADED_FIELDS = [
@@ -849,6 +857,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::KYC_CLARIFICATION_REASONS);
     }
 
+    public function setKycClarificationReasons(array $reasons)
+    {
+        return $this->setAttribute(self::KYC_CLARIFICATION_REASONS, $reasons);
+    }
+
     public function getBusinessCategory()
     {
         return $this->getAttribute(self::BUSINESS_CATEGORY);
@@ -994,5 +1007,30 @@ class Entity extends Base\PublicEntity
     public function getLiveTransactionDone()
     {
         return $this->getAttribute(self::LIVE_TRANSACTION_DONE);
+    }
+
+    public function getAdditionalWebsites()
+    {
+        return $this->getAttribute(self::ADDITIONAL_WEBSITES);
+    }
+
+    public function getIssueFields()
+    {
+        return $this->getAttribute(self::ISSUE_FIELDS);
+    }
+
+    public function getKycId()
+    {
+        return $this->getAttribute(self::KYC_ID);
+    }
+
+    public function setKycId(string $kycId)
+    {
+        $this->setAttribute(self::KYC_ID, $kycId);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getMerchantId();
     }
 }

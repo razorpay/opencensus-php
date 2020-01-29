@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         self::BODY                                          => 'required|array',
         self::BODY . '.' . F::HAS_MORE_DATA                 => 'present|nullable|string',
 
-        self::FIELDS                                        => 'required|array',
+        self::FIELDS                                        => 'present|array',
         self::FIELDS . '.*.' . F::TRANSACTION_POSTED_DATE   => 'required|date_format:' . Gateway::DATE_FORMAT,
         self::FIELDS . '.*.' . F::TRANSACTION_CATEGORY      => 'required|string',
         self::FIELDS . '.*.' . F::TRANSACTION_ID_RESPONSE   => 'required|string',

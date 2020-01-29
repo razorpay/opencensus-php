@@ -12,19 +12,22 @@ namespace RZP\Models\Options\Helpers;
 class PaymentLinkDefaultOption implements DefaultOption
 {
 
-    // Refer https://jsonbin.io/5dc2bda6a5f7237736c23e21/11 for JSON structure
+    // Refer https://jsonbin.io/5dc2bda6a5f7237736c23e2/1 for JSON structure
     // Few fields are commented below. Do not remove fields.
     // Change if a default value is needed in them in future.
     public function get()
     {
         return array (
 //                    'org_id' => '100000000',
-            'name'        => '',
-            'description' => '',
             'checkout' =>
                 array (
+                    'name'        => '',
+                    'description' => '',
+                    'first_payment_min_amount' => 'Minimum Amount Due',
                     'prefill' =>
                         array (
+                                      'select_partial' => "0",
+                                      'select_full' => "0",
 //                                    'method' => 'Use if sent',
 //                                    'amount' => 'Use if sent',
 //                                    'wallet' => 'Use if sent',
@@ -43,56 +46,57 @@ class PaymentLinkDefaultOption implements DefaultOption
                         ),
                     'method' =>
                         array (
-                            'card' => true,
-                            'netbanking' => true,
-                            'wallet' => true,
-                            'upi' => true,
-                            'emi' => true,
-                            'upi_intent' => false,
-                            'qr' => false
+                            'card' => "1",
+                            'netbanking' => "1",
+                            'wallet' => "1",
+                            'upi' => "1",
+                            'emi' => "1",
+                            'upi_intent' => "0",
+                            'qr' => "1"
                         ),
                     'features' =>
                         array (
-                            'cardsaving' => true,
+                            'cardsaving' => "1",
                         ),
                     'readonly' =>
                         array (
-                            'contact' => false,
-                            'email' => false,
-                            'name' => false
+                            'contact' => "0",
+                            'email' => "0",
+                            'name' => "0"
                         ),
                     'hidden' =>
                         array (
-                            'contact' => false,
-                            'email' => false
+                            'contact' => "0",
+                            'email' => "0"
                         ),
                     'theme' =>
                         array (
-                            'hide_topbar' => false,
-                            'image_padding' => true,
-                            'image_frame' => true,
-                            'close_button' => true,
-                            'close_method_back' => false,
+                            'hide_topbar' => "0",
+                            'image_padding' => "1",
+                            'image_frame' => "1",
+                            'close_button' => "0",
+                            'close_method_back' => "0",
 //                                    'color' => 'Use if sent : Merchant Profile',
 //                                    'backdrop_color' => 'Use if sent : Merchant Profile',
-                            'debit_card' => false
+                            'debit_card' => "0"
                         ),
                     'modal' =>
                         array (
-                            'confirm_close' => false,
+                            'confirm_close' => "0",
 //                                    'ondismiss' => 'Use if sent : function()',
 //                                    'onhidden' => 'Use if sent : function()',
-                            'escape' => true,
-                            'animation' => true,
-                            'backdropclose' => false,
-                            'handleback' => true,
-                            'select_partial' => false
+                            'escape' => "1",
+                            'animation' => "1",
+                            'backdropclose' => "0",
+                            'handleback' => "1",
+                            'select_partial' => "0"
                         ),
                     'partial_payment' =>
                         array (
                             'min_amount_label' => 'Minimum first amount',
-                            'total_amount_label' => 'Make payment in parts',
-                            'total_amount_description' => 'Pay some now and remaining later'
+                            'partial_amount_label' => 'Make payment in parts',
+                            'partial_amount_description' => 'Pay some now and the remaining later',
+                            'full_amount_label' => 'Pay in full'
                         ),
                 ),
             'order' =>
@@ -109,8 +113,8 @@ class PaymentLinkDefaultOption implements DefaultOption
                 array (
                     'footer' =>
                         array (
-                            'razorpay_branding' => true,
-                            'security_branding' => true
+                            'razorpay_branding' => "1",
+                            'security_branding' => "1"
                         ),
                     'label' =>
                         array (
@@ -125,8 +129,9 @@ class PaymentLinkDefaultOption implements DefaultOption
                         ),
                     'show_preferences' =>
                         array (
-                            'issued_to'     => true
-                        )
+                            'issued_to'     => "1"
+                        ),
+                    'enable_embedded_checkout' => "0"
                 )
         );
     }

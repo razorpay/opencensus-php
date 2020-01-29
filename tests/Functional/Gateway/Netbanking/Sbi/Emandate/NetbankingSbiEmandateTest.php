@@ -414,7 +414,7 @@ class NetbankingSbiEmandateTest extends TestCase
 
         $debitPayments[] = [
             'payment'       => $this->createSecondReccuringPayment($token),
-            'status'        => 'Failure',
+            'status'        => 'REJECTED',
             'return_reason' => 'Mandate does not Exist / Expired',
         ];
 

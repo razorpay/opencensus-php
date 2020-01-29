@@ -613,16 +613,13 @@ class WebhookTest extends TestCase
 
         $payment  = $this->getDefaultPaymentArray();
 
-        // mock express and inferno requests
-        $this->mockExpressSendRequest(function ($path, $content) use ($translatedWebhookBody) {
+        // mock mozart webhook translate and inferno requests
+        $this->mockMozartWebhookTranslateRequest(function ($path, $content) use ($translatedWebhookBody) {
 
-            $response = new \Requests_Response();
-
-            $response->body = $translatedWebhookBody;
-
-            $response->headers['request-id'] = '12345678';
-
-            return $response;
+            return [
+                'content'   => $translatedWebhookBody,
+                'headers'   => ['request-id' => ['12345678']],
+            ];
         });
 
         $webhookFired = [];
@@ -662,7 +659,7 @@ class WebhookTest extends TestCase
 
         $this->createMerchantWebhook(['events' => ['payment.captured' => "1"]]);
 
-        $this->mockExpressSendRequest(null, 0);
+        $this->mockMozartWebhookTranslateRequest(null, 0);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -1677,6 +1674,39 @@ class WebhookTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testWebhookDeactivate()
+    {
+        Mail::fake();
+
+        $this->createMerchantWebhook();
+
+        $webhook = $this->getLastEntity('webhook', false);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'] . '/deactivate';
+
+        $this->startTest();
+
+        // test webhook deactivate
+        $webhookExpected = $this->getEntityById('webhook',$webhook['id']);
+
+        $this->assertEquals($webhookExpected['active'],false);
+
+        $testData = $this->testData[__FUNCTION__.'Data'];
+
+        // test mail sent
+        Mail::assertQueued(WebhookMail::class, function ($mail) use ($testData)
+        {
+            $this->assertEquals($mail->viewData['url'], $testData['url']);
+
+            $this->assertEquals($mail->viewData['mode'], $testData['mode']);
+
+            $this->assertEquals($mail->viewData['subject'], $testData['subject']);
+
+            return ($mail->hasFrom('alerts@razorpay.com') and ($mail->hasTo('test@razorpay.com')));
+        });
+    }
+
 
     protected function createTransferEntity($payment, $account)
     {

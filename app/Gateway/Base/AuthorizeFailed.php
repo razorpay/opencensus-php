@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Base;
 
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -25,12 +26,16 @@ trait AuthorizeFailed
 
         try
         {
-            $gateway = $input['payment']['gateway'];
+            $gateway = $input[Constants\Entity::PAYMENT][Entity::GATEWAY];
 
-            if (($input['payment']['cps_route'] === true) and
-                ($gateway === Payment\Gateway::NETBANKING_BOB))
+            // If payment went via card payment service then call do verification through card payment service
+            if (($input[Constants\Entity::PAYMENT][Entity::CPS_ROUTE] === Entity::CARD_PAYMENT_SERVICE))
             {
-                $this->app['cps']->action($gateway, PaymentAction::VERIFY, $input);
+                $this->app['card.payments']->action($gateway, PaymentAction::VERIFY, $input);
+            }
+            elseif (($input[Constants\Entity::PAYMENT][Entity::CPS_ROUTE] === Entity::NB_PLUS_SERVICE))
+            {
+                $this->app['nbplus.payments']->action($gateway, PaymentAction::VERIFY, $input);
             }
             else
             {

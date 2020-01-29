@@ -144,24 +144,26 @@ trait TestsBusinessBanking
         $this->bankAccount    = $bankAccount;
     }
 
-    protected function createPayout()
+    protected function createPayout(array $extraPayoutParams = [])
     {
         $this->createContact();
 
         $this->createFundAccount();
 
-        $this->payout = $this->fixtures->create(
-            'payout',
-            [
-                'purpose'           => 'refund',
-                'fund_account_id'   => $this->fundAccount['id'],
-                'notes'             => [
-                    'abc' => 'xyz',
-                ],
-                'amount'            => 1000,
-                'currency'          => 'INR',
-                'balance_id'        => $this->bankingBalance->getId(),
-            ]);
+        $payoutParams = [
+            'purpose'           => 'refund',
+            'fund_account_id'   => $this->fundAccount['id'],
+            'notes'             => [
+                'abc' => 'xyz',
+            ],
+            'amount'            => 1000,
+            'currency'          => 'INR',
+            'balance_id'        => $this->bankingBalance->getId(),
+        ];
+
+        $payoutParams = array_merge($payoutParams, $extraPayoutParams);
+
+        $this->payout = $this->fixtures->create('payout', $payoutParams);
 
         $this->transaction = $this->getDbLastEntity('transaction');
     }
@@ -195,10 +197,24 @@ trait TestsBusinessBanking
                 'source_id'   => $this->contact->getId(),
             ],
             [
-                'name'           => "test",
+                'name'           => 'test',
                 'ifsc'           => 'SBIN0007105',
                 'account_number' => '111000',
             ]);
+    }
+
+    protected function createVpaFundAccount(array $attributes = [])
+    {
+        $this->contact === null ? $this->createContact() : $this->contact ;
+
+        $defaultAttributes = [
+            'source_id'   => $this->contact->getId(),
+            'source_type' => 'contact',
+        ];
+
+        $attributes = array_merge($defaultAttributes, $attributes);
+
+        return $this->fixtures->fund_account->createVpa($attributes);
     }
 
     protected function createFAVBankingPricingPlan()
@@ -211,7 +227,7 @@ trait TestsBusinessBanking
             'type'                => 'pricing',
             'plan_id'             => '1hDYlICobzOCYt',
             'product'             => 'banking',
-            "feature"             => 'fund_account_validation',
+            'feature'             => 'fund_account_validation',
             'payment_method'      => 'bank_account',
             'account_type'        => 'shared'
         ];
@@ -219,17 +235,50 @@ trait TestsBusinessBanking
         $this->fixtures->create('pricing', $pricingPlan);
     }
 
-    protected function mockRazorxTreatment()
+    protected function mockRazorxTreatment(string $channel = 'yesbank',
+                                           string $ftsEnabled = 'off',
+                                           string $webhookViaStork = 'off',
+                                           string $defaultBehaviour = 'off')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
+                          ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use ($channel, $ftsEnabled, $defaultBehaviour)
+                {
+                    if (ends_with($feature, 'mode_payout_filter'))
+                    {
+                        return strtolower($channel);
+                    }
+
+                    if (starts_with($feature, 'fts_'))
+                    {
+                        return strtolower($ftsEnabled);
+                    }
+
+                    return strtolower($defaultBehaviour);
+                }));
+
+        $this->app->razorx->method('getCachedTreatment')
+                          ->willReturn(strtolower($webhookViaStork));
+    }
+
+    protected function createWorkflowFeature(array $attributes = [])
+    {
+        $defaultAttributes = [
+            'name'        => 'payout_workflows',
+            'entity_id'   => '10000000000000',
+            'entity_type' => 'merchant',
+        ];
+
+        $attributes = array_merge($defaultAttributes, $attributes);
+
+        return $this->fixtures->create('feature', $attributes);
     }
 }

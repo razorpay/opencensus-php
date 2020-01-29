@@ -101,6 +101,22 @@ return [
         ],
     ],
 
+    'testCreateCardPaymentFailedWithRestrictionUpi' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment method is not among the list of valid methods for order',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_FOR_ORDER
+        ],
+    ],
+
     'testCreatePaymentWithDisabledMethod' => [
         'response' => [
             'content' => [
@@ -413,5 +429,76 @@ return [
             'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY
         ],
+    ],
+
+    'googlePayPaymentCreateRequestData' => [
+        'contact'       => '9876543210',
+        'email'         => 'abc@gmail.com',
+        'currency'      => 'INR',
+        'method'        => 'card',
+        'application'   => 'google_pay',
+        '_'             => [
+            'checkout_id'           => 'BY486x1wJh2nFj',
+            'os'                    => 'android',
+            'package_name'          => 'com.oyo.consumer',
+            'platform'              => 'mobile_sdk',
+            'cellular_network_type' => '4G',
+            'data_network_type'     => 'cellular',
+            'locale'                => 'en-',
+            'library'               => 'custom',
+            'library_version'       => '3.6.0'
+        ],
+    ],
+
+    'testPaymentS2SJsonPrivateAuthUPIIntent' => [
+        'request' => [
+            'url' => '/payments/create/json',
+            'method' => 'POST',
+            'content' => [
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'contact'       => '9999999999',
+                'email'         => 'a@b.com',
+                'description'   => 'description',
+                'notes'         => [
+                    'key'   => 'value'
+                ],
+                '_'  => [
+                    'flow'      => 'intent'
+                ],
+                'method'        =>  'upi',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testPaymentS2SJsonPrivateAuthUPIVpa' => [
+        'request' => [
+            'url' => '/payments/create/json',
+            'method' => 'POST',
+            'content' => [
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'contact'       => '9999999999',
+                'email'         => 'a@b.com',
+                'description'   => 'description',
+                'notes'         => [
+                    'key'   => 'value'
+                ],
+                'vpa'           =>  'dontencrypt@icici',
+                'method'        =>  'upi',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
     ],
 ];

@@ -4,9 +4,12 @@ namespace RZP\Gateway\Mozart;
 
 class Action
 {
+    const CHECKACCOUNT          = 'check_account';
     const PAY_INIT              = 'pay_init';
     const PAY_VERIFY            = 'pay_verify';
     const AUTH_INIT             = 'auth_init';
+    const AUTH_VERIFY           = 'auth_verify';
+    const CHECK_BALANCE         = 'check_balance';
 
     const CAPTURE               = 'capture';
     const REFUND                = 'refund';
@@ -26,6 +29,10 @@ class Action
 
     const VERIFY_TERMINAL       = 'verify_terminal';
 
+    const DISABLE_TERMINAL      = 'disable_terminal';
+
+    const ENABLE_TERMINAL       = 'enable_terminal';
+
     const MANDATE_CREATE        = 'mandate_create';
 
     const MANDATE_EXECUTE       = 'mandate_execute';
@@ -35,4 +42,6 @@ class Action
     const MANDATE_UPDATE_VERIFY = 'mandate_update_verify';
 
     const MANDATE_CREATE_VERIFY = 'mandate_create_verify';
+
+    const DECRYPT               = 'decrypt';
 }

@@ -16,6 +16,7 @@ use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
 
 use RZP\Exception;
+use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Models\User;
@@ -39,19 +40,21 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Merchant\Webhook\Stork;
-use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
 
 class Service extends Base\Service
 {
@@ -61,7 +64,7 @@ class Service extends Base\Service
     const OAUTH_MAIL      = 'oauth_mail';
     const ES_ON_DEMAND_ANNOUNCEMENT_TAG = 'es-on-demand.announcement-early-settlement';
 
-    const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 500;
+    const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 100;
 
     /**
      * Creates a merchant and saves in database
@@ -311,6 +314,11 @@ class Service extends Base\Service
 
         $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $input)
         {
+            if (isset($input[Entity::INTERNATIONAL]) === true)
+            {
+                (new Detail\Core())->updateInternationalActivationFlow($merchant, $input[Entity::INTERNATIONAL]);
+            }
+
             $merchant = $this->core()->edit($merchant, $input);
 
             if (isset($input[Entity::FEE_BEARER]) === true)
@@ -504,7 +512,23 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId, $configList);
 
-        return $merchant->toArray();
+        $response = $merchant->toArray();
+
+        $response['settlement_ux_revamp'] = $this->shouldShowSettlementUxRevamp();
+
+        return $response;
+    }
+
+    public function shouldShowSettlementUxRevamp(): bool
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+            Merchant\RazorxTreatment::SETTLEMENT_UX_REVAMP,
+            $this->mode
+        );
+
+        $result = (strtolower($variant) === 'on');
+
+        return $result;
     }
 
     public function fetchBalance($merchantId = null)
@@ -562,7 +586,7 @@ class Service extends Base\Service
 
         $balance = $this->repo->balance->fetch($input, $merchantId);
 
-        return $balance->toArrayWithItems();
+        return $balance->toArrayPublic();
     }
 
     public function editAmountCredits($merchantId, $input)
@@ -1133,8 +1157,36 @@ class Service extends Base\Service
             return false;
         }
 
-        $actions = (new \RZP\Models\Workflow\Action\Core)->fetchOpenActionOnEntityOperation(
+        $actions = (new Action\Core())->fetchOpenActionOnEntityOperation(
             $oldBankAccount->getId(), $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
+
+        $actions = $actions->toArray();
+
+        // If there are any action in progress
+        if (empty($actions) === false)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getWebsiteStatus()
+    {
+        $oldMerchantDetail = $this->merchant->merchantDetail;
+
+        if (empty($oldMerchantDetail) === true)
+        {
+            return false;
+        }
+
+        $actions = (new Action\Core())->fetchOpenActionOnEntityOperation(
+            $oldMerchantDetail->getMerchantId(),
+            $oldMerchantDetail->getEntity(),
+            Permission::EDIT_MERCHANT_WEBSITE_DETAIL);
 
         $actions = $actions->toArray();
 
@@ -1770,45 +1822,45 @@ class Service extends Base\Service
 
     public function enableScheduledEs(): array
     {
-        $this->repo->transactionOnLiveAndTest(function ()
+        $userRole = $this->repo
+                         ->merchant
+                         ->getMerchantUserMapping(
+                            $this->merchant->getId(),
+                            $this->user->getId(),
+                            null,
+                            Product::PRIMARY)
+                         ->pivot
+                         ->role;
+
+        if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER))
         {
-            $userRole = $this->repo
-                             ->merchant
-                             ->getMerchantUserMapping(
-                                 $this->merchant->getId(),
-                                 $this->user->getId(),
-                                 null,
-                                 Product::PRIMARY)
-                             ->pivot
-                             ->role;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+                                                    'role',
+                                                    $userRole);
+        }
 
-            if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER) and ($userRole !== User\Role::FINANCE))
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
-                                                        'role',
-                                                        $userRole);
-            }
+        $pricingForMerchant = $this->getScheduledEarlySettlementPricingForMerchant();
 
-            $this->getScheduledEarlySettlementPricingForMerchant();
+        $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
+                                                Schedule\Period::HOURLY,
+                                                1,
+                                                null,
+                                                0,
+                                                0,
+                                                ScheduleTask\Type::SETTLEMENT);
 
-            $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
+        if ($schedule === null)
+        {
+            throw new Exception\LogicException(
+                'Schedule for Scheduled Automatic settlement was not found.',
+                ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE
+            );
+        }
 
-            $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
-                                                    Schedule\Period::HOURLY,
-                                                    1,
-                                                    null,
-                                                    0,
-                                                    0,
-                                                    ScheduleTask\Type::SETTLEMENT);
+        $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
 
-            if ($schedule === null)
-            {
-                throw new Exception\LogicException(
-                    'Schedule for Scheduled Automatic settlement was not found.',
-                    ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE
-                );
-            }
-
+        $this->repo->transactionOnLiveAndTest(function () use($schedule, $scheduledTasks)
+        {
             foreach ($scheduledTasks as $scheduledTask)
             {
                 $input = [
@@ -1830,26 +1882,95 @@ class Service extends Base\Service
                                                         Feature\Constants::ES_AUTOMATIC => 1
                                                     ],
                                                     Feature\Entity::SHOULD_SYNC => 1]);
-
-            $tags = $this->merchant->tagNames();
-
-            array_walk($tags, function(& $tag)
-            {
-                $tag = substr($tag, 0, 2);
-            });
-
-            if (in_array('KA', $tags) === true)
-            {
-                // for key accounts, send Feature enabled mail to Capital product team
-                $data['merchant'] = $this->merchant->toArrayPublic();
-
-                $esNotifyEmail = new EsEnabledNotify($data);
-
-                Mail::queue($esNotifyEmail);
-            }
         });
 
+
+        // All the mail sending steps are taken out of the transactionOnLiveAndTest. We want the flow to not get disturbed or reverted for any issues that may happen with mailer.
+        try
+        {
+            $this->sendMailsPostEnableScheduledEs($pricingForMerchant);
+        }
+
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FEATURE_ENABLE_EARLY_SETTLEMENT_MAIL_FAILED,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'user_id' => $this->user->getId()
+                ]);
+        }
+
         return ['success' => true];
+    }
+
+    public function sendMailsPostEnableScheduledEs(array $pricingForMerchant = null)
+    {
+        // Check merchant corresponding tags to see if it is a key account
+        $tags = $this->merchant->tagNames();
+
+        array_walk($tags, function(& $tag)
+        {
+            $tag = substr($tag, 0, 2);
+        });
+        if (in_array('KA', $tags) === true)
+        {
+            // For key accounts, send feature enabled mail to Capital product team
+            $kamMailerData[EsEnabledNotify::TO_EMAIL] = EsEnabledNotify::KAM_MAILING_LIST_EMAILS;
+
+            $kamMailerData[EsEnabledNotify::TO_NAME] = EsEnabledNotify::KAM_MAILING_LIST_NAMES;
+
+            $kamMailerData[EsEnabledNotify::SUBJECT] = EsEnabledNotify::KAM_MAILER_SUBJECT;
+
+            $kamMailerData[EsEnabledNotify::VIEW] = EsEnabledNotify::KAM_MAILER_VIEW;
+
+            $kamMailerData[EsEnabledNotify::MERCHANT_DATA] = $this->merchant->toArrayPublic();
+
+            $esNotifyKAMEmail = new EsEnabledNotify($kamMailerData);
+
+            Mail::queue($esNotifyKAMEmail);
+        }
+
+        if (isset($pricingForMerchant) === true)
+        {
+            // Fetch all userIds which belong to the merchant and are either owner, finance or admin type
+            $merchantOwnerAdminUsersCollections = (new MerchantUser\Repository)->findByRolesAndMerchantId([User\Entity::OWNER,
+                                                                                                           User\Entity::ADMIN,
+                                                                                                           User\Role::FINANCE],
+                                                                                                           $this->merchant->getId());
+
+            $merchantOwnerAdminUsers = array_unique($merchantOwnerAdminUsersCollections
+                                                    ->pluck(User\Entity::USER_ID)
+                                                    ->toArray());
+
+            // Fetch their corresponding names and email id's
+            $userNamesAndEmailsCollections = (new User\Repository)->findMany($merchantOwnerAdminUsers, [User\Entity::NAME, User\Entity::EMAIL]);
+
+            $userNamesAndEmails = $userNamesAndEmailsCollections->pluck(User\Entity::NAME, User\Entity::EMAIL)->toArray();
+
+            $pricingForMerchantPercentRate = number_format(floatval($pricingForMerchant[Pricing\Entity::PERCENT_RATE]) / 100, 2);
+
+            $merchantMailerData[EsEnabledNotify::TO_EMAIL] = array_keys($userNamesAndEmails);
+
+            // Add capital support to receiver's list
+            array_push($merchantMailerData[EsEnabledNotify::TO_EMAIL], MailConstants::MAIL_ADDRESSES[MailConstants::CAPITAL_SUPPORT]);
+
+            $merchantMailerData[EsEnabledNotify::TO_NAME] = array_values($userNamesAndEmails);
+
+            array_push($merchantMailerData[EsEnabledNotify::TO_NAME], MailConstants::HEADERS[MailConstants::CAPITAL_SUPPORT]);
+
+            $merchantMailerData[Pricing\Entity::PERCENT_RATE] = $pricingForMerchantPercentRate;
+
+            $merchantMailerData[EsEnabledNotify::SUBJECT] = EsEnabledNotify::MERCHANT_MAILER_SUBJECT;
+
+            $merchantMailerData[EsEnabledNotify::VIEW] = EsEnabledNotify::MERCHANT_MAILER_VIEW;
+
+            $esNotifyMerchantEmail = new EsEnabledNotify($merchantMailerData);
+
+            Mail::queue($esNotifyMerchantEmail);
+        }
     }
 
     public function addOrRemoveMerchantFeatures(array $input)
@@ -2300,8 +2421,12 @@ class Service extends Base\Service
             // Merchant confirmed details
             $data['confirmed'] = $this->getMerchantConfirmed($merchant);
 
+            $data['balance_configs'] = (new BalanceConfigService)->getMerchantBalanceConfigs();
+
             // Fetch formatted merchant details.
             $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
+
+            $data['is_inheritance_parent']  =  $merchant->isInheritanceParent();
 
             $data['tags'] = $merchant->tagNames();
         }
@@ -2990,8 +3115,8 @@ class Service extends Base\Service
         (new Validator)->validateInput('list_submerchants', $input);
 
         // add default params
-        $params['skip'] = $params['skip'] ?? 0;
-        $params['count'] = $params['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
+        $input['skip'] = $input['skip'] ?? 0;
+        $input['count'] = $input['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
 
         $submerchants = $this->core()->listSubmerchants($partner, $input);
 
@@ -3603,14 +3728,12 @@ class Service extends Base\Service
     }
 
     /**
-     * @param string $merchantId
-     *
      * @return array
      * @throws Exception\BadRequestException
      */
-    public function fetchReferral(string $merchantId): array
+    public function fetchReferral(): array
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant = $this->auth->getMerchant();
 
         $referrals = (new Referral\Core)->fetchMerchantReferral($merchant);
 
@@ -3618,15 +3741,13 @@ class Service extends Base\Service
     }
 
     /**
-     * @param string $merchantId
-     *
      * @return array
      * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function createReferral(string $merchantId): array
+    public function createReferral(): array
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant = $this->auth->getMerchant();
 
         $partner = $this->fetchPartner();
 

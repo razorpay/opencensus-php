@@ -549,4 +549,60 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
+
+    'testTransferInsufficientBalanceWithNegativeBalance' => [
+        'response' => [
+            'content' => [
+                'entity'            =>'transfer',
+                'source'            =>'acc_10000000000000',
+                'recipient'         =>'acc_10000000000001',
+                'amount'            =>1000,
+                'currency'          =>"INR",
+                'amount_reversed'   =>0
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testTransferInsufficientBalanceWithReserveBalance' => [
+        'response' => [
+            'content' => [
+                'entity'            =>'transfer',
+                'source'            =>'acc_10000000000000',
+                'recipient'         =>'acc_10000000000001',
+                'amount'            =>1000,
+                'currency'          =>"INR",
+                'amount_reversed'   =>0
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testTransferWithFeeInsufficientBalanceWithNegativeBalance' => [
+        'response' => [
+            'content' => [
+                'entity'            =>'transfer',
+                'source'            =>'acc_10000000000000',
+                'recipient'         =>'acc_10000000000001',
+                'amount'            =>1000,
+                'currency'          =>"INR",
+                'amount_reversed'   =>0
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testTransferWithFeeInsufficientBalanceWithReserveBalance' => [
+        'response' => [
+            'content' => [
+                'entity'            =>'transfer',
+                'source'            =>'acc_10000000000000',
+                'recipient'         =>'acc_10000000000001',
+                'amount'            =>1000,
+                'currency'          =>"INR",
+                'amount_reversed'   =>0
+            ],
+            'status_code' => 200,
+        ]
+    ]
 ];

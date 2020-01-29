@@ -149,7 +149,7 @@ class BankingInvoiceReport extends BaseReport
 
         return [
             MerchantEntity::MERCHANT_ID     => $this->merchant->getAttribute(MerchantEntity::ID),
-            MerchantEntity::BILLING_LABEL   => $this->merchant->getAttribute(MerchantEntity::BILLING_LABEL),
+            MerchantEntity::NAME            => $this->merchant->getAttribute(MerchantEntity::NAME),
             self::ADDRESS                   => $merchantDetail->getAttribute(Detail\Entity::BUSINESS_REGISTERED_ADDRESS),
             self::BUSINESS_REGISTERED_CITY  => $merchantDetail->getAttribute(Detail\Entity::BUSINESS_REGISTERED_CITY),
             self::BUSINESS_REGISTERED_STATE => $merchantDetail->getAttribute(Detail\Entity::BUSINESS_REGISTERED_STATE),

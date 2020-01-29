@@ -10,6 +10,7 @@ $invoice_status                 = $invoice_data['status'];
 $customer_details               = $invoice_data['customer_details'];
 $checkout_options               = $data['options']['checkout'];
 $hostedpage_options             = $data['options']['hosted_page'];
+$isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'];
 ?>
 
     <!doctype html>
@@ -46,12 +47,51 @@ $hostedpage_options             = $data['options']['hosted_page'];
             </script>
         @endif
     @endif
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    @if($invoice_status !== 'paid')
+        @if($isHostedCheckout)
+            <script src="https://cdn.razorpay.com/static/hosted/embedded-invoke.js"></script>
+        @else
+            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        @endif
+    @endif
+
+
     @include('invoice.payment_link_stylesheet')
 
     <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
 
     <script>
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Polyfill
+        if (typeof Object.assign !== 'function') {
+          // Must be writable: true, enumerable: false, configurable: true
+          Object.defineProperty(Object, "assign", {
+            value: function assign(target, varArgs) { // .length of function is 2
+              'use strict';
+              if (target === null || target === undefined) {
+                throw new TypeError('Cannot convert undefined or null to object');
+              }
+
+              var to = Object(target);
+
+              for (var index = 1; index < arguments.length; index++) {
+                var nextSource = arguments[index];
+
+                if (nextSource !== null && nextSource !== undefined) {
+                  for (var nextKey in nextSource) {
+                    // Avoid bugs when hasOwnProperty is shadowed
+                    if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                      to[nextKey] = nextSource[nextKey];
+                    }
+                  }
+                }
+              }
+              return to;
+            },
+            writable: true,
+            configurable: true
+          });
+        }
+
         function initAnalytics() {
             analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
             analytics.track('ga', 'pageview');
@@ -368,14 +408,23 @@ $hostedpage_options             = $data['options']['hosted_page'];
                             <div id="header-details">
                                 @if (isset($data['merchant']))
                                     <div id="merchant">
-                                        <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                                        @if(isset($data['checkout_options']['description']))
-                                            <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
+                                        <div id="merchant-name">
+                                            @if(isset($checkout_options['name']))
+                                                {{{ $checkout_options['name'] }}}
+                                            @else
+                                                {{{ $invoice_data['merchant_label'] }}}
+                                            @endif
+                                        </div>
+                                        @if(isset($checkout_options['description']))
+                                            <div id="merchant-desc">{{$checkout_options['description']}}</div>
                                         @endif
                                     </div>
                                 @endif
                             </div>
                         </div>
+                        @if($isHostedCheckout && $invoice_status === 'issued')
+                            <button id="desk-payment-btn">PROCEED TO PAY</button>
+                        @endif
                         <div id="scs-box">
                             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACUAAAAlCAMAAADyQNAxAAAASFBMVEUAAADD+tvD+tvD+tvD+tvD+dvD+trD+dvE+9vE/NvG+9zD/+HH/+H////C+doewGBj2JOW6rojwmOo8MeL5rF/4qh03qBm2ZW6Mr7TAAAADnRSTlMA6JrxzLKRiHlOOiIUAmMEAH8AAADOSURBVDjLlZRZDoMwDERtSAgEMizd7n/TSi0qSerE8P6QniwM46GY4J01DDbW+UAyY8M44GYUnKlDTjfl0tDin3ZIpR4yfSw1KNFkk7RpA2oM+3YtarTfTTvU6T4fExpjvF9tz8CQWR/Y4UC+JG3zih1PrigtvwdHVpdgyegSDLEugQkHt0w6iGa9trUgcfRey7ytogRDFokmSbDkkGhPQYIjj0SbBQk++4+LJHHIM3GXMnE6X3pWT+dev6EL96jftt4TZztH76/rXaj36ht1cjrNdgCxBgAAAABJRU5ErkJggg==" />
                             <div style="font-weight: 600; font-size: 18px">Payment Completed</div>
@@ -430,9 +479,15 @@ $hostedpage_options             = $data['options']['hosted_page'];
                 <div id="header-details">
                     @if (isset($data['merchant']))
                         <div id="merchant">
-                            <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                            @if(isset($data['checkout_options']['description']))
-                                <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
+                            <div id="merchant-name">
+                                @if(isset($checkout_options['name']))
+                                    {{{ $checkout_options['name'] }}}
+                                @else
+                                    {{{ $invoice_data['merchant_label'] }}}
+                                @endif
+                            </div>
+                            @if(isset($checkout_options['description']))
+                                <div id="merchant-desc">{{$checkout_options['description']}}</div>
                             @endif
                         </div>
                     @endif
@@ -667,6 +722,12 @@ $hostedpage_options             = $data['options']['hosted_page'];
         if (checkIsDesktop()) {
             document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
             document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
+
+            var payBtn = document.getElementById('desk-payment-btn');
+            if (payBtn) {
+                payBtn.style['background-color'] = color;
+                payBtn.style['display'] = 'block';
+            }
         } else {
             var payBtn = document.getElementById('mob-payment-btn');
             payBtn.style['background-color'] = color;
@@ -679,6 +740,8 @@ $hostedpage_options             = $data['options']['hosted_page'];
             var invoiceObj = data.invoice;
             var merchant = data.merchant;
             var $checkout_options = data.options.checkout;
+            var $hostedpage_options = data.options.hosted_page;
+            var $isHostedCheckout = !!Number($hostedpage_options.enable_embedded_checkout);
 
             // : base options
             var options = {
@@ -727,7 +790,7 @@ $hostedpage_options             = $data['options']['hosted_page'];
                 // partial_payment_label:  $checkout_options.label.partial_payment
             };
 
-            var modalCheckoutOptions = $checkout_options.modal; // TODO: Ask if need to remove some keys like ondismiss, onhidden, etc.
+            var modalCheckoutOptions = $checkout_options.modal;
             options.modal = Object.assign(modalCheckoutOptions, options.modal); // Shouldn't override base options
 
             // : description option : Hiding this permanantly as requested by Sriram
@@ -736,15 +799,16 @@ $hostedpage_options             = $data['options']['hosted_page'];
             // }
 
             // set from Rendering preferences
-            options.name = $checkout_options.name || invoiceObj.merchant_label;
+            options.name = $checkout_options.name || invoiceObj.merchant_label; // Same used in dummy  checkout as well
             options.description = $checkout_options.description;
+            options.min_amount_label = $checkout_options.first_payment_min_amount;
 
             // : hidden option
             options.hidden = $checkout_options.hidden; // Eg: email, contact
 
             // : theme options
             var themeFromCheckoutOptions = $checkout_options.theme;
-            options.modal = Object.assign(themeFromCheckoutOptions, options.theme); // Shouldn't override base options
+            options.theme = Object.assign(themeFromCheckoutOptions, options.theme); // Shouldn't override base options
 
 
             // : prefill options
@@ -779,17 +843,34 @@ $hostedpage_options             = $data['options']['hosted_page'];
                 }
             }
 
-            var razorpay;
+            if ($isHostedCheckout) {
+                var ele;
 
-            if (checkIsDesktop()) {
-                options.parent = '#chkout-box';
-                razorpay = window.razorpay = Razorpay(options);
+                if (checkIsDesktop()) {
+                    ele = document.getElementById('desk-payment-btn')
+                } else {
+                    ele = document.getElementById('mob-payment-btn')
+                }
+
+                ele.addEventListener('click', function() {
+                    const hostedCheckoutURL = 'https://api.razorpay.com/v1/checkout/embedded';
+                    window.invokeHostedCheckout(options, 'post', hostedCheckoutURL); // Redirects to Hosted checkout page, so handler not needed
+                })
+
             } else {
-                document.getElementById('mob-payment-btn').addEventListener('click', function() {
+                var razorpay;
+
+                if (checkIsDesktop()) {
+                    options.parent = '#chkout-box';
                     razorpay = window.razorpay = Razorpay(options);
-                    razorpay.open();
-                });
+                } else {
+                    document.getElementById('mob-payment-btn').addEventListener('click', function() {
+                        razorpay = window.razorpay = Razorpay(options);
+                        razorpay.open();
+                    });
+                }
             }
+
 
         }(window.RZP_DATA = window.RZP_DATA || {}));
     </script>

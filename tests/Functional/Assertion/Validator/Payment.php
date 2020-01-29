@@ -14,6 +14,7 @@ class Payment extends Validator
         Entity::AMOUNT              => 'required|integer',
         Entity::CURRENCY            => 'required|in:INR,USD',
         Entity::BASE_AMOUNT         => 'sometimes|integer',
+        Entity::BASE_CURRENCY       => 'sometimes|string',
         Entity::STATUS              => 'required|in:created,authorized,captured,failed,refunded',
         Entity::TWO_FACTOR_AUTH     => 'sometimes|nullable|in:passed,skipped,unknown,failed,not_applicable,unavailable',
         Entity::METHOD              => 'required|custom',
@@ -51,6 +52,7 @@ class Payment extends Validator
         Entity::EMI_PLAN            => 'sometimes',
         Entity::DISPUTES            => 'sometimes',
         Entity::REFERENCE16         => 'sometimes',
+        Entity::ACCOUNT_ID          => 'sometimes|string'
     );
 
     protected function validateMethod($attribute, $value)

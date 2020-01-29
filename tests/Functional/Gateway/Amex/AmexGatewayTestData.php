@@ -167,7 +167,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment processing failed due to 3dsecure or OTP authentication failure',
+                    'description' => 'The card is not enrolled for American Express SafeKey program. Please try another card.',
                 ],
             ],
             'status_code' => 400,

@@ -5,9 +5,12 @@ namespace RZP\Models\BankingAccount;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\BankingAccount\State;
+use RZP\Models\Base\PublicCollection;
 
 /**
- * @property Merchant\Entity     $merchant
+ * @property Merchant\Entity            $merchant
+ * @property Merchant\Balance\Entity    $balance
  */
 class Entity extends Base\PublicEntity
 {
@@ -180,6 +183,7 @@ class Entity extends Base\PublicEntity
         // 'banking_account_details' works fine
         //
         'bankingAccountDetails',
+        self::PASSWORD,
     ];
 
     protected $public = [
@@ -335,9 +339,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_MOBILE);
     }
 
+    public function getInternalReferenceNumber()
+    {
+        return $this->getAttribute(self::BANK_INTERNAL_REFERENCE_NUMBER);
+    }
+
     public function getBeneficiaryAddress1()
     {
         return $this->getAttribute(self::BENEFICIARY_ADDRESS1);
+    }
+
+    public function getBeneficiaryAddress2()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS2);
+    }
+
+    public function getBeneficiaryAddress3()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS3);
+    }
+
+    public function getBeneficiaryPin()
+    {
+        return $this->getAttribute(self::BENEFICIARY_PIN);
     }
 
     public function getBeneficiaryCountry()
@@ -380,6 +404,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE1);
     }
 
+    public function getBankInternalStatus()
+    {
+        return $this->getAttribute(self::BANK_INTERNAL_STATUS);
+    }
+
     public function getDetailsDataUsingKey($key)
     {
         return $this->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY, $key)
@@ -403,6 +432,23 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Balance\Entity::class);
     }
 
+    public function activationStates()
+    {
+        return $this->hasMany('\RZP\Models\BankingAccount\State\Entity');
+    }
+
+    /**
+     * This function is used for getting the activation status change log of a banking account
+     * @param Entity $bankingAccount
+     *
+     * @return PublicCollection
+     */
+    public function getActivationStatusChangeLog(): PublicCollection
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT)
+                    ->get();
+    }
     public function bankingAccountDetails()
     {
         return $this->hasMany(Detail\Entity::class, Detail\Entity::BANKING_ACCOUNT_ID, self::ID);

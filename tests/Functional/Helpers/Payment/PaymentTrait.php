@@ -6,6 +6,7 @@ use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
+use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Constants\Shield as ShieldConstants;
 use Symfony\Component\DomCrawler\Crawler;
@@ -13,15 +14,13 @@ use Symfony\Component\DomCrawler\Crawler;
 use RZP\Exception;
 use RZP\Models\Risk;
 use RZP\Models\Payment;
+use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Payment\Verify\Action;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
-use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 
 trait PaymentTrait
 {
@@ -39,6 +38,7 @@ trait PaymentTrait
     use PaymentMobikwikTrait;
     use PaymentOlamoneyTrait;
     use PaymentPayLaterTrait;
+    use PaymentGetsimplTrait;
     use PaymentCreationTrait;
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
@@ -1014,6 +1014,11 @@ trait PaymentTrait
             $input['fta_data'] = $data['fta_data'];
         }
 
+        if (isset($data['mode_requested']) === true)
+        {
+            $input['mode_requested'] = $data['mode_requested'];
+        }
+
         $this->ba->scroogeAuth();
 
         $request = array(
@@ -1070,6 +1075,11 @@ trait PaymentTrait
                 case 3471:
                     $event = 'processed_event';
                     $refund[RefundEntity::SPEED_PROCESSED] = 'instant';
+                    break;
+
+                // Emandate Debit
+                case 4000:
+                    $event = 'processed_event';
                     break;
             }
 
@@ -1329,6 +1339,18 @@ trait PaymentTrait
 
         $this->ba->privateAuth();
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function fetchPayment($paymentId, $content = [])
+    {
+        $request['url'] = '/payments/'.$paymentId;
+        $request['method'] = 'GET';
+
+        $request['content'] = $content;
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function fetchRefundsForPayment($paymentId)
@@ -2138,19 +2160,19 @@ trait PaymentTrait
         });
     }
 
-    protected function mockExpressSendRequest($closure, $times = 1)
+    protected function mockMozartWebhookTranslateRequest($closure, $times = 1)
     {
-        $express = Mockery::mock('RZP\Services\Express')->makePartial();
+        $mozart = Mockery::mock('RZP\Services\Mozart')->makePartial();
 
-        $express->shouldAllowMockingProtectedMethods();
+        $mozart->shouldAllowMockingProtectedMethods();
 
-        $express->shouldReceive('sendRequest')
+        $mozart->shouldReceive('translateWebhook')
                 ->times($times)
                 ->andReturnUsing($closure);
 
-        $this->app->instance('express', $express);
+        $this->app->instance('mozart', $mozart);
 
-        return $express;
+        return $mozart;
     }
 
     protected function mockShield()
@@ -2446,4 +2468,85 @@ trait PaymentTrait
         return $address;
     }
 
+    protected function setFetchFileBasedRefundsFromScroogeMockResponse(array $refundEntities)
+    {
+        $scroogeResponse = [
+            'code'     => 200,
+            'body'     => [
+                'data' => [],
+            ],
+        ];
+
+        foreach ($refundEntities as $refundEntity)
+        {
+            $scroogeResponse['body']['data'][] = [
+                'id'          => $refundEntity['id'],
+                'amount'      => $refundEntity['amount'],
+                'base_amount' => $refundEntity['base_amount'],
+                'payment_id'  => $refundEntity['payment_id'],
+                'bank'        => $refundEntity->payment['bank'],
+                'gateway'     => $refundEntity['gateway'],
+                'currency'    => $refundEntity['currency'],
+                'method'      => $refundEntity->payment['method'],
+                'created_at'  => $refundEntity['created_at'],
+            ];
+        }
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getFileBasedRefunds'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getFileBasedRefunds')
+                           ->willReturn($scroogeResponse);
+    }
+
+    protected function callFTAPatchRoute($content = [])
+    {
+        $this->ba->adminAuth();
+
+        $request = array(
+            'method'    => 'PATCH',
+            'url'       => '/fund_transfer_attempts',
+            'content'   => $content
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function markProcessedInstantRefundFailed($refund, $fta)
+    {
+        $strippedFtaId = substr($fta['id'], 4);
+
+        $ftaUpdateContent = [];
+        $ftaUpdateContent[$strippedFtaId]['status'] = 'failed';
+        $ftaUpdateContent[$strippedFtaId]['remarks'] = 'transaction got reversed';
+        $ftaUpdateContent[$strippedFtaId]['failure_reason'] = '[manual] transaction got reversed';
+
+        $this->callFTAPatchRoute($ftaUpdateContent);
+
+        $event = 'fee_only_reversal_event';
+        $this->scroogeUpdateRefundStatus($refund, $event);
+
+        $event = 'processed_to_file_init_event';
+        $status = 'file_init';
+        $this->scroogeUpdateRefundStatus($refund, $event, $status);
+    }
+
+    protected function enableRazorXTreatmentForRazorXRefund()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+    }
 }

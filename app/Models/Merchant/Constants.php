@@ -32,7 +32,7 @@ final class Constants
     const FULLY_MANAGED                           = 'fully_managed';
     const PURE_PLATFORM                           = 'pure_platform';
     const PARTNER_INTENT                          = 'partner_intent';
-    const TRANSLATE_WEBHOOK_URL                   = 'translate_webhook_url';
+    const TRANSLATE_WEBHOOK_GATEWAY               = 'translate_webhook_gateway';
 
     const DOCUMENT_TYPE                           = 'document_type';
 
@@ -45,6 +45,11 @@ final class Constants
 
     const REMOVE                                  = 'remove';
     const LIVE                                    = 'live';
+
+    public static $internationalActionMapping = [
+        Action::ENABLE_INTERNATIONAL  => 1,
+        Action::DISABLE_INTERNATIONAL => 0,
+    ];
 
     public static $partnerTypes = [
         self::BANK,
@@ -71,6 +76,7 @@ final class Constants
     const REASON_CODE            = 'reason_code';
     const CUSTOM_REASON_TYPE     = 'custom';
     const PREDEFINED_REASON_TYPE = 'predefined';
+    const DOCUMENT               = 'document';
 
     /**
      * Partner types that are allowed to view and manage
@@ -181,5 +187,10 @@ final class Constants
         Entity::CATEGORY,
         Entity::CATEGORY2,
         Entity::BILLING_LABEL,
+    ];
+
+    const INSURANCE_CATEGORIES = [
+        '6211',
+        '6300',
     ];
 }

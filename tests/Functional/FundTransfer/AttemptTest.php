@@ -397,17 +397,6 @@ class AttemptTest extends TestCase
 
         $channel = Channel::RBL;
 
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-             ->andReturn($redisMock);
-
-        $redisMock->expects($this->at(0))
-                  ->method('hget')
-                  ->with('config:fts_channels', $channel)
-                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
-
         $this->ba->privateAuth();
 
         $this->setUpMerchantForBusinessBanking(
@@ -491,18 +480,6 @@ class AttemptTest extends TestCase
 
         $channel = Channel::RBL;
 
-        $redisMock = $this->getMockBuilder(Redis::class)
-                          ->setMethods(['hget'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-             ->andReturn($redisMock);
-
-        $redisMock->expects($this->at(0))
-                  ->method('hget')
-                  ->with('config:fts_channels', $channel)
-                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
-
         $this->ba->privateAuth();
 
         $this->setUpMerchantForBusinessBanking(
@@ -564,6 +541,14 @@ class AttemptTest extends TestCase
 
         $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
 
+        //state transition has been added for fta update where initiated to reversed state transition is not allowed.
+        //first it will be changed to processed and then into reversed state.
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
         $this->updateFta(
             $attempt['fts_transfer_id'],
             $attempt['source'],
@@ -587,17 +572,6 @@ class AttemptTest extends TestCase
         Carbon::setTestNow($now);
 
         $channel = Channel::RBL;
-
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
-                          ->getMock();
-
-        Redis::shouldReceive('connection')
-             ->andReturn($redisMock);
-
-        $redisMock->expects($this->at(0))
-                  ->method('hget')
-                  ->with('config:fts_channels', $channel)
-                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
 
         $this->ba->privateAuth();
 

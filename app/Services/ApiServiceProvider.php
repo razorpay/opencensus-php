@@ -35,6 +35,7 @@ use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\FundTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\PaperMandate;
 use RZP\Models\EntityOrigin;
@@ -174,6 +175,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new CardPaymentService();
         });
 
+        $this->app->singleton('nbplus.payments', function($app)
+        {
+            $nbPlusMock = $app['config']->get('applications.nbplus_payment_service.mock');
+
+            if ($nbPlusMock === true)
+            {
+                return new Mock\NbPlus\Service();
+            }
+
+            return new NbPlus\Service();
+        });
+
         $this->app->singleton('card.otpelf', function($app)
         {
             $mock = $app['config']->get('applications.otpelf.mock');
@@ -211,6 +224,18 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('diag', function($app)
         {
             return new DiagClient($app);
+        });
+
+        $this->app->singleton('salesforce', function($app)
+        {
+            $salesForceMock = $app['config']->get('applications.salesforce.mock');
+
+            if ($salesForceMock === true)
+            {
+                return new Mock\SalesForceClient($app);
+            }
+
+            return new SalesForceClient($app);
         });
 
         $this->app->singleton('gateway_downtime_metric', function($app)
@@ -327,8 +352,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMozart();
 
         $this->registerHyperVerge();
-
-        $this->registerExpress();
     }
 
     /**
@@ -377,7 +400,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'diag',
             'mozart',
             'hubspot',
-            'express',
+            'salesforce',
         ];
     }
 
@@ -639,9 +662,11 @@ class ApiServiceProvider extends BaseServiceProvider
             'order'                     => Order\Entity::class,
             'refund'                    => Payment\Refund\Entity::class,
             'settlement'                => Settlement\Entity::class,
+            'settlement_transfer'       => Settlement\Transfer\Entity::class,
             'payout'                    => Payout\Entity::class,
             'transaction'               => Transaction\Entity::class,
             'fund_account_validation'   => FundAccount\Validation\Entity::class,
+            'fund_transfer_attempt'     => FundTransfer\Attempt\Entity::class,
             'customer_transaction'      => Customer\Transaction\Entity::class,
             'external'                  => External\Entity::class,
 
@@ -792,23 +817,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('shield.service', function($app)
         {
             return new Shield($app);
-        });
-    }
-
-    protected function registerExpress()
-    {
-        $this->app->singleton('express', function($app)
-        {
-            $mock = $app['config']->get('applications.express.mock');
-
-            if ($mock === true)
-            {
-                return new Mock\Express($app);
-            }
-            else
-            {
-                return new Express($app);
-            }
         });
     }
 

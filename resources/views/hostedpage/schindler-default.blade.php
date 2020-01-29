@@ -50,6 +50,7 @@
             @endif
         @endif
 
+        <script src="https://cdn.razorpay.com/static/hosted/create-order.js"></script>
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
         @include('hostedpage.styles.general')

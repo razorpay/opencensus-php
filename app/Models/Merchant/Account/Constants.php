@@ -77,6 +77,10 @@ class Constants
     const OWNER_INFO         = 'owner_info';
     const CONTACT_INFO       = 'contact_info';
 
+    // external ids
+    const EXTERNAL_ID       = 'external_id';
+    const LEGAL_EXTERNAL_ID = 'legal_external_id';
+
     // Values
     const ACCOUNT            = 'account';
     const OPERATION          = 'operation';
@@ -106,5 +110,10 @@ class Constants
         self::B2B,
         self::B2C,
         self::B2BC,
+    ];
+
+    public static $validAddressTypes = [
+        self::REGISTERED,
+        self::OPERATION,
     ];
 }

@@ -148,9 +148,11 @@ trait FraudDetector
             $this->setRiskMetadata($payment, $riskFields);
 
             if (($variant !== 'v2') and
-                ($riskData['risk_score'] > $this->merchant->getRiskThreshold()))
+                (($riskData['risk_score'] > $this->merchant->getRiskThreshold()) and
+                 (($this->payment->card->isInternational() === true) and ($this->payment->card->isAmex() === false))))
             {
                 $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::CONFIRMED;
+                $riskData[Risk\Entity::REASON]     = Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD;
                 $riskSource = Risk\Source::SHIELD;
             }
         }

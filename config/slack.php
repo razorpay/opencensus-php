@@ -175,6 +175,10 @@ return array(
         'pgob_alerts'          => 'CL985FWUX',
         // fta alerts
         'fta_alerts'           => 'CMLR1R6FJ',
+        // irctc alerts
+        'ops_irctc'            => 'C971JT8JC',
+
+        'payout_links_alerts'  => 'CT0D3HTBR'
 
     ],
 

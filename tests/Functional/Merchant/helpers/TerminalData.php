@@ -1554,7 +1554,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1601,7 +1600,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1719,7 +1717,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1964,7 +1961,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -2243,6 +2239,28 @@ return [
         ]
     ],
 
+
+    'testEnableTerminalFailedOnGateway'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'Terminal enable failed on gateway',
+                ],
+            ],
+            'status_code' => 502
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TERMINAL_ENABLE_FAILED
+        ],
+    ],
+
+
+
     'testDisableTerminal'  => [
         'request' => [
             'method' => 'PUT'
@@ -2250,7 +2268,7 @@ return [
         'response' => [
             'content' => [
                 'entity'              => 'terminal',
-                'status'              => 'activated',
+                'status'              => 'deactivated',
                 'enabled'             =>  false,
                 'notes'               =>  'some notes',
                 'mpan'                =>  [
@@ -2262,6 +2280,26 @@ return [
         ]
     ],
 
+    'testDisableTerminalFailedOnGateway'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'Terminal disable failed on gateway',
+                ],
+            ],
+            'status_code' => 502
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TERMINAL_DISABLE_FAILED
+        ],
+    ],
+
+
     'testOnlyActivatedTerminalShouldBeEnabled'  => [
         'request' => [
             'method' => 'PUT'
@@ -2270,14 +2308,14 @@ return [
             'content'  => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only terminals in activated state can be enabled',
+                    'description' => 'Only deactivated terminals can be enabled',
                 ],
             ],
             'status_code' => 400
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_DEACTIVATED_TERMINALS_CAN_BE_ENABLED
         ],
     ],
 
@@ -2555,8 +2593,8 @@ return [
                     Terminal\Type::NON_RECURRING => '1',
                     Terminal\Type::UPI_TRANSFER  => '1',
                 ],
-                'virtual_upi_root'            => 'rzp.',
-                'virtual_upi_merchant_prefix' => 'pay.',
+                'virtual_upi_root'            => 'rzpy.',
+                'virtual_upi_merchant_prefix' => 'payto00000',
                 'virtual_upi_handle'          => 'hdfcbank',
             ],
             'method'  => 'POST',
@@ -2623,10 +2661,9 @@ return [
                 'category'                      => '1234',
                 'gateway_merchant_id'           => 'MER0000000000111',
                 'gateway_merchant_id2'          => 'MERCHANNEL0000000000111',
-                'gateway_terminal_password'     => env('UPI_JUSPAY_MERCHANT_PRIVATE_KEY'),
-                'gateway_terminal_password2'    => env('UPI_JUSPAY_BANK_PUBLIC_KEY'),
                 'gateway_secure_secret'         => 'NotUsedAsOfNow',
                 'upi'                           => 1,
+                'vpa'                           => 'abcd@some'
             ],
             'method' => 'POST'
         ],
@@ -2643,10 +2680,8 @@ return [
         'request' => [
             'content' => [
                 'category'                      => '1234',
-                'gateway_terminal_password'     => 'somekey',
-                'gateway_terminal_password2'    => 'somepublic',
                 'gateway_secure_secret'         => 'NotUsedAsOfNow',
-
+                'vpa'                           => 'abcd@some'
             ],
             'method' =>  'POST'
         ],
@@ -2654,6 +2689,31 @@ return [
             'content'   => [
                 'gateway_terminal_password'    => 'new_password',
                 'enabled'                      => true
+            ]
+        ]
+    ],
+    'testCreateJuspayIntentTerminal'           =>  [
+        'request'   => [
+            'content'   => [
+                'gateway'                       => 'upi_juspay',
+                'gateway_acquirer'              => 'axis',
+                'category'                      => '1234',
+                'gateway_merchant_id'           => 'MER0000000000111',
+                'gateway_merchant_id2'          => 'MERCHANNEL0000000000111',
+                'gateway_secure_secret'         => 'NotUsedAsOfNow',
+                'upi'                           => 1,
+                'vpa'                           => 'abcd@some',
+                'type'                          => [
+                    'non_recurring'             => '1',
+                    'pay'                       => '1'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'MER0000000000111',
+                'gateway_acquirer'          =>  'axis',
+                'enabled'                   => true
             ]
         ]
     ],

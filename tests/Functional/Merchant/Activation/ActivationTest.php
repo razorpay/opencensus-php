@@ -3,33 +3,41 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use Mail;
 use Config;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Currency\Currency;
-use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Tests\Functional\Partner\Constants;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
+use RZP\Mail\Merchant\NeedsClarificationEmail as NeedsClarificationEmail;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 /**
  * @group dns-sensitive
+ *
+ * todo, need to add test cases for VA Emails (https://razorpay.atlassian.net/browse/RX-1025)
  */
-class ActivationTest extends TestCase
+class ActivationTest extends OAuthTestCase
 {
     use MocksDnsTrait;
+    use PartnerTrait;
     use EntityActionTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
@@ -97,6 +105,7 @@ class ActivationTest extends TestCase
         $this->assertFalse($merchant->merchantDetail->isSubmitted());
 
         $this->assertEquals($merchant->getWebsite(), 'https://example.com');
+        $this->assertEquals($merchant->getBillingLabel(), 'tsest123');
 
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
@@ -110,6 +119,37 @@ class ActivationTest extends TestCase
         $this->assertEquals($legalEntity->getMcc(), 5691);
         $this->assertEquals('ecommerce', $legalEntity->getBusinessCategory());
         $this->assertEquals('fashion_and_lifestyle', $legalEntity->getBusinessSubcategory());
+    }
+
+    public function testBusinessWebsiteUpdate()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $website = 'http://abc.com';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => $website]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals($merchant->getWebsite(), 'https://example.com');
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
+
+        $this->assertContains('example.com', $merchant->getWhitelistedDomains());
+
+        $this->assertNotContains('abc.com', $merchant->getWhitelistedDomains());
     }
 
 
@@ -312,6 +352,44 @@ class ActivationTest extends TestCase
         }
     }
 
+    public function testIAForUnregisteredBusinessFromKycService()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $tests = [
+            'testIAForUnregisteredBusinessFeatureEnabledNameMisMatch'     => MerchantDetailsConstant::SUCCESS,
+            'testIAForUnregisteredBusinessFeatureEnabledIncorrectDetails' => MerchantDetailsConstant::INCORRECT_DETAILS,
+            'testIAForUnregisteredBusinessFeatureEnabledTimeout'          => MerchantDetailsConstant::FAILURE,
+            'testIAForUnregisteredBusinessFeatureEnabled'                 => MerchantDetailsConstant::SUCCESS, // at bottom because once successful, the request can not be tried again
+        ];
+
+        foreach ($tests as $test => $mockStatus)
+        {
+            Config::set('applications.kyc.pan_authentication', $mockStatus);
+
+            Config::set('applications.kyc.mock', true);
+
+            $featureVariantMap = [
+                'non_registered_onboarding' => 'on',
+                'kyc_service_verification'  => 'on',
+            ];
+
+            $this->mockRazorXMultiFeature($test,$featureVariantMap);
+
+            $testData = $this->testData[$test];
+
+            $this->runRequestResponseFlow($testData);
+        }
+    }
+
     protected function mockHubSpotClient($methodName)
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
@@ -327,11 +405,24 @@ class ActivationTest extends TestCase
 
     public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
     {
-        $testData                       = &$this->testData[$functionName];
+        $featureVariantMap = [$featureName => $variant];
 
-        $uniqueLocalId                  = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
+        $this->mockRazorXMultiFeature($functionName, $featureVariantMap, $merchantId);
+    }
 
-        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
+    public function mockRazorXMultiFeature(string $functionName, array $featureVariantMap, $merchantId = '1cXSLlUU8V9sXl')
+    {
+        $testData = &$this->testData[$functionName];
+
+        $localIdVariantMap = [];
+
+        foreach ($featureVariantMap as $featureName => $variant)
+        {
+            $uniqueLocalId                     = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
+            $localIdVariantMap[$uniqueLocalId] = $variant;
+        }
+
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => json_encode($localIdVariantMap)];
     }
 
     public function testInstantActivationOfSubscriptionsForActiveMerchants()
@@ -855,6 +946,47 @@ class ActivationTest extends TestCase
         $this->startTest();
     }
 
+    public function testReleaseFundsWithParntersBankAccount()
+    {
+        list($application) = $this->createPartnerMerchantAndSubMerchant(MerchantConstants::AGGREGATOR);
+
+        $data = $this->getInstantlyActivatedMerchantDetailData(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->ba->adminAuth();
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/merchants/' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID . '/action';
+
+        $data = $this->getInstantlyActivatedMerchantData();
+        $this->fixtures->on('test')->edit('merchant', Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $data);
+        $this->fixtures->on('live')->edit('merchant', Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $data);
+
+        $configAttributes = [
+            'SETTLE_TO_PARTNER' => 1,
+        ];
+
+        $this->createConfigForPartnerApp($application->getId(), Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $configAttributes);
+
+        $config = [
+            'deleted_at' => '1576153748'
+        ];
+
+        $bankAccount = $this->getDbEntity('bank_account',
+                                          ['entity_id'   => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                                           'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->fixtures->on('test')->edit('bank_account', $bankAccount['id'], $config);
+
+        $bankAccount = $this->getDbEntity('bank_account',
+                                          ['entity_id'   => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                                           'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $this->fixtures->on('test')->edit('bank_account', $bankAccount['id'], $config);
+
+        $this->startTest();
+    }
+
     public function testPostInstantActivationFetaureCheck()
     {
         $merchantId = '1cXSLlUU8V9sXl';
@@ -1013,6 +1145,19 @@ class ActivationTest extends TestCase
         $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
 
         $this->assertFalse($merchant->convertOnApi());
+    }
+
+    public function testWhitelistInternationalForRiskyBusinessType()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->runFixturesForInternationalActivation($merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNull($merchant->convertOnApi());
     }
 
     public function testWhitelistInternationalWithNoWebsite()
@@ -1318,9 +1463,9 @@ class ActivationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
-        $this->assertTrue($merchant->isInternational());
+        $this->assertFalse($merchant->isInternational());
 
-        $this->assertFalse($merchant->convertOnApi());
+        $this->assertNull($merchant->convertOnApi());
     }
 
     public function testGreylistInternationalInstantActivationOnKYC()
@@ -1354,9 +1499,9 @@ class ActivationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
-        $this->assertTrue($merchant->isInternational());
+        $this->assertFalse($merchant->isInternational());
 
-        $this->assertFalse($merchant->convertOnApi());
+        $this->assertNull($merchant->convertOnApi());
     }
 
     public function testBlacklistInternationalOnKYC()
@@ -1442,6 +1587,7 @@ class ActivationTest extends TestCase
                                                    'promoter_pan_name'       => 'pankaj kumar',
                                                    'bank_account_name'       => 'pankaj k',
                                                    'poa_verification_status' => 'verified',
+                                                   'poi_verification_status' => 'verified',
                                                    'submitted'               => 1,
                                                    'submitted_at'            => now()->getTimestamp()]);
 
@@ -1472,8 +1618,10 @@ class ActivationTest extends TestCase
     public function testFailureBankDetailsVerification()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type' => 2,
-                                                   "promoter_pan_name"       => "pankaj kumar",]);
+                                                  ['business_type'             => 2,
+                                                   'promoter_pan_name'         => 'pankaj kumar',
+                                                   'kyc_clarification_reasons' => $this->getClarificationReason(),
+                                                  ]);
 
         $attribute = [
             ValidationEntity::REGISTERED_NAME => "pankaj kumar",
@@ -1489,11 +1637,12 @@ class ActivationTest extends TestCase
     public function testFailureBankDetailsVerificationForNameMismatchCase()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'           => 2,
-                                                   'promoter_pan_name'       => 'pankaj kumar',
-                                                   'poa_verification_status' => 'verified',
-                                                   'submitted'               => 1,
-                                                   'submitted_at'            => now()->getTimestamp()]);
+                                                  ['business_type'             => 2,
+                                                   'promoter_pan_name'         => 'pankaj kumar',
+                                                   'poa_verification_status'   => 'verified',
+                                                   'submitted'                 => 1,
+                                                   'kyc_clarification_reasons' => $this->getClarificationReason(),
+                                                   'submitted_at'              => now()->getTimestamp()]);
 
         $attribute = [
             ValidationEntity::REGISTERED_NAME => "random name",
@@ -1509,12 +1658,13 @@ class ActivationTest extends TestCase
     public function testFailureBankDetailsVerificationForBankNameMismatchCase()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'           => 2,
-                                                   'promoter_pan_name'       => 'pankaj kumar',
-                                                   'bank_account_name'       => 'puneet jain',
-                                                   'poa_verification_status' => 'verified',
-                                                   'submitted'               => 1,
-                                                   'submitted_at'            => now()->getTimestamp()]);
+                                                  ['business_type'             => 2,
+                                                   'promoter_pan_name'         => 'pankaj kumar',
+                                                   'bank_account_name'         => 'puneet jain',
+                                                   'poa_verification_status'   => 'verified',
+                                                   'submitted'                 => 1,
+                                                   'kyc_clarification_reasons' => $this->getClarificationReason(),
+                                                   'submitted_at'              => now()->getTimestamp()]);
 
         $attribute = [
             ValidationEntity::REGISTERED_NAME => "pankaj kumar",
@@ -1533,6 +1683,8 @@ class ActivationTest extends TestCase
      */
     protected function validateBankDetailFailureCase($attribute, $merchantDetail): void
     {
+        Mail::fake();
+
         $this->fixtures->create('fund_account_validation', $attribute);
 
         $fav = $this->getLastEntity('fund_account_validation', true, 'test');
@@ -1545,7 +1697,61 @@ class ActivationTest extends TestCase
 
         $this->assertEquals($merchantDetail->getBankDetailsVerificationStatus(), 'failed');
 
-        $this->assertEquals($merchantDetail->getActivationStatus(), 'under_review');
+        $this->assertEquals($merchantDetail->getActivationStatus(), 'needs_clarification');
+
+        $this->assertEquals($merchantDetail->getKycClarificationReasons(), $this->getClarificationReasonsForPennyTestingFailure());
+
+        Mail::assertQueued(NeedsClarificationEmail::class);
+    }
+
+    protected function getClarificationReasonsForPennyTestingFailure()
+    {
+        return [
+            Entity::ADDITIONAL_DETAILS => [
+                "address_proof_url" => [[
+                                            'reason_type' => 'predefined',
+                                            'field_type'  => 'document',
+                                            'reason_code' => 'unable_to_validate_acc_number',
+                                        ]],
+                "cancelled_cheque"  => [[
+                                            'reason_type' => 'predefined',
+                                            'field_type'  => 'document',
+                                            'reason_code' => 'unable_to_validate_acc_number',
+                                        ]],
+            ],
+        ];
+    }
+
+    protected function getClarificationReason()
+    {
+        return [
+            Entity::ADDITIONAL_DETAILS => [
+                "address_proof_url" => [[
+                                            'reason_type' => 'predefined',
+                                            'field_type'  => 'document',
+                                            'reason_code' => 'unable_to_validate_acc_number',
+                                        ]],
+            ],
+        ];
+    }
+
+    /**
+     * @param $attribute
+     * @param $merchantDetail
+     */
+    public function testValidateNeedsClarificationStatusChange(): void
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'           => 1,
+                                                   'promoter_pan_name'       => 'pankaj kumar',
+                                                   'poa_verification_status' => 'verified',
+                                                   'submitted'               => 1,
+                                                   'activation_status'       => 'needs_clarification',
+                                                   'submitted_at'            => now()->getTimestamp()]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID]);
+
+        $this->startTest();
     }
 
     /**

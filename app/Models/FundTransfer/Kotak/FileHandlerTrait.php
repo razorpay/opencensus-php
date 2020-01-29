@@ -171,10 +171,8 @@ trait FileHandlerTrait
         return $extension;
     }
 
-    public function getH2HFileFromAws($key, $useKeyForFileName = false)
+    public function getH2HFileFromAws($key, $useKeyForFileName = false, $bucket = 'h2h_bucket', $region = null)
     {
-        $bucket = 'h2h_bucket';
-
         if ($useKeyForFileName === false)
         {
             $extension = $this->getFileExtension($key);
@@ -195,7 +193,7 @@ trait FileHandlerTrait
             }
         }
 
-        return $this->getFileFromAws($key, $fullPath, $bucket);
+        return $this->getFileFromAws($key, $fullPath, $bucket, $region);
     }
 
     public function deleteFileIfExists()

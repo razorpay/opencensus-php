@@ -955,6 +955,8 @@ class Calculator extends Base\Core
             {
                 $this->traceContext(TraceCode::COMMISSION_NOT_DEFINED);
 
+                $this->trace->traceException($ex);
+
                 $feeDetails['is_valid']  = false;
 
                 return $feeDetails;

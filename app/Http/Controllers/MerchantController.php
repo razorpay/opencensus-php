@@ -14,6 +14,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\AccessMap;
+use RZP\Models\Merchant\InheritanceMap;
 
 class MerchantController extends Controller
 {
@@ -921,6 +922,18 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * @param $id
+     *
+     * @return mixed
+     */
+    public function getWebsiteStatus()
+    {
+        $response = $this->service(E::MERCHANT)->getWebsiteStatus();
+
+        return ApiResponse::json($response);
+    }
+
     public function getBusinessCategories()
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getBusinessCategories();
@@ -1443,9 +1456,9 @@ class MerchantController extends Controller
      *
      * @return mixed
      */
-    public function fetchReferral(string  $merchantId)
+    public function fetchReferral()
     {
-        $response = $this->service()->fetchReferral($merchantId);
+        $response = $this->service()->fetchReferral();
 
         return ApiResponse::json($response);
     }
@@ -1455,10 +1468,57 @@ class MerchantController extends Controller
      *
      * @return mixed
      */
-    public function createReferral(string  $merchantId)
+    public function createReferral()
     {
-        $response = $this->service()->createReferral($merchantId);
+        $response = $this->service()->createReferral();
 
         return ApiResponse::json($response);
     }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function putAdditionalWebsite(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->putAdditionalWebsite($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getInheritanceParent(string $merchantId)
+    {
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->getInheritanceParent($merchantId);
+
+        return ApiResponse::json($response->toArrayPublic());
+    }
+
+    public function postInheritanceParent(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->postInheritanceParent($merchantId, $input);
+        
+        return ApiResponse::json($response->toArrayPublic());
+    }
+
+    public function deleteInheritanceParent(string $merchantId)
+    {
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->deleteInheritanceParent($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postInheritanceParentBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->postInheritanceParentBulk($input);
+
+        return ApiResponse::json($response);
+    }
+    
 }

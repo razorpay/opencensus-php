@@ -4,6 +4,7 @@ namespace RZP\Models\Transaction;
 
 use RZP\Constants\Entity as E;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Type
 {
@@ -16,8 +17,9 @@ class Type
     const EXTERNAL                = 'external';
     const ADJUSTMENT              = 'adjustment';
     const SETTLEMENT              = 'settlement';
-    const BANK_TRANSFER           = 'bank_transfer';
     const COMMISSION              = 'commission';
+    const BANK_TRANSFER           = 'bank_transfer';
+    const SETTLEMENT_TRANSFER     = 'settlement_transfer';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
 
     //
@@ -40,6 +42,15 @@ class Type
         self::FUND_ACCOUNT_VALIDATION,
     ];
 
+    const BANKING_TYPE = [
+        self::PAYOUT,
+        self::BANK_TRANSFER,
+        self::REVERSAL,
+        self::ADJUSTMENT,
+        self::EXTERNAL,
+        self::FUND_ACCOUNT_VALIDATION,
+    ];
+
     const IGNORE_ENTITIES_FROM_MERCHANT_BANKING_INVOICE = [
         self::PAYMENT,
         self::REFUND,
@@ -49,6 +60,7 @@ class Type
         self::SETTLEMENT,
         self::ADJUSTMENT,
         self::COMMISSION,
+        self::SETTLEMENT_TRANSFER,
     ];
 
     public static function validateType(string $type)
@@ -58,6 +70,16 @@ class Type
         if ((defined($key) === false) or (constant($key) !== $type))
         {
             throw new InvalidArgumentException("Not a valid Transaction type: {$type}");
+        }
+    }
+
+    public static function validateBankingType(string $type)
+    {
+        self::validateType($type);
+
+        if (in_array($type, self::BANKING_TYPE, true) === false)
+        {
+            throw new BadRequestValidationFailureException("Not a valid banking transaction type : " . $type);
         }
     }
 

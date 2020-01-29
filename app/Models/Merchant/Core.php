@@ -8,7 +8,6 @@ use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
 use Razorpay\OAuth\Application as OAuthApp;
-use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Exception;
 use RZP\Models\Emi;
@@ -16,6 +15,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Jobs\EsSync;
 use RZP\Models\Batch;
+use RZP\Models\Partner;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -27,6 +27,7 @@ use RZP\Models\User\Role;
 use RZP\Constants\Product;
 use RZP\Jobs\MerchantSync;
 use RZP\Models\BankAccount;
+use RZP\Models\Admin\Group;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Action;
@@ -35,6 +36,7 @@ use RZP\Jobs\MailingListUpdate;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Settlement\Bucket;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\LegalEntity;
@@ -47,10 +49,11 @@ use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
-use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
+use RZP\Models\Merchant\Detail\InternationalActivationFlow;
 
 class Core extends Base\Core
 {
@@ -115,12 +118,35 @@ class Core extends Base\Core
 
         $this->upsertLegalEntity($merchant, []);
 
+        $this->addToDefaultUnclaimedGroup($merchant);
+
         // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::CREATED, $merchant->toArrayEvent());
 
         return $merchant;
+    }
+
+    /**
+     * Any merchant created will be assign to Default Unclaimed Group for SalesForce.
+     *
+     * @param Entity $merchant
+     */
+    public function addToDefaultUnClaimedGroup(Entity $merchant)
+    {
+        $group = (new Group\Entity())->getSalesForceGroupId();
+
+        $unClaimedGroupId = $group[Group\Constant::SALESFORCE_UNCLAIMED_GROUP_ID];
+
+        $this->trace->info(TraceCode::MERCHANT_DEFAULT_GROUP_ATTACH,
+                           [
+                               'action'   => 'attach_in_merchant_map',
+                               'merchant' => $merchant->getId(),
+                               'groupId'  => $unClaimedGroupId,
+                           ]);
+
+        $this->repo->sync($merchant, 'groups', [$unClaimedGroupId], false);
     }
 
     public function upsertLegalEntity(Entity $merchant, array $input)
@@ -133,6 +159,9 @@ class Core extends Base\Core
     }
 
     /**
+     * For any code getting added here, consider whether it is applicable for a submerchant
+     * getting linked via an admin or by a referral code and update code in those cases too
+     *
      * @param array  $input
      * @param Entity $aggregatorMerchant
      * @param bool   $linkedAccount
@@ -149,6 +178,15 @@ class Core extends Base\Core
     {
         $aggregatorMerchant->getValidator()->validateSubMerchantInput($input, $linkedAccount);
 
+        // validate that external id passed is unique for that partner
+        if (empty($input[Entity::EXTERNAL_ID]) === false)
+        {
+            (new Partner\Core)->validateExternalIdForPartnerSubmerchant($aggregatorMerchant, $input[Entity::EXTERNAL_ID]);
+        }
+
+        $legalEntity           = null;
+        $externalLegalEntityId = null;
+
         $input['email'] = $input['email'] ?? $aggregatorMerchant->getEmail();
 
         if ($accountEntity === true)
@@ -158,6 +196,19 @@ class Core extends Base\Core
         else
         {
             $entity = new Entity;
+
+            if (empty($input[Entity::LEGAL_ENTITY_ID]) === false)
+            {
+                $legalEntity = $this->repo->legal_entity->findOrFailPublic($input[Entity::LEGAL_ENTITY_ID]);
+
+                unset($input[Entity::LEGAL_ENTITY_ID]);
+            }
+            else if (empty($input[Entity::LEGAL_EXTERNAL_ID]) === false)
+            {
+                $externalLegalEntityId = $input[Entity::LEGAL_EXTERNAL_ID];
+
+                unset($input[Entity::LEGAL_EXTERNAL_ID]);
+            }
         }
 
         $subMerchant = $entity->build($input);
@@ -193,13 +244,25 @@ class Core extends Base\Core
             $subMerchant->org()->associate($org);
         }
 
+        if (empty($legalEntity) === false)
+        {
+            $subMerchant->legalEntity()->associate($legalEntity);
+        }
+
         $this->repo->saveOrFail($subMerchant);
 
         $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant);
 
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
 
-        $this->upsertLegalEntity($subMerchant, []);
+        $legalEntityInput = [];
+
+        if (empty($externalLegalEntityId) === false)
+        {
+            $legalEntityInput[LegalEntity\Entity::EXTERNAL_ID] = $externalLegalEntityId;
+        }
+
+        $this->upsertLegalEntity($subMerchant, $legalEntityInput);
 
         return $subMerchant;
     }
@@ -212,7 +275,7 @@ class Core extends Base\Core
      * @throws BadRequestException
      * @throws Exception\LogicException
      */
-    protected function assignSubMerchantPricingPlan(Entity $merchant, Entity $subMerchant, bool $linkedAccount = false)
+    public function assignSubMerchantPricingPlan(Entity $merchant, Entity $subMerchant, bool $linkedAccount = false)
     {
         // assign parent pricing plan by default
         $pricingPlan = $merchant->getPricingPlanId();
@@ -237,7 +300,9 @@ class Core extends Base\Core
 
     protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null)
     {
-        $this->createBalance($merchant, Mode::TEST);
+        $merchantBalance = $this->createBalance($merchant, Mode::TEST);
+
+        $this->createBalanceConfig($merchantBalance, Mode::TEST);
 
         (new BankAccount\Core)->createTestBankAccount($merchant);
 
@@ -247,12 +312,23 @@ class Core extends Base\Core
 
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
 
+        $this->setDefaultFeatureForMerchant($merchant);
+    }
+
+    protected function setDefaultFeatureForMerchant(Entity $merchant)
+    {
         // Removing this feature is complicated, but
         // blindly assigning the feature to everybody is not
         (new Feature\Core)->create([
             Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
             Feature\Entity::ENTITY_ID       => $merchant->getId(),
             Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
+        ], $shouldSync = true);
+
+        (new Feature\Core)->create([
+            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+            Feature\Entity::ENTITY_ID       => $merchant->getId(),
+            Feature\Entity::NAME            => Feature\Constants::VALIDATE_MERCHANT_DOMAIN,
         ], $shouldSync = true);
     }
 
@@ -523,7 +599,7 @@ class Core extends Base\Core
         {
             $this->trace->info(TraceCode:: MERCHANT_BALANCE_ID,
                                [
-                                   "balance_id" => $merchantBalance->getId()
+                                   'balance_id' => $merchantBalance->getId()
                                ]);
 
             return $merchantBalance;
@@ -536,6 +612,17 @@ class Core extends Base\Core
         $this->repo->balance->createBalance($merchantBalance);
 
         return $merchantBalance;
+    }
+
+    public function createBalanceConfig($merchantBalance, $mode)
+    {
+        $balanceConfig = Merchant\Balance\BalanceConfig\Entity::buildFromBalance($merchantBalance);
+
+        $balanceConfig->setConnection($mode);
+
+        $this->repo->balance_config->createBalanceConfig($balanceConfig);
+
+        return $balanceConfig;
     }
 
     public function getUsers(Entity $merchant, string $product = Product::PRIMARY)
@@ -621,14 +708,27 @@ class Core extends Base\Core
 
         $function = camel_case($action);
 
-        $merchant->$function();
-
-        if ($useWorkflows === true)
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $function, $useWorkflows, $originalMerchant, $action)
         {
-            $this->triggerWorkFlowForMerchantEditAction($originalMerchant, $merchant, $action);
+            $merchant->$function();
+
+            if ($useWorkflows === true)
+            {
+                $this->triggerWorkFlowForMerchantEditAction($originalMerchant, $merchant, $action);
+            }
+
+            $this->repo->saveOrFail($merchant);
+        });
+
+        if (array_key_exists($action, Constants::$internationalActionMapping))
+        {
+            (new Detail\Core())->updateInternationalActivationFlow($merchant, Constants::$internationalActionMapping[$action]);
         }
 
-        $this->repo->saveOrFail($merchant);
+        if($action === Merchant\Action::RELEASE_FUNDS)
+        {
+            $this->addMerchantToSettlementBucketOnFundsRelease($merchant);
+        }
 
         if($action === Constants::SUSPEND)
         {
@@ -646,6 +746,83 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    /*
+     check if merchant is subMerchant to aggregator/fully Managerd partner
+     and if partner is settle to partner
+     and then check partner's bank account exists or not.
+    */
+    public function getSettledToPartnersTypeOfMerchantIfExists(Entity $merchant)
+    {
+        $partners = $this->fetchAffiliatedPartners($merchant->getId());
+
+        //
+        // subMerchant can belong to only one aggregator or fully managed at a time.
+        // settlementPartnerTypes are aggregator and fully Managed.
+        //
+        $partner = $partners->filter(function(Entity $partner)
+        {
+            return (in_array($partner->getPartnerType(), PartnerConstants::$settlementPartnerTypes, true) === true);
+
+        })->first();
+
+        if (empty($partner) === true)
+        {
+            return null;
+        }
+
+        return $partner;
+    }
+
+    public function isValidBankAccountForSettledToPartner(Entity $submerchant, Entity $partner = null)
+    {
+        if ($partner === null)
+        {
+            return false;
+        }
+
+        $application = $this->getInternalPartnerApp($partner);
+
+        $config      = (new PartnerConfig\Core)->fetch($application, $submerchant);
+
+        if ($config === null)
+        {
+            return false;
+        }
+
+        $shouldSettleToPartner = $config->shouldSettleToPartner();
+
+        if ($shouldSettleToPartner === true)
+        {
+            // validate Partner's Bank account
+            $bankAccount = $partner->bankAccount;
+
+            if ($bankAccount === null)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND);
+            }
+        }
+
+        return $shouldSettleToPartner;
+    }
+
+    /**
+     * Adds merchant to settlement bucket when funds are released for the merchant.
+     *
+     * @param Merchant\Entity $merchant
+     */
+    protected function addMerchantToSettlementBucketOnFundsRelease(Merchant\Entity $merchant)
+    {
+        $settlementTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        (new Bucket\Core())->addMerchantToSettlementBucket('', $merchant->getId(), $settlementTime);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ADDED_TO_BUCKET_ON_RELEASE_FUNDS,
+            [
+                'merchant_id' => $merchant->getId(),
+            ]);
     }
 
     /**
@@ -1138,6 +1315,8 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchant);
 
+            $this->setDefaultFeatureForPartner($merchant);
+
             $this->createPartnerApp($merchant);
         });
 
@@ -1146,6 +1325,35 @@ class Core extends Base\Core
         $this->trace->count(Metric::PARTNER_MARKED_TOTAL, $dimensions);
 
         return $merchant;
+    }
+
+    protected function setDefaultFeatureForPartner(Entity $partner)
+    {
+        // add feature flags if commissions are not yet created or if commission balance is zero
+        $commissionBalance = $partner->commissionBalance;
+
+        if (($commissionBalance !== null) and ($commissionBalance->getBalance() > 0))
+        {
+            return;
+        }
+
+        $featureCore = new Feature\Core;
+
+        $features = [
+            Feature\Constants::GENERATE_PARTNER_INVOICE,
+            Feature\Constants::AUTOMATED_COMM_PAYOUT,
+        ];
+
+        foreach ($features as $feature)
+        {
+            $featureCore->create(
+                [
+                    Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
+                    Feature\Entity::ENTITY_ID       => $partner->getId(),
+                    Feature\Entity::NAME            => $feature,
+                ], $shouldSync = true
+            );
+        }
     }
 
     /**
@@ -1675,6 +1883,13 @@ class Core extends Base\Core
     {
         $appIds = $this->getPartnerApplicationIds($partner);
 
+        $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS,
+            [
+                'partner_id' => $partner->getId(),
+                'app_ids'    => $appIds,
+                'params'     => $params,
+            ]);
+
         if (empty($params[Constants::APPLICATION_ID]) === false)
         {
             $inputAppId = $params[Constants::APPLICATION_ID];
@@ -2187,18 +2402,26 @@ class Core extends Base\Core
      * @return Entity
      * @throws \Throwable
      */
-    public function syncMerchantEntityFields(Merchant\Entity $merchant, array $input): Entity
+    public function syncMerchantEntityFields(Entity $merchant, array $input): Entity
     {
         $merchantInput = [];
 
-        if (isset($input[Detail\Entity::BUSINESS_WEBSITE]) === true)
+        if ((isset($input[Detail\Entity::BUSINESS_WEBSITE]) === true) and
+            ($merchant->getWebsite() !== $input[Detail\Entity::BUSINESS_WEBSITE]))
         {
             $merchantInput[Entity::WEBSITE] = $input[Detail\Entity::BUSINESS_WEBSITE];
+
+            $this->updateWhitelistedDomain($merchant, $merchantInput);
         }
 
         if (isset($input[Detail\Entity::BUSINESS_NAME]) === true)
         {
             $merchantInput[Entity::NAME] = $input[Detail\Entity::BUSINESS_NAME];
+        }
+
+        if (isset($input[Detail\Entity::BUSINESS_DBA]) === true)
+        {
+            $merchantInput[Entity::BILLING_LABEL] = $input[Detail\Entity::BUSINESS_DBA];
         }
 
         if (empty($merchantInput) === true)
@@ -2216,6 +2439,77 @@ class Core extends Base\Core
         });
 
         return $merchant;
+    }
+
+    /**
+     * Extract domain and add it in whitelisted domain
+     * if previously website is present then remove it's domain from whitelisted_domain
+     * and update website in business website.
+     *
+     * @param Entity $merchant
+     * @param array  $merchantInput
+     */
+    public function updateWhitelistedDomain(Entity $merchant, array $merchantInput)
+    {
+        $website = $merchantInput[Entity::WEBSITE];
+
+        $domain = (new TLDExtract)->getEffectiveTLDPlusOne($website);
+
+        $oldWebsite = $merchant->getWebsite();
+
+        if ($oldWebsite !== null)
+        {
+            $oldDomain = (new TLDExtract)->getEffectiveTLDPlusOne($oldWebsite);
+
+            $this->removeDomainFromWhitelistedDomain($merchant, $oldDomain);
+        }
+
+        $this->addDomainInWhitelistedDomain($merchant, $domain);
+    }
+
+    /**
+     * add domain in whitelisted domain if domain is not in autoWhitelisted domain array
+     *
+     * @param Entity      $merchant
+     * @param string|null $domain
+     */
+    public function addDomainInWhitelistedDomain(Entity $merchant, string $domain = null)
+    {
+        $whitelistedDomains = $merchant->getWhitelistedDomains() ?? [];
+
+        if ((in_array($domain, Entity::AUTO_WHITELISTED_DOMAINS) === false) and
+            (in_array($domain, $whitelistedDomains) === false) and
+            (empty($domain) === false))
+        {
+            array_push($whitelistedDomains, $domain);
+
+            $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
+
+            $merchant->edit($merchantInput);
+
+        }
+    }
+
+    /**
+     * remove domain from whitelisted domain column
+     *
+     * @param Entity      $merchant
+     * @param string|null $domain
+     */
+    public function removeDomainFromWhitelistedDomain(Entity $merchant, string $domain = null)
+    {
+        $whitelistedDomains = $merchant->getWhitelistedDomains() ?? [];
+
+        $key = array_search($domain, $whitelistedDomains);
+
+        if ($key !== false)
+        {
+            unset($whitelistedDomains[$key]);
+
+            $merchantInput[Entity::WHITELISTED_DOMAINS] = $whitelistedDomains;
+
+            $merchant->edit($merchantInput);
+        }
     }
 
     /**
@@ -2274,40 +2568,49 @@ class Core extends Base\Core
             return null;
         }
 
-        return (int)($accessor->get(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW));
+        return (int) ($accessor->get(Merchant\Constants::PAYMENT_TIMEOUT_WINDOW));
     }
 
 
     /**
-     * Enable international and set convert currency as false, if applicable
+     * Activates/Deactivates (international) as applicable
+     *
+     * We allow changing business type between L1 and L2 form .
+     * As international activation flow is function of business type,
+     * So disable international if  not allowed
+     *
      *
      * @param Entity        $merchant
      * @param Detail\Entity $merchantDetails
      *
      * @throws BadRequestException
+     * @throws Exception\LogicException
      */
-    public function activateInternationalIfApplicable(Entity $merchant, Detail\Entity $merchantDetails)
+    public function updateInternationalIfApplicable(Entity $merchant, Detail\Entity $merchantDetails)
     {
         $shouldActivateInternational = $this->shouldActivateInternational($merchant, $merchantDetails);
 
         if ($shouldActivateInternational === true)
         {
-            $merchant->enableInternational();
-
-            $merchant->setCurrencyConversion(false);
-
-            $this->trace->info(
-                TraceCode::MERCHANT_UPDATE_INTERNATIONAL,
-                [
-                    'category'      => $merchantDetails->getBusinessCategory(),
-                    'subcategory'   => $merchantDetails->getBusinessSubCategory(),
-                ]);
-
-            $this->trace->count(Metric::INTERNATIONAL_ACTIVATION);
+            (new Detail\InternationalCore())->activateInternational($merchant);
+        }
+        elseif ($merchant->isInternational() === true)
+        {
+            (new Detail\InternationalCore())->deactivateInternational($merchant);
         }
     }
 
-    public function translateWebhookPayloadIfApplicable(Entity $merchant, string $payload): array
+    /**
+     * Here we are taking mode as input parameter instead of using $this->mode because
+     * for webhook jobs we do not take mode as constructor argument and mode has to be passed for cases functionality depends on mode
+     *
+     * @param Entity $merchant
+     * @param string $payload
+     * @param string $mode
+     *
+     * @return array
+     */
+    public function translateWebhookPayloadIfApplicable(Entity $merchant, string $payload, string $mode): array
     {
         $partners = $this->fetchAffiliatedPartners($merchant->getId());
 
@@ -2325,9 +2628,9 @@ class Core extends Base\Core
             ];
         }
 
-        $translationUrl = $this->getWebhookTranslateUrl($partner);
+        $translationGateway = $this->getTranslateWebhookGateway($partner);
 
-        if (empty($translationUrl) === true)
+        if (empty($translationGateway) === true)
         {
             return [
                 'headers' => [],
@@ -2337,25 +2640,36 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::PARTNER_WEBHOOK_TRANSLATION,
             [
-                'translation_url' => $translationUrl,
-                'partner_id'      => $partner->getId(),
+                'translation_gateway' => $translationGateway,
+                'partner_id'          => $partner->getId(),
             ]);
 
-        return $this->app['express']->translateWebhook($translationUrl, $payload);
+        try
+        {
+            return $this->app['mozart']->translateWebhook($translationGateway, $payload, $mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw $e;
+        }
     }
 
-    protected function getWebhookTranslateUrl(Entity $partner)
+    protected function getTranslateWebhookGateway(Entity $partner)
     {
-        return (new Settings\Service)->getForMerchant(Constants::PARTNER, Constants::TRANSLATE_WEBHOOK_URL, $partner);
+        return (new Settings\Service)->getForMerchant(Constants::PARTNER, Constants::TRANSLATE_WEBHOOK_GATEWAY, $partner);
     }
 
     /**
      * Check if merchant is eligible for international payments
+     *
      * @param Entity        $merchant
      * @param Detail\Entity $merchantDetails
      *
      * @return bool
-     * @throws \RZP\Exception\BadRequestException
+     * @throws BadRequestException
+     * @throws Exception\LogicException
      */
     protected function shouldActivateInternational(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
@@ -2366,47 +2680,61 @@ class Core extends Base\Core
             return false;
         }
 
-        // If business_website is empty, then don't allow international by default
-        $businessWebsite = $merchant->getWebsite() ?? $merchantDetails->getWebsite();
-
-        $category = $merchantDetails->getBusinessCategory();
-
-        $subcategory = $merchantDetails->getBusinessSubCategory();
-
-        if (($merchant->isInternational() === true) or
-            (empty($businessWebsite) === true) or
-            (empty($category) === true))
+        //
+        // Enable international for merchant if
+        // 1) Merchant has a valid website
+        // 2) If international activation flow is set
+        //
+        if (($this->validateWebsiteCheckForInternationalActivation($merchant, $merchantDetails) === false) or
+            (empty($merchantDetails->getInternationalActivationFlow()) === true))
         {
             return false;
         }
 
-        $internationalActivationFlowFromCategory = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
-            BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
-            $category,
-            $subcategory,
-            ActivationFlow::BLACKLIST);
-
-        $featureValue = $merchantDetails->getInternationalActivationFlow() ?: $internationalActivationFlowFromCategory;
-
         //
-        // Conditions being checked:
-        // 1: If international_activation is whitelist, return true
-        // 2: If international_activation is greylist and merchant is kyc verifed, return true
+        // $activationFlowImpl will be an instance of the ActivationFlowInterface
         //
-        if (($featureValue === ActivationFlow::WHITELIST) or
-            (($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED) and
-            ($featureValue === ActivationFlow::GREYLIST)))
+        $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
+
+        return $activationFlowImpl->shouldActivateInternational();
+    }
+
+    public function validateWebsiteCheckForInternationalActivation(Entity $merchant, Detail\Entity $merchantDetails): bool
+    {
+        // If business_website is empty, then don't allow international by default
+        $businessWebsite = $merchant->getWebsite() ?? $merchantDetails->getWebsite();
+
+        if (empty($businessWebsite) === false)
         {
             return true;
         }
 
-        return false;
+        $partners = $this->fetchAffiliatedPartners($merchant->getId());
+
+        // Filter partners whose feature (SKIP_WEBSITE_INTERNAT) is present.
+        $partner = $partners->filter(function(Entity $partner) {
+            return ($partner->skipWebsiteForInternational() === true);
+
+        })->first();
+
+        //
+        // If partner is not present and businessWebsite is absent
+        // then we do not allow international Activation.
+        //
+        if ($partner === null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * Auto Enable International for merchant if
      *  1) Merchant belongs to Razorpay org Or
      *  2) Merchant is not in unregistered business onBoarding flow
+     *  3) If Submerchant is getting activated using a submerchant batch and if the submerchant
+     *     batch parameters define to not auto-enable international attribute, false will be returned.
      *
      * @param Entity        $merchant
      *
@@ -2533,26 +2861,24 @@ class Core extends Base\Core
         return $merchantIdToPartnerBankAccountMap;
     }
 
+    /**
+     * @param Entity $merchant
+     *
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
     protected function internationalEnable(Entity $merchant)
     {
-        if ($merchant->isInternational() === true)
+        (new Validator())->validateBeforeEnablingInternationalByMerchant($merchant);
+
+        $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
+
+        $shouldActivateInternational = $this->shouldActivateInternational($merchant, $merchantDetails);
+
+        if ($shouldActivateInternational === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_INTERNATIONAL);
+            (new Detail\InternationalCore())->activateInternational($merchant);
         }
-
-        $merchantDetails = $merchant->merchantDetail;
-
-        // Since website is not synced between merchant and merchant_detail,
-        // thereofre checking for both
-        if ((empty($merchant->getWebsite()) === true) and
-            (empty($merchantDetails->getWebsite()) === true))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET);
-        }
-
-        $this->activateInternationalIfApplicable($merchant, $merchantDetails);
 
         $this->repo->saveOrFail($merchant);
     }
@@ -2565,9 +2891,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED);
         }
 
-        $merchant->disableInternational();
-
-        $merchant->setCurrencyConversion(null);
+        (new Detail\InternationalCore())->deactivateInternational($merchant);
 
         $this->repo->saveOrFail($merchant);
     }
@@ -2650,7 +2974,7 @@ class Core extends Base\Core
 
         $transactionReportEmails = array_merge($transactionReportEmails, [$merchant->getEmail()]);
 
-        $merchantEmailList = [] ;
+        $merchantEmailList = [];
 
         foreach ($transactionReportEmails as $transactionReportEmail)
         {

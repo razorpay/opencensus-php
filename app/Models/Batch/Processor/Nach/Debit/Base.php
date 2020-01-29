@@ -83,7 +83,7 @@ class Base extends BaseProcessor
 
     protected function getFormattedGatewayAmount($content)
     {
-        return number_format($content[self::AMOUNT], 2, '.', '');
+        return number_format($content[self::AMOUNT] / 100, 2, '.', '');
     }
 
     protected function updatePayment(Payment\Entity $payment, array $content)

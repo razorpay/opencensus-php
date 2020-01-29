@@ -14,6 +14,7 @@ use RZP\Models\Options;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
+use RZP\Models\PaperMandate;
 use RZP\Constants\Entity as E;
 use RZP\Models\Options\Constants;
 use RZP\Models\Plan\Subscription;
@@ -419,6 +420,15 @@ class ViewDataSerializer extends Base\Core
                 $serialized['rbl_emandate_interim_process'] = true;
 
                 break;
+
+            case Preferences::MID_RBL_INTERIM_PROCESS2:
+
+                if ($this->invoice->getEntityType() === E::SUBSCRIPTION_REGISTRATION)
+                {
+                    $serialized['rbl_emandate_interim_process2'] = true;
+                }
+
+                break;
         }
     }
 
@@ -540,6 +550,22 @@ class ViewDataSerializer extends Base\Core
                 [Order\Entity::STATUS] = $order->getStatus();
 
             }
+            else if ($externalEntity->getMethod() === SubscriptionRegistration\Method::NACH)
+            {
+                $paperMandate = $externalEntity->paperMandate;
+
+                $startAt = $paperMandate->getStartAt() ?? null;
+
+                $serialized
+                [E::SUBSCRIPTION_REGISTRATION]
+                [SubscriptionRegistration\Entity::NACH]
+                [PaperMandate\Entity::START_AT] = $startAt;
+
+                $serialized
+                [E::SUBSCRIPTION_REGISTRATION]
+                [SubscriptionRegistration\Entity::NACH]
+                [PaperMandate\Entity::START_AT . '_formatted'] = $this->formatTime($startAt);
+            }
         }
         else
         {
@@ -585,5 +611,15 @@ class ViewDataSerializer extends Base\Core
                 $this->invoice->merchant->getId());
 
         return $options ?? [];
+    }
+
+    protected function formatTime($time, $format = 'j M Y')
+    {
+        if ($time === null)
+        {
+            return null;
+        }
+
+        return Carbon::createFromTimestamp($time, Timezone::IST)->format($format);
     }
 }

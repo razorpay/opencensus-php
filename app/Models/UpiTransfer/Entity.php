@@ -7,6 +7,9 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\VirtualAccount;
 
+/**
+ * @property VirtualAccount\Entity  $virtualAccount
+ */
 class Entity extends Base\PublicEntity
 {
     const ID                 = 'id';
@@ -30,6 +33,11 @@ class Entity extends Base\PublicEntity
 
     // NPCI reference number
     const NPCI_REFERENCE_ID = 'npci_reference_id';
+    const RRN               = 'rrn';
+
+    // Transaction reference number
+    const TRANSACTION_REFERENCE = 'transaction_reference';
+    const TR                    = 'tr';
 
     // Indicates whether the upi transfer corresponds
     // to an active virtual account on our side. If
@@ -67,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_MERCHANT_ID,
         self::NPCI_REFERENCE_ID,
         self::PROVIDER_REFERENCE_ID,
+        self::TRANSACTION_REFERENCE,
     ];
 
     protected $visible = [
@@ -86,6 +95,7 @@ class Entity extends Base\PublicEntity
         self::BANK_REFERENCE,
         self::NPCI_REFERENCE_ID,
         self::PROVIDER_REFERENCE_ID,
+        self::TRANSACTION_REFERENCE,
     ];
 
     protected $public = [
@@ -97,7 +107,8 @@ class Entity extends Base\PublicEntity
         self::PAYER_ACCOUNT,
         self::PAYER_IFSC,
         self::PAYMENT_ID,
-        self::BANK_REFERENCE,
+        self::RRN,
+        self::TR,
         self::VIRTUAL_ACCOUNT_ID,
     ];
 
@@ -107,6 +118,8 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::VIRTUAL_ACCOUNT_ID,
         self::BANK_REFERENCE,
+        self::RRN,
+        self::TR,
     ];
 
     protected $casts = [
@@ -114,11 +127,8 @@ class Entity extends Base\PublicEntity
         self::EXPECTED => 'bool',
     ];
 
-    protected $hidden = [
-        self::BANK_REFERENCE,
-        self::PAYER_BANK,
-        self::PAYER_IFSC,
-        self::PAYER_ACCOUNT,
+    protected $razorxAttributes = [
+        self::TR,
     ];
 
     // ----------------------- Relations -----------------------
@@ -167,6 +177,16 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setPublicRrnAttribute(array & $array)
+    {
+        $array[self::RRN] = $array[self::NPCI_REFERENCE_ID];
+    }
+
+    public function setPublicTrAttribute(array & $array)
+    {
+        $array[self::TR] = $array[self::TRANSACTION_REFERENCE];
+    }
+
 // -------------------------- Getters --------------------------------------
 
     public function getMethod()
@@ -192,5 +212,61 @@ class Entity extends Base\PublicEntity
     public function isExpected()
     {
         return $this->getAttribute(self::EXPECTED);
+    }
+
+    public function getBankReference()
+    {
+        return $this->getAttribute(self::PROVIDER_REFERENCE_ID);
+    }
+
+    public function getRrn()
+    {
+        return $this->getAttribute(self::NPCI_REFERENCE_ID);
+    }
+
+    public function getTr()
+    {
+        return $this->getAttribute(self::TRANSACTION_REFERENCE);
+    }
+
+    public function toArrayPublic()
+    {
+        $app = \App::getFacadeRoot();
+
+        $merchantId = $this->virtualAccount->merchant->getId();
+
+        foreach ($this->razorxAttributes as $razorxAttribute)
+        {
+            //
+            // To display an attribute via RazorX, include the attribute
+            // in razorxAttributes array in UpiTransfer/Entity and add
+            // constant upi_transfer_<attribute> in Merchant/RazorxTreatment.
+            //
+            $featureFlag = strtolower('upi_transfer_' . $razorxAttribute);
+
+            $variant = null;
+
+            try
+            {
+                $variant = $app['razorx']->getTreatment(
+                    $merchantId,
+                    $featureFlag,
+                    $app['basicauth']->getMode()
+                );
+            }
+            catch(\Exception $e)
+            {
+                $variant = 'off';
+            }
+
+            if (strtolower($variant) !== 'on')
+            {
+                $index = array_search($razorxAttribute, $this->public);
+
+                unset($this->public[$index]);
+            }
+        }
+
+        return parent::toArrayPublic();
     }
 }

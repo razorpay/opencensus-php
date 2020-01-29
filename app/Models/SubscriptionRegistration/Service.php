@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
+use RZP\Http\RequestHeader;
 use RZP\Models\Customer\Token;
 use RZP\Jobs\TokenRegistrationAutoCharge;
 
@@ -48,7 +49,9 @@ class Service extends Base\Service
 
     public function createAuthLink(array $input): array
     {
-        $invoice = $this->core->createAuthLink($input, $this->merchant);
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
+
+        $invoice = $this->core->createAuthLink($input, $this->merchant,null, null, $batchId);
 
         return $invoice->toArrayPublic();
     }
@@ -97,7 +100,15 @@ class Service extends Base\Service
 
     public function chargeToken(String $id, array $input): array
     {
-        return $this->core->chargeToken($id, $input, $this->merchant);
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
+
+        $response =  $this->core->chargeToken($id, $input, $this->merchant, $batchId);
+
+        if($this->auth->getInternalApp() === "batch")
+        {
+            $this->setOrderId($response);
+        }
+        return $response;
     }
 
     public function processAutoCharges(array $input)
@@ -279,6 +290,8 @@ class Service extends Base\Service
         $paymentInput[Payment\Entity::CONTACT]     = $customer->getContact();
 
         $paymentInput[Payment\Entity::EMAIL]       = $customer->getEmail();
+
+        $paymentInput[Payment\Entity::AUTH_TYPE]   = $subscriptionRegistration->getAuthType();
 
         $paymentService = new Payment\Service();
 
@@ -492,5 +505,18 @@ class Service extends Base\Service
         $invoice = (new Invoice\Core())->cancelInvoice($invoice);
 
         return (new ViewDataSerializer($invoice))->serializeForApi();
+    }
+
+    protected function setOrderId(& $response)
+    {
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentId = Payment\Entity::stripDefaultSign($paymentId);
+
+        $payment = $this->repo->payment->find($paymentId);
+
+        $orderId = $payment->getApiOrderId();
+
+        $response['order_id'] = Order\Entity::getSignedId($orderId);
     }
 }

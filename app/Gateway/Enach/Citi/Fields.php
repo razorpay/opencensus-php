@@ -20,7 +20,7 @@ class Fields
     const CHECK_SUM                                       = '          ';
     const FLAG                                            = ' ';
     const REASON_CODE                                     = '  ';
-    const PRODUCT_TYPE                                    = 'ACH';
+    const PRODUCT_TYPE                                    = '10 ';
     const BENEFICIARY_AADHAR_NUMBER                       = '               ';
     const FILLER                                          = '       ';
     const END_TIMESTAMP                                   = 'end_timestamp';
@@ -29,10 +29,10 @@ class Fields
 
     //Constant values used in Presentation file headings
     const ACH_TRANSACTION_CODE_HEADING                    = '56';
-    const CONTROL_7_HEADING                               = '0000000';
+    const CONTROL_7_HEADING                               = '       ';
     const USERNAME_HEADING                                = 'RAZORPAY SOFTWARE PVT LTD               ';
-    const ACH_FILE_NUMBER_HEADING                         = '000000000';
-    const CONTROL_14_HEADING                              = '00000000000000';
+    const ACH_FILE_NUMBER_HEADING                         = '         ';
+    const CONTROL_14_HEADING                              = '              ';
     const CONTROL_9_HEADING                               = '         ';
     const CONTROL_15_HEADING                              = '               ';
     const LEDGER_FOLIO_NUMBER_HEADING                     = '   ';
@@ -43,9 +43,10 @@ class Fields
     const SAVINGS                                         = 'savings';
     const CURRENT                                         = 'current';
     const USER_REFERENCE_HEADING                          = '000000000000000000';
-    const USER_BANK_ACCOUNT_NUMBER_HEADING                = '00000000000000000000000000000000000';
+    const USER_BANK_ACCOUNT_NUMBER_HEADING                = '000018003                          ';
     const SETTLEMENT_CYCLE_HEADING                        = '  ';
     const FILLER_57                                       = '                                                         ';
+    const CLIENT_CODE                                     = 'CTRAZORPAY';
 
     const ACCOUNT_TYPE_VALUE                             =  'accountType' ;
     const ACCOUNT_NAME                                   =  'accountName';
@@ -96,12 +97,10 @@ class Fields
 
         $endDate = $paperMandate->getEndAt();
 
-        $terminal = $token->terminal;
-
         return [
             NachRegisterFileHeadings::CATEGORY_CODE                 => $categoryCode,
             NachRegisterFileHeadings::CATEGORY_DESCRIPTION          => $categoryDescription,
-            NachRegisterFileHeadings::CLIENT_CODE                   => $terminal->getGatewayTerminalId(),
+            NachRegisterFileHeadings::CLIENT_CODE                   => self::CLIENT_CODE,
             NachRegisterFileHeadings::MERCHANT_UNIQUE_REFERENCE_NO  => $paymentId,
             NachRegisterFileHeadings::CUSTOMER_ACCOUNT_NUMBER       => $accountNumber,
             NachRegisterFileHeadings::CUSTOMER_NAME                 => $customerName,

@@ -503,4 +503,100 @@ class FundAccountsTest extends TestCase
 
         Queue::assertPushed(CreateAccount::class);
     }
+
+    public function testCreateFundAccountInvalidAccountType()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountFromInactiveCustomer()
+    {
+        $this->fixtures->create('customer', ['id' => '1000facustomer', 'active' => 0]);
+
+        $this->startTest();
+    }
+
+    public function testCreateCardFundAccountFeatureS2SNotEnabled()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->removeFeatures(['s2s']);
+
+        $this->startTest();
+    }
+
+    public function testCreateCardFundAccountFeaturePayoutToCardsNotEnabled()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->removeFeatures(['payout_to_cards']);
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountCard()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountWithoutName()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountWithInvalidBankAccountNumber()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountForRZPFeesContact()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'rzp_fees']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateFundAccountForRZPFeesContact()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $this->fixtures->edit('contact', 'cont_1000000contact', ['type' => 'rzp_fees']);
+
+        $fundAccount = $this->getLastEntity('fund_account');
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/fund_accounts/' . $fundAccount['id'];
+
+        $this->startTest();
+    }
 }

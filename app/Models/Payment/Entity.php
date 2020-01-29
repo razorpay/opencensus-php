@@ -33,6 +33,7 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\UpiTransfer;
 use RZP\Models\BankTransfer;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Payment\Processor\Wallet;
@@ -56,6 +57,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
  * @property Emi\Entity             $emiPlan
+ * @property Customer\Entity        $customer
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
@@ -174,6 +176,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const DISPUTES              = 'disputes';
     const TRANSFER              = 'transfer';
     const BILLING_ADDRESS       = 'billing_address';
+    const REFUNDS               = 'refunds';
     const TRANSACTION           = 'transaction';
 
     // Tells us whether this payment is a initial or auto recurring type
@@ -206,18 +209,25 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
-    const PAYMENT_TIMEOUT_NACH              = 1296000;  // 15 Days
+    const BASE_CURRENCY                     = 'base_currency';
+    const PAYMENT_TIMEOUT_NACH              = 1728000;  // 20 Days
 
     // payment services
     const API                               = 0;
     const CORE_PAYMENT_SERVICE              = 1;
     const CARD_PAYMENT_SERVICE              = 2;
+    const NB_PLUS_SERVICE                   = 3;
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
     const HOSTED_TIME_FORMAT                = 'j M Y';
 
     const UPI_PROVIDER                      = 'upi_provider';
+
+    // To identify GPay Card Payments
+    protected $application                  = null;
+
+    const ACCOUNT_ID                        = 'account_id';
 
     protected static $sign      = 'pay';
 
@@ -264,6 +274,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::METHOD,
         self::AMOUNT,
         self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
         self::BASE_AMOUNT_REFUNDED,
@@ -341,7 +352,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CREATED_AT,
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
-        self::OFFER_ID,
         self::FEE_BEARER,
     ];
 
@@ -350,11 +360,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
+        self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
         self::INTERNATIONAL,
         self::METHOD,
+        self::REFUNDS,
         self::AMOUNT_REFUNDED,
         self::AMOUNT_TRANSFERRED,
         self::REFUND_STATUS,
@@ -382,7 +395,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
-        self::OFFER_ID,
+        self::ACCOUNT_ID,
     ];
 
     /**
@@ -436,6 +449,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
         self::ORDER_ID,
         self::INVOICE_ID,
         self::CARD_ID,
@@ -445,7 +460,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
-        self::OFFER_ID,
+        self::ACCOUNT_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -894,6 +909,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setInternational()
     {
+        if ($this->isGooglePayCard() === true)
+        {
+            return;
+        }
+
         $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : false;
 
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
@@ -907,6 +927,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setBaseAmount(int $amount)
     {
         $this->setAttribute(self::BASE_AMOUNT, $amount);
+    }
+
+    public function setVpa(string $vpa)
+    {
+        $this->setAttribute(self::VPA, $vpa);
     }
 
     public function setAmountAuthorized()
@@ -1181,6 +1206,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
+    public function setApplication(string $applicationName)
+    {
+        $this->application = $applicationName;
+    }
+
     public function setAuthType($authType)
     {
         $this->setAttribute(self::AUTH_TYPE, $authType);
@@ -1261,6 +1291,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::CPS_ROUTE, 2);
     }
 
+    public function enableNbPlusService()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 3);
+    }
+
     public function setMethod(string $method)
     {
         $this->setAttribute(self::METHOD, $method);
@@ -1301,17 +1336,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
     }
 
-
-    public function setOfferId(string $offerId)
-    {
-        $this->setAttribute(self::OFFER_ID, $offerId);
-
-    }
-
     public function setFeeBearer($feeBearer)
     {
         $this->setAttribute(self::FEE_BEARER, $feeBearer);
 
+    }
+
+    public function setBatchId($batchId)
+    {
+        $this->setAttribute(self::BATCH_ID, $batchId);
     }
 
     // ----------------------- Setters Ends-----------------------------------------
@@ -1676,6 +1709,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::PAYMENT_LINK_ID);
     }
 
+    public function hasReceiver()
+    {
+        return ($this->isAttributeNotNull(self::RECEIVER_ID));
+    }
+
     public function hasMetadata($key = null)
     {
         if ($key === null)
@@ -1814,6 +1852,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::CARD_PAYMENT_SERVICE);
     }
 
+    public function isRoutedThroughNbPlus()
+    {
+        return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::NB_PLUS_SERVICE);
+    }
+
     public function isPushPaymentMethod()
     {
         return ($this->isBankTransfer() === true) or
@@ -1822,9 +1865,27 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                ($this->isUpi() === true);
     }
 
+    public function isGooglePayCard()
+    {
+        return (($this->isCard()) and
+                ($this->application === 'google_pay'));
+    }
+
     public function isBharatQr()
     {
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
+    }
+
+    public function isFlowIntent(): bool
+    {
+        return ($this->getMetadata('flow') === Flow::INTENT);
+    }
+
+    public function isUpiQr(): bool
+    {
+        // By definition if receiver type is qr_code and flow is intent, its upi qr payment
+        // Not relying on isBharatQr method as its implementation may change over time.
+        return (($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE) and $this->isFlowIntent());
     }
 
     /**
@@ -1971,22 +2032,22 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->hiddenInReport;
     }
 
-    public function getPspFromVpa()
+    public function getVpaHandleFromVpa()
     {
         $vpa = $this->getAttribute(self::VPA);
 
         $vpaParts = explode('@', $vpa);
 
-        $psp = end($vpaParts);
+        $vpaHandle = end($vpaParts);
 
-        return $psp;
+        return $vpaHandle;
     }
 
     public function getBankCodeFromVpa()
     {
-        $psp = $this->getPspFromVpa();
+        $vpaHandle = $this->getVpaHandleFromVpa();
 
-        return ProviderCode::getBankCode($psp);
+        return ProviderCode::getBankCode($vpaHandle);
     }
 
     public function getTransferId()
@@ -2233,6 +2294,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::CARD_ID);
     }
 
+    public function getApplication()
+    {
+        return $this->application;
+    }
+
     public function getTwoFactorAuth()
     {
         return $this->getAttribute(self::TWO_FACTOR_AUTH);
@@ -2396,7 +2462,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
         else if ($this->isUpi() === true)
         {
-            $issuer = $this->getPspFromVpa();
+            $issuer = $this->getVpaHandleFromVpa();
         }
         else if ($this->isPayLater() === true)
         {
@@ -2592,6 +2658,41 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $reference;
     }
 
+    /**
+     * @param array $array
+     *
+     * Base amount should be set in public array iff
+     * 1) route is privileged route
+     * 2) the payment is non-inr payment
+     */
+    public function setPublicBaseAmountAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        if (($this->getCurrency() !== Currency\Currency::INR) or
+            ($app['basicauth']->isProxyOrPrivilegeAuth() === true))
+        {
+            return;
+        }
+
+        unset($array[self::BASE_AMOUNT]);
+    }
+    /**
+     * @param array $array
+     *
+     * Base currency should be set in public array iff
+     * 1) the payment is non-inr payment
+     */
+    public function setPublicBaseCurrencyAttribute(array & $array)
+    {
+        if ($this->getCurrency() === Currency\Currency::INR)
+        {
+            return;
+        }
+
+        $array[self::BASE_CURRENCY] = Currency\Currency::INR;
+    }
+
     public function setPublicOrderIdAttribute(array & $array)
     {
         if (isset($array[self::ORDER_ID]))
@@ -2622,15 +2723,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $array[self::CARD_ID] =
                 Card\Entity::getIdPrefix() . $this->getAttribute(self::CARD_ID);
-        }
-    }
-
-    public function setPublicOfferIdAttribute(array & $array)
-    {
-        if (isset($array[self::OFFER_ID]))
-        {
-            $array[self::OFFER_ID] =
-                Offer\Entity::getIdPrefix() . $this->getAttribute(self::OFFER_ID);
         }
     }
 
@@ -2715,6 +2807,31 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             unset($array[self::GATEWAY_PROVIDER]);
         }
+    }
+
+    public function setPublicAccountIdAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        /*
+         *  Set accounttId attribute if
+         * 1) we are in non privileged auth and payment merchant id is different from auth merchant id
+         */
+
+        if ($auth->isPrivilegeAuth() === true)
+        {
+            return;
+        }
+
+        if (($auth->getMerchant() === null) or
+            ($auth->getMerchant()->getId() === $this->getMerchantId()))
+        {
+            return;
+        }
+
+        $array[self::ACCOUNT_ID] = Account\Entity::getSignedId($array[self::MERCHANT_ID]);
     }
 
     public function associateTerminal($terminal)
@@ -3054,7 +3171,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function dissociateOffer(Offer\Entity $offer)
     {
-        $this->offers()->detach($offer);
+        $this->offers()->detach($offer->getId());
     }
 
     /**
@@ -3063,8 +3180,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      */
     public function getOffer()
     {
-        return $this->offers->first();
+        return $this->offers()->first();
     }
+
 
 // --------------- Relation to other entity section ends -----------------------
 
@@ -3290,7 +3408,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function shouldRunFraudChecks()
     {
-        if ($this->isCard() === false)
+        if (($this->isCard() === false) or ($this->isGooglePayCard() === true))
         {
             return false;
         }
@@ -3304,8 +3422,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return false;
         }
 
-        return (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true));
+        return (($this->card->isInternational() === true) and
+                ($this->card->isAmex() === false));
     }
 
     public function shouldRunShieldChecks()
@@ -3369,7 +3487,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 break;
 
             case Method::UPI:
-                $paymentArray[self::VPA] = self::DUMMY_VPA;
+                if (array_get($paymentArray, '_.flow') !== 'intent')
+                {
+                    $paymentArray[self::VPA] = self::DUMMY_VPA;
+                }
                 break;
 
             case Method::NACH:
@@ -3439,6 +3560,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getPaymentResponseCacheKey(): string
     {
         return 'payment:response' . $this->getId() . '.cache';
+    }
+
+    public static function getTrackIdRequestKey(string $trackId): string
+    {
+        return 'track_id:request:'. $trackId . '.cache';
+    }
+
+    public static function getTrackIdResponseKey(string $trackId): string
+    {
+        return 'track_id:response:'. $trackId . '.cache';
     }
 
     public function getTransactionType()

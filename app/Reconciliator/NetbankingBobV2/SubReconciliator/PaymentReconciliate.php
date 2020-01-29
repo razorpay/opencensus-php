@@ -62,10 +62,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ((empty($dbReferenceNumber) === false) and
             ($dbReferenceNumber !== $referenceNumber))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->trace->info(
                 TraceCode:: RECON_MISMATCH,
                 [
-                    'info_code'              => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'              => $infoCode,
                     'payment_id'             => $this->payment->getId(),
                     'amount'                 => $this->payment->getAmount(),
                     'db_reference_number'    => $dbReferenceNumber,

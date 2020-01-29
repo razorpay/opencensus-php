@@ -31,9 +31,7 @@ class Base extends Mailable
     {
         $merchantEmail = $this->data['merchant']['email'];
 
-        $merchantName = $this->data['merchant']['name'];
-
-        $this->to($merchantEmail, $merchantName);
+        $this->to($merchantEmail);
 
         return $this;
     }

@@ -20,6 +20,20 @@ class Helper
             $data[Merchant\Entity::EMAIL] = $input[Constants::EMAIL];
         }
 
+        if (empty($input[Constants::EXTERNAL_ID]) === false)
+        {
+            $data[Merchant\Entity::EXTERNAL_ID] = $input[Constants::EXTERNAL_ID];
+        }
+
+        if (empty($input[Constants::LEGAL_ENTITY_ID]) === false)
+        {
+            $data[Merchant\Entity::LEGAL_ENTITY_ID] = $input[Constants::LEGAL_ENTITY_ID];
+        }
+        else if (empty($input[Constants::LEGAL_EXTERNAL_ID]) === false)
+        {
+            $data[Merchant\Entity::LEGAL_EXTERNAL_ID] = $input[Constants::LEGAL_EXTERNAL_ID];
+        }
+
         return $data;
     }
 
@@ -228,6 +242,49 @@ class Helper
         }
 
         return $customFields;
+    }
+
+    /**
+     * We modify the input here because for some cases like address type, we want to accept case insensitive chars
+     * like both REGISTERED and registered. So we modify the input here, so that validations and === comparisons will
+     * pass and there will be uniformity elsewhere in the code
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public static function modifyAccountInput(array $input): array
+    {
+        if (empty($input[Constants::PROFILE][Constants::ADDRESSES]) === false)
+        {
+            foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $key => $address)
+            {
+                $type = strtolower($input[Constants::PROFILE][Constants::ADDRESSES][$key][Constants::TYPE]);
+
+                $input[Constants::PROFILE][Constants::ADDRESSES][$key][Constants::TYPE] = $type;
+            }
+        }
+
+        // convert email to lowercase
+        if (empty($input[Constants::EMAIL]) === false)
+        {
+            $input[Constants::EMAIL] = mb_strtolower($input[Constants::EMAIL]);
+        }
+
+        if (empty($input[Constants::LEGAL_EXTERNAL_ID]) === false)
+        {
+            $legalEntity = app('repo')->legal_entity->fetchByExternalId($input[Constants::LEGAL_EXTERNAL_ID]);
+
+            // if its a valid legal entity passed and it already exists
+            if (empty($legalEntity) === false)
+            {
+                $input[Constants::LEGAL_ENTITY_ID] = $legalEntity->getId();
+
+                unset($input[Constants::LEGAL_EXTERNAL_ID]);
+            }
+        }
+
+        return $input;
     }
 
     private static function getAddressesFromInput(array $input): array

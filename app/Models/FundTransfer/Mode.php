@@ -297,6 +297,7 @@ class Mode
         return [
             self::IMPS,
             self::IFT,
+            self::UPI,
         ];
     }
 }

@@ -93,6 +93,15 @@ class Gateway
     ];
 
     /**
+     * Columns of CPS authorization table.
+     * To be used while force authorizing failed payment
+     */
+    const RRN           = 'rrn';
+    const AUTH_CODE     = 'auth_code';
+    const RECON_ID      = 'recon_id';
+    const PAYMENT_ID    = 'payment_id';
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -374,6 +383,20 @@ class Gateway
         $this->input = $input;
 
         $this->action = ACTION::VERIFY_TERMINAL;
+    }
+
+    public function enableTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = Action::ENABLE_TERMINAL;
+    }
+
+    public function disableTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = Action::DISABLE_TERMINAL;
     }
 
     public function debit(array $input)
@@ -721,7 +744,8 @@ class Gateway
         $riskScore = $input['payment_analytics']['risk_score'];
 
         if (($riskScore > $input['merchant']->getRiskThreshold()) and
-            ($input['card'][Card\Entity::INTERNATIONAL] === true))
+            (($input['card'][Card\Entity::INTERNATIONAL] === true) and
+             ($input['card'][Card\Entity::NETWORK] !== Card\Network::AMEX)))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY,
@@ -1299,7 +1323,7 @@ class Gateway
 
         $type = strtoupper($type);
 
-        if (($this->env === 'func') and
+        if (($this->env === 'func' or $this->env === 'automation') and
             (isset($this->externalMockDomain) === true))
         {
             return $this->getExternalMockUrl($type);

@@ -36,6 +36,13 @@ class PaperMandateTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateAuthLinkForPaperMandateWithoutAuthType()
+    {
+        $this->mockGenerateNACH();
+
+        $this->startTest();
+    }
+
     public function testCreateAuthLinkForPaperMandateWithoutBankAccountForMandate()
     {
         $this->mockGenerateNACH();
@@ -98,33 +105,6 @@ class PaperMandateTest extends TestCase
         $paperMandate = $this->getDbLastEntity(Entity::PAPER_MANDATE);
 
         $this->assertEquals(PaperMandate\Status::CREATED, $paperMandate->getStatus());
-    }
-
-    public function testAuthenticatePaperMandateWithTertiarySignaturePresentWithoutSecondary()
-    {
-        $this->ba->publicAuth();
-
-        $merchant = $this->getDbEntityById('merchant', '10000000000000');
-
-        $this->mockExtractNACHWithTertiarySignaturePresentWithoutSecondary($merchant);
-
-        $this->createOrder();
-
-        $this->createAndPutImageFileInRequest(__FUNCTION__);
-
-        $this->startTest();
-
-        $paperMandate = $this->getDbLastEntity(Entity::PAPER_MANDATE);
-
-        $this->assertEquals(PaperMandate\Status::CREATED, $paperMandate->getStatus());
-    }
-
-    protected function mockExtractNACHWithTertiarySignaturePresentWithoutSecondary($merchant)
-    {
-        $this->testData['hyperVergeExtractNACHOutput']['details']['signaturePresentSecondary']['value'] = 'no';
-        $this->testData['hyperVergeExtractNACHOutput']['details']['signaturePresentTertiary']['value'] = 'yes';
-
-        $this->mockExtractNACH($merchant);
     }
 
     protected function mockExtractNACHWithWrongAccountNumber($merchant)

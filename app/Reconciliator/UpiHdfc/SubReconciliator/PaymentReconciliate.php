@@ -125,6 +125,16 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
         else
         {
+            $upiTransfer = $this->repo->upi_transfer->findByNpciReferenceId($rrn);
+
+            if ($upiTransfer !== null)
+            {
+                $paymentId = $upiTransfer->payment->getId();
+            }
+        }
+
+        if ($paymentId === null)
+        {
             $paymentId = $this->createPayment($rrn, $gatewayPaymentId, $row);
         }
 
@@ -353,10 +363,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             ($dbReferenceNumber !== $referenceNumber) and
             ($dbReferenceNumber !== 'NA'))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getBaseAmount(),
                     'db_reference_number'       => $dbReferenceNumber,

@@ -83,6 +83,33 @@ return [
         ],
     ],
 
+    'testAddEmiPlansWithMerchantPayback' => [
+        'request' => [
+            'content' => [
+                'bank'             => 'HDFC',
+                'duration'         => 3,
+                'rate'             => 1045,
+                'methods'          => 'card',
+                'min_amount'       => 400000,
+                'merchant_id'      => '10000000000000',
+                'merchant_payback' => 0,
+            ],
+            'method' => 'POST',
+            'url'    => '/emi',
+        ],
+        'response' => [
+            'content' => [
+                'bank'             => 'HDFC',
+                'duration'         => 3,
+                'rate'             => 1045,
+                'methods'          => 'card',
+                'min_amount'       => 400000,
+                'merchant_payback' => 0,
+                'merchant_id'      => '10000000000000',
+            ],
+        ],
+    ],
+
     'testAddBOBEmiPlansWithMerchant' => [
         'request' => [
             'content' => [
