@@ -2456,9 +2456,7 @@ class Header
 
         Type::MDR_ADJUSTMENT => [
             self::INPUT => [
-                self::MDR_ADJUSTMENT_MERCHANT_ID,
                 self::MDR_ADJUSTMENT_TRANSACTION_ID,
-                self::MDR_ADJUSTMENT_PAYMENT_ID,
             ],
         ]
     ];

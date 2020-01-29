@@ -180,7 +180,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function mdrAdjustment(array $input)
+    public function mdrAdjustmentCalculation(array $input)
     {
 
         $response = new Base\PublicCollection();
@@ -197,24 +197,29 @@ class Service extends Base\Service
 
     protected function processMdrAdjustmentRow(array $input)
     {
-        $paymentId = $input['payment_id'];
-
-        $merchantId = $input['merchant_id'];
-
         $transactionId = $input['transaction_id'];
 
         $response = [
-            Entity::MERCHANT_ID => $merchantId,
             'transaction_id'    => $transactionId,
-            'payment_id'        => $paymentId,
             'idempotency_key'   => $input['idempotency_key'],
         ];
         try
         {
 
-            $payment = $this->repo->payment->findOrFail($paymentId);
+            $this->trace->info(TraceCode::MDR_ADJUSTMENT_CALCULATION_INITIATED, ['transaction_id' => $transactionId]);
 
             $transaction = $this->repo->transaction->findOrFail($transactionId);
+
+            $paymentId = $transaction->getEntityId();
+
+            if ($transaction->getType() != Constants\Entity::PAYMENT)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+            }
+
+            $merchantId = $transaction->getMerchantId();
+
+            $payment = $this->repo->payment->findOrFail($paymentId);
 
             if (($payment->getMerchantId() !== $merchantId) or
                 ($transaction->getMerchantId() !== $merchantId))
@@ -229,6 +234,8 @@ class Service extends Base\Service
 
             [$newFee, $newTax] = $pricingFee->calculateMerchantFees($payment);
 
+            $response['payment_id']        = $paymentId;
+            $response['merchant_id']       = $merchantId;
             $response['old_fee']           = $oldFee;
             $response['old_tax']           = $oldTax;
             $response['new_fee']           = $newFee;
@@ -238,6 +245,8 @@ class Service extends Base\Service
             $response['debit_less_than_2k'] = $payment->getBaseAmount() < 2000 * 100 ? true : false;
             $response['success']           = true;
             $response['errorDescription']  = '';
+
+            $this->trace->info(TraceCode::MDR_ADJUSTMENT_CALCULATION_COMPLETE, $response);
 
 
         }
@@ -249,11 +258,11 @@ class Service extends Base\Service
                 'code'        => $e->getError(),
                 'description' => $e->getMessage(),
             ];
+
+            $this->trace->info(TraceCode::SERVER_ERROR_MDR_ADJUSTMENT_CALCULATION_FAILED, $response);
         }
         catch (\Throwable $e)
         {
-
-
             $response['success'] = false;
             $response['error'] =  [
                 'code'        => 'Server error',
@@ -261,6 +270,7 @@ class Service extends Base\Service
                 ];
             $response['http_status_code'] =   500;
 
+            $this->trace->info(TraceCode::SERVER_ERROR_MDR_ADJUSTMENT_CALCULATION_FAILED, $response);
 
         }
 

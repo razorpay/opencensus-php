@@ -62,11 +62,11 @@ class TransactionController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function mdrAdjustment()
+    public function mdrAdjustmentCalculation()
     {
         $input = Request::all();
 
-        $response = $this->service()->mdrAdjustment($input);
+        $response = $this->service()->mdrAdjustmentCalculation($input);
 
         return ApiResponse::json($response);
     }
