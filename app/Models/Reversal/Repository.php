@@ -122,7 +122,24 @@ class Repository extends Base\Repository
         return $reversals;
     }
 
-    public function fetchSumOfFeesAndTaxForReversalPayoutsByBalanceId($merchantId, $balanceId, $from, $to)
+    /**
+     * calculates the sum of `fee` and `tax` of all the created for a merchant for the given balance_id in the given time frame.
+     *
+     * select  SUM(payouts.tax) AS tax,SUM(payouts.fees) AS fee
+     * from `reversals` inner join `payouts`
+     * on `reversals`.`entity_id` = `payouts`.`id`
+     * where `reversals`.`merchant_id` = ? and `entity_type` = payout
+     * and `reversals`.`created_at` between ? and ?
+     * and `reversals`.`balance_id` = ?
+     *
+     * @param $merchantId
+     * @param $balanceId
+     * @param $startTime
+     * @param $endTime
+     *
+     * @return mixed
+     */
+    public function fetchSumOfFeesAndTaxForReversalPayoutsForGivenBalanceId($merchantId, $balanceId, $startTime, $endTime)
     {
         $balanceIDColumn            = $this->dbColumn(Entity::BALANCE_ID);
         $reversalsEntityIDColumn    = $this->dbColumn(Entity::ENTITY_ID);
@@ -132,14 +149,15 @@ class Repository extends Base\Repository
         $payoutsFeeColumn   = $this->repo->payout->dbColumn(PayoutEntity::FEES);
         $payoutsIDColumn    = $this->repo->payout->dbColumn(Entity::ID);
 
-        $columns = ' SUM(' . $payoutsTaxColumn . ') AS tax, SUM(' . $payoutsFeeColumn . ') AS fee';
+        $columns = ' SUM(' . $payoutsTaxColumn . ') AS tax,
+                     SUM(' . $payoutsFeeColumn . ') AS fee';
 
         return $this->newQuery()
                     ->selectRaw($columns)
                     ->join(Table::PAYOUT, $reversalsEntityIDColumn, $payoutsIDColumn)
                     ->merchantID($merchantId)
                     ->where(Entity::ENTITY_TYPE, Type::PAYOUT)
-                    ->whereBetween($reversalsCreatedAtColumn, [$from, $to])
+                    ->whereBetween($reversalsCreatedAtColumn, [$startTime, $endTime])
                     ->where($balanceIDColumn, $balanceId)
                     ->first();
     }
