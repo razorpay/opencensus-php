@@ -404,6 +404,7 @@ final class Route
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
         'toggle_transaction_hold'                  => ['patch',    'transactions/hold',                              'TransactionController@toggleTransactionHold'                       ],
         'toggle_transaction_release'               => ['patch',    'transactions/release',                           'TransactionController@toggleTransactionRelease'                    ],
+        'mdr_adjustment'                          => ['post',      'transactions/mdr_adjustment_calculation',        'TransactionController@mdrAdjustmentCalculation'                    ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
@@ -1796,6 +1797,7 @@ final class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'merchant_inheritance_parent_set_bulk',
+        'mdr_adjustment',
         'pricing_add_plan_rule_bulk',
         'admin_lead_verify',
         'admin_authentication',
@@ -3344,6 +3346,8 @@ final class Route
         'merchant_inheritance_parent_set_bulk'               =>  '*',
         'merchant_inheritance_parent_delete'                 =>  '*',
 
+        'mdr_adjustment'                                     => '*',
+
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
 
@@ -3769,6 +3773,7 @@ final class Route
             'virtual_account_create',
             'oauth_token_create',
             'merchant_inheritance_parent_set_bulk',
+            'mdr_adjustment',
         ],
 
         'stork' => [

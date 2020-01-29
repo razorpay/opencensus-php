@@ -41,6 +41,11 @@ class Fee extends Base\Core
         $this->repo = new Pricing\Repository;
     }
 
+    public function setMerchant(Merchant\Entity $merchant)
+    {
+        $this->merchant = $merchant;
+    }
+
     /**
      *  Used in testing to mock
      *  pricing repository
