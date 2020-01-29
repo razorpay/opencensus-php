@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Batch\Processor;
 
-
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
 

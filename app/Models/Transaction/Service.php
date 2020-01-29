@@ -206,7 +206,6 @@ class Service extends Base\Service
 
         try
         {
-
             $this->trace->info(TraceCode::MDR_ADJUSTMENT_CALCULATION_INITIATED, ['transaction_id' => $transactionId]);
 
             $transaction = $this->repo->transaction->findOrFail($transactionId);
@@ -227,6 +226,7 @@ class Service extends Base\Service
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
             }
+
             [$oldFee, $oldTax] = [$transaction->getFee(), $transaction->getTax()];
 
             $pricingFee = new Fee;
@@ -238,16 +238,27 @@ class Service extends Base\Service
             $isDebitLessThan2k = $payment->getBaseAmount() < 2000 * 100 ? true : false;
 
             $response['payment_id']         = $paymentId;
+
             $response['merchant_id']        = $merchantId;
+
             $response['TYPE']               = 'payment';
+
             $response['old_fee']            = $oldFee;
+
             $response['old_tax']            = $oldTax;
+
             $response['new_fee']            = $newFee;
+
             $response['new_tax']            = $newTax;
+
             $response['delta_fee']          = $newFee - $oldFee;
+
             $response['delta_tax']          = $newTax - $oldTax;
+
             $response['debit_less_than_2k'] = $isDebitLessThan2k;
+
             $response['success']            = true;
+
             $response['errorDescription']   = '';
 
             $this->trace->info(TraceCode::MDR_ADJUSTMENT_CALCULATION_COMPLETE, $response);
@@ -257,7 +268,9 @@ class Service extends Base\Service
         catch (Exception\BaseException $e)
         {
             $response['success'] = false;
+
             $response['http_status_code'] = $e->getError()->getHttpStatusCode();
+
             $response['error'] =  [
                 'code'        => $e->getError(),
                 'description' => $e->getMessage(),
@@ -268,10 +281,12 @@ class Service extends Base\Service
         catch (\Throwable $e)
         {
             $response['success'] = false;
+
             $response['error'] =  [
                 'code'        => 'Server error',
                 'description' => $e->getMessage(),
                 ];
+
             $response['http_status_code'] =   500;
 
             $this->trace->info(TraceCode::SERVER_ERROR_MDR_ADJUSTMENT_CALCULATION_FAILED, $response);
