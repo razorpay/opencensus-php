@@ -203,6 +203,7 @@ class Service extends Base\Service
             'transaction_id'    => $transactionId,
             'idempotency_key'   => $input['idempotency_key'],
         ];
+
         try
         {
 
@@ -234,21 +235,24 @@ class Service extends Base\Service
 
             [$newFee, $newTax] = $pricingFee->calculateMerchantFees($payment);
 
-            $response['payment_id']        = $paymentId;
-            $response['merchant_id']       = $merchantId;
-            $response['old_fee']           = $oldFee;
-            $response['old_tax']           = $oldTax;
-            $response['new_fee']           = $newFee;
-            $response['new_tax']           = $newTax;
-            $response['delta_fee']         = $newFee - $oldFee;
-            $response['delta_tax']         = $newTax - $oldTax;
-            $response['debit_less_than_2k'] = $payment->getBaseAmount() < 2000 * 100 ? true : false;
-            $response['success']           = true;
-            $response['errorDescription']  = '';
+            $isDebitLessThan2k = $payment->getBaseAmount() < 2000 * 100 ? true : false;
+
+            $response['payment_id']         = $paymentId;
+            $response['merchant_id']        = $merchantId;
+            $response['TYPE']               = 'payment';
+            $response['old_fee']            = $oldFee;
+            $response['old_tax']            = $oldTax;
+            $response['new_fee']            = $newFee;
+            $response['new_tax']            = $newTax;
+            $response['delta_fee']          = $newFee - $oldFee;
+            $response['delta_tax']          = $newTax - $oldTax;
+            $response['debit_less_than_2k'] = $isDebitLessThan2k;
+            $response['success']            = true;
+            $response['errorDescription']   = '';
 
             $this->trace->info(TraceCode::MDR_ADJUSTMENT_CALCULATION_COMPLETE, $response);
 
-
+            $response = array_merge($response, $transaction->toArrayPublic());
         }
         catch (Exception\BaseException $e)
         {
