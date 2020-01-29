@@ -807,6 +807,9 @@ final class Route
         'action_request_execute'                   => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
+        'workflow_payout_amount_rules_get_admin'   => ['get',      'admin-workflows/rules/payout_amount',            'WorkflowController@getWorkflowPayoutAmountRules'                   ],
+        'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
+        'workflow_merchants_create_payout_get'     => ['get',      'merchants/workflows/permissions/create_payout',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
 
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -2341,6 +2344,9 @@ final class Route
         'workflow_get_multiple',
         'workflow_update',
         'workflow_delete',
+        'workflow_payout_amount_rules_get_admin',
+        'workflow_merchants_create_payout_get',
+        'workflow_payout_amount_rules_create',
         'action_checker_create',
         'action_diff_get',
         'action_request_execute',
@@ -2840,8 +2846,11 @@ final class Route
         'feature_delete_entity'                    => Permission::DELETE_MERCHANT_FEATURES,
         'feature_get'                              => Permission::VIEW_MERCHANT_FEATURES,
         'workflow_create'                          => Permission::CREATE_WORKFLOW, // Fix permissions
+        'workflow_payout_amount_rules_create'      => Permission::CREATE_WORKFLOW,
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
+        'workflow_payout_amount_rules_get_admin'   => Permission::VIEW_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
+        'workflow_merchants_create_payout_get'     => Permission::VIEW_ALL_WORKFLOW,
         'workflow_update'                          => Permission::EDIT_WORKFLOW,
         'workflow_delete'                          => Permission::DELETE_WORKFLOW,
         'action_checker_create'                    => '*',
