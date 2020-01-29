@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Constants\Table;
+use RZP\Constants\Product;
 use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
@@ -19,12 +21,14 @@ use RZP\Models\Workflow\Step;
 use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
 use RZP\Models\User\BankingRole;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Workflow\Action\Checker;
 
 class Repository extends Base\Repository
 {
     const QUEUED_PAYOUTS_FETCH_LIMIT = 5000;
+    const PENDING_PAYOUTS_FETCH_LIMIT = 5000;
 
     protected $entity = 'payout';
 
@@ -48,15 +52,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchFromUtr($utr, $balanceId)
+    public function fetchFromUtr($utr, $amount, $balanceId)
     {
         return $this->newQuery()
                     ->where(Entity::BALANCE_ID, $balanceId)
+                    ->where(Entity::AMOUNT, $amount)
                     ->where(Entity::UTR, $utr)
                     ->get();
     }
 
-    public function fetchFromCmsRefNumber($cmsRefNumber, $balanceId)
+    public function fetchFromCmsRefNumber($cmsRefNumber, $amount, $balanceId)
     {
         $ftaTable = $this->repo->fund_transfer_attempt->getTableName();
 
@@ -68,6 +73,8 @@ class Repository extends Base\Repository
 
         $payoutsBalanceColumn = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
 
+        $payoutsAmountColumn = $this->repo->payout->dbColumn(Entity::AMOUNT);
+
         $payoutAttrs = $this->dbColumn('*');
 
         return $this->newQuery()
@@ -75,6 +82,7 @@ class Repository extends Base\Repository
                     ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
                     ->where($payoutsBalanceColumn, $balanceId)
                     ->where($ftaCmsRefNumColumn, $cmsRefNumber)
+                    ->where($payoutsAmountColumn, $amount)
                     ->get();
     }
 
@@ -124,9 +132,9 @@ class Repository extends Base\Repository
      * @param User\Entity     $user
      * @param Merchant\Entity $merchant
      *
-     * @return array
+     * @return Base\Collection
      */
-    public function fetchSummaryOfPayoutsPendingOnUser(User\Entity $user, Merchant\Entity $merchant): array
+    public function fetchPayoutsPendingOnUser(User\Entity $user, Merchant\Entity $merchant): Base\Collection
     {
         /** @var BuilderEx $query */
         $query = $this->newQuery();
@@ -137,10 +145,13 @@ class Repository extends Base\Repository
 
         $query->merchantId($merchant->getId());
 
-        return [
-            'count'        => $query->count(),
-            'total_amount' => (int) $query->sum(Entity::AMOUNT),
-        ];
+        // TODO: Update this to handle scale
+        // JIRA: https://razorpay.atlassian.net/browse/RX-420
+        $query->limit(self::PENDING_PAYOUTS_FETCH_LIMIT);
+
+        $query->with(['balance']);
+
+        return $query->get();
     }
 
     public function updateStatus(Base\PublicCollection $payouts, string $status)
@@ -211,6 +222,86 @@ class Repository extends Base\Repository
         $mappedStatuses = Status::getInternalStatusFromPublicStatus($publicStatus);
 
         $query->whereIn($statusColumn, $mappedStatuses);
+    }
+
+    /**
+     * calculates the sum of `fee` and `tax` of all the payouts initiated for a merchant in given time frame.
+     *
+     * select SUM(tax) AS tax,SUM(fees) AS fee
+     * from `payouts` where `payouts`.`merchant_id` = ?
+     * and `payouts`.`balance_id` = ? and
+     * and `payouts`.`initiated_at` between ? and ?"
+     *
+     * @param string $merchantId
+     * @param string $balanceId
+     * @param int    $startTime
+     * @param int    $endTime
+     *
+     * @return mixed
+     */
+    public function fetchFeesAndTaxOfPayoutsForGivenBalanceId(
+        string $merchantId,
+        string $balanceId,
+        int $startTime,
+        int $endTime)
+    {
+        $payoutsBalanceIdColumn   = $this->dbColumn(Entity::BALANCE_ID);
+        $payoutsInitiatedAtColumn = $this->dbColumn(Entity::INITIATED_AT);
+
+        return $this->newQuery()
+                    ->selectRaw(
+                        'SUM(' . Entity::TAX .') AS tax,
+                         SUM(' . Entity::FEES . ') AS fee')
+                    ->merchantId($merchantId)
+                    ->where($payoutsBalanceIdColumn, $balanceId)
+                    ->whereBetween($payoutsInitiatedAtColumn, [$startTime, $endTime])
+                    ->first();
+    }
+
+    /**
+     * calculates the sum of `fee` and `tax` of all the payouts initiated and then failed for a merchant in
+     * given time frame.
+     *
+     * Payouts can go to failed state from either created or initiated state.
+     * We only want to get fees and tax for payouts which went from initiated to failed
+     * i.e where initiated_at is not null.
+     *
+     * select SUM(tax) AS tax,SUM(fees) AS fee
+     * from `payouts` where `payouts`.`merchant_id` = ?
+     * and `payouts`.`balance_id` = ?
+     * and `payouts`.`initiated_at` is not null
+     * and `payouts`.`failed_at` between ? and ?
+     * and `payouts`.`status` = failed
+     *
+     * @param string $merchantId
+     * @param string $balanceId
+     * @param int    $startTime
+     * @param int    $endTime
+     *
+     * @return mixed
+     */
+    public function fetchFeesAndTaxForFailedPayoutsForGivenBalanceId(
+        string $merchantId,
+        string $balanceId,
+        int $startTime,
+        int $endTime)
+    {
+        $payoutsBalanceIdColumn   = $this->dbColumn(Entity::BALANCE_ID);
+        $payoutsInitiatedAtColumn = $this->dbColumn(Entity::INITIATED_AT);
+        $payoutsFailedAtColumn    = $this->dbColumn(Entity::FAILED_AT);
+        $payoutsStatusColumn      = $this->dbColumn(Entity::STATUS);
+
+        return $this->newQuery()
+                    ->selectRaw(
+                        'SUM(' . Entity::TAX .') AS tax,
+                         SUM(' . Entity::FEES . ') AS fee')
+                    ->merchantId($merchantId)
+                    ->where($payoutsBalanceIdColumn, $balanceId)
+                    ->whereNotNull($payoutsInitiatedAtColumn)
+                    ->whereBetween($payoutsFailedAtColumn, [$startTime, $endTime])
+                    ->where($payoutsStatusColumn, '=', Status::FAILED)
+                    ->first();
+
     }
 
     /**
@@ -291,6 +382,18 @@ class Repository extends Base\Repository
         $this->joinQueryContact($query);
 
         $query->where($contactPhoneColumn, $contactPhone);
+    }
+
+    protected function addQueryParamProduct(BuilderEx $query, array $params)
+    {
+        $product = $params[Merchant\Entity::PRODUCT];
+
+        $productColumn = $this->repo->balance->dbColumn(Payout\Entity::TYPE);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryBalance($query);
+
+        $query->where($productColumn, $product);
     }
 
     /**
@@ -467,6 +570,26 @@ class Repository extends Base\Repository
         $this->repo->workflow_action->joinQueryWorkflowStep($query);
     }
 
+    protected function joinQueryBalance(BuilderEx $query)
+    {
+        $balanceTable = $this->repo->balance->getTableName();
+
+        if ($query->hasJoin($balanceTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $balanceTable,
+            function(JoinClause $join)
+            {
+                $balanceIdColumn       = $this->repo->balance->dbColumn(Balance\Entity::ID);
+                $payoutBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+
+                $join->on($balanceIdColumn, $payoutBalanceIdColumn);
+            });
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -487,14 +610,18 @@ class Repository extends Base\Repository
 
         if (($fa === null) or ($fa->getSourceType() !== E::CONTACT))
         {
-            // I.e. this documentn will not be indexed.
+            // I.e. this document will not be indexed.
             return [];
         }
 
+        /** @var $contact Contact\Entity */
         $contact = $fa->source;
+        $balance = $entity->balance;
 
+        $serialized[Entity::PRODUCT]       = $balance->getType();
         $serialized[Entity::CONTACT_NAME]  = $contact->getName();
         $serialized[Entity::CONTACT_EMAIL] = $contact->getEmail();
+        $serialized[Entity::CONTACT_TYPE]  = $contact->getType();
 
         return $serialized;
     }
@@ -522,5 +649,21 @@ class Repository extends Base\Repository
                     ->where(Entity::BATCH_ID, $batchId)
                     ->merchantId($merchantId)
                     ->first();
+    }
+
+    protected function addQueryParamReversedFrom($query, $params)
+    {
+        $reversedFrom  = $params[Entity::REVERSED_FROM];
+        $reversedAtCol = $this->dbColumn(Entity::REVERSED_AT);
+
+        $query->where($reversedAtCol, '>=', $reversedFrom);
+    }
+
+    protected function addQueryParamReversedTo($query, $params)
+    {
+        $reversedTo    = $params[Entity::REVERSED_TO];
+        $reversedAtCol = $this->dbColumn(Entity::REVERSED_AT);
+
+        $query->where($reversedAtCol, '<=', $reversedTo);
     }
 }

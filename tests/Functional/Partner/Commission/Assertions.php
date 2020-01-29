@@ -175,6 +175,20 @@ class Assertions extends TestCase
         $this->assertZeroCommission($calculator);
     }
 
+    public function testZeroPartnerPricingRule(array $data)
+    {
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $this->assertImplicitPlanType($calculator, 'implicit_variable');
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT);
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+    }
+
     public function testGSTOnCommissionForPaymentWithNoGST(array $data)
     {
         $this->assertShouldCreateCommission($data);
@@ -535,13 +549,12 @@ class Assertions extends TestCase
         {
             $partnerFee = $calculator->getPartnerFee();
 
-            $this->assertNotEquals(0, $partnerFee);
             $this->assertGreaterThan($partnerFee, $merchantFee);
         }
 
         $this->assertNotEquals(0, $merchantFee);
 
-        $this->assertTrue($commissionFee < $merchantFee);
+        $this->assertTrue($commissionFee <= $merchantFee);
     }
 
     protected function assertNonZeroCommissionTaxByType(Calculator $calculator, string $type, int $totalCount = 1)

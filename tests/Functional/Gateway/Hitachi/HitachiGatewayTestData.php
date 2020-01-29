@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Hitachi;
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -62,6 +63,7 @@ return [
         'entity' => 'hitachi',
         'admin' => true,
     ],
+
     'testNotEnrolledCard' => [
         'merchant_id' => '10000000000000',
         'amount' => 50000,
@@ -88,6 +90,34 @@ return [
         'tax'               => 0,
         'entity'            => 'payment',
     ],
+
+    'testInternationalRiskyPaymentSuccess' => [
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'method' => 'card',
+        'status' => 'captured',
+        'two_factor_auth' => 'passed',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'hitachi',
+        'terminal_id'       => '100HitachiTmnl',
+        'signed'            => false,
+        'verified'          => null,
+        'fee'               => 1000,
+        'tax'               => 0,
+        'entity'            => 'payment',
+    ],
+
      'testInternationalVisa' => [
         'merchant_id' => '10000000000000',
         'amount' => 50000,
@@ -285,15 +315,45 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED,
+        ],
+    ],
+
+    'testNotEnrolledInternationalCard' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY,
+        ],
+    ],
+
+    'testPaymentFailureShieldBlock' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                    => 'RZP\Exception\BadRequestException',
+            'internal_error_code'      => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
         ],
     ],
 
@@ -488,4 +548,38 @@ return [
         'entity'            => 'payment',
         'international'     => true
     ],
+
+    'testBqrPayment' => [
+        'url'     => '/payment/callback/bharatqr/hitachi',
+        'method'  => 'post',
+        'content' => [
+            'F002'       => '423156XXXXXX1234',
+            'F003'       => '26000',
+            'F004'       => '000000000200',
+            'F011'       => 'abc123',
+            'F012'       => '120000',
+            'F013'       => '1212',
+            'F037'       => 'somethingrandom',
+            'F038'       => 'randomauthorization',
+            'F039'       => '00',
+            'F041'       => 'abc',
+            'F042'       => 'random',
+            'F043'       => 'RazorpayBangalore',
+            'F102'       => 'paymentId',
+            'PurchaseID' => 'tobefilled',
+            'SenderName' => 'Random Name',
+        ],
+    ],
+
+    'createVirtualAccount' => [
+        'url'     => '/virtual_accounts',
+        'method'  => 'post',
+        'content' => [
+            'receiver_types' => 'qr_code',
+            'notes'          => [
+                'key' => 'value',
+            ],
+        ],
+    ],
+
 ];

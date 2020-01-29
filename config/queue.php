@@ -101,6 +101,20 @@ return [
                 'speed_changed'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'failed'            => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
+            'account' => [
+                'suspended'              => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'funds_hold'             => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'funds_unhold'           => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'international_enabled'  => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'international_disabled' => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'instantly_activated'    => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'under_review'           => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'needs_clarification'    => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'activated'              => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'rejected'               => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'payments_enabled'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'payments_disabled'      => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
         ],
         'live' => [
             'payment' => [
@@ -163,6 +177,20 @@ return [
                 'speed_changed'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'failed'            => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
+            'account' => [
+                'suspended'              => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'funds_hold'             => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'funds_unhold'           => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'international_enabled'  => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'international_disabled' => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'instantly_activated'    => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'under_review'           => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'needs_clarification'    => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'activated'              => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'rejected'               => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'payments_enabled'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'payments_disabled'      => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
         ],
     ],
     'dashboard' => [
@@ -198,6 +226,10 @@ return [
         'live'       => env('AWS_IRCTC_BATCH_QUEUE'),
     ],
     'emandate_batch' => [
+        'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
+        'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
+    ],
+    'nach_batch' => [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
     ],
@@ -299,21 +331,25 @@ return [
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
     ],
     'fts_create_account' => [
-        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
-        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+        'test'       => env('AWS_FTS_TEST_QUEUE'),
+        'live'       => env('AWS_FTS_LIVE_QUEUE'),
     ],
     'fts_register_account' => [
-        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
-        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+        'test'       => env('AWS_FTS_TEST_QUEUE'),
+        'live'       => env('AWS_FTS_LIVE_QUEUE'),
     ],
     'fts_fund_transfer' => [
-        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
-        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+        'test'       => env('AWS_FTS_TEST_QUEUE'),
+        'live'       => env('AWS_FTS_LIVE_QUEUE'),
     ],
     'carvault_migration' => [
         'test'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
         'live'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
      ],
+    'terminal_onboarding_creation'=> [
+        'test'       => env('AWS_TERMINAL_ONBOARDING_CREATION_TEST_QUEUE'),
+        'live'       => env('AWS_TERMINAL_ONBOARDING_CREATION_LIVE_QUEUE'),
+    ],
     'merchant_balance_update' => [
         'test'       => env('AWS_MERCHANT_BALANCE_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MERCHANT_BALANCE_UPDATE_LIVE_QUEUE'),
@@ -334,9 +370,29 @@ return [
         'test'       => env('AWS_BENEFICIARY_VERIFY_TEST_QUEUE'),
         'live'       => env('AWS_BENEFICIARY_VERIFY_LIVE_QUEUE'),
     ],
+    'commission' => [
+        'test'       => env('AWS_COMMISSION_QUEUE'),
+        'live'       => env('AWS_COMMISSION_QUEUE'),
+    ],
+    'fund_account_validation' => [
+        'test'       => env('AWS_FUND_ACCOUNT_VALIDATION_QUEUE'),
+        'live'       => env('AWS_FUND_ACCOUNT_VALIDATION_QUEUE'),
+    ],
     'mailing_list_update' => [
         'test'       => env('AWS_MAILING_LIST_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MAILING_LIST_UPDATE_LIVE_QUEUE'),
+    ],
+    'fa_vpa_validation' => [
+        'test'       => env('AWS_FA_VPA_VALIDATION_TEST_QUEUE'),
+        'live'       => env('AWS_FA_VPA_VALIDATION_LIVE_QUEUE'),
+    ],
+    'payment_card_api_reconciliation' => [
+        'test'       =>  env('AWS_PAYMENT_CARD_API_RECONCILIATION_TEST_QUEUE'),
+        'live'       =>  env('AWS_PAYMENT_CARD_API_RECONCILIATION_LIVE_QUEUE'),
+    ],
+    'payment_nbplus_api_reconciliation' => [
+        'test'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_TEST_QUEUE'),
+        'live'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_LIVE_QUEUE'),
     ],
     /*
      | Lists various queues to be used per mailable

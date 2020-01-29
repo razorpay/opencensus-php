@@ -98,13 +98,13 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment)
+    public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment, array $input)
     {
         $verbose = true;
 
         $checker = new Checker($offer, $verbose);
 
-        if ($checker->checkApplicabilityForPayment($payment) === false)
+        if ($checker->checkApplicabilityForPayment($payment, $payment->order) === false)
         {
             $this->trace->info(
                 TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT,
@@ -113,12 +113,17 @@ class Core extends Base\Core
                     'offer_id'   => $offer->getId()
                 ]);
 
+            $this->lockDecrementCurrentOfferUsage($payment);
+
             if ($offer->shouldBlockPayment() === true)
             {
                 $errorMessage = $offer->getErrorMessage();
 
                 throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
+
+            $this->revertOfferPaymentInput($offer,  $payment,  $input);
+
         }
 
         $this->trace->info(
@@ -129,7 +134,24 @@ class Core extends Base\Core
             ]);
     }
 
-    public function fetchMerchantOffersForCheckout(Merchant\Entity $merchant)
+    public function revertOfferPaymentInput(Entity $offer, Payment\Entity $payment, array $input)
+    {
+        //In case of discounted offer where Rzp modifies the amount, if offer validations fails
+        //and merchant does not want to block payment for that offer, setting the original order amount
+        //again for payment amount.
+
+        if(($offer->getOfferType() === Constants::INSTANT_OFFER) and ($input['order_amount'] !== null ))
+        {
+            $payment->setAmount($input['order_amount']);
+
+            $payment->setBaseAmount($input['order_amount']);
+        }
+
+        //As offer is not applicable, dissociating it
+        $payment->dissociateOffer($offer);
+    }
+
+    public function fetchSharedAccOffersForCheckout(Merchant\Entity $merchant)
     {
         $merchantId = $merchant->getId();
 
@@ -148,7 +170,7 @@ class Core extends Base\Core
 
         $sharedOffers = $groupedOffers->get(Account::SHARED_ACCOUNT) ?? new PublicCollection;
 
-        $applicableOffers = $directOffers;
+        $applicableOffers = new PublicCollection();
 
         //
         // For shared merchant offers if there is no similar offer (i,e for same method,
@@ -185,6 +207,25 @@ class Core extends Base\Core
         }
 
         return $offer;
+    }
+
+    public function validateDefaultOfferForOrder(Order\Entity $order, Entity $offer)
+    {
+        $verbose = true;
+
+        $checker = new Checker($offer, $verbose);
+
+        if ($checker->checkValidityOnOrder($order) === true)
+        {
+            return $offer;
+        }
+    }
+
+    public function fetchDefaultOffers()
+    {
+        $defaultOffers = $this->repo->offer->fetchAllDefaultOffersForMerchant($this->merchant->getId());
+
+        return $defaultOffers;
     }
 
     public function fetchSharedOffers()
@@ -348,7 +389,7 @@ class Core extends Base\Core
         {
             $checker = new Checker($offer, $verbose);
 
-            if ($checker->checkApplicabilityForPayment($payment))
+            if ($checker->checkApplicabilityForPayment($payment, $order))
             {
                 $applicableOffers[] = $offer->getPublicId();
             }
@@ -362,5 +403,49 @@ class Core extends Base\Core
         $this->merchant = $merchant;
 
         return $this;
+    }
+
+    //increment the offer usage count after failed payment for max offer validation.
+    public function lockIncrementCurrentOfferUsage(Entity $offer)
+    {
+        if($offer !== null)
+        {
+            $offer = $this->repo->transaction(function () use($offer)
+            {
+                $offer = $this->repo->offer->lockForUpdate($offer->getId());
+
+                $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() + 1);
+
+                $this->repo->saveOrFail($offer);
+
+                return $this->repo->offer->findByPublicIdAndMerchant($offer->getPublicId(), $this->merchant);
+            });
+
+            return $offer;
+        }
+    }
+
+    //decrement the offer usage count after failed payment for max offer validation.
+    public function lockDecrementCurrentOfferUsage(Payment\Entity $payment)
+    {
+        $offer = $payment->getOffer();
+
+        if($offer !== null && $offer->getMaxOfferUsage() !== null)
+        {
+            $offer = $this->repo->transaction(function () use($offer)
+            {
+                $offer = $this->repo->offer->lockForUpdate($offer->getId());
+
+                $offer->setCurrentUsageCount($offer->getCurrentOfferUsage() - 1);
+
+                $this->repo->saveOrFail($offer);
+
+                return $offer;
+            });
+
+            return $offer;
+        }
+
+
     }
 }

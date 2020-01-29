@@ -6,11 +6,18 @@ use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Batch;
+use RZP\Models\Contact;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Constants\Entity as E;
+use RZP\Services\FTS\Constants;
 use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Services\FTS\CreateAccount;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Core
@@ -20,24 +27,33 @@ use RZP\Exception\LogicException;
 class Core extends Base\Core
 {
     /**
-     * @param array                  $input
-     * @param Merchant\Entity        $merchant
+     * @param array $input
+     * @param Merchant\Entity $merchant
      * @param Base\PublicEntity|null $source
-     * @param Batch\Entity|null      $batch
+     * @param bool $createDuplicate
+     * @param string|null $batchId
+     * @param bool $allowRZPFeesFundAccountCreation
      *
      * @return Entity
+     *
+     * @throws BadRequestException
      */
     public function create(array $input,
                            Merchant\Entity $merchant,
                            Base\PublicEntity $source = null,
-                           Batch\Entity $batch = null,
-                           string $batchId = null): Entity
+                           bool $createDuplicate = false,
+                           string $batchId = null,
+                           bool $allowRZPFeesFundAccountCreation = false): Entity
     {
+        $traceRequest = $this->unsetSensitiveCardDetails($input);
+
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $traceRequest);
+
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
         {
             $result = $this->repo->fund_account->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
-                                                                      $merchant->getId(),
-                                                                      $batchId);
+                $merchant->getId(),
+                $batchId);
 
             if ($result !== null)
             {
@@ -45,7 +61,56 @@ class Core extends Base\Core
             }
         }
 
-        $this->modifyRequestForBackwardCompatibility($input);
+        // allowRZPFeesFundAccountCreation is only set to true when fund account is created at merchant activation.
+        if ($allowRZPFeesFundAccountCreation === false)
+        {
+            // If the corresponding contact is of type 'rzp_fees', we won't allow the merchant to create the fund account
+            if ((empty($source) === false) and
+                ($source->getEntityName() === Entity::CONTACT))
+            {
+                $contactType = $source->getType();
+
+                if (Contact\Type::isInInternal($contactType) === true)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED,
+                        null,
+                        [
+                            'contact_id'   => $source->getId(),
+                            'input'        => $traceRequest
+                        ]);
+                }
+            }
+        }
+
+        if (($merchant->getId() === Merchant\Account::MEDLIFE) or
+            ($merchant->getId() === Merchant\Account::OKCREDIT))
+        {
+            $this->modifyRequestForBackwardCompatibility($input);
+        }
+
+        (new Validator)->setStrictFalse()->validateInput('create', $input);
+
+        if (($source instanceof Contact\Entity) and
+            ($createDuplicate === false))
+        {
+            $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input,
+                                                                                       $merchant,
+                                                                                       $source);
+
+            if (empty($fundAccount) === false)
+            {
+
+                $this->trace->info(
+                    TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND,
+                    [
+                        Entity::ID           => $fundAccount->getId(),
+                        Entity::BATCH_ID     => $batchId,
+                    ]);
+
+                return $fundAccount;
+            }
+        }
 
         $fundAccount = (new Entity);
 
@@ -56,7 +121,7 @@ class Core extends Base\Core
         $fundAccount = $fundAccount->build($input);
 
         $this->repo->transaction(
-            function() use ($input, $merchant, $source, $fundAccount, $batch, $batchId)
+            function() use ($input, $merchant, $source, $fundAccount, $batchId)
             {
                 $account = $this->createAccount($input, $merchant, $source);
 
@@ -64,10 +129,20 @@ class Core extends Base\Core
 
                 $fundAccount->account()->associate($account);
 
-                $batchId ? ($fundAccount->setBatchId($batchId)) : ($fundAccount->batch()->associate($batch));
+                if (empty($batchId) === false)
+                {
+                    $fundAccount->setBatchId($batchId);
+                }
 
                 $this->repo->saveOrFail($fundAccount);
             });
+
+        $this->createFTSAccountForFundAccount($input, $fundAccount, $source);
+
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATED,
+            [
+                E::FUND_ACCOUNT => $fundAccount->getId(),
+            ]);
 
         return $fundAccount;
     }
@@ -78,11 +153,15 @@ class Core extends Base\Core
      *
      * This function handles this backward compatibilty modification of the request.
      *
-     * Consumers can send the details in either `bank_account`|`vpa` or `details`.
+     * UPDATE : We are deprecating `details` in all fund_account API requests. This function
+     * is now used by fund_account_validation so that there is no change in the fund_account_validation APIs
+     *
+     * Consumers can send the details in only `bank_account`|`vpa`
+     * Internally, the fund_account_validation API can still send details in `bank_account`|`vpa`|`details`
      *
      * @param array $input
      */
-    protected function modifyRequestForBackwardCompatibility(array & $input)
+    public function modifyRequestForBackwardCompatibility(array & $input)
     {
         //
         // If the `details` key is unset, we assume the details are present in the new structure
@@ -169,6 +248,24 @@ class Core extends Base\Core
                 'input'  => $input,
             ]);
 
+        // If the corresponding contact is of type 'rzp_fees', we won't allow the merchant to update the fund account
+        if (($fundAccount->getSourceType() === Entity::CONTACT) and
+            (empty($fundAccount->getSourceId()) === false))
+        {
+            $contactType = $fundAccount->contact->getType();
+
+            if (Contact\Type::isInInternal($contactType) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED,
+                    null,
+                    [
+                        'fund_account_id' => $fundAccount->getId(),
+                        'input' => $input
+                    ]);
+            }
+        }
+
         $fundAccount->edit($input);
 
         $this->repo->saveOrFail($fundAccount);
@@ -178,6 +275,7 @@ class Core extends Base\Core
 
     public function delete(Entity $fundAccount)
     {
+        // If we ever decide to make this public. Will need to make sure that Internal fund account cannot be deleted.
         $this->trace->info(TraceCode::FUND_ACCOUNT_DELETE_REQUEST, ['id' => $fundAccount->getId()]);
 
         return $this->repo->deleteOrFail($fundAccount);
@@ -191,5 +289,73 @@ class Core extends Base\Core
     public function findByPublicIdAndMerchant(string $id, Merchant\Entity $merchant): Entity
     {
         return $this->repo->fund_account->findByPublicIdAndMerchant($id, $merchant);
+    }
+
+    /**
+     * Unset sensitive card details
+     *
+     * @param array $input
+     * @return array
+     */
+    public function unsetSensitiveCardDetails(array $input)
+    {
+        if ((isset($input[Entity::CARD]) === true) and
+            (is_array($input[Entity::CARD]) === true))
+        {
+            if (empty($input[Entity::CARD][Card\Entity::NUMBER]) === false)
+            {
+                $input[Entity::CARD][Card\Entity::IIN] = substr($input[Entity::CARD][Card\Entity::NUMBER], 0, 6);
+            }
+
+            unset($input[Entity::CARD][Card\Entity::CVV]);
+            unset($input[Entity::CARD][Card\Entity::NUMBER]);
+        }
+
+        return $input;
+    }
+
+    protected function createFTSAccountForFundAccount(array $input,
+                                                      Entity $fundAccount,
+                                                      Base\PublicEntity $source = null)
+    {
+        try
+        {
+            if ($source !== null)
+            {
+                $account = $fundAccount->account;
+
+                (new CreateAccount($this->app))->callFtsCreateAccount($account, Constants::PAYOUT);
+            }
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FTS_CREATE_ACCOUNT_FAILED,
+                [
+                    'data' => $input,
+                ]);
+        }
+    }
+
+    public function createRZPFeesFundAccount(Merchant\Entity $merchant, $contact)
+    {
+        $this->trace->info(TraceCode::RZP_FEES_FUND_ACCOUNT_CREATE_REQUEST,
+                           [
+                               'contact_id' => $contact->getId()
+                           ]);
+
+        $fundAccountData = [
+            'account_type'  => 'bank_account',
+            'contact_id'    => $contact->getPublicId(),
+            'bank_account'  => [
+                'name'              => $this->config['banking_account.razorpayx_fee_details.name'],
+                'ifsc'              => $this->config['banking_account.razorpayx_fee_details.ifsc'],
+                'account_number'    => $this->config['banking_account.razorpayx_fee_details.account_number'],
+            ]
+        ];
+
+        $this->create($fundAccountData, $merchant, $contact, false, null, true);
     }
 }

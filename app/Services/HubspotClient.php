@@ -94,7 +94,7 @@ class HubspotClient
         }
     }
 
-    public function trackL1ContactProperties(array $input, Merchant\Entity $merchant, string $activationFlow)
+    public function trackL1ContactProperties(array $input, Merchant\Entity $merchant, string $activationFlow = null)
     {
         $payloadData = $input;
 
@@ -162,6 +162,9 @@ class HubspotClient
             Merchant\Detail\Entity::ADDRESS_PROOF_URL,
             Merchant\Detail\Entity::PROMOTER_ADDRESS_URL,
             Merchant\Detail\Entity::BUSINESS_PROOF_URL,
+            Merchant\Detail\Entity::BANK_ACCOUNT_NUMBER,
+            Merchant\Detail\Entity::COMPANY_CIN,
+            Merchant\Detail\Entity::COMPANY_PAN
         ];
 
         foreach($keyForRemovingSensitiveInformation as $key)

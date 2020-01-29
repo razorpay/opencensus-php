@@ -29,6 +29,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     // 30 minutes
     const BUFFER_TIME = 1800;
 
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
+    const BLACKLISTED_COLUMNS = [
+        self::COLUMN_PAYER_NAME,
+    ];
+
     public function __construct(string $gateway = null)
     {
         parent::__construct($gateway);
@@ -136,7 +142,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         // We are converting to int after casting to string as PHP randomly
         // returns wrong int values due to differing floating point precisions
         // So something like intval(31946.0) may give 31945 or 31946.
-        // Convering to string using number_format and then converting
+        // Converting to string using number_format and then converting
         // is a hack to avoid this issue
         return intval(number_format($paymentAmount, 2, '.', ''));
     }

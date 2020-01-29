@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Transfer;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 
 class Repository extends Base\Repository
@@ -31,17 +33,23 @@ class Repository extends Base\Repository
     /**
      * Fetch all transfers from a merchant, done on a payment
      *
-     * @param string          $type
-     * @param string          $paymentId
+     * @param string          $sourceType
+     * @param string          $sourceId
      * @param Merchant\Entity $merchant
+     * @param $status         $status
      */
-    public function fetchBySourceTypeAndIdAndMerchant(string $type, string $paymentId, Merchant\Entity $merchant)
+    public function fetchBySourceTypeAndIdAndMerchant(string $sourceType, string $sourceId, Merchant\Entity $merchant, array $status = [])
     {
-        return $this->newQuery()
-                    ->where(Entity::SOURCE_TYPE, $type)
-                    ->where(Entity::SOURCE_ID, $paymentId)
-                    ->merchantId($merchant->getId())
-                    ->get();
+        $query = $this->newQuery()
+                      ->where(Entity::SOURCE_TYPE, $sourceType)
+                      ->where(Entity::SOURCE_ID, $sourceId)
+                      ->merchantId($merchant->getId());
+        if (count($status) > 0)
+        {
+            $query = $query->whereIn(Entity::STATUS, $status);
+        }
+
+        return $query->get();
     }
 
     /**
@@ -60,7 +68,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::TO_ID, $merchant->getId())
                     ->where(Entity::TO_TYPE, E::MERCHANT)
-                    ->where(Entity::SOURCE_TYPE, E::PAYMENT)
                     ->merchantId($merchant->parent->getId())
                     ->findOrFailPublic($id);
     }
@@ -90,5 +97,109 @@ class Repository extends Base\Repository
         Settlement\Entity::verifyIdAndStripSign($id);
 
         $query->where(Entity::RECIPIENT_SETTLEMENT_ID, $id);
+    }
+
+    /**
+     * Query: SELECT DISTINCT `source_id` FROM `transfers` WHERE `source_type` = $sourceType AND
+     * `status` = 'pending' LIMIT $count
+     *
+     * @param string $sourceType
+     * @param int $count
+     *
+     * @return mixed
+     */
+    public function fetchPendingTransfersToRetry(string $sourceType, int $count = 100)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select(Entity::SOURCE_ID)
+                    ->where(Entity::SOURCE_TYPE, $sourceType)
+                    ->where(Entity::STATUS, Status::PENDING)
+                    ->limit($count)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::SOURCE_ID)
+                    ->toArray();
+    }
+
+    /**
+     * Query: SELECT DISTINCT `source_id` FROM `transfers` WHERE `source_type` = $sourceType AND
+     * `status` = 'failed' AND `processed_at` < ? AND `attempts` < 4 LIMIT $count
+     *
+     * @param string $sourceType
+     * @param int $count
+     *
+     * @return mixed
+     */
+    public function fetchFailedTransfersToRetry(string $sourceType, int $count = 100)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select(Entity::SOURCE_ID)
+                    ->where(Entity::SOURCE_TYPE, $sourceType)
+                    ->where(Entity::STATUS, Status::FAILED)
+                    ->where(
+                        Entity::PROCESSED_AT,
+                        '<',
+                        Carbon::yesterday(Timezone::IST)->getTimestamp()
+                    )
+                    ->where(Entity::ATTEMPTS, '<', Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
+                    ->limit($count)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::SOURCE_ID)
+                    ->toArray();
+    }
+
+    /**
+     * Query: UPDATE `transfers` SET `status` = $status WHERE `source_type` = $sourceType AND `source_id` = $sourceId
+     *
+     * @param string $sourceType
+     * @param string $sourceId
+     * @param string $status
+     * @return mixed
+     */
+    public function updateTransferStatusBySourceTypeAndId(string $sourceType, string $sourceId, string $status)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_TYPE, $sourceType)
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->update([Entity::STATUS => $status]);
+    }
+
+    /**
+     * Query for fetching the transfers by paymentId
+     *
+     * @param string $sourceType
+     * @param string $sourceId
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function getTransfersByPayments(string $sourceType, string $sourceId,string $merchantId)
+    {
+        return $this->newQuery()
+                ->where(Entity::SOURCE_TYPE, $sourceType)
+                ->where(Entity::SOURCE_ID, $sourceId)
+                ->where(Entity::TO_ID,$merchantId)
+                ->get();
+    }
+
+    /**
+     * Query for fetching transfer by payment and transferId
+     *
+     * @param string $sourceType
+     * @param string $sourceId
+     * @param string $merchantId
+     * @param string $transId
+     *
+     * @return mixed
+     */
+    public function getTransfersByPaymentsAndTransId(string $sourceType, string $sourceId,string $merchantId,string $transId)
+    {
+        return $this->newQuery()
+                ->where(Entity::ID,$transId)
+                ->where(Entity::SOURCE_TYPE, $sourceType)
+                ->where(Entity::SOURCE_ID, $sourceId)
+                ->where(Entity::TO_ID,$merchantId)
+                ->get();
     }
 }

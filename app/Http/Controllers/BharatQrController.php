@@ -43,8 +43,8 @@ class BharatQrController extends Controller
                 break;
 
             case 'upi_hdfc' :
-                // currently we have only hdfc that is using mindgate as the accquirer.
-                // later on if some other accquirer also uses mindgate, but needs some pre processing
+                // currently we have only hdfc that is using mindgate as the acquirer.
+                // later on if some other acquirer also uses mindgate, but needs some pre processing
                 // then we can do that and later use mindgate code.
                 $gateway = 'upi_mindgate';
 

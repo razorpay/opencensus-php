@@ -29,7 +29,7 @@ class MerchantInvoiceController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('merchant_invoice')->createMulitpleInvoiceEntities($input);
+        $data = $this->service('merchant_invoice')->createMultipleInvoiceEntities($input);
 
         return ApiResponse::json([]);
     }
@@ -39,5 +39,23 @@ class MerchantInvoiceController extends Controller
         $data = $this->service()->createCorrectionInvoice($this->input);
 
         return ApiResponse::json([]);
+    }
+
+    public function getBankingInvoices()
+    {
+        $input = Request::all();
+
+        $invoices = $this->service()->fetchMultipleBankingInvoices($input);
+
+        return ApiResponse::json($invoices);
+    }
+
+    public function verify()
+    {
+        $input = Request::all();
+
+        $invoices = $this->service()->verify($input);
+
+        return ApiResponse::json($invoices);
     }
 }

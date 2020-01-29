@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Merchant\Account;
 
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\Detail;
 
@@ -14,25 +16,47 @@ class Response extends Core
         $accountDetails = $account->merchantDetail;
 
         $data = [
-            Constants::ENTITY          => Constants::ACCOUNT,
-            Constants::ID              => Entity::getSignedId($account->getId()),
-            Constants::MANAGED         => 1,
-            Constants::NOTES           => $account->getNotes(),
-            Constants::BUSINESS_ENTITY => $accountDetails->getBusinessType(),
-            Constants::EMAIL           => $account->getEmail(),
-            Constants::PHONE           => $accountDetails->getContactMobile(),
-            Constants::REVIEW_STATUS   => $this->getReviewStatusData($account, $accountDetails),
-            Constants::PROFILE         => $this->getProfileData($account, $accountDetails),
-            Constants::PAYMENT         => $this->getPaymentData($account),
-            Constants::CREATED_AT      => $account->getCreatedAt(),
+            Constants::ENTITY            => Constants::ACCOUNT,
+            Constants::ID                => Entity::getSignedId($account->getId()),
+            Constants::MANAGED           => 1,
+            Constants::EXTERNAL_ID       => $account->getExternalId(),
+            Constants::NOTES             => $account->getNotes(),
+            Constants::BUSINESS_ENTITY   => $accountDetails->getBusinessType(),
+            Constants::LEGAL_ENTITY_ID   => $account->getLegalEntityId(),
+            Constants::LEGAL_EXTERNAL_ID => $account->legalEntity->getExternalId(),
+            Constants::EMAIL             => $account->getEmail(),
+            Constants::REVIEW_STATUS     => $this->getReviewStatusData($account),
+            Constants::PROFILE           => $this->getProfileData($account),
+            Constants::PAYMENT           => $this->getPaymentData($account),
+            Constants::CREATED_AT        => $account->getCreatedAt(),
         ];
 
-        $settlementData = $this->getSettlementData($account);
+        $contactMobile =  $accountDetails->getContactMobile();
+
+        if (empty($contactMobile) === false)
+        {
+            // if contact mobile is present, contact info should be sent as contact info fields are mandatory
+            $data[Constants::PHONE] = $contactMobile;
+
+            $data[Constants::CONTACT_INFO] = [
+                Constants::NAME => $accountDetails->getContactName(),
+                Constants::EMAIL => $accountDetails->getContactEmail(),
+                Constants::PHONE => $accountDetails->getContactMobile(),
+            ];
+        }
+
+        $settlementData = $this->getSettlementData($account, $accountDetails);
 
         if (empty($settlementData) === false)
         {
             $data[Constants::SETTLEMENT] = $settlementData;
         }
+
+        $data[Constants::SETTINGS] = [
+            Constants::PAYMENT => [
+                Constants::INTERNATIONAL => $accountDetails->getBusinessInternational(),
+            ],
+        ];
 
         $customFields = $accountDetails->getCustomFields();
 
@@ -41,11 +65,15 @@ class Response extends Core
             $data[Constants::TNC] = $customFields[Constants::TNC];
         }
 
+        $this->trace->info(TraceCode::ACCOUNT_CREATION_RESPONSE, $data);
+
         return $data;
     }
 
-    protected function getReviewStatusData(Merchant\Entity $account, Detail\Entity $accountDetails): array
+    protected function getReviewStatusData(Merchant\Entity $account): array
     {
+        $accountDetails = $account->merchantDetail;
+
         $data = [
             Constants::CURRENT_STATE => [
                 Constants::STATUS             => $account->getAccountStatus(),
@@ -55,11 +83,116 @@ class Response extends Core
             ],
         ];
 
+        if ($account->isKycHandledByPartner() === true)
+        {
+            return $data;
+        }
+
+        $activationStatus = $accountDetails->getActivationStatus();
+
+        // if activation form is not yet submitted
+        if (empty($activationStatus) === true)
+        {
+            $data[Constants::REQUIREMENTS] = $this->getRequirementsDataBeforeSubmission($account);
+        }
+        else if ($activationStatus === Detail\Status::NEEDS_CLARIFICATION)
+        {
+            $data[Constants::REQUIREMENTS] = $this->getRequirementsWhenNeedsClarification($account);
+        }
+        else
+        {
+            $data[Constants::REQUIREMENTS] = [];
+        }
+
         return $data;
     }
 
-    protected function getProfileData(Merchant\Entity $account, Detail\Entity $accountDetails): array
+    protected function getRequirementsDataBeforeSubmission(Merchant\Entity $account): array
     {
+        $accountDetails = $account->merchantDetail;
+
+        $response = (new Detail\Core)->createResponse($accountDetails);
+
+        $requirements = [];
+
+        if ($response['can_submit'] === false)
+        {
+            $requirements = [
+                Constants::BUSINESSES => [
+                    Constants::FIELDS    => [],
+                    Constants::DOCUMENTS => [],
+                ],
+            ];
+
+            $fields = $response['verification']['required_fields'];
+
+            foreach ($fields as $field)
+            {
+                if (Merchant\Document\Type::isValid($field) === true)
+                {
+                    $requirements[Constants::BUSINESSES][Constants::DOCUMENTS][] = [
+                        Constants::TYPE   => $field,
+                        Constants::REASON => Constants::REQUIRED_DOCUMENT_MISSING,
+                    ];
+                }
+                else
+                {
+                    $requirements[Constants::BUSINESSES][Constants::FIELDS][] = [
+                        Constants::FIELD_NAME => $field,
+                        Constants::REASON     => Constants::REQUIRED_FIELD_MISSING,
+                    ];
+                }
+            }
+        }
+
+        return $requirements;
+    }
+
+    protected function getRequirementsWhenNeedsClarification(Merchant\Entity $account): array
+    {
+        $accountDetails = $account->merchantDetail;
+
+        $reasons = $accountDetails->getKycClarificationReasons();
+
+        if (empty($reasons) === true)
+        {
+            return [];
+        }
+
+        $clarificationReasons = $reasons[Detail\Entity::CLARIFICATION_REASONS] ?? [];
+
+        $requirements = [];
+
+        foreach ($clarificationReasons as $fieldName => $reasons)
+        {
+            foreach ($reasons as $reason)
+            {
+                $requirement = [
+                    Constants::FIELD_NAME => $fieldName,
+                ];
+
+                if ($reason[Merchant\Constants::REASON_TYPE] === Merchant\Constants::PREDEFINED_REASON_TYPE)
+                {
+                    $requirement[Constants::REASON] = $reason[Merchant\Constants::REASON_CODE];
+                }
+                else
+                {
+                    $requirement[Constants::REASON] = Detail\NeedsClarificationMetaData::OTHERS;
+                }
+
+                $group = (Merchant\Document\Type::isValid($fieldName) === true) ? Constants::DOCUMENTS : Constants::FIELDS;
+
+                $requirements[Constants::BUSINESSES][$group][] = $requirement;
+            }
+        }
+
+        return $requirements;
+    }
+
+    protected function getProfileData(Merchant\Entity $account): array
+    {
+        $accountDetails = $account->merchantDetail;
+
         $data = [
             Constants::ADDRESSES         => $this->getAddressesData($account, $accountDetails),
             Constants::NAME              => $account->getName(),
@@ -83,6 +216,31 @@ class Response extends Core
             $data[Constants::IDENTIFICATION][] = [
                 Constants::TYPE                  => DocumentType::COMPANY_PAN,
                 Constants::IDENTIFICATION_NUMBER => $companyPan,
+            ];
+        }
+
+        $gstin = $accountDetails->getGstin();
+
+        if (empty($gstin) === false)
+        {
+            $data[Constants::IDENTIFICATION][] = [
+                Constants::TYPE                  => DocumentType::GSTIN,
+                Constants::IDENTIFICATION_NUMBER => $gstin,
+            ];
+        }
+
+        $promoterPan = $accountDetails->getPromoterPan();
+
+        if (empty($promoterPan) === false)
+        {
+            $data[Constants::OWNER_INFO] = [
+                Constants::NAME           => $accountDetails->getPromoterPanName(),
+                Constants::IDENTIFICATION => [
+                    [
+                        Constants::TYPE                  => DocumentType::OWNER_PAN,
+                        Constants::IDENTIFICATION_NUMBER => $accountDetails->getPromoterPan(),
+                    ],
+                ]
             ];
         }
 
@@ -149,19 +307,48 @@ class Response extends Core
         return $data;
     }
 
-    protected function getSettlementData(Merchant\Entity $account): array
+    protected function getSettlementData(Merchant\Entity $account, Detail\Entity $accountDetails): array
     {
         $bankAccount = $account->bankAccount;
 
-        if (empty($bankAccount) === true)
+        $bankAccountArray = [];
+
+        $status = Constants::PENDING_VERIFICATION;
+
+        if (($this->mode === Mode::LIVE) and (empty($bankAccount) === false))
         {
-            return [];
+            $bankAccountArray = [
+                Constants::ID             => $bankAccount->getPublicId(),
+                Constants::ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
+                Constants::IFSC           => $bankAccount->getIfscCode(),
+                Constants::NAME           => $bankAccount->getBeneficiaryName(),
+                Constants::NOTES          => $bankAccount->getNotes()->toArray(),
+            ];
+
+            $status = Constants::ACTIVE;
+        }
+        else if($accountDetails->hasBankAccountDetails() === true)
+        {
+            $testBankAccount = $this->repo->bank_account->getBankAccountOnConnection($account, Mode::TEST);
+
+            $bankAccountArray = [
+                Constants::ACCOUNT_NUMBER => $accountDetails->getBankAccountNumber(),
+                Constants::IFSC           => $accountDetails->getBankBranchIfsc(),
+                Constants::NAME           => $accountDetails->getBankAccountName(),
+                Constants::NOTES          => $testBankAccount->getNotes()->toArray(),
+            ];
+        }
+
+        if (empty($bankAccountArray) === true)
+        {
+            return $bankAccountArray;
         }
 
         $data = [
             Constants::FUND_ACCOUNTS => [
                 [
-                    Constants::BANK_ACCOUNT => $bankAccount->toArrayPublic(),
+                    Constants::BANK_ACCOUNT => $bankAccountArray,
+                    Constants::STATUS       => $status,
                 ]
             ],
         ];

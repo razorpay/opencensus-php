@@ -29,6 +29,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_PAYMENT_AMOUNT                 = 'transaction_amt';
     const COLUMN_INTERNATIONAL_PAYMENT_AMOUNT   = 'transaction_amt';
 
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     /**
      * The payment id in the file is under column 'SESSION ID ASPD'.
      * However, the id is sometimes capitalized, somethings not,
@@ -299,15 +301,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $reconCurrency = $row[self::COLUMN_CURRENCY] ?? null;
 
-        if (strtoupper($expectedCurrency) !== strtoupper($reconCurrency))
+        if ((strtoupper($expectedCurrency) !== strtoupper($reconCurrency)) and (empty($reconCurrency) !== true))
         {
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'info_code'         => Base\InfoCode::CURRENCY_MISMATCH,
+                    'payment_id'        => $this->payment->getId(),
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 

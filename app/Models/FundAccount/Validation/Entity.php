@@ -8,6 +8,8 @@ use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\Transaction\Entity as Transaction;
+use RZP\Models\Feature\Constants as MerchantFeature;
+use RZP\Models\FundAccount\Entity as FundAccountEntity;
 
 /**
  * @property FundAccount fundAccount
@@ -27,6 +29,7 @@ class Entity extends Base\PublicEntity
     const STATUS                 = 'status';
     const ACCOUNT_STATUS         = 'account_status';
     const REGISTERED_NAME        = 'registered_name';
+    const UTR                    = 'utr';
     const FEES                   = 'fees';
     const TAX                    = 'tax';
     const AMOUNT                 = 'amount';
@@ -80,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CREATED_AT,
+        self::UTR,
     ];
 
     protected $public = [
@@ -92,12 +96,14 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::RESULTS,
         self::CREATED_AT,
+        self::UTR,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::RESULTS,
+        self::FUND_ACCOUNT,
     ];
 
     protected $defaults = [
@@ -109,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY        => null,
         self::ACCOUNT_STATUS  => null,
         self::REGISTERED_NAME => null,
+        self::UTR             => null,
     ];
 
     protected $casts = [
@@ -147,12 +154,12 @@ class Entity extends Base\PublicEntity
 
     // -------------- Setters --------------
 
-    public function setAmount(int $amount)
+    public function setAmount(int $amount = null)
     {
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
-    public function setCurrency(string $currency)
+    public function setCurrency(string $currency = null)
     {
         $this->setAttribute(self::CURRENCY, $currency);
     }
@@ -204,6 +211,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::REGISTERED_NAME, $name);
     }
 
+    public function setUtr(string $value = null)
+    {
+        return $this->setAttribute(self::UTR, $value);
+    }
+
     public function setFTSTransferId($ftsTransferId)
     {
         $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
@@ -222,6 +234,31 @@ class Entity extends Base\PublicEntity
             self::ACCOUNT_STATUS  => $this->getAccountStatus(),
             self::REGISTERED_NAME => $this->getRegisteredName(),
         ];
+
+        $merchant = $this->merchant;
+
+        if ( ($merchant !== null) and
+            ($merchant->isFeatureEnabled(MerchantFeature::EXPOSE_FA_VALIDATION_UTR) === true))
+        {
+            $array[self::RESULTS][self::UTR] = $this->getUtr();
+        }
+    }
+
+    public function setPublicFundAccountAttribute(array & $favEntity)
+    {
+        $bankAccount    = FundAccountEntity::BANK_ACCOUNT;
+        $vpa            = FundAccountEntity::VPA;
+        $details        = FundAccountEntity::DETAILS;
+
+        if (isset($favEntity[self::FUND_ACCOUNT][$bankAccount]) === true)
+        {
+            $favEntity[self::FUND_ACCOUNT][$details] = $favEntity[self::FUND_ACCOUNT][$bankAccount];
+        }
+
+        if (isset($favEntity[self::FUND_ACCOUNT][$vpa]) === true)
+        {
+            $favEntity[self::FUND_ACCOUNT][$details] = $favEntity[self::FUND_ACCOUNT][$vpa];
+        }
     }
 
     // -------------- Getters --------------
@@ -286,12 +323,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECEIPT);
     }
 
-    // ------------ Mocked Setters ---------
-
-    public function setUtr(string $value = null)
+    public function getUtr()
     {
-        return;
+        return $this->getAttribute(self::UTR);
     }
+
+    // ------------ Mocked Setters ---------
 
     public function setRemarks(string $value = null)
     {

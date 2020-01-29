@@ -77,6 +77,14 @@ class CreateP2pUpiTransactionTable extends Migration
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
+
+            // Indices
+
+            $table->index([Entity::DEVICE_ID, Entity::HANDLE]);
+            $table->index(Entity::NETWORK_TRANSACTION_ID);
+            $table->index(Entity::RRN);
+            $table->index(Entity::GATEWAY_ERROR_CODE);
+            $table->index(Entity::CREATED_AT);
         });
     }
 

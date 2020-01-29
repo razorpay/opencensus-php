@@ -4,15 +4,25 @@ namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Gateway\Netbanking\Sbi\EMandate\EmandateSbiTestTrait;
 
 class NetbankingSbiCombinedFileTest extends TestCase
 {
     use PaymentTrait;
+    use EmandateSbiTestTrait;
+    use DbEntityFetchTrait;
+
+    // For making an e-mandate Payment
+    const ACCOUNT_NUMBER    = '12345678901234';
+    const IFSC              = 'SBIN0000001';
+    const NAME              = 'Test account';
 
     protected $terminal;
 
@@ -33,33 +43,185 @@ class NetbankingSbiCombinedFileTest extends TestCase
     {
         Mail::fake();
 
-        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+        $this->bank = "SBIN";
 
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $this->createClaimAndRefundPayment($this->bank);
 
-        $transaction = $this->getLastEntity('transaction', true);
+        $refund = $this->getDbLastEntity('refund');
 
-        $this->fixtures->edit('transaction', $transaction['id'], [
-            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
-        ]);
+        $this->assertNull($refund->getGatewayRefunded());
+        $this->assertEquals(1, $refund->getReference3());
+        $this->assertEquals('processed', $refund->getStatus());
 
-        $this->refundPayment($payment['id']);
-
-        $this->ba->adminAuth();
-
-        $content = $this->startTest();
-        $content = $content['items'][0];
+        $content = $this->generateFiles();
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull(File\Entity::SENT_AT);
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
+        $this->performPostFileGenerationAssertions();
+    }
+
+    public function testGenerateCombinedFileForSubsidiaryBanks()
+    {
+        Mail::fake();
+
+        $bank = "SBBJ";
+
+        $this->createClaimAndRefundPayment($bank);
+
+        $refund = $this->getDbLastEntity('refund');
+
+        $this->assertNull($refund->getGatewayRefunded());
+        $this->assertEquals(1, $refund->getReference3());
+        $this->assertEquals('processed', $refund->getStatus());
+
+        $content = $this->generateFiles();
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $this->performPostFileGenerationAssertions();
+    }
+
+    public function testMultipleRefundsSeqNo()
+    {
+        $payments    = [];
+        $refunds     = [];
+        $seqNoList   = [];
+        $expected    = [];
+
+        for ($i = 0; $i < 2; $i++)
+        {
+            $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+            $payments[] = $this->doAuthAndCapturePayment($payment);
+        }
+
+        // full refund
+        $refunds[] = $this->refundPayment($payments[0]['id']);
+
+        // partial refunds
+        $refunds[] = $this->refundPayment($payments[1]['id'], 10000);
+        $refunds[] = $this->refundPayment($payments[1]['id'], 10000);
+
+        // expected output
+        $expected[$refunds[0]['id']] = 1;
+        $expected[$refunds[1]['id']] = 1;
+        $expected[$refunds[2]['id']] = 2;
+
+        foreach ($refunds as $refund)
+        {
+            $seqNoList[$refund['id']] = ($this->getDbEntityById('refund', $refund['id']))->getReference3();
+        }
+
+        $this->assertArraySelectiveEquals($expected, $seqNoList);
+    }
+
+    public function testClaimFileWithEmandatePayment()
+    {
+        Mail::fake();
+
+        $this->createClaimAndRefundPayment();
+
+        $this->setUpEmandate();
+
+        $this->createEmandatePayment();
+
+        $content = $this->generateFiles();
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $this->performPostFileGenerationAssertions();
+    }
+
+    protected function checkRefundsFile(array $refundsFileData)
+    {
+        $this->assertFileExists($refundsFileData['url']);
+
+        $refundsFileContents = file($refundsFileData['url']);
+
+        $this->assertCount(1, $refundsFileContents);
+
+        $refundsFileRow = explode('|', $refundsFileContents[0]);
+
+        $this->assertCount(6, $refundsFileRow);
+
+        $this->assertEquals($refundsFileRow[4], 500);
+    }
+
+    protected function createClaimAndRefundPayment($bank = "SBIN")
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray($bank);
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->updateAuthorizedAtOfPayment($payment['id']);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->updateCreatedAtOfRefund($refund['id']);
+    }
+
+    protected function createEmandatePayment()
+    {
+        $this->payment = $this->getEmandateNetbankingRecurringPaymentArray('SBIN');
+
+        $this->payment['bank_account'] = [
+            'account_number'    => self::ACCOUNT_NUMBER,
+            'ifsc'              => self::IFSC,
+            'name'              => self::NAME,
+        ];
+
+        unset($this->payment['card']);
+
+        $registerPayments[] = [
+            'payment' => $this->createRegistrationPayment(),
+            'status'  => 'SUCCESS',
+            'umrn'    => '111111111111111'
+        ];
+
+        $this->updateAuthorizedAtOfPayment($registerPayments[0]['payment']['id']);
+
+        $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
+        $batch = $this->uploadBatchFile($registerSuccessFile, 'register');
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+    }
+
+    protected function generateFiles()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        return $content['items'][0];
+    }
+
+    protected function setUpEmandate()
+    {
+        $this->fixtures->create('customer');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
+
+        $this->fixtures->merchant->enableEmandate();
+
+        $this->fixtures->create('terminal:shared_emandate_sbi_terminal');
+    }
+
+    protected function performPostFileGenerationAssertions()
+    {
         $files = $this->getEntities('file_store', ['count' => 2], true);
 
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        $rfDate = Carbon::now(Timezone::IST)->format('d.m.y');
+        $rfDate = Carbon::now(Timezone::IST)->format('d.m.Y');
 
         $expectedFilesContent = [
             'entity' => 'collection',
@@ -105,18 +267,37 @@ class NetbankingSbiCombinedFileTest extends TestCase
         });
     }
 
-    protected function checkRefundsFile(array $refundsFileData)
+    protected function updateAuthorizedAtOfPayment($paymentId)
     {
-        $this->assertFileExists($refundsFileData['url']);
+        $this->fixtures->stripSign($paymentId);
 
-        $refundsFileContents = file($refundsFileData['url']);
+        // setting authorized at to 8am. Payments are picked from 8pm to 8pm cycle.
+        $authorizedAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
 
-        $this->assertCount(1, $refundsFileContents);
+        $this->fixtures->edit(
+            'payment',
+            $paymentId,
+            [
+                'authorized_at' => $authorizedAt,
+            ]);
 
-        $refundsFileRow = explode('|', $refundsFileContents[0]);
+        return $paymentId;
+    }
 
-        $this->assertCount(6, $refundsFileRow);
+    protected function updateCreatedAtOfRefund($refundId)
+    {
+        $this->fixtures->stripSign($refundId);
 
-        $this->assertEquals($refundsFileRow[4], 500);
+        // setting created at to 8am. refunds are picked from 8pm to 8pm cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit(
+            'refund',
+            $refundId,
+            [
+                'created_at' => $createdAt,
+            ]);
+
+        return $refundId;
     }
 }

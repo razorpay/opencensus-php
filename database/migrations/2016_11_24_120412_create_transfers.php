@@ -9,6 +9,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
+use RZP\Models\Transfer;
 
 class CreateTransfers extends Migration
 {
@@ -29,6 +30,9 @@ class CreateTransfers extends Migration
             $table->char(Entity::SOURCE_ID, Entity::ID_LENGTH);
 
             $table->string(Entity::SOURCE_TYPE, 50);
+
+            $table->char(Entity::STATUS, 255)
+                  ->default(Transfer\Status::PROCESSED);
 
             $table->char(Entity::TO_ID, Entity::ID_LENGTH);
 
@@ -62,17 +66,38 @@ class CreateTransfers extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::TRANSACTION_ID, Entity::ID_LENGTH);
+            $table->char(Entity::TRANSACTION_ID, Entity::ID_LENGTH)
+                  ->nullable()
+                  ->default(null);
 
             $table->char(Entity::RECIPIENT_SETTLEMENT_ID, Settlement\Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Entity::MESSAGE, 255)
+                  ->nullable()
+                  ->default(null);
+
+            $table->char(Entity::ORIGIN, 255)
+                  ->nullable()
+                  ->default(null);
+
             $table->integer(Entity::CREATED_AT);
+
+            $table->integer(Entity::PROCESSED_AT)
+                  ->nullable()
+                  ->default(null);
+
+            $table->tinyInteger(Entity::ATTEMPTS)
+                  ->nullable()
+                  ->default(0);
+
             $table->integer(Entity::UPDATED_AT);
 
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
+            $table->index(Entity::SOURCE_ID);
+            $table->index([Entity::SOURCE_TYPE, Entity::STATUS]);
 
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

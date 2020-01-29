@@ -262,7 +262,25 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingPlanNachRegistrationRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testAddPricingPlanEmandateDebitAadhaarRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanNachDebitRule()
     {
         $content = $this->createPricingPlan();
 
@@ -298,6 +316,34 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    /*
+     * in this test we create two merchants who are customer fee bearer
+     * and share a pricing plan. this pricing plan has all rules fee_bearer=customer
+     * we try to add a rule in which fee_bearer=platform
+     * we assert that that this addition of rule is not allowed
+     */
+    public function testAddPricingRuleWithFeeBearerMismatch()
+    {
+        $plan = $this->createPricingPlan();
+
+        $merchantAttributes = [
+            'fee_bearer'        => 'customer',
+            'pricing_plan_id'   => $plan['id'],
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $testData['request']['url'] = '/pricing/'. $plan['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest($testData);
+
+        $this->assertContains('Unable to add rule to plan', $response['error']['description']);
+    }
+
     public function testUpdatePricingPlanRule()
     {
         $content = $this->createPricingPlan2();
@@ -324,6 +370,31 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    /*
+     * in this test we create two merchants who are customer fee bearer
+     * and share a pricing plan. this pricing plan has all rules fee_bearer=customer
+     * we try to update a rule in which fee_bearer=platform
+     * we assert that that this addition of rule is not allowed
+     */
+    public function testUpdatePricingPlanFeeBearerMismatch()
+    {
+        $content = $this->createPricingPlan2(['fee_bearer' => 'customer']);
+
+        $merchantAttributes = [
+            'fee_bearer'        => 'customer',
+            'pricing_plan_id'   => $content['id'],
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule/' . $content['rules'][0]['id'];
+
+        $this->startTest($testData);
+
+
+    }
     /**
      * RZP admin will be able to update the pricing plan for SBI or any other organisation.
      * Here, we are testing the case where RZP admin is updating SBI pricing plan rule.
@@ -656,6 +727,37 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAssignPricingPlanFeeBearerMismatch()
+    {
+        /*
+         * default merchant is platform fee bearer
+         * we are creating a plan whose fee_bearer is customer
+         * we are trying to assign above plan to default merchant
+         * this is expected to fail
+         */
+
+        $id = $this->createPricingPlan(['fee_bearer' => 'customer'])['id'];
+
+        $this->setDefaultMerchantMethods();
+
+        $testData['request']['content']['pricing_plan_id'] = $id;
+
+        $this->startTest($testData);
+
+        /*
+         * now the other way round
+         */
+        $id = $this->createPricingPlan(['fee_bearer' => 'customer'])['id'];
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->setFeeBearer('platform');
+
+        $testData['request']['content']['pricing_plan_id'] = $id;
+
+        $this->startTest($testData);
+    }
+
     public function testMerchantAssignPricingPlanMerchantDefault()
     {
         // This test case is for handling errors where
@@ -828,6 +930,31 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddBulkPlanRules()
+    {
+        $content = $this->assignPricingPlanToMerchant();
+
+        $this->ba->batchAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['items'][0]['plan_id'],$content['id']);
+    }
+
+    public function testAddBulkPlanRulesReplicatePlan()
+    {
+        $content = $this->assignPricingPlanToMerchant();
+
+        $this->fixtures->merchant->edit('1ApiFeeAccount', ['pricing_plan_id' => $content['id']]);
+
+        $this->ba->batchAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEquals($response['items'][0]['plan_id'],$content['id']);
+        $this->assertEquals($response['items'][0]['plan_id'],$response['items'][1]['plan_id']);
+    }
+
     public function testDeletePricingPlanRule()
     {
         $this->ba->adminAuth();
@@ -970,16 +1097,6 @@ class PricingTest extends TestCase
         $this->assertNotEmpty($response);
     }
 
-    protected function setDefaultMerchantMethods()
-    {
-        // Disable all methods and only enable card.
-        // The default pricing plan has only card enabled
-
-        $this->fixtures->merchant->disableAllMethods();
-
-        $this->fixtures->merchant->enableCard();
-    }
-
     protected function assignPricingPlanToMerchant()
     {
         $id = $this->createPricingPlan()['id'];
@@ -987,31 +1104,6 @@ class PricingTest extends TestCase
         $this->setDefaultMerchantMethods();
 
         return $this->merchantAssignPricingPlan($id, '10000000000000');
-    }
-
-    protected function createPricingPlan($pricingPlan = [])
-    {
-        $defaultPricingPlan = [
-            'plan_name'           => 'TestPlan1',
-            'payment_method'      => 'card',
-            'payment_method_type' => 'credit',
-            'payment_network'     => 'DICL',
-            'payment_issuer'      => 'HDFC',
-            'percent_rate'        => 1000,
-            'fixed_rate'          => 0,
-            'org_id'              => '100000razorpay',
-            'type'                => 'pricing',
-        ];
-
-        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
-
-        $plan = $this->fixtures->create('pricing', $pricingPlan);
-
-        $plan = $plan->toArray();
-
-        $plan['id'] = $plan['plan_id'];
-
-        return $plan;
     }
 
     protected function createCommissionPlan($pricingPlan = [])
@@ -1693,5 +1785,14 @@ class PricingTest extends TestCase
         $paymentObj = $this->getLastEntity('payment', true);
 
         $this->assertEquals('20', $paymentObj['fee']);
+    }
+
+    public function testAddPricingPlanRuleWithVpaReceiver()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
     }
 }

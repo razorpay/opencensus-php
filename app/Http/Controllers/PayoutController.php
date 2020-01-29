@@ -44,7 +44,7 @@ class PayoutController extends Controller
 
     public function postRejectFundAccountPayout(string $id)
     {
-        $response = $this->service()->rejectFundAccountPayout($id);
+        $response = $this->service()->rejectFundAccountPayout($id, $this->input);
 
         return ApiResponse::json($response);
     }
@@ -118,13 +118,6 @@ class PayoutController extends Controller
     public function getPayoutReversal(string $payoutId)
     {
         $data = $this->service()->fetchReversalOfPayout($payoutId);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getQueuedPayoutsSummary()
-    {
-        $data = $this->service()->getQueuedPayoutsSummary();
 
         return ApiResponse::json($data);
     }

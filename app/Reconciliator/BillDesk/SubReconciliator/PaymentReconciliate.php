@@ -17,9 +17,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_FEE                = 'charges_rsps';
     const COLUMN_GST                = 'gst_rs_ps';
     const COLUMN_SETTLED_AT         = 'settlement_date';
+    const COLUMN_PAYMENT_AMOUNT     = 'gross_amountrsps';
 
     // 29/06/2017 00:31:08
     const SETTLEMENT_DATE_FORMAT    = 'd/m/Y H:i:s';
+
+    const BLACKLISTED_COLUMNS = [];
 
     protected function getPaymentId(array $row)
     {
@@ -102,7 +105,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'trace_code'    => TraceCode::RECON_INFO_ALERT,
                     'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
-                    'row'           => $row,
+                    'date'          => $row[self::COLUMN_SETTLED_AT],
+                    'payment_id'    => $this->payment->getId(),
                     'gateway'       => $this->gateway
                 ]);
 

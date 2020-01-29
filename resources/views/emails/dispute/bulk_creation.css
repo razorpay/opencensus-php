@@ -1,0 +1,116 @@
+* {
+	font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+	line-height: 20px;
+	color: #212121;
+}
+
+h2 {
+	margin: 0;
+	font-size: 20px;
+	line-height: 24px;
+	text-align: center;
+}
+
+strong {
+	color: #8A8A8A;
+	font-size: 12px;
+}
+
+label {
+	font-size: 12px;
+	color: #757575;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.text-center {
+	text-align: center;
+}
+
+.text-right {
+	text-align: right;
+}
+
+center {
+	max-width: 800px;
+}
+
+table {
+	width: 100%;
+}
+
+.table {
+	background-color: #fafafa;
+	/*border-left: 1px solid #f2f2f2;*/
+	/*border-right: 1px solid #f2f2f2;*/
+}
+
+.table > tbody > tr > td {
+	padding: 24px 4%;
+	padding-bottom: 0;
+}
+
+.table > tbody > tr > td.first {
+	border-left: 1px solid #f2f2f2;
+	width: 5%;
+}
+
+.table > tbody > tr > td.last {
+	border-right: 1px solid #f2f2f2;
+	width: 5%;
+}
+
+.table > tbody > tr > td.content {
+	background-color: #fff;
+	border-left: 1px solid #f2f2f2;
+	border-right: 1px solid #f2f2f2;
+	color: #000000;
+}
+
+.merchant__logo {
+	width: 48px;
+	height: 48px;
+	margin-bottom: 8px;
+}
+
+.footer {
+	border-bottom: 1px solid #f2f2f2;
+	border-top: 1px dashed #e5e5e5;
+	padding-bottom: 24px;
+}
+
+.footer--cta {
+	text-decoration: none;
+	padding: 10px 15px;
+	display: inline-block;
+	border-radius: 5px;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.footerFerchant {
+	font-size: 12px;
+	font-weight: bold;
+	color: #757575;
+}
+
+.footerFerchant__address {
+	font-size: 10px;
+	color: #757575;
+}
+
+.footerRZP {
+	text-align: right;
+	padding-left: 10%;
+	padding-bottom: 24px;
+	font-size: 10px;
+	color: #757575;
+}
+
+.text-uppercase {
+	text-transform: uppercase;
+}
+
+.lh-26 {
+	line-height:26px;
+}

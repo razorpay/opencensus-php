@@ -4,7 +4,6 @@ namespace RZP\Models\Payout;
 
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
-use RZP\Models\FundTransfer\Mode;
 
 class Fetch extends BaseFetch
 {
@@ -14,6 +13,7 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_ID       => 'sometimes|unsigned_id',
             Entity::CUSTOMER_ID       => 'sometimes|public_id|size:19',
             Entity::BALANCE_ID        => 'sometimes|unsigned_id',
+            Entity::PRODUCT           => 'required_without:balance_id|string|in:banking',
             Entity::DESTINATION       => 'sometimes|public_id|max:20',
             Entity::METHOD            => 'sometimes|string|custom',
             Entity::MODE              => 'sometimes|string|custom',
@@ -30,6 +30,8 @@ class Fetch extends BaseFetch
             Entity::REFERENCE_ID      => 'sometimes|string|max:40',
             Entity::PURPOSE           => 'sometimes|string|max:255',
             EsRepository::QUERY       => 'sometimes|string|min:2|max:50',
+            Entity::REVERSED_FROM     => 'sometimes|epoch',
+            Entity::REVERSED_TO       => 'sometimes|epoch',
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
         AuthType::PROXY_AUTH => [
@@ -39,6 +41,9 @@ class Fetch extends BaseFetch
             Entity::PENDING_ON_ME           => 'sometimes|boolean',
             Entity::PENDING_ON_ROLES        => 'sometimes|array',
             Entity::PENDING_ON_ROLES . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3',
+        ],
+        AuthType::PRIVILEGE_AUTH => [
+            Entity::PRODUCT                 => 'sometimes|string',
         ],
     ];
 
@@ -68,6 +73,9 @@ class Fetch extends BaseFetch
             Entity::PENDING_ON_ME,
             Entity::PENDING_ON_ROLES,
             Entity::PENDING_ON_ROLES . '.*',
+            Entity::REVERSED_FROM,
+            Entity::REVERSED_TO,
+            Entity::PRODUCT,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
@@ -93,13 +101,17 @@ class Fetch extends BaseFetch
     ];
 
     const COMMON_FIELDS = [
-        Entity::ID,
         Entity::MERCHANT_ID,
         Entity::TYPE,
         Entity::METHOD,
+        Entity::MODE,
         Entity::BALANCE_ID,
         Entity::STATUS,
         Entity::PURPOSE,
+        Entity::REVERSED_FROM,
+        Entity::REVERSED_TO,
+        Entity::PRODUCT,
+        Entity::CONTACT_TYPE,
     ];
 
     protected function validateMethod(string $attribute, string $value)

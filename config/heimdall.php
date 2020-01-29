@@ -87,6 +87,14 @@ return [
                 'description' => 'Edit partner details',
                 'assignable'  => true,
             ],
+            Permission::COMMISSION_CAPTURE => [
+                'description' => 'Capture commission',
+                'assignable'  => true,
+            ],
+            Permission::COMMISSION_PAYOUT => [
+                'description' => 'Clear on hold flag of partner commission transactions which triggers settlement',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
@@ -143,6 +151,9 @@ return [
             ],
             Permission::EDIT_MERCHANT_FEATURES              => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
+
+            Permission::EDIT_MERCHANT_WEBSITE_DETAIL        => '',
+
             Permission::EDIT_IIN_RULE                       => '',
             Permission::EDIT_IIN_RULE_BULK                  => [
                 'description' => 'Bulk Edit IIN Rule',
@@ -633,6 +644,9 @@ return [
                 'description' => 'edit_permission',
                 'workflow'    => true
             ],
+            Permission::REMINDER_OPERATION  => [
+                'description' => 'reminder_operation',
+            ],
         ],
 
         PermissionCategory::AUDIT_LOG  => [
@@ -787,6 +801,24 @@ return [
             Permission::P2P_MANAGE_MERCHANT => [
                 'description'   => 'Allows to manage merchant setup',
                 'assignable'    => true,
+            ],
+        ],
+
+        PermissionCategory::RENDERING_PREFERENCES => [
+            Permission::MANAGE_RENDERING_PREFERENCES => [
+                'description' => 'Manage rendering preferences from admin dashboard',
+                'assignable'  => true
+            ]
+        ],
+
+        PermissionCategory::DOWNTIME_CONFIG => [
+            Permission::UPDATE_DOWNTIME_CONFIG => [
+                'description'   => 'Update Downtime Configuration',
+                'assignable'    => true
+            ],
+            Permission::LIST_DOWNTIME_CONFIG => [
+                'description'   => 'List Downtime Configuration',
+                'assignable'    => true
             ],
         ],
     ],

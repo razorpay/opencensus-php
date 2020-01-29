@@ -4,6 +4,7 @@ namespace RZP\Models\Partner\Config;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Merchant\AccessMap;
@@ -41,6 +42,13 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($config);
+
+        $this->trace->info(
+            TraceCode::PARTNER_CONFIG_CREATED,
+            [
+                'input' => $input,
+                'id'    => $config->getId(),
+            ]);
 
         return $config;
     }
@@ -80,11 +88,13 @@ class Core extends Base\Core
         $this->validatePricingPlans($input);
 
         (new Validator)->validateSettleToPartner($partner, $input, $subMerchant);
+
+        (new Validator)->validatePaymentMethodsForPartnerType($partner, $input);
     }
 
     /**
      * If submerchant config is present, returns it. Else returns associated partners config
-     * 
+     *
      * @param Application\Entity   $application
      * @param Merchant\Entity|null $subMerchant
      *
@@ -144,7 +154,16 @@ class Core extends Base\Core
 
         (new Validator)->validateSettleToPartner($partner, $input, $submerchant);
 
+        (new Validator)->validatePaymentMethodsForPartnerType($partner, $input);
+
         $this->repo->saveOrFail($config);
+
+        $this->trace->info(
+            TraceCode::PARTNER_CONFIG_EDITED,
+            [
+                'input' => $input,
+                'id'    => $config->getId(),
+            ]);
 
         return $config;
     }
@@ -218,6 +237,15 @@ class Core extends Base\Core
         $appIds = $applications->getIds();
 
         return $this->repo->partner_config->fetchAllConfigForApps($appIds);
+    }
+
+    public function fetchAllDefaultConfigsByPartner(Merchant\Entity $partner): Base\PublicCollection
+    {
+        $configs = $this->fetchAllConfigsByPartner($partner);
+
+        return $configs->filter(function ($config) {
+            return ($config->isDefaultConfig() === true);
+        });
     }
 
     public function fetchAllEnabledConfigGroupsByPartner(Merchant\Entity $merchant)

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Constants\Environment;
+use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Card;
@@ -51,6 +53,11 @@ trait HeadlessOtp
 
     protected function canRunHeadlessOtpFlow($payment, $gatewayInput)
     {
+        if ($payment[Payment\Entity::CPS_ROUTE] === Payment\Entity::CARD_PAYMENT_SERVICE)
+        {
+            return false;
+        }
+
         if (empty($gatewayInput['auth_type']) === false)
         {
             if ($gatewayInput['auth_type'] === Payment\AuthType::HEADLESS_OTP)
@@ -63,7 +70,7 @@ trait HeadlessOtp
 
         if (($payment->isMethodCardOrEmi() === true) and
             ($this->isAuthTypeOtp($payment) === true) and
-            ($this->merchant->isFeatureEnabled(Feature\Constants::HEADLESS) === true))
+            ($this->merchant->isHeadlessEnabled() === true))
         {
             $iin = $payment->card->iinRelation;
 
@@ -137,12 +144,32 @@ trait HeadlessOtp
             'type'    => $payment->card->getType()
         ];
 
+        $analytics = $payment->getMetadata('payment_analytics');
+
+        // For private auth we should always fetch it from payment analytics
+        if ($this->app['basicauth']->isPrivateAuth() === false)
+        {
+            if (empty($analytics['ip']) === true)
+            {
+                $analytics['ip'] = $this->app['request']->ip();
+            }
+
+            if (empty($analytics['user_agent']) === true)
+            {
+                $analytics['user_agent'] = $this->app['request']->header('User-Agent');
+            }
+        }
+
         $data = [
             'payment_id'  => $payment->getId(),
             'request'     => $request,
             'card'        => $card,
             'merchant_id' => $payment->getMerchantId(),
             'gateway'     => $payment->getGateway(),
+            'client'      => [
+                'ip' => $analytics['ip'],
+                'ua' => $analytics['user_agent'],
+            ]
         ];
 
         $response = $this->app['card.otpelf']->otpSend($data);
@@ -363,6 +390,12 @@ trait HeadlessOtp
 
     protected function disableIinFlowIfApplicable($payment, $code)
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment(Environment::PRODUCTION) === true))
+        {
+            return;
+        }
+
         if ($payment->hasCard() === false)
         {
             return;

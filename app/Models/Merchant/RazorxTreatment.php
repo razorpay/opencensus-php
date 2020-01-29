@@ -28,6 +28,8 @@ final class RazorxTreatment
     // Razorx treatment constant for which batch validation needs to skip or not.
     const BATCH_SERVICE_SKIP_VALIDATION = 'batch_service_skip_validation';
 
+    const NON_REGISTERED_ONBOARDING = 'non_registered_onboarding';
+
     // Decides if increased cap for allowed line items in invoice to be used for merchant's invoice.
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
 
@@ -38,4 +40,46 @@ final class RazorxTreatment
 
     const SECOND_FACTOR_AUTH_PROJECT_EXP   = 'second_factor_auth_project';
     const SECOND_FACTOR_AUTH_LOGIN_EXP     = 'second_factor_auth_login';
+
+    const SELLER_APP_PL_BATCH_UPLOAD_EXPERIMENT = 'sellerapp_PL_batch_upload';
+
+    const TRANSFERS_VIA_ORDER = 'transfers_via_order';
+
+    const RENDERING_PREFERENCES_PAYMENT_LINKS = 'rendering_preferences_payment_links';
+
+    // Decides if fund account and contact creation should have duplicate checks
+    const X_CONTACT_AND_FUND_ACCOUNT_CREATION = 'x_contact_and_fund_account_creation';
+
+    // Decides what payload to return in the payouts webhook
+    const PAYOUTS_WEBHOOK_FILTER = 'payouts_webhook_filter';
+
+    // Decides if payout.created webhook should be fired for the merchant
+    const PAYOUTS_CREATED_WEBHOOK = 'payouts_created_webhook';
+
+    //Decides to hit KYC Service or Mozart for KYC verification
+    const KYC_SERVICE_VERIFICATION = 'kyc_service_verification';
+
+    // Decides if the Settlement UX changes are displayed to the merchant
+    const SETTLEMENT_UX_REVAMP = 'settlement_ux_revamp';
+
+    // Decides payout channel based on IMPS mode
+    const IMPS_MODE_PAYOUT_FILTER = 'imps_mode_payout_filter';
+
+    // Decides payout channel based on NEFT mode
+    const NEFT_MODE_PAYOUT_FILTER = 'neft_mode_payout_filter';
+
+    // Decides payout channel based on RTGS mode
+    const RTGS_MODE_PAYOUT_FILTER = 'rtgs_mode_payout_filter';
+
+    // Decides payout channel based on UPI mode
+    const UPI_MODE_PAYOUT_FILTER = 'upi_mode_payout_filter';
+
+    // Decides payout channel based on IFT mode
+    const IFT_MODE_PAYOUT_FILTER = 'ift_mode_payout_filter';
+
+    // Decides whether or not to display tr attribute in upi_transfer entity
+    const UPI_TRANSFER_TR = 'upi_transfer_tr';
+
+    // Display Parent Payment Id
+    const DISPLAY_PARENT_PAYMENT_ID = 'display_parent_payment_id';
 }

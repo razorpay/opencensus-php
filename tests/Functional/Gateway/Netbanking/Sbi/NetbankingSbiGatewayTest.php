@@ -34,20 +34,34 @@ class NetbankingSbiGatewayTest extends TestCase
         $this->fixtures->create('terminal:shared_netbanking_sbi_terminal');
     }
 
-    public function testPayment()
+    public function makePayment($bank)
     {
-        $this->doNetbankingSbiAuthAndCapturePayment();
+        $this->doNetbankingSbiAuthAndCapturePayment($bank);
 
         $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
 
-        $this->assertTestResponse($paymentEntity);
+        $this->assertEquals($bank, $paymentEntity['bank']);
 
         $this->assertEquals('IGAAAAGNN6', $paymentEntity[Entity::ACQUIRER_DATA]['bank_transaction_id']);
 
+        $this->assertArraySelectiveEquals($this->testData['testPayment'], $paymentEntity);
+
         $netbankingEntity = $this->getDbLastEntityToArray('netbanking', 'test');
+
+        $this->assertEquals($bank, $netbankingEntity['bank']);
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentNetbankingEntity'], $netbankingEntity);
+    }
+
+    public function testPaymentForSbiAndSubsidiaryBanks()
+    {
+        $this->makePayment("SBIN");
+        $this->makePayment("SBBJ");
+        $this->makePayment("SBHY");
+        $this->makePayment("SBMY");
+        $this->makePayment("STBP");
+        $this->makePayment("SBTR");
     }
 
     public function testTpvPayment()
@@ -158,7 +172,9 @@ class NetbankingSbiGatewayTest extends TestCase
         {
             if ($action === 'authorize')
             {
-                $content[ResponseFields::STATUS] = 'Failed';
+                $content[ResponseFields::STATUS]      = 'Failed';
+                $content[ResponseFields::STATUS_DESC] = 'failed at bank end';
+                $content[ResponseFields::BANK_REF_NO] = null;
             }
         });
 
@@ -168,6 +184,11 @@ class NetbankingSbiGatewayTest extends TestCase
         {
             $this->doNetbankingSbiAuthAndCapturePayment();
         });
+
+        $netbankingEntity = $this->getDbLastEntityToArray('netbanking', 'test');
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentFailedNetbankingEntity'], $netbankingEntity);
     }
 
     public function testAuthInvalidStatus()
@@ -214,7 +235,7 @@ class NetbankingSbiGatewayTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $this->testPayment();
+        $this->makePayment($this->bank);
 
         $payment = $this->getLastEntity('payment');
 
@@ -255,7 +276,7 @@ class NetbankingSbiGatewayTest extends TestCase
     {
         $testData = $this->testData[__FUNCTION__];
 
-        $this->testPayment();
+        $this->makePayment($this->bank);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -277,9 +298,39 @@ class NetbankingSbiGatewayTest extends TestCase
         $this->assertTestResponse($paymentEntity, 'testPaymentErrorPaymentEntity');
     }
 
-    protected function doNetbankingSbiAuthAndCapturePayment()
+    public function testForceAuthorizePayment()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $testData = $this->testData['testAuthFailed'];
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content[ResponseFields::STATUS] = 'Failed';
+            }
+        });
+
+        $this->runRequestResponseFlow($testData, function ()
+        {
+            $this->doNetbankingSbiAuthAndCapturePayment();
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $content = $this->forceAuthorizeFailedPayment($payment['id'], ['gateway_payment_id' => 100]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayPayment['bank_payment_id'], 100);
+    }
+
+    protected function doNetbankingSbiAuthAndCapturePayment($bank = "SBIN")
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray($bank);
 
         $payment = $this->doAuthAndCapturePayment($payment);
     }

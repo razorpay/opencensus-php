@@ -4,28 +4,31 @@ namespace RZP\Models\Transaction\Processor;
 
 use Mail;
 use Carbon\Carbon;
-
-use Razorpay\Trace\Logger;
 use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Base as BaseCollection;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base\Entity as BaseEntity;
-use RZP\Models\Transaction as TransactionModel;
+use RZP\Models\Payment\Processor\Capture;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 
 abstract class Base extends BaseCore
 {
+    use Capture;
+
     protected $source;
 
     /** @var Transaction\Entity */
@@ -71,7 +74,7 @@ abstract class Base extends BaseCore
         $this->source = $source;
     }
 
-    public function setTransaction(TransactionModel\Entity $txn)
+    public function setTransaction(Transaction\Entity $txn)
     {
         $this->txn = $txn;
     }
@@ -82,7 +85,7 @@ abstract class Base extends BaseCore
 
         if ($this->source->hasTransaction() === true)
         {
-           $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($this->source);
+            $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($this->source);
         }
         else
         {
@@ -171,9 +174,9 @@ abstract class Base extends BaseCore
     public function setSourceDefaults()
     {
         $txnData = [
-            TransactionModel\Entity::TYPE            => $this->source->getEntity(),
-            TransactionModel\Entity::CURRENCY        => Currency\Currency::INR,
-            TransactionModel\Entity::CHANNEL         => $this->source->merchant->getChannel(),
+            Transaction\Entity::TYPE            => $this->source->getEntity(),
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::CHANNEL         => $this->source->merchant->getChannel(),
         ];
 
         $this->txn->fill($txnData);
@@ -193,19 +196,19 @@ abstract class Base extends BaseCore
 
     protected function createNewTransaction()
     {
-        $txn = new TransactionModel\Entity;
+        $txn = new Transaction\Entity;
 
         $txn->generateId();
 
         //
-        // Ideally we should have used build() here but not doing to avoiding unexpected & silent
-        // bugs/issues because we are in hurry to release x.
+        // Ideally we should have used build() here but not doing to avoid
+        // unexpected & silent bugs/issues because we are in hurry to release x.
         //
         // Call to build() will set defaults in the entity object and hence are accessible in
-        // toArrayPublic() like methods.  Also, mostly defaults of code are same as of database.
+        // toArrayPublic() like methods. Also, mostly defaults of code are same as of database.
         //
         // Needed the following attribute to exist in entity object during creation because immediately
-        // after creatiof of payout's txn we serialize payout with transaction relation. And without this
+        // after creation of payout's txn we serialize payout with transaction relation. And without this
         // line former will fail at setPublicSettlementIdAttribute().
         //
         $txn->setSettled(false);
@@ -267,7 +270,7 @@ abstract class Base extends BaseCore
 
     protected function calculateFeeDefault()
     {
-        $this->txn->setCreditType(TransactionModel\CreditType::DEFAULT);
+        $this->txn->setCreditType(Transaction\CreditType::DEFAULT);
     }
 
     protected function calculateFeeForAmountCredit()
@@ -294,7 +297,7 @@ abstract class Base extends BaseCore
 
         $this->txn->setGratis(true);
 
-        $this->txn->setCreditType(TransactionModel\CreditType::AMOUNT);
+        $this->txn->setCreditType(Transaction\CreditType::AMOUNT);
 
         $this->feesSplit = new BaseCollection\PublicCollection;
     }
@@ -305,7 +308,7 @@ abstract class Base extends BaseCore
 
         $this->txn->setCredits($feeCredits);
 
-        $this->txn->setCreditType(TransactionModel\CreditType::FEE);
+        $this->txn->setCreditType(Transaction\CreditType::FEE);
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
@@ -319,7 +322,27 @@ abstract class Base extends BaseCore
 
     public function updateCredits()
     {
-        if ($this->txn->isGratis() === true)
+        $mode = $this->mode ?? 'live';
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $this->merchantBalance->merchant->getId(),
+            ]
+        );
+
+        $response = $this->app->razorx->getTreatment($this->merchantBalance->merchant->getId(),
+                                            BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE, $mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $this->merchantBalance->merchant->getId(),
+                'response'      => $response
+            ]
+        );
+
+        if($this->txn->isGratis() === true)
         {
             $this->updateAmountCredits();
         }
@@ -329,7 +352,7 @@ abstract class Base extends BaseCore
         }
         else if ($this->txn->isRefundCredits() === true)
         {
-            $this->updateRefundCredits();
+            $this->updateRefundCredits($response === 'on');
         }
     }
 
@@ -533,12 +556,12 @@ abstract class Base extends BaseCore
         }
     }
 
-    public function updateRefundCredits()
+    public function updateRefundCredits(bool $negativeBalanceEnabled = false)
     {
         // While filling the txn fees and amount, we have not used fee credits.
         if ((($this->txn->isTypeRefund() === false) and
-             ($this->txn->isTypeReversal() === false)) or
-             ($this->txn->isRefundCredits() === false))
+                ($this->txn->isTypeReversal() === false)) or
+            ($this->txn->isRefundCredits() === false))
         {
             return;
         }
@@ -547,22 +570,34 @@ abstract class Base extends BaseCore
 
         $merchantId = $this->merchantBalance->merchant->getId();
 
-        $refundCredits = $this->getMerchantCreditsOfType(Credits\Type::REFUND);
+        $refundCredits = $this->merchantBalance->getRefundCredits();
 
-        if ($refundCredits < $amount)
+        if ($negativeBalanceEnabled === false)
         {
-            throw new Exception\LogicException(
-                'Refund Credits should be higher or equal to the refund amount',
+            if ($refundCredits < $amount)
+            {
+                throw new Exception\LogicException(
+                    'Refund Credits should be higher or equal to the refund amount',
                 null,
-                [
-                    'transaction_id'    => $this->txn->getId(),
-                    'merchant_id'       => $merchantId,
-                    'refund_credits'    => $refundCredits,
-                    'amount'            => $amount,
-                ]);
-        }
+                    [
+                        'transaction_id'    => $this->txn->getId(),
+                        'merchant_id'       => $merchantId,
+                        'refund_credits'    => $refundCredits,
+                        'amount'            => $amount,
+                    ]);
+            }
 
-        $this->merchantBalance->subtractRefundCredits($amount);
+            $this->merchantBalance->subtractRefundCredits($amount, $negativeBalanceEnabled);
+        }
+        else
+        {
+            $this->merchantBalance->subtractRefundCredits($amount, $negativeBalanceEnabled);
+
+            $newCredits = $this->merchantBalance->getRefundCredits();
+
+            (new Balance\Core)->sendNegativeBalanceMailIfApplicable($this->merchantBalance->merchant, $refundCredits, $newCredits,
+                $this->merchantBalance->getType(), 'refund credits', $this->txn->getType());
+        }
 
         //create a credit transaction for the same
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
@@ -577,11 +612,61 @@ abstract class Base extends BaseCore
 
     public function updateMerchantBalance()
     {
-        $this->merchantBalance->updateBalance($this->txn);
+        $mode = $this->mode ?? 'live';
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $this->merchantBalance->merchant->getId(),
+            ]
+        );
+
+        $response = $this->app->razorx->getTreatment($this->merchantBalance->merchant->getId(),
+                                                        BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE, $mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $this->mode,
+                'merchant_id'   => $this->merchantBalance->merchant->getId(),
+                'response'      => $response
+            ]
+        );
+
+        $oldBalance = $this->merchantBalance->getBalance();
+
+        if ($response === 'on')
+        {
+            if ($this->txn->getType() === Transaction\Type::PAYMENT)
+            {
+                (new Balance\Core)->checkMerchantBalance($this->merchantBalance->merchant,
+                                                         $this->txn->getNetAmount(),
+                                                    Transaction\Type::PAYMENT,
+                                                         $this->merchantBalance->getType());
+            }
+        }
+
+        $this->merchantBalance->updateBalance($this->txn, $response === 'on');
+
+        $newBalance = $this->merchantBalance->getBalance();
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
-        $this->txn->setBalance($this->merchantBalance->getBalance());
+        $this->txn->setBalance($this->merchantBalance->getBalance(), $response === 'on');
+
+        if ($response === 'on')
+        {
+            if ($newBalance < 0)
+            {
+                $dimensions = (new Balance\Metric)->getBalanceNegativeDimensions($this->merchantBalance->merchant,
+                                                                                 $this->merchantBalance,
+                                                                                 $this->txn->getType());
+
+                $this->trace->count(Balance\Metric::BALANCE_NEGATIVE, $dimensions);
+            }
+
+            (new Balance\Core)->sendNegativeBalanceMailIfApplicable($this->merchantBalance->merchant, $oldBalance, $newBalance,
+                $this->merchantBalance->getType(), 'merchant balance', $this->txn->getType());
+        }
     }
 
     /**
@@ -592,13 +677,14 @@ abstract class Base extends BaseCore
      * @param Transaction\Entity $txn
      * @param null               $settledAt
      */
-    public function dispatchForSettlementBucketing(TransactionModel\Entity $txn, $settledAt = null)
+    public function dispatchForSettlementBucketing(Transaction\Entity $txn, $settledAt = null)
     {
         //
         // in case the transaction is not eligible for settlement then
         // settled_at will have some number else it will be null
         //
-        if ($settledAt === null)
+        if (($settledAt === null) or
+            ($txn->isOnHold() === true))
         {
             return;
         }

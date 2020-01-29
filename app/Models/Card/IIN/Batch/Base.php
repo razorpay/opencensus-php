@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card\IIN\Batch;
 
+use RZP\Exception;
 use RZP\Base\JitValidator;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN;
@@ -9,9 +10,13 @@ use RZP\Models\Base\Core as BaseCore;
 
 abstract class Base extends BaseCore
 {
+    const IDEMPOTENT_ID                   = 'idempotent_id';
+
     protected $input;
 
-    protected $iin;
+    protected $iinMin;
+
+    protected $iinMax;
 
     protected $entry;
 
@@ -30,21 +35,23 @@ abstract class Base extends BaseCore
 
         $this->input = [];
 
-        $this->validate($entry);
+        $this->validate();
     }
 
     public function process()
     {
         if ($this->shouldSkip() === true)
         {
-            return;
+            return ['skipped' => true];
         }
 
         $this->parseEntry();
 
-        $data = $this->iinService->addOrUpdate($this->iin, $this->input);
+        $this->validateParsedData();
 
-        return $data;
+        $success = $this->iinService->addOrUpdateMultiple($this->iinMin,$this->iinMax,$this->input);
+
+        return $success;
     }
 
     public function shouldSkip()
@@ -61,15 +68,21 @@ abstract class Base extends BaseCore
 
     protected function parseEntry()
     {
-        $this->iin = $this->getIin();
+        $this->iinMin = $this->getIinMin();
+
+        $this->iinMax = $this->getIinMax();
 
         $this->setNetwork();
 
         $this->setIssuer();
 
+        $this->setIssuerName();
+
         $this->setType();
 
         $this->setSubType();
+
+        $this->setProductCode();
 
         $this->setCountry();
 
@@ -98,6 +111,16 @@ abstract class Base extends BaseCore
         }
     }
 
+    protected function setProductCode()
+    {
+        $value = $this->getProductCode();
+
+        if ($value !== null)
+        {
+            $this->input[IIN\Entity::PRODUCT_CODE] = $value;
+        }
+    }
+
     protected function setCountry()
     {
         $value = $this->getCountry();
@@ -115,6 +138,16 @@ abstract class Base extends BaseCore
         if ($value !== null)
         {
             $this->input[IIN\Entity::ISSUER] = $value;
+        }
+    }
+
+    public function setIssuerName()
+    {
+        $value = $this->getIssuerName();
+
+        if ($value !== null)
+        {
+            $this->input[IIN\Entity::ISSUER_NAME] = $value;
         }
     }
 
@@ -150,7 +183,30 @@ abstract class Base extends BaseCore
         }
     }
 
-    abstract function getIin();
+    protected function validateParsedData()
+    {
+        if ((isset($this->iinMin) && isset($this->iinMax)  === false) || ($this->iinMax < $this->iinMin))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid\Empty IIN Range given',
+                [
+                    'IIN Min' => $this->iinMin,
+                    'IIN Max' => $this->iinMax
+                ]
+            );
+        }
+
+        if ((isset($this->input[IIN\Entity::COUNTRY]) === true) and
+            (strlen($this->input[IIN\Entity::COUNTRY]) !== 2))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Country Code: '.$this->input[IIN\Entity::COUNTRY]);
+        }
+    }
+
+    abstract function getIinMin();
+
+    abstract function getIinMax();
 
     abstract function getType();
 
@@ -160,9 +216,13 @@ abstract class Base extends BaseCore
 
     abstract function getIssuer();
 
+    abstract function getIssuerName();
+
     abstract function getNetworkCode();
 
     abstract function getCategory();
 
     abstract function getMessageType();
+
+    abstract function getProductCode();
 }

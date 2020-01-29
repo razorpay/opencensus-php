@@ -6,12 +6,14 @@ use App;
 use Crypt;
 use Cache;
 use Requests;
+use RZP\Gateway\Mpi\Base as Mpi;
 use RZP\Models\Admin\ConfigKey;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
 use RZP\Http\Route;
 use Requests_Hooks;
+use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
@@ -89,6 +91,15 @@ class Gateway
         Action::OTP_GENERATE,
         Action::VALIDATE_VPA,
     ];
+
+    /**
+     * Columns of CPS authorization table.
+     * To be used while force authorizing failed payment
+     */
+    const RRN           = 'rrn';
+    const AUTH_CODE     = 'auth_code';
+    const RECON_ID      = 'recon_id';
+    const PAYMENT_ID    = 'payment_id';
 
     /**
      * The application instance.
@@ -212,6 +223,8 @@ class Gateway
 
     protected $wasGatewayHit = false;
 
+    protected $shouldMapLateAuthorized = false;
+
     /**
      * @var $downtimeMetric DowntimeMetric Singleton for storing count of gateway
      * requests data with success-failure count and error codes (if any)
@@ -309,6 +322,16 @@ class Gateway
     {
         $this->input = $input;
         $this->action = Action::AUTHORIZE;
+
+     // Risk validation for gateways using this function before authenticate and Authorize of the payment.
+        if (isset($input['payment_analytics']['risk_score']) === true)
+        {
+            if (($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::SHIELD_V2) or
+                ($input['payment_analytics']['risk_engine'] === Payment\Analytics\Metadata::MAXMIND_V2))
+            {
+                $this->validateRiskScore($input);
+            }
+        }
     }
 
     /**
@@ -353,6 +376,27 @@ class Gateway
         $this->input = $input;
 
         $this->action = ACTION::CREATE_TERMINAL;
+    }
+
+    public function verifyTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = ACTION::VERIFY_TERMINAL;
+    }
+
+    public function enableTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = Action::ENABLE_TERMINAL;
+    }
+
+    public function disableTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = Action::DISABLE_TERMINAL;
     }
 
     public function debit(array $input)
@@ -425,6 +469,12 @@ class Gateway
     {
         throw new Exception\LogicException(
             'Verify Refund is not implemented');
+    }
+
+    public function reconcile(array $input)
+    {
+        throw new Exception\LogicException(
+            'Reconcile is not implemented');
     }
 
     public function canTopup()
@@ -666,6 +716,45 @@ class Gateway
             [$request],
             [$this, 'shouldRetry'],
             [$this, 'getMaxRetryCount']);
+    }
+
+    //
+    // TODO: Move this to base card gateway from here
+    //
+    protected function decideRiskValidationStep($input, $authResponse)
+    {
+        $eci = $authResponse[Mpi\Entity::ECI];
+
+        $networkCode = Card\Network::getCode($input['card']['network']);
+
+        $isInternational = $input['card']['international'];
+
+        if (($isInternational !== true) or
+            ((($networkCode === Card\Network::VISA) and ($eci !== '06')) or
+             (($networkCode === Card\Network::MC) and ($eci !== '01'))))
+        {
+            return;
+        }
+
+        $this->validateRiskScore($input);
+    }
+
+    protected function validateRiskScore($input)
+    {
+        $riskScore = $input['payment_analytics']['risk_score'];
+
+        if (($riskScore > $input['merchant']->getRiskThreshold()) and
+            (($input['card'][Card\Entity::INTERNATIONAL] === true) and
+             ($input['card'][Card\Entity::NETWORK] !== Card\Network::AMEX)))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY,
+                null,
+                null,
+                ['riskScore' => $riskScore],
+                null,
+                Action::AUTHENTICATE);
+        }
     }
 
     protected function sendExternalRequest($request)
@@ -1234,7 +1323,7 @@ class Gateway
 
         $type = strtoupper($type);
 
-        if (($this->env === 'func') and
+        if (($this->env === 'func' or $this->env === 'automation') and
             (isset($this->externalMockDomain) === true))
         {
             return $this->getExternalMockUrl($type);
@@ -1576,6 +1665,12 @@ class Gateway
                 ($this->input['payment'][Payment\Entity::RECEIVER_TYPE] === Receiver::QR_CODE));
     }
 
+    protected function isUpiTransferPayment(): bool
+    {
+        return ((empty($this->input['payment'][Payment\Entity::RECEIVER_TYPE]) === false) and
+                ($this->input['payment'][Payment\Entity::RECEIVER_TYPE] === Receiver::VPA));
+    }
+
     /**
      * Returns the external mock url
      * Used for gateway testing using mock in func
@@ -1591,6 +1686,12 @@ class Gateway
 
     protected function pushDimensions($action, $input, $status, $excData = null)
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->runningUnitTests() === false))
+        {
+            return;
+        }
+
         $gatewayMetric = new Metric;
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);
@@ -1662,7 +1763,9 @@ class Gateway
 
     protected function getMozartApiUrl($input)
     {
-        $baseUrl = $this->app['config']->get('applications.mozart.url');
+        $urlConfig = 'applications.mozart.' . $this->mode . '.url';
+
+        $baseUrl = $this->app['config']->get($urlConfig);
 
         $version = $this->getVersionForAction($input, $this->action);
 
@@ -1678,9 +1781,11 @@ class Gateway
     {
         $url = $this->getMozartApiUrl($input);
 
+        $passwordConfig = 'applications.mozart.' . $this->mode . '.password';
+
         $authentication = [
             'api',
-            $this->app['config']->get('applications.mozart.password')
+            $this->app['config']->get($passwordConfig)
         ];
 
         $input['terminal'] = $input['terminal']->toArrayWithPassword();
@@ -1752,5 +1857,10 @@ class Gateway
                 null,
                 $this->action);
         }
+    }
+
+    public function isMandateUpdateCallback($input)
+    {
+        return false;
     }
 }

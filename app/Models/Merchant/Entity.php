@@ -14,7 +14,6 @@ use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\State;
 use RZP\Models\Feature;
-use RZP\Models\Pricing;
 use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
@@ -27,7 +26,6 @@ use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
-use RZP\Constants\Timezone;
 use RZP\Models\Payment\Event;
 use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
@@ -35,6 +33,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
@@ -46,13 +45,20 @@ use RZP\Models\Payment\Refund\Speed as RefundSpeed;
  * @property Methods\Entity     $methods
  * @property BankAccount\Entity $bankAccount
  * @property Balance\Entity     $bankingBalance
+ * @property Balance\Entity     $sharedBankingBalance
  * @property Balance\Entity     $primaryBalance
+ * @property Balance\Entity     $reservePrimaryBalance
+ * @property Balance\Entity     $reserveBankingBalance
+ * @property Base\Collection    $activeBankingAccounts
+ * @property Balance\Entity     $commissionBalance
  */
 class Entity extends Base\PublicEntity
 {
     use Taggable;
     use NotesTrait;
     use Cacheable;
+
+    const ID_LENGTH = 14;
 
     const ID                             = 'id';
     const ORG_ID                         = 'org_id';
@@ -73,9 +79,15 @@ class Entity extends Base\PublicEntity
     const RECEIPT_EMAIL_ENABLED          = 'receipt_email_enabled';
     const CHANNEL                        = 'channel';
     const WEBSITE                        = 'website';
+    const EXTERNAL_ID                    = 'external_id';
+
+    // this is same as mcc in legal entity table.
+    // This will be removed after migrating to legal entity
     const CATEGORY                       = 'category';
+
     const WHITELISTED_IPS_LIVE           = 'whitelisted_ips_live';
     const WHITELISTED_IPS_TEST           = 'whitelisted_ips_test';
+    const WHITELISTED_DOMAINS            = 'whitelisted_domains';
     const CATEGORY2                      = 'category2';
     const INVOICE_CODE                   = 'invoice_code';
     const SCOPE                          = 'scope';
@@ -108,6 +120,7 @@ class Entity extends Base\PublicEntity
     const DASHBOARD_WHITELISTED_IPS_LIVE = 'dashboard_whitelisted_ips_live';
     const DASHBOARD_WHITELISTED_IPS_TEST = 'dashboard_whitelisted_ips_test';
     const PARTNERSHIP_URL                = 'partnership_url';
+    const LEGAL_ENTITY_ID                = 'legal_entity_id';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -118,7 +131,7 @@ class Entity extends Base\PublicEntity
     const COUPON_CODE              = 'coupon_code';
 
     // Receipt email to be triggered at payment status
-    const RECEIPT_EMAIL_TRIGGER_EVENT = "receipt_email_trigger_event";
+    const RECEIPT_EMAIL_TRIGGER_EVENT = 'receipt_email_trigger_event';
 
     //
     // Followings are derived data indexed in ES and goes to
@@ -131,6 +144,9 @@ class Entity extends Base\PublicEntity
     const REFERRER                  = 'referrer';
     // List of tags this entity is tagged as.
     const TAG_LIST                  = 'tag_list';
+
+    // key used to pass external legal entity id when creating merchant
+    const LEGAL_EXTERNAL_ID         = 'legal_external_id';
 
     /**
      * Constants for merchant analytics keys
@@ -145,6 +161,7 @@ class Entity extends Base\PublicEntity
 
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
+    const AUTO_REFUND_DELAY_FOR_NACH = 1728000; // 20 days
     const DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
     const INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 7;
     // 30 minutes in seconds
@@ -153,6 +170,11 @@ class Entity extends Base\PublicEntity
     const MAX_AUTO_REFUND_DELAY = 864000;
     // Default merchant brand color used if not set already
     const DEFAULT_MERCHANT_BRAND_COLOR = '#2371EC';
+
+    const AUTO_WHITELISTED_DOMAINS = [
+        'google.com',
+        'apple.com',
+    ];
 
     /**
      * A query parameter to filter results based on
@@ -205,6 +227,8 @@ class Entity extends Base\PublicEntity
     const AUTO_ENABLE_INTERNATIONAL = 'auto_enable_international';
     const CREATE_SUBMERCHANT        = 'create_submerchant';
 
+    const BANKING_ACTIVATED_AT      = 'banking_activated_at';
+
     protected $entity = 'merchant';
 
     protected static $sign = '';
@@ -240,6 +264,7 @@ class Entity extends Base\PublicEntity
         self::FEE_MODEL,
         self::REFUND_SOURCE,
         self::LOGO_URL,
+        self::ICON_URL,
         self::FEE_BEARER,
         self::HOLD_FUNDS,
         self::RISK_RATING,
@@ -261,12 +286,14 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
+        self::WHITELISTED_DOMAINS,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
         self::DASHBOARD_WHITELISTED_IPS_LIVE,
         self::DASHBOARD_WHITELISTED_IPS_TEST,
         self::DEFAULT_REFUND_SPEED,
         self::PARTNERSHIP_URL,
+        self::EXTERNAL_ID,
     ];
 
     const CONFIG_LIST = [
@@ -340,6 +367,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
+        self::WHITELISTED_DOMAINS,
         self::MERCHANT_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
@@ -349,6 +377,7 @@ class Entity extends Base\PublicEntity
         self::RESTRICTED,
         self::DEFAULT_REFUND_SPEED,
         self::PARTNERSHIP_URL,
+        self::EXTERNAL_ID,
      ];
 
     protected $defaults = [
@@ -381,6 +410,7 @@ class Entity extends Base\PublicEntity
         self::NOTES                          => [],
         self::WHITELISTED_IPS_LIVE           => [],
         self::WHITELISTED_IPS_TEST           => [],
+        self::WHITELISTED_DOMAINS            => [],
         self::FEE_CREDITS_THRESHOLD          => null,
         self::CATEGORY                       => 0,
         self::WEBSITE                        => null,
@@ -412,6 +442,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH         => 'bool',
         self::WHITELISTED_IPS_LIVE           => 'array',
         self::WHITELISTED_IPS_TEST           => 'array',
+        self::WHITELISTED_DOMAINS            => 'array',
         self::FEE_CREDITS_THRESHOLD          => 'int',
         self::BUSINESS_BANKING               => 'bool',
         self::SECOND_FACTOR_AUTH             => 'bool',
@@ -449,8 +480,9 @@ class Entity extends Base\PublicEntity
         self::APPLICATION,
     ];
 
-    const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
-    const RISK_THRESHOLD_DEFAULT     = 8;
+    const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;
+    const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
+    const RISK_THRESHOLD_DEFAULT                      = 8;
 
     protected function generateTransactionReportEmail($input)
     {
@@ -492,14 +524,35 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
+    public function isFeeBearerPlatform()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::PLATFORM;
+    }
+
     public function isFeeBearerCustomer()
     {
         return $this->getAttribute(self::FEE_BEARER) === FeeBearer::CUSTOMER;
     }
 
+    public function isFeeBearerDynamic()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === FeeBearer::DYNAMIC;
+    }
+
+    public function isFeeBearerCustomerOrDynamic()
+    {
+        return (($this->isFeeBearerDynamic() === true) or
+                ($this->isFeeBearerCustomer() === true));
+    }
+
     public function isPrepaid()
     {
         return $this->getAttribute(self::FEE_MODEL) === FeeModel::PREPAID;
+    }
+
+    public function isPostpaid()
+    {
+        return $this->getAttribute(self::FEE_MODEL) === FeeModel::POSTPAID;
     }
 
     public function isLive()
@@ -510,6 +563,11 @@ class Entity extends Base\PublicEntity
     public function getActivatedAt()
     {
         return $this->getAttribute(self::ACTIVATED_AT);
+    }
+
+    public function getLegalEntityId()
+    {
+        return $this->getAttribute(self::LEGAL_ENTITY_ID);
     }
 
     public function getReceiptEmailTriggerEvent()
@@ -536,7 +594,7 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::RESTRICTED) === true);
     }
-      
+
     public function setRestricted(bool $restricted)
     {
         $this->setAttribute(self::RESTRICTED, $restricted);
@@ -553,6 +611,10 @@ class Entity extends Base\PublicEntity
     public function isMarketplace(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
+    }
+    public function isDisplayParentPaymentId(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::DISPLAY_LA_PARENT_PAYMENT_ID);
     }
 
     public function isAxisExpressPayEnabled(): bool
@@ -663,6 +725,14 @@ class Entity extends Base\PublicEntity
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
+    public function isInsuranceCategory()
+    {
+        $insuranceCategories = Constants::INSURANCE_CATEGORIES;
+
+        return in_array($this->getAttribute(self::CATEGORY), $insuranceCategories);
+    }
+
+
     public function isFeatureEnabled(string $featureName): bool
     {
         $assignedFeatures = $this->getEnabledFeatures();
@@ -753,8 +823,15 @@ class Entity extends Base\PublicEntity
     public function activate()
     {
         $this->setAttribute(self::ACTIVATED, true);
-        $this->setAttribute(self::LIVE, true);
+        $this->liveEnable();
         $this->setAttribute(self::ACTIVATED_AT, time());
+    }
+
+    public function deactivate()
+    {
+        $this->setAttribute(self::ACTIVATED, false);
+        $this->liveDisable();
+        $this->holdFunds();
     }
 
     /**
@@ -790,25 +867,31 @@ class Entity extends Base\PublicEntity
     public function suspend()
     {
         $this->setAttribute(self::SUSPENDED_AT, time());
-        $this->setAttribute(self::LIVE, false);
-        $this->setAttribute(self::HOLD_FUNDS, true);
+        $this->liveDisable();
+        $this->setHoldFunds(true);
+
+        $this->fireEventWithMerchantPayload('api.account.suspended');
     }
 
     public function unsuspend()
     {
         $this->setAttribute(self::SUSPENDED_AT, null);
-        $this->setAttribute(self::LIVE, true);
-        $this->setAttribute(self::HOLD_FUNDS, false);
+        $this->liveEnable();
+        $this->setHoldFunds(false);
     }
 
     public function liveEnable()
     {
         $this->setAttribute(self::LIVE, true);
+
+        $this->fireEventWithMerchantPayload('api.account.payments_enabled');
     }
 
     public function liveDisable()
     {
         $this->setAttribute(self::LIVE, false);
+
+        $this->fireEventWithMerchantPayload('api.account.payments_disabled');
     }
 
     public function archive()
@@ -908,26 +991,59 @@ class Entity extends Base\PublicEntity
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function bankingBalance()
+    public function sharedBankingBalance()
     {
         return $this->hasOne(Balance\Entity::class)
                     ->where(Balance\Entity::TYPE, Balance\Type::BANKING)
                     ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::SHARED);
     }
 
-    public function getBalanceByProductType(string $product)
+    public function bankingBalances()
     {
-        switch ($product)
+        return $this->hasMany(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
+    }
+
+    public function commissionBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::COMMISSION);
+    }
+
+    public function reservePrimaryBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+            ->where(Balance\Entity::TYPE, Balance\Type::RESERVE_PRIMARY);
+    }
+
+    public function reserveBankingBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+            ->where(Balance\Entity::TYPE, Balance\Type::RESERVE_BANKING);
+    }
+
+    public function getBalanceByType(string $type)
+    {
+        switch ($type)
         {
-            case Product::PRIMARY:
+            case Balance\Type::PRIMARY:
                 return $this->primaryBalance;
 
-            case Product::BANKING:
-                return $this->bankingBalance;
+            case Balance\Type::BANKING:
+                return $this->sharedBankingBalance;
+
+            case Balance\Type::COMMISSION:
+                return $this->commissionBalance;
+
+            case Balance\Type::RESERVE_PRIMARY:
+                return $this->reservePrimaryBalance;
+
+            case Balance\Type::RESERVE_BANKING:
+                return $this->reserveBankingBalance;
 
             default:
                 throw new LogicException(
-                    "Invalid product type - {$product}",
+                    "Invalid balance type - {$type}",
                     null,
                     [
                         Entity::MERCHANT_ID => $this->getId(),
@@ -935,9 +1051,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getBalanceByProductTypeOrFail(string $product): Balance\Entity
+    public function getBalanceByTypeOrFail(string $type): Balance\Entity
     {
-        $balance = $this->getBalanceByProductType($product);
+        $balance = $this->getBalanceByType($type);
 
         if ($balance === null)
         {
@@ -945,8 +1061,8 @@ class Entity extends Base\PublicEntity
                 ErrorCode::BAD_REQUEST_BALANCE_DOES_NOT_EXIST,
                 null,
                 [
-                    self::ID      => $this->getKey(),
-                    self::PRODUCT => $product,
+                    self::ID             => $this->getKey(),
+                    Balance\Entity::TYPE => $type,
                 ]);
         }
 
@@ -957,6 +1073,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(
             'RZP\Models\BankAccount\Entity', 'entity_id', self::ID);
+    }
+
+    public function merchantDocuments()
+    {
+        return $this->hasMany('RZP\Models\Merchant\Document\Entity');
+    }
+
+    public function legalEntity()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\LegalEntity\Entity');
     }
 
     public function methods()
@@ -1060,6 +1186,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
     }
 
+    public function merchantInheritanceMap()
+    {
+        return $this->hasOne('RZP\Models\Merchant\InheritanceMap\Entity');
+    }
+
     public function setBrandColor($brandColor)
     {
         $this->setAttribute(self::BRAND_COLOR, $brandColor);
@@ -1124,6 +1255,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_PLAN_ID);
     }
 
+    public function getExternalId()
+    {
+        return $this->getAttribute(self::EXTERNAL_ID);
+    }
+
     public function offers()
     {
         return $this->hasMany('RZP\Models\Offer\Entity');
@@ -1134,6 +1270,17 @@ class Entity extends Base\PublicEntity
         return $this->hasMany(BankingAccount\Entity::class);
     }
 
+    public function hasBankingAccounts()
+    {
+        return ($this->bankingAccounts->count() > 0);
+    }
+
+    public function activeBankingAccounts()
+    {
+        return $this->bankingAccounts()
+                    ->where(BankingAccount\Entity::STATUS, BankingAccount\Status::ACTIVATED);
+    }
+
     protected function getMaxPaymentAmountAttribute()
     {
         $amount = $this->attributes[self::MAX_PAYMENT_AMOUNT];
@@ -1141,7 +1288,7 @@ class Entity extends Base\PublicEntity
         if (($amount === null) or
             ($amount === '0'))
         {
-            $amount = self::MAX_PAYMENT_AMOUNT_DEFAULT;
+            $amount = (new Core())->getMaxPayAmount($this);
         }
 
         return (int) $amount;
@@ -1312,6 +1459,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DASHBOARD_WHITELISTED_IPS_TEST);
     }
 
+    public function getWhitelistedDomains()
+    {
+        return $this->getAttribute(self::WHITELISTED_DOMAINS);
+    }
+
     public function getOrgId()
     {
         return $this->getAttribute(self::ORG_ID);
@@ -1337,6 +1489,8 @@ class Entity extends Base\PublicEntity
      * if convert_currency === null, then international payments are off
      * if convert_currency === false, then conversion is handled by Gateway
      * if convert_currency === true, then conversion is handled by us
+     *
+     * @param $val
      */
     public function setCurrencyConversion($val)
     {
@@ -1389,6 +1543,11 @@ class Entity extends Base\PublicEntity
     public function getDisplayName()
     {
         return $this->getAttribute(self::DISPLAY_NAME);
+    }
+
+    public function getDisplayNameElseName()
+    {
+        return (empty($this->getDisplayName()) === false) ? $this->getDisplayName() : $this->getName();
     }
 
     public function setDisplayName($displayName)
@@ -1507,6 +1666,13 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::PARTNER_TYPE);
     }
 
+    public function isInheritanceParent(): bool
+    {
+        $inheritanceMap = (new InheritanceMap\Repository)->getInheritanceMapByParentMerchantId($this->getId());
+
+        return (sizeof($inheritanceMap) !== 0);
+    }
+
     public function isFullyManagedPartner(): bool
     {
         return ($this->getPartnerType() === Constants::FULLY_MANAGED);
@@ -1535,6 +1701,26 @@ class Entity extends Base\PublicEntity
     public function hasOptionalSubmerchantEmailFeature(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::ALLOW_SUBMERCHANT_WITHOUT_EMAIL));
+    }
+
+    public function isKycHandledByPartner(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::KYC_HANDLED_BY_PARTNER));
+    }
+
+    public function canCommunicateWithSubmerchant(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::NO_COMM_WITH_SUBMERCHANTS) === false);
+    }
+
+    public function forceGreyListInternational(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::FORCE_GREYLIST_INTERNAT) === true);
+    }
+
+    public function skipWebsiteForInternational(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::SKIP_WEBSITE_INTERNAT) === true);
     }
 
     public function createCustomerOnContactEmailNull(): bool
@@ -1663,6 +1849,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::HOLD_FUNDS);
     }
 
+    public function getHoldFundsReason()
+    {
+        return $this->getAttribute(self::HOLD_FUNDS_REASON);
+    }
+
     public function isFundsOnHold(): bool
     {
         return (bool) $this->getHoldFunds();
@@ -1691,6 +1882,22 @@ class Entity extends Base\PublicEntity
     public function setHoldFunds($holdFunds)
     {
         $this->setAttribute(self::HOLD_FUNDS, $holdFunds);
+
+        if ($holdFunds === true)
+        {
+            $this->fireEventWithMerchantPayload('api.account.funds_hold');
+        }
+        else
+        {
+            $this->setHoldFundsReason();
+
+            $this->fireEventWithMerchantPayload('api.account.funds_unhold');
+        }
+    }
+
+    public function setHoldFundsReason(string $reason = null)
+    {
+        $this->setAttribute(self::HOLD_FUNDS_REASON, $reason);
     }
 
     public function isReceiptEmailsEnabled()
@@ -1718,17 +1925,6 @@ class Entity extends Base\PublicEntity
         }
 
         return (int) $riskThreshold;
-    }
-
-    public function getSubventionType()
-    {
-        // Move to subvention type if ever.
-        if ($this->isFeeBearerCustomer())
-        {
-            return FeeBearer::CUSTOMER;
-        }
-
-        return FeeBearer::PLATFORM;
     }
 
     public function getRedactedAccountNumber()
@@ -1804,11 +2000,15 @@ class Entity extends Base\PublicEntity
     public function enableInternational()
     {
         $this->setAttribute(self::INTERNATIONAL, true);
+
+        $this->fireEventWithMerchantPayload('api.account.international_enabled');
     }
 
     public function disableInternational()
     {
         $this->setAttribute(self::INTERNATIONAL, false);
+
+        $this->fireEventWithMerchantPayload('api.account.international_disabled');
     }
 
     /** Overridden from the PublicEntity */
@@ -1854,6 +2054,11 @@ class Entity extends Base\PublicEntity
     public function toArrayConfig()
     {
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
+    }
+
+    public function isHeadlessEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::HEADLESS_DISABLE) === false;
     }
 
     /**
@@ -2008,6 +2213,16 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
     }
 
+    public function isSaveVpaEnabled()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::SAVE_VPA);
+    }
+
+    public function shouldSaveVpa()
+    {
+        return (($this->isSaveVpaEnabled() === true) and ($this->methods->isUpiEnabled() === true));
+    }
+
     public static function hascustomerTransactionHistoryEnabled($merchantId)
     {
         return (in_array($merchantId, Merchant\Preferences::CUSTOMER_TRANSACTION_HISTORY_ENABLED_MID, true) === true);
@@ -2054,7 +2269,7 @@ class Entity extends Base\PublicEntity
         $headless   = false;
         $expressPay = false;
 
-        if ($this->isFeatureEnabled(Feature\Constants::HEADLESS) === true)
+        if ($this->isHeadlessEnabled() === true)
         {
             $headless = $iin->isHeadLessOtp();
         }
@@ -2104,6 +2319,7 @@ class Entity extends Base\PublicEntity
             self::BILLING_LABEL  => $this->getAttribute(self::BILLING_LABEL),
             self::EMAIL          => $this->getAttribute(self::EMAIL),
             self::ACTIVATED      => $this->getAttribute(self::ACTIVATED),
+            self::ACTIVATED_AT   => $this->getAttribute(self::ACTIVATED_AT),
             self::ARCHIVED_AT    => $this->getAttribute(self::ARCHIVED_AT),
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
@@ -2240,5 +2456,18 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    protected function fireEventWithMerchantPayload(string $event)
+    {
+        $entity = clone $this;
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $entity,
+        ];
+
+        $app = App::getFacadeRoot();
+
+        $app['events']->fire($event, $eventPayload);
     }
 }

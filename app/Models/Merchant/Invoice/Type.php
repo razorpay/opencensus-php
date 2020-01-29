@@ -13,16 +13,22 @@ class Type
     // Commission on All Methods Except Cards
     const OTHERS                = 'others';
 
+    // Commission on Razorpay-X Transactions
+    const RX_TRANSACTIONS       = 'rx_transactions';
+
     // Commission on All Validations
     const VALIDATION            = 'validation';
 
-    // Fee on Instant Refund <= INR 1,000
+    // Fee on Instant Refunds
+    const INSTANT_REFUNDS       = 'instant_refunds';
+
+    // Fee on Instant Refund <= INR 1,000 - This is kept to support older invoice
     const REFUND_LTE_1K         = 'refund_lte_1k';
 
-    // Fee on Instant Refund > INR 1,000 & <= INR 10,000
+    // Fee on Instant Refund > INR 1,000 & <= INR 10,000 - This is kept to support older invoice
     const REFUND_GT_1K_LTE_10K  = 'refund_gt_1k_lte_10k';
 
-    // Fee on Instant Refund > INR 10,000
+    // Fee on Instant Refund > INR 10,000 - This is kept to support older invoice
     const REFUND_GT_10K         = 'refund_gt_10k';
 
     // This is kept to support older invoice
@@ -39,11 +45,16 @@ class Type
         self::OTHERS        => 997158,
         self::ADJUSTMENT    => 997158,
         self::VALIDATION    => 997158,
+        self::RX_TRANSACTIONS      => 997158,
+        self::INSTANT_REFUNDS      => 997158,
         // This is kept to support older invoice
-        self::NON_CARD      => 997158,
-        self::REFUND_LTE_1K         => 997158,
-        self::REFUND_GT_1K_LTE_10K  => 997158,
-        self::REFUND_GT_10K         => 997158,
+        self::NON_CARD             => 997158,
+        // This is kept to support older invoice
+        self::REFUND_LTE_1K        => 997158,
+        // This is kept to support older invoice
+        self::REFUND_GT_1K_LTE_10K => 997158,
+        // This is kept to support older invoice
+        self::REFUND_GT_10K        => 997158,
     ];
 
     const DEFAULT_DESCRIPTION = 'Commission';
@@ -51,33 +62,45 @@ class Type
     const CARD_LTE_2K_DESCRIPTION           = 'Commission on Card Payments <= INR 2,000';
     const CARD_GT_2K_DESCRIPTION            = 'Commission on Card Payments > INR 2,000';
     const OTHERS_DESCRIPTION                = 'Commission on All Methods Except Cards';
+    const RX_TRANSACTIONS_DESCRIPTION       = 'Commission for Razorpay-X transactions';
     const VALIDATION_DESCRIPTION            = 'Commission on All Validations';
+    const INSTANT_REFUNDS_DESCRIPTION       = 'Fee on Instant Refunds';
     const REFUND_LTE_1K_DESCRIPTION         = 'Fee on Instant Refund <= INR 1,000';
     const REFUND_GT_1K_LTE_10K_DESCRIPTION  = 'Fee on Instant Refund > INR 1,000 & <= INR 10,000';
     const REFUND_GT_10K_DESCRIPTION         = 'Fee on Instant Refund > INR 10,000';
 
     protected static $typeToDescriptionMap = [
-        self::CARD_LTE_2K   => self::CARD_LTE_2K_DESCRIPTION,
-        self::CARD_GT_2K    => self::CARD_GT_2K_DESCRIPTION,
-        self::OTHERS        => self::OTHERS_DESCRIPTION,
-        self::VALIDATION    => self::VALIDATION_DESCRIPTION,
+        self::CARD_LTE_2K            => self::CARD_LTE_2K_DESCRIPTION,
+        self::CARD_GT_2K             => self::CARD_GT_2K_DESCRIPTION,
+        self::OTHERS                 => self::OTHERS_DESCRIPTION,
+        self::VALIDATION             => self::VALIDATION_DESCRIPTION,
+        self::RX_TRANSACTIONS        => self::RX_TRANSACTIONS_DESCRIPTION,
+        self::INSTANT_REFUNDS        => self::INSTANT_REFUNDS_DESCRIPTION,
         // This is kept to support older invoice
-        self::NON_CARD              => self::OTHERS_DESCRIPTION,
-        self::REFUND_LTE_1K         => self::REFUND_LTE_1K_DESCRIPTION,
-        self::REFUND_GT_1K_LTE_10K  => self::REFUND_GT_1K_LTE_10K_DESCRIPTION,
-        self::REFUND_GT_10K         => self::REFUND_GT_10K_DESCRIPTION,
+        self::NON_CARD               => self::OTHERS_DESCRIPTION,
+        // This is kept to support older invoice
+        self::REFUND_LTE_1K          => self::REFUND_LTE_1K_DESCRIPTION,
+        // This is kept to support older invoice
+        self::REFUND_GT_1K_LTE_10K   => self::REFUND_GT_1K_LTE_10K_DESCRIPTION,
+        // This is kept to support older invoice
+        self::REFUND_GT_10K          => self::REFUND_GT_10K_DESCRIPTION,
     ];
 
-    public static function getAllTypes(): array
+    public static function getAllPrimaryBalanceTypes(): array
     {
         return [
             self::CARD_LTE_2K,
             self::CARD_GT_2K,
-            self::REFUND_LTE_1K,
-            self::REFUND_GT_1K_LTE_10K,
-            self::REFUND_GT_10K,
+            self::INSTANT_REFUNDS,
             self::OTHERS,
             self::VALIDATION,
+        ];
+    }
+
+    public static function getAllBankingBalanceTypes(): array
+    {
+        return [
+            self::RX_TRANSACTIONS,
         ];
     }
 

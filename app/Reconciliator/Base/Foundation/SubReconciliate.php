@@ -13,9 +13,9 @@ use RZP\Reconciliator\Core;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Messenger;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Base\InfoCode;
-use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -35,15 +35,27 @@ class SubReconciliate extends Base\Core
     const RECON_STATUS          = 'recon_status';
     const ALREADY_RECONCILED_AT = 'already_reconciled_at';
     const RECON_ERROR_MSG       = 'recon_error_msg';
-    const MERCHANT_ID           = 'merchant_id';
+    const RZP_MERCHANT_ID       = 'rzp_merchant_id';
     const PROCESSED_AT          = 'processed_at';
     const BATCH_ID              = 'batch_id';
     const ATTEMPT_NUMBER        = 'attempt_number';
+    const RECON_ENTITY_ID       = 'recon_entity_id';
+    const RECON_NET_AMOUNT      = 'recon_net_amount';
 
     /**
-     * The list of columns which shouldn't be exposed to specific data sources like qubole.
+     * For few gateways, we do not get the RZP  payment/refund ID
+     * in the MIS row. We want to add extra column recon_entity_id
+     * in the output file only for such gateways.
+     * This variable need to be overridden and set to 'true' in
+     * such gateways.
+     *
+     * @var bool
      */
-    const BLACKLISTED_COLUMNS = [];
+    const SHOULD_ADD_ENTITY_ID_COLUMN = false;
+
+    const THRESHOLD = [
+        InfoCode::AMOUNT_MISMATCH   =>  10,
+    ];
 
     /**
      * The list of payments/refunds attempted to reconcile.
@@ -114,11 +126,13 @@ class SubReconciliate extends Base\Core
 
     protected static $currentRowNumber = -1;
 
-    public function __construct(string $gateway = null)
+    public function __construct(string $gateway = null, Batch\Entity $batch = null)
     {
         parent::__construct();
 
         $this->gateway = $gateway;
+
+        $this->batch = $batch;
 
         $this->core = new Core;
 
@@ -262,13 +276,18 @@ class SubReconciliate extends Base\Core
      */
     protected function insertRowInOutputFile(array $row = [], string $reconType = 'unknown')
     {
+        $processed_at = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
+
         $row[self::RECON_TYPE]              = $reconType;
         $row[self::RECON_STATUS]            = '';
         $row[self::ALREADY_RECONCILED_AT]   = '';
         $row[self::RECON_ERROR_MSG]         = '';
-        $row[self::MERCHANT_ID]             = '';
-        $row[self::PROCESSED_AT]            = '';
+        $row[self::RZP_MERCHANT_ID]         = '';
+        $row[self::PROCESSED_AT]            = $processed_at;
         $row[self::BATCH_ID]                = '';
+        $row[self::ATTEMPT_NUMBER]          = '';
+        $row[self::RECON_ENTITY_ID]         = '';
+        $row[self::RECON_NET_AMOUNT]        = '';
 
         static::$reconOutputData[] = $row;
 
@@ -381,6 +400,24 @@ class SubReconciliate extends Base\Core
         }
     }
 
+    protected function persistGatewayAmount(Base\Entity $entity, array $rowDetails)
+    {
+        $gatewayAmount = $rowDetails[BaseReconciliate::GATEWAY_AMOUNT];
+
+        $transaction = $entity->transaction;
+
+        if (($gatewayAmount === null) or
+            ($transaction === null) or
+            ($transaction->getGatewayAmount() !== null))
+        {
+            return;
+        }
+
+        $transaction->setGatewayAmount($gatewayAmount);
+
+        $this->repo->saveOrFail($transaction);
+    }
+
     protected function checkIfAlreadyReconciled($entity)
     {
         $transaction = $entity->transaction;
@@ -434,6 +471,25 @@ class SubReconciliate extends Base\Core
     }
 
     /**
+     * To be overridden in child class
+     * @param array $rowDetails
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function persistGatewayUtr(array $rowDetails, PublicEntity $gatewayPayment)
+    {
+        return;
+    }
+
+    /**
+     * Being used in Worldline gateway (VasAxis) only.
+     * If present, will be saved in worldline entity
+     */
+    protected function getGatewayUtr($row)
+    {
+        return null;
+    }
+
+    /**
      * Not all gateways provide us with gateway_settled_at.
      * Hence, we send back null for these gateways.
      *
@@ -441,6 +497,18 @@ class SubReconciliate extends Base\Core
      * @return null
      */
     protected function getGatewaySettledAt(array $row)
+    {
+        return null;
+    }
+
+    /**
+     * Not all gateways provide us with gateway_amount.
+     * Hence, we send back null for these gateways.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getGatewayAmount(array $row)
     {
         return null;
     }
@@ -521,7 +589,8 @@ class SubReconciliate extends Base\Core
     }
 
     /**
-     * Set the status and error msg for the current row in progress
+     * Sets the status, error msg, already reconciled_at time
+     * for the current row in progress
      *
      * @param string $status
      * @param string|null $errorCode
@@ -529,39 +598,43 @@ class SubReconciliate extends Base\Core
      */
     protected function setRowReconStatusAndError(string $status, string $errorCode = null, int $reconciledAt = null)
     {
-        $statusDescription = Constants::RECON_PUBLIC_DESCRIPTIONS[$status] ?? $status;
-
-        static::$reconOutputData[static::$currentRowNumber][self::RECON_STATUS] = $statusDescription;
+        static::$reconOutputData[static::$currentRowNumber][self::RECON_STATUS] = $status;
 
         if ($status === InfoCode::ALREADY_RECONCILED)
         {
             // Add the already reconciled_at time
-            $reconciledTime = Carbon::createFromTimestamp($reconciledAt, Timezone::IST)->format('d M Y H:i:s');
+            $reconciledTime = Carbon::createFromTimestamp($reconciledAt, Timezone::IST)->format('Y-m-d H:i:s');
 
             static::$reconOutputData[static::$currentRowNumber][self::ALREADY_RECONCILED_AT] = $reconciledTime;
         }
 
-        if (empty($errorCode) === false)
-        {
-            $errorMsg = Constants::RECON_PUBLIC_DESCRIPTIONS[$errorCode] ?? $errorCode;
+        //
+        // For error codes, we don't want to overwrite it, because the first point
+        // where we set the error code, that is very specific to the issue.
+        //
+        $existingErrorCode = static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG];
 
-            static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] = $errorMsg;
+        if ((empty($errorCode) === false) and
+            (empty($existingErrorCode) === true))
+        {
+            static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] = $errorCode;
         }
     }
 
     /**
-     * sets merchantId for the current row in progress
-     * @param string $merchantId
+     * sets Recon Entity ID (payment ID / Refund ID) for the
+     * current row in progress
+     *
+     * @param string $reconEntityId
      */
-    protected function setMerchantIdInOutput(string $merchantId)
+    protected function setReconEntityIdInOutput(string $reconEntityId)
     {
-        static::$reconOutputData[static::$currentRowNumber][self::MERCHANT_ID] = $merchantId;
+        static::$reconOutputData[static::$currentRowNumber][self::RECON_ENTITY_ID] = $reconEntityId;
     }
 
-    protected function setProcessedAtInOutput()
+    protected function setMerchantIdInOutput(string $merchantId)
     {
-        $processed_at = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
-        static::$reconOutputData[static::$currentRowNumber][self::PROCESSED_AT] = $processed_at;
+        static::$reconOutputData[static::$currentRowNumber][self::RZP_MERCHANT_ID] = $merchantId;
     }
 
     protected function setBatchIdInOutput($batchId)
@@ -572,6 +645,11 @@ class SubReconciliate extends Base\Core
     protected function setAttemptsInOutput($attemptNumber)
     {
         static::$reconOutputData[static::$currentRowNumber][self::ATTEMPT_NUMBER] = $attemptNumber;
+    }
+
+    protected function setReconNetAmountInOutput(float $reconNetAmount)
+    {
+        static::$reconOutputData[static::$currentRowNumber][self::RECON_NET_AMOUNT] = $reconNetAmount;
     }
 
     /**
@@ -716,12 +794,41 @@ class SubReconciliate extends Base\Core
     }
 
     /**
+     * Gateway must define const BLACKLISTED_COLUMNS of black listed
+     * columns which should not be included in the output file.
+     *
      * @return array
-     * 1. Gateway should override this function to return list of black listed columns which should not
-     * be included in the output file.
      */
     public function getBlackListedColumnHeadersForOutputFile()
     {
-        return static::BLACKLISTED_COLUMNS;
+        $className = get_class($this);
+
+        // check if constant BLACKLISTED_COLUMNS defined in subreconciliator
+        $defined = defined($className . '::' . 'BLACKLISTED_COLUMNS');
+
+        if ($defined === false)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'info_code' => InfoCode::RECON_BLACKLISTED_COLUMNS_NOT_DEFINED,
+                    'gateway'   => $this->gateway,
+                ]);
+
+            return null;
+        }
+
+        return constant($className . '::' . 'BLACKLISTED_COLUMNS');
+    }
+
+    /**
+     * Child gateway sub reconciliator need to override
+     * this function if MIS file need to be modified.
+     *
+     * Currently this is being used for cardfssbob
+     * @param $row
+     */
+    protected function modifyRowIfNeeded(&$row)
+    {
+        return;
     }
 }

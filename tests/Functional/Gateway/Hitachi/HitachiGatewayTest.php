@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Hitachi;
 use App;
 
 use RZP\Exception;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Hitachi;
 use RZP\Models\Payment\Gateway;
@@ -20,6 +21,8 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class HitachiGatewayTest extends TestCase
 {
     use PaymentTrait;
+
+    protected $razorX;
 
     public function setUp()
     {
@@ -56,6 +59,10 @@ class HitachiGatewayTest extends TestCase
 
         $this->mockCardVault();
 
+        $this->mockShield();
+
+        $this->mockMaxmind();
+
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
                            ->setMethods(['getTreatment'])
@@ -63,17 +70,28 @@ class HitachiGatewayTest extends TestCase
 
         $this->app->instance('razorx', $razorxMock);
 
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
+        $this->app->razorx
+             ->method('getTreatment')
+             ->will($this->returnCallback(function ($mid, $feature, $mode)
                 {
+                    if ($feature === 'shield_risk_evaluation')
+                    {
+                        return 'shield_on';
+                    }
+
                     if ($feature === 'save_all_cards')
                     {
                         return 'off';
                     }
+
+                    if ($feature === 'secure_3d_international')
+                    {
+                        return 'v2';
+                    }
+
                     return 'on';
                 }));
+
     }
 
     public function testSuccessful13DigitPanForEnrolledCard()
@@ -234,6 +252,7 @@ class HitachiGatewayTest extends TestCase
                 'name'         => 'Test Card'
             ]
         ]);
+
         $txn = $this->getEntities('transaction', [], true);
         $this->assertEquals(0, $txn['count']);
 
@@ -260,6 +279,140 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
+    }
+
+    //Authorize success for risky payment because VeRes and PaRes as 'Y'
+    public function testInternationalRiskyPaymentSuccess()
+    {
+        $this->mockShield();
+
+        $this->fixtures->iin->create([
+            'iin'     => '514906',
+            'country' => 'US',
+            'network' => 'Visa',
+        ]);
+
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => CardNumber::INTERNATIONAL_VISA_ENROLLED,
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ]);
+
+        $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
+        $this->assertEquals('shield_v2', $paymentAnalytic['risk_engine']);
+        $this->assertEquals('35', $paymentAnalytic['risk_score']);
+
+        $txn = $this->getEntities('transaction', [], true);
+
+        $this->assertEquals(0, $txn['count']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNull($payment['transaction_id']);
+        $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHitachiAuthEntity'], $gatewayPayment);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastTransaction(true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
+    }
+
+    //Failure due to shield response as block
+    public function testPaymentFailureShieldBlock()
+    {
+        $this->mockShield();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = [
+            'number'       => '4012010000000007',
+            'expiry_month' => '02',
+            'expiry_year'  => '21',
+            'cvv'          => 123,
+            'name'         => 'Test Card'
+        ];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals('PAYMENT_CONFIRMED_FRAUD_BY_SHIELD', $riskEntity['reason']);
+
+        $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
+
+        $this->assertEquals('payment_analytics', $paymentAnalytic['entity']);
+
+        $this->assertEquals('shield_v2', $paymentAnalytic['risk_engine']);
+    }
+
+    //PaymentFailure due to risk validation for Veres as 'N'
+    public function testNotEnrolledInternationalCard()
+    {
+        $this->mockShield();
+
+        $this->fixtures->iin->create([
+            'iin'     => '514906',
+            'country' => 'US',
+            'network' => 'Visa',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = [
+            'number'       => CardNumber::INTERNATIONAL_VISA_NE,
+            'expiry_month' => '02',
+            'expiry_year'  => '21',
+            'cvv'          => 123,
+            'name'         => 'Test Card'
+        ];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals('PAYMENT_FAILED_RISK_CHECK_IN_GATEWAY', $riskEntity['reason']);
+
+        $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
+
+        $this->assertEquals('payment_analytics', $paymentAnalytic['entity']);
+
+        $this->assertEquals('shield_v2', $paymentAnalytic['risk_engine']);
     }
 
     public function testInternationalVisa()
@@ -823,8 +976,6 @@ class HitachiGatewayTest extends TestCase
 
     public function testAuthenticationGatewayExpressPayDisabled()
     {
-        $this->fixtures->merchant->addFeatures('headless');
-
         $this->fixtures->iin->create([
             'iin'     => '556763',
             'country' => 'IN',
@@ -958,6 +1109,8 @@ class HitachiGatewayTest extends TestCase
         $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotEmpty($payment['reference2']);
 
         $this->assertEquals($motoTerminal['id'], $payment['terminal_id']);
 
@@ -1257,5 +1410,98 @@ class HitachiGatewayTest extends TestCase
         {
             self::assertNotNull($e);
         }
+    }
+
+    public function testBqrPaymentAndRefund()
+    {
+        $request = $this->testData['testBqrPayment'];
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->t1 = $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->t2 = $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $this->t3 = $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
+
+        $content = $this->getMockServer()->getBharatQrCallback($qrCodeId);
+
+        // This method tests if the request that contains plain text as input is getting handled properly
+        $request = [
+            'url'       => '/payment/callback/bharatqr/hitachi',
+            'raw'       => http_build_query($content),
+            'method'    => 'post',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('card', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('hitachi', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+
+        // Notes from the VA are copied over to the payment
+        $this->assertArrayHasKey('notes', $payment);
+        $this->assertArrayHasKey('key', $payment['notes']);
+        $this->assertEquals('value', $payment['notes']['key']);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('Random Name', $card['name']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('refunded', $payment['status']);
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
+    }
+
+    protected function createVirtualAccount()
+    {
+        $this->ba->privateAuth();
+
+        $request = $this->testData[__FUNCTION__];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $bankAccount = $response['receivers'][0];
+
+        return $bankAccount;
+    }
+
+    protected function parseResponseXml(string $response): array
+    {
+        return (array) simplexml_load_string(trim($response));
     }
 }

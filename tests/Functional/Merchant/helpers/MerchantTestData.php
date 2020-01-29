@@ -643,6 +643,34 @@ return [
         ]
     ],
 
+    'testEditMerchantWhitelistedDomains' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_domains' => [
+                    'example.com',
+                    'razorpay.com'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => '1X4hRFHFx4UiXt',
+                'entity'         => 'merchant',
+                'whitelisted_domains' => [
+                    'example.com',
+                    'razorpay.com'
+                ],
+            ]
+        ]
+    ],
+
     'testEditMerchantInvalidWhitelistedIpsTest' => [
         'request'  => [
             'content' => [
@@ -1821,6 +1849,23 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForSaveVpaEnabledMerchant' => [
+        'request'   => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content'   => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    'save_vpa' => true
+                ]
+            ]
+        ]
+    ],
+
     'testGetCheckoutPreferencesForMagicDisabledMerchant' => [
         'request'  => [
             'url'    => '/preferences',
@@ -1856,6 +1901,29 @@ return [
                     ]
                 ]
             ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithContactDetailsWhereContactDoesNotExist' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'contact_id' => 'cont_AAAAAAAAAAAAAA'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
 
@@ -1968,28 +2036,6 @@ return [
                         'payment_method'  => 'wallet',
                         'issuer'          => 'olamoney',
                         'display_text'    => 'Shared olamoney offer',
-                    ]
-                ]
-            ],
-        ],
-    ],
-
-    'testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers' => [
-        'request' => [
-            'url'    => '/preferences',
-            'method' => 'get',
-            'content' => [
-                'currency' => 'INR'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'offers' => [
-                    [
-                        'name'            => 'Test Offer',
-                        'payment_method'  => 'wallet',
-                        'issuer'          => 'olamoney',
-                        'display_text'    => 'Merchant specific offer',
                     ]
                 ]
             ],
@@ -3254,6 +3300,171 @@ return [
                 //''
             ]
         ]
+    ],
+
+    'testFetchEsScheduledPricing' => [
+        'request' => [
+            'url' => '/es/scheduled_pricing',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'percent_rate' => 240,
+                'fixed_rate' => 0,
+            ]
+        ]
+    ],
+
+    'testFetchEsScheduledPricingZeroPercent' => [
+        'request' => [
+            'url' => '/es/scheduled_pricing',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'Invalid ES pricing was assigned to this merchant',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_INVALID_ES_PRICING,
+        ],
+    ],
+
+    'testFetchEsScheduledPricingInternationalPricing' => [
+        'request' => [
+            'url' => '/es/scheduled_pricing',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'ES scheduled pricing is not assigned to this Merchant',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND,
+        ],
+    ],
+
+    'testEnableEsScheduledSuccess' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testEnableEsScheduledSuccessWithKAMMail' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testEnableEsScheduledMailExpectedRoleTypesOnly' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testEnableEsScheduledUnauthorizedUserAccess' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The input action is not supported for the merchant user',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+        ]
+    ],
+
+    'testEnableEsScheduledUnknownScheduleFailure' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Schedule not found in database.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE,
+        ],
+    ],
+
+    'testEnableEsScheduledUneditableFeature' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testEnableEsScheduledEsautomaticPricingUnavailable' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'ES scheduled pricing is not assigned to this Merchant',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_ES_SCHEDULED_PRICING_NOT_FOUND,
+        ],
     ],
 
     'testPutEmiMethod' => [
@@ -4691,11 +4902,34 @@ return [
             ],
         ],
         'response' => [
-            'content' => [
-                'international'     => true,
-                'convert_currency'  => false,
+            'content'     => [
+                'international'    => true,
+                'convert_currency' => false,
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testInternationalEnableForGreyList' => [
+        'request'   => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => true
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_INTERNATIONAL_STATUS_CHANGE_REQUEST,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_INTERNATIONAL_STATUS_CHANGE_REQUEST,
         ],
     ],
 
@@ -5080,5 +5314,357 @@ return [
             ],
             'status_code' => 200,
         ],
+    ],
+
+    'testMerchantRazorxBulkExperimentFetch' => [
+        'request'  => [
+            'url'     => '/razorx/bulkevaluate',
+            'method'  => 'get',
+            'content' => [
+                'features' => 'feature1,feature2'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'feature1' => ['result' => 'on'],
+                'feature2' => ['result' => 'off'],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntent'  => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => true,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntentForMerchantWithoutPartnerIntent' => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => null,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testFetchPartnerIntentWithPartnerIntentFalse'  => [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchant/partner-intent',
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => false,
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentTrue'  => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 0 //sends false,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '0',
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentFalse' => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 1 //sends true,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '1',
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testUpdatePartnerIntentWithPartnerIntentNull'  => [
+        'request'   => [
+            'method'    => 'PATCH',
+            'url'       => '/merchant/partner-intent',
+            'content'   => [
+                'partner_intent'    => 1 //sends true,
+            ],
+        ],
+        'response'  => [
+            'content'   => [
+                'partner_intent'    => '1',
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testSetInheritanceParent'     =>  [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchants/{id}/inheritance_parent',
+            'content'   =>  [
+                'id'    =>  'parents_id'
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+
+    'testSetInheritanceParentBatch'     =>  [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchants/inheritance_parent/bulk',
+            'content'   =>
+                [
+                    [
+                        'idempotency_key'    =>  '12345',
+                        'merchant_id'        =>  'submerchant_id',
+                        'parent_merchant_id' =>  'parent_id'
+                    ],
+                    [
+                        'idempotency_key'    => '12346',
+                        'merchant_id'        =>  'submerchant2_id',
+                        'parent_merchant_id' =>  'parent_id'
+                    ]
+                ]
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testSetNonPartnerInheritanceParent'    =>  [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchants/{id}/inheritance_parent',
+            'content'   =>  [
+                'id'    =>  'parents_id'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Inheritance parent should be aggregator or fully-managed partner of the submerchant',
+            ],
+            'status_code'   => 400,
+            ],
+            'exception' => [
+                'class'               => RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT,
+            ],
+        ],
+    ],
+
+    'testGetInheritanceParent'     =>  [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testGetInheritanceParentIfNotPresent'     =>  [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 400,
+        ],
+    ],
+
+    'testDeleteInheritanceParent'     =>  [
+        'request'   => [
+            'method'    => 'DELETE',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 200,
+        ],
+    ],
+
+    'testDeleteInheritanceParentIfNotPresent'     =>  [
+        'request'   => [
+            'method'    => 'DELETE',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 400,
+        ],
+    ],
+
+    'testGetBalances' => [
+        'request' => [
+            'url' => '/balances',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'count' => 2,
+                'items' => [
+                    '0' => [
+                        'id'                => '100def000def00',
+                        'type'              => 'primary',
+                        'currency'          => null,
+                        'name'              => null,
+                        'balance'           => 100000,
+                    ],
+                    '1' => [
+                        'id'                => '100abc000abc00',
+                        'type'              => 'banking',
+                        'currency'          => 'INR',
+                        'name'              => null,
+                        'balance'           => 0,
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetBalancesByType' => [
+        'request' => [
+            'url' => '/balances?type=primary',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    '0' => [
+                        'id'                => '100def000def00',
+                        'type'              => 'primary',
+                        'currency'          => null,
+                        'name'              => null,
+                        'balance'           => 100000,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testMerchantInternationalDisableAction' => [
+        'request'  => [
+            'content' => [
+                'action' => 'disable_international'
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'merchant',
+                'international'   => false,
+                'merchant_detail' => [
+                    'international_activation_flow' => 'blacklist',
+                ]
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalEnableAction' => [
+        'request'  => [
+            'content' => [
+                'action' => 'enable_international'
+            ],
+            'url'     => '/merchants/10000000000000/action',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'merchant',
+                'international'   => true,
+                'merchant_detail' => [
+                    'international_activation_flow' => 'whitelist',
+                ]
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalDisableBulkEdit' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids' => [
+                    '10000000000000',
+                ],
+                'attributes'   => [
+                    'international'    => 0,
+                    'convert_currency' => 0,
+                ],
+            ],
+            'url'     => '/merchants/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 1,
+                'success' => 1,
+                'failed'  => 0,
+            ]
+        ]
+    ],
+
+    'testMerchantInternationalEnableBulkEdit' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids' => [
+                    '10000000000000',
+                ],
+                'attributes'   => [
+                    'international'    => 1,
+                    'convert_currency' => 1,
+                ],
+            ],
+            'url'     => '/merchants/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 1,
+                'success' => 1,
+                'failed'  => 0,
+            ]
+        ]
     ],
 ];

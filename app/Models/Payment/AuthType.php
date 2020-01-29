@@ -8,6 +8,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class AuthType
 {
     const NETBANKING   = 'netbanking';
+    const DEBITCARD    = 'debitcard';
     const AADHAAR      = 'aadhaar';
     const AADHAAR_FP   = 'aadhaar_fp';
     const SKIP         = 'skip';
@@ -17,12 +18,17 @@ class AuthType
     const HEADLESS_OTP = 'headless_otp';
     const IVR          = 'ivr';
     const UNKNOWN      = 'unknown';
+    const PHYSICAL     = 'physical';
 
     public static $types = [
         Method::EMANDATE => [
             self::NETBANKING,
             self::AADHAAR,
             self::AADHAAR_FP,
+            self::DEBITCARD,
+        ],
+        Method::NACH    => [
+            self::PHYSICAL,
         ],
         Method::CARD    => [
             self::PIN,
@@ -87,7 +93,7 @@ class AuthType
 
     public static $featureToAuthMap = [
         self::PIN  => [Feature\Constants::ATM_PIN_AUTH],
-        self::OTP  => [Feature\Constants::IVR, Feature\Constants::AXIS_EXPRESS_PAY, Feature\Constants::HEADLESS],
+        self::OTP  => [Feature\Constants::IVR, Feature\Constants::AXIS_EXPRESS_PAY,],
         self::SKIP => [Feature\Constants::DIRECT_DEBIT],
     ];
 
@@ -148,6 +154,11 @@ class AuthType
                 $enabled = ($merchant->isFeatureEnabled($feature) or $enabled);
             }
 
+            if ($type === self::OTP)
+            {
+                $enabled = ($merchant->isHeadlessEnabled() or $enabled);
+            }
+
             if ($enabled === false)
             {
                 throw new BadRequestValidationFailureException(
@@ -169,6 +180,11 @@ class AuthType
             foreach (self::$featureToAuthMap[$type] as $feature)
             {
                 $enabled = ($merchant->isFeatureEnabled($feature) or $enabled);
+            }
+
+            if ($type === self::OTP)
+            {
+                $enabled = ($merchant->isHeadlessEnabled() or $enabled);
             }
 
             return $enabled;

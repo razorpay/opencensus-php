@@ -70,7 +70,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'         => 607500,
+                'iin'         => '607500',
                 'category'    => 'STANDARD',
                 'network'     => 'RuPay',
                 'type'        => 'debit',

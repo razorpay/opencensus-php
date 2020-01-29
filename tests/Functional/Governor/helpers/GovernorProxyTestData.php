@@ -1,20 +1,26 @@
 <?php
-
 return [
     'testCreateNamespace' => [
         'request' => [
             'server' => [
                 'CONTENT_TYPE'  => 'application/json',
             ],
-            'url' => '/cps/rule_engine/rule/namespace/entity_identifier1',
+            'url' => '/clients',
             'method' => 'GET'
         ],
         'response' => [
             'content' => [
-                "status"    =>  false,
-                "error"     => "SOME_AWESOME_ERROR"
+                [
+                    "id" => "cps",
+                    "name" => "cps",
+                ],
+                [
+                    "id" => "routingengine",
+                    "name" => "routingengine"
+                ]
+
             ],
-            'status_code'   => 400,
+            'status_code'   => 200,
         ],
     ],
 ];

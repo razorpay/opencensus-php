@@ -6,6 +6,8 @@ use DB;
 use Mail;
 use Event;
 use Redis;
+use Closure;
+use Mockery;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Cache\Events\CacheHit;
@@ -18,18 +20,26 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Pricing;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\Webhook;
 use RZP\Mail\User\MappedToAccount;
+use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
+use RZP\Exception\BadRequestException;
+use RZP\Models\User\Core as UserCore;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -56,8 +66,21 @@ class MerchantTest extends TestCase
     use HeimdallTrait;
     use MocksDnsTrait;
     use DbEntityFetchTrait;
-    use OAuthTrait;
     use CreatesInvoice;
+    use PartnerTrait;
+
+    const CAPITAL_SUPPORT_EMAIL = 'capital.support@razorpay.com';
+
+    const USER_ROLES_UNAUTHORIZED_TO_ENABLE_ES_SCHEDULED = ['operations',
+                                                            'finance'];
+
+    const USER_ROLES_AUTHORIZED_TO_ENABLE_ES_SCHEDULED = ['owner',
+                                                            'admin'];
+
+    const USER_ROLES_UNAUTHORIZED_TO_RECEIVE_ES_SCHEDULED_MAILS = ['support',
+                                                                    'manager',
+                                                                    'agent',
+                                                                    'operations'];
 
     public function setUp()
     {
@@ -120,6 +143,19 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('debit_card', $methods);
     }
 
+    public function testSetDefaultUnclaimedGroupIdForCreateMerchant()
+    {
+        $this->createMerchant();
+
+        $merchantMap = \DB::connection('test')->table('merchant_map')
+                          ->where('merchant_id', '1X4hRFHFx4UiXt')
+                          ->first();
+
+        $this->assertEquals($merchantMap->entity_id, 'E15BhsdMSofcUJ');
+        $this->assertEquals($merchantMap->entity_type, 'group');
+        $this->assertEquals($merchantMap->merchant_id, '1X4hRFHFx4UiXt');
+    }
+
     public function testGetMerchantUsers()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -174,7 +210,7 @@ class MerchantTest extends TestCase
     public function testMerchantFetchCardEnabled()
     {
         $merchants = $this->getEntities(
-                'merchant', ['methods' => '{"card":true}'], true);
+            'merchant', ['methods' => '{"card":true}'], true);
 
         $this->assertEquals($merchants['entity'], 'collection');
     }
@@ -232,7 +268,7 @@ class MerchantTest extends TestCase
         $this->fixtures->create(
             'key',
             ['merchant_id' => '1cXSLlUU8V9sXl',
-             'id' => '1DP5mmOlF5G5ag']);
+                'id' => '1DP5mmOlF5G5ag']);
 
         $this->ba->proxyAuthTest();
 
@@ -281,14 +317,14 @@ class MerchantTest extends TestCase
     public function testEditBulkMerchantAttributes()
     {
         $this->createMerchant([
-                                  'id'    => '10000000000044',
-                                  'email' => 'test1@razorpay.com',
-                              ]);
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
 
         $this->createMerchant([
-                                  'id'    => '10000000000055',
-                                  'email' => 'test2@razorpay.com',
-                              ]);
+            'id'    => '10000000000055',
+            'email' => 'test2@razorpay.com',
+        ]);
 
         $this->setAdminForInternalAuth();
 
@@ -309,14 +345,14 @@ class MerchantTest extends TestCase
     public function testEditBulkMerchantAction()
     {
         $this->createMerchant([
-                                  'id'    => '10000000000044',
-                                  'email' => 'test1@razorpay.com',
-                              ]);
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
 
         $this->createMerchant([
-                                  'id'    => '10000000000055',
-                                  'email' => 'test2@razorpay.com',
-                              ]);
+            'id'    => '10000000000055',
+            'email' => 'test2@razorpay.com',
+        ]);
 
         $this->setAdminForInternalAuth();
 
@@ -336,14 +372,14 @@ class MerchantTest extends TestCase
     public function testFailedBulkMerchant()
     {
         $this->createMerchant([
-                                  'id'    => '10000000000044',
-                                  'email' => 'test1@razorpay.com',
-                              ]);
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
 
         $this->createMerchant([
-                                  'id'    => '10000000000055',
-                                  'email' => 'test2@razorpay.com',
-                              ]);
+            'id'    => '10000000000055',
+            'email' => 'test2@razorpay.com',
+        ]);
 
         $this->setAdminForInternalAuth();
 
@@ -370,9 +406,9 @@ class MerchantTest extends TestCase
         ]);
 
         $user = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-            UserEntity::CONTACT_MOBILE          =>  '9801234567',
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9801234567',
         ]);
 
         $mappingData = [
@@ -410,15 +446,15 @@ class MerchantTest extends TestCase
     public function testMerchant2faEnable()
     {
         $merchant = $this->fixtures->create('merchant', [
-                MerchantEntity::SECOND_FACTOR_AUTH      =>  0,
-            ]);
+            MerchantEntity::SECOND_FACTOR_AUTH      => 0,
+        ]);
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-                UserEntity::SECOND_FACTOR_AUTH      =>  0,
-                UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-                UserEntity::CONTACT_MOBILE          =>  '9999999999',
-                UserEntity::PASSWORD                => 'hello123',
-            ], 'owner');
+            UserEntity::SECOND_FACTOR_AUTH      => 0,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9999999999',
+            UserEntity::PASSWORD                => 'hello123',
+        ], 'owner');
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -443,15 +479,15 @@ class MerchantTest extends TestCase
     public function testFailedMerchant2faEnableInvalidPass()
     {
         $merchant = $this->fixtures->create('merchant', [
-                MerchantEntity::SECOND_FACTOR_AUTH      =>  0,
-            ]);
+            MerchantEntity::SECOND_FACTOR_AUTH      => 0,
+        ]);
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-                UserEntity::SECOND_FACTOR_AUTH      =>  0,
-                UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-                UserEntity::CONTACT_MOBILE          =>  '9999999999',
-                UserEntity::PASSWORD                => 'hello123',
-            ], 'owner');
+            UserEntity::SECOND_FACTOR_AUTH      => 0,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9999999999',
+            UserEntity::PASSWORD                => 'hello123',
+        ], 'owner');
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -476,13 +512,13 @@ class MerchantTest extends TestCase
     public function testMerchant2faDisable()
     {
         $merchant = $this->fixtures->create('merchant', [
-            MerchantEntity::SECOND_FACTOR_AUTH      =>  1,
-              ]);
+            MerchantEntity::SECOND_FACTOR_AUTH      => 1,
+        ]);
 
-         $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-            UserEntity::CONTACT_MOBILE          =>  '9999999999',
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => '9999999999',
             UserEntity::PASSWORD                => 'hello123',
         ], 'owner');
 
@@ -510,9 +546,9 @@ class MerchantTest extends TestCase
     public function testFailedMerchantEnable2faMobNotPresent()
     {
         $ownerUser = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  1,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            UserEntity::CONTACT_MOBILE          => null,
             UserEntity::PASSWORD                => 'hello123',
         ]);
 
@@ -552,9 +588,9 @@ class MerchantTest extends TestCase
     public function testFailedMerchantEnable2faMobNotVerified()
     {
         $ownerUser = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => null,
             UserEntity::PASSWORD                => 'hello123',
         ]);
 
@@ -598,15 +634,15 @@ class MerchantTest extends TestCase
         ]);
 
         $ownerUser = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => null,
         ]);
 
         $user = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  null,
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => null,
             UserEntity::PASSWORD                => 'hello123',
         ]);
 
@@ -666,9 +702,9 @@ class MerchantTest extends TestCase
         ]);
 
         $user = $this->fixtures->create('user',[
-            UserEntity::SECOND_FACTOR_AUTH      =>  1,
-            UserEntity::CONTACT_MOBILE_VERIFIED =>  0,
-            UserEntity::CONTACT_MOBILE          =>  '9801234567',
+            UserEntity::SECOND_FACTOR_AUTH      => 1,
+            UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+            UserEntity::CONTACT_MOBILE          => '9801234567',
         ]);
 
         $mappingData = [
@@ -872,6 +908,15 @@ class MerchantTest extends TestCase
     }
 
     public function testEditMerchantWhitelistedIpsTest()
+    {
+        $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantWhitelistedDomains()
     {
         $this->createMerchant();
 
@@ -1293,6 +1338,22 @@ class MerchantTest extends TestCase
     {
         $merchant = $this->getLastEntity('merchant', true);
 
+        $webhookInput = [
+            'merchant_id' => $merchant['id'],
+            'url'         => 'http://webhook.com/v1/dummy/route',
+            'events'      => ['account.suspended' => '1'],
+        ];
+
+        $this->fixtures->create('webhook', $webhookInput);
+
+        $webhookData = [];
+        $this->mockInfernoSendRequest(function ($request, $entity) use (& $webhookData)
+        {
+            $webhookData = $request;
+
+            return false;
+        });
+
         $this->setAdminForInternalAuth();
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
@@ -1303,9 +1364,35 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
+        $webhookData['content'] = json_decode($webhookData['content'], true);
+
+        $this->assertEquals('account.suspended', $webhookData['content']['event']);
+
         $merchant = $this->getEntityById('merchant', $merchant['id'], true);
 
         $this->assertNotNull($merchant['suspended_at']);
+    }
+
+    protected function mockInferno()
+    {
+        $class = Webhook\Inferno::class;
+
+        $inferno = Mockery::mock($class, [])->makePartial();
+
+        $this->app->instance('webhook.inferno', $inferno);
+
+        return $inferno;
+    }
+
+    protected function mockInfernoSendRequest(Closure $closure, $times = 1)
+    {
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldReceive('sendRequest')
+                ->times($times)
+                ->andReturnUsing($closure);
+
+        $this->app->instance('webhook.inferno', $inferno);
     }
 
     public function testMerchantSuspendForAlreadySuspendedMerchant()
@@ -1454,9 +1541,9 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->fixtures->create('merchant_detail',
-                                                [
-                                                    'merchant_id' => '10000000000000',
-                                                ]);
+            [
+                'merchant_id' => '10000000000000',
+            ]);
 
         $this->startTest();
 
@@ -1519,7 +1606,7 @@ class MerchantTest extends TestCase
         $this->startTest();
 
         $bankAccounts = $this->getEntities(
-                            'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
+            'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
 
         // The old account should get deleted (hard delete) as there are
         // no settlements attached to it.
@@ -1535,7 +1622,7 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
 
         $bankAccounts = $this->getEntities(
-                            'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
+            'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
 
         // The old account should get deleted (hard delete) as there are
         // no settlements attached to it.
@@ -1555,8 +1642,8 @@ class MerchantTest extends TestCase
         $capturedPayments = $this->fixtures->times(4)->create(
             'payment:captured',
             ['captured_at' => $capturedAt,
-             'created_at' => $createdAt,
-             'updated_at' => $createdAt + 10]);
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt + 10]);
 
         $settleAtTimestamp = (new Transaction\Core)->calculateSettledAtTimestamp($capturedAt, 3) + 1;
 
@@ -1566,7 +1653,7 @@ class MerchantTest extends TestCase
         $this->runRequestResponseFlow($testData);
 
         $bankAccounts = $this->getEntities(
-                            'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
+            'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
 
         // The old account should get SOFT deleted as there are settlements
         // attached to it.
@@ -1653,6 +1740,16 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('x-frame-options', $headers);
     }
 
+    public function testGetCheckoutPublicRoute()
+    {
+        $this->ba->directAuth();
+
+        $response = $this->call('GET', '/v1/checkout/public');
+
+        $response->assertStatus(200);
+        $this->assertContains('<title>Razorpay Checkout</title>', $response->getContent());
+    }
+
     public function testGetCheckoutPreferencesWithNetbankingDisabled()
     {
         $this->ba->publicLiveAuth();
@@ -1699,7 +1796,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(36, $banks);
+        $this->assertCount(37, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -1709,6 +1806,15 @@ class MerchantTest extends TestCase
         $this->ba->publicAuth();
 
         $this->fixtures->merchant->addFeatures(['magic']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesForSaveVpaEnabledMerchant()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['save_vpa']);
 
         $this->startTest();
     }
@@ -1821,17 +1927,17 @@ class MerchantTest extends TestCase
 
     public function testGetNetbankingDowntimeWithNoBanksExclusiveToGateway()
     {
-         $this->ba->publicAuth();
+        $this->ba->publicAuth();
 
-         $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
 
-         Carbon::setTestNow($dt);
+        Carbon::setTestNow($dt);
 
-         $this->fixtures->create('gateway_downtime:netbanking', [
+        $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'ebs',
             'issuer'  => 'ALL']);
 
-         $this->startTest();
+        $this->startTest();
     }
 
     public function testGetNetbankingDowntimeInfoWithIssuerExclusiveToGateway()
@@ -1988,15 +2094,15 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-         $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
 
-         Carbon::setTestNow($dt);
+        Carbon::setTestNow($dt);
 
-         $this->fixtures->create('gateway_downtime:netbanking', [
+        $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
             'issuer'  => 'ALLA',]);
 
-         $this->startTest();
+        $this->startTest();
     }
 
     public function testGetCheckoutPreferencesWithDirectNetbankingDowntime()
@@ -2009,8 +2115,8 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
-            'issuer'      => 'ALL',]);
-
+            'issuer'      => 'ALL',
+        ]);
 
         $this->startTest();
     }
@@ -2041,6 +2147,8 @@ class MerchantTest extends TestCase
             'display_text'     => 'Some display text',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
+            'type'             => 'already_discounted',
+            'merchant_id'      => '100000Razorpay',
         ]);
 
         $this->startTest();
@@ -2058,6 +2166,7 @@ class MerchantTest extends TestCase
             'display_text'     => 'Merchant specific offer',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
+            'type'             => 'already_discounted'
         ]);
 
         $this->startTest();
@@ -2077,6 +2186,7 @@ class MerchantTest extends TestCase
             'display_text'     => 'Shared olamoney offer',
             'terms'            => 'Some terms',
             'starts_at'        => $startsAt,
+            'type'             => 'already_discounted'
         ]);
 
         //
@@ -2095,33 +2205,6 @@ class MerchantTest extends TestCase
         $content = $this->startTest();
 
         $this->assertCount(1, $content['offers']);
-    }
-
-    public function testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers()
-    {
-        $this->ba->publicAuth();
-
-        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
-
-        $offer1 = $this->fixtures->create('offer:wallet', [
-            'merchant_id'      => '100000Razorpay',
-            'checkout_display' => true,
-            'display_text'     => 'Some display text',
-            'terms'            => 'Some terms',
-            'starts_at'        => $startsAt,
-        ]);
-
-        $offer2 = $this->fixtures->create('offer:wallet', [
-            'merchant_id'      => '10000000000000',
-            'checkout_display' => true,
-            'display_text'     => 'Merchant specific offer',
-            'terms'            => 'Some terms',
-            'starts_at'        => $startsAt,
-        ]);
-
-        $response = $this->startTest();
-
-        $this->assertStringStartsWith('offer_', $response['offers'][0]['id']);
     }
 
     public function testGetCheckoutPreferencesWithMultipleOrderOffers()
@@ -2327,6 +2410,44 @@ class MerchantTest extends TestCase
         $this->ba->publicAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGetCheckoutPreferencesWithContactDetails()
+    {
+        $this->fixtures->create('contact', [
+            'id' => 'ABCD123321DCBA',
+        ]);
+
+        $this->fixtures->create('fund_account', [
+            'id'           => '100000000000fa',
+            'source_id'    => 'ABCD123321DCBA',
+            'source_type'  => 'contact',
+            'account_type' => 'bank_account',
+            'account_id'   => '1000000lcustba',
+        ]);
+
+        $request = [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency'      => 'INR',
+                'contact_id'    => 'cont_ABCD123321DCBA',
+            ],
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['contact']['id'], 'cont_ABCD123321DCBA');
+        $this->assertEquals($response['contact']['fund_accounts'][0]['id'], 'fa_100000000000fa');
+    }
+
+    public function testGetCheckoutPreferencesWithContactDetailsWhereContactDoesNotExist()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
     }
 
     public function testGetCheckoutPreferencesForPaidOrder()
@@ -2595,11 +2716,12 @@ class MerchantTest extends TestCase
         $offer = $this->fixtures->create('offer', [
             'payment_method' => 'emi',
             'error_message'  => 'Payment method used is not eligible for offer. ' .
-                                'Please try with a different payment method.',
+                'Please try with a different payment method.',
             'display_text'   => 'Some display text',
             'percent_rate'   => 5000,
             'min_amount'     => 200000,
             'terms'          => 'Some terms',
+            'type'           => 'instant',
         ]);
 
         $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 300000]);
@@ -2776,6 +2898,477 @@ class MerchantTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testFetchEsScheduledPricing()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    public function testFetchEsScheduledPricingZeroPercent()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '10ZeroPricingP']);
+
+        $esZeroRules = [
+            [
+            'id'             => '1ZeroPricingR9',
+            'plan_id'        => '10ZeroPricingP',
+            'plan_name'      => 'ZeroPricingPlan',
+            'feature'        => 'esautomatic',
+            'payment_method' => 'card',
+            'percent_rate'   => 0,
+            'fixed_rate'     => 0,
+            'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1ZeroPricing10',
+                'plan_id'        => '10ZeroPricingP',
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'esautomatic',
+                'payment_method' => 'upi',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ]
+        ];
+
+        $this->fixtures->pricing->addPricingRulesToDb($esZeroRules);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    public function testFetchEsScheduledPricingInternationalPricing()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1nvp2XPMmaRLxb']);
+
+        $esInternationalRules = [
+            [
+                'id'             => 'EsInterPrice01',
+                'plan_id'        => '1nvp2XPMmaRLxb',
+                'plan_name'      => 'testDefaultPlan',
+                'feature'        => 'esautomatic',
+                'payment_method' => 'card',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'international'  => 1,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => 'EsInterPrice02',
+                'plan_id'        => '1nvp2XPMmaRLxb',
+                'plan_name'      => 'testDefaultPlan',
+                'feature'        => 'esautomatic',
+                'payment_method' => 'upi',
+                'percent_rate'   => 20,
+                'fixed_rate'     => 0,
+                'international'  => 1,
+                'org_id'         => '100000razorpay',
+            ]
+        ];
+
+        $this->fixtures->pricing->addPricingRulesToDb($esInternationalRules);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    public function testEnableEsScheduledSuccess()
+    {
+        // We expect a mail to be shot to merchant every time Es schedule enable succeeds
+        Mail::fake();
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'demo',
+            ]);
+
+        $scheduleTaskCard = [
+            'method'        => 'card',
+            'international' => 1,
+            'entity_type'   =>'merchant'
+        ];
+
+        $scheduleTaskUpi = [
+            'method'        => 'upi',
+            'international' => 0,
+            'entity_type'   =>'merchant'
+        ];
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskCard);
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskUpi);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+
+        $features = $this->getEntities('feature', [], true);
+
+        $this->assertCount(1, $features['items']);
+
+        $this->assertEquals('es_automatic', $features['items'][0]['name']);
+
+        $scheduleTaskUpi['schedule_id'] = '100001schedule';
+
+        $scheduleTasks = $this->getEntities('schedule_task', [], true);
+
+        $this->assertArraySelectiveEquals($scheduleTaskUpi,
+            (array) collect($scheduleTasks['items'])->firstWhere('method', '=', 'upi'));
+
+        $this->assertArraySelectiveEquals($scheduleTaskCard,
+            (array) collect($scheduleTasks['items'])->firstWhere('method', '=', 'card'));
+
+        $this->assertArraySelectiveEquals([
+            'method'        => null,
+            'international' => 0,
+            'entity_type'   =>'merchant',
+            'schedule_id'   =>'100001schedule'
+        ],
+            (array) collect($scheduleTasks['items'])->firstWhere('method', '=', null));
+
+        $this->assertNotEquals('100001schedule', $scheduleTasks['items'][2]['schedule_id']);
+
+        // In this case we expect only one mail is queued
+        Mail::assertQueued(EsEnabledNotify::class, 1);
+
+        Mail::assertQueued(EsEnabledNotify::class, function ($mail)
+        {
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_VIEW,$mail->view);
+
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_SUBJECT, $mail->subject);
+
+            $this->assertArrayKeysExist($mail->viewData,
+                                            [EsEnabledNotify::TO_EMAIL, EsEnabledNotify::TO_NAME, EsEnabledNotify::SUBJECT, EsEnabledNotify::VIEW, Pricing\Entity::PERCENT_RATE]);
+
+            return ($mail->hasFrom(self::CAPITAL_SUPPORT_EMAIL)) and
+                    ($mail->hasTo(self::CAPITAL_SUPPORT_EMAIL));
+        });
+    }
+
+
+    public function testEnableEsScheduledSuccessWithKAMMail()
+    {
+        // We expect 2 mails to be queued in case a Key Account (one with tag 'KA') enables es scheduled, additional mail is circulated internally to kam and capital product.
+        Mail::fake();
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'demo',
+            ]);
+
+        $scheduleTaskCard = [
+            'method'        => 'card',
+            'international' => 1,
+            'entity_type'   =>'merchant'
+        ];
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskCard);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $merchantEntityInstance = $this->getDbEntityById('merchant', '10000000000000', true);
+
+        $merchantEntityInstance->tag('KA');
+
+        $this->startTest();
+
+        // First check if enough mails have been queued
+        Mail::assertQueued(EsEnabledNotify::class, 2);
+
+        Mail::assertQueued(EsEnabledNotify::class, function ($mail)
+        {
+            switch ($mail->view){
+                // Check mailer for merchant intimation
+                case EsEnabledNotify::MERCHANT_MAILER_VIEW:
+                    $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_SUBJECT, $mail->subject);
+
+                    $this->assertArrayKeysExist($mail->viewData,
+                        [EsEnabledNotify::TO_EMAIL, EsEnabledNotify::TO_NAME, EsEnabledNotify::SUBJECT, EsEnabledNotify::VIEW, Pricing\Entity::PERCENT_RATE]);
+
+                    return ($mail->hasFrom(self::CAPITAL_SUPPORT_EMAIL)) and
+                        ($mail->hasTo(self::CAPITAL_SUPPORT_EMAIL));
+
+                // Check mailer for Key Account intimation
+                case EsEnabledNotify::KAM_MAILER_VIEW:
+                    $this->assertEquals(EsEnabledNotify::KAM_MAILER_SUBJECT, $mail->subject);
+
+                    $this->assertArrayKeysExist($mail->viewData,
+                        [EsEnabledNotify::TO_EMAIL, EsEnabledNotify::TO_NAME, EsEnabledNotify::SUBJECT, EsEnabledNotify::VIEW, EsEnabledNotify::MERCHANT_DATA]);
+
+                    return ($mail->hasFrom(self::CAPITAL_SUPPORT_EMAIL)) and
+                        ($mail->hasTo(EsEnabledNotify::KAM_MAILING_LIST_EMAILS));
+
+                // If either not present than appropriate mailer is missing
+                default:
+                    return false;
+            }
+        });
+    }
+
+    public function testEnableEsScheduledMailExpectedRoleTypesOnly()
+    {
+        // Es auto should enabled and mail should be sent to one of each role type
+        Mail::fake();
+
+        $unexpectedUserRole = array_random(self::USER_ROLES_UNAUTHORIZED_TO_RECEIVE_ES_SCHEDULED_MAILS);
+
+        $userAlternateRole = 'admin';
+
+        // We choose the sending user randomly from users who can send
+        $userSendingRole = array_random(self::USER_ROLES_AUTHORIZED_TO_ENABLE_ES_SCHEDULED);
+
+        $financeEmailId = 'finance@xyz.com';
+
+        $alternateEmailId = 'thirdguy@xyz.com';
+
+        $unexpectedUserEmailId = 'unexpected@xyz.com';
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'demo',
+            ]);
+
+        $scheduleTaskCard = [
+            'method'        => 'card',
+            'international' => 1,
+            'entity_type'   =>'merchant'
+        ];
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskCard);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        // We create and attach a user with finance role. This guy is expected to receive the mail.
+        $this->fixtures->create('user',['id' => 'MerchantUser99', 'email' => $financeEmailId, 'name' => 'FinanceMan']);
+
+        $financeUser = $this->getDbEntityById('user','MerchantUser99', true);
+
+        (new UserCore)->updateUserMerchantMapping($financeUser, ['merchant_id' => '10000000000000', 'role' => 'finance', 'product' => 'primary', 'action' => 'attach']);
+
+        // If random selects sender as Admin then update sending users role to admin and alternate users role to owner
+        if ($userSendingRole === 'admin')
+        {
+            $sendingUser = $this->getDbEntityById('user','MerchantUser01', true);
+
+            (new UserCore)->updateUserMerchantMapping($sendingUser, ['merchant_id' => '10000000000000', 'role' => $userSendingRole, 'product' => 'primary', 'action' => 'attach']);
+
+            $userAlternateRole = 'owner';
+        }
+
+        // Add the alternate guy from users who have access to enable es scheduled
+        $this->fixtures->create('user',['id' => 'MerchantUser98', 'email' => $alternateEmailId, 'name' => 'AlternateGuy']);
+
+        $alternateUser = $this->getDbEntityById('user','MerchantUser98', true);
+
+        (new UserCore)->updateUserMerchantMapping($alternateUser, ['merchant_id' => '10000000000000', 'role' => $userAlternateRole, 'product' => 'primary', 'action' => 'attach']);
+
+        // Add the last guy who is attached to the merchant but part of the groups who should not receive the mail
+        $this->fixtures->create('user',['id' => 'MerchantUser97', 'email' => $unexpectedUserEmailId, 'name' => 'UnexpectedGuy']);
+
+        $unexpectedUser = $this->getDbEntityById('user','MerchantUser98', true);
+
+        (new UserCore)->updateUserMerchantMapping($unexpectedUser, ['merchant_id' => '10000000000000', 'role' => $unexpectedUserRole, 'product' => 'primary', 'action' => 'attach']);
+
+        $this->startTest();
+
+        Mail::assertQueued(EsEnabledNotify::class, function ($mail) use ($financeEmailId, $alternateEmailId, $unexpectedUserEmailId)
+        {
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_VIEW,$mail->view);
+
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_SUBJECT, $mail->subject);
+
+            $this->assertArrayKeysExist($mail->viewData,
+                [EsEnabledNotify::TO_EMAIL, EsEnabledNotify::TO_NAME, EsEnabledNotify::SUBJECT, EsEnabledNotify::VIEW, Pricing\Entity::PERCENT_RATE]);
+
+            return ($mail->hasTo($alternateEmailId)) and
+                    ($mail->hasTo($financeEmailId) and
+                    !($mail->hasTo($unexpectedUserEmailId)));
+        });
+    }
+
+    public function testEnableEsScheduledUnauthorizedUserAccess()
+    {
+        // ES should neither be enabled nor any mail should be sent
+        Mail::fake();
+
+        $userRoleToBeSet = array_random(self::USER_ROLES_UNAUTHORIZED_TO_ENABLE_ES_SCHEDULED);
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'demo',
+            ]);
+
+        $scheduleTaskCard = [
+            'method'        => 'card',
+            'international' => 1,
+            'entity_type'   =>'merchant'
+        ];
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskCard);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $user = $this->getDbEntityById('user','MerchantUser01', true);
+
+        (new UserCore)->updateUserMerchantMapping($user, ['merchant_id' => '10000000000000', 'role' => $userRoleToBeSet, 'product' => 'primary', 'action' => 'attach']);
+
+        $this->startTest();
+
+        $features = $this->getEntities('feature', [], true);
+
+        $this->assertCount(1, $features['items']);
+
+        $this->assertEquals('es_on_demand', $features['items'][0]['name']);
+
+        Mail::assertNotQueued(EsEnabledNotify::class);
+    }
+
+    public function testEnableEsScheduledUnknownScheduleFailure()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+
+        Mail::assertNotQueued(EsEnabledNotify::class);
+    }
+
+    public function testEnableEsScheduledUneditableFeature()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'hh',
+            ]);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+
+        Mail::assertNotQueued(EsEnabledNotify::class);
+    }
+
+    public function testEnableEsScheduledEsautomaticPricingUnavailable()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1AXp2Xd3t5aRLX']);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'hh',
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+
+        Mail::assertNotQueued(EsEnabledNotify::class);
     }
 
     public function testPutEmiMethod()
@@ -3203,7 +3796,7 @@ class MerchantTest extends TestCase
             $this->testData[__FUNCTION__],
             function ()
             {
-               $this->merchantEditCredits('10000000000000', 'abcde');
+                $this->merchantEditCredits('10000000000000', 'abcde');
             });
     }
 
@@ -3270,12 +3863,12 @@ class MerchantTest extends TestCase
 
         $mimeType = 'image/png';
         $uploadedFile = new UploadedFile(
-                                            $file,
-                                            $file,
-                                            $mimeType,
-                                            filesize($file),
-                                            null,
-                                            true
+            $file,
+            $file,
+            $mimeType,
+            filesize($file),
+            null,
+            true
         );
 
         return $uploadedFile;
@@ -3507,10 +4100,10 @@ class MerchantTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $row = DB::table('merchant_map')
-                   ->where('merchant_id', '=', $content['id'])
-                   ->where('entity_id', '=', Org::SUPER_ADMIN)
-                   ->where('entity_type', '=', 'admin')
-                   ->first();
+            ->where('merchant_id', '=', $content['id'])
+            ->where('entity_id', '=', Org::SUPER_ADMIN)
+            ->where('entity_type', '=', 'admin')
+            ->first();
 
         $this->assertNotNull($row);
     }
@@ -3564,7 +4157,7 @@ class MerchantTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, $mode='test')
+    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, $mode = 'test')
     {
         DB::connection($mode)->table('merchant_users')
             ->insert([
@@ -3678,9 +4271,9 @@ class MerchantTest extends TestCase
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
 
         $this->createOAuthApplication([
-                'id'         => '10000000000App',
-                'type'       => 'partner',
-                'deleted_at' => Carbon::now()->timestamp]);
+            'id'         => '10000000000App',
+            'type'       => 'partner',
+            'deleted_at' => Carbon::now()->timestamp]);
 
         $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
@@ -3883,9 +4476,9 @@ class MerchantTest extends TestCase
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
 
         $this->fixtures->user->createUserMerchantMapping([
-                'user_id'     => $user->getId(),
-                'merchant_id' => '10000000000040',
-                'role'        => 'owner']);
+            'user_id'     => $user->getId(),
+            'merchant_id' => '10000000000040',
+            'role'        => 'owner']);
 
         $this->fixtures->user->createUserForMerchant('10000000000040', ['email' => 'test1@razorpay.com']);
 
@@ -4089,12 +4682,12 @@ class MerchantTest extends TestCase
         ]);
 
         $this->fixtures->create(
-        'feature',
-        [
-            'entity_id'     => 'parentaccount1',
-            'entity_type'   => 'merchant',
-            'name'          => 'marketplace'
-        ]);
+            'feature',
+            [
+                'entity_id'     => 'parentaccount1',
+                'entity_type'   => 'merchant',
+                'name'          => 'marketplace'
+            ]);
 
         $this->startTest();
     }
@@ -4314,7 +4907,7 @@ class MerchantTest extends TestCase
     {
         Queue::fake();
 
-        $this->CreateBalanceEntities();
+        $this->createBalanceEntities();
 
         $this->ba->proxyAuth();
 
@@ -4331,7 +4924,7 @@ class MerchantTest extends TestCase
     {
         $this->createEsMockAndSetExpectations(__FUNCTION__, 'bulkUpdate');
 
-        $this->CreateBalanceEntities();
+        $this->createBalanceEntities();
 
         $this->ba->proxyAuth();
 
@@ -4343,7 +4936,7 @@ class MerchantTest extends TestCase
      *
      * @return array
      */
-    private function CreateBalanceEntities(): array
+    private function createBalanceEntities(): array
     {
         Carbon::setTestNow(Carbon::now()->addHours(25));
 
@@ -4407,15 +5000,15 @@ class MerchantTest extends TestCase
         $expectedBalance = [
             'type'             => 'banking',
             'account_type'     => 'shared',
-            'channel'          =>  null,
+            'channel'          => null,
             'merchant_id'      => '10000000000000',
         ];
 
         $this->assertArraySelectiveEquals($expectedBalance, $balance->toArray());
 
         $merchants = DB::connection('test')->table('merchant_users')
-                                           ->where('user_id', '=', $user['id'])
-                                           ->pluck('merchant_id', 'product');
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'product');
 
         $this->assertEquals(count($merchants), 2);
 
@@ -4487,21 +5080,36 @@ class MerchantTest extends TestCase
 
     public function testInternationalEnable()
     {
-        // Mock Razorx
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('On');
-
         $merchantDetailsData = [
-            'business_category'     => 'not_for_profit',
-            'business_subcategory'  => 'educational',
-            'activation_status'     => 'activated',
+            'business_category'             => 'ecommerce',
+            'business_subcategory'          => 'arts_and_collectibles',
+            'international_activation_flow' => 'whitelist',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantData = [
+            'international'     => 0,
+            'activated'         => 1,
+            'convert_currency'  => null,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testInternationalEnableForGreyList()
+    {
+        $merchantDetailsData = [
+            'business_category'             => 'not_for_profit',
+            'business_subcategory'          => 'educational',
+            'activation_status'             => 'activated',
+            'international_activation_flow' => 'greylist',
         ];
 
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
@@ -4611,7 +5219,7 @@ class MerchantTest extends TestCase
         $merchantId = 10000000000000;
 
         $admin = $this->ba->getAdmin();
-        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
         $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
 
@@ -4648,7 +5256,7 @@ class MerchantTest extends TestCase
         $request = [
             'url'       => '/merchants/beneficiary/api/yesbank',
             'method'    => 'post',
-            'content'   =>  [
+            'content'   => [
                 'duration'   => 1200,
                 'send_email' => false,
             ]
@@ -4746,7 +5354,7 @@ class MerchantTest extends TestCase
 
     public function testEditDashboardInvalidWhitelistedIpsTest()
     {
-         $this->getDbEntityById('merchant', '10000000000000');
+        $this->getDbEntityById('merchant', '10000000000000');
 
         $this->ba->adminAuth();
 
@@ -4921,7 +5529,6 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
-
         $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/users/account/' . $user['id'] . '/unlock';
@@ -4933,5 +5540,458 @@ class MerchantTest extends TestCase
         $userDB = $this->getDbEntityById('user', $user['id']);
 
         $this->assertEquals($userDB['account_locked'], $response['account_locked']);
+    }
+
+    public function testMerchantRazorxBulkExperimentFetch()
+    {
+        $merchantId = 10000000000000;
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntent()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+            ->upsert('partner_intent', true)
+            ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntentForMerchantWithoutPartnerIntent()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerIntentWithPartnerIntentFalse()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+            ->upsert('partner_intent', false)
+            ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentTrue()
+    {
+        $merchant = $this->getDbEntityById('merchant','10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+            ->upsert('partner_intent', true)
+            ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentFalse()
+    {
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        Settings\Accessor::for($merchant, Settings\Module::PARTNER)
+            ->upsert('partner_intent', false)
+            ->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnerIntentWithPartnerIntentNull()
+    {
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetInheritanceParent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'id'    =>  '10000000000000'
+        ];
+
+        $a = $this->startTest();
+
+        $this->assertEquals($a['merchant_id'], $subMerchantId);
+
+        $this->assertEquals($a['parent_merchant_id'], '10000000000000');
+
+        $merchantInheritanceMap = $this->getLastEntity('merchant_inheritance_map', true);
+
+        $this->assertEquals($merchantInheritanceMap['parent_merchant_id'], '10000000000000');
+
+        $this->assertEquals($merchantInheritanceMap['merchant_id'], $subMerchantId);
+    }
+
+    public function testSetInheritanceParentBatch()
+    {
+        $this->ba->proxyAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        $subMerchantId2 =$this->fixtures->create('merchant')->getId();
+
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            [
+                'idempotency_key'    =>  '12345',
+                'merchant_id'        =>  $subMerchantId,
+                'parent_merchant_id' =>  '10000000000000'
+            ],
+            [
+                'idempotency_key'    => '12346',
+                'merchant_id'        =>  $subMerchantId2,
+                'parent_merchant_id' =>  '10000000000000'
+            ]
+        ];
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['count'], 2);
+
+        $this->assertEquals($response['items'][0]['merchant_id'], $subMerchantId);
+        $this->assertEquals($response['items'][0]['parent_merchant_id'], '10000000000000');
+        $this->assertEquals($response['items'][0]['success'], true);
+
+        $this->assertEquals($response['items'][1]['success'], false);
+        $this->assertEquals($response['items'][1]['error']['code'], ErrorCode::BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT);
+        $this->assertEquals($response['items'][1]['http_status_code'], 400);
+    }
+
+    public function testSetNonPartnerInheritanceParent()
+    {
+        $this->ba->adminAuth();
+
+        $submerchant = $this->fixtures->create('merchant');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $submerchant['id'] . '/inheritance_parent';
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'id'    =>  '10000000000000'
+        ];
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT);
+
+        $this->expectExceptionMessage(
+            'Inheritance parent should be aggregator or fully-managed partner of the submerchant');
+
+        $this->startTest();
+
+    }
+
+    public function testGetInheritanceParent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        // set inheritance parent
+        $request = [
+            'method'  => 'post',
+            'url'     => '/merchants/' . $subMerchantId. '/inheritance_parent',
+            'content' => [
+                'id'  => '10000000000000'
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $res = $this->startTest();
+
+        $this->assertEquals($res['merchant_id'], $subMerchantId);
+
+        $this->assertEquals($res['parent_merchant_id'], '10000000000000');
+    }
+
+    public function testGetInheritanceParentIfNotPresent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $this->expectException(BadRequestException::class);
+
+        $this->startTest();
+    }
+
+    public function testDeleteInheritanceParent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        // set inheritance parent
+        $request = [
+            'method'  => 'post',
+            'url'     => '/merchants/' . $subMerchantId . '/inheritance_parent',
+            'content' => [
+                'id'  => '10000000000000'
+            ]
+        ];
+
+        $createRes = $this->makeRequestAndGetContent($request);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $res = $this->startTest();
+
+        $this->assertEquals($res['id'], $createRes['id']);
+
+        $this->assertEquals($res['deleted'], true);
+
+        $merchantInheritanceMap = $this->getLastEntity('merchant_inheritance_map', true);
+
+        $this->assertNull($merchantInheritanceMap);
+    }
+
+    public function testDeleteInheritanceParentIfNotPresent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND);
+
+        $this->expectExceptionMessage(
+            'No db records found.');
+
+        $this->startTest();
+    }
+
+    public function testGetBalances()
+    {
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'                => '100abc000abc00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'banking',
+            'currency'          => 'INR',
+            'name'              => null,
+            'balance'           => 0,
+            'credits'           => 0,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => '2224440041626905',
+            'account_type'      => 'shared',
+            'channel'           => null,
+            'updated_at'        => 1
+        ];
+
+        $balanceData2 = [
+            'id'                => '100def000def00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'primary',
+            'currency'          => null,
+            'name'              => null,
+            'balance'           => 100000,
+            'credits'           => 50000,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => null,
+            'account_type'      => null,
+            'channel'           => 'shared',
+            'updated_at'        => 1
+        ];
+
+        $this->fixtures->create('balance',$balanceData1);
+
+        $this->fixtures->create('balance',$balanceData2);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetBalancesByType()
+    {
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'                => '100abc000abc00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'banking',
+            'currency'          => 'INR',
+            'name'              => null,
+            'balance'           => 0,
+            'credits'           => 0,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => '2224440041626905',
+            'account_type'      => 'shared',
+            'channel'           => null,
+            'updated_at'        => 1
+        ];
+
+        $balanceData2 = [
+            'id'                => '100def000def00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'primary',
+            'currency'          => null,
+            'name'              => null,
+            'balance'           => 100000,
+            'credits'           => 50000,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => null,
+            'account_type'      => null,
+            'channel'           => 'shared',
+            'updated_at'        => 1
+        ];
+
+        $this->fixtures->create('balance',$balanceData1);
+
+        $this->fixtures->create('balance',$balanceData2);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
+    protected function setUpPartnerAndGetSubMerchantId()
+    {
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $subMerchant = $this->fixtures->merchant->createEntityInTestAndLive('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->merchant_access_map->createEntityInTestAndLive('merchant_access_map', $accessMapData);
+
+        return $subMerchantId;
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $razorxMock->method('getTreatment')
+            ->will($this->onConsecutiveCalls('on', 'off'));
+
+        $this->app->instance('razorx', $razorxMock);
+    }
+
+    public function testMerchantInternationalDisableAction()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['international' => true]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'international_activation_flow' => 'whitelist']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantInternationalEnableAction()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantInternationalDisableBulkEdit()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(true, 'whitelist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
+
+        $this->assertEquals($merchant['international'], false);
+
+        $this->assertEquals($merchantDetail['international_activation_flow'], 'blacklist');
+    }
+
+    public function testMerchantInternationalEnableBulkEdit()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'blacklist');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', 10000000000000);
+
+        $this->assertEquals($merchant['international'], true);
+
+        $this->assertEquals($merchantDetail['international_activation_flow'], 'whitelist');
+    }
+
+    public function setMerchantMerchantDetailsAndPricing($international, $internationalActivationFlow)
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id' => '1In3Yh5Mluj605',
+            'international'   => $international]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'international_activation_flow' => $internationalActivationFlow,
+            'business_category'             => 'education',
+            'business_subcategory'          => 'college']);
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->fixtures->edit('pricing', '1AXp2Xd3t5aRLX', ['international' => true]);
     }
 }

@@ -40,6 +40,13 @@ class Entity extends Base\PublicEntity
     // For emails
     const MERCHANT_EMAILS         = 'merchant_emails';
     const SKIP_EMAIL              = 'skip_email';
+    const EMAIL                   = 'email';
+
+    // For international disputes
+    const BASE_AMOUNT             = 'base_amount';
+    const BASE_CURRENCY           = 'base_currency';
+    const GATEWAY_AMOUNT          = 'gateway_amount';
+    const GATEWAY_CURRENCY        = 'gateway_currency';
 
     /**
      *  Field for edit input, when accepted chargeback amount
@@ -59,6 +66,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT                 = 'payment';
 
     const SKIP_DEDUCTION          = 'skip_deduction';
+    const CONTACT                 = 'contact';
 
     protected static $sign = 'disp';
 

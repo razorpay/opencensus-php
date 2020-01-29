@@ -2,7 +2,11 @@
 
 namespace RZP\Tests\Functional\Contacts;
 
+use Queue;
+
 use RZP\Models\Feature;
+use RZP\Services\RazorXClient;
+use RZP\Jobs\FTS\CreateAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -44,6 +48,8 @@ class FundAccountsTest extends TestCase
 
     public function testCreateFundAccountBankAccount()
     {
+        Queue::fake();
+
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
@@ -59,6 +65,17 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateFundAccountBankAccountPublic()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
     }
 
     public function testCreateFundAccountBankAccountBeneficiaryVerified()
@@ -89,6 +106,8 @@ class FundAccountsTest extends TestCase
 
     public function testCreateVpa()
     {
+        Queue::fake();
+
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
@@ -104,10 +123,14 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
+
+        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateCard()
     {
+        Queue::fake();
+
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
@@ -125,6 +148,8 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
+
+        Queue::assertPushed(CreateAccount::class);
     }
 
     public function testCreateCardBeneficiaryVerified()
@@ -212,6 +237,412 @@ class FundAccountsTest extends TestCase
     public function testDeleteFundAccount()
     {
         $this->fixtures->create('fund_account:bank_account', ['id' => '100000000000fa']);
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccount()
+    {
+        $this->ba->batchAuth();
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountForMerchantBehindRazorx()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                  ->willReturn('create_duplicate');
+
+        $this->startTest();
+
+        $contacts = $this->getEntities('contact');
+
+        $fundAccounts = $this->getEntities('fund_account');
+
+        $this->assertEquals(3, count($contacts['items']));
+
+        $this->assertEquals(3, count($fundAccounts['items']));
+    }
+
+    public function testBulkFundAccountWithInvalidContactId()
+    {
+        $this->ba->batchAuth();
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountWithValidContactId()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountWithPrivateAuthFailed()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountWithSameContact()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['items'][0]['contact_id'], $response['items'][2]['contact_id']);
+    }
+
+    public function testBulkFundAccountWithSameFundAccount()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['items'][0]['id'], $response['items'][2]['id']);
+    }
+
+    public function testBulkFundAccountWithSameIdempotencyKey()
+    {
+        $this->ba->batchAuth();
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
+        $this->startTest();
+    }
+
+    // below test cases are considering duplicate checks
+    // on the same contact in context
+    public function testDuplicateFundAccountCreationOnApiForCard()
+    {
+        // we do not have duplicate checks for card account type
+        $this->markTestSkipped();
+    }
+
+    public function testDuplicateFundAccountCreationOnApiForBankAccount()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $fundAccount = $this->getLastEntity('fund_account', true);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($fundAccount['id'], $response['id']);
+    }
+
+    public function testDuplicateFundAccountCreationOnDashboardForVpa()
+    {
+        $this->testCreateVpa();
+
+        $fundAccount = $this->getLastEntity('fund_account', true);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEquals($fundAccount['id'], $response['id']);
+    }
+
+    public function testDuplicateFundAccountCreationOnDashboardForBankAccount()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $fundAccount = $this->getLastEntity('fund_account', true);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEquals($fundAccount['id'], $response['id']);
+    }
+
+    public function testCreateDuplicateFundAccountOnApi()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $contact = $this->getLastEntity('contact', true);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                           ->willReturn('create_duplicate');
+
+        $this->ba->privateAuth();
+
+        $request =  [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals($contact['id'], $response['id']);
+    }
+
+    public function testFundAccountDuplicatesForDifferentContacts()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $fundAccount1 = $this->getLastEntity('fund_account');
+
+        $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
+
+        $request = [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000001contact',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $fundAccount2 = $this->getLastEntity('fund_account');
+
+        $this->assertNotEquals($fundAccount1['id'], $fundAccount2['id']);
+    }
+
+    public function testCreateSingleCharacterHandleOfVpa()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        $vpa = $this->getLastEntity('vpa', true);
+
+        $expectedVpaAttrs = [
+            'entity_type' => 'contact',
+            'entity_id'   => '1000000contact',
+            'username'    => 'a',
+            'handle'      => 'upi',
+            'merchant_id' => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
+    }
+
+    public function testCreateVpaWithDot()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        $vpa = $this->getLastEntity('vpa', true);
+
+        $expectedVpaAttrs = [
+            'entity_type' => 'contact',
+            'entity_id'   => '1000000contact',
+            'username'    => 'a.mitm',
+            'handle'      => 'upi',
+            'merchant_id' => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testFundAccountsWithExpiredKey()
+    {
+        $this->fixtures->key->edit('TheTestAuthKey', ['expired_at' => time()]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        // Create Contact
+        $data['request']['url'] = '/fund_accounts';
+        $data['request']['method'] = 'POST';
+
+        $this->startTest($data);
+
+        // Fetch Contacts
+        $data['request']['url'] = '/fund_accounts';
+        $data['request']['method'] = 'GET';
+
+        $this->startTest($data);
+
+        // GET Contact
+        $data['request']['url'] = '/fund_accounts/100000000000fa';
+        $data['request']['method'] = 'GET';
+
+        $this->startTest($data);
+
+        // GET Contact
+        $data['request']['url'] = '/fund_accounts/100000000000fa';
+        $data['request']['method'] = 'PATCH';
+
+        $this->startTest($data);
+    }
+
+    public function testCreateFundAccountInvalidAccountType()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountFromInactiveCustomer()
+    {
+        $this->fixtures->create('customer', ['id' => '1000facustomer', 'active' => 0]);
+
+        $this->startTest();
+    }
+
+    public function testCreateCardFundAccountFeatureS2SNotEnabled()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->removeFeatures(['s2s']);
+
+        $this->startTest();
+    }
+
+    public function testCreateCardFundAccountFeaturePayoutToCardsNotEnabled()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->removeFeatures(['payout_to_cards']);
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountCard()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountWithoutName()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountWithInvalidBankAccountNumber()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountForRZPFeesContact()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'rzp_fees']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateFundAccountForRZPFeesContact()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $this->fixtures->edit('contact', 'cont_1000000contact', ['type' => 'rzp_fees']);
+
+        $fundAccount = $this->getLastEntity('fund_account');
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/fund_accounts/' . $fundAccount['id'];
 
         $this->startTest();
     }

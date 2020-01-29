@@ -106,9 +106,13 @@ class MailTags
     const RBL_ENACH_DEBIT_MAIL             = 'rbl_enach_debit_mail';
     const RBL_ENACH_REGISTER_MAIL          = 'rbl_enach_register_mail';
 
+    const CITI_NACH_REGISTER_MAIL          = 'citi_nach_register_mail';
+    const CITI_NACH_DEBIT_MAIL             = 'citi_nach_debit_mail';
+
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
     const FEE_CREDITS_ALERT                = 'fee_credits_alert';
+    const RX_LOW_BALANCE_ALERT             = 'rx_low_balance_alert';
     const IRCTC_REFUND_REPORT              = 'irctc_refund_report';
     const AUTH_REMINDER                    = 'auth_reminder';
     const HOLIDAY_NOTIFICATION             = 'holiday_notification';
@@ -126,8 +130,10 @@ class MailTags
     const WELCOME                          = 'welcome';
     const ACCOUNT_ACTIVATED                = 'account_activated';
     const INSTANT_ACTIVATION               = 'instant_activation';
+    const NEEDS_CLARIFICATION              = 'needs_clarification';
     const SUB_MERCHANT_ADDED               = 'sub_merchant_added';
     const AFFILIATE_ADDED                  = 'affiliate_added';
+    const ACCOUNT_REJECTED                 = 'account_rejected';
 
     const ICICI_FILES                      = 'icici_files';
     const CBI_FILES                        = 'cbi_files';
@@ -158,6 +164,7 @@ class MailTags
 
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';
+    const DISPUTES_CREATED_IN_BULK         = 'disputes_created_in_bulk';
     const DISPUTE_ACCEPTED_ADMIN           = 'dispute_accepted_admin';
     const DISPUTE_SUBMITTED_ADMIN          = 'files_submitted_admin';
 
@@ -166,6 +173,18 @@ class MailTags
 
     // Transactions
     const TRANSACTION_CREATED              = 'transaction_created';
+
+    const BANKING_ACCOUNT_STATUS_UPDATED   = 'banking_account_status_updated';
+
+    const BANKING_ACCOUNT_X_PRO_ACTIVATION = 'banking_account_x_pro_activation';
+
+    const PARTNER_ON_BOARDED                            = 'partner_on_boarded';
+    const NEGATIVE_BALANCE_THRESHOLD_ALERT              = 'negative_balance_threshold_alert';
+    const BALANCE_NEGATIVE_ALERT                        = 'balance_negative_alert';
+    const BALANCE_POSITIVE_ALERT                        = 'balance_positve_alert';
+
+    //Merchant Invoice tags
+    const MERCHANT_INVOICE_EXECUTION_SUMMARY            = 'merchant_invoice_execution_summary';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

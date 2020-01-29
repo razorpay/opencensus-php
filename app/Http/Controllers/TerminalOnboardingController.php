@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Onboarding;
 
 class TerminalOnboardingController extends Controller
@@ -40,5 +41,50 @@ class TerminalOnboardingController extends Controller
         $data = $this->service()->fetchTerminals($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function postOnboardTerminalVerification()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyTerminals($input);
+
+        $this->trace->info(
+            TraceCode::TERMINAL_ONBOARDING_VERIFICATION_CRON_RESPONSE,
+            [
+                'input'    => $input,
+                'response' => $data,
+            ]);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postOnboardTerminalCreation()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->onboardTerminals($input);
+
+        $this->trace->info(
+            TraceCode::TERMINAL_ONBOARDING_CREATION_CRON_RESPONSE,
+            [
+                'input'    => $input,
+                'response' => $data,
+            ]);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * This is a precautionary API, which will be used using adminAuth, in case we need to change status of a terminalonboarding manually
+     * This will update status of input terminal_onboarding_details ids to created
+     */
+    public function putTerminalOnboardingStatus()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateTerminalOnboardingStatus($input);
+
+        return ApiResponse::json($response);
     }
 }

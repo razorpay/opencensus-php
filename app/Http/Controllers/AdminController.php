@@ -9,6 +9,8 @@ use ApiResponse;
 
 use RZP\Models\Admin;
 use RZP\Models\Report;
+use RZP\Services\Stork;
+use RZP\Trace\TraceCode;
 
 class AdminController extends Controller
 {
@@ -342,6 +344,43 @@ class AdminController extends Controller
         $input = Request::all();
 
         $data  = $this->service()->bulkCreate($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPvtResponse()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getPvtResponse($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Posts request to stork on given path.
+     */
+    public function postStork(string $path)
+    {
+        $mode  = $this->ba->getMode();
+        $input = Request::all();
+        $this->trace->info(TraceCode::STORK_ADMIN_REQUEST, compact('mode', 'input'));
+
+        $service = new Stork;
+        $service->init($mode);
+
+        $response = $service->request($path, $input);
+        $code     = $response->status_code;
+        $body     = json_decode($response->body, true);
+        $response = compact('code', 'body');
+
+        $this->trace->info(TraceCode::STORK_ADMIN_RESPONSE, $response);
+        return ApiResponse::json($response);
+    }
+
+    public function getModeConfigInstruments()
+    {
+        $data = $this->service()->getModeConfigInstruments();
 
         return ApiResponse::json($data);
     }

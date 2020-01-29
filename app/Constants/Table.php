@@ -30,6 +30,7 @@ class Table
     const CONTACT               = 'contacts';
     const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
+    const BALANCE_CONFIG        = 'balance_config';
     const PRICING               = 'pricing';
     const INVOICE               = 'invoices';
     const PAYMENT               = 'payments';
@@ -39,10 +40,14 @@ class Table
     const ADDRESS               = 'addresses';
     const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
+    const LEGAL_ENTITY          = 'legal_entity';
     const COMMISSION            = 'commissions';
     const PAYMENT_LINK          = 'payment_links';
+    const PAYOUT_LINK           = 'payout_links';
+    const PAYMENT_PAGE_ITEM     = 'payment_page_items';
     const FUND_ACCOUNT          = 'fund_accounts';
     const ENTITY_ORIGIN         = 'entity_origins';
+    const OFFLINE_DEVICE        = 'offline_devices';
 
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
@@ -71,6 +76,8 @@ class Table
     const APP_TOKEN                 = 'customer_apps';
     const BANK_ACCOUNT              = 'bank_accounts';
     const SETTLEMENT_BUCKET         = 'settlement_bucket';
+    const SETTLEMENT_TRANSFER       = 'settlement_transfer';
+    const SETTLEMENT_DESTINATION    = 'settlement_destination';
 
     // Subscriptions Tables
     const SUBSCRIPTION                   = 'subscriptions';
@@ -80,8 +87,10 @@ class Table
     const SUBSCRIPTION_TRANSACTION       = 'subscription_transactions';
     //Subscriptions Tables end
 
+    const PAPER_MANDATE              = 'paper_mandates';
     const METHODS                    = 'merchant_banks';
     const BANK_TRANSFER              = 'bank_transfers';
+    const UPI_TRANSFER               = 'upi_transfers';
     const GATEWAY_TOKEN              = 'gateway_tokens';
     const SCHEDULE_TASK              = 'schedule_tasks';
     const PARTNER_CONFIG             = 'partner_configs';
@@ -109,7 +118,13 @@ class Table
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validations';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registrations';
     const MERCHANT_DOCUMENT          = 'merchant_documents';
-    const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details'; 
+    const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
+    const REFERRALS                  = 'referrals';
+    const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
+    const COMMISSION_INVOICE         = 'commission_invoice';
+
+    const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
+    const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';
 
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other
@@ -123,7 +138,7 @@ class Table
     const ROLE                  = 'roles';
     const PERMISSION            = 'permissions';
     const PERMISSION_MAP        = 'permission_map';
-    const GROUP                 = 'groups';
+    const GROUP                 = 'org_groups';
     const ADMIN                 = 'admins';
     const GROUP_MAP             = 'group_map';
     const MERCHANT_MAP          = 'merchant_map';
@@ -205,7 +220,9 @@ class Table
     // Banking Accounts Tables
     const EXTERNAL                        = 'external';
     const BANKING_ACCOUNT                 = 'banking_accounts';
+    const BANKING_ACCOUNT_DETAIL          = 'banking_account_details';
     const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
+    const BANKING_ACCOUNT_STATE           = 'banking_account_state';
 
     // P2P Service Tables
     const P2P_DEVICE            = 'p2p_devices';
@@ -220,12 +237,20 @@ class Table
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
     const P2P_CONCERN           = 'p2p_concerns';
 
+    // Payments UPI Service, Store in different database
+    const PAYMENTS_UPI_VPA              = 'vpas';
+    const PAYMENTS_UPI_BANK_ACCOUNT     = 'bank_accounts';
+    const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'vpas_bank_accounts';
 
     const CREDITNOTE           = 'creditnote';
 
     const CREDITNOTE_INVOICE   = 'creditnote_invoices';
 
+    const INVOICE_REMINDER   = 'invoice_reminders';
+
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
+
+    const OPTIONS              = 'options';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,

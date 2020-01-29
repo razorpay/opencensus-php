@@ -24,6 +24,8 @@ class GatewayErrorThrottlerTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped('not being used now.');
+
         parent::setUp();
 
         $this->redis = Redis::connection()->client();

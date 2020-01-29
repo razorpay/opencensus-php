@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Trace\Logger as Trace;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
@@ -19,18 +20,32 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_TRANSACTION_STATUS     = 'transaction_status';
     const COLUMN_TRANSACTION_REMARKS    = 'transaction_remarks';
 
-    const COLUMN_PAYER_VPA = 'payer_virtual_address';
-
-    const COLUMN_PAYEE_VPA = 'payee_virtual_address';
+    // Blacklisted columns
+    const COLUMN_PAYER_VPA              = 'payer_virtual_address';
+    const COLUMN_PAYEE_VPA              = 'payee_virtual_address';
+    const COLUMN_DEVICE_TYPE            = 'device_type';
+    const COLUMN_APP                    = 'app';
+    const COLUMN_DEVICE_OS              = 'device_os';
+    const COLUMN_DEVICE_MOBILE_NO       = 'device_mobile_no';
+    const COLUMN_DEVICE_LOCATION        = 'device_location';
+    const COLUMN_IP_ADDRESS             = 'ip_address';
 
     const BLACKLISTED_COLUMNS = [
         self::COLUMN_PAYEE_VPA,
         self::COLUMN_PAYER_VPA,
+        self::COLUMN_DEVICE_TYPE,
+        self::COLUMN_APP,
+        self::COLUMN_DEVICE_OS,
+        self::COLUMN_DEVICE_MOBILE_NO,
+        self::COLUMN_DEVICE_LOCATION,
+        self::COLUMN_IP_ADDRESS,
     ];
 
     const SUCCESS   = 'SUCCESS';
     const DEBIT     = 'Debit';
     const APPROVED  = 'Approved';
+
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
 
     protected function getRefundId(array $row)
     {
@@ -104,7 +119,27 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             return null;
         }
 
-        return Carbon::createFromFormat('d-M-Y H:i:s', $refundSettledAt, Timezone::IST)->getTimestamp();
+        $gatewaySettledAtTimestamp = null;
+
+        try
+        {
+            $gatewaySettledAtTimestamp = Carbon::parse($refundSettledAt)->setTimezone(Timezone::IST)->getTimestamp();
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::INFO,
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code' => Base\InfoCode::INCORRECT_DATE_FORMAT,
+                    'message'   => 'Unable to parse settlement date -> ' . $ex->getMessage(),
+                    'date'      => $refundSettledAt,
+                    'gateway'   => $this->gateway,
+                ]);
+        }
+
+        return $gatewaySettledAtTimestamp;
     }
 
     protected function getReferenceNumber(array $row)
@@ -167,17 +202,21 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         if ((empty($npciRefId) === false) and
             ($npciRefId !== $referenceNumber))
         {
-            $this->trace->info(TraceCode::RECON_INFO_ALERT, [
-                'info_code'                 => Base\InfoCode::DATA_MISMATCH,
-                'message'                   => 'Reference number in db is not same as in recon',
-                'refund_id'                 => $this->refund->getId(),
-                'amount'                    => $this->refund->getBaseAmount(),
-                'payment_id'                => $this->payment->getId(),
-                'payment_amount'            => $this->payment->getBaseAmount(),
-                'db_reference_number'       => $npciRefId,
-                'recon_reference_number'    => $referenceNumber,
-                'gateway'                   => $this->gateway
-            ]);
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'info_code'                 => $infoCode,
+                    'message'                   => 'Reference number in db is not same as in recon',
+                    'refund_id'                 => $this->refund->getId(),
+                    'amount'                    => $this->refund->getBaseAmount(),
+                    'payment_id'                => $this->payment->getId(),
+                    'payment_amount'            => $this->payment->getBaseAmount(),
+                    'db_reference_number'       => $npciRefId,
+                    'recon_reference_number'    => $referenceNumber,
+                    'gateway'                   => $this->gateway
+                ]);
 
             return;
         }

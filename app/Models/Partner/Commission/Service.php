@@ -41,6 +41,39 @@ class Service extends Base\Service
         return $commission->toArrayPublic();
     }
 
+    public function captureByPartner(string $partnerId): int
+    {
+        $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+        return $this->core()->captureByPartner($partner);
+    }
+
+    public function bulkCaptureByPartner(array $input): int
+    {
+        return $this->core()->bulkCaptureByPartner($input);
+    }
+
+    public function capture(string $id): array
+    {
+        $commission = $this->repo->commission->findByPublicId($id);
+
+        return $this->core()->capture($commission)->toArrayPublic();
+    }
+
+    public function clearOnHoldForPartner(string $partnerId, array $input): array
+    {
+        $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+        return $this->core()->clearOnHoldForPartner($partner, $input);
+    }
+
+    public function fetchAggregateCommissionDetails(string $partnerId, array $input)
+    {
+        $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+        return $this->core()->fetchAggregateCommissionDetails($partner, $input);
+    }
+
     public function fetchAnalytics(array $input): array
     {
         (new Merchant\Validator)->validateIsPartner($this->merchant);

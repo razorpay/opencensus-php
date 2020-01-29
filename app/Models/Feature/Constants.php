@@ -85,6 +85,7 @@ class Constants
     const CARD_TRANSFER_REFUND            = 'card_transfer_refund';
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
+    const DISABLE_AMOUNT_CHECK            = 'disable_amount_check';
     const SUBSCRIPTION_V2                 = 'subscription_v2';
     const SUBSCRIPTION_AUTH_V2            = 'subscription_auth_v2';
     const EXPOSE_ARN_PAYMENT              = 'expose_arn_payment';
@@ -95,7 +96,7 @@ class Constants
     const TRANSACTION_V2                  = 'transaction_v2';
     const ES_ON_DEMAND                    = 'es_on_demand';
     const ES_AUTOMATIC                    = 'es_automatic';
-    const HEADLESS                        = 'headless';
+    const HEADLESS_DISABLE                = 'headless_disable';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
     const FIRST_DATA_S2S_FLOW             = 'first_data_s2s_flow';
     const OFFER_PRIVATE_AUTH              = 'offer_private_auth';
@@ -128,7 +129,57 @@ class Constants
     const PHONEPE_INTENT                  = 'phonepe_intent';
     const ISSUE_MPANS                     = 'issue_mpans';
     const BLOCK_DEBIT_2K                  = 'block_debit_2k';
+    const WALLET_AUTO_DEBIT               = 'wallet_auto_debit';
     const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
+    const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
+    const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
+    const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
+    const GOOGLE_PAY_CARDS                = 'google_pay_cards';
+
+    const ENACH_INTERMEDIATE              = 'enach_intermediate';
+    const SAVE_VPA                        = 'save_vpa';
+
+    const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
+
+    const OFFLINE_PAYMENTS                = 'offline_payments';
+
+    /**
+     * If applied on partner merchant then all sub merchant settlement will be settled to partner
+     * this will be further aggregated and settled to partner merchant
+     */
+    const AGGREGATE_SETTLEMENT            = 'aggregate_settlement';
+
+    /**
+     * When adding submerchant, whether to set international activation flow to greylist
+     * irrespective of merchant category and subcategory
+     */
+    const FORCE_GREYLIST_INTERNAT         = 'force_greylist_internat';
+
+    /**
+     * Skipping website and allowing international activation.
+     */
+    const SKIP_WEBSITE_INTERNAT         = 'skip_website_internat';
+
+    /**
+     * Flag to decide whether to show D2c credit score campaign announcement on merchant dashboard.
+     */
+    const SHOW_CREDIT_SCORE               = 'show_credit_score';
+
+    /**
+     * When creating submerchant, if kyc is handled by partner, we proceed to directly activate the merchant, when
+     * the submerchant is created. Else the submerchant will follow the usual kyc process
+     */
+    const KYC_HANDLED_BY_PARTNER          = 'kyc_handled_by_partner';
+
+    /**
+     * Only partners having this feature will be able to onboard the submerchants using the account apis
+     */
+    const SUBMERCHANT_ONBOARDING          = 'submerchant_onboarding';
+
+    /**
+     * Flag to decide whether razorpay can send communication mails to partner's submerchants
+     */
+    const NO_COMM_WITH_SUBMERCHANTS       = 'no_comm_with_submerchants';
 
     /**
      * Feature flag to enable to create new customer if contact and email both are null,
@@ -167,6 +218,18 @@ class Constants
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
     const ORDER_RECEIPT_UNIQUE            = 'order_receipt_unique';
 
+    /**
+     * Commission invoice will be generated only for those partners
+     * having this feature flag
+     */
+    const GENERATE_PARTNER_INVOICE        = 'generate_partner_invoice';
+
+    /**
+     * Feature flag to decide whether commission payout should happen
+     * manually via ops or automatically
+     */
+    const AUTOMATED_COMM_PAYOUT           = 'automated_comm_payout';
+
     // Payment authentication
     const ATM_PIN_AUTH                    = 'atm_pin_auth';
     const IVR                             = 'ivr';
@@ -202,9 +265,14 @@ class Constants
     const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
 
     /**
-     * Enables workflow feature on Payout for Business Banking (RazorpayX)
-     */
+ * Enables workflow feature on Payout for Business Banking (RazorpayX)
+ */
     const PAYOUT_WORKFLOWS              = 'payout_workflows';
+
+    /**
+     * Aggregator Partner + OAuth Client access
+     */
+    const AGGREGATOR_OAUTH_CLIENT       = 'aggregator_oauth_client';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -217,12 +285,28 @@ class Constants
 
     const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
 
+    const BLOCK_OFFER_CREATION     = 'block_offer_creation';
+
+    /*
+     * this is used for displaying the parent payment id for linked accounts in Route
+     */
+    const DISPLAY_LA_PARENT_PAYMENT_ID = 'display_parent_payment_id';
+
+    const REDIRECTION_ONHOLD       = 'redirection_onhold';
+
+    const ERROR_METADATA_RESPONSE  = 'error_metadata_response';
+
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
      * to have a controlled roll out of x_pro might be removed going forward.
      */
     const X_PRO_INVITE  = 'x_pro_invite';
+
+    /*
+     * This flag will be used to skip some merchants from hitachi automatic onboarding
+     */
+    const SKIP_HITACHI_AUTO_ONBOARD  = 'skip_hitachi_auto_onboard';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -240,6 +324,7 @@ class Constants
         self::IRCTC_METHODS,
         self::GOOGLE_PAY_OMNICHANNEL,
         self::PHONEPE_INTENT,
+        self::SAVE_VPA,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -331,6 +416,7 @@ class Constants
         self::CARD_TRANSFER_REFUND            => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
+        self::DISABLE_AMOUNT_CHECK            => true,
         self::SUBSCRIPTION_V2                 => true,
         self::SUBSCRIPTION_AUTH_V2            => true,
         self::EXPOSE_ARN_PAYMENT              => true,
@@ -342,7 +428,7 @@ class Constants
         self::TRANSACTION_V2                  => true,
         self::ES_ON_DEMAND                    => true,
         self::ES_AUTOMATIC                    => true,
-        self::HEADLESS                        => true,
+        self::HEADLESS_DISABLE                => true,
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
         self::OFFER_PRIVATE_AUTH              => true,
@@ -396,6 +482,30 @@ class Constants
         self::PHONEPE_INTENT                  => true,
         self::BLOCK_DEBIT_2K                  => true,
         self::USE_MSWIPE_TERMINALS            => true,
+        self::WALLET_AUTO_DEBIT               => true,
+        self::EXPOSE_GATEWAY_PROVIDER         => true,
+        self::KYC_HANDLED_BY_PARTNER          => true,
+        self::NO_COMM_WITH_SUBMERCHANTS       => true,
+        self::SUBMERCHANT_ONBOARDING          => true,
+        self::EXPOSE_FA_VALIDATION_UTR        => true,
+        self::VALIDATE_MERCHANT_DOMAIN        => true,
+        self::PARTNER_ACTIVATE_MERCHANT       => true,
+        self::GOOGLE_PAY_CARDS                => true,
+        self::FORCE_GREYLIST_INTERNAT         => true,
+        self::SKIP_WEBSITE_INTERNAT           => true,
+        self::SHOW_CREDIT_SCORE               => true,
+        self::AGGREGATOR_OAUTH_CLIENT         => true,
+        self::AGGREGATE_SETTLEMENT            => true,
+        self::BLOCK_OFFER_CREATION            => true,
+        self::ENACH_INTERMEDIATE              => true,
+        self::SAVE_VPA                        => true,
+        self::GENERATE_PARTNER_INVOICE        => true,
+        self::AUTOMATED_COMM_PAYOUT           => true,
+        self::OFFLINE_PAYMENTS                => true,
+        self::ERROR_METADATA_RESPONSE         => true,
+        self::SKIP_HITACHI_AUTO_ONBOARD       => true,
+        self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
+        self::REDIRECTION_ONHOLD              => true,
     ];
 
     // Entity type constants
@@ -475,6 +585,11 @@ class Constants
             'display_name'  => 'On demand Payout',
             'documentation' => '',
         ],
+        self::ES_AUTOMATIC              => [
+            'feature'       => self::ES_AUTOMATIC,
+            'display_name'  => 'Es Automatic',
+            'documentation' => '',
+        ],
         self::PL_FIRST_MIN_AMOUNT       => [
             'feature'       => self::PL_FIRST_MIN_AMOUNT,
             'display_name'  => 'Partial payments: minimum first amount',
@@ -505,6 +620,11 @@ class Constants
             'display_name'  => 'Allow Refunds From Linked Accounts',
             'documentation' => '',
         ],
+        self::DISPLAY_LA_PARENT_PAYMENT_ID    => [
+            'feature'       => self::DISPLAY_LA_PARENT_PAYMENT_ID,
+            'display_name'  => 'display parent paymentId for transfers',
+            'documentation' => '',
+        ],
         self::PAYOUT_TO_CARDS           => [
             'feature'       => self::PAYOUT_TO_CARDS,
             'display_name'  => 'Payout to cards',
@@ -518,6 +638,11 @@ class Constants
         self::PAYOUT_WORKFLOWS          => [
             'feature'       => self::PAYOUT_WORKFLOWS,
             'display_name'  => 'Razorpay X - Workflows',
+            'documentation' => '',
+        ],
+        self::SHOW_CREDIT_SCORE         => [
+            'feature'       => self::SHOW_CREDIT_SCORE,
+            'display_name'  => 'D2C Credit score campaign',
             'documentation' => '',
         ],
     ];
@@ -535,6 +660,8 @@ class Constants
         self::MARKETPLACE,
         self::SUBSCRIPTIONS,
         self::VIRTUAL_ACCOUNTS,
+        self::ES_AUTOMATIC,
+        self::SHOW_CREDIT_SCORE,
     ];
 
     /*

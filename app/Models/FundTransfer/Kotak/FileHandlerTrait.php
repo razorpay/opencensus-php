@@ -171,10 +171,8 @@ trait FileHandlerTrait
         return $extension;
     }
 
-    public function getH2HFileFromAws($key, $useKeyForFileName = false)
+    public function getH2HFileFromAws($key, $useKeyForFileName = false, $bucket = 'h2h_bucket', $region = null)
     {
-        $bucket = 'h2h_bucket';
-
         if ($useKeyForFileName === false)
         {
             $extension = $this->getFileExtension($key);
@@ -195,7 +193,7 @@ trait FileHandlerTrait
             }
         }
 
-        return $this->getFileFromAws($key, $fullPath, $bucket);
+        return $this->getFileFromAws($key, $fullPath, $bucket, $region);
     }
 
     public function deleteFileIfExists()
@@ -737,6 +735,23 @@ trait FileHandlerTrait
             if (blank($row) === false)
             {
                 $data[] = $this->parseTextRow($row, $ix, $delimiter, $headings);
+            }
+        }
+
+        return $data;
+    }
+
+    protected function parseCsvFile(string $file, string $delimiter = ',')
+    {
+        $rows = $this->getFileLines($file);
+
+        $data = [];
+
+        foreach ($rows as $ix => $row)
+        {
+            if (blank($row) === false)
+            {
+                $data[] = str_getcsv($row, $delimiter);
             }
         }
 

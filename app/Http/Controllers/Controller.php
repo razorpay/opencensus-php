@@ -74,6 +74,10 @@ abstract class Controller extends BaseController
 
         $data = [];
 
+        if (isset($input['canary']) === true && $context === 'production') {
+            $context = 'canary';
+        }
+
         if (in_array($context, array_keys($urlMap)))
         {
             $url = $urlMap[$context];

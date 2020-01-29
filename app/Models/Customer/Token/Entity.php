@@ -4,6 +4,7 @@ namespace RZP\Models\Customer\Token;
 
 use Crypt;
 use Carbon\Carbon;
+use RZP\Base\BuilderEx;
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -11,11 +12,13 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\PaymentsUpi\Vpa;
 use RZP\Models\Merchant\Account;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
+ * @property Vpa\Entity  $vpa
  * @property Card\Entity $card
  * @property Terminal\Entity $terminal
  * @property Merchant\Entity $merchant
@@ -30,7 +33,9 @@ class Entity extends Base\PublicEntity
     const TOKEN                     = 'token';
     const METHOD                    = 'method';
     const CARD_ID                   = 'card_id';
+    const VPA_ID                    = 'vpa_id';
     const CARD                      = 'card';
+    const VPA                       = 'vpa';
     const BANK                      = 'bank';
     const BANK_DETAILS              = 'bank_details';
     const WALLET                    = 'wallet';
@@ -49,6 +54,7 @@ class Entity extends Base\PublicEntity
     const AADHAAR_NUMBER            = 'aadhaar_number';
     const AADHAAR_VID               = 'aadhaar_vid';
     const CONFIRMED_AT              = 'confirmed_at';
+    const START_TIME                = 'start_time';
     const REJECTED_AT               = 'rejected_at';
     const INITIATED_AT              = 'initiated_at';
     const ACKNOWLEDGED_AT           = 'acknowledged_at';
@@ -114,6 +120,8 @@ class Entity extends Base\PublicEntity
         self::AADHAAR_VID,
         self::MAX_AMOUNT,
         self::EXPIRED_AT,
+        self::START_TIME,
+        self::VPA_ID,
     ];
 
     protected $visible = [
@@ -128,7 +136,9 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
         self::METHOD,
         self::CARD_ID,
+        self::VPA_ID,
         self::CARD,
+        self::VPA,
         self::CUSTOMER_ID,
         self::TERMINAL_ID,
         self::GATEWAY_TOKEN,
@@ -150,6 +160,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::START_TIME,
     ];
 
     protected $public = [
@@ -160,6 +171,7 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::METHOD,
         self::CARD,
+        self::VPA,
         self::RECURRING,
         self::RECURRING_DETAILS,
         self::AUTH_TYPE,
@@ -169,7 +181,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER,
         self::BANK_DETAILS,
         self::MAX_AMOUNT,
-        self::EXPIRED_AT
+        self::EXPIRED_AT,
+        self::START_TIME,
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
@@ -177,6 +190,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::WALLET                    => null,
         self::CARD_ID                   => null,
+        self::VPA_ID                    => null,
         self::ACCOUNT_NUMBER            => null,
         self::ACCOUNT_TYPE              => null,
         self::IFSC                      => null,
@@ -193,18 +207,21 @@ class Entity extends Base\PublicEntity
         self::USED_AT                   => null,
         self::USED_COUNT                => 0,
         self::EXPIRED_AT                => null,
+        self::START_TIME                => null,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::CARD,
+        self::VPA,
         self::MRN,
         self::BANK_DETAILS,
         // TODO: Remove this after deciding on how to expose
         self::RECURRING_DETAILS,
         self::MAX_AMOUNT,
-        self::EXPIRED_AT
+        self::EXPIRED_AT,
+        self::START_TIME,
     ];
 
     protected $appends = [
@@ -240,14 +257,31 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Card\Entity');
     }
 
+    public function vpa()
+    {
+        return $this->belongsTo('RZP\Models\PaymentsUpi\Vpa\Entity');
+    }
+
     public function terminal()
     {
         return $this->belongsTo('RZP\Models\Terminal\Entity');
     }
 
+    public function nachPayments()
+    {
+        return $this->hasMany('RZP\Models\Payment\Entity')
+                    ->where(Payment\Entity::METHOD, Payment\Method::NACH)
+                    ->limit(5);
+    }
+
     public function hasCard()
     {
         return $this->isAttributeNotNull(self::CARD_ID);
+    }
+
+    public function hasVpa()
+    {
+        return $this->isAttributeNotNull(self::VPA_ID);
     }
 
     public function getBank()
@@ -335,6 +369,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPIRED_AT);
     }
 
+    public function getStartTime()
+    {
+        return $this->getAttribute(self::START_TIME);
+    }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -353,6 +392,11 @@ class Entity extends Base\PublicEntity
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
+    }
+
+    public function getVpaId()
+    {
+        return $this->getAttribute(self::VPA_ID);
     }
 
     public function getCustomerId()
@@ -400,6 +444,11 @@ class Entity extends Base\PublicEntity
     public function setRecurring($recurring)
     {
         $this->setAttribute(self::RECURRING, $recurring);
+    }
+
+    public function setStartTime($startTime)
+    {
+        $this->setAttribute(self::START_TIME, $startTime);
     }
 
     public function setRecurringStatus($recurringStatus)
@@ -544,6 +593,22 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function setPublicVpaAttribute(array & $array)
+    {
+        if ($this->hasVpa() and ($this->vpa instanceof Vpa\Entity))
+        {
+            $array[self::VPA] = $this->vpa->toArrayToken();
+        }
+    }
+
+    protected function setPublicStartTimeAttribute(array & $array)
+    {
+        if ($this->getMethod() !== Payment\Method::UPI)
+        {
+            unset($array[self::START_TIME]);
+        }
+    }
+
     protected function setPublicBankDetailsAttribute(array & $array)
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::TOKEN_BANK_DETAILS) === true)
@@ -651,6 +716,18 @@ class Entity extends Base\PublicEntity
         if (isset($input[self::IFSC]) === true)
         {
             $input[self::IFSC] = strtoupper($input[self::IFSC]);
+        }
+    }
+
+    public function scopeWithVpaTokens(BuilderEx $query, bool $withVpa)
+    {
+        if ($withVpa === true)
+        {
+            $query->with(self::VPA);
+        }
+        else
+        {
+            $query->whereNull(self::VPA_ID);
         }
     }
 }

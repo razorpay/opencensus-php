@@ -25,6 +25,9 @@ class Account
 
     const DEMO_VA_TEST          = '5ubLZpACTmD8D4';
 
+    const MEDLIFE               = '6knz9sdyiFESCn';
+    const OKCREDIT              = 'BhxjLIZbVWc0AI';
+
     protected static $nodalAccounts = [
         self::NODAL_ACCOUNT,
         self::ATOM_ACCOUNT
@@ -33,6 +36,19 @@ class Account
     protected static $testAccounts = [
         self::DEMO_ACCOUNT,
         self::TEST_ACCOUNT,
+    ];
+
+    /**
+     * This is list of merchants which are used in automation suite. Private
+     * credentials of these merchant are with automation suite allowing later to
+     * make api calls etc. Automation is added as a application for api service i.e.
+     * automation can do white-listed proxy/internal api call as well. Automation
+     * service besides this much wants to restrict its accesses to a set of merchant ids
+     * which it works with- for reasons. This list is used in BasicAuth for the same.
+     */
+    const AUTOMATION_SUITE_MERCHANT_IDS = [
+        '9kmnB8D4KxfyQP',
+        '94tLpgbojcR85O',
     ];
 
     public static function isNodalAccount($id)

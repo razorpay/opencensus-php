@@ -38,7 +38,6 @@ class BankTransfer extends Base
         $this->fees = 0;
         $this->tax  = 0;
     }
-
     /**
      * {@inheritDoc}
      */

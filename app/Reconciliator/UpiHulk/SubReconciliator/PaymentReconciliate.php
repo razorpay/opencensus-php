@@ -28,6 +28,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const SUCCESS = 'SUCCESS';
 
+    const BLACKLISTED_COLUMNS = [
+        self::PAYER_AC_NAME,
+        self::PAYER_VIRTUAL_ADDR,
+    ];
+
     protected function getPaymentId(array $row)
     {
         $npciTxnId = $row[self::UPI_TRANSACTION_ID] ?: null;
@@ -118,16 +123,22 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $npciRefId = $gatewayPayment->getNpciReferenceId();
 
-        if ($npciRefId !== $referenceNumber)
+        if ((empty($npciRefId) === false) and
+            ($npciRefId !== $referenceNumber))
         {
-            $this->trace->info(TraceCode::RECON_INFO_ALERT, [
-                'message'           => 'Npci Reference id is not same as in recon',
-                'payment_id'        => $this->payment->getId(),
-                'payment_status'    => $this->payment->getStatus(),
-                'api_reference1'    => $npciRefId,
-                'recon_reference1'  => $referenceNumber,
-                'gateway'           => $this->gateway
-            ]);
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'message'                   => 'Npci Reference id is not same as in recon',
+                    'info_code'                 => $infoCode,
+                    'payment_id'                => $this->payment->getId(),
+                    'payment_status'            => $this->payment->getStatus(),
+                    'db_reference_number'       => $npciRefId,
+                    'recon_reference_number'    => $referenceNumber,
+                    'gateway'                   => $this->gateway
+                ]);
 
             if ($this->payment->hasBeenAuthorized())
             {

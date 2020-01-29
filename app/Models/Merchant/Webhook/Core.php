@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
+use Mail;
+
 use RZP\Jobs;
 use RZP\Models;
 use RZP\Exception;
@@ -11,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
+use RZP\Mail\Merchant\Webhook as WebhookMail;
 
 class Core extends Base\Core
 {
@@ -75,11 +78,14 @@ class Core extends Base\Core
         array $input,
         Webhook\Entity $webhook)
     {
-        $payload = $input['payload'];
+        $payloads = $input['payloads'] ?? [$input['payload']];
 
-        $data = $this->prepareData($payload, $merchant, $event, $webhook);
+        foreach ($payloads as $payload)
+        {
+            $data = $this->prepareData($payload, $merchant, $event, $webhook);
 
-        $this->dispatchWebhook($data,$event);
+            $this->dispatchWebhook($data,$event);
+        }
     }
 
     protected function prepareData(
@@ -175,5 +181,49 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::STORK_WEBHOOK_MIGRATE_SUMMARY, $summary);
 
         return $summary;
+    }
+
+    /**
+     * Read webhook from id
+     * Then deactivate the webhook and sends a deactivation email to merchant.
+     * @param string $id
+     */
+    public function webhookDeactivate(string $id)
+    {
+        $webhook = $this->repo->webhook->findOrFailPublic($id);
+
+        $this->disableWebhook($webhook);
+
+        $options = [
+            'mode'         => $this->mode,
+            'type'         => 'deactivate',
+        ];
+
+        $this->sendMail($webhook, $options);
+    }
+
+    public function sendMail(Entity $webhook, array $options)
+    {
+        $merchant = $webhook->merchant;
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
+        $merchant = $merchant->toArrayPublic();
+
+        $webhook = $webhook->toArrayPublic();
+
+        $webhookMail = new WebhookMail($webhook, $merchant, $options);
+
+        Mail::queue($webhookMail);
+    }
+
+    protected function disableWebhook(Entity $webhook)
+    {
+        $webhook->deactivate();
+
+        $this->repo->saveOrFail($webhook);
     }
 }

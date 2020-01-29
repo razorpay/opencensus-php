@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
 use RZP\Models\FileStore;
 use RZP\Models\Gateway\File;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
@@ -41,6 +42,13 @@ abstract class Base extends Core
 
         $this->mutex = $this->app['api.mutex'];
         $this->refundCore = new Refund\Core;
+
+        $this->increaseAllowedSystemLimits();
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
     }
 
     /**
@@ -84,6 +92,9 @@ abstract class Base extends Core
     {
         try
         {
+            // Resetting any global variables being used since this is a singleton class
+            $this->resetFileProcessorAttributes();
+
             $entities = $this->repo->useSlave(function ()
             {
                 return $this->fetchEntities();
@@ -124,6 +135,11 @@ abstract class Base extends Core
     {
         $this->gatewayFile = $gatewayFile;
 
+        return $this;
+    }
+
+    public function resetFileProcessorAttributes()
+    {
         return $this;
     }
 

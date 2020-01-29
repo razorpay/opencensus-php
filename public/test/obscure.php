@@ -85,6 +85,7 @@ function disableEmptyInputs(form) {
                 <option value="upi">UPI</option>
                 <option value="emandate">E-Mandate</option>
                 <option value="cardless_emi">Cardless Emi</option>
+                <option value="paylater">PayLater</option>
             </select>
         </td>
     </tr>
@@ -121,11 +122,14 @@ function disableEmptyInputs(form) {
                 <option value="CBIN">CBI</option>
                 <option value="CNRB">Canara Bank</option>
                 <option value="VIJB">Vijaya Bank</option>
+                <option value="UBIN">Union Bank</option>
+                <option value="SCBL">Standard Chartered Bank</option>
                 <option value="CIUB">City union Bank</option>
                 <option value="IDIB">Indian Bank</option>
                 <option value="IBKL">Industrial Development Bank of India</option>
                 <option value="YESB">Yes Bank</option>
                 <option value="SIBL">South Indian Bank</option>
+                <option value="KVBL">Karur Vysya Bank</option>
             </select>
         </td>
     </tr>
@@ -149,6 +153,80 @@ function disableEmptyInputs(form) {
             </select>
         </td>
     </tr>
+<!--    "uncomment below for device parameters testing"-->
+    <tr>
+        <td colspan="40">Device Parameters </td>
+        <td>
+            <select name="device[is_roming]">
+                <option value="false" selected>False</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[carrier_network]">
+                <option value="Idea" selected>Idea</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[carrier_Id]">
+                <option value="hashed_String" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[device_Id]">
+                <option value="hashed_String" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[device_manufacturer]">
+                <option value="OnePlus" selected>OnePlus</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[device_model]">
+                <option value="ONEPLUS_A5000" selected>ONEPLUS_A5000</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[serial_number]">
+                <option value="hashed_String" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[ip_address]">
+                <option value="192.168.14.30" selected>192.168.14.30</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[wifi_ssid]">
+                <option value="hashed_String" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[android_id]">
+                <option value="hashed_String" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[installed_apps]">
+                <option value="s,v,g,t" selected>hashed_String</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[advertising_id]">
+                <option value="250edd01-878f-4f49-b4ba-71b2681440a0" selected>250edd01-878f-4f49-b4ba-71b2681440a0</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[safety_net_cts_profile_match]">
+                <option value="true" selected>True</option>
+            </select>
+        </td>
+        <td>
+            <select name="device[safety_net_basic_integrity]">
+                <option value="true" selected>True</option>
+            </select>
+        </td>
+    </tr>
     <tr>
         <td colspan="40">Select Provider </td>
         <td>
@@ -157,6 +235,9 @@ function disableEmptyInputs(form) {
                 <option value="earlysalary">Earlysalary</option>
                 <option value="flexmoney">Flexmoney</option>
                 <option value="epaylater">EPayLater</option>
+                <option value="getsimpl">Simpl</option>
+                <option value="icic">Icici Paylater</option>
+                <option value="bajajfinserv">Bajaj Finserv</option>
             </select>
         </td>
     </tr>
@@ -243,13 +324,12 @@ function disableEmptyInputs(form) {
         <td colspan='40'>VPA:</td>
         <td><input type="text" name="vpa" size="25" value="nemomobile@imobile" autocomplete="vpa"></td>
     </tr>
-<!--    <tr>-->
-<!--        <td colspan='40'>Account Number:</td>-->
-<!--        <td><input type="text" name="bank_account[account_number]" size="25" value=""></td>-->
-<!--        <td><input type="text" name="bank_account[ifsc]" size="25" value=""></td>-->
-<!--        <td><input type="text" name="bank_account[name]" size="25" value=""></td>-->
-<!--        <td><input type="text" name="bank_account[account_type]" size="25" value="current"></td>-->
-<!--    </tr>-->
+    <tr>
+        <td colspan='40'>Bank Account:</td>
+        <td><input type="text" name="bank_account[account_number]" size="25" value="" placeholder="Account Number"></td>
+        <td><input type="text" name="bank_account[ifsc]" size="25" value="" placeholder="IFSC"></td>
+        <td><input type="text" name="bank_account[name]" size="25" value="" placeholder="Name"></td>
+    </tr>
 <!--    <tr>-->
 <!--        <td colspan='40'>Token recurring:</td>-->
 <!--        <td><input type="text" name="recurring_token[max_amount]" size="25" value="20000"></td>-->
@@ -263,7 +343,7 @@ function disableEmptyInputs(form) {
                 <option value="pin">Card - PIN</option>
                 <option value="skip">Card - SKIP</option>
                 <option value="otp">Card - OTP</option>
-                <option value="aadhaar">eMandate - Aadhaar</option>
+                <option value="debitcard">eMandate - Debit Card</option>
                 <option value="netbanking">eMandate - Netbanking</option>
             </select>
         </td>
@@ -315,7 +395,12 @@ function disableEmptyInputs(form) {
 
 <form name ="refund" method="post" action="//<?=$private_url?>/payments/">
 <input type="text" id="refund_id" placeholder="Enter payment id to refund"/>
-<input type="text" id="amount" name="amount" value="100"/><input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
+<input type="text" id="amount" name="amount" value="100"/>
+<select name="speed">
+    <option value="normal">Normal</option>
+    <option value="optimum">Optimum</option>
+</select>
+<input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
 </form>
 </div>
 </div>

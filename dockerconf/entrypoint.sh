@@ -27,7 +27,6 @@ configure(){
   $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
   echo "copying apache config"
   cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
-
   ## Enable newrelic only for prod and perf
   if [[ "${APP_MODE}" == "prod" ]] || [[ "${APP_MODE}" == "perf" ]]; then
     $ALOHOMORA_BIN cast --region ap-south-1 --env "$APP_MODE" --app api "dockerconf/newrelic.ini.j2"
@@ -46,15 +45,23 @@ configure_dark(){
     echo QUEUE_DRIVER=sync >> ./environment/.env.production
     echo SLACK_QUEUE_DRIVER=sync >> ./environment/.env.production
     echo "MOZART_URL=\"https://mozart-dark.razorpay.com/\"" >> ./environment/.env.production
+    echo "MOZART_TEST_URL=\"https://mozart-dark.razorpay.com/\"" >> ./environment/.env.production
+    echo "MOZART_LIVE_URL=\"https://mozart-dark.razorpay.com/\"" >> ./environment/.env.production
     echo "SCROOGE_URL=\"https://scrooge-dark.razorpay.com/v1/\"" >> ./environment/.env.production
     echo "CORE_PAYMENT_SERVICE_LIVE_URL=\"https://cps-dark-live.razorpay.com/v1/\"" >> ./environment/.env.production
     echo "CORE_PAYMENT_SERVICE_TEST_URL=\"https://cps-dark-test.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "CARD_PAYMENT_SERVICE_LIVE_URL=\"https://payments-card-dark.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "CARD_PAYMENT_SERVICE_TEST_URL=\"https://payments-card-test-dark.razorpay.com/v1/\"" >> ./environment/.env.production
+    echo "NBPLUS_PAYMENT_SERVICE_LIVE_URL=\"https://payments-nbplus-dark.razorpay.com/\"" >> ./environment/.env.production
+    echo "NBPLUS_PAYMENT_SERVICE_TEST_URL=\"https://payments-nbplus-test-dark.razorpay.com/\"" >> ./environment/.env.production
     echo "CHECKOUT_URL=\"https://checkout-dark.razorpay.com\"" >> ./environment/.env.production
 }
 
 run_migration_job(){
     cd /app
     php artisan migrate --database=live_migration --force && php artisan migrate --database=test_migration --force
+    php artisan migrate --database=payments_upi_live --path=database/migrations/payments_upi --force
+    php artisan migrate --database=payments_upi_test --path=database/migrations/payments_upi --force
 }
 
 start_apache(){
@@ -107,6 +114,13 @@ main() {
     batch_id=$3
     mode=$4
     php artisan "${command}" "${batch_id}" "${mode}"
+  elif [[ "${app_type}" == "merchantInvoice-job" ]]; then
+    echo "Starting K8s Job"
+    command=$2
+    mode=$3
+    year=$4
+    month=$5
+    php artisan "${command}" "${mode}" "${year}" "${month}"
   elif [[ "${app_type}" == "sqs" ]]; then
     sleep_time=$2
     #['sqs', '10']

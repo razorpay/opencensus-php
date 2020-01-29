@@ -191,4 +191,23 @@ class Scrooge extends BaseScrooge
                 "updated_at": 1537266043
             }');
     }
+
+    public function getInstantRefundsMode(string $merchantId, array $params): array
+    {
+        return json_decode('{
+            "mode": "IMPS"
+        }', true);
+    }
+
+    public function getFileBasedRefunds(array $input): array
+    {
+        $scroogeResponse = [
+            'code'     => 200,
+            'body'     => [
+                'data' => [],
+            ],
+        ];
+
+        return $scroogeResponse;
+    }
 }

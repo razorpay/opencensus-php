@@ -605,7 +605,7 @@ class Repository extends Base\Repository
         // INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
         // INNER JOIN `terminals` ON `payments`.`terminal_id` = `terminals`.`id`
         // WHERE `refunds`.`created_at` >= $from
-        //   AND `refunds`.`created_at` < $to
+        //   AND `refunds`.`created_at` <= $to
         //   AND `payments`.`bank` = $gatewayCode
         //   AND `refunds`.`gateway` = $gateway
 
@@ -879,6 +879,14 @@ class Repository extends Base\Repository
                       });
 
         return $query->get();
+    }
+
+    public function findByPaymentIdAndReference3(string $paymentId, int $seqNo)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Refund\Entity::REFERENCE3, '=', $seqNo)
+                    ->firstOrFailPublic();
     }
 
     /**

@@ -7,9 +7,7 @@ use Mail;
 use Cache;
 use Config;
 use Carbon\Carbon;
-
 use Razorpay\Trace\Logger as Trace;
-
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -72,6 +70,42 @@ class Beneficiary extends Base\Core
      */
     public function enqueueForBeneficiaryRegistration(Base\Entity $account, $accountType = FundAccountType::BANK_ACCOUNT)
     {
+        $key = 'fts_razorx_beneficiary_register_' . strtolower($accountType . '_' . $account->getType());
+
+        $traceData = [
+            'key' => $key,
+            'account_type' => $accountType,
+            'type' => $account->getType(),
+        ];
+
+        try
+        {
+            $this->trace->info(TraceCode::FTS_BENEFICIARY_REGISTER_RAZORX_INIT, $traceData);
+
+            $shouldDoBeneReg = $this->app->razorx->getTreatment(
+                $account->getMerchantId(),
+                $key,
+                $this->mode
+            );
+
+            $traceData ['should_do_bene_registration'] = $shouldDoBeneReg;
+
+            $this->trace->info(TraceCode::FTS_BENEFICIARY_REGISTER_RAZORX_COMPLETE, $traceData);
+
+            // Return if Razorx bene registration experiment is off
+            if (strtolower($shouldDoBeneReg) === 'off')
+            {
+                return;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FAILED_TO_GET_TREATMENT_FOR_REGISTER_BENEFICIARY, $traceData);
+        }
+
         $isValidType = $this->isValidBeneficiaryRegistrationType($account, $accountType);
 
         // We don't have to register beneficiary for the bank account created in test mode.
@@ -453,7 +487,7 @@ class Beneficiary extends Base\Core
                 'to'   => $endTime
             ]);
 
-        return $this->repo->bank_account->getMerchantBankAccountsBetweenTimestamp($startTime, $endTime);
+        return $this->repo->bank_account->getBankAccountsBetweenTimestamp($startTime, $endTime);
     }
 
     /**

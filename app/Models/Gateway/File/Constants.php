@@ -43,9 +43,20 @@ class Constants
     const CITI             = 'citi';
     const CBI              = 'cbi';
     const SIB              = 'sib';
+    const FIRST_DATA       = 'first_data';
     const SBIN             = 'sbin';
+    const KVB              = 'kvb';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
+
+    const PAPER_NACH_CITI       = 'paper_nach_citi';
+
+    /**
+     * Scrooge file based refunds related constants
+     */
+    const QUERY_LIMIT              = 50000;
+    const SCROOGE_MAX_ATTEMPTS     = 1;
+    const FETCH_FROM_SCROOGE_COUNT = 500;
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -56,7 +67,6 @@ class Constants
             self::ICICI,
             self::IBK,
             self::CSB,
-            self::CBI,
             self::ALLA,
             self::ISG,
             self::HDFC_EMANDATE,
@@ -94,6 +104,9 @@ class Constants
             self::CUB,
             self::IDBI,
             self::SBIN,
+            self::CBI,
+            self::KVB,
+            self::SCBL,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -106,6 +119,13 @@ class Constants
             self::SBI,
             self::ENACH_NPCI_NETBANKING,
         ],
+        Type::NACH_DEBIT => [
+            self::PAPER_NACH_CITI,
+        ],
+        Type::NACH_REGISTER => [
+            self::PAPER_NACH_CITI,
+        ],
+
         Type::REFUND_FAILED => [
             'All',
             self::UPI_ICICI,
@@ -117,6 +137,9 @@ class Constants
             self::HDFC_FSS,
             self::AXIS_CYBERSOURCE,
         ],
+        Type::PARESDATA => [
+           self::FIRST_DATA,
+        ],
     ];
 
     const TYPE_SENDER_MAPPING = [
@@ -126,7 +149,10 @@ class Constants
         Type::EMI               => MailConstants::MAIL_ADDRESSES[MailConstants::EMI],
         Type::EMANDATE_REGISTER => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::EMANDATE_DEBIT    => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
+        Type::NACH_DEBIT        => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
+        Type::NACH_REGISTER     => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
+        Type::PARESDATA         => MailConstants::MAIL_ADDRESSES[MailConstants::GATEWAY_POD],
     ];
 
     const RECIPIENTS_MAP = [
@@ -162,6 +188,9 @@ class Constants
             self::CUB         => ['cub.netbanking.refunds@razorpay.com'],
             self::IDBI        => ['idbi.netbanking.refunds@razorpay.com'],
             self::SBIN        => ['sbi.netbanking.refunds@razorpay.com'],
+            self::CBI         => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::KVB         => ['kvb.netbanking.refunds@razorpay.com'],
+            self::SCBL        => ['scb.netbanking.claims@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
@@ -178,7 +207,15 @@ class Constants
             self::SBI                   => [''],
         ],
 
-        Type::EMI => [
+        Type::NACH_DEBIT => [
+            self::PAPER_NACH_CITI                  => [''],
+        ],
+
+        Type::NACH_REGISTER => [
+            self::PAPER_NACH_CITI                  => [''],
+        ],
+
+            Type::EMI => [
             self::AXIS     => ['axiscards.emi@razorpay.com'],
             self::INDUSIND => ['indusind.emi@razorpay.com'],
             self::KOTAK    => ['kotakcards.emi@razorpay.com'],
@@ -200,5 +237,13 @@ class Constants
             self::AXIS_CYBERSOURCE => ['supportteam@razorpay.com'],
             self::HDFC_FSS         => ['supportteam@razorpay.com'],
         ],
+
+        Type::PARESDATA => [
+            self::FIRST_DATA    => [''],
+        ],
+    ];
+
+    const ASYNC_GATEWAYS = [
+        self::SBIN
     ];
 }

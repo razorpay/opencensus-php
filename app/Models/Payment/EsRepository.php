@@ -11,28 +11,14 @@ class EsRepository extends Base\EsRepository
         Entity::ID,
         Entity::MERCHANT_ID,
         Entity::NOTES,
+        Entity::RECURRING,
         Entity::CREATED_AT,
     ];
 
-    public function buildQueryForNotes(array & $query, string $value)
+    public function buildQueryForRecurring(array & $query, string $value)
     {
-        //
-        // - Notes search is again on an specific object (unlike 'q') and so
-        //   we give boost of 2.
-        // - The query construct is same as above (for 'q') but the fields here
-        //   are all keys of notes object (denoted as notes.*).
-        //
+        $queryValue = (($value === '1') or ($value === true)) ? true : false;
 
-        $clause = [
-            Es::MULTI_MATCH => [
-                Es::QUERY                => $value,
-                Es::TYPE                 => Es::BEST_FIELDS,
-                Es::FIELDS               => 'notes.*',
-                Es::BOOST                => 2,
-                Es::MINIMUM_SHOULD_MATCH => '100%',
-            ],
-        ];
-
-        $this->addMust($query, $clause);
+        $this->addTermFilter($query, Entity::RECURRING, $queryValue);
     }
 }

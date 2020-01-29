@@ -6,8 +6,9 @@ use Carbon\Carbon;
 use RZP\Models\Pricing;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\RefundSource;
-use RZP\Models\Payment\Refund\Speed as RefundSpeed;
+use RZP\Models\Transaction\ReconciledType;
 
 class Refund extends Base
 {
@@ -20,6 +21,11 @@ class Refund extends Base
 
     public function fillDetails()
     {
+        if ($this->source->isRefundSpeedInstant() === true)
+        {
+            $this->txn->setFeeModel($this->txn->merchant->getFeeModel());
+        }
+
         $amount = $this->source->getBaseAmount();
 
         $this->txn->setAmount($amount);
@@ -37,22 +43,39 @@ class Refund extends Base
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
 
-        $this->repo->saveOrFail($this->txn);
+        $this->checkAndSetTxnReconciliation();
 
-        $this->dispatchForSettlementBucketing($this->txn, $settledAt);
+        $this->repo->saveOrFail($this->txn);
+    }
+
+    protected function checkAndSetTxnReconciliation()
+    {
+        if ($this->source->getGateway() === Gateway::WALLET_OPENWALLET)
+        {
+            $this->txn->setReconciledAt(time());
+
+            $this->txn->setReconciledType(ReconciledType::NA);
+        }
     }
 
     protected function getSettledAtTimestampForRefund()
     {
         $payment = $this->source->payment;
+        $refund  = $this->source;
+
+        $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         if ($payment->hasBeenCaptured())
         {
             $paymentTxn = $payment->transaction;
 
-            $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
-
             return ($paymentTxn->isSettled() ? $nowTimestamp : $paymentTxn->getSettledAt());
+        }
+
+        if (($payment->isAuthorized() === true) and
+            ($refund->isDirectSettlementWithoutRefund() === true))
+        {
+            return $nowTimestamp;
         }
 
         return null;
@@ -63,20 +86,31 @@ class Refund extends Base
         $payment = $this->source->payment;
         $refund  = $this->source;
 
-        if (($payment->isAuthorized() === true) and
-            ($refund->isDirectSettlementWithoutRefund() === false))
+        if ($payment->isCaptured() === true)
         {
-            return false;
+            return true;
         }
 
-        return true;
+        if (($payment->isAuthorized() === true) and
+            ($refund->isDirectSettlementWithoutRefund() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getNetAmount()
     {
         $refund = $this->source;
 
-        $netAmount = $refund->getBaseAmount() + $this->fees;
+        $netAmount = $refund->getBaseAmount();
+
+        if (($refund->isRefundSpeedInstant() === true) and
+            ($this->txn->isPostpaid() !== true))
+        {
+            $netAmount += $this->fees;
+        }
 
         //
         // Net amount is 0, only in a single case when payment's settledby is not razorpay and

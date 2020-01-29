@@ -115,7 +115,7 @@ abstract class RowProcessor extends Base\Core
 
         $customProperties = [
             'channel'                           => $this->reconEntity->getChannel(),
-            'purpose'                           => $this->reconEntity->getPurpose(),
+            'fund_transfer_attempt_purpose'     => $this->reconEntity->getPurpose(),
             'fund_transfer_attempt_id'          => $this->reconEntity->getId(),
             'utr'                               => $utr,
             'batch_fund_transfer_attempt_id'    => $batchFtaId,
@@ -123,7 +123,7 @@ abstract class RowProcessor extends Base\Core
             'fund_transfer_attempt_mode'        => $this->reconEntity->getMode(),
             'fund_transfer_attempt_status'      => $this->reconEntity->getStatus(),
             'source_id'                         => $this->reconEntity->getSourceId(),
-            'reconcile_file'                    => $this->reconcileFile,
+            'reconcile_file_name'               => $this->reconcileFile,
         ];
 
         $this->app['diag']->trackSettlementEvent(
@@ -293,15 +293,6 @@ abstract class RowProcessor extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
-
-            $alerts = new Alerts();
-
-            $slackData = $ftaData + [
-                'headLine' => 'fta source processing failed',
-                'error'    => $e->getMessage(),
-            ];
-
-            $alerts->notifySlack($slackData, Alerts::ALERT);
         }
     }
 

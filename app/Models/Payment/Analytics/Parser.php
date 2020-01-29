@@ -68,6 +68,12 @@ class Parser extends Base\Core
         Entity::RISK_ENGINE           => 'risk_engine',
     ];
 
+    protected static $defaults = [
+        Entity::PLATFORM_VERSION => null,
+        Entity::PLATFORM         => null,
+        Entity::INTEGRATION      => null,
+    ];
+
     protected function init()
     {
         $this->request = $this->app['request'];
@@ -292,11 +298,15 @@ class Parser extends Base\Core
             {
                 $metadataKey = self::$map[$key];
 
+                $functionName = 'set' . studly_case($key);
+
                 if (empty($metadata[$metadataKey]) === false)
                 {
-                    $functionName = 'set' . studly_case($key);
-
                     $log->$functionName($metadata[$key]);
+                }
+                else if (array_key_exists($key, self::$defaults) === true)
+                {
+                    $log->$functionName(self::$defaults[$key]);
                 }
             }
         }

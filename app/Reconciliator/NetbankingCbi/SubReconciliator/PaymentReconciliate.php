@@ -11,6 +11,8 @@ use RZP\Gateway\Mozart\NetbankingCbi\ReconFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    const BLACKLISTED_COLUMNS = [];
+
     protected function getPaymentId(array $row)
     {
         return $row[ReconFields::PAYMENT_ID] ?? null;
@@ -65,7 +67,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $data = json_decode($gatewayPayment['raw'], true);
 
-        $dbReferenceNumber = $data['bank_payment_id'];
+        $dbReferenceNumber = $data['bank_payment_id'] ?? null;
 
         //
         // Sometimes we have db reference number saved as string 'null'.
@@ -77,10 +79,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             ($dbReferenceNumber !== 'null') and
             ($dbReferenceNumber !== $referenceNumber))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
                     'amount'                    => $this->payment->getAmount(),

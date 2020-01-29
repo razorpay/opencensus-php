@@ -2,11 +2,13 @@
 
 namespace RZP\Services;
 
-use RZP\Models\Merchant;
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use Maclof\Kubernetes\Client;
 use Maclof\Kubernetes\Models\Job;
 use RZP\Models\Batch as BatchModel;
+use RZP\Models\Merchant\Invoice\Core;
 use RZP\Services\Batch as BatchService;
 
 class KubernetesClient
@@ -42,6 +44,11 @@ class KubernetesClient
 
     protected $merchant;
 
+    /**
+     * Constants to use
+     */
+    const INVOICE = 'invoice';
+
     const NODE_SELECTOR_HITACHI = 'node-role.kubernetes.io/worker-hitachi-queue';
 
     protected $batchNodePreference = [
@@ -52,16 +59,18 @@ class KubernetesClient
      * Maintains the cpu request based on batch type
      * @var array
      */
-    protected $batchNodeCpuRequest = [
+    protected $nodeCpuRequest = [
         BatchModel\Type::RECONCILIATION => '200m',
+        self::INVOICE                   => '100m'
     ];
 
     /**
      * Maintains the memory request based on batch type
      * @var array
      */
-    protected $batchNodeMemoryRequest = [
+    protected $nodeMemoryRequest = [
         BatchModel\Type::RECONCILIATION => '1024Mi',
+        self::INVOICE                   => '150Mi'
     ];
 
     public function __construct($app)
@@ -107,7 +116,14 @@ class KubernetesClient
 
     }
 
-    public function createJob(string $mode, string $batchId, array $params, string $batchType = null)
+    /**
+     * @param string $mode
+     * @param string $batchId
+     * @param array $params
+     * @param string|null $batchType
+     * @return bool
+     */
+    public function createJob(string $mode, string $batchId, array $params, string $batchType = null) : bool
     {
         try
         {
@@ -118,7 +134,7 @@ class KubernetesClient
                 $batchService = new BatchService();
                 $batchService->process($batchId, $mode, $params);
 
-                return;
+                return true;
             }
 
             // Selecting node selector
@@ -152,13 +168,11 @@ class KubernetesClient
 
             if ($this->client->jobs()->exists($job->getMetadata('name')))
             {
-
                 $this->trace->error(
                     TraceCode::KUBERNETES_BATCH_JOB_EXISTS,
                     [
                         BatchModel\Entity::ID   => $batchId,
                     ]);
-
             }
             else
             {
@@ -170,6 +184,8 @@ class KubernetesClient
                         BatchModel\Entity::ID   => $batchId,
                         'kubernetes_response'   => $response,
                     ]);
+
+                return true;
             }
 
         }
@@ -184,6 +200,67 @@ class KubernetesClient
                 ]);
         }
 
+        return false;
+    }
+
+    public function createInvoiceJob(string $mode, $year, $month)
+    {
+        try
+        {
+            if ($this->mock === true)
+            {
+                (new Core)->processMerchantInvoice($mode, $year, $month);
+
+                return;
+            }
+
+            // Create Job Spec
+            $jobSpec = $this->generateInvoiceJobSpec($mode, $year, $month);
+
+            $job = new Job($jobSpec);
+
+            $this->client = new Client([
+                'master'  => $this->masterUrl,
+                'ca_cert' => $this->caCert,
+                'token'   => $this->token,
+            ]);
+
+            // Set Namespace if provided
+            if (($this->namespace !== null) and (file_exists($this->namespace) === true))
+            {
+                $this->trace->info(
+                    TraceCode::KUBERNETES_INVOICE_JOB_NAMESPACE,
+                    [
+                        'mode'           => $mode,
+                        'year'           => $year,
+                        'month'          => $month,
+                        'namespace'      => file_get_contents($this->namespace),
+                    ]);
+
+                $this->client->setNamespace(file_get_contents($this->namespace));
+            }
+
+            if ($this->client->jobs()->exists($job->getMetadata('name')))
+            {
+                $this->trace->error(TraceCode::KUBERNETES_INVOICE_JOB_EXISTS);
+            }
+            else
+            {
+                $response = $this->client->jobs()->create($job);
+
+                $this->trace->info(TraceCode::KUBERNETES_INVOICE_JOB_CREATED,
+                    [
+                        'kubernetes_response'   => $response,
+                    ]);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::KUBERNETES_INVOICE_JOB_ERROR);
+        }
     }
 
     private function generateJobSpec(string $mode, string $batchId, array $params, string $batchType = null)
@@ -196,9 +273,9 @@ class KubernetesClient
 
         $this->nodeSelector = $params['node_selector'] ?? $this->nodeSelector;
 
-        $cpuRequest = $this->batchNodeCpuRequest[$batchType] ?? '100m';
+        $cpuRequest = $this->nodeCpuRequest[$batchType] ?? '100m';
 
-        $memoryRequest = $this->batchNodeMemoryRequest[$batchType] ?? '150Mi';
+        $memoryRequest = $this->nodeMemoryRequest[$batchType] ?? '150Mi';
 
         $jobSpec = [
             'metadata' => [
@@ -302,4 +379,119 @@ class KubernetesClient
         return $jobSpec;
     }
 
+    private function generateInvoiceJobSpec(string $mode, $year, $month)
+    {
+        $currentTime = Carbon::now(Timezone::IST)->getTimeStamp();
+
+        $metaName = strtolower('batch-' . 'merchantInvoice' . $currentTime);
+
+        $dockerImage = $this->getDockerImage();
+
+        $this->nodeSelector = $params['node_selector'] ?? $this->nodeSelector;
+
+        $cpuRequest = $this->nodeCpuRequest[self::INVOICE] ?? '100m';
+
+        $memoryRequest = $this->nodeMemoryRequest[self::INVOICE] ?? '150Mi';
+
+        $jobSpec = [
+            'metadata' => [
+                'name' => $metaName,
+                'labels' => [
+                    'name' => 'batch-job',
+                ]
+            ],
+            'spec' => [
+                'template' => [
+                    'metadata' => [
+                        'labels' => [
+                            'name' => 'batch-job',
+                        ],
+                        'annotations' => [
+                            'iam.amazonaws.com/role' => $this->iamRole,
+                            'k8s.rzp.io/logger' => 'efk',
+                            'k8s.rzp.io/logs' => 'true',
+                            'batch_job_type' => $batchType ?? '',
+                        ]
+                    ],
+                    'spec' => [
+                        'containers' => [
+                            [
+                                'envFrom' => [
+                                    [
+                                        'secretRef' => [
+                                            'name' => 'aws-secret'
+                                        ]
+                                    ]
+                                ],
+                                'env' => [
+                                    [
+                                        'name' => 'APP_MODE',
+                                        'value' => $this->appMode
+                                    ]
+                                ],
+                                'name'  => 'batch',
+                                'image' => $dockerImage,
+                                'resources' => [
+                                    'requests' => [
+                                        'cpu' => $cpuRequest,
+                                        'memory' => $memoryRequest
+                                    ],
+                                    'limits' => [
+                                        'cpu' => '500m',
+                                        'memory' => '2048Mi'
+                                    ]
+                                ],
+                                'livenessProbe' => [
+                                    'exec' => [
+                                        'command' => ["cat", $this->commitFilePath]
+                                    ],
+                                    'initialDelaySeconds' => 180,
+                                    'periodSeconds' => 2,
+                                    'successThreshold' => 1
+                                ],
+                                'readinessProbe' => [
+                                    'exec' => [
+                                        'command' => ["cat", $this->commitFilePath]
+                                    ],
+                                    'initialDelaySeconds' => 180,
+                                    'periodSeconds' => 2,
+                                    'successThreshold' => 1
+                                ],
+                                'imagePullPolicy' => 'IfNotPresent',
+                                'args' => ["merchantInvoice-job", "merchantinvoice:process", $mode, $year, $month],
+                                'backoffLimit' => 4,
+                                'volumeMounts' => [
+                                    [
+                                        'name' => 'trace',
+                                        'mountPath' => '/app/storage/logs/'
+                                    ]
+                                ],
+                            ],
+                        ],
+                        'volumes' => [
+                            [
+                                'name' => 'trace',
+                                'hostPath' => [
+                                    'path' => $this->logPath,
+                                    'type' => '',
+                                ]
+                            ]
+                        ],
+                        'restartPolicy' => 'Never',
+                        'dnsPolicy' => 'Default',
+                        'nodeSelector' => [
+                            $this->nodeSelector => ''
+                        ],
+                        'imagePullSecrets' => [
+                            [
+                                'name' => 'registry',
+                            ]
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        return $jobSpec;
+    }
 }

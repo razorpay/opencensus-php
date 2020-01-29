@@ -5,9 +5,12 @@ namespace RZP\Models\BankingAccount;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\BankingAccount\State;
+use RZP\Models\Base\PublicCollection;
 
 /**
- * @property Merchant\Entity     $merchant
+ * @property Merchant\Entity            $merchant
+ * @property Merchant\Balance\Entity    $balance
  */
 class Entity extends Base\PublicEntity
 {
@@ -75,8 +78,14 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER_LENGTH             = 40;
     const ACCOUNT_IFSC_LENGTH               = 11;
 
+    // TODO: move username, password, reference1 to banking_account_details
+    // JIRA ticket: https://razorpay.atlassian.net/browse/RX-608
+
+    // for rbl this is ldap id
     const USERNAME                          = 'username';
+    // for rbl this is ldap password
     const PASSWORD                          = 'password';
+    // For rbl this is the corp_id
     const REFERENCE1                        = 'reference1';
 
     const ACCOUNT_TYPE                      = 'account_type';
@@ -87,6 +96,11 @@ class Entity extends Base\PublicEntity
 
     const PINCODES      = 'pincodes';
     const ACTION        = 'action';
+
+    const DETAILS       = 'details';
+
+    // Relation Constants
+    const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
 
     protected $entity = 'banking_account';
 
@@ -159,6 +173,17 @@ class Entity extends Base\PublicEntity
         self::BANK_INTERNAL_REFERENCE_NUMBER,
         self::MERCHANT,
         self::INTERNAL_COMMENT,
+        self::BANKING_ACCOUNT_DETAILS,
+        //
+        // This has been added so that banking_account_details
+        // relations can be fetched on admin auth.
+        // For some reason admin auth expects the relations to be
+        // present in visible array as camel cased.
+        // For proxy auth this is not required, having snake cased
+        // 'banking_account_details' works fine
+        //
+        'bankingAccountDetails',
+        self::PASSWORD,
     ];
 
     protected $public = [
@@ -177,8 +202,17 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
-        self::USERNAME,
         self::PINCODE,
+        self::BANKING_ACCOUNT_DETAILS,
+    ];
+
+    protected $relations = [
+        self::BANKING_ACCOUNT_DETAILS,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::BANKING_ACCOUNT_DETAILS
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -305,9 +339,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_MOBILE);
     }
 
+    public function getInternalReferenceNumber()
+    {
+        return $this->getAttribute(self::BANK_INTERNAL_REFERENCE_NUMBER);
+    }
+
     public function getBeneficiaryAddress1()
     {
         return $this->getAttribute(self::BENEFICIARY_ADDRESS1);
+    }
+
+    public function getBeneficiaryAddress2()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS2);
+    }
+
+    public function getBeneficiaryAddress3()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS3);
+    }
+
+    public function getBeneficiaryPin()
+    {
+        return $this->getAttribute(self::BENEFICIARY_PIN);
     }
 
     public function getBeneficiaryCountry()
@@ -340,14 +394,30 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PASSWORD);
     }
 
+    public function isAlreadyActivated()
+    {
+        return ($this->isAttributeNotNull(self::ACCOUNT_ACTIVATION_DATE));
+    }
+
     public function getReference1()
     {
         return $this->getAttribute(self::REFERENCE1);
     }
 
-    public function isAlreadyActivated()
+    public function getBankInternalStatus()
     {
-        return ($this->isAttributeNotNull(self::ACCOUNT_ACTIVATION_DATE));
+        return $this->getAttribute(self::BANK_INTERNAL_STATUS);
+    }
+
+    public function getDetailsDataUsingKey($key)
+    {
+        return $this->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY, $key)
+                                             ->value(Detail\Entity::GATEWAY_VALUE);
+    }
+
+    public function getPincode()
+    {
+        return $this->getAttribute(self::PINCODE);
     }
 
     // --------------------------- Relations ---------------------------------- //
@@ -360,6 +430,38 @@ class Entity extends Base\PublicEntity
     public function balance()
     {
         return $this->belongsTo(Balance\Entity::class);
+    }
+
+    public function activationStates()
+    {
+        return $this->hasMany('\RZP\Models\BankingAccount\State\Entity');
+    }
+
+    /**
+     * This function is used for getting the activation status change log of a banking account
+     * @param Entity $bankingAccount
+     *
+     * @return PublicCollection
+     */
+    public function getActivationStatusChangeLog(): PublicCollection
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT)
+                    ->get();
+    }
+    public function bankingAccountDetails()
+    {
+        return $this->hasMany(Detail\Entity::class, Detail\Entity::BANKING_ACCOUNT_ID, self::ID);
+    }
+
+    // ----------------------- Public setters ---------------------------------
+
+    public function setPublicBankingAccountDetailsAttribute(array & $array)
+    {
+        if (app('basicauth')->isAdminAuth() === false)
+        {
+            unset($array[self::BANKING_ACCOUNT_DETAILS]);
+        }
     }
 
     protected function isChannelYesbank()

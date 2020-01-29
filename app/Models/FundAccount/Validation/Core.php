@@ -3,15 +3,17 @@
 namespace RZP\Models\FundAccount\Validation;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use Razorpay\Trace\Logger;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
 
 class Core extends Base\Core
@@ -170,7 +172,7 @@ class Core extends Base\Core
      */
     protected function createOrGetFundAccount(array $input, Merchant\Entity $merchant): FundAccount\Entity
     {
-        assertTrue(isset($input['fund_account']) === true);
+        $this->fundAccountCore->modifyRequestForBackwardCompatibility($input['fund_account']);
 
         try
         {
@@ -190,8 +192,9 @@ class Core extends Base\Core
     }
 
     /**
-     * @param array $input
+     * @param array           $input
      * @param Merchant\Entity $merchant
+     *
      * @return Entity
      */
     protected function createValidationEntity(array $input, Merchant\Entity $merchant): Entity
@@ -204,6 +207,8 @@ class Core extends Base\Core
 
             $validation->associateFundAccount($fundAccount);
 
+            $this->runInputValidations($validation, $input);
+
             $processor = Processor\Factory::get($validation);
 
             $processor->setDefaultValuesForValidation();
@@ -212,38 +217,88 @@ class Core extends Base\Core
             // it is assumed that source already exist.
             $this->repo->saveOrFail($validation);
 
-            $this->verifyFeesLessThanApplicableBalance($validation, $merchant);
+            $txn = $this->createTransactionIfApplicable($validation, $merchant, $processor);
 
-            // Transaction might fail because of concurrent request verifying and changing balance at the same time.
-            try
+            if ($txn !== null)
             {
-                $txn = $processor->createTransaction();
+                $validation->setFees($txn->getFee());
+                $validation->setTax($txn->getTax());
+
+                $this->repo->saveOrFail($validation);
             }
-            catch (Exception\LogicException $e)
-            {
-                if ($e->getMessage() === 'Something very wrong is happening! Balance is going negative')
-                {
-                    $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_INITIATED, $e->getData());
-
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
-                        null,
-                        null);
-                }
-
-                throw $e;
-            }
-
-            $validation->setFees($txn->getFee());
-
-            $validation->setTax($txn->getTax());
-
-            $this->repo->saveOrFail($validation);
 
             return $validation;
         });
 
         return $validation;
+    }
+
+    /**
+     * @param Entity $validation
+     * @param array  $input
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function runInputValidations(Entity $validation, array $input)
+    {
+        $type = $validation->fundAccount->account->getEntityName();
+
+        Processor\Factory::validate($type);
+
+        // Extra checks are not required for non banking, create rules are sufficient
+        if ($validation->balance->isTypeBanking() === false)
+        {
+            return;
+        }
+
+        $accountType = $validation->fundAccount->getAccountType();
+
+        $validationRuleName = Product::BANKING . '_' . $accountType;
+
+        (new Validator($validation))->validateInput($validationRuleName, $input);
+    }
+
+    /**
+     * @param Entity          $validation
+     * @param Merchant\Entity $merchant
+     * @param Processor\Base  $processor
+     *
+     * @return \RZP\Models\Transaction\Entity|null
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    protected function createTransactionIfApplicable(Entity $validation,
+                                                     Merchant\Entity $merchant,
+                                                     Processor\Base $processor)
+    {
+        if ($validation->getFundAccountType() === FundAccount\Type::VPA)
+        {
+            return null;
+        }
+
+        $this->verifyFeesLessThanApplicableBalance($validation, $merchant);
+
+        // Transaction might fail because of concurrent request verifying and changing balance at the same time.
+        try
+        {
+            $txn = $processor->createTransaction();
+        }
+        catch (Exception\LogicException $e)
+        {
+            if ($e->getMessage() === 'Something very wrong is happening! Balance is going negative')
+            {
+                $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_INITIATED, $e->getData());
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
+                    null,
+                    null);
+            }
+
+            throw $e;
+        }
+
+        return $txn;
     }
 
     /**
@@ -300,6 +355,12 @@ class Core extends Base\Core
         $processor->updateStatusAfterFtaRecon($input);
     }
 
+    /**
+     * @param Entity          $validation
+     * @param Merchant\Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
     private function verifyFeesLessThanApplicableBalance(Entity $validation, Merchant\Entity $merchant)
     {
         if ($merchant->getFeeModel() === Merchant\FeeModel::POSTPAID)
@@ -327,6 +388,7 @@ class Core extends Base\Core
         {
             return;
         }
+
         throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
                 null,
@@ -339,9 +401,12 @@ class Core extends Base\Core
 
     public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
-        $entity->setFTSTransferId($ftsTransferId);
+        if (empty($ftsTransferId) === false)
+        {
+            $entity->setFTSTransferId($ftsTransferId);
 
-        $this->repo->saveOrFail($entity);
+            $this->repo->saveOrFail($entity);
+        }
     }
 
     protected function associateBalance(Entity $fundAccValidation, array $input)

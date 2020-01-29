@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\AccessMap;
 use RZP\Constants as AppConstants;
 
 class Entity extends PublicEntity
@@ -17,6 +18,7 @@ class Entity extends PublicEntity
     const REVISIT_AT              = 'revisit_at';
     const ORIGIN_TYPE             = 'origin_type';
     const ENTITY_TYPE             = 'entity_type';
+    const TDS_PERCENTAGE          = 'tds_percentage';
     const DEFAULT_PLAN_ID         = 'default_plan_id';
     const IMPLICIT_PLAN_ID        = 'implicit_plan_id';
     const EXPLICIT_PLAN_ID        = 'explicit_plan_id';
@@ -24,8 +26,12 @@ class Entity extends PublicEntity
     const SETTLE_TO_PARTNER       = 'settle_to_partner';
     const IMPLICIT_EXPIRY_AT      = 'implicit_expiry_at';
     const COMMISSIONS_ENABLED     = 'commissions_enabled';
+    const HAS_GST_CERTIFICATE     = 'has_gst_certificate';
     const EXPLICIT_REFUND_FEES    = 'explicit_refund_fees';
     const EXPLICIT_SHOULD_CHARGE  = 'explicit_should_charge';
+    const DEFAULT_PAYMENT_METHODS = 'default_payment_methods';
+
+    const DEFAULT_TDS_PERCENTAGE  = 500;
 
     protected $entity             = AppConstants\Entity::PARTNER_CONFIG;
 
@@ -38,9 +44,12 @@ class Entity extends PublicEntity
         self::COMMISSION_MODEL,
         self::IMPLICIT_EXPIRY_AT,
         self::COMMISSIONS_ENABLED,
+        self::DEFAULT_PAYMENT_METHODS,
         self::EXPLICIT_REFUND_FEES,
         self::EXPLICIT_SHOULD_CHARGE,
         self::SETTLE_TO_PARTNER,
+        self::TDS_PERCENTAGE,
+        self::HAS_GST_CERTIFICATE,
         self::REVISIT_AT,
     ];
 
@@ -56,9 +65,12 @@ class Entity extends PublicEntity
         self::COMMISSION_MODEL,
         self::IMPLICIT_EXPIRY_AT,
         self::COMMISSIONS_ENABLED,
+        self::DEFAULT_PAYMENT_METHODS,
         self::EXPLICIT_REFUND_FEES,
         self::EXPLICIT_SHOULD_CHARGE,
         self::SETTLE_TO_PARTNER,
+        self::TDS_PERCENTAGE,
+        self::HAS_GST_CERTIFICATE,
         self::REVISIT_AT,
         self::CREATED_AT,
     ];
@@ -70,18 +82,24 @@ class Entity extends PublicEntity
     ];
 
     protected $defaults = [
-        self::COMMISSIONS_ENABLED    => 0,
-        self::EXPLICIT_REFUND_FEES   => 0,
-        self::EXPLICIT_SHOULD_CHARGE => 0,
-        self::COMMISSION_MODEL       => CommissionModel::COMMISSION,
-        self::SETTLE_TO_PARTNER      => 0,
+        self::COMMISSIONS_ENABLED     => 0,
+        self::EXPLICIT_REFUND_FEES    => 0,
+        self::EXPLICIT_SHOULD_CHARGE  => 0,
+        self::COMMISSION_MODEL        => CommissionModel::COMMISSION,
+        self::SETTLE_TO_PARTNER       => 0,
+        self::TDS_PERCENTAGE          => self::DEFAULT_TDS_PERCENTAGE,
+        self::HAS_GST_CERTIFICATE     => 0,
+        self::DEFAULT_PAYMENT_METHODS => null,
     ];
 
     protected $casts = [
-        self::COMMISSIONS_ENABLED    => 'bool',
-        self::EXPLICIT_REFUND_FEES   => 'bool',
-        self::EXPLICIT_SHOULD_CHARGE => 'bool',
-        self::SETTLE_TO_PARTNER      => 'bool',
+        self::COMMISSIONS_ENABLED     => 'bool',
+        self::DEFAULT_PAYMENT_METHODS => 'array',
+        self::EXPLICIT_REFUND_FEES    => 'bool',
+        self::EXPLICIT_SHOULD_CHARGE  => 'bool',
+        self::SETTLE_TO_PARTNER       => 'bool',
+        self::TDS_PERCENTAGE          => 'int',
+        self::HAS_GST_CERTIFICATE     => 'bool',
     ];
 
     protected static $unsetCreateInput = [Constants::APPLICATION_ID, Constants::PARTNER_ID];
@@ -145,9 +163,29 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::COMMISSION_MODEL);
     }
 
+    public function getDefaultPaymentMethods()
+    {
+        return $this->getAttribute(self::DEFAULT_PAYMENT_METHODS);
+    }
+
     public function shouldSettleToPartner(): bool
     {
         return ($this->getAttribute(self::SETTLE_TO_PARTNER) === true);
+    }
+
+    public function getTdsPercentage(): int
+    {
+        return $this->getAttribute(self::TDS_PERCENTAGE);
+    }
+
+    public function shouldCreditGst(): bool
+    {
+        return ($this->getAttribute(self::HAS_GST_CERTIFICATE) === false);
+    }
+
+    public function isDefaultConfig(): bool
+    {
+        return ($this->getAttribute(self::ENTITY_TYPE) === AccessMap\Entity::APPLICATION);
     }
 
     // --------------------- SETTERS ---------------------

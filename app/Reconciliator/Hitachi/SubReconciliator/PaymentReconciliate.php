@@ -63,6 +63,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         Network::MC     => '280000',
     ];
 
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     protected function getPaymentId(array $row)
     {
         // Unsettled rows should be skipped while processing.
@@ -337,13 +339,14 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
         else
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
                     'trace_code'      => TraceCode::RECON_PARSE_ERROR,
                     'message'         => 'Unable to figure out the card type.',
                     'recon_card_type' => $cardType,
-                    'row'             => $row,
-                    'gateway'         => $this->gateway
+                    'payment_id'      => $this->payment->getId(),
+                    'gateway'         => $this->gateway,
                 ]);
 
             // It's as good as no card type present in the row.
@@ -466,15 +469,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 
-        if ($expectedCurrency !== $reconCurrency)
+        if (($expectedCurrency !== $reconCurrency) and ( empty($reconCurrency) !== true))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'message'           => 'Payment currency mismatch',
+                    'info_code'         => Base\InfoCode::CURRENCY_MISMATCH,
+                    'payment_id'        => $this->payment->getId(),
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 

@@ -135,6 +135,7 @@ class TransactionEventTest extends TestCase
                 'receiver' => '+919988771111',
                 'source'    => 'api.test.p2p',
                 'template'  => 'sms.p2p.collect',
+                'sender'    => 'RZRPAY',
                 'params'    => [
                     'app_name'          => 'Razorpay Mobile Application',
                     'payee_name'        => 'ALOCAL CUSTOMER',
@@ -217,6 +218,29 @@ class TransactionEventTest extends TestCase
         {
             $this->assertNotNull($headers['X-Razorpay-Signature'][0]);
             $this->assertSame('www.example.com', $headers['Host'][0]);
+        });
+    }
+
+    public function testEducationSms()
+    {
+        $this->mockReminder();
+
+        $helper = $this->getTransactionHelper();
+
+        $request = $helper->initiatePay();
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->withSchemaValidated();
+
+        $helper->authorizeTransaction($request['callback'], $content);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertMockReminder(function ($request, $merchantId) use ($transaction) {
+            $this->assertSame('p2p', $request['namespace']);
+            $this->assertSame($transaction->getId(), $request['entity_id']);
+            $this->assertSame($transaction->getEntityName(), $request['entity_type']);
         });
     }
 }

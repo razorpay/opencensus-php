@@ -63,7 +63,7 @@ class Gateway extends Base\Gateway
      */
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Action::AUTHORIZE);
 
         return $this->authenticate($input);
     }
@@ -204,11 +204,13 @@ class Gateway extends Base\Gateway
 
         $eci = $gatewayPayment->getEci();
 
+        $paresStatus = $PARes[PARes::TX][PARes::STATUS];
+
         $networkCode = Card\Network::getCode($input['card']['network']);
 
         $isInternational = $input['card']['international'];
 
-        $this->validateAuthResponse($eci, $networkCode, $isInternational);
+        $this->validateAuthResponse($eci, $networkCode, $paresStatus, $isInternational);
 
         $this->app['diag']->trackGatewayPaymentEvent(
             EventCode::PAYMENT_AUTHENTICATION_PROCESSED,
@@ -216,6 +218,13 @@ class Gateway extends Base\Gateway
 
         if ($input['payment'][Payment\Entity::GATEWAY] === Payment\Gateway::FIRST_DATA)
         {
+            $str = $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID] . '|' . $input['payment']['id'] . '|'.
+                                        $input['gateway'][PARes::GATEWAY_PARES];
+
+            $key = \RZP\Gateway\FirstData\Gateway::PARES_DATA_CACHE_KEY . $input['payment']['id'];
+
+            $this->app['cache']->put($key, $str, 60 * 25); // 1 day 1 hour
+
             $this->trace->info(TraceCode::GATEWAY_RAW_PARES_RESPONSE, [
                 'pares'     => $input['gateway'][PARes::GATEWAY_PARES],
                 'store_id'  => $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID],
@@ -227,7 +236,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment->toArray();
     }
 
-    protected function validateAuthResponse($eci, $networkCode, $isInternational)
+    protected function validateAuthResponse($eci, $networkCode, $paresStatus, $isInternational)
     {
         if (($networkCode === Card\Network::VISA) and
             (($eci === '05') or
@@ -244,12 +253,24 @@ class Gateway extends Base\Gateway
             return true;
         }
 
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED;
+
+        if ($paresStatus === ParesStatus::A)
+        {
+            $errorCode = ErrorCode::GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED;
+        }
+        else if ($paresStatus === ParesStatus::N)
+        {
+            $errorCode = ErrorCode::GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED;
+        }
+
         throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+            $errorCode,
             null,
             null,
             [
                 'eci'             => $eci,
+                'paresStatus'     => $paresStatus,
                 'network'         => $networkCode,
                 'isInternational' => $isInternational,
             ],

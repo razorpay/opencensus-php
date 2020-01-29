@@ -8,6 +8,8 @@ use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as EnachRblDebitHeadings;
+use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as CitiNachDebitHeadings;
+use RZP\Gateway\Enach\Citi\NachRegisterFileHeadings as CitiNachRegisterHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Axis\EMandateDebitReconFileHeadings as AxisEMDebitHeadings;
 use RZP\Gateway\Netbanking\Sbi\Emandate\RegisterFileHeadings as SbiEMRegisterHeadings;
@@ -128,6 +130,12 @@ class Header
     const MPAN_RUPAY_PAN               =   'RPAN';
 
     //
+    // Parent config inheritance headers
+    //
+    const MERCHANT_CONFIG_INHERITANCE_PARENT_MERCHANT_ID = 'Parent Merchant Id';
+    const MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID        = 'Merchant Id';
+
+    //
     // Virtual Account Bulk Creation Headers
     //
     const VA_CUSTOMER_ID         = 'customer_id';
@@ -200,6 +208,54 @@ class Header
     const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
     const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
     const HDFC_EM_DEBIT_NARRATION           = HdfcEMDebitHeadings::NARRATION;
+    //
+    // Citi Nach Register Response File Headers
+    //
+    const CITI_NACH_REGISTER_SERIAL_NUMBER                 = CitiNachRegisterHeadings::SERIAL_NUMBER;
+    const CITI_NACH_REGISTER_CATEGORY_CODE                 = CitiNachRegisterHeadings::CATEGORY_CODE;
+    const CITI_NACH_REGISTER_CATEGORY_DESCRIPTION          = CitiNachRegisterHeadings::CATEGORY_DESCRIPTION;
+    const CITI_NACH_REGISTER_START_DATE                    = CitiNachRegisterHeadings::START_DATE;
+    const CITI_NACH_REGISTER_END_DATE                      = CitiNachRegisterHeadings::END_DATE;
+    const CITI_NACH_REGISTER_CLIENT_CODE                   = CitiNachRegisterHeadings::CLIENT_CODE;
+    const CITI_NACH_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO  = CitiNachRegisterHeadings::MERCHANT_UNIQUE_REFERENCE_NO;
+    const CITI_NACH_REGISTER_CUSTOMER_ACCOUNT_NUMBER       = CitiNachRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER;
+    const CITI_NACH_REGISTER_CUSTOMER_NAME                 = CitiNachRegisterHeadings::CUSTOMER_NAME;
+    const CITI_NACH_REGISTER_ACCOUNT_TYPE                  = CitiNachRegisterHeadings::ACCOUNT_TYPE;
+    const CITI_NACH_REGISTER_BANK_NAME                     = CitiNachRegisterHeadings::BANK_NAME;
+    const CITI_NACH_REGISTER_BANK_IFSC                     = CitiNachRegisterHeadings::BANK_IFSC;
+    const CITI_NACH_REGISTER_AMOUNT                        = CitiNachRegisterHeadings::AMOUNT;
+    const CITI_NACH_REGISTER_STATUS                        = CitiNachRegisterHeadings::STATUS;
+    const CITI_NACH_REGISTER_REMARKS                       = CitiNachRegisterHeadings::REMARKS;
+    const CITI_NACH_REGISTER_UMRN                          = CitiNachRegisterHeadings::UMRN;
+    const CITI_NACH_REGISTER_LOT                           = CitiNachRegisterHeadings::LOT;
+    const CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE       = CitiNachRegisterHeadings::SOFT_COPY_RECEIVED_DATE;
+    //
+    // Citi Nach Debit Response File Headers
+    //
+    const CITI_NACH_DEBIT_ACH_TRANSACTION_CODE             = CitiNachDebitHeadings::ACH_TRANSACTION_CODE;
+    const CITI_NACH_DEBIT_CONTROL_9S                       = CitiNachDebitHeadings::CONTROL_9S;
+    const CITI_NACH_DEBIT_DESTINATION_ACCOUNT_TYPE         = CitiNachDebitHeadings::DESTINATION_ACCOUNT_TYPE;
+    const CITI_NACH_DEBIT_LEDGER_FOLIO_NUMBER              = CitiNachDebitHeadings::LEDGER_FOLIO_NUMBER;
+    const CITI_NACH_DEBIT_CONTROL_15S                      = CitiNachDebitHeadings::CONTROL_15S;
+    const CITI_NACH_DEBIT_BENEFICIARY_ACCOUNT_HOLDER_NAME  = CitiNachDebitHeadings::BENEFICIARY_ACCOUNT_HOLDER_NAME;
+    const CITI_NACH_DEBIT_CONTROL_9SS                      = CitiNachDebitHeadings::CONTROL_9SS;
+    const CITI_NACH_DEBIT_CONTROL_7S                       = CitiNachDebitHeadings::CONTROL_7S;
+    const CITI_NACH_DEBIT_USER_NAME                        = CitiNachDebitHeadings::USER_NAME;
+    const CITI_NACH_DEBIT_CONTROL_13S                      = CitiNachDebitHeadings::CONTROL_13S;
+    const CITI_NACH_DEBIT_AMOUNT                           = CitiNachDebitHeadings::AMOUNT;
+    const CITI_NACH_DEBIT_ACH_ITEM_SEQ_NO                  = CitiNachDebitHeadings::ACH_ITEM_SEQ_NO;
+    const CITI_NACH_DEBIT_CHECKSUM                         = CitiNachDebitHeadings::CHECKSUM;
+    const CITI_NACH_DEBIT_FLAG                             = CitiNachDebitHeadings::FLAG;
+    const CITI_NACH_DEBIT_REASON_CODE                      = CitiNachDebitHeadings::REASON_CODE;
+    const CITI_NACH_DEBIT_DESTINATION_BANK_IFSC            = CitiNachDebitHeadings::DESTINATION_BANK_IFSC;
+    const CITI_NACH_DEBIT_BENEFICIARY_BANK_ACCOUNT_NUMBER  = CitiNachDebitHeadings::BENEFICIARY_BANK_ACCOUNT_NUMBER;
+    const CITI_NACH_DEBIT_SPONSOR_BANK_IFSC                = CitiNachDebitHeadings::SPONSOR_BANK_IFSC;
+    const CITI_NACH_DEBIT_USER_NUMBER                      = CitiNachDebitHeadings::USER_NUMBER;
+    const CITI_NACH_DEBIT_TRANSACTION_REFERENCE            = CitiNachDebitHeadings::TRANSACTION_REFERENCE;
+    const CITI_NACH_DEBIT_PRODUCT_TYPE                     = CitiNachDebitHeadings::PRODUCT_TYPE;
+    const CITI_NACH_DEBIT_BENEFICIARY_AADHAR_NUMBER        = CitiNachDebitHeadings::BENEFICIARY_AADHAR_NUMBER;
+    const CITI_NACH_DEBIT_UMRN                             = CitiNachDebitHeadings::UMRN;
+    const CITI_NACH_DEBIT_FILLER                           = CitiNachDebitHeadings::FILLER;
 
     //
     // SBI Emandate Register Response File Headers
@@ -249,22 +305,24 @@ class Header
     //
     // SBI Emandate Debit Response File Headers
     //
-    const SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER   = SbiEMDebitHeadings::SERIAL_NUMBER;
-    const SBI_EM_DEBIT_EMANDATE_TYPE            = SbiEMDebitHeadings::EMANDATE_TYPE;
-    const SBI_EM_DEBIT_UMRN                     = SbiEMDebitHeadings::UMRN;
-    const SBI_EM_DEBIT_SCHEME_NAME              = SbiEMDebitHeadings::SCHEME_NAME;
-    const SBI_EM_DEBIT_SUB_SCHEME_NAME          = SbiEMDebitHeadings::SUB_SCHEME_NAME;
-    const SBI_EM_DEBIT_MANDATE_HOLDER_NAME      = SbiEMDebitHeadings::MANDATE_HOLDER_NAME_RESP;
-    const SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER     = SbiEMDebitHeadings::DEBIT_ACC_NO;
-    const SBI_EM_DEBIT_DEBIT_BANK_IFSC          = SbiEMDebitHeadings::DEBIT_BANK_IFSC;
-    const SBI_EM_DEBIT_DEBIT_DATE               = SbiEMDebitHeadings::DEBIT_DATE_RESP;
-    const SBI_EM_DEBIT_AMOUNT                   = SbiEMDebitHeadings::AMOUNT;
-    const SBI_EM_DEBIT_JOURNAL_NUMBER           = SbiEMDebitHeadings::JOURNAL_NUMBER;
-    const SBI_EM_DEBIT_PROCESSING_DATE          = SbiEMDebitHeadings::PROCESSING_DATE;
-    const SBI_EM_DEBIT_CUSTOMER_REF_NO          = SbiEMDebitHeadings::CUSTOMER_REF_NO;
-    const SBI_EM_DEBIT_DEBIT_STATUS             = SbiEMDebitHeadings::DEBIT_STATUS;
-    const SBI_EM_DEBIT_CREDIT_STATUS            = SbiEMDebitHeadings::CREDIT_STATUS;
-    const SBI_EM_DEBIT_REASON                   = SbiEMDebitHeadings::REASON;
+    const SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER    = SbiEMDebitHeadings::SERIAL_NUMBER;
+    const SBI_EM_DEBIT_UMRN                      = SbiEMDebitHeadings::UMRN;
+    const SBI_EM_DEBIT_CUSTOMER_CODE             = SbiEMDebitHeadings::CUSTOMER_CODE;
+    const SBI_EM_DEBIT_CUSTOMER_NAME             = SbiEMDebitHeadings::CUSTOMER_NAME;
+    const SBI_EM_DEBIT_TRANSACTION_INPUT_CHANNEL = SbiEMDebitHeadings::TRANSACTION_INPUT_CHANNEL;
+    const SBI_EM_DEBIT_FILE_NAME                 = SbiEMDebitHeadings::FILE_NAME;
+    const SBI_EM_DEBIT_CUSTOMER_REF_NO           = SbiEMDebitHeadings::CUSTOMER_REF_NO;
+    const SBI_EM_DEBIT_MANDATE_HOLDER_NAME       = SbiEMDebitHeadings::MANDATE_HOLDER_NAME;
+    const SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER      = SbiEMDebitHeadings::MANDATE_HOLDER_ACCOUNT_NO;
+    const SBI_EM_DEBIT_DEBIT_BANK_IFSC           = SbiEMDebitHeadings::DEBIT_BANK_IFSC;
+    const SBI_EM_DEBIT_DEBIT_DATE                = SbiEMDebitHeadings::DEBIT_DATE_RESP;
+    const SBI_EM_DEBIT_AMOUNT                    = SbiEMDebitHeadings::AMOUNT;
+    const SBI_EM_DEBIT_JOURNAL_NUMBER            = SbiEMDebitHeadings::JOURNAL_NUMBER;
+    const SBI_EM_DEBIT_PROCESSING_DATE           = SbiEMDebitHeadings::PROCESSING_DATE;
+    const SBI_EM_DEBIT_DEBIT_STATUS              = SbiEMDebitHeadings::DEBIT_STATUS;
+    const SBI_EM_DEBIT_CREDIT_STATUS             = SbiEMDebitHeadings::CREDIT_STATUS;
+    const SBI_EM_DEBIT_REASON                    = SbiEMDebitHeadings::REASON;
+    const SBI_EM_DEBIT_CREDIT_DATE               = SbiEMDebitHeadings::CREDIT_DATE;
 
     //
     // AXIS Emandate Debit Response File Headers
@@ -459,6 +517,25 @@ class Header
     const ENTITY_TO_IDS        = 'entity_to_ids';
     const ENTITY_FROM_TYPE     = 'entity_from_type';
     const ENTITY_TO_TYPE       = 'entity_to_type';
+
+
+    // Admin Entity Headers
+    const ADMIN_ID            = 'admin_id';
+    const EMAIL               = 'email';
+    const NAME                = 'name';
+    const USERNAME            = 'username';
+    const PASSWORD            = 'password';
+    const USER_TYPE           = 'user_type';
+    const EMPLOYEE_CODE       = 'employee_code';
+    const BRANCH_CODE         = 'branch_code';
+    const DEPARTMENT_CODE     = 'department_code';
+    const SUPERVISOR_CODE     = 'supervisor_code';
+    const LOCATION_CODE       = 'location_code';
+    const GROUPS              = 'groups';
+    const ROLES              = 'roles';
+    const DISABLED            = 'disabled';
+    const LOCKED              = 'locked';
+    const ALLOW_ALL_MERCHANTS = 'allow_all_merchants';
 
     //
     // Auth Link Headers
@@ -679,8 +756,36 @@ class Header
     const TERMINAL_CREATION_ENABLED              = 'Enabled';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
+    // Pricing Rules Addition Headers
+    const PRICING_RULE_MERCHANT_ID         = 'merchant_id';
+    const PRICING_RULE_PRODUCT             = 'product';
+    const PRICING_RULE_FEATURE             = 'feature';
+    const PRICING_RULE_PAYMENT_METHOD      = 'payment_method';
+    const PRICING_RULE_PAYMENT_METHOD_TYPE = 'payment_method_type';
+    const PRICING_RULE_PAYMENT_NETWORK     = 'payment_network';
+    const PRICING_RULE_INTERNATIONAL       = 'international';
+    const PRICING_RULE_PERCENT_RATE        = 'percent_rate';
+    const PRICING_RULE_AMOUNT_RANGE_ACTIVE = 'amount_range_active';
+    const PRICING_RULE_AMOUNT_RANGE_MIN    = 'amount_range_min';
+    const PRICING_RULE_AMOUNT_RANGE_MAX    = 'amount_range_max';
+
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
+
+    //Hitachi Visa IIN Batch
+    const IIN_HITACHI_VISA_ROW                   = 'row';
+
+    //MC MasterCard IIN Batch
+    const IIN_MC_MASTERCARD_COMPANY_ID           = 'COMPANY_ID';
+    const IIN_MC_MASTERCARD_COMPANY_NAME         = 'COMPANY_NAME';
+    const IIN_MC_MASTERCARD_ICA                  = 'ICA';
+    const IIN_MC_MASTERCARD_ACCOUNT_RANGE_FROM   = 'ACCOUNT_RANGE_FROM';
+    const IIN_MC_MASTERCARD_ACCOUNT_RANGE_TO     = 'ACCOUNT_RANGE_TO';
+    const IIN_MC_MASTERCARD_BRAND_PRODUCT_CODE   = 'BRAND_PRODUCT_CODE';
+    const IIN_MC_MASTERCARD_BRAND_PRODUCT_NAME   = 'BRAND_PRODUCT_NAME';
+    const IIN_MC_MASTERCARD_ACCEPTANCE_BRAND     = 'ACCEPTANCE_BRAND';
+    const IIN_MC_MASTERCARD_COUNTRY              = 'COUNTRY';
+    const IIN_MC_MASTERCARD_REGION               = 'REGION';
 
     /**
      * Input and output file headers
@@ -1400,10 +1505,12 @@ class Header
         'emandate_debit_sbi' => [
             self::INPUT => [
                 self::SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER,
-                self::SBI_EM_DEBIT_EMANDATE_TYPE,
                 self::SBI_EM_DEBIT_UMRN,
-                self::SBI_EM_DEBIT_SCHEME_NAME,
-                self::SBI_EM_DEBIT_SUB_SCHEME_NAME,
+                self::SBI_EM_DEBIT_CUSTOMER_CODE,
+                self::SBI_EM_DEBIT_CUSTOMER_NAME,
+                self::SBI_EM_DEBIT_TRANSACTION_INPUT_CHANNEL,
+                self::SBI_EM_DEBIT_FILE_NAME,
+                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_MANDATE_HOLDER_NAME,
                 self::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER,
                 self::SBI_EM_DEBIT_DEBIT_BANK_IFSC,
@@ -1411,17 +1518,20 @@ class Header
                 self::SBI_EM_DEBIT_AMOUNT,
                 self::SBI_EM_DEBIT_JOURNAL_NUMBER,
                 self::SBI_EM_DEBIT_PROCESSING_DATE,
-                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_DEBIT_STATUS,
                 self::SBI_EM_DEBIT_CREDIT_STATUS,
                 self::SBI_EM_DEBIT_REASON,
+                self::SBI_EM_DEBIT_CREDIT_DATE,
             ],
             self::OUTPUT => [
                 self::SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER,
-                self::SBI_EM_DEBIT_EMANDATE_TYPE,
                 self::SBI_EM_DEBIT_UMRN,
-                self::SBI_EM_DEBIT_SCHEME_NAME,
-                self::SBI_EM_DEBIT_SUB_SCHEME_NAME,
+                self::SBI_EM_DEBIT_UMRN,
+                self::SBI_EM_DEBIT_CUSTOMER_CODE,
+                self::SBI_EM_DEBIT_CUSTOMER_NAME,
+                self::SBI_EM_DEBIT_TRANSACTION_INPUT_CHANNEL,
+                self::SBI_EM_DEBIT_FILE_NAME,
+                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_MANDATE_HOLDER_NAME,
                 self::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER,
                 self::SBI_EM_DEBIT_DEBIT_BANK_IFSC,
@@ -1429,10 +1539,10 @@ class Header
                 self::SBI_EM_DEBIT_AMOUNT,
                 self::SBI_EM_DEBIT_JOURNAL_NUMBER,
                 self::SBI_EM_DEBIT_PROCESSING_DATE,
-                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_DEBIT_STATUS,
                 self::SBI_EM_DEBIT_CREDIT_STATUS,
                 self::SBI_EM_DEBIT_REASON,
+                self::SBI_EM_DEBIT_CREDIT_DATE,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
@@ -1566,6 +1676,104 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        'nach_register_nach_citi' => [
+            self::INPUT => [
+                self::CITI_NACH_REGISTER_SERIAL_NUMBER,
+                self::CITI_NACH_REGISTER_CATEGORY_CODE,
+                self::CITI_NACH_REGISTER_CATEGORY_DESCRIPTION,
+                self::CITI_NACH_REGISTER_START_DATE,
+                self::CITI_NACH_REGISTER_END_DATE,
+                self::CITI_NACH_REGISTER_CLIENT_CODE,
+                self::CITI_NACH_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO,
+                self::CITI_NACH_REGISTER_CUSTOMER_ACCOUNT_NUMBER,
+                self::CITI_NACH_REGISTER_CUSTOMER_NAME,
+                self::CITI_NACH_REGISTER_ACCOUNT_TYPE,
+                self::CITI_NACH_REGISTER_BANK_NAME,
+                self::CITI_NACH_REGISTER_BANK_IFSC,
+                self::CITI_NACH_REGISTER_AMOUNT,
+                self::CITI_NACH_REGISTER_LOT,
+                self::CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE,
+                self::CITI_NACH_REGISTER_STATUS,
+                self::CITI_NACH_REGISTER_REMARKS,
+                self::CITI_NACH_REGISTER_UMRN,
+            ],
+            self::OUTPUT => [
+                self::CITI_NACH_REGISTER_SERIAL_NUMBER,
+                self::CITI_NACH_REGISTER_CATEGORY_CODE,
+                self::CITI_NACH_REGISTER_CATEGORY_DESCRIPTION,
+                self::CITI_NACH_REGISTER_START_DATE,
+                self::CITI_NACH_REGISTER_END_DATE,
+                self::CITI_NACH_REGISTER_CLIENT_CODE,
+                self::CITI_NACH_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO,
+                self::CITI_NACH_REGISTER_CUSTOMER_ACCOUNT_NUMBER,
+                self::CITI_NACH_REGISTER_CUSTOMER_NAME,
+                self::CITI_NACH_REGISTER_ACCOUNT_TYPE,
+                self::CITI_NACH_REGISTER_BANK_NAME,
+                self::CITI_NACH_REGISTER_BANK_IFSC,
+                self::CITI_NACH_REGISTER_AMOUNT,
+                self::CITI_NACH_REGISTER_LOT,
+                self::CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE,
+                self::CITI_NACH_REGISTER_STATUS,
+                self::CITI_NACH_REGISTER_REMARKS,
+                self::CITI_NACH_REGISTER_UMRN,
+            ],
+        ],
+
+        'nach_debit_nach_citi' => [
+            self::INPUT => [
+                self::CITI_NACH_DEBIT_ACH_TRANSACTION_CODE,
+                self::CITI_NACH_DEBIT_CONTROL_9S,
+                self::CITI_NACH_DEBIT_DESTINATION_ACCOUNT_TYPE,
+                self::CITI_NACH_DEBIT_LEDGER_FOLIO_NUMBER,
+                self::CITI_NACH_DEBIT_CONTROL_15S,
+                self::CITI_NACH_DEBIT_BENEFICIARY_ACCOUNT_HOLDER_NAME,
+                self::CITI_NACH_DEBIT_CONTROL_9SS,
+                self::CITI_NACH_DEBIT_CONTROL_7S,
+                self::CITI_NACH_DEBIT_USER_NAME,
+                self::CITI_NACH_DEBIT_CONTROL_13S,
+                self::CITI_NACH_DEBIT_AMOUNT,
+                self::CITI_NACH_DEBIT_ACH_ITEM_SEQ_NO,
+                self::CITI_NACH_DEBIT_CHECKSUM,
+                self::CITI_NACH_DEBIT_FLAG,
+                self::CITI_NACH_DEBIT_REASON_CODE,
+                self::CITI_NACH_DEBIT_DESTINATION_BANK_IFSC,
+                self::CITI_NACH_DEBIT_BENEFICIARY_BANK_ACCOUNT_NUMBER,
+                self::CITI_NACH_DEBIT_SPONSOR_BANK_IFSC,
+                self::CITI_NACH_DEBIT_USER_NUMBER,
+                self::CITI_NACH_DEBIT_TRANSACTION_REFERENCE,
+                self::CITI_NACH_DEBIT_PRODUCT_TYPE,
+                self::CITI_NACH_DEBIT_BENEFICIARY_AADHAR_NUMBER,
+                self::CITI_NACH_DEBIT_UMRN,
+                self::CITI_NACH_DEBIT_FILLER,
+            ],
+            self::OUTPUT => [
+                self::CITI_NACH_DEBIT_ACH_TRANSACTION_CODE,
+                self::CITI_NACH_DEBIT_CONTROL_9S,
+                self::CITI_NACH_DEBIT_DESTINATION_ACCOUNT_TYPE,
+                self::CITI_NACH_DEBIT_LEDGER_FOLIO_NUMBER,
+                self::CITI_NACH_DEBIT_CONTROL_15S,
+                self::CITI_NACH_DEBIT_BENEFICIARY_ACCOUNT_HOLDER_NAME,
+                self::CITI_NACH_DEBIT_CONTROL_9SS,
+                self::CITI_NACH_DEBIT_CONTROL_7S,
+                self::CITI_NACH_DEBIT_USER_NAME,
+                self::CITI_NACH_DEBIT_CONTROL_13S,
+                self::CITI_NACH_DEBIT_AMOUNT,
+                self::CITI_NACH_DEBIT_ACH_ITEM_SEQ_NO,
+                self::CITI_NACH_DEBIT_CHECKSUM,
+                self::CITI_NACH_DEBIT_FLAG,
+                self::CITI_NACH_DEBIT_REASON_CODE,
+                self::CITI_NACH_DEBIT_DESTINATION_BANK_IFSC,
+                self::CITI_NACH_DEBIT_BENEFICIARY_BANK_ACCOUNT_NUMBER,
+                self::CITI_NACH_DEBIT_SPONSOR_BANK_IFSC,
+                self::CITI_NACH_DEBIT_USER_NUMBER,
+                self::CITI_NACH_DEBIT_TRANSACTION_REFERENCE,
+                self::CITI_NACH_DEBIT_PRODUCT_TYPE,
+                self::CITI_NACH_DEBIT_BENEFICIARY_AADHAR_NUMBER,
+                self::CITI_NACH_DEBIT_UMRN,
+                self::CITI_NACH_DEBIT_FILLER,
             ],
         ],
 
@@ -2147,7 +2355,103 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ]
-        ]
+        ],
+
+        Type::IIN_HITACHI_VISA => [
+            self::INPUT => [
+                self::IIN_HITACHI_VISA_ROW,
+            ],
+            self::OUTPUT => [
+                self::IIN_HITACHI_VISA_ROW,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
+        Type::IIN_MC_MASTERCARD => [
+            self::INPUT => [
+                self::IIN_MC_MASTERCARD_COMPANY_ID,
+                self::IIN_MC_MASTERCARD_COMPANY_NAME,
+                self::IIN_MC_MASTERCARD_ICA,
+                self::IIN_MC_MASTERCARD_ACCOUNT_RANGE_FROM,
+                self::IIN_MC_MASTERCARD_ACCOUNT_RANGE_TO,
+                self::IIN_MC_MASTERCARD_BRAND_PRODUCT_CODE,
+                self::IIN_MC_MASTERCARD_BRAND_PRODUCT_NAME,
+                self::IIN_MC_MASTERCARD_ACCEPTANCE_BRAND,
+                self::IIN_MC_MASTERCARD_COUNTRY,
+                self::IIN_MC_MASTERCARD_REGION,
+            ],
+            self::OUTPUT => [
+                self::IIN_MC_MASTERCARD_COMPANY_ID,
+                self::IIN_MC_MASTERCARD_COMPANY_NAME,
+                self::IIN_MC_MASTERCARD_ICA,
+                self::IIN_MC_MASTERCARD_ACCOUNT_RANGE_FROM,
+                self::IIN_MC_MASTERCARD_ACCOUNT_RANGE_TO,
+                self::IIN_MC_MASTERCARD_BRAND_PRODUCT_CODE,
+                self::IIN_MC_MASTERCARD_BRAND_PRODUCT_NAME,
+                self::IIN_MC_MASTERCARD_ACCEPTANCE_BRAND,
+                self::IIN_MC_MASTERCARD_COUNTRY,
+                self::IIN_MC_MASTERCARD_REGION,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
+        Type::PRICING_RULE => [
+            self::INPUT => [
+                self::PRICING_RULE_MERCHANT_ID,
+                self::PRICING_RULE_PRODUCT,
+                self::PRICING_RULE_FEATURE,
+                self::PRICING_RULE_PAYMENT_METHOD,
+                self::PRICING_RULE_PAYMENT_METHOD_TYPE,
+                self::PRICING_RULE_PAYMENT_NETWORK,
+                self::PRICING_RULE_INTERNATIONAL,
+                self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
+                self::PRICING_RULE_AMOUNT_RANGE_MIN,
+                self::PRICING_RULE_AMOUNT_RANGE_MAX,
+            ],
+            self::OUTPUT => [
+                self::PRICING_RULE_MERCHANT_ID,
+                self::PRICING_RULE_PRODUCT,
+                self::PRICING_RULE_FEATURE,
+                self::PRICING_RULE_PAYMENT_METHOD,
+                self::PRICING_RULE_PAYMENT_METHOD_TYPE,
+                self::PRICING_RULE_PAYMENT_NETWORK,
+                self::PRICING_RULE_INTERNATIONAL,
+                self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
+                self::PRICING_RULE_AMOUNT_RANGE_MIN,
+                self::PRICING_RULE_AMOUNT_RANGE_MAX,
+            ]
+        ],
+
+        Type::ADMIN_BATCH => [
+            self::INPUT => [
+                self::ADMIN_ID,
+            ],
+
+            self::OUTPUT => [
+                self::ADMIN_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
+        Type::MERCHANT_CONFIG_INHERITANCE => [
+            self::INPUT => [
+                self::MERCHANT_CONFIG_INHERITANCE_PARENT_MERCHANT_ID,
+                self::MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID,
+            ],
+            /*
+             * Input key is needed for header validation.
+             * Not adding output key here
+             * Reason is this batch is entirely migrated to batch micro service.
+             */
+        ],
     ];
 
     /**
@@ -2203,6 +2507,11 @@ class Header
             $actualHeaders = [];
         }
 
+        if ($type === Type::ADMIN_BATCH)
+        {
+            $expectedHeaders [] = self::validateAdminBatchHeader($actualHeaders);
+        }
+
         if ($type === Type::MPAN)
         {
             // header can contain empty columns when input file is CSV
@@ -2226,10 +2535,28 @@ class Header
                 ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
                 null,
                 [
-                    'expected_headers'  => $expectedHeaders,
-                    'input_headers'     => $actualHeaders,
+                    'expected_headers' => $expectedHeaders,
+                    'input_headers'    => $actualHeaders,
                 ]);
         }
+    }
+
+    protected static function validateAdminBatchHeader($actualHeaders)
+    {
+        $validInputArray = ['allow_all_merchants'];
+
+        $expectedHeaders = '';
+
+        foreach ($validInputArray as $attribute)
+        {
+            if ((in_array($attribute, $actualHeaders, true) === true))
+            {
+                $expectedHeaders = $attribute;
+
+            }
+        }
+
+        return $expectedHeaders;
     }
 
     /**

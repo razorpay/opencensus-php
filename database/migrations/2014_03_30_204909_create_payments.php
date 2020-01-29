@@ -188,6 +188,7 @@ class CreatePayments extends Migration
                   ->nullable();
 
             $table->tinyInteger(Payment::CPS_ROUTE)
+                  ->default(Payment::API)
                   ->nullable();
 
             $table->integer(Payment::REFERENCE5)
@@ -270,7 +271,8 @@ class CreatePayments extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->bigInteger(Payment::REFERENCE12)
+            $table->bigInteger(Payment::FEE_BEARER)
+                  ->default(0) // platform fee bearer
                   ->unsigned()
                   ->nullable();
 

@@ -22,6 +22,9 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     // index 1 after converting to an array.
     const REFUND_ID_INDEX = 1;
 
+    // We get the refund ID but prefixed and suffixed with some string
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
+
     protected function getRefundId(array $row)
     {
         $columnRefundId = $row[self::COLUMN_REFUND_ID];
@@ -71,7 +74,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                 [
                     'trace_code'    => TraceCode::RECON_INFO_ALERT,
                     'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
-                    'row'           => $row,
+                    'refund_id'     => $this->refund->getId(),
+                    'date'          => $row[self::COLUMN_SETTLED_AT],
                     'gateway'       => $this->gateway
                 ]);
 

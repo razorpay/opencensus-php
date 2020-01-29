@@ -3,78 +3,78 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
-use RZP\Models\Payment;
-use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
-use RZP\Jobs\MailingListUpdate;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
-use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Mail\Merchant\Activation as ActivationMail;
-use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
+use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
 use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
+use RZP\Mail\Merchant\RazorpayX\InstantActivation as RazorpayXInstantActivationMail;
 
 class Activate extends Base\Core
 {
     use NotifyTrait;
 
-    const MAIL_EXCLUDED_METHODS = [
-        // Don't include marketplace transfer method (for now)
-        Payment\Method::TRANSFER,
-
-        // Don't include bank transfer (VA) method (for now)
-        // TODO: Will add once we've figured out how to display max fees correctly
-        Payment\Method::BANK_TRANSFER
-    ];
-
     /**
      * This function is used for activating merchant
      *
-     * @param Entity        $merchant
-     * @param Detail\Entity $merchantDetail
+     * @param Entity $merchant
      *
      * @return Detail\Entity
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     * @throws Throwable
      */
-    public function activate(Entity $merchant, Detail\Entity $merchantDetail): Detail\Entity
+    public function activate(Entity $merchant): Detail\Entity
     {
         // Merchants who have been activated (instantly activated whitelisted merchants)
         if ($merchant->isActivated() === true)
         {
-            return $this->markKycVerified($merchant, $merchantDetail);
-        }
+            $this->trace->info(TraceCode::ALREADY_ACTIVATED, $merchant->toArrayPublic());
 
+            return $this->markKycVerified($merchant);
+        }
         //
         // For merchants who never went through the instant activations flow, and,
         // who went through the instant activations flow and got greylisted
         //
-        return $this->activateAndMarkKycVerified($merchant, $merchantDetail);
+        $this->trace->info(TraceCode::NOT_ACTIVATED, $merchant->toArrayPublic());
+
+        return $this->activateAndMarkKycVerified($merchant);
     }
 
     /**
-     * @param Entity $merchant
+     * @param Entity        $merchant
      *
      * @return Detail\Entity
+     *
+     * @throws Exception\BadRequestException
+     * @throws Throwable
      */
-    public function activateAndMarkKycVerified(Entity $merchant, Detail\Entity $merchantDetail): Detail\Entity
+    public function activateAndMarkKycVerified(Entity $merchant): Detail\Entity
     {
+        $merchantDetail = $merchant->merchantDetail;
+
         $merchant->getValidator()->validateBeforeActivate();
 
         $this->validateMethodsAndPricing($merchant);
 
-        if (Detail\Core::shouldSkipBankAccountRegistration() === false)
+        if ($this->shouldCreateBankAccount($merchantDetail) === true)
         {
-            (new Detail\Core)->setBankAccountForMerchant($merchantDetail);
+            (new Detail\Core)->setBankAccountForMerchant($merchant);
 
             $merchant->getValidator()->validateHasBankAccount();
         }
@@ -82,6 +82,8 @@ class Activate extends Base\Core
         $merchant->enableReceiptEmails();
 
         $merchant->activate();
+
+        $merchant->releaseFunds();
 
         // making sure that merchant's has_key_access is set to true when website is set.
         if ((empty($merchantDetail->getWebsite()) === false) and
@@ -96,9 +98,11 @@ class Activate extends Base\Core
 
         $merchantCore = new Merchant\Core;
 
-        $merchantCore->activateInternationalIfApplicable($merchant, $merchantDetail);
+        $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
-        $merchantCore->createBalance($merchant, 'live');
+        $merchantBalance = $merchantCore->createBalance($merchant, 'live');
+
+        $merchantCore->createBalanceConfig($merchantBalance, 'live');
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
         {
@@ -108,7 +112,7 @@ class Activate extends Base\Core
 
             $this->repo->saveOrFail($merchantDetail);
 
-            if($merchant->isActivated() === true)
+            if ($merchant->isActivated() === true)
             {
                 $merchantCore->addMerchantEmailToMailingList($merchant);
             }
@@ -130,12 +134,14 @@ class Activate extends Base\Core
     }
 
     /**
-     * Instantly activates a merchant with funds on hold
-     *
-     * @param Entity        $merchant
+     * @param Entity $merchant
      * @param Detail\Entity $merchantDetails
      *
      * @return array
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     * @throws Throwable
      */
     public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails): array
     {
@@ -149,7 +155,7 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
-        (new Merchant\Core)->activateInternationalIfApplicable($merchant, $merchantDetails);
+        (new Merchant\Core)->updateInternationalIfApplicable($merchant, $merchantDetails);
 
         $merchant->holdFunds();
 
@@ -157,7 +163,9 @@ class Activate extends Base\Core
 
         $merchant->setActivationSource($originProduct);
 
-        (new Core)->createBalance($merchant, 'live');
+        $merchantBalance = (new Core)->createBalance($merchant, 'live');
+
+        (new Core)->createBalanceConfig($merchantBalance, 'live');
 
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED);
 
@@ -175,12 +183,12 @@ class Activate extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
-        if($merchant->isActivated() === true)
+        if ($merchant->isActivated() === true)
         {
             (new Merchant\Core)->addMerchantEmailToMailingList($merchant);
         }
 
-        $detailCore->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
+        $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
 
         $this->activateBusinessBankingIfApplicable($merchant);
 
@@ -193,18 +201,22 @@ class Activate extends Base\Core
 
     /**
      * @param Entity        $merchant
-     * @param Detail\Entity $merchantDetail
      *
      * @return Detail\Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     * @throws Throwable
      */
-    public function markKycVerified(Entity $merchant, Detail\Entity $merchantDetail): Detail\Entity
+    public function markKycVerified(Entity $merchant): Detail\Entity
     {
+        $merchantDetail = $merchant->merchantDetail;
+
         // @todo: add a check - should be through an instantly_activated state
         $merchant->getValidator()->validateBeforeKycVerified();
 
-        if (Detail\Core::shouldSkipBankAccountRegistration() === false)
+        if ($this->shouldCreateBankAccount($merchantDetail) === true)
         {
-            (new Detail\Core)->setBankAccountForMerchant($merchantDetail);
+            (new Detail\Core)->setBankAccountForMerchant($merchant);
 
             $merchant->getValidator()->validateHasBankAccount();
         }
@@ -217,7 +229,7 @@ class Activate extends Base\Core
 
         $merchantCore = new Merchant\Core;
 
-        $merchantCore->activateInternationalIfApplicable($merchant, $merchantDetail);
+        $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
         {
@@ -227,7 +239,7 @@ class Activate extends Base\Core
 
             $this->repo->saveOrFail($merchantDetail);
 
-            if($merchant->isActivated() === true)
+            if ($merchant->isActivated() === true)
             {
                 $merchantCore->addMerchantEmailToMailingList($merchant);
             }
@@ -325,7 +337,9 @@ class Activate extends Base\Core
         $merchant->activate();
 
         // Create the live mode balance entity for the merchant
-        (new Merchant\Core)->createBalance($merchant, Mode::LIVE);
+        $merchantBalance = (new Merchant\Core)->createBalance($merchant, Mode::LIVE);
+
+        (new Merchant\Core)->createBalanceConfig($merchantBalance, Mode::LIVE);
 
         $this->repo->saveOrFail($merchant);
 
@@ -346,276 +360,112 @@ class Activate extends Base\Core
      */
     public function sendActivationEmail($merchant)
     {
-        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+        //
+        // In order to distinguish between RX merchant and PG Merchant, we cannot use getRequestOriginProduct, because
+        // this activation happens from Admin Dashboard, in which case the OriginProduct will always be Primary.
+        // Hence we will check if the Merchant has business_banking enabled, we will send the RX email, else the default PG email
+        //
 
-        $is_whitelist_activation = $merchant->merchantDetail->getActivationFlow() === ActivationFlow::WHITELIST;
+        $isBusinessBankingEnabled = $merchant->isBusinessBankingEnabled();
 
-        $data = [
-            'merchant' => [
-                'name'                               => $merchant->getName(),
-                'website'                            => $merchant->getWebsite(),
-                'billing_label'                      => $merchant->getBillingLabel(),
-                'email'                              => $merchant->getEmail(),
-                'activation_source'                  => $merchant->getActivationSource(),
-                Constants::IS_WHITELISTED_ACTIVATION => $is_whitelist_activation,
-                'org'                                => [
-                    'business_name' => $org->getBusinessName(),
-                    'custom_code'   => $org->getCustomCode(),
-                ],
-            ],
-        ];
+        $this->trace->info(TraceCode::ACTIVATION_CONFIRMATION_EMAIL,
+                            [
+                                'merchant_id'                 => $merchant->getId(),
+                                'is_business_banking_enabled' => $isBusinessBankingEnabled
+                            ]);
 
-        $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
-
-        // For marketplace accounts, send this email to the parent merchant
-        if ($merchant->isLinkedAccount() === true)
+        if ($isBusinessBankingEnabled === true)
         {
-            $data['merchant']['email'] = $merchant->parent->getEmail();
+            if ($merchant->hasBankingAccounts() === false)
+            {
+                $this->trace->error(TraceCode::NO_ASSOCIATED_BANKING_ACCOUNT,
+                                    [
+                                        'merchant_id' => $merchant->getId()
+                                    ]);
+            }
+            else
+            {
+                Mail::queue(new AccountActivationConfirmation($merchant->getId()));
+            }
         }
+        else
+        {
+            $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
-        $activationMail = new ActivationMail($data, $org->toArray());
+            $is_whitelist_activation = $merchant->merchantDetail->getActivationFlow() === ActivationFlow::WHITELIST;
 
-        Mail::queue($activationMail);
+            $data = [
+                'merchant' => [
+                    'name'                               => $merchant->getName(),
+                    'website'                            => $merchant->getWebsite(),
+                    'billing_label'                      => $merchant->getBillingLabel(),
+                    'email'                              => $merchant->getEmail(),
+                    'activation_source'                  => $merchant->getActivationSource(),
+                    Constants::IS_WHITELISTED_ACTIVATION => $is_whitelist_activation,
+                    'org'                                => [
+                        'business_name' => $org->getBusinessName(),
+                        'custom_code'   => $org->getCustomCode(),
+                    ],
+                ],
+            ];
+
+            $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
+
+            // For marketplace accounts, send this email to the parent merchant
+            if ($merchant->isLinkedAccount() === true)
+            {
+                $data['merchant']['email'] = $merchant->parent->getEmail();
+            }
+
+            $activationMail = new ActivationMail($data, $org->toArray());
+
+            Mail::queue($activationMail);
+        }
     }
 
     public function notifyMerchantForInstantActivation(Entity $merchant)
     {
-        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+        $instantActivationMail = null;
 
-        $data = [
-            'merchant' => [
-                Entity::NAME              => $merchant->getName(),
-                Entity::BILLING_LABEL     => $merchant->getBillingLabel(),
-                Entity::EMAIL             => $merchant->getEmail(),
-                Entity::ACTIVATION_SOURCE => $merchant->getActivationSource(),
-                Entity::BUSINESS_BANKING  => $merchant->isBusinessBankingEnabled(),
-                'org'                     => [
-                    OrgEntity::BUSINESS_NAME => $org->getBusinessName(),
-                    OrgEntity::CUSTOM_CODE   => $org->getCustomCode(),
+        $activationSource = $merchant->getActivationSource();
+
+        $this->trace->info(TraceCode::INSTANT_ACTIVATION_NOTIFICATION,
+                           [
+                               'merchant_id'          => $merchant->getPublicId(),
+                               'activation_source'    => $activationSource,
+                               'has_banking_accounts' => $merchant->hasBankingAccounts()
+                           ]
+        );
+
+        if (($activationSource === Product::BANKING) and
+            ($merchant->hasBankingAccounts() === true))
+        {
+            $instantActivationMail = new RazorpayXInstantActivationMail($merchant->getId());
+        }
+        else
+        {
+            $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+            $data = [
+                'merchant' => [
+                    Entity::NAME              => $merchant->getName(),
+                    Entity::BILLING_LABEL     => $merchant->getBillingLabel(),
+                    Entity::EMAIL             => $merchant->getEmail(),
+                    Entity::ACTIVATION_SOURCE => $merchant->getActivationSource(),
+                    Entity::BUSINESS_BANKING  => $merchant->isBusinessBankingEnabled(),
+                    'org'                     => [
+                        OrgEntity::BUSINESS_NAME => $org->getBusinessName(),
+                        OrgEntity::CUSTOM_CODE   => $org->getCustomCode(),
+                    ],
                 ],
-            ],
-        ];
+            ];
 
-        $data['merchant']['org'][HostNameEntity::HOSTNAME] = $org->getPrimaryHostName();
+            $data['merchant']['org'][HostNameEntity::HOSTNAME] = $org->getPrimaryHostName();
 
-        $instantActivationMail = new InstantActivationMail($data, $org->toArray());
+            $instantActivationMail = new InstantActivationMail($data, $org->toArray());
+        }
 
         Mail::queue($instantActivationMail);
-    }
-
-    /**
-     * Returns formatted pricing rules with proper display text
-     * as an array with the display text as the key
-     * [
-     *   "2%" => ["Credit Cards", "Wallets"],
-     *   "1.8%" => ["Wallets"],
-     *   "2.1%" => ["Net Banking"]
-     * ]
-     * @param  array $rules Array of rules
-     * @return array Formatted rules with flipped keys
-     */
-    protected function formatPricingRules($rules)
-    {
-        $newRules = $amountRangeRules = [];
-
-        $rules = $this->rearrangeRules($rules);
-
-        foreach ($rules as $rule)
-        {
-            $rule['pricing_display'] = Pricing\Plan::formattedPricing($rule);
-
-            // This just holds Wallet/Card/Net Banking as of now
-            $display = Payment\Method::formatted($rule[Pricing\Entity::PAYMENT_METHOD]);
-
-            // This now holds Credit/Debit/All
-            $methodType = $rule[Pricing\Entity::PAYMENT_METHOD_TYPE] ? : 'Visa/MasterCard/Maestro';
-
-            if ($rule[Pricing\Entity::PAYMENT_METHOD] === Payment\Method::CARD)
-            {
-                // If we have a payment_network (such as AMEX/DICL)
-                if ($rule[Pricing\Entity::PAYMENT_NETWORK] !== null)
-                {
-                    // This becomes "American Express Cards"
-                    $display = $rule[Pricing\Entity::PAYMENT_NETWORK_NAME] . ' Cards';
-                }
-                else if ($methodType !== null)
-                {
-                    $type = ' ';
-
-                    if ($rule[Pricing\Entity::INTERNATIONAL] === true)
-                    {
-                        $type .= 'International ';
-                    }
-
-                    // This is Credit/Debit/[ Visa/MasterCard/Maestro ] Cards
-                    $display = ucfirst($methodType) . $type . 'Cards';
-                }
-            }
-            else if ($rule[Pricing\Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING)
-            {
-                if ($rule[Pricing\Entity::PAYMENT_NETWORK] !== null)
-                {
-                    $display = $rule[Pricing\Entity::PAYMENT_NETWORK_NAME] . ' Net Banking';
-                }
-            }
-
-            // Passing amount range rules separately
-            // Support currently for only one set of amountRangeRules
-            if ($rule[Pricing\Entity::AMOUNT_RANGE_ACTIVE] === true)
-            {
-                $amountRangeMin = $rule[Pricing\Entity::AMOUNT_RANGE_MIN] / 100;
-
-                $amountRangeMax = $rule[Pricing\Entity::AMOUNT_RANGE_MAX] / 100;
-
-                if ($amountRangeMin === 0)
-                {
-                    $amountRangeRules['low'] = $display . ' Below INR ' .
-                                $amountRangeMax . ' - '.$rule['pricing_display'];
-                }
-                else
-                {
-                    $amountRangeRules['high'] = $display.' Over INR '.
-                                $amountRangeMin.' - '.$rule['pricing_display'];
-                }
-
-                continue;
-            }
-
-            // We flip this around to store the rules as an array with the
-            // pricing display as the key. Since the pricing display is
-            // deterministic (see Pricing\Plan::formattedPricing)
-            // The same pricing gives the same display
-            //
-            // Now we can iterate over the newRules array and display
-            // the list of pricing options at the same pricing in the same
-            // line easily
-            $newRules[$rule['pricing_display']][] = $display;
-        }
-
-        return [ 'amountRangeRules' => $amountRangeRules,
-                     'otherRules'   => $newRules];
-    }
-
-    /**
-     * Rearrange $rules to display in emails in appropriate order
-     * Rules are arranged on basis of usage:
-     *  Basic Card Rules,
-     *  Basic Netbanking Rules,
-     *  Basic Wallet Rules,
-     *  Any Other Exceptional Cases,
-     * @param array $rules
-     * @return array
-     */
-    protected function rearrangeRules(array $rules)
-    {
-        $arrangedRules = [];
-
-        $orderOfRules = [
-            Payment\Method::CARD,
-            Payment\Method::NETBANKING,
-            Payment\Method::WALLET,
-            Payment\Method::EMI,
-            'exceptional'
-        ];
-
-        $exceptionalRules = $emiRules = $cardRules = $netbankingRules = $walletRules = [];
-
-        foreach ($rules as $rule)
-        {
-            switch ($rule['payment_method'])
-            {
-                case Payment\Method::CARD:
-                    if ($rule['payment_network'] === null)
-                    {
-                        $cardRules[] = $rule;
-                    }
-                    else
-                    {
-                        $exceptionalRules[] = $rule;
-                    }
-
-                    break;
-
-                case Payment\Method::NETBANKING:
-                    $netbankingRules[] = $rule;
-                    break;
-
-                case Payment\Method::WALLET:
-                    $walletRules[] = $rule;
-                    break;
-
-                case Payment\Method::EMI:
-                    $emiRules[] = $rule;
-                    break;
-
-                default:
-                    $exceptionalRules[] = $rule;
-                    break;
-            }
-        }
-
-        foreach ($orderOfRules as $ruleType)
-        {
-            $arrangedRules = array_merge($arrangedRules, ${$ruleType.'Rules'});
-        }
-
-        return $arrangedRules;
-    }
-
-    /**
-     * Remove rules in the merchant's pricing plan
-     * for methods not enabled for the merchant
-     *
-     * @param array $rules Array of rules
-     * @param Entity $merchant Merchant entity being activated
-     * @return array Array of rules
-     **/
-    protected function filterActiveRulesForMerchant($rules, $merchant)
-    {
-        $returnRules = [];
-
-        $merchantMethods = (new Methods\Core)->getMethods($merchant);
-
-        foreach ($rules as $rule) {
-            // Don't add rules other than payment
-            if ($rule[Pricing\Entity::FEATURE] !== Pricing\Feature::PAYMENT)
-            {
-                continue;
-            }
-
-            // Not mentioning some methods in the activation mails
-            if (in_array($rule[Pricing\Entity::PAYMENT_METHOD], self::MAIL_EXCLUDED_METHODS, true) === true)
-            {
-                continue;
-            }
-
-            // Don't add international rule if merchant international not active
-            if (($merchant->isInternational() === false) and
-                 ($rule[Pricing\Entity::INTERNATIONAL] === true))
-            {
-                continue;
-            }
-
-            $methodCheck = 'is' . studly_case($rule[Pricing\Entity::PAYMENT_METHOD]) . 'Enabled';
-
-            if ($merchantMethods->$methodCheck() === false)
-            {
-                continue;
-            }
-
-            // Don't add amex rule if merchant amex not active
-            if (($merchantMethods->isAmexEnabled() === false) and
-                 ($rule[Pricing\Entity::PAYMENT_NETWORK] === Card\Network::AMEX))
-            {
-                continue;
-            }
-
-            // If none of the above rule exceptions are valid, add the rule to
-            // be returned.
-            $returnRules[] = $rule;
-        }
-
-        return $returnRules;
     }
 
     /**
@@ -647,8 +497,8 @@ class Activate extends Base\Core
             // This endpoint could be hit from test mode as well, depending which this merchant has been read from
             // corresponding connection. Because this entity is synced between both connection, setting connection
             // to live mode is same as fetching merchant of same id from live connection. We need to do this
-            // because in subsequent steps we do things like $merchant->bankingBalance which we expect in this flow
-            // to query in live connection.
+            // because in subsequent steps we do things like $merchant->sharedBankingBalance which we expect
+            // in this flow to query in live connection.
             //
             $merchant->setConnection($liveMode);
 
@@ -685,5 +535,16 @@ class Activate extends Base\Core
         }
 
         return $merchant;
+    }
+
+    /**
+     * @param $merchantDetail
+     *
+     * @return bool
+     */
+    protected function shouldCreateBankAccount($merchantDetail): bool
+    {
+        return ((Detail\Core::shouldSkipBankAccountRegistration() === false) and
+                ($merchantDetail->hasBankAccountDetails() === true));
     }
 }

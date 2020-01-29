@@ -2,14 +2,17 @@
 
 namespace RZP\Http\Controllers;
 
+use View;
 use Request;
 use Redirect;
 use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Admin;
+use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Gateway\Base\Action;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
@@ -27,7 +30,6 @@ use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra as VajraConstants;
 
 class GatewayController extends Controller
 {
-
     /**
      * This is a health Check API for third party url.
      * It basically hits external services (like payment gateway) through api.
@@ -85,7 +87,7 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-            return (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+            return $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver);
         }
         else
         {
@@ -107,7 +109,20 @@ class GatewayController extends Controller
 
         $paymentRepo = $this->app['repo']->payment;
 
-        $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
+        if ($gatewayDriver === Gateway::GOOGLE_PAY)
+        {
+            $mode = $paymentRepo->determineLiveOrTestModeForEntityWithNotNullGateway($paymentId, $gatewayDriver);
+
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $payment = $paymentRepo->findOrFail($paymentId);
+
+            $gatewayDriver = $payment->getGateway();
+        }
+        else
+        {
+            $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
+        }
 
         $postInput = [
             'gateway' => $input,
@@ -117,7 +132,7 @@ class GatewayController extends Controller
         {
             if ($mode === null)
             {
-                $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+                $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver);
             }
             else
             {
@@ -125,17 +140,55 @@ class GatewayController extends Controller
 
                 $paymentId = Payment\Entity::getSignedId($paymentId);
 
-                $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+                if ((in_array($gatewayDriver, Payment\Gateway::$s2sMandateCallbackGateways, true) === true) and
+                    ($gateway->isMandateUpdateCallback($input) === true))
+                {
+                    $data = (new Payment\Service)->mandateUpdateCallback($paymentId, $input);
+                }
+                else
+                {
+                    $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+                }
             }
 
             $response = $gateway->postProcessServerCallback($postInput);
         }
         catch (\Exception $exception)
         {
+            $this->trace->traceException($exception, Logger::CRITICAL, TraceCode::PAYMENT_CALLBACK_FAILURE);
+
             $response = $gateway->postProcessServerCallback($postInput, $exception);
         }
 
         return $response;
+    }
+
+    /**
+     * When callback payment id is not found in payment table, it could be
+     * 1. Present in QrCode entity for VA payments
+     * 2. Unexpected payments made directly to VPA
+     *
+     * @return array|bool
+     */
+    protected function processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver)
+    {
+        // First if mode is not found from payment repo, we will check with QR repo
+        $qrRepo = $this->app['repo']->qr_code;
+
+        $mode = $qrRepo->determineLiveOrTestModeByMerchantReference($paymentId);
+
+        if ($mode !== null)
+        {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $data = (new QrCode\Upi\Service)->processPayment($input, $paymentId, $gatewayDriver);
+        }
+        else
+        {
+            $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+        }
+
+        return $data;
     }
 
     protected function callbackEbs($input)
@@ -205,6 +258,9 @@ class GatewayController extends Controller
             // Only logs the response
             case Gateway::WALLET_OLAMONEY:
                 break;
+            case Gateway::GETSIMPL:
+                $data = $this->processGetSimplCallback($input);
+                return $data;
 
             //Special case because gateway is upi_mindgate
             case 'upi_hdfc':
@@ -224,6 +280,20 @@ class GatewayController extends Controller
 
                 break;
 
+            case Gateway::UPI_JUSPAY:
+
+                $input = [
+                    'headers' => [
+                        'x-merchant-payload-signature' => Request::header('X-Merchant-Payload-Signature')
+                    ],
+                    'raw'     => Request::getContent(),
+                    'body'    => $input,
+                ];
+
+                $data = $this->processServerCallback($input, $gateway);
+
+                break;
+
             case Gateway::UPI_HULK:
                 $input['headers'] = Request::header();
                 $input['raw'] = Request::getContent();
@@ -235,6 +305,7 @@ class GatewayController extends Controller
             case Gateway::UPI_MINDGATE:
             case Gateway::UPI_SBI:
             case Gateway::UPI_AXIS:
+            case Gateway::GOOGLE_PAY:
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;
 
@@ -243,6 +314,45 @@ class GatewayController extends Controller
         // $input['gateway'] = $gateway;
 
         return ApiResponse::json($data);
+    }
+
+    public function staticCallbackGateway($method, $gateway, $mode)
+    {
+        $input = Request::all();
+
+        $data = [];
+
+        $trace = $this->app['trace'];
+
+        $trace->info(
+            TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK,
+            [
+                'input'     => $input,
+                'body'      => Request::getContent(),
+                'headers'   => Request::header(),
+                'gateway'   => $gateway,
+            ]);
+
+        switch ($method)
+        {
+            case Payment\Method::NETBANKING:
+                $data = $this->staticCallbackNetbanking($input, $gateway,$mode);
+                return $data;
+        }
+
+        return null;
+    }
+
+    public function staticCallbackNetbanking($input, $gateway, $mode)
+    {
+        switch ($gateway)
+        {
+            case Gateway::NETBANKING_KVB:
+            $data = $this->callbackKvbbank($input, $mode);
+            return $data;
+        }
+
+        return null;
     }
 
     public function callbackKotakCancel()
@@ -405,6 +515,58 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
+    public function processGetSimplCallback($input)
+    {
+        if((isset($input['token']) === false) or ($input['token'] === "null"))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                [
+                    'provider' => Gateway::GETSIMPL,
+                    'input'    => $input,
+                ]);
+        }
+
+        $this->app['trace']->info(
+            TraceCode::PAYLATER_ELLIGIBILITY_CALLBACK,
+            [
+                'gateway'          =>  Payment\Gateway::GETSIMPL,
+                'payment_id'       =>  $input['merchant_payload']
+            ]
+        );
+
+        $paymentId = $input['merchant_payload'];
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $this->app['rzp.mode'] = $mode;
+
+        $payment = $this->app['repo']->payment->findOrFail($paymentId);
+
+        $merchant = $payment->merchant;
+
+        $input = Mozart\GetSimpl\Helper::getPaymentInputParameters($input, $payment);
+
+        $input['simpltoken'] = $input['token'];
+
+        $gatewayinput = $input;
+
+        $input['payment'] = $payment;
+
+        $data = (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
+
+        if ($this->app['rzp.mode'] === 'test')
+        {
+            return $data;
+        }
+        assertTrue ($data !== null);
+
+        return View::make('gateway.callback')->with('data', $data);
+    }
+
     public function callbackYesbank()
     {
         $input = Request::all();
@@ -434,6 +596,39 @@ class GatewayController extends Controller
         $response = $gateway->preProcessServerCallback($input, Gateway::NETBANKING_YESB);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($response, Gateway::NETBANKING_YESB);
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $payment = $this->app['repo']->payment->findOrFail($paymentId);
+
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
+
+        $publicPaymentId = $payment->getPublicId();
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $url = $url . '?' . http_build_query(['preProcessServerCallbackResponse' => json_encode($response)]);
+
+        return Redirect::to($url);
+    }
+
+    public function callbackKvbbank($input, $mode)
+    {
+        $this->app['trace']->info(
+            TraceCode::NETBANKING_PAYMENT_CALLBACK,
+            [
+                'gateway'          => 'netbanking_kvb',
+                'encrypted_string' => $input
+            ]
+        );
+
+        $gateway = $this->app['gateway']->gateway(Gateway::NETBANKING_KVB);
+
+        $response = $gateway->preProcessServerCallback($input, Gateway::NETBANKING_KVB, $mode);
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($response, Gateway::NETBANKING_KVB);
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
@@ -774,6 +969,21 @@ class GatewayController extends Controller
         $input = Request::all();
 
         $data = $service->processGatewayDowntimeWebhook($source, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyPayment($gateway)
+    {
+        $gatewayInput = Request::all();
+
+        $data = [];
+
+        switch($gateway)
+        {
+            case Payment\Gateway::GOOGLE_PAY:
+                $data = $this->app['gateway']->call($gateway, Action::VERIFY, $gatewayInput, null, null);
+        }
 
         return ApiResponse::json($data);
     }

@@ -28,14 +28,21 @@ class DeviceVerificationCompleted extends Event implements ShouldQueue
         $entity = $this->getEntity();
 
         $appName = $entity->getAppFullName();
+        $sender  = $entity->getSmsSender();
 
         return [
             'receiver' => $entity->getFormattedContact(),
             'source'   => "api.{$this->context->getMode()}.p2p",
             'template' => 'sms.p2p.verification_completed',
+            'sender'   => $sender,
             'params'   => [
                 'app_name'      => $appName,
             ],
         ];
+    }
+
+    public function getReminderPayload()
+    {
+        return;
     }
 }

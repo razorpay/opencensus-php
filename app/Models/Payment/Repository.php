@@ -1374,6 +1374,52 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function fetchDebitNachPaymentPendingAuth(
+        string $gateway, string $paymentId, string $accountNo)
+    {
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $selectCols = $this->dbColumn('*');
+
+        //
+        // The SQL query that will be run is –
+        //
+        // select `payments`.* from `payments` inner join `tokens`
+        // on `token_id` = `tokens`.`id` or `global_token_id` = `tokens`.`id`
+        // where `payments`.`id` = ? and
+        // `account_number` = ? and
+        // `recurring_type` = ? and
+        // `status` = ? and
+        // `payments`.`recurring` = ? and
+        // `payments`.`method` = ?
+        //
+        return $this->newQuery()
+            ->select($selectCols)
+            ->join(
+                Table::TOKEN,
+                function ($join)
+                use ($tokenIdColumn)
+                {
+                    $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                    $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                })
+            ->where($paymentIdColumn, $paymentId)
+            ->where(Token\Entity::ACCOUNT_NUMBER, $accountNo)
+            ->where(Entity::RECURRING_TYPE, RecurringType::AUTO)
+            ->where(Entity::STATUS, Status::CREATED)
+            ->where($paymentRecurringColumn, 1)
+            ->where($paymentMethodColumn, Method::NACH)
+            ->where(Entity::GATEWAY, $gateway)
+            ->with('merchant')
+            ->firstOrFail();
+    }
+
     public function fetchDebitEnachPaymentPendingAuth(
         string $gateway, string $paymentId, string $gatewayToken)
     {
@@ -1445,6 +1491,48 @@ class Repository extends Base\Repository
         });
 
         $query->select($this->getTableName() . '.*');
+    }
+
+    /**
+     * Fetches payments for virtual account
+     *
+     * select * from `payments` inner join `virtual_accounts` on
+     * `payments`.`receiver_id` = `virtual_accounts`.`qr_code_id` or
+     * `payments`.`receiver_id` = `virtual_accounts`.`bank_account_id`
+     *  where `payments`.`merchant_id` = ? and `virtual_accounts`.`id` = ?;
+     *
+     * @todo : Join has to be added for VPA as well
+     *
+     * @param $query
+     * @param $params
+     */
+    protected function addQueryParamVirtualAccountId($query, $params)
+    {
+        $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
+
+        $virtualAccountIdCol = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
+
+        $virtualAccountId = $params[Payment\Entity::VIRTUAL_ACCOUNT_ID];
+
+        $qrcodeId = $this->repo
+                         ->virtual_account
+                         ->dbColumn(VirtualAccount\Entity::QR_CODE_ID);
+
+        $bankAccountId = $this->repo
+                              ->virtual_account
+                              ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
+
+        $vpaId = $this->repo
+                      ->virtual_account
+                      ->dbColumn(VirtualAccount\Entity::VPA_ID);
+
+        $query->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId, $vpaId)
+                    {
+                        $join->on($paymentReceiverId, '=', $qrcodeId);
+                        $join->orOn($paymentReceiverId, '=', $bankAccountId);
+                        $join->orOn($paymentReceiverId, '=', $vpaId);
+                    })
+              ->where($virtualAccountIdCol, '=', $virtualAccountId);
     }
 
     protected function joinQueryBankTransfer($query)
@@ -1524,6 +1612,9 @@ class Repository extends Base\Repository
         string $filterType,
         bool $isCorrection = false)
     {
+        //
+        // will consider all the payments
+        //
         $query = $this->newQuery()
                       ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                       ->whereBetween(Entity::CAPTURED_AT, [$start, $end])
@@ -1637,12 +1728,28 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function getByTokenIdAndCustomerId(string $tokenId, string $customerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::TOKEN_ID, $tokenId)
+                    ->where(Entity::CUSTOMER_ID, $customerId)
+                    ->first();
+    }
+
     public function fetchCreatedPaymentsBetween(string $gateway, int $from, int $to)
     {
         return $this->newQuery()
                     ->betweenTime($from, $to)
                     ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
+    public function fetchPaymentsGivenIds(array $paymentIds, int $limit)
+    {
+        return $this->newQuery()
+                    ->whereIn(Payment\Entity::ID, $paymentIds)
+                    ->limit($limit)
                     ->get();
     }
 
@@ -1687,6 +1794,37 @@ class Repository extends Base\Repository
         $obj = $this->connection(Mode::TEST)->newQuery()->where(Entity::GATEWAY, $gateway)->find($id);
 
         if ($obj !== null)
+        {
+            return Mode::TEST;
+        }
+
+        //
+        // We need to set connection to null
+        // because it will be set to test if the
+        // id is not found in any of the database.
+        // So even if the db connection is later set
+        // to live, query connection will be set to
+        // test.
+        //
+        $this->connection(null);
+
+        return null;
+    }
+
+    public function determineLiveOrTestModeForEntityWithNotNullGateway($id, $gateway)
+    {
+        $obj = $this->connection(Mode::LIVE)->newQuery()->find($id);
+
+        if (($obj !== null) and
+            ($obj->getGateway() !== null))
+        {
+            return Mode::LIVE;
+        }
+
+        $obj = $this->connection(Mode::TEST)->newQuery()->find($id);
+
+        if (($obj !== null) and
+            ($obj->getGateway() !== null))
         {
             return Mode::TEST;
         }

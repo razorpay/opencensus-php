@@ -8,11 +8,13 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingKotakCombinedFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -40,6 +42,13 @@ class NetbankingKotakCombinedFileTest extends TestCase
         ]);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Kotak refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 
@@ -129,6 +138,13 @@ class NetbankingKotakCombinedFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Kotak refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
+
         $this->ba->adminAuth();
 
         $content = $this->startTest();
@@ -193,6 +209,95 @@ class NetbankingKotakCombinedFileTest extends TestCase
         });
     }
 
+    public function testGenerateKotakCombinedFileForNonTpvRefundsOutOfRange()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal');
+
+        Mail::fake();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('KKBK');
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Refund out of range
+        $refundEntity['created_at'] = Carbon::yesterday()->getTimestamp();
+
+        // Netbanking Kotak refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNull($content[File\Entity::SENT_AT]);
+        $this->assertNotNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        Mail::assertNotSent(DailyFileMail::class);
+    }
+
+    public function testGenerateKotakCombinedFileForTpvRefundsOutOfRange()
+    {
+        Mail::fake();
+
+        $terminalAttrs = [
+            'id'               => 'TpvNbKotakTmnl',
+            'network_category' => 'securities',
+            'tpv'              => 1,
+        ];
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_netbanking_kotak_terminal',
+            $terminalAttrs);
+
+        $payment = $this->makeTpvPayment();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Refund out of range
+        $refundEntity['created_at'] = Carbon::yesterday()->getTimestamp();
+
+        // Netbanking Kotak refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNull($content[File\Entity::SENT_AT]);
+        $this->assertNotNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        Mail::assertNotSent(DailyFileMail::class);
+    }
 
     public function testGenerateTpvKotakRefundFile()
     {
@@ -217,6 +322,13 @@ class NetbankingKotakCombinedFileTest extends TestCase
         ]);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Kotak refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 
@@ -292,6 +404,13 @@ class NetbankingKotakCombinedFileTest extends TestCase
         ]);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Kotak refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
 
         $this->ba->adminAuth();
 

@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Payment\Processor\Processor;
@@ -34,7 +35,6 @@ class EmandateDebitReconciliate extends PaymentReconciliate
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'info_code'  => InfoCode::PAYMENT_ABSENT,
                     'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
-                    'row'        => $row,
                     'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);
@@ -232,6 +232,8 @@ class EmandateDebitReconciliate extends PaymentReconciliate
             //
             $processor->processAuth($this->payment);
 
+            $this->paymentTransaction = $this->payment->reload()->transaction;
+
             $this->persistReconciledAt($this->payment);
         }
         else
@@ -367,5 +369,16 @@ class EmandateDebitReconciliate extends PaymentReconciliate
     protected function getApiErrorCodeMapped(array $rowDetails)
     {
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+    }
+
+    public function recordGatewayFeeAndServiceTax($rowDetails)
+    {
+        // check failure case, for failed payments this function should not execute
+        if (($this->payment->isFailed() === true) or ($this->payment->isCreated() === true))
+        {
+            return;
+        }
+
+        parent::recordGatewayFeeAndServiceTax($rowDetails);
     }
 }

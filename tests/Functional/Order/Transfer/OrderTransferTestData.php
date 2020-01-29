@@ -1,0 +1,188 @@
+<?php
+
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+
+return [
+    'testCreateOrderTransfers' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'content' => [
+                'amount'    => '50000',
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => '50000',
+                        'currency' => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'    => 50000,
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 50000,
+                        'currency'  => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetOrderTransfers' => [
+        'request'  => [
+            'method'  => 'GET',
+            'content' => [
+                'expand' => [
+                    'transfers',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'order',
+                'amount'      => 50000,
+                'amount_paid' => 50000,
+                'amount_due'  => 0,
+                'currency'    => 'INR',
+                'offer_id'    => null,
+                'status'      => 'paid',
+                'notes'       => [],
+                'transfers'   => [
+                    'entity' => 'collection',
+                    'count'  => 1,
+                    'items'  => [
+                        [
+                            'entity'                  => 'transfer',
+                            'recipient'               => 'acc_10000000000001',
+                            'amount'                  => 50000,
+                            'currency'                => 'INR',
+                            'amount_reversed'         => 0,
+                            'notes'                   => [],
+                            'fees'                    => 0,
+                            'tax'                     => 0,
+                            'on_hold'                 => false,
+                            'on_hold_until'           => null,
+                            'recipient_settlement_id' => null,
+                            'linked_account_notes'    => [],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testReverseOrderTransfer' => [
+        'request'  => [
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'reversal',
+                'amount'   => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testWebhookOrderTransferProcessed'       => [
+        'mode'  => 'test',
+        'event' => [
+            'entity'   => 'event',
+            'event'    => 'transfer.processed',
+            'contains' => [
+                'transfer',
+            ],
+            'payload'  => [
+                'transfer' => [
+                    'entity' => [
+                        'entity'                  => 'transfer',
+                        'recipient'               => 'acc_10000000000001',
+                        'amount'                  => 50000,
+                        'currency'                => 'INR',
+                        'amount_reversed'         => 0,
+                        'notes'                   => [],
+                        'fees'                    => 0,
+                        'tax'                     => 0,
+                        'on_hold'                 => false,
+                        'on_hold_until'           => null,
+                        'recipient_settlement_id' => null,
+                        'linked_account_notes'    => [],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testProcessOrderTransfersPartialPayment' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'content' => [
+                'amount'          => '50000',
+                'currency'        => 'INR',
+                'partial_payment' => true,
+                'transfers'       => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => '50000',
+                        'currency' => 'INR',
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Partial payment not allowed for transfers',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCronProcessPendingOrderTransfers' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/transfers/process_pending',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
+
+    'testCronProcessFailedOrderTransfers' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/transfers/process_failed',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
+];

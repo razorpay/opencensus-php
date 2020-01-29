@@ -103,8 +103,7 @@ class UfhService
      *
      * @throws Exception\ServerErrorException
      */
-    public function uploadFileAndGetUrl(
-                                        UploadedFile $file,
+    public function uploadFileAndGetUrl(UploadedFile $file,
                                         string $storageFileName,
                                         string $type,
                                         Entity $entity,
@@ -197,9 +196,9 @@ class UfhService
         }
     }
 
-    public function getSignedUrl(string $fileId, array $params = [])
+    public function getSignedUrl(string $fileId, array $params = [], $merchantId = null)
     {
-        return $this->ufhClient->getSignedUrl($fileId, $params);
+        return $this->ufhClient->getSignedUrl($fileId, $params, $merchantId);
     }
 
     protected function validateResponse(array $res = null)

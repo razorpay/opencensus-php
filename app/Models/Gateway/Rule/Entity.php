@@ -806,6 +806,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute($key) === $terminal->getAttribute($key));
     }
 
+    protected function compareCurrency(Terminal\Entity $terminal, Merchant\Entity $merchant, Payment\Entity $payment = null): bool
+    {
+        return $terminal->supportsCurrency($this->getCurrency());
+    }
+
     protected function compareMethod(Terminal\Entity $terminal, Merchant\Entity $merchant, Payment\Entity $payment = null): bool
     {
         $method = $this->getMethod();

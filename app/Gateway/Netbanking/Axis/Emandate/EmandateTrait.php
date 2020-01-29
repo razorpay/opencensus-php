@@ -396,6 +396,11 @@ trait EmandateTrait
 
     protected function sendEmandatePaymentVerifyRequest(Verify $verify)
     {
+        if ($verify->input['payment']['recurring_type'] === Payment\RecurringType::AUTO)
+        {
+            throw new PaymentVerificationException([], $verify, Payment\Verify\Action::FINISH);
+        }
+
         $content = $this->getEmandatePaymentVerifyData($verify);
 
         $request = $this->getStandardRequestArray($content);

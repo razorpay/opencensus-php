@@ -14,6 +14,7 @@ use RZP\Constants\Mode;
 use Database\Connection;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Environment;
 use RZP\Models\Base\Collection;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicEntity;
@@ -624,13 +625,17 @@ class Repository extends \Razorpay\Spine\Repository
 
         $serialized = $entity->setVisible($fields)->toArray();
 
-        // There is issue around Notes and NotesTrait which needs to be handled
-        // there. For now following is the quickest solution to handle it.
-        // Ref: https://github.com/razorpay/api/issues/1678
-
+        // Refer- config/es_mappings.php on how notes is indexed.
         if (array_key_exists(Common::NOTES, $serialized) === true)
         {
-            $serialized[Common::NOTES] = (object) $serialized[Common::NOTES];
+            $serialized[Common::NOTES] = array_map(
+                function ($key, $value)
+                {
+                    return compact('key', 'value');
+                },
+                array_keys($serialized[Common::NOTES]),
+                $serialized[Common::NOTES]
+            );
         }
 
         return $serialized;
@@ -850,6 +855,20 @@ class Repository extends \Razorpay\Spine\Repository
     protected function hasEntityFetch(): bool
     {
         return (empty($this->entityFetch) === false);
+    }
+
+    protected function getMasterReplicaConnection(string $mode = null)
+    {
+        if ($this->app['env'] === Environment::TESTING)
+        {
+            return Config::get('database.default');
+        }
+
+        $mode = ($mode ?? $this->app['rzp.mode']) ?? Mode::LIVE;
+
+        $connection = ($mode === Mode::TEST) ? Connection::MASTER_REPLICA_TEST : Connection::MASTER_REPLICA_LIVE;
+
+        return $connection;
     }
 
     protected function getSlaveConnection(string $mode = null)

@@ -2,8 +2,13 @@
 
 namespace RZP\Tests\Functional\FundAccount;
 
+use Queue;
 use \RZP\Constants;
+use RZP\Models\Feature;
+use RZP\Jobs\FaVpaValidation;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -41,7 +46,12 @@ class FundAccountValidationTest extends TestCase
 
     public function testCreateValidationWithFundAccountId()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
 
@@ -55,6 +65,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
         $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertNotNull($fav['results']['utr']);
         $this->assertEquals('10000000000000', $fav['balance_id']);
 
         // Fee and tax will be calculated at the time fund account validation is created.
@@ -72,7 +83,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('fund_account_validation', $txn['type']);
         $this->assertEquals('platform', $txn['fee_bearer']);
         $this->assertEquals('postpaid', $txn['fee_model']);
-        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(false, $txn['settled']);
         $this->assertEquals(354, $txn['fee']);
         $this->assertEquals(354, $txn['mdr']);
         $this->assertEquals(54, $txn['tax']);
@@ -82,6 +93,36 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(1000000, $txn['balance']);
         $this->assertEquals(0, $txn['fee_credits']);
         $this->assertEquals('default', $txn['credit_type']);
+
+        // utr should be present in response['results'] array
+        $this->assertArrayKeysExist($response['results'], ['utr','account_status','registered_name']);
+
+        return $response;
+    }
+
+    public function testCreateValidationWithExposeUTRNotSetInResponse()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        // remove features is not required as by default feature would be disabled
+        //$this->fixtures->merchant->removeFeatures(['expose_fa_validation_utr']);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $response = $this->startTest();
+
+        $fav      = $this->getLastEntity('fund_account_validation', true);
+
+        // Queue will be processed by now.
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertNotNull($fav['results']['registered_name']);
+
+        // utr should not be present in response['results'] array
+        $this->assertArrayKeysExist($response['results'], ['account_status','registered_name']);
+
         return $response;
     }
 
@@ -92,6 +133,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testCreateValidationWithFundAccountEntity()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->createValidationWithFundAccountEntity();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -112,6 +155,8 @@ class FundAccountValidationTest extends TestCase
         // Transaction is always created for Fee Bearer: Platform.
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_bearer' => 'customer']);
 
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->createValidationWithFundAccountEntity();
 
         $txn = $this->getLastEntity('transaction', true);
@@ -123,6 +168,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testGetValidations()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->createValidationWithFundAccountEntity();
 
         $this->ba->privateAuth();
@@ -133,6 +180,8 @@ class FundAccountValidationTest extends TestCase
     public function testFundAccValidationOnPrepaidModelWithFeeCredits()
     {
         $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
+
+        $this->enableRazorXTreatmentForRazorX();
 
         $this->ba->privateAuth();
 
@@ -150,6 +199,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationWhenFailedDuringRecon()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -181,7 +232,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('fund_account_validation', $txn['type']);
         $this->assertEquals('platform', $txn['fee_bearer']);
         $this->assertEquals('postpaid', $txn['fee_model']);
-        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(false, $txn['settled']);
         $this->assertEquals(354, $txn['fee']);
         $this->assertEquals(354, $txn['mdr']);
         $this->assertEquals(54, $txn['tax']);
@@ -196,6 +247,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationOnPostpaidModelWithFeeCredits()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
 
         $this->ba->privateAuth();
@@ -220,6 +273,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationOnPrepaidModelWithNoFeeCredits()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
         $this->createValidationWithFundAccountEntity();
@@ -267,6 +322,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationRetry()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -303,7 +360,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('fund_account_validation', $txn['type']);
         $this->assertEquals('platform', $txn['fee_bearer']);
         $this->assertEquals('postpaid', $txn['fee_model']);
-        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(false, $txn['settled']);
         $this->assertEquals(354, $txn['fee']);
         $this->assertEquals(354, $txn['mdr']);
         $this->assertEquals(54, $txn['tax']);
@@ -343,6 +400,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationRetryWithCron()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -392,6 +451,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationWhenFailedDuringReconWithNonInternalError()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
@@ -450,5 +511,136 @@ class FundAccountValidationTest extends TestCase
         // validate fund transfer attempt table last entry
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);
+    }
+
+    public function testFundAccValidationWithAccountNumberAndVpa()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        // get database entities
+        $balance = $this->getLastEntity('balance', true);
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $txn = $this->getLastEntity('transaction', true);
+
+        // validate balance entry in database
+        $this->assertEquals(10000000, $balance['balance']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        // no transaction should be created for 0 fee
+        $this->assertNotEquals($fav['id'], $txn['entity_id']);
+
+        // no fta
+        $this->assertNotEquals($fav['id'], $fta['source']);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Razorpay Customer', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+    }
+
+    public function testFixTransactionSettledAt()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->createValidationWithFundAccountEntity();
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals(false, $txn['settled']);
+
+        $this->fixtures->merchant->editEntity('transaction', $txn['id'], ['settled' => true]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals(false, $txn['settled']);
+    }
+
+    public function testFundAccValidationBankingFailedAccountTypeDirect()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000, AccountType::DIRECT);
+
+        $this->createFAVBankingPricingPlan();
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationBankingFailedAmountVpa()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationBankingFailedCurrencyVpa()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationBankingFailedMissingFundAccountId()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationFailedFundAccountCardType()
+    {
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->mockCardVault();
+
+        $fundAccountResponse = $this->createFundAccountCard();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
     }
 }

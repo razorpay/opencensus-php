@@ -232,6 +232,38 @@ class Repository extends Base\Repository
         return $query;
     }
 
+    /**
+     * @param array $params
+     * @param string|null $merchantId
+     * @return mixed
+     *
+     * SELECT batches.id AS batch_id,
+     * batches.gateway,
+     * batches.processing,
+     * batches.status,
+     * batches.total_count,
+     * batches.processed_count,
+     * batches.success_count,
+     * batches.failure_count,
+     * batches.failure_reason,
+     * files.id AS input_file_id,
+     * files.name AS input_file_name,
+     * files.size AS input_file_size,
+     * 'outputfiles' AS output_files,
+     * batches.attempts,
+     * batches.processed_at,
+     * batches.created_at,
+     * batches.updated_at
+     * FROM `batches`
+     * INNER JOIN `files` ON `batches`.`id` = `files`.`entity_id`
+     * WHERE `batches`.`type` = 'reconciliation'
+     * AND `files`.`type` = 'reconciliation_batch_input'
+     * GROUP BY `batches`.`id`,
+     * `files`.`id`
+     * ORDER BY `batches`.`created_at` DESC,
+     * `batches`.`id` DESC
+     * LIMIT 1000
+     */
     public function getReconBatchesWithFiles(array $params, string $merchantId = null)
     {
         $query = $this->buildQueryFromParams($params, $merchantId, true);
@@ -278,18 +310,18 @@ class Repository extends Base\Repository
                    . ',' . $batchStatusColumn . ',' . $batchTotalCount . ',' . $batchProcessedCount
                    . ',' . $batchSuccessCount . ',' . $batchFailureCount . ',' . $batchFailureReason;
 
-        $params2 = 'MAX(case when ( ' . $fileTypeColumn . ' = "reconciliation_batch_input") THEN ' . $fileIdColumn . ' ELSE NULL END) as input_file_id, '
-                 . 'MAX(case when ( ' . $fileTypeColumn . ' = "reconciliation_batch_input") THEN ' . $fileNameColumn . ' ELSE NULL END) as input_file_name, '
-                 . 'MAX(case when ( ' . $fileTypeColumn . ' = "reconciliation_batch_input") THEN ' . $fileSizeColumn . ' ELSE NULL END) as input_file_size, '
-                 . 'MAX(case when ( ' . $fileTypeColumn . ' = "reconciliation_batch_output") THEN ' . $fileIdColumn . ' ELSE NULL END) as output_file_id';
+        $params2 = $fileIdColumn . ' as input_file_id, '
+                   . $fileNameColumn . ' as input_file_name, '
+                   . $fileSizeColumn . ' as input_file_size, '
+                   . '\'outputfiles\' as output_files';
 
         $params3 = $batchAttempts . ',' . $batchProcessedAt . ',' . $batchCreatedAt . ',' . $batchUpdatedAt;
 
         return $query->selectRaw($params1 . ', ' . $params2 . ', ' . $params3)
                      ->join(Table::FILE_STORE, $batchIdColumn, '=', $fileEntityIdColumn)
                      ->where($batchTypeColumn, '=', Batch\Type::RECONCILIATION)
-                     ->orderBy($batchIdColumn)
-                     ->groupBy($batchIdColumn)
+                     ->where($fileTypeColumn, '=', FileStore\Type::RECONCILIATION_BATCH_INPUT)
+                     ->groupBy($batchIdColumn, $fileIdColumn)
                      ->get();
     }
 

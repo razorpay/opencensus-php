@@ -2,9 +2,11 @@
 
 namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiHdfc;
 
+use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Batch\Status;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
@@ -28,9 +30,19 @@ class UpiHdfcReconTest extends TestCase
 
         $this->payment = $this->getDefaultUpiPaymentArray();
 
-        $upiEntity = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+        $upiEntity1 = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
 
-        $entries[] = $this->overrideUpiHdfcPayment($upiEntity);
+        $upiEntity2 = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+
+        $entries[] = $this->overrideUpiHdfcPayment($upiEntity1);
+
+        $row = $this->overrideUpiHdfcPayment($upiEntity2);
+
+        // Change the settlement date format for this row, to test
+        // that this format is being parsed correctly without error.
+        $row['Settlement Date'] = '08/19/2018';
+
+        $entries[] = $row;
 
         $file = $this->writeToExcelFile($entries, 'upiHdfc');
 
@@ -40,15 +52,21 @@ class UpiHdfcReconTest extends TestCase
 
         $this->assertBatchStatus(Status::PROCESSED);
 
-        $transactionEntity = $this->getDbLastEntity('transaction');
+        $updatedPayment1 = $this->getDbEntityById('payment', $upiEntity1['payment_id']);
+        $updatedPayment2 = $this->getDbEntityById('payment', $upiEntity2['payment_id']);
 
-        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $transactionEntity1 = $this->getDbEntityById('transaction', $updatedPayment1['transaction_id']);
+        $transactionEntity2 = $this->getDbEntityById('transaction', $updatedPayment2['transaction_id']);
 
-        $this->assertNotNull($transactionEntity['gateway_settled_at']);
+        $this->assertNotNull($transactionEntity1['reconciled_at']);
+        $this->assertNotNull($transactionEntity2['reconciled_at']);
 
-        $upiEntity = $this->getDbLastEntityToArray('upi');
+        $this->assertNotNull($transactionEntity1['gateway_settled_at']);
+        $this->assertNotNull($transactionEntity2['gateway_settled_at']);
 
-        $this->assertEquals($entries[0]['Txn ref no. (RRN)'], $upiEntity['npci_reference_id']);
+        $upiEntity2 = $this->getDbLastEntityToArray('upi');
+
+        $this->assertEquals($entries[1]['Txn ref no. (RRN)'], $upiEntity2['npci_reference_id']);
     }
 
     public function testUpiHdfcRefundFile()
@@ -131,6 +149,169 @@ class UpiHdfcReconTest extends TestCase
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
 
         $this->assertEquals('authorized', $updatedPayment['status']);
+    }
+
+    public function testUpiHdfcForceAuthorizeQrCodePayment()
+    {
+        $this->gateway = 'upi_mindgate';
+
+        // First Fix the terminal
+        $terminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', [
+            'gateway_merchant_id'   => 'HDFC000000000',
+        ]);
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $va = new VirtualAccount\Entity();
+        $va->forceFill([
+            'id'                => 'ThisIsVaNotVpa',
+            'merchant_id'       => '10000000000000',
+            'notes'             => [],
+            'amount_expected'   => 50000,
+            'status'            => 'active',
+        ]);
+        $va->saveOrFail();
+
+        $randomId = str_random(14);
+
+        $qrCode = new QrCode\Entity();
+        $qrCode->forceFill([
+            'id'            => $randomId,
+            'merchant_id'   => '10000000000000',
+            'provider'      => 'upi_qr',
+            'reference'     => $randomId,
+            'entity_id'     => $va->getId(),
+            'entity_type'   => 'virtual_account',
+        ]);
+        $qrCode->saveOrFail();
+
+        $va->setAttribute('qr_code_id', $randomId);
+        $va->saveOrFail();
+
+        $this->mockServerContentFunction(
+            function(& $content, $action = null) use ($qrCode, $terminal)
+            {
+                if ($action === 'callback')
+                {
+                    $content[0] = $terminal['razorpay upi mindgate'];
+                    $content[1] = $qrCode->getId();
+                }
+            });
+
+        $upiEntity = $this->getNewUpiEntity('10000000000000', 'upi_mindgate', $this->getMockServer());
+
+        $this->assertArraySubset([
+            'merchant_reference' => $randomId
+        ], $upiEntity);
+
+        // Force failing the payment
+        $this->fixtures->payment->edit($upiEntity['payment_id'],
+            [
+                'status'                => 'failed',
+                'error_code'            => 'BAD_REQUEST_ERROR',
+                'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'     => 'Payment was not completed on time.',
+            ]);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideUpiHdfcPayment(array_merge($upiEntity, [
+            'payment_id'  => $qrCode->getId(),
+        ]));
+
+        $file = $this->writeToExcelFile($entries, 'UpiHdfc');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiHdfc', ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+    }
+
+    public function testUpiHdfcRevalidateFailsQrCodePayment()
+    {
+        $this->gateway = 'upi_mindgate';
+
+        // First Fix the terminal
+        $terminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', [
+            'gateway_merchant_id'   => 'HDFC000000000',
+        ]);
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $va = new VirtualAccount\Entity();
+        $va->forceFill([
+            'id'                => 'ThisIsVaNotVpa',
+            'merchant_id'       => '10000000000000',
+            'notes'             => [],
+            'amount_expected'   => 50000,
+            'status'            => 'active',
+        ]);
+        $va->saveOrFail();
+
+        $randomId = str_random(14);
+
+        $qrCode = new QrCode\Entity();
+        $qrCode->forceFill([
+            'id'            => $randomId,
+            'merchant_id'   => '10000000000000',
+            'provider'      => 'upi_qr',
+            'reference'     => $randomId,
+            'entity_id'     => $va->getId(),
+            'entity_type'   => 'virtual_account',
+        ]);
+        $qrCode->saveOrFail();
+
+        $va->setAttribute('qr_code_id', $randomId);
+        $va->saveOrFail();
+
+        $this->mockServerContentFunction(
+            function(& $content, $action = null) use ($qrCode, $terminal)
+            {
+                if ($action === 'callback')
+                {
+                    $content[0] = $terminal['razorpay upi mindgate'];
+                    $content[1] = 'Random14CharsS';
+                }
+            });
+
+        $upiEntity = $this->getNewUpiEntity('10000000000000', 'upi_mindgate', $this->getMockServer());
+
+        $this->assertArraySubset([
+            'merchant_reference' => null
+        ], $upiEntity);
+
+        // Force failing the payment
+        $this->fixtures->payment->edit($upiEntity['payment_id'],
+            [
+                'status'                => 'failed',
+                'error_code'            => 'BAD_REQUEST_ERROR',
+                'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'     => 'Payment was not completed on time.',
+            ]);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideUpiHdfcPayment(array_merge($upiEntity, [
+            'payment_id'  => $qrCode->getId(),
+        ]));
+
+        $file = $this->writeToExcelFile($entries, 'UpiHdfc');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiHdfc', ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        // This will stay failed
+        $this->assertEquals('failed', $updatedPayment['status']);
     }
 
     protected function overrideUpiHdfcPayment(array $upiEntity)

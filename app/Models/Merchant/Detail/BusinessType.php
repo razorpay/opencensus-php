@@ -79,12 +79,30 @@ class BusinessType
             self::TRUST,
             self::SOCIETY,
             self::OTHER,
+            self::NGO,
         ],
         self::UNREGISTERED => [
             self::INDIVIDUAL,
             self::NOT_YET_REGISTERED,
         ]
     ];
+
+    protected static $GreylistedInternationalActivationFlowBusinessType = [
+        self::PROPRIETORSHIP,
+        self::NGO,
+        self::SOCIETY,
+        self::TRUST
+    ];
+
+    public static function isBusinessTypeGreylistedForInternational($businessType = null)
+    {
+        if (empty($businessType) === true)
+        {
+            return false;
+        }
+
+        return in_array($businessType, self::$GreylistedInternationalActivationFlowBusinessType, true);
+    }
 
     /**
      * @param string $businessTypeBucket
@@ -113,14 +131,13 @@ class BusinessType
     /**
      * Checks business type is a unregistered business type or not
      *
-     * @param string $businessType
+     * @param  $businessType
      *
      * @return bool
-     * @throws Exception\BadRequestValidationFailureException
      */
     public static function isUnregisteredBusiness(string $businessType): bool
     {
-        if ($businessType == null)
+        if (empty($businessType))
         {
             return false;
         }
@@ -128,6 +145,21 @@ class BusinessType
         $unRegisteredBusiness = self::$businessTypeBuckets[self::UNREGISTERED];
 
         return in_array($businessType, $unRegisteredBusiness, true);
+    }
+
+    /**
+     * Checks that business type belongs to unregistered business or not
+     *
+     * @param int $businessType
+     *
+     * @return bool
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public static function isUnregisteredBusinessIndex(int $businessType): bool
+    {
+        $businessType = self::getKeyFromIndex($businessType);
+
+        return BusinessType::isUnregisteredBusiness($businessType) === true;
     }
 
     public static function getType($num)

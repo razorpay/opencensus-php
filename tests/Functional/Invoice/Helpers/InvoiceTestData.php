@@ -132,9 +132,9 @@ return [
                 'type'            => 'link',
                 'view_less'       => 1,
                 'amount'          => 100,
-                'currency'        => "INR",
+                'currency'        => 'INR',
                 'description'     => 'Any Description about paymentLink',
-                'partial_payment' => "0",
+                'partial_payment' => '0',
                 'idempotency_key' => 'B24Y8gjypHOVOm'
             ],
         ],
@@ -172,9 +172,9 @@ return [
                 'type'            => 'link',
                 'view_less'       => 1,
                 'amount'          => 100,
-                'currency'        => "INR",
+                'currency'        => 'INR',
                 'description'     => 'Any Description about paymentLink',
-                'partial_payment' => "0",
+                'partial_payment' => '0',
                 'idempotency_key' => 'B24Y8gjypHOVOm'
             ],
         ],
@@ -248,24 +248,24 @@ return [
                     'email'           => 'test@razorpay.com',
                     'contact'         => '9999999999',
                     'billing_address' => [
-                        'type'    => "billing_address",
+                        'type'    => 'billing_address',
                         'primary' => true,
-                        'line1'   => "Line One Etc",
-                        'line2'   => "Line Two Etc",
-                        'zipcode' => "560078",
-                        'city'    => "Bangalore",
-                        'state'   => "Karnataka",
-                        'country' => "in",
+                        'line1'   => 'Line One Etc',
+                        'line2'   => 'Line Two Etc',
+                        'zipcode' => '560078',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
                     ],
                     'shipping_address' => [
-                        'type'    => "shipping_address",
+                        'type'    => 'shipping_address',
                         'primary' => true,
-                        'line1'   => "Shipping Line One Etc",
-                        'line2'   => "Shipping Line Two Etc",
-                        'zipcode' => "560080",
-                        'city'    => "Bangalore",
-                        'state'   => "Karnataka",
-                        'country' => "in",
+                        'line1'   => 'Shipping Line One Etc',
+                        'line2'   => 'Shipping Line Two Etc',
+                        'zipcode' => '560080',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
                     ],
                 ],
                 'line_items' => [
@@ -781,6 +781,68 @@ return [
         ],
     ],
 
+    'testCreateLinkReminderEnable' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => '12300',
+                'description' => 'test',
+                'type'        => 'link',
+                'customer'    =>[
+                        'contact' => '1234567890',
+                        'email'   => 'abc@abc.com'
+                    ],
+                'reminder_enable' => true
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testCreateLinkReminderDisable' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => '12300',
+                'description' => 'test',
+                'type'        => 'link',
+                'customer'    =>[
+                    'contact' => '1234567890',
+                    'email'   => 'abc@abc.com'
+                ],
+                'reminder_enable' => false
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testCreateLinkReminderFieldNotThere' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'amount'      => '12300',
+                'description' => 'test',
+                'type'        => 'link',
+                'customer'    =>[
+                    'contact' => '1234567890',
+                    'email'   => 'abc@abc.com'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
     'testCreateLinkCustomerContactEmailNullOldMerchantFlagDisabled' => [
         'request' => [
             'url' => '/invoices',
@@ -1187,12 +1249,12 @@ return [
             'content' => [
                 'line_items' => [
                     [
-                        'name'     => "Line item #1",
+                        'name'     => 'Line item #1',
                         'amount'   => 10000000,
                         'quantity' => 4,
                     ],
                     [
-                        'name'     => "Line item #2",
+                        'name'     => 'Line item #2',
                         'amount'   => 15000000,
                         'quantity' => 2,
                     ],
@@ -1595,7 +1657,7 @@ return [
             'url' => '/invoices',
             'method' => 'post',
             'content' => [
-                'receipt'       => "00000000000001",
+                'receipt'       => '00000000000001',
                 'customer'      => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
@@ -1632,7 +1694,7 @@ return [
             'url' => '/invoices',
             'method' => 'post',
             'content' => [
-                'receipt'       => "00000000000001",
+                'receipt'       => '00000000000001',
                 'customer'      => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
@@ -1670,7 +1732,7 @@ return [
             'url' => '/invoices',
             'method' => 'post',
             'content' => [
-                'receipt'       => "00000000000001",
+                'receipt'       => '00000000000001',
                 'customer'      => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
@@ -1701,7 +1763,7 @@ return [
             'url' => '/invoices',
             'method' => 'post',
             'content' => [
-                'receipt'       => "00000000000001",
+                'receipt'       => '00000000000001',
                 'customer'      => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
@@ -4069,7 +4131,7 @@ return [
         ],
     ],
 
-   'testPayExpiredInvoice' => [
+    'testPayExpiredInvoice' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -4083,9 +4145,9 @@ return [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-   ],
+    ],
 
-   'testPayDeletedInvoice' => [
+    'testPayDeletedInvoice' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -4099,7 +4161,7 @@ return [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-   ],
+    ],
 
     'testCancelInvoice' => [
         'request' => [
@@ -4738,12 +4800,10 @@ return [
                             ],
                         ],
                         [
-                            'multi_match' => [
-                                'query'                => 'info',
-                                'type'                 => 'best_fields',
-                                'fields'               => 'notes.*',
-                                'boost'                => 2,
-                                'minimum_should_match' => '75%',
+                            'match' => [
+                                'notes.value' => [
+                                    'query' => 'info',
+                                ],
                             ],
                         ]
                     ],
@@ -4814,7 +4874,7 @@ return [
                                     'customer_email',
                                     'description',
                                     'terms',
-                                    'notes.*',
+                                    'notes.value',
                                 ],
                                 'boost'                => 1,
                                 'minimum_should_match' => '75%',
@@ -5184,5 +5244,46 @@ return [
             ],
         ],
     ],
+
+    'testCreateInvoiceLinkWithAutoReminders' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer'        => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                    'gstin'   => '29ABCDE1234L1Z1',
+                ],
+                'type'            => 'link',
+                'view_less'       => 1,
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'description'     => 'Any Description about paymentLink',
+                'partial_payment' => '0',
+                'idempotency_key' => 'B24Y8gjypHOVOm'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => null,
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'status'           => 'issued',
+                'sms_status'       => 'pending',
+                'email_status'     => 'pending',
+                'view_less'        => true,
+                'amount'           => 100,
+                'currency'         => 'INR',
+                'payment_id'       => null,
+                'type'             => 'link',
+                'idempotency_key'  => 'B24Y8gjypHOVOm'
+            ],
+        ],
+    ]
     // ----------------------------------------------------------------------
 ];

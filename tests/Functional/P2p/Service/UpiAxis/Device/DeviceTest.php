@@ -83,8 +83,9 @@ class DeviceTest extends TestCase
                 'receiver'  => '919742417121',
                 'source'    => 'api.test.p2p',
                 'template'  => 'sms.p2p.verification_completed',
+                'sender'    => 'BAJAJP',
                 'params'    => [
-                    'app_name'      => 'Bajaj Application',
+                    'app_name'      => 'Bajaj Finserv MARKETS',
                 ],
             ], $input);
         });
@@ -198,8 +199,8 @@ class DeviceTest extends TestCase
         $helper->deregisterDevice();
 
         $this->assertTrue($deviceToken->refresh()->trashed());
-        $this->assertTrue($bankAccount->refresh()->trashed());
-        $this->assertTrue($vpa->refresh()->trashed());
+        $this->assertFalse($bankAccount->refresh()->trashed());
+        $this->assertNull($vpa->refresh()->getBankAccountId());
         $this->assertTrue($transaction->refresh()->isCreated());
         $this->assertNull($this->getDbLastEntity('p2p_beneficiary'));
     }

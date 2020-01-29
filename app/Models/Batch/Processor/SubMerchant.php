@@ -2,14 +2,19 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
 use RZP\Models\Merchant\Email;
+use RZP\Constants\Entity as CE;
 use RZP\Models\Batch\Constants;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Entity as ME;
+use RZP\Models\Merchant\Webhook\Stork;
 use RZP\Models\Merchant\Account\Entity as Account;
 use RZP\Models\Batch\Helpers\SubMerchant as Helper;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
@@ -98,12 +103,14 @@ class SubMerchant extends Base
 
     protected function processEntry(array & $entry)
     {
-        $this->repo->transactionOnLiveAndTest(function() use (& $entry)
+        $subMerchant = $this->repo->transactionOnLiveAndTest(function() use (& $entry)
         {
-            $this->createSubMerchantForEntry($entry);
-
+            $subMerchant = $this->createSubMerchantForEntry($entry);
             $this->unsetExtraOutputKeys($entry);
+            return $subMerchant;
         });
+
+        (new Stork)->invalidateCacheForBothModeWithoutFail(optional($subMerchant)->getId());
     }
 
     protected function performPreProcessingActions()
@@ -139,7 +146,7 @@ class SubMerchant extends Base
         $this->settings[ME::SKIP_BA_REGISTRATION]      = (bool) ($this->settings[ME::SKIP_BA_REGISTRATION] ?? true);
 
         // This parameter is for data back filling. when we don't want to create new MID but want to update existing MIDS
-        // mids will be fetched using email provided in file 
+        // mids will be fetched using email provided in file
         $this->settings[ME::CREATE_SUBMERCHANT] = (bool) ($this->settings[ME::CREATE_SUBMERCHANT] ?? true);
 
         $this->partner = $this->repo->merchant->findOrFailPublic($this->settings[ME::PARTNER_ID]);
@@ -260,8 +267,16 @@ class SubMerchant extends Base
 
             if ($response[MerchantDetail::SUBMITTED] === false)
             {
+                $this->trace->info(
+                    TraceCode::MERCHANT_ACTIVATION_FORM_SUBMISSION_FAILURE,
+                    [
+                        'response'    => $response,
+                        'merchant_id' => $subMerchant->getId(),
+                    ]);
+
                 $status                           = Status::FAILURE;
                 $entry[Header::ERROR_DESCRIPTION] = 'Activation details not submitted successfully';
+
             }
 
             if (($response[MerchantDetail::SUBMITTED] === true) and ($this->autoActivate === true))
@@ -280,9 +295,7 @@ class SubMerchant extends Base
                     MerchantDetail::ACTIVATION_STATUS => Merchant\Detail\Status::ACTIVATED
                 ];
 
-                $subMerchant->load('merchantDetail');
-
-                $response = $this->merchantDetailCore->updateActivationStatus($subMerchant->merchantDetail, $activationStatusData, $subMerchant);
+                $response = $this->merchantDetailCore->updateActivationStatus($subMerchant, $activationStatusData, $subMerchant);
 
                 if ($response[ME::ACTIVATED] === false)
                 {
@@ -306,7 +319,55 @@ class SubMerchant extends Base
         $entry[Header::STATUS]      = $status;
         $entry[Header::MERCHANT_ID] = Account::getSignedId($subMerchant->getId());
 
+        $this->addMSwipeConfigurations($subMerchant, $entry);
+
         return $subMerchant;
+    }
+
+    /**
+     * MSwipe merchants require some extra configurations to be added. This should ideally be a
+     * part of a separate batch or workflow, but adding a new batch will take time, and existing
+     * workflows alternatives all buckle under the stress of MSwipe numbers. Eg. Assigning four
+     * features to 5000 merchants everyday generally results in a spike in queued messages and
+     * Slack webhooks getting throttled. It also results in a massive loss of time, since there
+     * are dedicated people in activations who work on nothing but MSwipe activations on some
+     * days. So yes, this is a hack, but a very VERY useful one.
+     */
+    protected function addMSwipeConfigurations($subMerchant, $entry)
+    {
+        if ($this->isMswipeSubmerchant() === false)
+        {
+            return;
+        }
+
+        (new Merchant\Service)->assignSettlementSchedule($subMerchant->getId(), [
+            'schedule_id' => Preferences::MSWIPE_SETTLEMENT_SCHEDULE_ID,
+        ]);
+
+        (new Merchant\Service)->assignPricingPlan($subMerchant->getId(), [
+            Merchant\Entity::PRICING_PLAN_ID => Preferences::MSWIPE_PRICING_PLAN_ID,
+        ]);
+
+        foreach (Preferences::MSWIPE_FEATURE_LIST as $featureName)
+        {
+            (new Feature\Core)->create([
+                Feature\Entity::ENTITY_TYPE => CE::MERCHANT,
+                Feature\Entity::ENTITY_ID   => $subMerchant->getId(),
+                Feature\Entity::NAME        => $featureName,
+            ], true);
+        }
+
+        (new Merchant\Service)->updatePaymentMethods($subMerchant->getId(), Preferences::MSWIPE_METHOD_LIST);
+    }
+
+    protected function isMswipeSubmerchant()
+    {
+        if ($this->partner->getId() === Preferences::MSWIPE_PARTNER_MID)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function unsetExtraOutputKeys(array & $entry)
@@ -320,5 +381,10 @@ class SubMerchant extends Base
     {
         // Don't send an email
         return;
+    }
+
+    protected function resetErrorOnSuccess(): bool
+    {
+        return false;
     }
 }

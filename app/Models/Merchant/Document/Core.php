@@ -2,12 +2,19 @@
 
 namespace RZP\Models\Merchant\Document;
 
-use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\AutoKyc;
+use RZP\Exception\BadRequestException;
+use RZP\Models\FileStore\Core as FileStoreCore;
+use RZP\Models\Merchant\AutoKyc\Verifiers\POAVerifier;
+use RZP\Models\Merchant\Detail\Constants as DetailConstant;
+use RZP\Models\Merchant\AutoKyc\MozartService\ProcessorFactoryImpl;
 
 class Core extends Base\Core
 {
@@ -18,20 +25,36 @@ class Core extends Base\Core
      */
     public function delete(Entity $document)
     {
+        $merchantDetailCore = new Detail\Core();
+
         $this->trace->info(TraceCode::DOCUMENT_DELETE_REQUEST, ['id' => $document->getId()]);
 
-        return $this->repo->deleteOrFail($document);
+        $this->repo->deleteOrFail($document);
+
+        return $merchantDetailCore->createResponse($this->merchant->merchantDetail);
     }
 
     /**
      * this function creates or edit a new document with params documentType and fileStoreId
+     *
      * @param Merchant\Entity $merchant
      * @param array           $params
-     * @param Entity|null     $document
+     * @param Entity|null     $inputDocument
+     *
+     * @throws BadRequestException
      */
-    public function storeInMerchantDocument(Merchant\Entity $merchant, array $params, Entity $document = null)
+    public function storeInMerchantDocument(Merchant\Entity $merchant, array $params, Entity $inputDocument = null)
     {
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $params]);
+
+        //
+        // Ideally inputDocument should be not null only if params contain only one document data
+        //
+        if (count($params) > 1 and $inputDocument !== null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_NOT_SUPPORTED_FEATURE);
+        }
 
         foreach ($params as $documentType => $fileStoreId)
         {
@@ -40,7 +63,7 @@ class Core extends Base\Core
                 Entity::DOCUMENT_TYPE => $documentType,
             ];
 
-            $document = $document ?? (new Entity)->generateId();
+            $document = $inputDocument ?? (new Entity)->generateId();
 
             $document->edit($input);
 
@@ -63,9 +86,11 @@ class Core extends Base\Core
      */
     public function uploadActivationFile(Merchant\Entity $merchant, array $input, bool $validateLock = true)
     {
+        $merchantDetailCore = new Detail\Core();
+
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $input]);
 
-        $merchantDetails = (new Detail\Core())->getMerchantDetails($merchant);
+        $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
         if ($validateLock === true)
         {
@@ -78,7 +103,7 @@ class Core extends Base\Core
 
         $document->setEntityType();
 
-        $this->repo->transaction(function() use ($document, $merchant, $input)
+        $this->repo->transaction(function() use ($document, $merchant, $input, $merchantDetails)
         {
             $this->repo->saveOrFail($document);
 
@@ -89,9 +114,43 @@ class Core extends Base\Core
             $param = (new Detail\Service())->storeActivationFile($document, $param);
 
             $this->storeInMerchantDocument($merchant, $param, $document);
+
+            $this->handleAndPerformOcrForUnRegisteredBusinessType(
+                $merchantDetails,
+                $document,
+                $merchant);
+
+            $this->repo->saveOrFail($document);
         });
 
-        return $document->toArrayPublic();
+        $this->pushEventsAndMetrics($merchant, $input);
+
+        return $merchantDetailCore->createResponse($merchantDetails);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function fetchActivationFilesFromDocument(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $documentsResponse = $this->documentResponse($merchant);
+
+        $detailService = new Detail\Service();
+
+        foreach ($documentsResponse as $documentType => &$documentMetaData)
+        {
+            foreach($documentMetaData as &$document)
+            {
+                $signedUrl = $detailService->getSignedUrl($document[Entity::FILE_STORE_ID], $merchantId);
+
+                $document[Entity::SIGNED_URL] = $signedUrl;
+            }
+        }
+        return $documentsResponse;
     }
 
     /**
@@ -110,5 +169,178 @@ class Core extends Base\Core
                 $this->delete($document);
             }
         }
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+    public function documentResponse(Merchant\Entity $merchant): array
+    {
+        $documentsResponse = [];
+
+        $merchants = (new Merchant\Core)->getAllMerchantsMappedToMerchantLegalEntity($merchant);
+
+        if ($merchants->isEmpty() === false)
+        {
+            $documents = $this->repo->merchant_document->findDocumentsForMerchantIds($merchants->getIds());
+        }
+        else
+        {
+            $documents = $merchant->merchantDocuments;
+        }
+
+        foreach ($documents as $document)
+        {
+            $documentMetaData = [
+                Entity::ID            => $document->getId(),
+                Entity::FILE_STORE_ID => $document->getFileStoreId()
+            ];
+
+            if (isset($documentsResponse[$document->getDocumentType()]) === false)
+            {
+                $documentsResponse[$document->getDocumentType()] = [];
+            }
+
+            array_push($documentsResponse[$document->getDocumentType()], $documentMetaData);
+        }
+
+        return $documentsResponse;
+    }
+
+    protected function handleAndPerformOcrForUnRegisteredBusinessType(
+        Merchant\Detail\Entity $merchantDetails,
+        Entity $document,
+        Merchant\Entity $merchant)
+    {
+        $merchantCore = new Merchant\Core();
+
+        if ((Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false) or
+            ($merchantCore->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === false))
+        {
+            return;
+        }
+
+        $ocrResponse = $this->performOcr($document, $merchantDetails);
+
+        $ocrDetails = $ocrResponse != null ? $ocrResponse->getResponseData() : [];
+
+        (new AutoKyc\Events())->sendServiceVerifierEvents($ocrDetails);
+
+        $pOAVerifier = new POAVerifier($merchantDetails->getPromoterPanName(),
+                                       $ocrDetails);
+
+        $verificationData = $pOAVerifier->verify();
+
+        $document->setOcrVerify($verificationData[Detail\Constants::DOCUMENT_VERIFICATION_STATUS]);
+
+        $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_OCR_PERFORMED_TOTAL,
+                            [
+                                Entity::DOCUMENT_TYPE => $document->getDocumentType()
+                            ]);
+
+        $this->pushEventsForOCRVerification($merchant,
+                                            $ocrDetails,
+                                            $document,
+                                            $verificationData[Detail\Constants::OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME],
+                                            $merchantDetails->getPromoterPanName());
+    }
+
+    /**
+     * @param Entity        $document
+     *
+     * @param Detail\Entity $merchantDetails
+     *
+     * @return null|AutoKyc\Response
+     */
+    protected function performOcr(Entity $document, Merchant\Detail\Entity $merchantDetails)
+    {
+        $signedUrl = (new FileStoreCore)->getSignedUrl(
+            $document->getFileStoreId(),
+            $document->getMerchantId()
+        );
+
+        $input = [
+            DetailConstant::SIGNED_URL                  => $signedUrl,
+            Merchant\Detail\Constants::ENTITY_ID        => $document->getMerchantId(),
+            Merchant\Detail\Constants::DOCUMENT_TYPE    => $this->mapToKycDocType($document->getDocumentType()),
+            Merchant\Detail\Constants::DOCUMENT_FILE_ID => $document->getFileStoreId(),
+            Merchant\Detail\Constants::KYC_ID           => $merchantDetails->getKycId(),
+        ];
+
+        try
+        {
+            $processor = ProcessorFactoryImpl::getPOAProcessor($input);
+
+            return $processor->process();
+        }
+        catch (\Throwable $exception)
+        {
+            $data = [
+                Entity::FILE_STORE_ID => $document->getFileStoreId(),
+            ];
+
+            $this->trace->traceException($exception,
+                                         null,
+                                         TraceCode::MERCHANT_POA_VERIFICATION_FAILED,
+                                         $data);
+
+            return null;
+        }
+    }
+
+    protected function mapToKycDocType(string $document_type): ?string
+    {
+        if ($document_type === Type::AADHAR_BACK or $document_type === Type::AADHAR_FRONT)
+        {
+            return Type::AADHAAR;
+        }
+        if ($document_type === Type::PASSPORT_BACK or $document_type === Type::PASSPORT_FRONT)
+        {
+            return Type::PASSPORT;
+        }
+        if ($document_type === Type::VOTER_ID_BACK or $document_type === Type::VOTER_ID_FRONT)
+        {
+            return Type::VOTERS_ID;
+        }
+
+        return null;
+    }
+
+    protected function pushEventsAndMetrics(Merchant\Entity $merchant, array $input)
+    {
+        $eventAttributes = [];
+
+        if (empty($input[Entity::DOCUMENT_TYPE]) === false)
+        {
+            $eventAttributes[Constants::DOCUMENT_TYPE] = $input[Entity::DOCUMENT_TYPE];
+        }
+
+        $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_TYPE_SUBMITTED_TOTAL,
+                            [
+                                Entity::DOCUMENT_TYPE => $input[Entity::DOCUMENT_TYPE]
+                            ]);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_UPLOAD_DOCUMENT_SUCCESS, $merchant, null, $eventAttributes);
+    }
+
+    protected function pushEventsForOCRVerification(Merchant\Entity $merchant,
+                                                    array $ocrDetails,
+                                                    Entity $document,
+                                                    $ocrMatchingPercentage = 0,
+                                                    $promoterPanName = null)
+    {
+        $eventProperties = [
+            Entity::DOCUMENT_TYPE              => $document->getDocumentType(),
+            Constants::API_CALL_SUCCESSFUL     => $ocrDetails[Constants::SUCCESS] ?? false,
+            Constants::VERIFIED                => ($document->getOcrVerify() === OcrVerificationStatus::VERIFIED),
+            Constants::OCR_MATCHING_PERCENTAGE => $ocrMatchingPercentage,
+            Constants::OCR_MATCHING_THRESHOLD  => OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD,
+            Constants::OCR_NAME                => $ocrDetails[Constants::NAME] ?? null,
+            Detail\Entity::PROMOTER_PAN_NAME   => $promoterPanName,
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::DOCUMENT_VERIFICATION_OCR, $merchant, null, $eventProperties);
     }
 }

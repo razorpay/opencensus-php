@@ -6,6 +6,9 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Status;
+use RZP\Models\Base\PublicEntity;
+use RZP\Gateway\Upi\Icici\Action;
+use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Gateway\Upi\Icici\Status as UpiStatus;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -24,6 +27,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const BLACKLISTED_COLUMNS = [
         self::PAYER_VPA,
     ];
+
+    const SHOULD_ADD_ENTITY_ID_COLUMN = true;
 
     protected function getPaymentId(array $row)
     {
@@ -79,6 +84,54 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return true;
+    }
+
+    protected function getReferenceNumber($row)
+    {
+        return $row[self::BANK_TRANS_ID] ?? null;
+    }
+
+    public function getGatewayPayment($paymentId)
+    {
+        try
+        {
+            return $this->repo->upi->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
+        }
+        catch (DbQueryException $ex)
+        {
+            $this->trace->traceException($ex);
+
+            return null;
+        }
+    }
+
+    protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
+    {
+        $npciRefId = $gatewayPayment->getNpciReferenceId();
+
+        if ((empty($npciRefId) === false) and
+            ($npciRefId !== $referenceNumber))
+        {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'message'                   => 'Npci Reference id is not same as in recon',
+                    'info_code'                 => $infoCode,
+                    'payment_id'                => $this->payment->getId(),
+                    'amount'                    => $this->payment->getBaseAmount(),
+                    'payment_status'            => $this->payment->getStatus(),
+                    'db_reference_number'       => $npciRefId,
+                    'recon_reference_number'    => $referenceNumber,
+                    'gateway'                   => $this->gateway
+                ]);
+
+            return;
+        }
+
+        // We will only update the RRN if it is empty
+        $gatewayPayment->setNpciReferenceId($referenceNumber);
     }
 
     protected function getInputForForceAuthorize($row)

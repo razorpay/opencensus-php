@@ -66,10 +66,10 @@ class CreateTerminals extends Migration
             $table->string(Terminal::GATEWAY_ACCESS_CODE)
                   ->nullable();
 
-            $table->string(Terminal::GATEWAY_SECURE_SECRET)
+            $table->text(Terminal::GATEWAY_SECURE_SECRET)
                   ->nullable();
 
-            $table->string(Terminal::GATEWAY_SECURE_SECRET2)
+            $table->text(Terminal::GATEWAY_SECURE_SECRET2)
                   ->nullable();
 
             $table->text(Terminal::GATEWAY_RECON_PASSWORD)
@@ -112,6 +112,9 @@ class CreateTerminals extends Migration
                   ->default(0);
 
             $table->tinyInteger(Terminal::EMANDATE)
+                  ->default(0);
+
+            $table->tinyInteger(Terminal::NACH)
                   ->default(0);
 
             $table->tinyInteger(Terminal::EMI)
@@ -162,7 +165,7 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::EXPECTED)
                   ->default(0);
 
-            $table->string(Terminal::CURRENCY, 3)
+            $table->string(Terminal::CURRENCY, 1024)
                   ->default(Terminal::DEFAULT_CURRENCY);
 
             $table->string(Terminal::NETWORK_CATEGORY)
@@ -177,9 +180,18 @@ class CreateTerminals extends Migration
             $table->string(Terminal::IFSC_CODE, 11)
                   ->nullable();
 
+            $table->string(Terminal::VIRTUAL_UPI_ROOT, 10)
+                  ->nullable();
+
+            $table->string(Terminal::VIRTUAL_UPI_MERCHANT_PREFIX, 10)
+                  ->nullable();
+
+            $table->string(Terminal::VIRTUAL_UPI_HANDLE, 10)
+                  ->nullable();
+
             $table->text(Terminal::NOTES)
-                  ->nullable();    
-                    
+                  ->nullable();
+
             $table->integer(Terminal::CREATED_AT);
 
             $table->integer(Terminal::UPDATED_AT);
@@ -214,6 +226,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::CARDLESS_EMI);
             $table->index(Terminal::STATUS);
             $table->index(Terminal::ORG_ID);
+            $table->index(Terminal::BANK_TRANSFER);
         });
     }
 

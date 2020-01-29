@@ -17,6 +17,10 @@ class ResponseFields
     const DATE_TIME      = 'DT';
     const TRAN_REF_NUM   = 'TID';
 
+    const QOUT           = 'Qout';
+
+    const DATA           = 'DATA';
+
     /**
      * Status of the transaction
      */
@@ -24,6 +28,8 @@ class ResponseFields
 
     const BANKID         = 'BankId';
     const CHNPGCODE      = 'CHNPGCODE';
+
+    const CHECKSUM       = 'CHECKSUM';
 
     /**
      * Verification XML element

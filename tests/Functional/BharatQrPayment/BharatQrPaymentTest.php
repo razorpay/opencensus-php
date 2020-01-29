@@ -23,6 +23,8 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
 
+        $this->fixtures->on('live')->create('terminal:vpa_shared_terminal');
+
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         $this->fixtures->merchant->activate();
@@ -756,7 +758,7 @@ class BharatQrPaymentTest extends TestCase
 
         $qrCode = $this->getLastEntity('qr_code', true);
 
-        $this->assertRegExp('/1100/', $qrCode['qr_string']);
+        $this->assertRegExp('/5399/', $qrCode['qr_string']);
 
         $this->assertRegExp('/2223330048827001/', $qrCode['qr_string']);
 

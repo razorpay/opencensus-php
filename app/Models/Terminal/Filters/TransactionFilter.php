@@ -7,6 +7,8 @@ use App;
 use RZP\Exception;
 use RZP\Models\BankAccount\Generator;
 use RZP\Models\Card;
+use RZP\Models\Admin;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
@@ -19,6 +21,7 @@ use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Gateway\Hitachi\Gateway as HitachiGateway;
 
 class TransactionFilter extends Terminal\Filter
 {
@@ -36,19 +39,22 @@ class TransactionFilter extends Terminal\Filter
         'upi',
         'pharma',
         'corporate',
-        'mcc',
         'auth_type',
         'bharat_qr',
+        'bank_account_type',
+        'capability',
+        'blacklisted_mcc',
         'direct_settlement',
         'fee_bearer',
-        'bank_account_type',
-        'hitachi_shared_terminal',
-        'capability',
+        'shared_terminal',
+        'mcc',
+        'application',
     ];
 
     public function methodFilter($terminal)
     {
-        $method = $this->input['payment']->getMethod();
+        $method  = $this->input['payment']->getMethod();
+        $payment = $this->input['payment'];
 
         switch ($method)
         {
@@ -90,6 +96,9 @@ class TransactionFilter extends Terminal\Filter
                 return (($terminal->isPayLaterEnabled() === true) and
                         ($this->input['payment']->getWallet() === $terminal->getGatewayAcquirer()));
 
+            case Method::NACH:
+                return $terminal->isNachEnabled();
+
             default:
                 throw new Exception\LogicException(
                     'Unknown payment method passed.',
@@ -106,7 +115,8 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if ($payment->isMethodCardOrEmi() === true)
+        if (($payment->isMethodCardOrEmi() === true) and
+            ($payment->isGooglePayCard() === false))
         {
             $network = $payment->card->getNetworkCode();
             $gateway = $terminal->getGateway();
@@ -323,6 +333,11 @@ class TransactionFilter extends Terminal\Filter
             {
                 return true;
             }
+
+            if ($payment->isNach() === true)
+            {
+                return true;
+            }
         }
 
         return (new Terminal\Core)->hasApplicableGatewayTokens($terminal, $payment, $gatewayTokens);
@@ -334,15 +349,21 @@ class TransactionFilter extends Terminal\Filter
 
         if ($payment->isUpi() === true)
         {
+            if ($payment->isUpiTransfer() !== $terminal->isUpiTransfer())
+            {
+                return false;
+            }
+
             $flow = $payment->getMetadata('flow', 'collect');
 
-            if ($payment->isBharatQr() === true)
+            if (($payment->isBharatQr() === true) and ($payment->isFlowIntent() === false))
             {
                 if (empty($terminal->getVpa()) === true)
                 {
                     return false;
                 }
             }
+            // Flow is intent for UPI QR on VA and direct payments
             else if ($flow === 'intent')
             {
                 $gateway = $terminal->getGateway();
@@ -356,6 +377,13 @@ class TransactionFilter extends Terminal\Filter
                     // corresponsing omnichannel terminal exist otherwise it's normal intent flow and we return true.
                     if (empty($upiProvider))
                     {
+                        // For UPI QR Terminal has to be intent enabled, yet we are putting
+                        // extra check only to make sure implementation is there for gateway
+                        if ($payment->isUpiQr())
+                        {
+                            return in_array($gateway, Gateway::$upiQrGateways, true);
+                        }
+
                         return true;
                     }
 
@@ -464,7 +492,7 @@ class TransactionFilter extends Terminal\Filter
         {
             return (($terminal->isCardEnabled()) and
                     ($terminal->isEmiEnabled() === false) and
-                    ($terminal->isCurrencyInr() === true));
+                    ($terminal->supportsCurrency(Currency::INR) === true));
         }
 
         // validate terminal using the gateway and emi duration
@@ -545,6 +573,33 @@ class TransactionFilter extends Terminal\Filter
     }
 
     /**
+     * For card / emi payments, selects terminal with gateway not hitachi
+     * and merchant mcc not in blacklist mcc array
+     *
+     * @param  Terminal\Entity $terminal
+     *
+     * @return bool
+     */
+    public function blacklistedMccFilter(Terminal\Entity $terminal)
+    {
+        $merchant = $this->input['merchant'];
+
+        $merchantMcc = $merchant->getCategory();
+
+        // These MCCs are blacklisted by RBL and Hitachi. Hence, should not go via hitachi.
+        // We already have gateway rules enabled for this, but this is a fallback in case
+        // the gateway rules fails.
+        // Violation of the agreement with Hitachi and RBL, which results in getting fined by the bank.
+        if (($terminal->getGateway() === Gateway::HITACHI) and
+            (in_array($merchantMcc, HitachiGateway::BLACKLISTED_MCC) === true))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * For card / emi payments, selects terminals with null mcc or with mcc
      * matching that of the merchant
      *
@@ -556,6 +611,7 @@ class TransactionFilter extends Terminal\Filter
     public function mccFilter(Terminal\Entity $terminal, array $applicableTerminals)
     {
         $merchant = $this->input['merchant'];
+
         $merchantMcc = $merchant->getCategory();
 
         if (($this->input['payment']->isMethodCardOrEmi() === true) and
@@ -589,6 +645,48 @@ class TransactionFilter extends Terminal\Filter
                             $applicableTerminals,
                             $merchantMcc) === true);
             }
+        }
+
+        return true;
+    }
+
+    // filter rejects all shared terminal if there is a atleast one direct terminal present on same gateway
+    // filter selects all shared terminal if there is no direct terminal on same gateway
+    public function sharedTerminalFilter(Terminal\Entity $terminal, array $applicableTerminals)
+    {
+        $payment  = $this->input['payment'];
+
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return true;
+        }
+
+        //
+        // If terminal is direct for the merchant, we always select it.
+        //
+        if ($terminal->isDirectForMerchant() === true)
+        {
+            return true;
+        }
+
+        $currentGateway = $terminal->getGateway();
+
+        $directTerminalsOnSameGateway = false;
+
+        foreach ($applicableTerminals as $applicableTerminal)
+        {
+            if (($applicableTerminal->isDirectForMerchant() === true) and
+                ($applicableTerminal->getGateway() === $currentGateway))
+            {
+                // breaking once we get direct terminal on the same gateway as of current terminal
+                $directTerminalsOnSameGateway = true;
+                break;
+            }
+        }
+
+        if ($directTerminalsOnSameGateway === true)
+        {
+            return false;
         }
 
         return true;
@@ -741,6 +839,11 @@ class TransactionFilter extends Terminal\Filter
 
     public function bharatQrFilter($terminal)
     {
+        if (($this->input['payment']->isFlowIntent()) === true)
+        {
+            // We have already verified that terminal is intent enabled in UPI Filter
+            return true;
+        }
         if ($this->input['payment']->isBharatQr() === true)
         {
             return ($terminal->isBharatQr() === true);
@@ -776,9 +879,25 @@ class TransactionFilter extends Terminal\Filter
 
     public function feeBearerFilter($terminal, $applicableTerminals)
     {
-        if ($this->input['merchant']->isFeeBearerCustomer() === true)
+        /*
+         * For customer fee bearer payments, we are responsible for adding fees to payment amount and settling only
+         * actual payment amount (not fees) to the merchant. For direct settlements, Razorpay does not have control over
+         * the amount that finally gets settled to merchant by the bank. For this reason, there's a check  that skips
+         * direct settlement terminals for customer fee bearer merchants.
+         *
+         *
+         * Direct settlement terminals are being used by various HDFC VAS merchants, some of whom are on customer
+         * fee bearer. We are explicitly allowing direct settlement terminals for such merchants, otherwise
+         * the payments will fail with "no terminal found"
+         *
+         *
+         */
+        if ($this->input['payment']->isFeeBearerCustomer() === true)
         {
-            return ($terminal->isDirectSettlement() === false);
+            if ($terminal->isDirectSettlement() === true)
+            {
+                return ($this->input['merchant']->getOrgId() === Admin\Org\Entity::HDFC_ORG_ID);
+            }
         }
 
         return true;
@@ -886,6 +1005,22 @@ class TransactionFilter extends Terminal\Filter
             }
 
             return false;
+        }
+
+        return true;
+    }
+
+    public function applicationFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+        $application = $payment->getApplication();
+
+        switch ($application)
+        {
+            case 'google_pay':
+                return ($terminal->isTokenizationSupported() === true);
+            default:
+                return true;
         }
 
         return true;

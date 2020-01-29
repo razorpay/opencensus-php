@@ -2,12 +2,30 @@
 
 namespace RZP\Error;
 
+use App;
 use RZP\Exception;
 use Illuminate\Support;
 use RZP\Services\DowntimeMetric;
+use RZP\Models\Feature\Constants;
 
 class Error extends Support\Fluent
 {
+     /** Error codes in which data needs to persist in response
+     * Data will be persisted in the error response in non-debug also
+     */
+    const ERROR_CODES_PERSIST_DATA_IN_RESPONSE = [
+        ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
+        ErrorCode::BAD_REQUEST_USER_2FA_ALREADY_SETUP,
+        ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+        ErrorCode::BAD_REQUEST_2FA_SETUP_INCORRECT_OTP,
+        ErrorCode::BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED,
+        ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+        ErrorCode::BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED,
+        ErrorCode::BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA,
+        ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE,
+    ];
+
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const INTERNAL_ERROR_DESC   = 'internal_error_desc';
     const PUBLIC_ERROR_CODE     = 'code';
@@ -19,6 +37,7 @@ class Error extends Support\Fluent
     const ACTION                = 'action';
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_DESC    = 'gateway_error_desc';
+    const METADATA              = 'metadata';
 
     protected $attributes = array();
 
@@ -76,10 +95,8 @@ class Error extends Support\Fluent
         // {
         //     throw new InvalidArgumentException($key . ' not defined');
         // }
-
         $this->attributes[$key] = $value;
     }
-
 
     public function isInvalidTerminalError()
     {
@@ -176,6 +193,11 @@ class Error extends Support\Fluent
     protected function setHttpStatusCode($code)
     {
         $this->setAttribute(self::HTTP_STATUS_CODE, $code);
+    }
+
+    public function setMetadata($metadata)
+    {
+        $this->setAttribute(self::METADATA, $metadata);
     }
 
     protected function getAttribute($attr)
@@ -323,6 +345,25 @@ class Error extends Support\Fluent
             self::DESCRIPTION       => $description,
         );
 
+        $app = App::getFacadeRoot();
+
+        $isMetadataFeatureEnabled = false;
+
+        if (($app['basicauth'] !== null) and
+            ($app['basicauth']->getMerchant() !== null))
+        {
+                $merchant = $app['basicauth']->getMerchant();
+
+                $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+        }
+
+        if ($isMetadataFeatureEnabled === true)
+        {
+            $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
+        }
+
+        $error = $this->checkAndAddDataToErrorResp($error);
+
         $action = $this->getAttribute(self::ACTION);
 
         if ($action !== null)
@@ -332,8 +373,6 @@ class Error extends Support\Fluent
 
         if ($field !== null)
             $error[self::FIELD] = $field;
-
-        $attributes = $this->getAttribute(self::DATA);
 
         $array = ['error' => $error];
 
@@ -347,9 +386,28 @@ class Error extends Support\Fluent
         return $array;
     }
 
+    /** We generally don't send the data in the error response. However, in few situations
+    * need to send extra data in case of error. So, adding that extra data to the error
+    * response. Ref: https://razorpay.slack.com/archives/C6QPQKVLZ/p1568717119044100
+    */
+    public function checkAndAddDataToErrorResp(array $error)
+    {
+        $dataAttributes = $this->getAttribute(self::DATA);
+
+        if ((is_null($dataAttributes) === false) and
+            (in_array($this->getInternalErrorCode(), self::ERROR_CODES_PERSIST_DATA_IN_RESPONSE) === true))
+        {
+            $error = array_merge($error, ['_internal' => $dataAttributes]);
+        }
+
+        return $error;
+    }
+
     public function toDebugArray()
     {
-        return array('error' => $this->getAttributes());
+        $error = $this->checkAndAddDataToErrorResp($this->getAttributes());
+
+        return array('error' => $error);
     }
 
     protected function getDescriptionFromErrorCode($code)

@@ -25,7 +25,7 @@ class Fetch extends BaseFetch
             Entity::TRANSFER_ID                  => 'filled|public_id|size:18',
             Entity::CAPTURED                     => 'sometimes|boolean',
             Entity::BATCH_ID                     => 'sometimes|string|size:20',
-            self::EXPAND_EACH                    => 'filled|string|in:card,emi',
+            self::EXPAND_EACH                    => 'filled|string|in:card,emi,transaction,transaction.settlement,refunds',
             Entity::NOTES                        => 'sometimes|string|max:500',
             Entity::VERIFIED                     => 'sometimes|in:null,0,1,2',
             Entity::REFUND_STATUS                => 'sometimes|in:null,partial,full',
@@ -49,10 +49,12 @@ class Fetch extends BaseFetch
             Entity::VPA                          => 'sometimes|string|max:100',
             Terminal\Entity::GATEWAY_TERMINAL_ID => 'sometimes',
             Entity::ACQUIRER_DATA                => 'sometimes',
+            Entity::VIRTUAL_ACCOUNT_ID           => 'sometimes|string|max:17'
         ],
         AuthType::PROXY_AUTH => [
             // @codingStandardsIgnoreLine
-            self::EXPAND_EACH => 'filled|string|in:card,emi,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
+            self::EXPAND_EACH =>
+                'filled|string|in:card,emi,emi_plan,disputes,transfer,transfer.recipient_settlement,transaction,transaction.settlement|custom:expand',
         ],
         AuthType::ADMIN_AUTH => [
             Entity::NOTES       => 'sometimes|notes_fetch',
@@ -71,6 +73,7 @@ class Fetch extends BaseFetch
             Entity::RECURRING,
             self::EXPAND_EACH,
             Entity::NOTES,
+            Entity::VIRTUAL_ACCOUNT_ID,
         ],
         AuthType::PROXY_AUTH => [
             Entity::STATUS,
@@ -115,6 +118,7 @@ class Fetch extends BaseFetch
 
     const ES_FIELDS = [
         Entity::NOTES,
+        Entity::RECURRING,
     ];
 
     const SIGNED_IDS = [
@@ -125,6 +129,11 @@ class Fetch extends BaseFetch
         Entity::PAYMENT_LINK_ID,
         Entity::TRANSFER_ID,
         Entity::BATCH_ID,
+        Entity::VIRTUAL_ACCOUNT_ID,
+    ];
+
+    const COMMON_FIELDS = [
+        Entity::RECURRING,
     ];
 
     protected function validateCustomerId($attribute, $value)

@@ -59,7 +59,7 @@ class BeneficiaryHelper extends P2pHelper
 
         $request = $this->request('beneficiaries');
 
-        $this->get($request);
+        return $this->get($request);
     }
 
     protected function validateRequest()

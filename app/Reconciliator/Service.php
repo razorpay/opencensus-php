@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator;
 
+use Queue;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
@@ -13,6 +14,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Base\InfoCode;
+use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 
@@ -42,13 +44,15 @@ class Service extends Base\Service
 
     protected $core;
 
+    protected $messenger;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->core = new Core;
+        $this->messenger = new Messenger;
     }
-
 
     public function initiateReconciliationProcess(array $input)
     {
@@ -63,7 +67,8 @@ class Service extends Base\Service
         catch (\Throwable $e)
         {
             if (($this->isManualRequest($input) === true) or
-                ($this->isLambdaRequest() === true))
+                ($this->isLambdaRequest() === true) or
+                ($this->isCrawlerRequest($input) === true))
             {
                 $this->trace->traceException(
                     $e, Trace::ERROR, TraceCode::RECON_ALERT);
@@ -168,6 +173,180 @@ class Service extends Base\Service
         );
 
         return $data;
+    }
+
+    /**
+     * @param array $response
+     *
+     * Compare the fields return by CPS service with the values we got in MIS file
+     * If data mismatch, raise alert and don't overwrite the value.
+     * Note : Pushing when only existing value is empty. There is
+     * no sense in pushing when it matches, as it is already saved.
+     * @param array $input
+     */
+    public function persistGatewayDataAfterCpsReconResponse(array $response, array $input)
+    {
+        $paymentId = $input['payment_id'];
+
+        $misParams = $input['params'];
+
+        $pushData = [];
+
+        if (empty($response[$paymentId]) === false)
+        {
+            foreach (Constants::CPS_PARAMS as $field)
+            {
+                if (empty($misParams[$field]) === true)
+                {
+                    // MIS row does not have this field, so no sense in
+                    // comparing with CPS response or sending it to CPS.
+                    continue;
+                }
+
+                if (empty($response[$paymentId][$field]) === true)
+                {
+                    // Existing CPS data is empty, Overwrite it
+                    $pushData[$field] = $misParams[$field];
+                }
+                else if (trim($response[$paymentId][$field]) !== $misParams[$field])
+                {
+                    // CPS data and MIS data both are non empty and we have mismatch.
+                    // Trace alert and don't save this MIS value.
+                    $this->trace->info(
+                        TraceCode::RECON_MISMATCH,
+                        [
+                            'info_code'                 => InfoCode::CPS_PAYMENT_AUTH_DATA_MISMATCH,
+                            'payment_id'                => $paymentId,
+                            'field'                     => $field,
+                            'db_reference_number'       => $response[$paymentId][$field],
+                            'recon_reference_number'    => $misParams[$field],
+                            'gateway'                   => $input['gateway'],
+                            'batch_id'                  => $input['batch_id'],
+                        ]
+                    );
+
+                    // Skip saving this param
+                    continue;
+                }
+            }
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => InfoCode::CPS_PAYMENT_AUTH_DATA_ABSENT,
+                    'payment_id'    => $paymentId,
+                    'gateway'       => $input['gateway'],
+                    'batch_id'      => $input['batch_id'],
+                ]);
+
+            return;
+        }
+
+        if (empty($pushData) === true)
+        {
+            // No param has been set to be saved/overwritten,
+            // no meaning in pushing to queue.
+
+            return;
+        }
+
+        $pushData['payment_id'] = $paymentId;
+
+        $queueName = $this->app['config']->get('queue.payment_card_api_reconciliation.' . $this->mode);
+
+        Queue::pushRaw(json_encode($pushData), $queueName);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code' => InfoCode::RECON_CPS_QUEUE_DISPATCH,
+                'queue'     => $queueName,
+                'payload'   => json_encode($pushData),
+            ]
+        );
+    }
+
+    public function persistGatewayDataAfterNbPlusReconResponse(array $response, array $input, $entity)
+    {
+        $paymentId = $input['payment_id'];
+
+        $misParams = $input['recon_params'];
+
+        $gatewayParams = $input['gateway_params'];
+
+        $dataToUpdate = [];
+
+        $responseData = $response['items'];
+
+        if (empty($responseData[$paymentId]) === false)
+        {
+            foreach ($gatewayParams as $field)
+            {
+                if (empty($misParams[$field]) === true)
+                {
+                    continue;
+                }
+
+                if (empty($responseData[$paymentId][$field]) === true)
+                {
+                    $dataToUpdate[$field] = $misParams[$field];
+                }
+                else if (trim($responseData[$paymentId][$field]) !== $misParams[$field])
+                {
+                    $this->trace->info(
+                        TraceCode::RECON_MISMATCH,
+                        [
+                            'info_code'                 => InfoCode::NBPLUS_DATA_MISMATCH,
+                            'payment_id'                => $paymentId,
+                            'field'                     => $field,
+                            'db_reference_number'       => $responseData[$paymentId][$field],
+                            'recon_reference_number'    => $misParams[$field],
+                            'gateway'                   => $input['gateway'],
+                            'batch_id'                  => $input['batch_id'],
+                        ]
+                    );
+                }
+            }
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => InfoCode::NBPLUS_DATA_ABSENT,
+                    'payment_id'    => $paymentId,
+                    'gateway'       => $input['gateway'],
+                    'batch_id'      => $input['batch_id'],
+                ]);
+
+            return;
+        }
+
+        if (empty($dataToUpdate) === true)
+        {
+            return;
+        }
+
+        $dataToUpdate['payment_id'] = $paymentId;
+
+        // Final Payload
+        $pushData['entity_name'] = $entity;
+        $pushData['recon_data']  = $dataToUpdate;
+
+        $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
+
+        Queue::pushRaw(json_encode($pushData), $queueName);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code' => InfoCode::RECON_NBPLUS_QUEUE_DISPATCH,
+                'queue'     => $queueName,
+                'payload'   => json_encode($pushData),
+            ]
+        );
     }
 
     /**
@@ -365,6 +544,10 @@ class Service extends Base\Service
         {
             return RequestProcessor\Base::MANUAL;
         }
+        else if ($this->isCrawlerRequest($input))
+        {
+            return RequestProcessor\Base::CRAWLER;
+        }
         else if ($this->isLambdaRequest())
         {
             return RequestProcessor\Base::LAMBDA;
@@ -477,6 +660,17 @@ class Service extends Base\Service
             return true;
         }
 
+        return false;
+    }
+
+    protected function isCrawlerRequest(array $input): bool
+    {
+        if ((isset($input[RequestProcessor\Base::CRAWLER]) === true) and
+            ($input[RequestProcessor\Base::CRAWLER] === '1') and
+            ($this->auth->isCron() === true))
+        {
+            return true;
+        }
         return false;
     }
 

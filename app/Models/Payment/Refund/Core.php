@@ -48,6 +48,8 @@ class Core extends Base\Core
         'ByWbZS28NK9CeG' => false,
         'BREsAWr9hzga0n' => false,
         'Ba2to8xoI5kO2x' => false,
+        'Cc057xzfWMnyBn' => false,
+        'DafY7CuC98D8mK' => false,
     ];
 
     /**
@@ -64,9 +66,10 @@ class Core extends Base\Core
                 if ($refund->isScrooge() === true)
                 {
                     $data = [
-                        Entity::STATUS      => Status::PROCESSED,
-                        Entity::REFERENCE1  => $refund->getReference1(),
-                        Entity::MODE        => $ftaData['mode'] ?? '',
+                        Entity::STATUS        => Status::PROCESSED,
+                        Entity::REFERENCE1    => $refund->getReference1(),
+                        Entity::MODE          => $ftaData['mode'] ?? '',
+                        Constants::FTA_UPDATE => true,
                     ];
 
                     (new Service)->makeScroogeEditRefundRequest($refund, $data);
@@ -82,23 +85,31 @@ class Core extends Base\Core
             case Attempt\Status::FAILED:
                 if ($refund->isScrooge() === true)
                 {
+                    // Not sending reference1 in cases of failure
                     $data = [
-                        Entity::STATUS      => Status::FAILED,
-                        // Reference1 is set as part of FTA row processor (status cron)
-                        Entity::REFERENCE1  => $refund->getReference1(),
-                        Entity::REFERENCE2  => $refund->getReference2(),
+                        Entity::STATUS        => Status::FAILED,
+                        Entity::REFERENCE2    => $refund->getReference2(),
+                        Constants::FTA_UPDATE => true,
                     ];
+
+                    $event = Refund\ScroogeEvents::FILE_INIT_EVENT;
 
                     //
                     // If fta gets failed, resetting fta related data here. This can be processed by payment gateway
                     // later.
                     //
+
+                    if ($refund->isProcessed() === true)
+                    {
+                        $event = Refund\ScroogeEvents::PROCESSED_TO_FILE_INIT_EVENT;
+                    }
+
                     $refund->setBatchFundTransferId(null);
                     $refund->setUtr(null);
                     $refund->setRemarks(null);
                     $this->repo->saveOrFail($refund);
 
-                    (new Service)->makeScroogeEditRefundRequest($refund, $data, 'file_init_event');
+                    (new Service)->makeScroogeEditRefundRequest($refund, $data, $event);
                 }
                 else
                 {
@@ -149,9 +160,12 @@ class Core extends Base\Core
 
     public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
-        $entity->setFTSTransferId($ftsTransferId);
+        if (empty($ftsTransferId) === false)
+        {
+            $entity->setFTSTransferId($ftsTransferId);
 
-        $this->repo->saveOrFail($entity);
+            $this->repo->saveOrFail($entity);
+        }
     }
 
     public static function getRefundsPublicStatusMerchantsViaScrooge(): array
@@ -211,5 +225,34 @@ class Core extends Base\Core
         {
             $this->repo->transaction->bulkReconciliationUpdate($refundIds);
         }
+    }
+
+    /**
+     * This function calculates the sequence number of the refund associated with the payment. For example if a
+     * payment p1 has 3 three refunds. The order in which the refunds were created would be its sequence number. For p1,
+     * the refunds would be numbered as r1, r2, r3. This value is stored in reference3. The function calculates max of
+     * reference 3 for all refunds associated with a payment and increments it by 1.
+     *
+     * @param $payment
+     * @return int
+     *
+     */
+    public static function getNewRefundSequenceNumberForPayment($payment)
+    {
+        $maxSeqNo = 0;
+
+        $refunds = $payment->refunds;
+
+        foreach($refunds as $refund)
+        {
+            $currentSeqNo = $refund->getReference3();
+
+            if (($currentSeqNo !== null) and ($currentSeqNo > $maxSeqNo))
+            {
+                $maxSeqNo = $currentSeqNo;
+            }
+        }
+
+        return $maxSeqNo + 1;
     }
 }

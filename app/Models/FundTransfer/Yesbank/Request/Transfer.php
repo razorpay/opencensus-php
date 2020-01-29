@@ -339,7 +339,8 @@ class Transfer extends Base
         // Beneficiary details are required when the request is of purpose `refund` or
         // the request has to be made using sync API
         if (($attempt->isRefund() === true) or
-            ($this->typesWithoutPurposeCode === true))
+            ($this->typesWithoutPurposeCode === true) or
+            ($attempt->isPennyTesting() === true))
         {
             $beneName = $this->entity->bankAccount->getBeneficiaryName();
 
@@ -708,7 +709,7 @@ class Transfer extends Base
     /**
      * {@inheritdoc}
      */
-    protected function mockGenerateFailedResponse(): string
+    protected function mockGenerateFailedResponse(string $failure = ''): string
     {
         if ($this->requestType === Attempt\Type::SYNC)
         {

@@ -6,20 +6,21 @@ use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
+use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\FeeBearer;
+use RZP\Constants\Shield as ShieldConstants;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
 use RZP\Models\Risk;
 use RZP\Models\Payment;
+use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Payment\Verify\Action;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
-use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 
 trait PaymentTrait
 {
@@ -37,6 +38,7 @@ trait PaymentTrait
     use PaymentMobikwikTrait;
     use PaymentOlamoneyTrait;
     use PaymentPayLaterTrait;
+    use PaymentGetsimplTrait;
     use PaymentCreationTrait;
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
@@ -1012,6 +1014,11 @@ trait PaymentTrait
             $input['fta_data'] = $data['fta_data'];
         }
 
+        if (isset($data['mode_requested']) === true)
+        {
+            $input['mode_requested'] = $data['mode_requested'];
+        }
+
         $this->ba->scroogeAuth();
 
         $request = array(
@@ -1033,9 +1040,11 @@ trait PaymentTrait
             $response = $this->makeRequestAndGetContent($request);
         }
 
+        $rrn = $response['gateway_keys']['rrn'] ?? null;
+
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
-            $this->scroogeUpdateRefundStatus($refund, 'processed_event');
+            $this->scroogeUpdateRefundStatus($refund, 'processed_event', null, $rrn);
         }
         // Adding specific amount check - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
@@ -1067,6 +1076,11 @@ trait PaymentTrait
                     $event = 'processed_event';
                     $refund[RefundEntity::SPEED_PROCESSED] = 'instant';
                     break;
+
+                // Emandate Debit
+                case 4000:
+                    $event = 'processed_event';
+                    break;
             }
 
             if ($event !== '')
@@ -1096,7 +1110,7 @@ trait PaymentTrait
         return true;
     }
 
-    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null)
+    protected function scroogeUpdateRefundStatus(array $refund, $event, $status = null, $rrn = null)
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -1110,6 +1124,11 @@ trait PaymentTrait
         if (empty($refund[RefundEntity::SPEED_PROCESSED]) === false)
         {
             $input[RefundEntity::SPEED_PROCESSED] = $refund[RefundEntity::SPEED_PROCESSED];
+        }
+
+        if ($rrn !== null)
+        {
+            $input['reference_no'] = $rrn;
         }
 
         $input['event'] = $event;
@@ -1187,7 +1206,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [])
+    protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [], $gateway = null)
     {
         $this->ba->adminAuth();
 
@@ -1199,7 +1218,9 @@ trait PaymentTrait
 
         $response = $this->makeRequestAndGetContent($request);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
+        $gateway = $gateway ?? $this->gateway;
+
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
         {
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
@@ -1318,6 +1339,18 @@ trait PaymentTrait
 
         $this->ba->privateAuth();
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function fetchPayment($paymentId, $content = [])
+    {
+        $request['url'] = '/payments/'.$paymentId;
+        $request['method'] = 'GET';
+
+        $request['content'] = $content;
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function fetchRefundsForPayment($paymentId)
@@ -1449,6 +1482,25 @@ trait PaymentTrait
         $payment['auth_type'] = Payment\AuthType::NETBANKING;
 
         $payment['customer_id'] = 'cust_100000customer';
+
+        return $payment;
+    }
+
+    protected function getOtmInitialPaymentArray()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+        unset($payment['card']);
+
+        $payment['recurring'] = 1;
+        $payment['amount'] = 0;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $payment['recurring_token']['max_amount'] = 4000;
+
+        $payment['recurring_token']['expire_by'] = Carbon::now()->addDays(3)->getTimestamp();
+
+        $payment['recurring_token']['start_time'] = Carbon::now()->getTimestamp();
 
         return $payment;
     }
@@ -1988,6 +2040,7 @@ trait PaymentTrait
                         '510510' => '22.0',
                         '401201' => '15.3',
                         '555555' => '2.4',
+                        '514906' => '35.0',
                     ];
 
                     if (isset($binRiskMapping[$bin]) === true)
@@ -2107,6 +2160,21 @@ trait PaymentTrait
         });
     }
 
+    protected function mockMozartWebhookTranslateRequest($closure, $times = 1)
+    {
+        $mozart = Mockery::mock('RZP\Services\Mozart')->makePartial();
+
+        $mozart->shouldAllowMockingProtectedMethods();
+
+        $mozart->shouldReceive('translateWebhook')
+                ->times($times)
+                ->andReturnUsing($closure);
+
+        $this->app->instance('mozart', $mozart);
+
+        return $mozart;
+    }
+
     protected function mockShield()
     {
         $shield = Mockery::mock('RZP\Services\Mock\Shield')->makePartial();
@@ -2117,19 +2185,64 @@ trait PaymentTrait
                 {
                     $bin = $payment->card->getIin();
 
-                    $binRiskMapping = [
+                    $riskData = [];
+
+                    $binWithHighRiskScore = [
+                        '514906',
+                        '556763',
+                    ];
+
+                    $binConfirmedRiskMapping = [
                         '401201',
                     ];
 
-                    if (in_array($bin, $binRiskMapping) === true)
+                    $binSuspectedRiskMapping = [];
+
+                    if (in_array($bin, $binWithHighRiskScore) === true)
                     {
-                        return [
-                            Risk\Entity::FRAUD_TYPE => Risk\Type::CONFIRMED,
-                            Risk\Entity::REASON     => Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD,
-                        ];
+                        $riskScore = 35;
+                    }
+                    else
+                    {
+                        $riskScore = 0.01;
                     }
 
-                    return null;
+                    if (in_array($bin, $binConfirmedRiskMapping) === true)
+                    {
+                        $recommendedAction = ShieldConstants::ACTION_BLOCK;
+                    }
+                    elseif (in_array($bin, $binSuspectedRiskMapping) === true)
+                    {
+                            $recommendedAction = ShieldConstants::ACTION_REVIEW;
+                    }
+                    else
+                    {
+                            $recommendedAction = ShieldConstants::ACTION_ALLOW;
+                    }
+
+                    switch ($recommendedAction)
+                    {
+                        case ShieldConstants::ACTION_BLOCK:
+                            $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::CONFIRMED;
+                            $riskData[Risk\Entity::REASON]     = Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD;
+                            $riskData[Risk\Entity::RISK_SCORE] = $riskScore;
+
+                            break;
+
+                        case ShieldConstants::ACTION_REVIEW:
+                            $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::SUSPECTED;
+                            $riskData[Risk\Entity::REASON]     = Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD;
+                            $riskData[Risk\Entity::RISK_SCORE] = $riskScore;
+
+                            break;
+
+                        default:
+                            $riskData[Risk\Entity::RISK_SCORE] = $riskScore;
+
+                            break;
+                    }
+
+                    return $riskData;
                 });
 
         $this->app->instance('shield.service', $shield);
@@ -2206,7 +2319,6 @@ trait PaymentTrait
             switch ($endpoint)
             {
                 case '/account':
-
                     $response = [
                         'body' => [
                             'fund_account_id' => random_integer(2),
@@ -2217,9 +2329,10 @@ trait PaymentTrait
                     return $response;
 
                 case '/source_account':
-
                     $response = [
-                            'message' => 'source account registered',
+                            'body'=> [
+                                'message' => 'source account registered',
+                            ]
                         ];
 
                     return $response;
@@ -2233,5 +2346,207 @@ trait PaymentTrait
             ->andReturnUsing($callable);
 
         $this->app->instance('fts_create_account', $fts);
+    }
+
+    protected function setDefaultMerchantMethods()
+    {
+        // Disable all methods and only enable card.
+        // The default pricing plan has only card enabled
+
+        $this->fixtures->merchant->disableAllMethods();
+
+        $this->fixtures->merchant->enableCard();
+    }
+
+    protected function createPricingPlan($pricingPlan = [])
+    {
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'DICL',
+            'payment_issuer'      => 'HDFC',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+        ];
+
+        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $plan = $plan->toArray();
+
+        $plan['id'] = $plan['plan_id'];
+
+        return $plan;
+    }
+
+    public function getPricingPlanForFeeBearerTest(string $pricingFeeBearer)
+    {
+        $defaultPricingPlan = [
+            'plan_name'                 => 'TestPlan1',
+            'payment_method'            => 'card',
+            'payment_method_type'       => 'credit',
+            'percent_rate'              => 1000,
+            'fixed_rate'                =>  0,
+            'payment_network'           => 'MC',
+            'payment_issuer'            => 'SBIN',
+            'org_id'                    => '10000000000000',
+            'type'                      => 'pricing',
+            'fee_bearer'                => $pricingFeeBearer,
+        ];
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        return $plan;
+    }
+
+    protected function setUpMerchantForFeeBearerTest(string $merchantFeeBearer, array $pricingPlan)
+    {
+        $this->fixtures->merchant->edit('10000000000000', [
+            'pricing_plan_id' => $pricingPlan['id'],
+            'fee_bearer'      => $merchantFeeBearer,
+        ]);
+    }
+
+    protected function setUpAndGetPaymentArrayForFeeBearerPricingTest(string $merchantFeeBearer, string $pricingFeeBearer)
+    {
+        $this->mockCardVault();
+
+        $this->ba->publicAuth();
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+        ]);
+
+        $plan = $this->getPricingPlanForFeeBearerTest($pricingFeeBearer);
+
+        $this->setUpMerchantForFeeBearerTest($merchantFeeBearer, $plan);
+
+        return $this->getPaymentArrayForFeeBearerTest($merchantFeeBearer);
+    }
+
+    protected function getPaymentArrayForFeeBearerTest($merchantFeeBearer)
+    {
+        $defaultPaymentArray = $this->getDefaultPaymentArray();
+
+        $defaultPaymentArray['card']['number'] = '555555555555558';
+
+        if ($merchantFeeBearer === FeeBearer::PLATFORM)
+        {
+            return $defaultPaymentArray;
+        }
+
+        try
+        {
+            return $this->getFeesForPayment($defaultPaymentArray)['input'];
+        }
+        catch (Exception\LogicException $logicException)
+        {
+            return $defaultPaymentArray;
+        }
+    }
+
+    protected function getDefaultBillingAddressArray()
+    {
+        $address = [
+            'line1'         => 'Razorpay Software, 1st Floor, 22, SJR Cyber',
+            'line2'         => 'Hosur Main Road, Adugodi',
+            'city'          => 'Bengaluru',
+            'state'         => 'Karnataka',
+            'country'       => 'in',
+            'postal_code'   => '560030',
+        ];
+
+        return $address;
+    }
+
+    protected function setFetchFileBasedRefundsFromScroogeMockResponse(array $refundEntities)
+    {
+        $scroogeResponse = [
+            'code'     => 200,
+            'body'     => [
+                'data' => [],
+            ],
+        ];
+
+        foreach ($refundEntities as $refundEntity)
+        {
+            $scroogeResponse['body']['data'][] = [
+                'id'          => $refundEntity['id'],
+                'amount'      => $refundEntity['amount'],
+                'base_amount' => $refundEntity['base_amount'],
+                'payment_id'  => $refundEntity['payment_id'],
+                'bank'        => $refundEntity->payment['bank'],
+                'gateway'     => $refundEntity['gateway'],
+                'currency'    => $refundEntity['currency'],
+                'method'      => $refundEntity->payment['method'],
+                'created_at'  => $refundEntity['created_at'],
+            ];
+        }
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getFileBasedRefunds'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getFileBasedRefunds')
+                           ->willReturn($scroogeResponse);
+    }
+
+    protected function callFTAPatchRoute($content = [])
+    {
+        $this->ba->adminAuth();
+
+        $request = array(
+            'method'    => 'PATCH',
+            'url'       => '/fund_transfer_attempts',
+            'content'   => $content
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function markProcessedInstantRefundFailed($refund, $fta)
+    {
+        $strippedFtaId = substr($fta['id'], 4);
+
+        $ftaUpdateContent = [];
+        $ftaUpdateContent[$strippedFtaId]['status'] = 'failed';
+        $ftaUpdateContent[$strippedFtaId]['remarks'] = 'transaction got reversed';
+        $ftaUpdateContent[$strippedFtaId]['failure_reason'] = '[manual] transaction got reversed';
+
+        $this->callFTAPatchRoute($ftaUpdateContent);
+
+        $event = 'fee_only_reversal_event';
+        $this->scroogeUpdateRefundStatus($refund, $event);
+
+        $event = 'processed_to_file_init_event';
+        $status = 'file_init';
+        $this->scroogeUpdateRefundStatus($refund, $event, $status);
+    }
+
+    protected function enableRazorXTreatmentForRazorXRefund()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
     }
 }

@@ -526,15 +526,23 @@ class Gateway extends Base\Gateway
 
     protected function saveVerifyContentIfNeeded($gatewayPayment, $response)
     {
-        if (isset($response[Resp::API_TRANSACTION_ID]))
+        if (isset($response[Resp::API_TRANSACTION_ID]) === true)
         {
-            $attributes = $this->getVerifyContents($response);
+            $attributes = [
+                Entity::TRANSACTION_ID      => $response[Resp::API_TRANSACTION_ID],
+                Entity::GATEWAY_PAYMENT_ID  => $response[Resp::API_REFERENCE_ID],
+            ];
 
             if ($gatewayPayment['received'] === false)
             {
-                $gatewayPayment->fill($attributes);
-                $this->repo->saveOrFail($gatewayPayment);
+                $additionalAttributes = $this->getAdditionalVerifyContents($response);
+
+                $attributes = array_merge($attributes, $additionalAttributes);
             }
+
+            $gatewayPayment->fill($attributes);
+
+            $this->repo->saveOrFail($gatewayPayment);
         }
 
         $this->action = Action::VERIFY;
@@ -542,7 +550,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyContents($content)
+    protected function getAdditionalVerifyContents($content)
     {
         $isFlagged = false;
 
@@ -555,8 +563,6 @@ class Gateway extends Base\Gateway
         $content = [
             Entity::RECEIVED            => true,
             Entity::IS_FLAGGED          => $isFlagged,
-            Entity::TRANSACTION_ID      => $content[Resp::API_TRANSACTION_ID],
-            Entity::GATEWAY_PAYMENT_ID  => $content[Resp::API_REFERENCE_ID],
         ];
 
         return $content;

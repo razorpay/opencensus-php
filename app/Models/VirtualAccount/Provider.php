@@ -3,6 +3,7 @@
 namespace RZP\Models\VirtualAccount;
 
 use Lib\CRC16;
+use RZP\Error;
 use RZP\Exception;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
@@ -30,9 +31,10 @@ class Provider
      * payment to a virtual account.
      */
     const DASHBOARD = 'dashboard';
-
+    const AUTOMATION = 'automation';
     // Qr Code Providers
     const BHARAT_QR = 'bharat_qr';
+    const UPI_QR    = 'upi_qr';
 
     // Qr Code Tag Values constants
     const MERCHANT_CATEGORY = 'merchant_category';
@@ -84,6 +86,9 @@ class Provider
             self::KOTAK_IP,
         ],
         self::DASHBOARD => [
+            '*',
+        ],
+        self::AUTOMATION => [
             '*',
         ],
     ];
@@ -150,6 +155,9 @@ class Provider
         {
             case self::BHARAT_QR :
                 return $this->getBharatQrCode($qrCode);
+
+            case self::UPI_QR:
+                return $this->getUpiQrCode($qrCode);
 
             default :
                 return '';
@@ -459,6 +467,57 @@ class Provider
         return $methods->isMethodEnabled($method);
     }
 
+    protected function getUpiQrCode(QrCode\Entity $qrCode)
+    {
+        $terminal = $this->getTerminalForMethod(Payment\Method::UPI, $qrCode, null, [
+            'flow'  => 'intent'
+        ]);
+
+        if (($terminal instanceof Terminal\Entity) === false)
+        {
+            throw new Exception\LogicException('UPI intent terminal needs to there for merchant',
+                Error\ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
+                [
+                    'merchant_id'   => $qrCode->merchant->getId(),
+                ]);
+        }
+
+        // Once we have mocked the complete payment, we can call gateway
+        $gatewayInput = [
+            'payment'           => [
+                Payment\Entity::ID              => $qrCode->getId(),
+                Payment\Entity::AMOUNT          => $qrCode->getAmount(),
+                Payment\Entity::CURRENCY        => 'INR',
+                Payment\Entity::DESCRIPTION     => $qrCode->source->description,
+                Payment\Entity::RECEIVER_TYPE   => Receiver::QR_CODE,
+                Payment\Entity::RECEIVER_ID     => $qrCode->getId(),
+            ],
+            'merchant'          => $qrCode->merchant,
+            'terminal'          => $terminal,
+        ];
+
+        if ($qrCode->source->hasOrder() === true)
+        {
+            $gatewayInput['order'] = $qrCode->source->entity;
+        }
+
+        $mode = app('rzp.mode');
+
+        // Any exception on gateway will rollback the process right away
+        $response = app('gateway')->call($terminal->getGateway(), 'get_intent_url', $gatewayInput, $mode, $terminal);
+
+        // To Signed terminals, gateway will return qr_code_url along with intent_url
+        // otherwise gateway will only return intent_url, And qr_code_url is for QR.
+        if (isset($response['data']['qr_code_url']))
+        {
+            return $response['data']['qr_code_url'];
+        }
+        else if (isset($response['data']['intent_url']))
+        {
+            return $response['data']['intent_url'];
+        }
+    }
+
     /**
      * This method will select the terminals using a dummy payment
      * The terminals will have all the mpans which will be used to
@@ -472,7 +531,11 @@ class Provider
      *
      * @return mixed
      */
-    public function getTerminalForMethod(string $method, PublicEntity $receiver, string $network = null, array $metadata = [])
+    public function getTerminalForMethod(
+        string $method,
+        PublicEntity $receiver,
+        string $network = null,
+        array $metadata = [])
     {
         $paymentArray = (new Payment\Entity)->getDummyPaymentArray($method, $receiver, $network, $metadata);
 

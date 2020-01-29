@@ -141,11 +141,17 @@ class Gateway extends Base\Gateway
             ($message !== ''))
         {
             // Payment fails, throw exception
+
+            $internalErrorCode = \RZP\Gateway\Netbanking\Hdfc\ErrorCode::getHdfcNetbankingErrorCodes($message);
+
             throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
+                    $internalErrorCode,
                     '',
                     $message);
         }
+
+        // If callback status was a success, we verify the payment immediately
+        $this->verifyCallback($gatewayPayment, $input);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -157,6 +163,37 @@ class Gateway extends Base\Gateway
         }
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function verifyCallback($gatewayPayment, array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->getGatewayStatus($verify);
+
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+        // For emandate registration request, we set the amount to Rs 1
+        if ($this->isFirstRecurringPayment($input) === true)
+        {
+            $expectedAmount = number_format(Fields::INIT_AMOUNT, 2, '.', '');
+        }
+
+        $actualAmount   = number_format($verify->verifyResponseContent[Fields::TXN_AMOUNT], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
     }
 
     public function verify(array $input)
@@ -538,7 +575,7 @@ class Gateway extends Base\Gateway
     {
         $email = $input['payment'][Payment\Entity::EMAIL] ?: Payment\Entity::DUMMY_EMAIL;
 
-        $clientCode = $this->stripEmailSpecialChars($email);
+        $clientCode = str_limit($this->stripEmailSpecialChars($email), 40, '');
 
         return $clientCode;
     }

@@ -2,12 +2,16 @@
 
 namespace RZP\Models\Transfer;
 
+use function GuzzleHttp\Psr7\try_fopen;
+use Razorpay\Trace\TraceCode;
 use RZP\Base;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Transaction;
+use RZP\Models\Merchant\Balance;
 
 class Validator extends Base\Validator
 {
@@ -20,6 +24,8 @@ class Validator extends Base\Validator
         Entity::LINKED_ACCOUNT_NOTES => 'sometimes|array',
         Entity::ON_HOLD              => 'required_with:on_hold_until|boolean',
         Entity::ON_HOLD_UNTIL        => 'sometimes|nullable|epoch',
+        Entity::STATUS               => 'sometimes|string',
+        Entity::ORIGIN               => 'filled',
     ];
 
     protected static $createValidators = [
@@ -35,7 +41,25 @@ class Validator extends Base\Validator
         'hold_parameters'
     ];
 
-    public function validateTransfers(Payment\Entity $payment, array $transfers)
+    public static function validateStatus($status)
+    {
+        if (Status::isStatusValid($status) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid status: ' . $status);
+        }
+    }
+
+    public static function validateOrigin($origin)
+    {
+        if (Origin::isOriginValid($origin) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid origin: ' . $origin);
+        }
+    }
+
+    public function validateTransfers(Payment\Entity $payment, array $transfers, $orderTransfers)
     {
         // Array of recipient ID types sent in the
         // transfer request. (possible: customer, account)
@@ -75,7 +99,7 @@ class Validator extends Base\Validator
 
         $this->validateTransferEntities($keys, $transferCount);
 
-        $this->validateTransferAmount($payment, $transferSum);
+        $this->validateTransferAmount($payment, $transferSum, $orderTransfers);
     }
 
     protected function validateTransferEntities(array $keys, int $transferCount)
@@ -123,7 +147,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateTransferAmount(Payment\Entity $payment, int $transferSum)
+    protected function validateTransferAmount(Payment\Entity $payment, int $transferSum, $orderTransfers)
     {
         //
         // For now -
@@ -136,14 +160,27 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED);
         }
 
-        if ($transferSum > $payment->getAmountUntransferred())
+        $orderTransferUnprocessedAmount = 0;
+
+        foreach ($orderTransfers as $orderTransfer)
+        {
+            if (($orderTransfer->getStatus() === Status::CREATED) or
+                ($orderTransfer->getStatus() === Status::PENDING) or
+                ($orderTransfer->getStatus() === Status::FAILED and $orderTransfer->getAttempts() < Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS))
+            {
+                $orderTransferUnprocessedAmount += $orderTransfer->getAmount();
+            }
+        }
+
+        if ($transferSum > ($payment->getAmountUntransferred() - $orderTransferUnprocessedAmount))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_UNTRANSFERRED,
                 Entity::AMOUNT,
                 [
                     'sum'           => $transferSum,
-                    'untransferred' => $payment->getAmountUntransferred()
+                    'untransferred' => $payment->getAmountUntransferred(),
+                    'unprocessed'   => $orderTransferUnprocessedAmount,
                 ]);
         }
     }
@@ -173,14 +210,29 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantBalanceForTransfer(Merchant\Balance\Entity $merchantBalance)
+    public function validateMerchantBalanceForTransfer(Merchant\Entity $merchant, Balance\Entity $merchantBalance)
     {
         $debit = $this->entity->transaction->getDebit();
 
-        if ($debit > $merchantBalance->getBalance())
+        try
         {
+            (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $debit,
+                                                        Transaction\Type::TRANSFER,
+                                                     Balance\Type::PRIMARY);
+        }
+        catch (\Exception $e)
+        {
+            if ($e->getCode() !== ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED)
+            {
+                $errorCode = ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE;
+            }
+            else
+            {
+                $errorCode = $e->getCode();
+            }
+            
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
+                $errorCode,
                 Entity::AMOUNT,
                 [
                     'debit_amount' => $debit,
@@ -213,6 +265,56 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
                 Entity::NOTES,
                 array_intersect(array_keys($laNotes), $laNotesKeys));
+        }
+    }
+
+    public function validateTransferForOrder(array $transfers, int $orderAmount)
+    {
+
+        // Array of recipient ID types sent in the
+        // transfer request. (possible: customer, account)
+        $keys = [];
+
+        $transferCount = $transferSum = 0;
+
+        foreach ($transfers as $transfer)
+        {
+            $this->validateInput('create', $transfer);
+
+            $transferNotes = $transfers[Entity::NOTES] ?? [];
+
+            $laNotesKeys = $transfers[Entity::LINKED_ACCOUNT_NOTES] ?? [];
+
+            if ((empty($laNotesKeys) === false) and (is_array($laNotesKeys) === true))
+            {
+                $laNotes = array_only($transferNotes, $laNotesKeys);
+
+                $this->validateLinkedAccountNotes($laNotes, $laNotesKeys);
+            }
+
+            $transferSum += (int) $transfer[Entity::AMOUNT];
+
+            $keySet = false;
+
+            $transferCount++;
+
+            // Fail if at least one of the values in
+            // ToType::$allowedTypes is not set for a transfer
+            if (isset($transfer[ToType::ACCOUNT])  === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ORDER_TRANSFER_ENTITIES_NOT_SET);
+            }
+
+            $keys[] = ToType::ACCOUNT;
+        }
+
+        $this->validateTransferEntities($keys, $transferCount);
+
+        if ($transferSum > $orderAmount)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_AMOUNT_GREATER_THAN_ORDER_AMOUNT);
         }
     }
 }

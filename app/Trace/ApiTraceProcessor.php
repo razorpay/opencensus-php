@@ -9,6 +9,16 @@ class ApiTraceProcessor
 {
     protected $app;
 
+    //
+    // This regex is copied from
+    // https://adamcaudill.com/2011/10/20/masking-credit-cards-for-pci/
+    //
+    // Sample string: 'CCPAY.4000000000000002@icici'
+    //
+    const CCPAY_CARD_REGEX = "/CCPAY.(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|" .
+                             "6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|" .
+                             "[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})/";
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -29,6 +39,10 @@ class ApiTraceProcessor
         $this->addDashboardHeaders($record);
 
         $this->addRouteNameForExceptions($record);
+
+        $this->scrubCardNumberViaCcPay($record);
+
+        $this->overrideRequestAttributes($record);
 
         return $record;
     }
@@ -92,5 +106,45 @@ class ApiTraceProcessor
         {
             $record['request']['route_name'] = optional($this->app['router'])->currentRouteName();
         }
+    }
+
+    protected function scrubCardNumberViaCcPay(& $record)
+    {
+        $context = $record['context'] ?? null;
+
+        if (empty($context) === true)
+        {
+            return;
+        }
+
+        array_walk_recursive($context, function(& $item)
+        {
+            if (is_string($item) === true)
+            {
+                if (preg_match(self::CCPAY_CARD_REGEX, $item) === 1)
+                {
+                    $item = 'CARD_NUMBER_SCRUBBED';
+                }
+            }
+        });
+
+        $record['context'] = $context;
+    }
+
+    /**
+     * So WebProcessor is pushed with request object available at the time as
+     * part of framework's first set of things i.e. registering service
+     * providers. After this http middleware are registered where
+     * Fideloper\Proxy\TrustProxies (library) verifies and attaches x-forwarded-
+     * headers of proxy server. That's it- tiny bad practice/miss causing issues.
+     *
+     * Refer: Razorpay\Trace\Processor\WebProcessor@getServerData.
+     *
+     * @param  array &$record
+     * @return void
+     */
+    protected function overrideRequestAttributes(array &$record)
+    {
+        $record['request']['url'] = $this->app->request->getUri();
     }
 }

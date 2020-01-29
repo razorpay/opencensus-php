@@ -9,6 +9,7 @@ use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Base as BaseModel;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Payment as PaymentModel;
 
 class Payment extends Base
@@ -39,12 +40,38 @@ class Payment extends Base
 
     protected function getPricingRule($rules, $method)
     {
+        $rules = $this->getRelevantPricingRulesForFeeBearer($rules);
+
         $rules = $this->getRelevantPricingRuleForProcurer($rules);
 
         $rule = $this->getRelevantPricingRuleForMethod($rules, $method);
 
         return $rule;
     }
+
+    protected function getRelevantPricingRulesForFeeBearer($rules)
+    {
+        $merchant = $this->entity->merchant;
+
+        if ($merchant === null)
+        {
+            return $rules;
+        }
+
+        $feeBearer = $merchant->getFeeBearer();
+
+        if ($feeBearer === FeeBearer::DYNAMIC)
+        {
+            return $rules;
+        }
+
+        $filters = [
+            [Pricing\Entity::FEE_BEARER, $feeBearer, true, null],
+        ];
+
+        return $this->applyFiltersOnRules($rules, $filters);
+    }
+
 
     protected function getRelevantPricingRuleForMethod($rules, $method)
     {
@@ -90,6 +117,10 @@ class Payment extends Base
         {
             $rule = $this->getRelevantPricingRuleForPayLater($rules);
         }
+        else if ($method === PaymentModel\Method::NACH)
+        {
+            $rule = $this->getRelevantPricingRuleForNach($rules);
+        }
         // else if ($method === PaymentModel\Method::TRANSFER)
         // {
         //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
@@ -106,7 +137,7 @@ class Payment extends Base
     {
         $payment = $this->entity;
 
-        if ($payment->merchant->isFeeBearerCustomer() === true)
+        if ($payment->merchant->isFeeBearerCustomerOrDynamic() === true)
         {
             return $rules;
         }
@@ -305,6 +336,21 @@ class Payment extends Base
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
+    protected function getRelevantPricingRuleForNach($rules)
+    {
+        $payment = $this->entity;
+
+        $recurringType = $payment->getRecurringType();
+
+        $filters = [
+            [Pricing\Entity::PAYMENT_ISSUER, $recurringType, true, null],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters);
+
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
     protected function getRelevantPricingRuleForEmi($rules)
     {
         $payment = $this->entity;
@@ -363,5 +409,78 @@ class Payment extends Base
         $rules = $this->applyFiltersOnRules($rules, $filters);
 
         return $this->validateAndGetOnePricingRule($rules);
+    }
+
+    /**
+     *
+     * Ensure that all the pricing rules have the same fee_bearer value.
+     * @param  $pricingRules
+     * @return return the common fee_bearer value
+     * @throws Exception\LogicException when pricingRules has more than 1 type of fee_bearer value
+     */
+    public function validateAndGetFeeBearer() : string
+    {
+        $pricingRules = $this->pricingRules;
+
+        if (count($pricingRules) < 1)
+        {
+            throw new Exception\LogicException(
+                'No pricing rule found. Expected atleast 1');
+        }
+
+        $feeBearers = [];
+
+        foreach ($pricingRules as $rule)
+        {
+            array_push($feeBearers, $rule->getFeeBearer());
+        }
+
+        $feeBearersUnique = array_unique($feeBearers);
+
+        if (count($feeBearersUnique) !== 1)
+        {
+            throw new Exception\LogicException(
+                'Expected only one type of feebearer for all rules. Found: ' . $feeBearers);
+        }
+
+        return $pricingRules[0]->getFeeBearer();
+    }
+
+    /*
+     * Even though function says "get", no rule is getting returned here.
+     * This is because even the parent class function has the same behavior.
+     */
+    public function getRelevantPricingRule(Pricing\Plan $pricing)
+    {
+        parent::getRelevantPricingRule($pricing);
+
+        $feeBearer = $this->validateAndGetFeeBearer($this->pricingRules);
+
+        $payment = $this->entity;
+        // this is an side effect that is unavoidable.
+        $payment->setFeeBearer($feeBearer);
+
+    }
+
+    protected function isFeeBearerCustomer()
+    {
+        $payment = $this->entity;
+
+        return ($payment->isFeeBearerCustomer() === true);
+    }
+
+    protected function setAmount()
+    {
+        $amount = $this->entity->getBaseAmount();
+
+        if ($this->isFeeBearerCustomerOrDynamic() === true)
+        {
+            // 1. The first call will have the fee = 0,
+            //    hence fees will be calculated on the original amount
+            // 2. On validation/capture call, the fee will be set
+            $amount = $amount - $this->entity->getFee();
+        }
+
+        $this->amount = $amount;
     }
 }

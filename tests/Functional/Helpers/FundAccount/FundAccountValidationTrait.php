@@ -6,11 +6,16 @@ use Closure;
 use Mockery;
 
 use RZP\Models\Merchant\Webhook;
+use RZP\Models\FundAccount\Entity as FundAccount;
+use RZP\Models\FundAccount\Validation\Entity as Validation;
+use RZP\Services\RazorXClient;
 
 trait FundAccountValidationTrait
 {
     protected function createValidationWithFundAccountEntity(): array
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $response = $this->startTest();
 
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -39,7 +44,7 @@ trait FundAccountValidationTrait
         $this->assertEquals('fund_account_validation', $txn['type']);
         // Fee Bearer is always Platform for Fund Account Validation
         $this->assertEquals('platform', $txn['fee_bearer']);
-        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(false, $txn['settled']);
         $this->assertEquals(354, $txn['fee']);
         $this->assertEquals(354, $txn['mdr']);
         $this->assertEquals(54, $txn['tax']);
@@ -59,5 +64,56 @@ trait FundAccountValidationTrait
                     Mockery::on($closure));
 
         $this->app->instance('webhook.inferno', $inferno);
+    }
+
+
+    protected function getDefaultFAVFundAccountArray(string $fundAccountId)
+    {
+        return [
+            FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+            Validation::FUND_ACCOUNT => [
+                FundAccount::ID => $fundAccountId,
+            ],
+            Validation::AMOUNT       => 100,
+            Validation::CURRENCY     => 'INR',
+            Validation::NOTES        => [],
+        ];
+    }
+
+    protected function buildFAVForFundAccountRequest(string $fundAccountId)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts/validations',
+            'content' => $this->getDefaultFAVFundAccountArray($fundAccountId)
+        ];
+
+        return $request;
+    }
+
+    protected function createFAVBankAccount()
+    {
+        $this->createFAVBankingPricingPlan();
+
+        $fundAccount = $this->createFundAccountBankAccount();
+
+        $request = $this->buildFAVForFundAccountRequest($fundAccount['id']);
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
     }
 }

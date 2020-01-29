@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Detail\Constants;
 
 return [
     'testMerchantActivationCategoriesResponseForAdminAuth' => [
@@ -18,35 +19,35 @@ return [
                 'financial_services'      => [
                     'description'   => 'Financial Services',
                     'subcategories' => [
-                        'mutual_fund'       => [
+                        'mutual_fund'    => [
                             'category'                 => 6211,
                             'description'              => 'Mutual Fund',
                             'category2'                => 'mutual_funds',
                             'activation_flow'          => 'greylist',
                             'international_activation' => 'blacklist',
                         ],
-                        'lending'           => [
+                        'lending'        => [
                             'category'                 => 6012,
                             'description'              => 'Lending',
                             'category2'                => 'lending',
                             'activation_flow'          => 'greylist',
                             'international_activation' => 'blacklist',
                         ],
-                        'cryptocurrency'    => [
+                        'cryptocurrency' => [
                             'category'                 => 6051,
                             'description'              => 'Cryptocurrency',
                             'category2'                => 'cryptocurrency',
                             'activation_flow'          => 'blacklist',
                             'international_activation' => 'blacklist',
                         ],
-                        'insurance'         => [
+                        'insurance'      => [
                             'category'                 => 6300,
                             'description'              => 'Insurance',
                             'category2'                => 'insurance',
                             'activation_flow'          => 'greylist',
                             'international_activation' => 'greylist',
                         ],
-                        'nbfc'              => [
+                        'nbfc'           => [
                             'category'                 => 6012,
                             'description'              => 'NBFC',
                             'category2'                => 'lending',
@@ -1123,6 +1124,44 @@ return [
         ]
     ],
 
+    'testPostInstantActivationForUnregisteredRazorxOff' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 11,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED,
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED,
+        ]
+    ],
+
     'testPostInstantActivation' => [
         'request'     => [
             'method'  => 'POST',
@@ -1182,6 +1221,397 @@ return [
                 ],
                 'can_submit'                 => false,
                 'activated'                  => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testPostInstantActivationWithBalanceCreation' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 1,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'               => 'ABCDE0000Z',
+                'gstin'                      => null,
+                'p_gstin'                    => null,
+                'business_category'          => 'ecommerce',
+                'business_subcategory'       => 'fashion_and_lifestyle',
+                'archived'                   => 0,
+                'submitted_at'               => null,
+                'activation_status'          => 'instantly_activated',
+                'business_operation_address' => 'My Addres is somewhere',
+                'business_operation_state'   => 'KA',
+                'business_operation_city'    => 'Bengaluru',
+                'business_operation_pin'     => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+                'verification'               => [
+                    'status'              => 'disabled',
+                    'disabled_reason'     => 'required_fields',
+                    'required_fields'     => [
+                        'address_proof_url',
+                        'bank_account_name',
+                        'bank_account_number',
+                        'bank_branch_ifsc',
+                        'business_pan_url',
+                        'business_proof_url',
+                        'contact_mobile',
+                        'contact_name',
+                        'promoter_address_url',
+                    ],
+                    'activation_progress' => 57,
+                ],
+                'can_submit'                 => false,
+                'activated'                  => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testInstantActivationForForUnRegisteredTORegisteredSwitch' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'test123',
+                'business_type'               => 3,
+                'business_model'              => '1245',
+                'promoter_pan_name'           => 'Test123',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'                => 'ABCDE0000Z',
+                'gstin'                       => null,
+                'p_gstin'                     => null,
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'archived'                    => 0,
+                'submitted_at'                => null,
+                'activation_status'           => 'instantly_activated',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+                'business_type'               => "3",
+                'international'               => true,
+                'verification'                => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit'                  => false,
+                'activated'                   => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testInstantActivationForUnregisteredBusinessWithBlacklistCategories' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'weapons_and_ammunitions',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'test123',
+                'business_type'               => 11,
+                'business_model'              => '1245',
+                'promoter_pan_name'           => 'Test123',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY,
+        ],
+    ],
+
+    'testInstantActivationForUnregisteredBusiness' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'test123',
+                'business_type'               => 11,
+                'business_model'              => '1245',
+                'promoter_pan_name'           => 'Test123',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'                => 'ABCDE0000Z',
+                'gstin'                       => null,
+                'p_gstin'                     => null,
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'archived'                    => 0,
+                'submitted_at'                => null,
+                'activation_status'           => 'instantly_activated',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+                'business_type'               => "11",
+                'can_submit'                  => false,
+                'activated'                   => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testIAForUnregisteredBusinessFeatureEnabled' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan_name'           => 'Test123',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 11,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'            => 'ABCDE0000Z',
+                'archived'                => 0,
+                'submitted_at'            => null,
+                'activation_status'       => 'instantly_activated',
+                'poi_verification_status' => 'verified',
+                'business_type'           => "11",
+                'can_submit'              => false,
+                'activated'               => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testIAForUnregisteredBusinessFeatureEnabledNameMisMatch' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan_name'           => 'promoter pan name',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 11,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'submitted_at'            => null,
+                'activation_status'       => null,
+                'poi_verification_status' => 'not_matched',
+                'business_type'           => "11",
+                'verification'            => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                    'required_fields' => [
+                        'bank_account_name',
+                        'bank_account_number',
+                        'bank_branch_ifsc',
+                        'contact_mobile',
+                        'contact_name',
+                        'poa_documents',
+                    ],
+                ],
+                'can_submit'              => false,
+                'activated'               => 0,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testIAForUnregisteredBusinessFeatureEnabledIncorrectDetails' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan_name'           => 'promoter pan name',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 11,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'submitted_at'            => null,
+                'activation_status'       => null,
+                'poi_verification_status' => 'incorrect_details',
+                'business_type'           => "11",
+                'can_submit'              => false,
+                'activated'               => 0,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testIAForUnregisteredBusinessFeatureEnabledTimeout' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'promoter_pan_name'           => 'promoter pan name',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 11,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'submitted_at'            => null,
+                'activation_status'       => null,
+                'poi_verification_status' => 'failed',
+                'business_type'           => "11",
+                'can_submit'              => false,
+                'activated'               => 0,
             ],
         ],
         'status_code' => 200,
@@ -1544,6 +1974,52 @@ return [
         'status_code' => 200,
     ],
 
+    'testKycSubmissionWhenPoaIsVerified' => [
+        'request'     => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'url'     => '/merchant/activation',
+            'content' => [
+                'contact_name'                => 'test',
+                'contact_mobile'              => '9123456789',
+                'business_type'               => '2',
+                'business_name'               => 'Acme',
+                'business_dba'                => 'Acme',
+                'bank_account_name'           => 'test',
+                'bank_account_number'         => '123456789012345',
+                'bank_branch_ifsc'            => 'ICIC0000001',
+                'business_operation_address'  => 'Test address',
+                'business_operation_state'    => 'Karnataka',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560030',
+                'business_registered_address' => 'Test address',
+                'business_registered_state'   => 'Karnataka',
+                'business_registered_city'    => 'Bengaluru',
+                'business_registered_pin'     => '560030',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'ecommerce',
+                'business_subcategory' => 'fashion_and_lifestyle',
+                'archived'             => 0,
+                'activation_status'    => 'instantly_activated',
+                'verification'         => [
+                    'status' => 'pending',
+                ],
+                'can_submit'           => true,
+                'activated'            => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'changeActivationStatus' => [
         'request'  => [
             'content' => [
@@ -1558,6 +2034,52 @@ return [
         ],
     ],
 
+    'testKycSubmissionWhenPoaIsFailed' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'contact_name'                => 'test',
+                'contact_mobile'              => '9123456789',
+                'business_type'               => '2',
+                'business_name'               => 'Acme',
+                'business_dba'                => 'Acme',
+                'bank_account_name'           => 'test',
+                'bank_account_number'         => '123456789012345',
+                'bank_branch_ifsc'            => 'ICIC0000001',
+                'business_operation_address'  => 'Test address',
+                'business_operation_state'    => 'Karnataka',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560030',
+                'business_registered_address' => 'Test address',
+                'business_registered_state'   => 'Karnataka',
+                'business_registered_city'    => 'Bengaluru',
+                'business_registered_pin'     => '560030',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'ecommerce',
+                'business_subcategory' => 'fashion_and_lifestyle',
+                'archived'             => 0,
+                'activation_status'    => 'instantly_activated',
+                'verification'         => [
+                    'status' => 'pending',
+                ],
+                'can_submit'           => true,
+                'activated'            => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'submitKyc' => [
         'request'  => [
             'content' => [
@@ -1565,12 +2087,52 @@ return [
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
                 'submitted'         => true,
                 'activation_status' => 'under_review',
                 'can_submit'        => true,
+            ],
+        ],
+    ],
+
+    'submitKycActivated' => [
+        'request'  => [
+            'content' => [
+                'submit' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'submitted'         => true,
+                'activation_status' => 'activated',
+                'can_submit'        => true,
+            ],
+        ],
+    ],
+
+    'validateUnregisteredKycSubmission' => [
+        'request'  => [
+            'content' => [
+                'submit' => true,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
             ],
         ],
     ],
@@ -1594,6 +2156,28 @@ return [
         'exception' => [
             'class'               => BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+        ],
+    ],
+
+    'testReleaseFundsWithParntersBankAccount' => [
+        'request'   => [
+            'content' => [
+                'action' => 'release_funds'
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_NO_BANK_ACCOUNT_FOUND,
         ],
     ],
 
@@ -1656,7 +2240,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -1678,6 +2262,33 @@ return [
         'status_code' => 200,
     ],
 
+    'testWhitelistInternationalForRiskyBusinessType' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'insurance',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+                'business_website'     => 'https://example.com',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'                  => 'ABCDE0000Z',
+                'business_category'             => 'financial_services',
+                'business_subcategory'          => 'insurance',
+                'international_activation_flow' => 'greylist',
+                'international'                 => false,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'testWhitelistInternationalWithNoWebsite' => [
         'request'     => [
             'method'  => 'POST',
@@ -1688,7 +2299,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => '',
             ],
@@ -1720,7 +2331,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
             ],
         ],
@@ -1751,7 +2362,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://www.example.com',
             ],
@@ -1783,7 +2394,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -1815,7 +2426,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -1847,7 +2458,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -1879,7 +2490,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -1911,7 +2522,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -1997,6 +2608,46 @@ return [
         'status_code' => 200,
     ],
 
+    'testBankDetailsVerificationStatusForUnRegisteredBusiness' => [
+        'request'  => [
+            'content' => [
+                'submit' => true
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+
+        ],
+        'response' => [
+            'content' => [
+                'submitted'    => true,
+                'verification' => [
+                    'status' => 'pending'
+                ],
+                'can_submit'   => true,
+                'locked'       => true,
+            ],
+        ],
+    ],
+
+    'testValidateNeedsClarificationStatusChange' => [
+        'request'  => [
+            'content' => [
+                'submit' => true
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+
+        ],
+        'response' => [
+            'content' => [
+                'submitted'         => true,
+                'activation_status' => 'under_review',
+                'can_submit'        => true,
+                'locked'            => true,
+            ],
+        ],
+    ],
+
     'testNeedsClarificationResponseForAdminAuth' => [
         'request'  => [
             'method' => 'GET',
@@ -2007,7 +2658,7 @@ return [
                 'contact_name'         => [
                     'reasons' => [
                         'provide_poc' => [
-                            'description' => 'Please provide a provide a POC that we can reach out to in case of issues associated with your account.',
+                            'description' => 'Please provide a POC that we can reach out to in case of issues associated with your account.',
                         ],
                     ],
                 ],
@@ -2022,20 +2673,6 @@ return [
                     'reasons' => [
                         'is_company_reg' => [
                             'description' => 'Is your company a registered entity?',
-                        ],
-                    ],
-                ],
-                'business_category'    => [
-                    'reasons' => [
-                        'services_offered' => [
-                            'description' => 'What are some of the services/products that are offered?',
-                        ],
-                    ],
-                ],
-                'business_subcategory' => [
-                    'reasons' => [
-                        'services_offered' => [
-                            'description' => 'What are some of the services/products that are offered?',
                         ],
                     ],
                 ],
@@ -2144,5 +2781,37 @@ return [
             ],
             'status_code' => 200,
         ]
-    ]
+    ],
+
+    'testBusinessWebsiteUpdate' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'           => 'ecommerce',
+                'business_subcategory'        => 'fashion_and_lifestyle',
+                'promoter_pan'                => 'ABCDE0000Z',
+                'business_name'               => 'business_name',
+                'business_dba'                => 'tsest123',
+                'business_type'               => 1,
+                'business_model'              => '1245',
+                'business_website'            => 'https://example.com',
+                'business_operation_address'  => 'My Addres is somewhere',
+                'business_operation_state'    => 'KA',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560095',
+                'business_registered_address' => 'Registered Address',
+                'business_registered_state'   => 'DL',
+                'business_registered_city'    => 'Delhi',
+                'business_registered_pin'     => '560050',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'activation_status' => 'instantly_activated',
+                'business_website'  => 'https://example.com',
+            ],
+        ],
+        'status_code' => 200,
+    ],
 ];

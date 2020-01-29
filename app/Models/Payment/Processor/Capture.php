@@ -11,17 +11,21 @@ use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
+use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Offer;
 
 trait Capture
 {
@@ -86,7 +90,7 @@ trait Capture
 
         $amount = $payment->getAmount();
 
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             $amount -= $payment->getFee();
         }
@@ -369,7 +373,7 @@ trait Capture
      */
     protected function modifyCaptureAmountForPaymentFee(Payment\Entity $payment, int & $captureAmount)
     {
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if ($payment->isFeeBearerCustomer() === true)
         {
             $captureAmount = $captureAmount + $payment->getFee();
 
@@ -392,7 +396,12 @@ trait Capture
 
         $order = $payment->order;
 
-        if ($order->isDiscountApplicable() === false)
+        if($payment->getOffer() === null)
+        {
+            return;
+        }
+
+        if($payment->getOffer()->getOfferType() !== Offer\Constants::INSTANT_OFFER)
         {
             return;
         }
@@ -436,7 +445,9 @@ trait Capture
 
         $this->notifyPaymentCaptured();
 
-        (new Payment\Metric)->pushCapturedMetrics($this->payment);
+        // temporarily disabling metric push for "api_payment_captured_v1_bucket"
+        //
+        //(new Payment\Metric)->pushCapturedMetrics($this->payment);
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)
@@ -515,6 +526,8 @@ trait Capture
                 return (($ex instanceof Exception\GatewayTimeoutException) === true);
             case Payment\Gateway::HITACHI:
                 return ($payment->card->getNetworkCode() === Card\Network::RUPAY);
+            case Payment\Gateway::PAYSECURE:
+                return true;
         }
 
         return false;
@@ -617,6 +630,8 @@ trait Capture
         });
 
         $this->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
+
+        $this->processTransferIfApplicable($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
     }
@@ -805,7 +820,8 @@ trait Capture
         $payment = $this->payment;
 
         if (($payment->isBankTransfer() === false) and
-            ($payment->isBharatQr() === false))
+            ($payment->isBharatQr() === false) and
+            ($payment->isUpiTransfer() === false))
         {
             return;
         }
@@ -852,7 +868,7 @@ trait Capture
 
         $payment->setTax($txn->getTax());
 
-        if ($this->merchant->isFeeBearerCustomer() === false)
+        if ($payment->isFeeBearerCustomer() === false)
         {
             //set and fee values from txn
             $payment->setFee($txn->getFee());
@@ -904,6 +920,11 @@ trait Capture
     {
         if ($payment->hasOrder())
         {
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_AMOUNT_CHECK) === true)
+            {
+                return;
+            }
+
             $order = $this->repo->order->fetchForPayment($payment);
 
             if ($order->getStatus() === Order\Status::PAID)
@@ -1001,6 +1022,55 @@ trait Capture
         if ($virtualAccount !== null)
         {
             $virtualAccountCore->updateStatus($virtualAccount, VirtualAccount\Status::CLOSED);
+        }
+    }
+
+    protected function processTransferIfApplicable(Payment\Entity $payment)
+    {
+        $this->trace->info(
+            TraceCode::ORDER_TRANSFER_PROCESS_INITIATED,
+            [
+                'order_id'   => $payment->getApiOrderId(),
+                'payment_id' => $payment->getId(),
+            ]
+        );
+
+        try
+        {
+            if ($this->shouldProcessOrderTransfer($payment) === false)
+            {
+                return;
+            }
+
+            $orderId = $payment->getApiOrderId();
+
+            $this->repo
+                 ->transfer
+                 ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+
+            $input = [
+                'order_id'   => $orderId,
+                'payment_id' => $payment->getId(),
+                'mode'       => $this->mode,
+            ];
+
+            $this->trace->info(
+                TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT,
+                [
+                    'input' => $input,
+                ]);
+
+            Jobs\OrderTransferProcess::dispatch($this->mode, $payment);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->critical(
+                TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_FAILED,
+                [
+                    'order_id'   => $payment->getApiOrderId(),
+                    'payment_id' => $payment->getId(),
+                    'message'    => $e->getMessage(),
+                ]);
         }
     }
 
@@ -1102,9 +1172,19 @@ trait Capture
             return true;
         }
 
-        if (($order->isDiscountApplicable() === true) and
-            ($payment->discount !== null) and
-            (($payment->getAmount() + $payment->discount->getAmount()) === $order->getAmount()))
+        return $this->isPaymentAndOrderAmountSame($order, $payment);
+    }
+
+    protected function isPaymentAndOrderAmountSame(Order\Entity $order, Payment\Entity $payment)
+    {
+        $discount = 0;
+
+        if($payment->discount !== null)
+        {
+            $discount = $payment->discount->getAmount();
+        }
+
+        if (($payment->getAmount() + $discount) === $order->getAmount())
         {
             return true;
         }
@@ -1208,5 +1288,33 @@ trait Capture
         $calculatedMdr = intval(ceil($paymentBaseAmount * $rate));
 
         return ($paymentBaseAmount <= self::MIN_MDR_PAYMENT_AMOUNT) ? 0 : min($calculatedMdr, $txnFee);
+    }
+
+    public function shouldProcessOrderTransfer(Payment\Entity $payment)
+    {
+        if ($payment->isCaptured() !== true or
+            $payment->hasOrder() !== true)
+        {
+            $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_PAYMENT_NOT_CAPTURED,
+                               [
+                                   'payment_id' => $payment->getId()
+                               ]);
+            return false;
+        }
+
+        $order = $payment->order;
+
+        if ($order->getStatus() !== Order\Status::PAID or
+            $order->isPartialPaymentAllowed() === true)
+        {
+            $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_ORDER_NOT_PAID,
+                               [
+                                   'payment_id' => $payment->getId(),
+                                   'order_id'   => $order->getId()
+                               ]);
+            return false;
+        }
+
+        return true;
     }
 }

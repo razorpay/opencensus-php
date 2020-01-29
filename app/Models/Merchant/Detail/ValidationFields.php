@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use RZP\Models\Base;
-use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Document\Type;
+use RZP\Models\Merchant\Document\TypeGroups;
 
 class ValidationFields
 {
+
+    const POA_DOCUMENTS = 'poa_documents';
+
     const DASHBOARD_FIELDS = [
             Entity::ADDRESS_PROOF_URL,
             Entity::BANK_ACCOUNT_NAME,
@@ -34,17 +37,10 @@ class ValidationFields
     ];
 
     // There are limited total fields for Individual and Not-yet-registered business types
-    const DASHBOARD_FIELDS_LIMITED = [
-            Entity::ADDRESS_PROOF_URL,
+    const DASHBOARD_UNREGISTERED_LIMITED = [
             Entity::BANK_ACCOUNT_NAME,
             Entity::BANK_ACCOUNT_NUMBER,
             Entity::BANK_BRANCH_IFSC,
-            Entity::BUSINESS_DBA,
-            Entity::BUSINESS_NAME,
-            Entity::BUSINESS_OPERATION_ADDRESS,
-            Entity::BUSINESS_OPERATION_CITY,
-            Entity::BUSINESS_OPERATION_PIN,
-            Entity::BUSINESS_OPERATION_STATE,
             Entity::BUSINESS_REGISTERED_ADDRESS,
             Entity::BUSINESS_REGISTERED_CITY,
             Entity::BUSINESS_REGISTERED_PIN,
@@ -53,9 +49,21 @@ class ValidationFields
             Entity::CONTACT_EMAIL,
             Entity::CONTACT_MOBILE,
             Entity::CONTACT_NAME,
-            Entity::PROMOTER_ADDRESS_URL,
             Entity::PROMOTER_PAN_NAME,
     ];
+
+    /**
+     * This contains documents required for unregistered business
+     */
+    const UNREGISTERED_DOCUMENT_FIELDS = [
+        self::POA_DOCUMENTS => [
+            [Type::AADHAR_FRONT, Type::AADHAR_BACK],
+            [Type::PASSPORT_FRONT, Type::PASSPORT_BACK],
+            [Type::VOTER_ID_FRONT, Type::VOTER_ID_BACK],
+            [Type::DRIVER_LICENSE_FRONT, Type::DRIVER_LICENSE_BACK],
+        ]
+    ];
+
 
     const BANK_ACCOUNT_FIELDS = [
         Entity::BANK_ACCOUNT_NAME,
@@ -101,4 +109,32 @@ class ValidationFields
             Entity::ADDRESS_PROOF_URL,
             Entity::PROMOTER_PAN_URL,
     ];
+
+    /**
+     *
+     * Returns list of document required for a particular field/ document group .
+     *
+     * @param string $field
+     *
+     * @return array
+     */
+    public static function getDocumentsRequired(string $field): array
+    {
+        if (Type::isValid($field))
+        {
+            return [$field];
+        }
+
+        //
+        // In case of unregistered as a poa document merchant can submit multiple documents
+        // Like aadhaar , passport , voter id , driver license so returning a default document type
+        //
+        if (array_key_exists($field, self::UNREGISTERED_DOCUMENT_FIELDS) === true)
+        {
+            return [Type::AADHAR_FRONT, Type::AADHAR_BACK];
+        }
+
+        return null;
+    }
+
 }

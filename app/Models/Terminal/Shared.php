@@ -42,6 +42,8 @@ class Shared
     const NETBANKING_AXIS_CRP_TERMINAL       = '100NbAxisCrpTl';
     const NETBANKING_AXIS_TPV_TERMINAL       = '100NbAxisTpvTl';
     const NETBANKING_AXIS_REC_TERMINAL       = '100NbAxisRecTl';
+    const NETBANKING_UBI_TERMINAL            = '1000NbUbiTrmnl';
+    const NETBANKING_SCB_TERMINAL            = '1000NbScbTrmnl';
     const NETBANKING_FEDERAL_TERMINAL        = '100NbFdrlTrmnl';
     const NETBANKING_FEDERAL_TPV_TERMINAL    = '100NbFdrlTpvTl';
     const NETBANKING_RBL_TERMINAL            = '100NbRblTermnl';
@@ -62,6 +64,9 @@ class Shared
     const NETBANKING_YESB_TPV_TERMINAL       = '100NbYesbTpvTl';
     const NETBANKING_PNB_CRP_TERMINAL        = '100NbPunbCrpTl';
     const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
+    const NACH_CITI_TERMINAL                 = '100NbcitiTrmnl';
+    const NETBANKING_KVB_TERMINAL            = '1000NbKvbTrmnl';
+    const NETBANKING_KVB_TPV_TERMINAL        = '1000NbKvbTpvTl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL            = '1000PaytmTrmnl';
     const PAYZAPP_RAZORPAY_TERMINAL          = '100PayzappTmnl';
@@ -81,6 +86,7 @@ class Shared
     const UPI_AXIS_INTENT_TERMINAL           = 'UPIAXISIntTmnl';
     const UPI_MINDGATE_TPV_TERMINAL          = '100UPIMndgtTpv';
     const UPI_MINDGATE_SBI_RAZORPAY_TERMINAL = '100UPIMgateSbi';
+    const UPI_MINDGATE_OTM_TERMINAL          = '100MgateOTMTml';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
     const UPI_ICICI_TPV_TERMINAL             = '100UPIICTpvTml';
     const UPI_AXIS_RAZORPAY_TERMINAL         = '100UPIAXISTmnl';
@@ -107,12 +113,14 @@ class Shared
     const CARDLESS_EMI_RAZORPAY_TERMINAL2    = '10CrdlesEmiTml';
     const CARDLESS_EMI_FLEXMONEY_TERMINAL    = '20CrdlesEmiTml';
     const PAYLATER_EPAYLATER_TERMINAL        = '10PayLaterTrml';
+    const PAYLATER_ICICI_TERMINAL            = '10PLaterIciTml';
     const ALLA_TPV_TERMINAL                  = '1000alltpvTrml';
     const IDFB_TPV_TERMINAL                  = '100idfctpvTrml';
     const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';
     const UPI_AIRTEL_RAZORPAY_TERMINAL       = '100UPIArtlTmnl';
     const UPI_CITI_RAZORPAY_TERMINAL         = '100UPICitiTmnl';
     const WORLDLINE_TERMINAL                 = '1000WldlineTml';
+    const UPI_JUSPAY_TERMINAL                = '100UpiJsPayTml';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -144,6 +152,7 @@ class Shared
         self::NETBANKING_PNB_TERMINAL,
         self::NETBANKING_ESFB_TERMINAL,
         self::NETBANKING_SBI_TERMINAL,
+        self::NETBANKING_KVB_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
         self::PAYUMONEY_RAZORPAY_TERMINAL,
         self::FREECHARGE_RAZORPAY_TERMINAL,
@@ -172,6 +181,7 @@ class Shared
         self::CARDLESS_EMI_RAZORPAY_TERMINAL,
         self::CARDLESS_EMI_FLEXMONEY_TERMINAL,
         self::WORLDLINE_TERMINAL,
+        self::NACH_CITI_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -207,6 +217,7 @@ class Shared
         self::NETBANKING_PNB_TERMINAL            => Gateway::NETBANKING_PNB,
         self::NETBANKING_SBI_TERMINAL            => Gateway::NETBANKING_SBI,
         self::NETBANKING_ESFB_TERMINAL           => Gateway::NETBANKING_EQUITAS,
+        self::NETBANKING_KVB_TERMINAL            => Gateway::NETBANKING_KVB,
         self::OLAMONEY_RAZORPAY_TERMINAL         => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL            => Gateway::PAYTM,
         self::PAYZAPP_RAZORPAY_TERMINAL          => Gateway::WALLET_PAYZAPP,
@@ -226,6 +237,7 @@ class Shared
         self::UPI_AXIS_RAZORPAY_TERMINAL         => Gateway::UPI_AXIS,
         self::UPI_AXIS_TPV_RAZORPAY_TERMINAL     => Gateway::UPI_AXIS,
         self::UPI_HULK_RAZORPAY_TERMINAL         => Gateway::UPI_HULK,
+        self::UPI_JUSPAY_TERMINAL                => Gateway::UPI_JUSPAY,
         self::OPENWALLET_RAZORPAY_TERMINAL       => Gateway::WALLET_OPENWALLET,
         self::MPESA_RAZORPAY_TERMINAL            => Gateway::WALLET_MPESA,
         self::HITACHI_MOTO_TERMINAL              => Gateway::HITACHI,
@@ -233,7 +245,9 @@ class Shared
         self::CARDLESS_EMI_RAZORPAY_TERMINAL     => Gateway::CARDLESS_EMI,
         self::CARDLESS_EMI_FLEXMONEY_TERMINAL    => Gateway::CARDLESS_EMI,
         self::PAYLATER_EPAYLATER_TERMINAL        => Gateway::PAYLATER,
+        self::PAYLATER_ICICI_TERMINAL            => Gateway::PAYLATER_ICICI,
         self::WORLDLINE_TERMINAL                 => Gateway::WORLDLINE,
+        self::NACH_CITI_TERMINAL                 => Gateway::NACH_CITI,
     ];
 
     public static function getSharedTerminalMapping()

@@ -1,7 +1,8 @@
 <?php
 
-
 namespace RZP\Models\Base\Traits;
+
+use RZP\Models\Merchant;
 
 /**
  * Trait ProcessAccountNumber
@@ -17,6 +18,7 @@ trait ProcessAccountNumber
      * Mandate Account number and Replaces it with balance id
      *
      * @param array $input
+     * @throws \RZP\Exception\BadRequestException
      */
     protected function processAccountNumber(array & $input)
     {

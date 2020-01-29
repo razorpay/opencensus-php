@@ -45,6 +45,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getMerchantSettlementAmount()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getMerchantSettlementAmount($input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Initiates settlements for merchants with
      * feature DAILY_SETTLEMENT enabled.
@@ -296,6 +305,24 @@ class SettlementController extends Controller
         $this->service()->resetProcessDetails();
 
         $data = $this->service()->getProcessDetails();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getHolidayListForYear()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getHolidayListForYear($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getSettlementTransactionsWithSettlementId($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getSettlementTransactionsWithSettlementId($id, $input);
 
         return ApiResponse::json($data);
     }

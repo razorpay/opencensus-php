@@ -68,7 +68,6 @@ abstract class EntityProcessor extends Base\Core
      * Returns an array with the following 2 keys
      * - entity
      * - fire_webhook
-     *
      */
     public function process(): array
     {
@@ -135,6 +134,7 @@ abstract class EntityProcessor extends Base\Core
         }
 
         $customProperties = [
+            'merchant_id'                       => $this->fta->merchant->getId(),
             'channel'                           => $this->fta->getChannel(),
             'purpose'                           => $this->fta->getPurpose(),
             'fund_transfer_attempt_id'          => $this->fta->getId(),
@@ -164,14 +164,20 @@ abstract class EntityProcessor extends Base\Core
 
         if ($this->fta->isStatusFailed() === true)
         {
-            $this->trace->info(TraceCode::FTA_STATUS_FAILED, ['fta_id' => $this->fta->getId()]);
+            $this->trace->info(TraceCode::FTA_STATUS_FAILED, [
+                'fta_id'      => $this->fta->getId(),
+                'merchant_id' => $this->fta->getMerchantId(),
+            ]);
 
             $failureBucket = Attempt\Metric::RZP_ERROR;
 
             if ($this->isMerchantLevelError() === true)
             {
                 $this->trace->info(
-                    TraceCode::FTA_STATUS_FAILED_MERCHANT_ERROR, ['fta_id' => $this->fta->getId()]);
+                    TraceCode::FTA_STATUS_FAILED_MERCHANT_ERROR, [
+                        'fta_id'      => $this->fta->getId(),
+                        'merchant_id' => $this->fta->getMerchantId(),
+                    ]);
 
                 $this->sendFailureEmailToMerchant = true;
 

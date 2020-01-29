@@ -140,6 +140,8 @@ class ManualReconciliate extends CombinedReconciliate
             throw $ex;
         }
 
+        $this->setMerchantIdInOutput($this->payment->getMerchantId());
+
         // check if already reconciled
         if ($this->payment->transaction->isReconciled() === true)
         {
@@ -417,10 +419,12 @@ class ManualReconciliate extends CombinedReconciliate
             ($dbReference1 !== $reference1) and
             ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_ARN) === false))
         {
+            $infoCode = ($isReconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => ($isReconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'                 => $infoCode,
                     'payment_id'                => $payment->getId(),
                     'amount'                    => $payment->getAmount(),
                     'db_reference_number'       => $dbReference1,

@@ -50,6 +50,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::BUSINESS_WEBSITE)
                   ->nullable();
 
+            $table->string(MerchantDetail::ADDITIONAL_WEBSITES, 511)
+                  ->nullable();
+
              $table->boolean(MerchantDetail::BUSINESS_INTERNATIONAL)
                   ->default(0);
 
@@ -137,6 +140,9 @@ class CreateMerchantDetailsTable extends Migration
                   ->nullable();
 
             $table->string(MerchantDetail::PROMOTER_PAN_NAME)
+                  ->nullable();
+
+            $table->string(MerchantDetail::DATE_OF_BIRTH, 30)
                   ->nullable();
 
             $table->string(MerchantDetail::BANK_NAME)
@@ -248,6 +254,15 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::ACTIVATION_STATUS, 30)
                   ->nullable();
 
+            $table->string(MerchantDetail::POI_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
+            $table->string(MerchantDetail::POA_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
+            $table->string(MerchantDetail::BANK_DETAILS_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
             $table->string(MerchantDetail::CLARIFICATION_MODE, 15)
                   ->nullable();
 
@@ -284,6 +299,15 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::INTERNATIONAL_ACTIVATION_FLOW)
                   ->nullable();
 
+            $table->string(MerchantDetail::LIVE_TRANSACTION_DONE)
+                 ->nullable();
+
+            $table->json(MerchantDetail::KYC_CLARIFICATION_REASONS)
+                  ->nullable();
+
+            $table->json(MerchantDetail::KYC_ADDITIONAL_DETAILS)
+                  ->nullable();
+
             $table->boolean(MerchantDetail::SUBMITTED)
                   ->default(0);
 
@@ -293,6 +317,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->integer(MerchantDetail::CREATED_AT);
 
             $table->integer(MerchantDetail::UPDATED_AT);
+
+            $table->char(MerchantDetail::KYC_ID, 14)
+                  ->nullable();
 
             $table->foreign(MerchantDetail::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

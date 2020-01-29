@@ -52,6 +52,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     public function testPayment()
     {
         $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+
         $payment['bank_account'] = [
             'account_number' => '914010009305862',
             'ifsc'           => 'yesb0000123',
@@ -76,6 +77,54 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $token = $this->getLastEntity('token', true);
         $this->assertEquals('netbanking', $token['auth_type']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+    }
+
+    public function testPaymentWithDisplayFeature()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ENACH_INTERMEDIATE]);
+
+        $this->testPayment();
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::ENACH_INTERMEDIATE]);
+    }
+
+    public function testPaymentAuthCard()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'debitcard', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(0, $payment['amount']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($enach['gateway_reference_id']);
+        $this->assertNotNull($enach['gateway_reference_id2']);
+
+        $this->assertEquals('true', $enach['status']);
+
+        $this->assertEquals('true' ,$enach['acknowledge_status']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('debitcard', $token['auth_type']);
+
         $this->assertEquals('initiated', $token['recurring_status']);
     }
 
@@ -586,7 +635,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         // Tests a case where there is no match against gateway_reference_id in enach table
         // Db query will fail and batch gracefully handles this and continues its execution.
 
-        // this should ideally not happen now since verify is implemented
         $this->createPaymentFailed();
 
         $payment = $this->getLastEntity('payment', true);

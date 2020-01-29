@@ -32,6 +32,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getBankAccountOnConnection($merchant, string $mode)
+    {
+        return $this->newQueryWithConnection($mode)
+                    ->where(Entity::ENTITY_ID, '=', $merchant->getId())
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
+                    ->first();
+    }
+
     public function getBankAccountsForMerchants(array $mids, $columns = ['*'])
     {
         return $this->newQuery()
@@ -171,11 +179,21 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getMerchantBankAccountsBetweenTimestamp($from, $to)
+    public function getBankAccountsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, [$from, $to])
                     ->whereIn(Entity::TYPE, Type::getBeneficiaryRegistrationTypes())
+                    ->with(['source'])
+                    ->oldest()
+                    ->get();
+    }
+
+    public function getMerchantBankAccountsBetweenTimestamp($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(BankAccount\Entity::CREATED_AT, [$from, $to])
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->with(['source'])
                     ->oldest()
                     ->get();
@@ -282,15 +300,17 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param  string $accountNumber
-     * @param  string $ifscCode
-     * @param  string $type
-     * @param  string $merchantId
+     * @param string $accountNumber
+     * @param string $ifscCode
+     * @param string $type
+     * @param string $name
+     * @param string $merchantId
      * @return Entity|null
      */
     public function findLatestBankAccountByAccountNumber(
         string $accountNumber,
         string $ifscCode,
+        string $name,
         string $type,
         string $merchantId)
     {
@@ -298,6 +318,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
                     ->where(Entity::IFSC_CODE, $ifscCode)
                     ->where(Entity::TYPE, $type)
+                    ->where(Entity::BENEFICIARY_NAME, $name)
                     ->merchantId($merchantId)
                     ->latest()
                     ->first();

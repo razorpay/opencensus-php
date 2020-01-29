@@ -3,10 +3,13 @@
 namespace RZP\Services\FTS;
 
 use Requests;
+use Requests_Response;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 
 class Base
@@ -31,6 +34,8 @@ class Base
 
     protected $mode;
 
+    protected $redis;
+
     // Account related URIs
     const FUND_ACCOUNT_CREATE_URI  = '/account';
     const FUND_ACCOUNT_REGISTER_URI  = '/account/register';
@@ -41,9 +46,29 @@ class Base
     // Source Account related URIs
     const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
 
+    const SOURCE_ACCOUNT_DELETE_URI = '/source_account';
+
+    const FUND_ACCOUNT_FETCH_URI  = '/account';
+
+    const FUND_TRANSFER_FETCH_URI = '/transfer';
+
+    const FUND_ACCOUNT_STATUS_FETCH_URI  = '/account/status';
+
+    const FUND_TRANSFER_STATUS_FETCH_URI = '/transfer/status';
+
+    const FUND_TRANSFER_ATTEMPTS_UPDATE_URI = '/attempts/update';
+
+    const FUND_TRANSFER_ATTEMPTS_FETCH_STATUS = '/transfers/status';
+
+    const FUND_TRANSFER_ATTEMPTS_CHECK_STATUS = '/transfers/check';
+
+    const FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS = '/attempts/verify';
+
+    const FUND_TRANSFER_ATTEMPTS_STATUS_FETCH = '/transfers/status';
+
     // Headers
     const ACCEPT        = 'Accept';
-    const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
+    const ADMIN_EMAIL   = 'admin_email';
     const CONTENT_TYPE  = 'Content-Type';
     const X_REQUEST_ID  = 'X-Request-ID';
 
@@ -53,7 +78,7 @@ class Base
         self::TRANSFER_RETRY,
     ];
 
-    const REQUEST_TIMEOUT = 30;
+    const REQUEST_TIMEOUT = 60;
 
     /**
      * FTS Base constructor.
@@ -62,21 +87,23 @@ class Base
      */
     public function __construct($app)
     {
-        $this->trace = $app['trace'];
-
-        $this->auth = $app['basicauth'];
+        $this->trace   = $app['trace'];
 
         $this->request = $app['request'];
 
-        $this->config = $app['config']->get('applications.fts');
+        $this->mode    = $app['rzp.mode'];
 
-        $this->mode = $app['rzp.mode'];
+        $this->auth    = $app['basicauth'];
+
+        $this->config  = $app['config']->get('applications.fts');
 
         $this->baseUrl = $this->config[$this->mode]['url'];
 
-        $this->key = $this->config[$this->mode]['fts_key'];
+        $this->key     = $this->config[$this->mode]['fts_key'];
 
-        $this->secret = $this->config[$this->mode]['fts_secret'];
+        $this->secret  = $this->config[$this->mode]['fts_secret'];
+
+        $this->redis   = $app['redis']->connection();
 
         $this->setHeaders();
     }
@@ -99,7 +126,14 @@ class Base
     {
         $request = $this->generateRequest($method, $endpoint, $data);
 
-        $response = $this->sendFtsRequest($request);
+        if ($this->mode === Mode::TEST)
+        {
+            $response = $this->getMockResponseByEndpoint($endpoint);
+        }
+        else
+        {
+            $response = $this->sendFtsRequest($request);
+        }
 
         $this->trace->info(TraceCode::FTS_RESPONSE, [
             'response' => $response->body
@@ -119,6 +153,8 @@ class Base
 
     /**
      * Generates request using the given params
+     * Issue with DELETE method: https://github.com/rmccue/Requests/issues/91
+     * Fix for DELETE method: https://github.com/rmccue/Requests/pull/188
      *
      * @param string $endpoint
      * @param string $method
@@ -131,7 +167,7 @@ class Base
         $url = $this->baseUrl . $endpoint;
 
         // json encode if data is must, else ignore.
-        if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
+        if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT, Requests::DELETE], true) === true)
         {
             $data = (empty($data) === false) ? json_encode($data) : null;
         }
@@ -143,6 +179,11 @@ class Base
                 $this->secret,
             ],
         ];
+
+        if ($method === Requests::DELETE)
+        {
+            $options += [ 'data_format' => 'body' ];
+        }
 
         return [
             'url'       => $url,
@@ -160,8 +201,8 @@ class Base
     {
         $headers = [];
 
-        $headers[self::ACCEPT]        = 'application/json';
-        $headers[self::CONTENT_TYPE]  = 'application/json';
+        $headers[self::ACCEPT]       = 'application/json';
+        $headers[self::CONTENT_TYPE] = 'application/json';
 
         $this->headers = $headers;
     }
@@ -173,7 +214,7 @@ class Base
      * @return \Requests_Response
      * @throws \Throwable
      */
-    protected function sendFtsRequest(array $request): \Requests_Response
+    protected function sendFtsRequest(array $request): Requests_Response
     {
         $this->traceRequest($request);
 
@@ -218,11 +259,11 @@ class Base
     /**
      * Method to parse response from FTS
      *
-     * @param \Requests_Response $response
+     * @param  $response
      * @return array
      * @throws Exception\RuntimeException
      */
-    protected function parseResponse(\Requests_Response $response): array
+    protected function parseResponse(Requests_Response $response): array
     {
         $code = null;
 
@@ -231,7 +272,7 @@ class Base
             $code = $response->status_code;
         }
 
-        if (in_array($code, [200, 201, 204], true) === false)
+        if (in_array($code, [200, 201, 204, 400], true) === false)
         {
             throw new Exception\RuntimeException(
                 'Unexpected response code received from FTS.',
@@ -256,5 +297,41 @@ class Base
     public static function isValidFtsAction(string $action): bool
     {
         return (in_array($action, self::ALLOWED_FTS_ACTION, true) === true);
+    }
+
+    protected function getMockResponseByEndpoint(string $endpoint)
+    {
+        if ($endpoint === self::FUND_TRANSFER_CREATE_URI)
+        {
+            return $this->mockCreateFundTransferResponse();
+        }
+    }
+
+    public function mockCreateFundTransferResponse()
+    {
+        $response = new Requests_Response();
+
+        $response->status_code = 201;
+
+        $content = json_encode([
+                Constants::STATUS           => Constants::STATUS_CREATED,
+                Constants::MESSAGE          => 'fund transfer sent to fts.',
+                Constants::FUND_TRANSFER_ID => random_integer(2),
+                Constants::FUND_ACCOUNT_ID  => random_integer(2),
+        ]);
+
+        $response->body = $content;
+
+        return $response;
+    }
+
+    protected function setAdminHeader()
+    {
+        $this->headers[RequestHeader::X_USER_EMAIL] = $this->getAdminEmail();
+    }
+
+    protected function getAdminEmail(): string
+    {
+        return $this->auth->getDashboardHeaders()[self::ADMIN_EMAIL] ?? 'EMAIL_NOT_FOUND';
     }
 }

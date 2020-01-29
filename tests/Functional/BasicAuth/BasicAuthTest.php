@@ -387,6 +387,18 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    // If submerchantid is not passed in X-Razorpay-Account header, only whitelisted routes should be accessible
+    public function testPartnerAuthWithoutAccountIdInHeader()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->fixtures->create('emi_plan', ['merchant_id' => '10000000000000']);
+
+        $this->ba->publicAuth('rzp_test_partner_' . $client->getId());
+
+        $this->startTest();
+    }
+
     public function testRequestWithPartnerHeadersClientCreds()
     {
         $client = $this->setUpPartnerMerchantAppAndGetClient('dev');

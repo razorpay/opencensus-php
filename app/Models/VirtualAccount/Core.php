@@ -20,6 +20,7 @@ use RZP\Models\Merchant\Entity as Merchant;
 class Core extends Base\Core
 {
     const VA_BANK_ACCOUNT_GENERATION = 'va_bank_account_generation';
+    const VA_ADD_RECEIVER            = 'va_add_receiver';
 
     public function __construct()
     {
@@ -45,12 +46,12 @@ class Core extends Base\Core
         //
         try
         {
-            $virtualAccount = $this->mutex->acquireAndRelease(
-                self::VA_BANK_ACCOUNT_GENERATION,
-                function() use ($input, $merchant, $customer, $order, $balance)
-                {
-                    $virtualAccount = $this->createEntityAndAssociate($merchant);
+            $virtualAccount = $this->createEntityAndAssociate($merchant);
 
+            $virtualAccount = $this->mutex->acquireAndRelease(
+                self::VA_BANK_ACCOUNT_GENERATION . $virtualAccount->getId(),
+                function() use ($input, $merchant, $customer, $order, $balance, $virtualAccount)
+                {
                     return $this->buildVirtualAccountAndReceivers(
                         $virtualAccount, $input, $customer, $order, $balance);
                 },
@@ -80,7 +81,7 @@ class Core extends Base\Core
     /**
      * A static qr code for all the unexpected payments is picked.
      */
-    public function createOrFetchSharedVirtualAccount()
+    public function createOrFetchSharedVirtualAccount(array $options = [])
     {
         $virtualAccountId = Entity::SHARED_ID;
 
@@ -88,7 +89,7 @@ class Core extends Base\Core
 
         if ($virtualAccount === null)
         {
-            $virtualAccount = $this->createSharedVirtualAccount();
+            $virtualAccount = $this->createSharedVirtualAccount($options);
         }
 
         return $virtualAccount;
@@ -113,7 +114,7 @@ class Core extends Base\Core
             ],
         ];
 
-        return $this->create($input, $merchant, null, null, $merchant->bankingBalance);
+        return $this->create($input, $merchant, null, null, $merchant->sharedBankingBalance);
     }
 
     public function createOrFetchBankingVirtualAccount(Merchant $merchant, Balance\Entity $balance): Entity
@@ -164,7 +165,7 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
-    protected function createSharedVirtualAccount()
+    protected function createSharedVirtualAccount(array $options = [])
     {
         $sharedMerchantId = $this->getDefaultMerchantId();
 
@@ -179,11 +180,14 @@ class Core extends Base\Core
         $input = [
             Entity::RECEIVERS => [
                 Entity::TYPES => [
+                    Receiver::VPA,
                     Receiver::QR_CODE,
                     Receiver::BANK_ACCOUNT
                 ]
             ],
         ];
+
+        $input[Entity::RECEIVERS] = array_merge($input[Entity::RECEIVERS], $options);
 
         $virtualAccount = $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer);
 
@@ -226,7 +230,7 @@ class Core extends Base\Core
         {
             $options = $receivers[$receiverType] ?? [];
 
-            $this->validateReceiver($receiverType, $virtualAccount);
+            $this->validateReceiver($receiverType, $virtualAccount, $options);
 
             $func = 'build' . studly_case($receiverType);
 
@@ -238,6 +242,34 @@ class Core extends Base\Core
         }
 
         $this->updateBalanceAccountNumberForBanking($virtualAccount);
+    }
+
+    public function getConfigsForVirtualAccount(array $receivers)
+    {
+        $virtualAccount = $this->createEntityAndAssociate($this->merchant);
+
+        $vaConfig = [];
+
+        $receiverHelper = $virtualAccount->getReceiverBuilder();
+
+        foreach ($receivers[Entity::RECEIVER_TYPES] as $receiverType)
+        {
+            $receiverConfig = [];
+
+            if (($receiverType === Receiver::VPA) or
+                ($receiverType === Receiver::BANK_ACCOUNT))
+            {
+                $this->validateReceiver($receiverType, $virtualAccount);
+
+                $func = 'get' . studly_case($receiverType) . 'Configs';
+
+                $receiverConfig = $receiverHelper->$func($virtualAccount);
+            }
+
+            $vaConfig[$receiverType] = $receiverConfig;
+        }
+
+        return $vaConfig;
     }
 
     /**
@@ -255,7 +287,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function validateReceiver(string $receiver, Entity $virtualAccount)
+    protected function validateReceiver(string $receiver, Entity $virtualAccount, array $options = [])
     {
         //
         // Don't validate receivers for banking virtual accounts
@@ -273,7 +305,15 @@ class Core extends Base\Core
                 break;
 
             case Receiver::QR_CODE:
-                $this->verifyBharatQrEnabled($virtualAccount->merchant);
+                // No need to check for feature on UPI QR
+                if (Receiver::isOnlyUpiQrCode($options) === false)
+                {
+                    $this->verifyBharatQrEnabled($virtualAccount->merchant);
+                }
+                break;
+
+            case Receiver::VPA:
+                $this->verifyVPAEnabled($virtualAccount->merchant);
                 break;
 
             default:
@@ -282,6 +322,12 @@ class Core extends Base\Core
                 // and we don't want to put any validation
                 // for receiver being enabled by default
                 return;
+        }
+
+        if ($virtualAccount->isReceiverPresent($receiver))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_RECEIVER_ALREADY_PRESENT);
         }
     }
 
@@ -325,6 +371,15 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount->toArray());
         }
 
+        $vpa = $virtualAccount->vpa;
+
+        if ($vpa !== null)
+        {
+            $this->repo->deleteOrFail($vpa);
+
+            $this->trace->info(TraceCode::VPA_DELETED, $vpa->toArray());
+        }
+
         $virtualAccount->setStatus(Status::CLOSED);
 
         $currentTime = Carbon::now()->getTimestamp();
@@ -360,6 +415,17 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
         }
 
+    }
+
+    protected function verifyVPAEnabled(Merchant $merchant)
+    {
+        $feature = Feature\Constants::VIRTUAL_ACCOUNTS;
+
+        if ($merchant->isFeatureEnabled($feature) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_VIRTUAL_VPA_NOT_ENABLED_FOR_MERCHANT);
+        }
     }
 
     public function eventVirtualAccountCredited(Payment $payment)
@@ -403,5 +469,26 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->fire('api.virtual_account.closed', $eventPayload);
+    }
+
+    public function addReceiver(Entity $virtualAccount, array $input)
+    {
+        $virtualAccount = $this->mutex->acquireAndRelease(
+            self::VA_ADD_RECEIVER . "_" . $virtualAccount->getPublicId(),
+            function() use ($input, $virtualAccount) {
+
+                $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
+
+                $this->repo->saveOrFail($virtualAccount);
+
+                return $virtualAccount;
+            },
+            10,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_IN_PROGRESS,
+            5,
+            200,
+            400);
+
+        return $virtualAccount;
     }
 }

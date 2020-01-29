@@ -38,11 +38,13 @@ class TransactionCreated extends Event implements ShouldQueue
             $currency     = $entity->getCurrency();
             $amount       = $entity->getAmount();
             $appName      = $entity->device->getAppFullName();
+            $sender       = $entity->device->getSmsSender();
 
             return [
                 'receiver' => $entity->device->getFormattedContact(),
                 'source'   => "api.{$this->context->getMode()}.p2p",
                 'template' => 'sms.p2p.collect',
+                'sender'   => $sender,
                 'params'   => [
                     'payee_name'        => $payeeName,
                     'app_name'          => $appName,
@@ -53,5 +55,10 @@ class TransactionCreated extends Event implements ShouldQueue
                 ],
             ];
         }
+    }
+
+    public function getReminderPayload()
+    {
+        return;
     }
 }

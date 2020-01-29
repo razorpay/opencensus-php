@@ -29,7 +29,7 @@ class PublicEntity extends UniqueIdEntity
     */
     const IDS                   = 'ids';
 
-    const SIGNED_PUBLIC_ID_REGEX   = '/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/';
+    const SIGNED_PUBLIC_ID_REGEX   = '/\b[a-z]{0,6}_[a-zA-Z0-9]{14}\b/';
 
     protected static $sign      = '';
 
@@ -79,6 +79,14 @@ class PublicEntity extends UniqueIdEntity
      * @var array
      */
     protected $hosted           = [];
+
+    /**
+     * Fields to be returned when receiving expand[] query param in fetch
+     * (eg. transaction, transaction.settlement with payment fetch)
+     *
+     * @var array
+     */
+    protected $expanded         = [];
 
     /**
      * This variable name cannot be "customer" since
@@ -144,6 +152,44 @@ class PublicEntity extends UniqueIdEntity
         $this->setPublicAttributes($array);
 
         return $this->arrangePublicAttributes($array);
+    }
+
+    /**
+     * Returns relations with public array based on expand[] query param in
+     * fetch routes (eg. transaction, transaction.settlement with payment fetch),
+     * as these relations might not be in public array of the fetched entity.
+     *
+     * @return  array
+     */
+    public function toArrayPublicWithExpand()
+    {
+        $attributes = $this->attributesToArray();
+
+        $relations = $this->relationsToArrayPublic(true);
+
+        $array = array_merge($attributes, $relations);
+
+        $this->setPublicAttributes($array);
+
+        $publicArray = $this->arrangePublicAttributes($array);
+
+        $this->arrangeExpandAttributes($array, $publicArray);
+
+        return $publicArray;
+    }
+
+    /**
+     * toArrayPublic at times has fields that we set/unset based on auth type. This should not impact the webhook data.
+     * toArrayWebhook assumes that the $webhook array will be a subset of the $public array.
+     * This function uses the public setters itself for custom data but only returns fields present in $webhook array.
+     *
+     * @return array
+     */
+    public function toArrayWebhook()
+    {
+        $attributes = $this->toArrayPublic();
+
+        return array_only($attributes, $this->webhook);
     }
 
     public function toArrayAdmin()
@@ -306,9 +352,22 @@ class PublicEntity extends UniqueIdEntity
         }
     }
 
-    public function relationsToArrayPublic()
+    /**
+     * Relations of the fetched entity.
+     *
+     *@param bool $expand
+     *@return array
+     */
+    public function relationsToArrayPublic(bool $expand = false)
     {
         $public = array_flip($this->public);
+
+        if ($expand === true)
+        {
+            $expanded = array_flip($this->expanded);
+
+            $public = array_merge($public, $expanded);
+        }
 
         $relations = $this->relations;
 
@@ -336,7 +395,11 @@ class PublicEntity extends UniqueIdEntity
             {
                 if ($this->isRelationEmbeddedInResponse($key) === true)
                 {
-                    $array[$key] = $value->toArrayPublicEmbedded();
+                    $array[$key] = $value->toArrayPublicEmbedded($expand);
+                }
+                else if ($expand === true)
+                {
+                    $array[$key] = $value->toArrayPublicWithExpand();
                 }
                 else
                 {
@@ -345,7 +408,14 @@ class PublicEntity extends UniqueIdEntity
             }
             else if (static::isPublicEntity($value) === true)
             {
-                $array[$key] = $value->toArrayPublic();
+                if ($expand === true)
+                {
+                    $array[$key] = $value->toArrayPublicWithExpand();
+                }
+                else
+                {
+                    $array[$key] = $value->toArrayPublic();
+                }
             }
             else
             {
@@ -358,6 +428,11 @@ class PublicEntity extends UniqueIdEntity
 
     public function relationsToArrayAdmin()
     {
+        //
+        // If you're not getting relations data here,
+        // Add the relation as the visible array in the Entity as camel cased
+        // Eg: bankingAccountDetails in $visible of BankingAccount\Detail\Entity
+        //
         $relations = $this->getArrayableRelations();
 
         // Snake case relation's keys
@@ -406,6 +481,19 @@ class PublicEntity extends UniqueIdEntity
         $array[static::ENTITY] = $this->entity;
     }
 
+    public function arrangeExpandAttributes(array $array, array & $publicArray)
+    {
+        foreach ($this->expanded as $expandedAttr)
+        {
+            if (array_key_exists($expandedAttr, $array) === true)
+            {
+                $publicArray[$expandedAttr] = $array[$expandedAttr];
+            }
+        }
+
+        $this->authRelatedChecks($publicArray);
+    }
+
     public function arrangePublicAttributes(array $array)
     {
         $publicArray = [];
@@ -418,6 +506,13 @@ class PublicEntity extends UniqueIdEntity
             }
         }
 
+        $this->authRelatedChecks($publicArray);
+
+        return $publicArray;
+    }
+
+    protected function authRelatedChecks(array & $publicArray)
+    {
         $app = App::getFacadeRoot();
 
         if ($app['basicauth']->isAdminAuth() === false)
@@ -433,8 +528,6 @@ class PublicEntity extends UniqueIdEntity
         {
             $publicArray = array_only($publicArray, $this->publicAuth);
         }
-
-        return $publicArray;
     }
 
     protected function arrangeDiffAttributes(array $attributes)
@@ -474,7 +567,7 @@ class PublicEntity extends UniqueIdEntity
         $entity = $this->entity;
 
         // It's always needed for live mode. Not taking care of test for now.
-        $url = "https://dashboard.razorpay.com/admin#/app/entity/live/$entity/$id";
+        $url = "https://dashboard.razorpay.com/admin#/app/entity/$entity/live/$id";
 
         return $url;
     }

@@ -7,6 +7,7 @@ use Config;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Order;
+use RZP\Models\Options;
 use RZP\Constants\Mode;
 use RZP\Models\Address;
 use RZP\Error\ErrorCode;
@@ -80,6 +81,8 @@ class Generator extends Base\Core
      * @var Order\Entity
      */
     protected $order;
+
+    protected $options;
 
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
@@ -180,12 +183,19 @@ class Generator extends Base\Core
     {
         $this->generateInvoiceSkeleton($input);
 
+        $this->autoEnableRemindersIfApplicable($input);
+
         $this->checkDuplicateInternalRef($input);
+
+        $this->copyOptions($input);
 
         if ($this->invoice->exists === true)
         {
             return $this->invoice;
         }
+
+        // retries the database transaction for 1 time when there is a deadlock error.
+        $maxAttempts = 2;
 
         $this->repo->transaction(
             function() use ($input)
@@ -200,7 +210,10 @@ class Generator extends Base\Core
                 }
 
                 $this->repo->saveOrFail($this->invoice);
-            });
+
+                $this->setReminderForInvoice($input, $this->invoice);
+
+            }, $maxAttempts);
 
         return $this->invoice;
     }
@@ -280,7 +293,7 @@ class Generator extends Base\Core
      *
      * @throws LogicException
      */
-    protected function getInvoiceLink(): string
+    public function getInvoiceLink(): string
     {
         $invoiceId = $this->invoice->getId();
 
@@ -430,6 +443,22 @@ class Generator extends Base\Core
         $this->setShortUrl();
     }
 
+    private function setReminderForInvoice(array $input, Entity $invoice)
+    {
+        $reminderCore = new Reminder\Core();
+
+        if(isset($input[Entity::REMINDER_ENABLE]) === true)
+        {
+            $reminderEnable = boolval($input[Entity::REMINDER_ENABLE]);
+
+            $reminderStatus = ($reminderEnable === true) ? Reminder\Status::PENDING : Reminder\Status::DISABLED;
+
+            $reminderInput[Reminder\Entity::REMINDER_STATUS] = $reminderStatus;
+
+            $reminderCore->create($reminderInput, $invoice);
+        }
+    }
+
     /**
      * @return void
      */
@@ -437,7 +466,7 @@ class Generator extends Base\Core
     {
         $order = $this->getOrder();
 
-        if ($order === null)
+        if (empty($order) === true)
         {
             $orderAmount    = $this->invoice->getAmount();
             $orderCurrency  = $this->invoice->getCurrency();
@@ -455,7 +484,8 @@ class Generator extends Base\Core
             if (($this->externalEntity !== null) and
                 ($this->invoice->isTypeOfSubscriptionRegistration() === true))
             {
-                if ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
+                if (($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE) or
+                    ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::NACH))
                 {
                     $orderInput[Order\Entity::METHOD] = $this->externalEntity->getMethod();
                 }
@@ -468,9 +498,28 @@ class Generator extends Base\Core
 
             $partialPayment = $this->invoice->isPartialPaymentAllowed();
 
+            // order creation flow via options requested for TPV
+            if( ($this->invoice->isTypeLink() === true) and (empty($this->options) === false) )
+            {
+                // update order using order keys sent in the options
+                if(isset($this->options[Options\Entity::ORDER]) === true)
+                {
+                    $optionsOrder = $this->options[Options\Entity::ORDER] ?? [];
+
+                    $orderInput = array_merge($orderInput, $optionsOrder);
+
+                    $order = (new Order\Service())->createOrderFromOptionsForPaymentLinks($orderInput, $partialPayment);
+
+                    $this->invoice->order()->associate($order);
+
+                    return;
+                }
+            }
+
+            // else execute existing code flow
             $order = (new Order\Core)->create($orderInput, $this->merchant, $partialPayment);
 
-            $this->setOrder($order);
+            $this->invoice->order()->associate($order);
         }
 
         return;
@@ -480,9 +529,12 @@ class Generator extends Base\Core
     {
         $order = $this->getOrder();
 
-        $this->invoice->order()->associate($order);
+        if (empty($order) === false)
+        {
+            $this->invoice->order()->associate($order);
 
-        assertTrue($this->invoice->getAmount() === $order->getAmount());
+            assertTrue($this->invoice->getAmount() === $order->getAmount());
+        }
     }
 
     protected function setInvoiceCreator(Entity $invoice)
@@ -671,5 +723,58 @@ class Generator extends Base\Core
                         ->findByPublicIdEntityAndTypeOrFail($id, $this->invoice->customer);
 
         $this->invoice->$relation()->associate($address);
+    }
+
+    private function copyOptions(array $input)
+    {
+        if(isset($input[Options\Entity::OPTIONS]) == true)
+        {
+            $this->options = $input[Options\Entity::OPTIONS];
+        }
+    }
+
+    /**
+     * Sets Reminder enable to true in input paramters when reminder settings
+     * are enabled for the particular entity.
+     *
+     * @param array $input
+     */
+    private function autoEnableRemindersIfApplicable(array &$input)
+    {
+        // Now enabling for only payment links which comes via API.
+        // The type should be link and external entity (used by auth links) should be empty.
+        // This below thing will be cleanedup while enabling for authlinks.
+        if ((array_key_exists(Entity::REMINDER_ENABLE, $input) === false) and
+            (empty($input[Entity::TYPE]) === false) and
+            ($input[Entity::TYPE] === 'link') and
+            (empty($this->externalEntity) === true) and
+            (empty($this->invoice->user) === true))
+        {
+            $reminderSettingsInput = $this->fetchReminderSettingsInput($input);
+
+            $reminderSettings = (new Reminder\Core)->fetchReminderSettings($reminderSettingsInput);
+
+            if (empty($reminderSettings['items']) === false)
+            {
+                $input[Entity::REMINDER_ENABLE] = 1;
+            }
+        }
+    }
+
+    /**
+     * Refactor this later to accomdate for auth links invoices etc.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    private function fetchReminderSettingsInput(array $input)
+    {
+        $reminderSettingsInput = [
+            'namespace' => 'payment_link',
+            'active'    => 'true',
+        ];
+
+        return $reminderSettingsInput;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
@@ -11,47 +12,39 @@ use Razorpay\Trace\Logger as Trace;
 
 trait AuthorizePush
 {
-    public function authorizePush(array $callbackData, string $referenceId, string $gateway)
+    public function authorizePush(array $callbackData, string $referenceId, array $data, Terminal\Entity $terminal)
     {
-        try
-        {
-            $gatewayClass = $this->app['gateway']->gateway($gateway);
+        $paymentInput = $data['payment'];
 
-            $data = $gatewayClass->getParsedDataFromUnexptectedCallback($callbackData);
+        $mutexResource = 'unexpected_' . $terminal->getGateway() . '_' . $referenceId;
 
-            $paymentInput = $data['payment'];
-
-            $terminalData = $data['terminal'];
-
-            $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalData);
-
-            $mutexResource = 'unexpected_' . $gateway . '_' . $referenceId;
-
-            $success = $this->app['api.mutex']->acquireAndRelease(
-                $mutexResource,
-                function() use ($gateway, $callbackData, $terminal, $paymentInput)
+        $success = $this->app['api.mutex']->acquireAndRelease(
+            $mutexResource,
+            function() use ($callbackData, $terminal, $paymentInput, $referenceId) {
+                try
                 {
-                    $this->validatePushPayment($gateway, $callbackData, $terminal);
+                    $this->validateAuthorizePushPayment($callbackData, $terminal);
 
-                    $this->createPaymentFromS2SCallback($gateway, $callbackData, $paymentInput, $terminal);
+                    $this->createPaymentFromS2SCallback($callbackData, $paymentInput, $terminal);
 
-                    return $this->authorizePushPayment($this->payment, $callbackData);
-                });
-        }
-        catch (\Throwable $ex)
-        {
-            $this->app['trace']->traceException(
-                $ex,
-                Trace::CRITICAL,
-                TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                [
-                    'gateway'    => $gateway,
-                    'payment_id' => $referenceId
-                ]
-            );
+                    $this->authorizePushPayment($this->payment, $callbackData);
 
-            $success = false;
-        }
+                    return true;
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->app['trace']->traceException(
+                        $ex,
+                        Trace::CRITICAL,
+                        TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                        [
+                            'gateway'       => $terminal->getGateway(),
+                            'payment_id'    => $referenceId
+                        ]);
+
+                    return false;
+                }
+            });
 
         $response =  ['success' => $success];
 
@@ -63,15 +56,40 @@ trait AuthorizePush
         return $response;
     }
 
-    protected function validatePushPayment(string $gateway, array $callbackData, Terminal\Entity $terminal)
+    /**
+     * A wrapper over the validatePushPayment, which check for pending payment
+     * We need to create pending payment in our system with later will be
+     * marked Failed by authorizePush function
+     */
+    protected function validateAuthorizePushPayment(array $callbackData, Terminal\Entity $terminal)
+    {
+        try
+        {
+            $this->validatePushPayment($callbackData, $terminal);
+        }
+        catch (Exception\GatewayErrorException $exception)
+        {
+            // Currently MindGate is throwing the exception for pending, and Axis does not
+            // In both cases, it will be considered valid authorize push payment
+            if ($exception->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYMENT_PENDING)
+            {
+                return;
+            }
+
+            throw $exception;
+        }
+    }
+
+    public function validatePushPayment(array $callbackData, Terminal\Entity $terminal)
     {
         $mode = $this->app['basicauth']->getMode();
+
+        $gateway = $terminal->getGateway();
 
         $this->app['gateway']->call($gateway, Payment\Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
     }
 
-    protected function createPaymentFromS2SCallback(
-        string $gateway,
+    public function createPaymentFromS2SCallback(
         array $callbackData,
         array $paymentInput,
         Terminal\Entity $terminal)
@@ -88,26 +106,15 @@ trait AuthorizePush
         return $payment;
     }
 
-    protected function authorizePushPayment(
+    public function authorizePushPayment(
         Payment\Entity $payment,
         array $callbackData)
     {
-        $success = false;
-
         try
         {
-            $this->repo->transaction(function() use ($payment, $callbackData)
-            {
-                // authorize on gateway
-                $input = [$payment->getId(), $callbackData];
+            $input = [$payment->getId(), $callbackData];
 
-                $this->callGatewayFunction(Payment\Action::AUTHORIZE_PUSH, $input);
-
-                // authorize on api
-                $this->processAuth($payment);
-            });
-
-            $success = true;
+            $this->callGatewayFunction(Payment\Action::AUTHORIZE_PUSH, $input);
         }
         catch (\Throwable $e)
         {
@@ -118,8 +125,10 @@ trait AuthorizePush
             $ex = new Exception\BadRequestException($errorCode);
 
             $this->updatePaymentFailed($ex, TraceCode::PAYMENT_AUTH_FAILURE);
+
+            throw $ex;
         }
 
-        return $success;
+        $this->processAuth($payment);
     }
 }

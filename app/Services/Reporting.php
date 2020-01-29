@@ -11,6 +11,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 
+use RZP\Services\Mock;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
@@ -23,6 +24,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Admin\Permission\Name as Permission;
 
 /**
  * Interface for api to talk to Reporting service
@@ -555,7 +557,7 @@ class Reporting implements ExternalService
         //
         if ($this->config['mock'] === true)
         {
-            return [];
+            return (new Mock\ReportingService)->getReportingConfig();
         }
 
         $options = [
@@ -668,6 +670,8 @@ class Reporting implements ExternalService
 
         $items = $this->filterForBusinessBanking($merchant, $items);
 
+        $items = $this->filterOnAdminAuth($merchant, $items);
+
         $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS,
             [
                 'count'     => $items->count(),
@@ -723,6 +727,45 @@ class Reporting implements ExternalService
                 default:
                     return true;
             }
+        });
+
+        return $items;
+    }
+
+    protected function filterOnAdminAuth(Merchant\Entity $merchant, $items)
+    {
+        $isAdmin = $this->ba->isAdminAuth();
+
+        $permissions = ($isAdmin === true) ? $this->ba->getAdmin()->getPermissionsList() : [];
+
+        $hasCommissionPayoutPerm = in_array(Permission::COMMISSION_PAYOUT, $permissions, true);
+
+        $filterConditions = [
+            [
+                'name'        => 'Unsettled Earnings Report',
+                'type'        => 'commissions',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $hasCommissionPayoutPerm,
+            ]
+        ];
+
+        $items = $items->filter(function ($value) use ($filterConditions) {
+            foreach ($filterConditions as $filterCondition)
+            {
+                if (($value['name'] === $filterCondition['name']) and
+                    ($value['type'] === $filterCondition['type']) and
+                    ($value['consumer'] === $filterCondition['consumer']))
+                {
+                    if ((empty($filterCondition['report_type']) === true) or
+                        ($filterCondition['report_type'] === $value['report_type']))
+                    {
+                        return $filterCondition['condition'];
+                    }
+                }
+            }
+
+            return true;
         });
 
         return $items;
@@ -908,15 +951,25 @@ class Reporting implements ExternalService
         // header to figure out whether the request is coming from RX dashboard.
         $isBusinessBanking = $this->ba->isProductBanking();
 
+        $isAdminAuth = $this->ba->isAdminAuth();
+
         $items = $items->filter(
-            function($value) use ($isBusinessBanking)
+            function($value) use ($isBusinessBanking, $isAdminAuth)
             {
                 $isBusinessBankingReport = (starts_with(strtolower($value['name']), 'rx') === true);
-
                 //
+                // We want to expose all configs on admin auth
+                // This has been done, so that banking configs
+                // show up on self serve dashboard
+                //
+                if ($isAdminAuth === true)
+                {
+                    return true;
+                }
+
                 // If business banking, return only business banking reports.
                 // If not business banking, return all reports except business banking reports.
-                //
+
                 if ($isBusinessBanking === true)
                 {
                     return ($isBusinessBankingReport === true);
@@ -954,9 +1007,19 @@ class Reporting implements ExternalService
     {
         if ($response->status_code !== 200)
         {
-            $payload['body'] = $response->body;
+            $responseBody = json_decode($response->body, true);
+            $payload = [
+                'body' => $responseBody,
+            ];
+            $errorMsg = null;
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION, null, $payload);
+            if (isset($responseBody['error']) and
+                isset($responseBody['error']['description']))
+            {
+                $errorMsg = $responseBody['error']['description'];
+            }
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION, null, $payload, $errorMsg);
         }
     }
 

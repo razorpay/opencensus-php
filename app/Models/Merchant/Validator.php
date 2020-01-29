@@ -13,6 +13,8 @@ use RZP\Models\Settlement;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Payment\Event;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Detail;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Validator
@@ -25,6 +27,12 @@ class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
     const MAXIMAGESIZE = 1024 * 1024;
+    const PREFERENCES = 'preferences';
+
+    const BATCH_ID                          = 'Batch Id';
+    const BULK_SUBMERCHANT_ASSIGN           = 'Bulk Submerchant Assign';
+    // Rate limit on items sending for bulk submerchant assign.
+    const MAX_BULK_SUBMERCHANT_ASSIGN_LIMIT = 15;
 
     const EXTENSIONMIMEMAP = [
         'jpeg'  => 'image/jpeg',
@@ -40,6 +48,8 @@ class Validator extends Base\Validator
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
         Entity::COUPON_CODE                 => 'sometimes|string',
+        Constants::PARTNER_INTENT           => 'sometimes|boolean',
+        Entity::EXTERNAL_ID                 => 'sometimes|string|max:255',
     ];
 
     protected static $editRules = [
@@ -57,7 +67,7 @@ class Validator extends Base\Validator
         Entity::CHANNEL                               => 'sometimes|string|max:32|custom',
         Entity::RISK_RATING                           => 'sometimes|min:0|max:5',
         Entity::RISK_THRESHOLD                        => 'sometimes|integer|min:0|max:100',
-        Entity::FEE_BEARER                            => 'sometimes|in:customer,platform',
+        Entity::FEE_BEARER                            => 'sometimes|in:customer,platform,dynamic',
         Entity::FEE_MODEL                             => 'sometimes|in:prepaid,postpaid',
         Entity::REFUND_SOURCE                         => 'sometimes|string|max:32|in:balance,credits',
         Entity::MAX_PAYMENT_AMOUNT                    => 'sometimes|integer',
@@ -73,6 +83,8 @@ class Validator extends Base\Validator
         Entity::WHITELISTED_IPS_LIVE . '.*'           => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
         Entity::WHITELISTED_IPS_TEST                  => 'sometimes|array|max:15',
         Entity::WHITELISTED_IPS_TEST . '.*'           => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
+        Entity::WHITELISTED_DOMAINS                   => 'sometimes|array|max:5',
+        Entity::WHITELISTED_DOMAINS . '.*'            => 'required_with:' . Entity::WHITELISTED_DOMAINS . '|string',
         Entity::DASHBOARD_WHITELISTED_IPS_LIVE        => 'sometimes|array|max:20',
         Entity::DASHBOARD_WHITELISTED_IPS_LIVE . '.*' => 'distinct|required_with:' .
                                                          Entity::DASHBOARD_WHITELISTED_IPS_LIVE . '|ipv4',
@@ -153,6 +165,7 @@ class Validator extends Base\Validator
         'features'                   => 'required|array',
         'optout_reason'              => 'sometimes|string|max:200',
         Feature\Entity::SHOULD_SYNC  => 'sometimes|boolean',
+        'es_enabled'                => 'sometimes|boolean',
     ];
 
     protected static $addTagsRules = [
@@ -243,6 +256,7 @@ class Validator extends Base\Validator
         Constants::TO                    => 'integer',
         Constants::COUNT                 => 'integer|min:1|max:50',
         Constants::SKIP                  => 'integer',
+        Entity::MERCHANT_ID              => 'sometimes|array',
     ];
 
     protected static $partnerSubmerchantMapRules = [
@@ -272,9 +286,32 @@ class Validator extends Base\Validator
         Entity::ACTION      => 'required|in:add,remove',
     ];
 
+    protected static $bulkSubmerchantAssignRules = [
+        'idempotency_key'   => 'required',
+        'submerchant_id'    => 'required|alpha_num|size:14',
+        'terminal_id'       => 'required|alpha_num|size:14',
+    ];
+
     protected static $suspendedMerchantRemoveRules = [
         'skip'  => 'sometimes|integer',
         'limit' => 'sometimes|integer',
+    ];
+
+    protected static $updatePartnerIntentRules = [
+        Constants::PARTNER_INTENT       => 'required|boolean',
+    ];
+
+    protected static $updatePartnerTypeRules = [
+        Entity::PARTNER_TYPE    => 'required|string|custom:partner_type_for_update',
+    ];
+
+    protected static $preferencesRules = [
+        'contact_id'  => 'filled|public_id',
+    ];
+
+    protected static $holidayNotifyRules = [
+        'lists'   => 'required|string',
+        'action'  => 'required|string',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -482,10 +519,13 @@ class Validator extends Base\Validator
         if ($merchants->count() > 0)
         {
             // throw exception if merchant by that email already exists
+            $description = PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS . $merchants->pluck(Entity::ID)->first();
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
                 Entity::EMAIL,
-                $merchants->pluck(Entity::ID)->toArray()
+                $merchants->pluck(Entity::ID)->toArray(),
+                $description
             );
         }
     }
@@ -702,6 +742,15 @@ class Validator extends Base\Validator
             // Feature must be a "visible feature" and editable by the merchant
             if ((in_array($feature, $visibleFeatures, true) === false) or
                 (in_array($feature, $editableFeature, true) === false))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+                    'feature',
+                    [$feature]);
+            }
+            // Only Merchant who have feature ES_ON_DEMAND enabled can change ES features
+            else if (($input['es_enabled'] === false) and
+                    ($feature === Feature\Constants::ES_AUTOMATIC))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
@@ -1176,7 +1225,15 @@ class Validator extends Base\Validator
 
         if ($bankAccount === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+            // check partner bank account exists
+            $partner = (new Core)->getSettledToPartnersTypeOfMerchantIfExists($merchant);
+
+            $partnerbankAccountExits = (new Core)->isValidBankAccountForSettledToPartner($merchant, $partner);
+
+            if ($partnerbankAccountExits === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+            }
         }
     }
 
@@ -1203,6 +1260,18 @@ class Validator extends Base\Validator
                     'merchant_name'    => $merchant->getName(),
                     'business_banking' => $merchant->isBusinessBankingEnabled()
                 ]);
+        }
+    }
+
+    public function validateAndTranslateToAccountNumberForBankingIfApplicable(array & $input)
+    {
+        $product       = array_get($input, Entity::PRODUCT);
+        $accountNumber = array_get($input, Balance\Entity::ACCOUNT_NUMBER);
+
+        if ((empty($product) === true) or
+            (empty($accountNumber) === false))
+        {
+            $this->validateAndTranslateAccountNumberForBanking($input);
         }
     }
 
@@ -1255,5 +1324,97 @@ class Validator extends Base\Validator
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+    }
+
+    public function validateBatchId($batchId)
+    {
+        if (empty($batchId) === true)
+        {
+            throw new BadRequestValidationFailureException('Batch Id not present');
+        }
+    }
+
+    /**
+     * @param array $input
+     * Rate limit on number of submerchant terminal assign in Bulk Route
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBulkSubmerchantAssignCount(array $input)
+    {
+        if (count($input) > self::MAX_BULK_SUBMERCHANT_ASSIGN_LIMIT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Current batch size ' . count($input) . ', max limit of ' . self::BULK_SUBMERCHANT_ASSIGN . ' is ' . self::MAX_BULK_SUBMERCHANT_ASSIGN_LIMIT,
+                null,
+                null
+            );
+        }
+    }
+
+    public function validatePartnerTypeForUpdate($attribute, $value)
+    {
+        $allowedPartnerTypes = [
+            Constants::RESELLER,
+            Constants::AGGREGATOR,
+        ];
+
+        if (in_array($value, $allowedPartnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                Entity::PARTNER_TYPE,
+                [$attribute => $value]);
+        }
+    }
+
+    public function validateBeforeEnablingInternationalByMerchant($merchant)
+    {
+        if ($merchant->isInternational() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_INTERNATIONAL);
+        }
+
+        $this->validateWebsite($merchant);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $internationalActivationFlow = $merchantDetails->getInternationalActivationFlow();
+
+        //
+        // @todo We need to remove this check once we implement feature request based international activation process
+        //
+        if ($internationalActivationFlow !== Detail\ActivationFlow::WHITELIST)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_INTERNATIONAL_STATUS_CHANGE_REQUEST,
+                Detail\Entity::INTERNATIONAL_ACTIVATION_FLOW,
+                [
+                    Detail\Entity::INTERNATIONAL_ACTIVATION_FLOW => $internationalActivationFlow
+                ]
+            );
+        }
+    }
+
+    /**
+     * Validates that merchant has a website
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateWebsite(Entity $merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        // Since website is not synced between merchant and merchant_detail,
+        // therefore checking for both
+        if ((empty($merchant->getWebsite()) === true) and
+            (empty($merchantDetails->getWebsite()) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET);
+        }
     }
 }

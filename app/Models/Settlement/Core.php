@@ -9,13 +9,16 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
+use RZP\Models\Settlement\Bucket\Preference;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
-use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use RZP\Jobs\Settlement\Bucket;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Merchant as MerchantModel;
 
 class Core extends Base\Core
 {
@@ -55,7 +58,7 @@ class Core extends Base\Core
         {
             $destination = $input[Entity::DESTINATION];
 
-            $merchantId = Settlement\NodalAccount::ACCOUNT_MAP[$this->mode][$destination];
+            $merchantId = NodalAccount::ACCOUNT_MAP[$this->mode][$destination];
 
             $adjInput = [
                 Adjustment\Entity::MERCHANT_ID  => $merchantId,
@@ -180,6 +183,7 @@ class Core extends Base\Core
         }
 
         $customProperties = [
+            'merchant_id'                       => $ftaData['merchant_id'],
             'channel'                           => $entity->getChannel(),
             'fund_transfer_attempt_id'          => $ftaData['fta_id'],
             'batch_fund_transfer_attempt_id'    => $batchFtaId,
@@ -336,8 +340,84 @@ class Core extends Base\Core
 
     public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
-        $entity->setFTSTransferId($ftsTransferId);
+        if (empty($ftsTransferId) === false)
+        {
+            $entity->setFTSTransferId($ftsTransferId);
 
-        return $this->repo->saveOrFail($entity);
+            $this->repo->saveOrFail($entity);
+        }
+    }
+
+    /**
+     * calculates the settlement amount fot given merchant and balanceType
+     *
+     * @param MerchantModel\Entity $merchant
+     * @param Balance\Entity       $balance
+     * @param int                  $timestamp
+     * @return array
+     */
+    public function getMerchantSettlementAmount(
+        MerchantModel\Entity $merchant,
+        Balance\Entity $balance,
+        int $timestamp = 0)
+    {
+        $isMerchantSettlementScheduled = ($timestamp !== 0);
+
+        $timestamp = $this->getValidSettlementTime($timestamp);
+
+        $amount = $this->repo
+                       ->transaction
+                       ->getMerchantSettlementAmount(
+                            $merchant->getId(),
+                            $balance,
+                            $timestamp->getTimestamp())
+                       ->toArray();
+
+        $settlementAmount = (int) $amount['settlement_amount'];
+
+        //
+        // In case merchant is not bucketed and has valid settlement amount
+        // then enqueue him for bucketing so the settlement can go as expected
+        //
+        if (($isMerchantSettlementScheduled === false) and
+            ($settlementAmount <= $balance->getBalance()) and
+            ($settlementAmount >= 100))
+        {
+            Bucket::dispatch($this->mode, '', $merchant->getId(), $timestamp->getTimestamp());
+        }
+
+        return [
+            'settlement_amount'    => $settlementAmount,
+            'next_settlement_time' => $timestamp->getTimestamp(),
+        ];
+    }
+
+    /**
+     * Gives the valid timestamp when the settlement will be processed
+     * This takes are of holidays in case the bucket timestamp fell under holiday
+     *
+     * @param int $timestamp
+     * @return Carbon
+     */
+    public function getValidSettlementTime(int $timestamp): Carbon
+    {
+        //
+        // If there is not future bucket for settlement for the merchant then consider the current timestamp
+        //
+        $timestamp = ($timestamp === 0) ? Preference::getCeilTimestamp(Carbon::now(Timezone::IST)) :
+                                            Carbon::createFromTimestamp($timestamp, Timezone::IST);
+
+        //
+        // If the timestamp given is a holiday then calculate the next working day
+        // This situation can come up if the holiday is marked at last moment
+        // also set the hour anchor to 9 AM as in that settlement cycle
+        // we'll be settling the amount for this merchant
+        //
+        if (Holidays::isWorkingDay($timestamp) === false)
+        {
+            $timestamp = Holidays::getNthWorkingDayFrom($timestamp, 1)->addHours(9);
+        }
+
+        return $timestamp;
     }
 }

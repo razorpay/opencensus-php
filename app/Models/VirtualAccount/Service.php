@@ -2,6 +2,8 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -11,6 +13,10 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
+use RZP\Models\QrCode;
+use RZP\Models\Currency\Currency;
+use RZP\Models\Offline\Device as OfflineDevice;
 
 class Service extends Base\Service
 {
@@ -42,6 +48,8 @@ class Service extends Base\Service
         $order = $this->getOrderIfGiven($input);
 
         $this->modifyRequestFromOldFormat($input);
+
+        (new Validator)->validateDefaultCloseBy($input);
 
         $virtualAccount = $this->core->create($input, $this->merchant, $customer, $order);
 
@@ -93,6 +101,11 @@ class Service extends Base\Service
                     ],
                 ];
 
+                if (isset($input[Entity::CLOSE_BY]) === true)
+                {
+                    $createArray[Entity::CLOSE_BY] =  $input[Entity::CLOSE_BY];
+                }
+
                 $virtualAccount = $this->create($createArray);
 
                 $this->editAmountExpectedToIncludeFees($order, $virtualAccount);
@@ -107,7 +120,7 @@ class Service extends Base\Service
 
     protected function editAmountExpectedToIncludeFees(Order\Entity $order, array & $virtualAccount)
     {
-        if ($order->merchant->isFeeBearerCustomer() === true)
+        if ($order->merchant->isFeeBearerCustomerOrDynamic() === true)
         {
             $amountExpected = $this->getExpectedAmountForVirtualAccount($order);
 
@@ -212,116 +225,22 @@ class Service extends Base\Service
         return $virtualAccount->toArrayPublic();
     }
 
-    public function fetchPayments(string $virtualAccountId)
+    public function fetchPayments(string $virtualAccountId, array $input)
     {
-        $payments = $this->repo
-                         ->payment
-                         ->fetchByPublicVaIdAndMerchant(
-                            $virtualAccountId,
-                            $this->merchant
-                            );
+        $input[Payment\Entity::VIRTUAL_ACCOUNT_ID] = $virtualAccountId;
+
+        $merchantId = $this->merchant->getId();
+
+        $payments = $this->repo->payment->fetch($input, $merchantId, true);
 
         return $payments->toArrayPublic();
     }
 
-    public function refundExcessPayments()
-    {
-        $virtualAccounts = $this->repo
-                                ->virtual_account
-                                ->fetchExcessPaidVirtualAccounts();
-
-        $this->trace->info(
-            TraceCode::VIRTUAL_ACCOUNT_EXCESS_REFUND,
-            $virtualAccounts->toArrayPublic()
-        );
-
-        $success = $failure = 0;
-
-        $failures = [];
-
-        foreach ($virtualAccounts as $virtualAccount)
-        {
-            list($paymentToRefund, $amountToRefund) = $this->fetchPaymentToRefund($virtualAccount);
-
-            try
-            {
-                $this->refundExcessPayment($paymentToRefund, $amountToRefund, $virtualAccount);
-
-                $success++;
-            }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException($ex);
-
-                $failure++;
-
-                $failures[] = [
-                    'payment_id'         => $paymentToRefund->getPublicId(),
-                    'virtual_account_id' => $virtualAccount->getPublicId(),
-                ];
-            }
-        }
-
-        $this->trace->info(
-            TraceCode::VIRTUAL_ACCOUNT_EXCESS_REFUND,
-            [
-                'success'  => $success,
-                'failure'  => $failure,
-                'failures' => $failures,
-            ]
-        );
-
-        return $virtualAccounts->toArrayPublic();
-    }
-
-    protected function fetchPaymentToRefund(Entity $virtualAccount)
-    {
-        $merchant = $virtualAccount->merchant;
-
-        $payments = $this->repo
-                         ->payment
-                         ->fetchByPublicVaIdAndMerchant(
-                            $virtualAccount->getPublicId(),
-                            $merchant
-                            );
-
-        $paymentToRefund = $payments->first();
-
-        $amountToRefund = $virtualAccount->getExcessAmount();
-
-        if ($paymentToRefund->getAmount() < $amountToRefund)
-        {
-            throw new Exception\LogicException(
-                'Last payment amount is less than VA excess',
-                null,
-                [
-                    'payment_amount'    => $paymentToRefund->getAmount(),
-                    'va_excess'         => $amountToRefund,
-                    'payment_id'        => $paymentToRefund->getId(),
-                    'va_id'             => $virtualAccount->getId(),
-                ]);
-        }
-
-        return [$paymentToRefund, $amountToRefund];
-    }
-
-    protected function refundExcessPayment(
-        Payment\Entity $payment,
-        int $amount,
-        Entity $virtualAccount)
-    {
-        $processor = $this->getNewProcessor($payment->merchant);
-
-        $processor->refundCapturedPayment(
-                        $payment,
-                        [
-                            'amount' => $amount,
-                        ]);
-
-        $virtualAccount->incrementAmountReversed($amount);
-
-        $this->repo->saveOrFail($virtualAccount);
-    }
+    /*
+     * If customer_id is there it will return customer based on that,
+     * otherwise if any of customer name, email or contact is given
+     * then it will create customer based on that and return that customer.
+     */
 
     protected function getCustomerIfGiven(array $input)
     {
@@ -334,6 +253,12 @@ class Service extends Base\Service
             $customer = $this->repo
                              ->customer
                              ->findByPublicIdAndMerchant($customerId, $this->merchant);
+            return $customer;
+        }
+
+        if (empty($input[Entity::CUSTOMER]) === false)
+        {
+            $customer = (new Customer\Core())->createLocalCustomer($input[Entity::CUSTOMER], $this->merchant, false);
         }
 
         return $customer;
@@ -441,5 +366,111 @@ class Service extends Base\Service
         $processor = new Payment\Processor\Processor($merchant);
 
         return $processor;
+    }
+
+    public function addReceiver(string $id, array $input)
+    {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ADD_RECEIVER, $input);
+
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($virtualAccount->isClosed())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
+        }
+
+        $this->verifyMerchantCategory();
+
+        $this->verifyMerchantIsLiveForLiveRequest();
+
+        $virtualAccount = $this->core->addReceiver($virtualAccount, $input, $this->merchant);
+
+        return $virtualAccount->toArrayPublic();
+    }
+
+    public function createOfflineQr($input = [])
+    {
+        (new Entity)->validateInput('create_offline_qr', $input);
+
+        $order = $this->createOrder($input);
+
+        // We don't any mutex here unlike create from order, since
+        // we are creating the order in this request.
+
+        $closeByTime = Carbon::now(Timezone::IST)->addSeconds(120)->getTimestamp();
+
+        $createVaArray = [
+            Entity::ORDER_ID        => $order->getPublicId(),
+            Entity::AMOUNT_EXPECTED => $order->getAmount(),
+            Entity::NOTES           => $input[Entity::NOTES] ?? [],
+            Entity::RECEIVERS       => [
+                Entity::TYPES => [
+                    Receiver::QR_CODE,
+                ],
+            ],
+            Entity::CLOSE_BY        => $closeByTime,
+        ];
+
+        $virtualAccount = $this->core->create($createVaArray, $this->merchant, null, $order);
+
+        $this->pushToDeviceIfApplicable($input, $virtualAccount);
+
+        // Doing this separately since we don't want to affect the VA entity code
+        $orderId = $order->getPublicId();
+
+        $va = $virtualAccount->toArrayPublic();
+
+        $va['order_id'] = $orderId;
+
+        return $va;
+    }
+
+    protected function pushToDeviceIfApplicable(array $input, $virtualAccount)
+    {
+        if (isset($input['notifications']['device_id']) === false)
+        {
+            return;
+        }
+
+        $device = $this->repo
+                       ->offline_device
+                       ->findByPublicIdAndMerchant($input['notifications']['device_id'], $this->merchant);
+
+        $currency = $input['currency'];
+
+        $formattedAmount = Currency::getSymbol($currency) . ' ' . ($input['amount'] / Currency::getExponent($currency));
+
+        $payload = [
+            'id'                => $virtualAccount->getPublicId(),
+            'action'            => 'showqr',
+            'qr_string'         => $virtualAccount->qrCode->getQrString(),
+            'formatted_amount'  => $formattedAmount,
+            'description'       => $virtualAccount->getDescription(),
+            'close_by'          => $virtualAccount->getCloseBy(),
+            'merchant_name'     => $this->merchant->getDbaName(),
+        ];
+
+        (new OfflineDevice\Service)->push($device, $payload);
+    }
+
+    protected function createOrder(array $input)
+    {
+        $orderInput = [
+            Order\Entity::AMOUNT   => $input['amount'],
+            Order\Entity::CURRENCY => $input['currency'],
+            Order\Entity::RECEIPT  => $input['receipt'],
+        ];
+
+        return (new Order\Core)->create($orderInput, $this->merchant);
+    }
+
+    public function getConfigsForVirtualAccount()
+    {
+        $receivers[Entity::RECEIVER_TYPES] = [Receiver::BANK_ACCOUNT, Receiver::VPA];
+
+        return $this->core->getConfigsForVirtualAccount($receivers);
     }
 }

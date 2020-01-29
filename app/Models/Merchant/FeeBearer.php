@@ -6,12 +6,14 @@ class FeeBearer
 {
     const PLATFORM = 'platform';
     const CUSTOMER = 'customer';
+    const DYNAMIC  = 'dynamic';
     const NA       = 'na';
 
     protected static $values = [
         self::NA       => -1,
         self::PLATFORM => 0,
         self::CUSTOMER => 1,
+        self::DYNAMIC  => 2,
     ];
 
     public static function getValueForBearerString($bearer)

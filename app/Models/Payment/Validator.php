@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Vpa;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -20,11 +21,23 @@ use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Validator extends Base\Validator
 {
+    protected $trace;
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $app = App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
+    }
+
     /**
      * recurring_token epoch constrains :
      * min : Sat Jan  1 05:30:00 IST 2000 => 946684800
@@ -50,6 +63,7 @@ class Validator extends Base\Validator
         'email'                         => 'sometimes|nullable|email',
         'upi_provider'                  => 'sometimes_if:method,upi|filled|string|custom',
         'contact'                       => 'sometimes|nullable|contact_syntax',
+        'billing_address'               => 'sometimes',
         'signature'                     => 'sometimes|nullable|string',
         'notes'                         => 'sometimes|notes',
         'notes.merchant_order_id'       => 'required_with:signature',
@@ -57,9 +71,9 @@ class Validator extends Base\Validator
         'order_id'                      => 'sometimes|filled',
         'customer_id'                   => 'sometimes|public_id|filled',
         'subscription_id'               => 'sometimes|public_id',
-        'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer|associative_array|filled',
-        'receiver.type'                 => 'required_with:receiver|filled|string|in:qr_code,bank_account',
-        'receiver.id'                   => 'required_with:receiver|filled|size:17|public_id',
+        'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer|associative_array|filled|custom',
+        'receiver.type'                 => 'required_with:receiver|filled|string',
+        'receiver.id'                   => 'required_with:receiver|filled|public_id',
         'payment_link_id'               => 'sometimes|public_id|size:17',
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
@@ -77,19 +91,21 @@ class Validator extends Base\Validator
         'subscription_card_change'      => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
         'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,5760|filled',
-        'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:20|filled',
+        'auth_type'                     => 'sometimes_if:method,emandate,card,emi,nach|string|max:20|filled',
         'preferred_auth'                => 'sometimes_if:method,card,emi|array|max:3|filled',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
         'bank_account.ifsc'             => 'required_with:bank_account|filled|alpha_num|size:11',
         'bank_account.name'             => 'required_with:bank_account|filled|alpha_space_num|between:4,120',
-        'recurring_token'               => 'sometimes_if:method,emandate|associative_array|filled',
-        'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
-        'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch:946684800,9223372036854775807',
+        'recurring_token'               => 'sometimes_if:method,emandate,upi|associative_array|filled',
+        'recurring_token.max_amount'    => 'sometimes_if:method,emandate,upi|filled|integer|min:500',
+        'recurring_token.expire_by'     => 'sometimes_if:method,emandate,upi|filled|epoch:946684800,9223372036854775807',
         'offer_id'                      => 'filled|public_id|size:20',
         'provider'                      => 'required_if:method,cardless_emi,paylater|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
+        'application'                   => 'sometimes|filled|string|in:google_pay',
+        'device'                        => 'sometimes',
     ];
 
     protected static $editAcquirerRules = [
@@ -97,6 +113,11 @@ class Validator extends Base\Validator
         Entity::REFERENCE1           => 'sometimes|nullable|string',
         Entity::REFERENCE2           => 'sometimes|nullable|string',
         Entity::REFERENCE16          => 'sometimes|nullable|string',
+    ];
+
+    protected static $editCpsResponseRules = [
+        Entity::AUTH_TYPE               => 'sometimes|nullable|string',
+        Entity::AUTHENTICATION_GATEWAY  => 'sometimes|nullable|string',
     ];
 
     protected static $editRules = [
@@ -197,7 +218,15 @@ class Validator extends Base\Validator
     ];
 
     protected static $paymentCardMigrateRules = [
-        'limit' => 'sometimes|integer',
+        'limit'                             => 'sometimes|integer',
+        'migrate_missing_fingerprint_cards' => 'sometimes|boolean'
+    ];
+
+    protected static $mandateUpdateRules = [
+        'start_time'  => 'sometimes',
+        'max_amount'  => 'sometimes',
+        'token_id'    => 'sometimes',
+        'is_mandate'  => 'sometimes'
     ];
 
     protected static $createValidators = [
@@ -387,6 +416,28 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateReceiver($attribute, $receiver)
+    {
+        if (Receiver::areTypesValid([$receiver['type']]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid receiver type: ' . $receiver['type']);
+        }
+
+        $requiredLength = 17;
+
+        if ($receiver['type'] === Receiver::VPA)
+        {
+            $requiredLength = 18;
+        }
+
+        if (strlen($receiver['id']) !== $requiredLength)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The receiver.id must be ' . $requiredLength . ' characters for receiver.type.' . $receiver['type']);
+        }
+    }
+
     protected function validateTestSuccess(array $input)
     {
         $app = App::getFacadeRoot();
@@ -410,11 +461,11 @@ class Validator extends Base\Validator
 
     protected function validateVpa($attribute, $vpa)
     {
+        (new Vpa\Validator)->validateAddress($attribute, $vpa);
+
         $vpaParts = explode('@', $vpa);
 
-        if ((count($vpaParts) !== 2) or
-            (ProviderCode::validate($vpaParts[1]) === false) or
-            (preg_match('/[^a-z@\.\-0-9]/i', $vpa) === 1))
+        if (ProviderCode::validate($vpaParts[1]) === false)
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
@@ -515,6 +566,16 @@ class Validator extends Base\Validator
             return;
         }
 
+        /*
+         * Checking if the card payment is of Google Pay. If it is of Google Pay then there are no
+         * card details.
+         */
+        if (((isset($input['application'])) === true) and
+            ($input['application'] === 'google_pay'))
+        {
+            return;
+        }
+
         if ((isset($input['recurring']) === true) and
             ($input['recurring'] === '1') and
             (empty($input['token']) === false))
@@ -578,7 +639,9 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if ($method !== Payment\Method::EMANDATE)
+        if (($method !== Payment\Method::EMANDATE) and
+            ($method !== Payment\Method::NACH) and
+            ($this->checkUpiRecurring($input) === false))
         {
             $this->validateInputValues('min_amount_check', $input);
         }
@@ -616,11 +679,29 @@ class Validator extends Base\Validator
 
         if ($amount > $maxAmountAllowed)
         {
+            $this->trace->count(Metric::PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
+                'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",
+            ]);
+
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 'amount',
                 ['amount' => $amount]);
         }
+    }
+
+    protected function checkUpiRecurring($input)
+    {
+        $method = $input['method'];
+
+        if (($method === Payment\Method::UPI) and
+            (isset($input['recurring']) === true) and
+            ($input['recurring']) === '1')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function validateUpiVpaPsp(string $vpa, array $excludedPsps)
@@ -636,6 +717,14 @@ class Validator extends Base\Validator
 
     public function validateCardAndCvv(array $input)
     {
+        /*
+            No card details when the payment is for Google Pay for cards.
+        */
+        if ((isset($input['application']) === true) and ($input['application'] === 'google_pay'))
+        {
+            return;
+        }
+
         if (isset($input['card']) === false)
         {
             throw new Exception\BadRequestException(
@@ -813,7 +902,7 @@ class Validator extends Base\Validator
         {
             $merchant = $this->entity->merchant;
 
-            if ($merchant->isFeeBearerCustomer() === false)
+            if ($merchant->isFeeBearerCustomerOrDynamic() === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Attribute fee is not allowed and should not be sent');

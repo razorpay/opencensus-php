@@ -104,7 +104,8 @@ class Context extends ArrayObject
         $basicAuth = app('basicauth');
 
         // Merchant and handle are required over Public and Device Auth
-        if (($basicAuth->getAuthType() === Type::PUBLIC_AUTH) or
+        if (($basicAuth->getAuthType() === Type::PRIVATE_AUTH) or
+            ($basicAuth->getAuthType() === Type::PUBLIC_AUTH) or
             ($basicAuth->getAuthType() === Type::DEVICE_AUTH))
         {
             // Setting the options first as options will be use to resolve the context
@@ -144,6 +145,12 @@ class Context extends ArrayObject
 
         // For Direct auth application needs to set
         if ($basicAuth->getAuthType() === Type::DIRECT_AUTH)
+        {
+            $this->type = self::APPLICATION;
+        }
+
+        // For internal service calls
+        if($basicAuth->getAuthType() === Type::PRIVILEGE_AUTH)
         {
             $this->type = self::APPLICATION;
         }
@@ -381,6 +388,13 @@ class Context extends ArrayObject
      */
     public function getRequestId(): string
     {
+        $requestId = $this->getOptions()->get(self::REQUEST_ID);
+
+        if (empty($requestId) === true)
+        {
+            $this->options->put(self::REQUEST_ID, UniqueIdEntity::generateUniqueId());
+        }
+
         return $this->getOptions()->get(self::REQUEST_ID);
     }
 
@@ -405,13 +419,6 @@ class Context extends ArrayObject
     {
         // Morphing must only be handled within P2P requests
         MorphMap::boot();
-
-        // If request doesn't have id specified, we can set
-        $requestId = $this->getOptions()->get(self::REQUEST_ID);
-        if (empty($requestId) === true)
-        {
-            $this->options->put(self::REQUEST_ID, UniqueIdEntity::generateUniqueId());
-        }
 
         // We only want to register the P2P Trace Processor within P2P requests
         app('trace')->pushProcessor(new P2pTraceProcessor($this));

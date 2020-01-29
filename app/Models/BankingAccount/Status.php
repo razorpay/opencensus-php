@@ -15,6 +15,12 @@ class Status
     const UNSERVICEABLE     = 'unserviceable';
     const REJECTED          = 'rejected';
 
+    //
+    // Account details can be saved only if the status
+    // of banking account is in below array
+    //
+    public static $allowedStatusForDetails = [self::PROCESSED];
+
     protected static $initialStatuses = [
         Status::CREATED,
         Status::UNSERVICEABLE,
@@ -75,6 +81,7 @@ class Status
       self::UNSERVICEABLE,
       self::REJECTED,
       self::CANCELLED,
+      self::ACTIVATED,
     ];
 
     public static function isValidStatus(string $status = null)

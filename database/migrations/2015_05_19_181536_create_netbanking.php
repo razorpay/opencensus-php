@@ -62,6 +62,7 @@ class CreateNetbanking extends Migration
             $table->index('caps_payment_id');
             $table->index('bank_payment_id');
             $table->index('verification_id');
+            $table->index('refund_id');
             $table->index('created_at');
         });
     }

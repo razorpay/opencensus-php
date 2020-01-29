@@ -134,6 +134,32 @@ return array(
             ],
         ],
 
+        'master-replica-test' => [
+            'driver'    => env('DB_TEST_DRIVER'),
+            'host'      => env('ES_DB_TEST_HOST'),
+            'port'      => env('SLAVE_DB_TEST_PORT'),
+            'database'  => env('DB_TEST_DATABASE'),
+            'username'  => env('SLAVE_DB_TEST_USERNAME'),
+            'password'  => env('SLAVE_DB_TEST_PASSWORD'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true
+        ],
+
+        'master-replica-live' => [
+            'driver'    => env('DB_LIVE_DRIVER'),
+            'host'      => env('ES_DB_LIVE_HOST'),
+            'port'      => env('SLAVE_DB_LIVE_PORT'),
+            'database'  => env('DB_LIVE_DATABASE'),
+            'username'  => env('SLAVE_DB_LIVE_USERNAME'),
+            'password'  => env('SLAVE_DB_LIVE_PASSWORD'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true
+        ],
+
         'test_migration' => [
             'host'      => env('DB_TEST_HOST'),
             'port'      => env('DB_TEST_PORT'),
@@ -186,6 +212,50 @@ return array(
             'prefix'    => '',
             'strict'    => true
         ],
+
+        'payments_upi_live' => [
+            'read'  => [
+                'host'     => env('SLAVE_DB_UPI_PAYMENTS_LIVE_HOST'),
+                'port'     => env('SLAVE_DB_UPI_PAYMENTS_LIVE_PORT'),
+                'username' => env('SLAVE_DB_UPI_PAYMENTS_LIVE_USERNAME'),
+                'password' => env('SLAVE_DB_UPI_PAYMENTS_LIVE_PASSWORD'),
+            ],
+            'write' => [
+                'host'     => env('DB_UPI_PAYMENTS_LIVE_HOST'),
+                'port'     => env('DB_UPI_PAYMENTS_LIVE_PORT'),
+                'username' => env('DB_UPI_PAYMENTS_LIVE_USERNAME'),
+                'password' => env('DB_UPI_PAYMENTS_LIVE_PASSWORD'),
+            ],
+            'sticky'    => true,
+            'database'  => env('DB_UPI_PAYMENTS_LIVE_DATABASE'),
+            'driver'    => env('DB_UPI_PAYMENTS_LIVE_DRIVER'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true,
+        ],
+
+        'payments_upi_test' => [
+            'read'  => [
+                'host'     => env('SLAVE_DB_UPI_PAYMENTS_TEST_HOST'),
+                'port'     => env('SLAVE_DB_UPI_PAYMENTS_TEST_PORT'),
+                'username' => env('SLAVE_DB_UPI_PAYMENTS_TEST_USERNAME'),
+                'password' => env('SLAVE_DB_UPI_PAYMENTS_TEST_PASSWORD'),
+            ],
+            'write' => [
+                'host'     => env('DB_UPI_PAYMENTS_TEST_HOST'),
+                'port'     => env('DB_UPI_PAYMENTS_TEST_PORT'),
+                'username' => env('DB_UPI_PAYMENTS_TEST_USERNAME'),
+                'password' => env('DB_UPI_PAYMENTS_TEST_PASSWORD'),
+            ],
+            'sticky'    => true,
+            'database'  => env('DB_UPI_PAYMENTS_TEST_DATABASE'),
+            'driver'    => env('DB_UPI_PAYMENTS_TEST_DRIVER'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true,
+        ],
     ],
 
     /*
@@ -229,8 +299,18 @@ return array(
         'default' => [
             'host'     => env('REDIS_LABS_HOST'),
             'port'     => env('REDIS_LABS_PORT'),
-            'timeout'  => 0.5,
+            'timeout'  => 1,
             'read_write_timeout' => 1,
+            'options'  => [
+                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
+            ]
+        ],
+
+        'default_with_high_timeout' => [
+            'host'     => env('REDIS_LABS_HOST'),
+            'port'     => env('REDIS_LABS_PORT'),
+            'timeout'  => 10,
+            'read_write_timeout' => 10,
             'options'  => [
                 'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
             ]

@@ -4,15 +4,22 @@ namespace RZP\Models\Order;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Item;
 use RZP\Models\Offer;
+use RZP\Models\Payment;
+use RZP\Models\Invoice;
+use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
 
 /**
  * @property Offer\Entity    $offer
  * @property Merchant\Entity $merchant
+ * @property Invoice\Entity  $invoice
+ * @property Transfer\Entity $transfer
  */
 class Entity extends Base\PublicEntity
 {
@@ -118,6 +125,12 @@ class Entity extends Base\PublicEntity
 
     const PAYER_NAME        = 'payer_name';
 
+    const TRANSFERS         = 'transfers';
+
+    const VIRTUAL_ACCOUNT   = 'virtual_account';
+
+    const AUTH_TYPE = 'auth_type';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,
@@ -170,8 +183,10 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::ATTEMPTS,
         self::NOTES,
+        self::VIRTUAL_ACCOUNT,
         self::CREATED_AT,
-        self::TOKEN
+        self::TOKEN,
+        self::TRANSFERS,
     ];
 
     protected $casts = [
@@ -220,6 +235,10 @@ class Entity extends Base\PublicEntity
         self::FORCE_OFFER,
     ];
 
+    const ALLOWED_LINE_ITEM_TYPES = [
+        Item\Type::PAYMENT_PAGE,
+    ];
+
     /** Related Models */
 
     public function merchant()
@@ -237,6 +256,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\Invoice\Entity');
     }
 
+    public function lineItems()
+    {
+        return $this->morphMany('RZP\Models\LineItem\Entity', 'entity');
+    }
+
     public function offers()
     {
         return $this->morphToMany(
@@ -244,6 +268,11 @@ class Entity extends Base\PublicEntity
                         'entity',
                         Table::ENTITY_OFFER)
                     ->withTimestamps();
+    }
+
+    public function virtualAccount()
+    {
+        return $this->morphOne('RZP\Models\VirtualAccount\Entity', 'entity');
     }
 
     public function associateOffer(Offer\Entity $offer)
@@ -256,6 +285,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(
             'RZP\Models\BankAccount\Entity', 'entity_id', self::ID);
+    }
+
+    public function transfers()
+    {
+        return $this->morphMany(Transfer\Entity::class, 'source');
     }
 
 /** End Related Models */
@@ -271,7 +305,9 @@ class Entity extends Base\PublicEntity
 
         if ($token !== null)
         {
-            $arrayPublic[self::TOKEN] = $token->toArrayTokenFields();
+            $invoice = $this->getMethod() === Payment\Method::NACH ? $this->invoice : null;
+
+            $arrayPublic[self::TOKEN] = $token->toArrayTokenFields($invoice);
         }
 
         return $arrayPublic;
@@ -360,6 +396,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::FIRST_PAYMENT_MIN_AMOUNT, $amount);
     }
 
+    public function setDiscount(bool $discount )
+    {
+        return $this->setAttribute(self::DISCOUNT, $discount);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -430,6 +471,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECEIPT);
     }
 
+    public function getBankForNachMethod()
+    {
+        $this->getValidator()->validateOrderForNachMethod();
+
+        $tokenRegistration = $this->getTokenRegistration();
+
+        if (($tokenRegistration === null) or
+            ($tokenRegistration->paperMandate === null) or
+            ($tokenRegistration->paperMandate->bankAccount === null))
+        {
+            return null;
+        }
+
+        $bank = $tokenRegistration->paperMandate->bankAccount->getBankCode();
+
+        return $bank;
+    }
+
     public function getTokenRegistration()
     {
         $invoice = $this->invoice;
@@ -445,6 +504,11 @@ class Entity extends Base\PublicEntity
         }
 
         return null;
+    }
+
+    public function getAllowedLineItemTypes()
+    {
+        return self::ALLOWED_LINE_ITEM_TYPES;
     }
 
     /** End Setters And Getters */
@@ -522,6 +586,11 @@ class Entity extends Base\PublicEntity
     public function hasOffers(): bool
     {
         return ($this->offers->isNotEmpty() === true);
+    }
+
+    public function isInternational(): bool
+    {
+        return ($this->getCurrency() !== Currency::INR);
     }
 
     protected function setPublicOffersAttribute(array & $array)

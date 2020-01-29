@@ -293,6 +293,12 @@ abstract class Base extends ApiProcessor
             return $this->mockGenerateFailedResponse();
         }
 
+        if ((isset($input[self::FAILED_RESPONSE]) === true) and
+            ($input[self::FAILED_RESPONSE] === 'merchant_error'))
+        {
+            return $this->mockGenerateFailedResponse($input[self::FAILED_RESPONSE]);
+        }
+
         $possibleFailureReceipts = self::MOCK_FAILURE_RESPONSE_TYPE;
 
         if (($this->entity->source instanceof Entity) and
@@ -318,9 +324,10 @@ abstract class Base extends ApiProcessor
     /**
      * Generates successful response for given request
      *
+     * @param string $failure
      * @return string
      */
-    protected abstract function mockGenerateFailedResponse(): string;
+    protected abstract function mockGenerateFailedResponse(string $failure = ''): string;
 
     /**
      * Generates failed response for given request

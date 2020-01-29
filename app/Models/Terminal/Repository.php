@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal;
 
 use DB;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -11,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\TerminalOnboardingDetail;
 use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
@@ -144,18 +146,43 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findActivatedTerminalByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
+    {
+        return $this->newQuery()
+            ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
+            ->where(Entity::GATEWAY, '=', $gateway)
+            ->where(Entity::STATUS, '=', Terminal\Status::ACTIVATED)
+            ->first();
+    }
+
+    public function findActivatedTerminalByMpanAndGatewayMerchantId(string $gatewayMerchantId, string $gateway, string $mpan)
+    {
+        return $this->newQuery()
+        ->where(Entity::GATEWAY, '=', $gateway)
+        ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
+        ->where(Entity::STATUS, '=', Terminal\Status::ACTIVATED)
+        ->where(function ($query) use ($mpan)
+        {
+            $query->where(Entity::VISA_MPAN, '=', $mpan)
+                  ->orWhere(Entity::MC_MPAN, '=', $mpan)
+                  ->orWhere(Entity::RUPAY_MPAN, '=', $mpan);
+        })
+        ->first();
+    }
+
     public function getByParams(array $params)
     {
-        $params = $this->unsetEmptyParams($params);
-
-        $query = $this->newQuery();
-
-        foreach ($params as $key => $value)
-        {
-            $query = $query->where($key, '=', $value);
-        }
+        $query = $this->buildFetchByParamsQuery($params);
 
         return $query->get();
+    }
+
+    public function getNonFailedByParams(array $params)
+    {
+        $query = $this->buildFetchByParamsQuery($params);
+
+        return $query->where(Entity::STATUS, '!=', Status::FAILED)
+                     ->get();
     }
 
     public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)
@@ -170,6 +197,31 @@ class Repository extends Base\Repository
 
         $query->remember($this->getCacheTtl())
               ->cachetags($cacheTag);
+
+        return $query->get();
+    }
+
+    public function getTerminalForMerchantParentMerchantAndSharedMerchant(Merchant\Entity $merchant)
+    {
+        $merchantInheritanceMap = $merchant->merchantInheritanceMap;
+
+        if (isset($merchantInheritanceMap) === false)
+        {
+            return $this->getTerminalsForMerchantAndSharedMerchant($merchant);
+        }
+
+        $parentMerchantId = $merchantInheritanceMap->parentMerchant->getId();
+
+        $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT, $parentMerchantId];
+
+        $cacheTags = [Entity::getCacheTag($merchant->getId()), Entity::getCacheTag($parentMerchantId)];
+
+        $query = $this->newQuery();
+
+        $this->addMerchantWhereCondition($query, $merchantIds);
+
+        $query->remember($this->getCacheTtl())
+              ->cachetags($cacheTags);
 
         return $query->get();
     }
@@ -286,7 +338,6 @@ class Repository extends Base\Repository
 
         return $query->pluck(Entity::ID)->all();
     }
-
 
     public function getSharedTerminalForGateway($gateway)
     {
@@ -455,15 +506,71 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchTerminalsForActivation($count)
+    {
+        $terminalId = $this->dbColumn(Entity::ID);
+
+        $termininalOnboardingDetailRepo = $this->repo->terminal_onboarding_detail;
+
+        $terminalOnboardingTerminalId = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::TERMINAL_ID);
+
+        $terminalOnboardingStatus = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::STATUS);
+
+        $currentTimestamp = Carbon::now()->getTimestamp();
+
+        return $this->newQuery()
+                    ->select($this->getTableName() . '.*')
+                    ->join(Table::TERMINAL_ONBOARDING_DETAIL, $terminalOnboardingTerminalId, '=', $terminalId)
+                    ->where($terminalOnboardingStatus, '=', TerminalOnboardingDetail\Status::PENDING)
+                    ->where(TerminalOnboardingDetail\Entity::VERIFY_AT, '<', $currentTimestamp)
+                    ->limit($count)
+                    ->get();
+    }
+
+    // fetches all terminals where terminal_onboarding_detail status is created
+    public function fetchTerminalsForOnboarding($input)
+    {
+        $count = $input['count'];
+
+        $terminalId = $this->dbColumn(Entity::ID);
+
+        $termininalOnboardingDetailRepo = $this->repo->terminal_onboarding_detail;
+
+        $terminalOnboardingTerminalId = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::TERMINAL_ID);
+
+        $terminalOnboardingStatus = $termininalOnboardingDetailRepo->dbColumn(TerminalOnboardingDetail\Entity::STATUS);
+
+        return $this->newQuery()
+                    ->take($count)
+                    ->select($this->getTableName() . '.*')
+                    ->join(Table::TERMINAL_ONBOARDING_DETAIL, $terminalOnboardingTerminalId, '=', $terminalId)
+                    ->where($terminalOnboardingStatus, '=', TerminalOnboardingDetail\Status::CREATED)
+                    ->get();
+    }
+
     public function findByMerchantIdGatewayAndCurrency(string $merchantId, string $gateway, string $currency)
     {
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY, '=', $gateway)
-                      ->where(Entity::CURRENCY, '=', $currency)
+                      ->where(Entity::CURRENCY, 'LIKE', '%'.$currency.'%')
                       ->enabled();
 
         $this->addMerchantWhereCondition($query, [$merchantId, Account::SHARED_ACCOUNT]);
 
         return $query->first();
+    }
+
+    protected function buildFetchByParamsQuery(array $params)
+    {
+        $params = $this->unsetEmptyParams($params);
+
+        $query = $this->newQuery();
+
+        foreach ($params as $key => $value)
+        {
+            $query = $query->where($key, '=', $value);
+        }
+
+        return $query;
     }
 }

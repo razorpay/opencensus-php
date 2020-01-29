@@ -2,8 +2,8 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'updateFeatureAsMerchant' => [
@@ -121,21 +121,14 @@ return [
         ],
         'response' => [
             'content' => [
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000001',
-                    'entity_type' => 'merchant'
+                'successful' => [
+                    'dummy' => [
+                        '10000000000001',
+                        '10000000000002',
+                        '10000000000003'
+                    ],
                 ],
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000002',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000003',
-                    'entity_type' => 'merchant'
-                ],
+                'failed'     => [],
             ]
         ]
     ],
@@ -157,36 +150,19 @@ return [
         ],
         'response' => [
             'content' => [
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000001',
-                    'entity_type' => 'merchant'
+                'successful' => [
+                    'dummy'               => [
+                        '10000000000001',
+                        '10000000000002',
+                        '10000000000003'
+                    ],
+                    'terminal_onboarding' => [
+                        '10000000000001',
+                        '10000000000002',
+                        '10000000000003'
+                    ],
                 ],
-                [
-                    'name'        => 'terminal_onboarding',
-                    'entity_id'   => '10000000000001',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000002',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'terminal_onboarding',
-                    'entity_id'   => '10000000000002',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000003',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'terminal_onboarding',
-                    'entity_id'   => '10000000000003',
-                    'entity_type' => 'merchant'
-                ],
+                'failed'     => [],
             ]
         ]
     ],
@@ -206,23 +182,42 @@ return [
         ],
         'response' => [
             'content' => [
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000001',
-                    'entity_type' => 'merchant'
+                'successful' => [
+                    'dummy' => [
+                        '10000000000001',
+                        '10000000000002',
+                        '10000000000003'
+                    ],
                 ],
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000002',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000003',
-                    'entity_type' => 'merchant'
-                ],
+                'failed'     => [],
             ]
         ]
+    ],
+
+    'testMultiRemoveFeatureFailure' => [
+        'request'  => [
+            'content' => [
+                'name'       => 'dummy',
+                'entity_ids' => ['10000000000001', '10000000000002', '10000000000003']
+            ],
+            'url'     => '/features/remove',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'successful' => [
+                    'dummy' => [
+                        '10000000000001',
+                        '10000000000003'
+                    ],
+                ],
+                'failed'     => [
+                    'dummy' => [
+                        '10000000000002'
+                    ],
+                ],
+            ],
+        ],
     ],
 
     'testDummyFeatureRouteWithAccess' => [
@@ -442,6 +437,31 @@ return [
         ]
     ],
 
+    'testEnableEsAutomaticFeaturesFailure' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'es_automatic' => '1'
+                ]
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
+
     'testUpdateMerchantProductFeatures' => [
         'request' => [
             'content' => [
@@ -569,6 +589,65 @@ return [
                         'feature'      => 'virtual_accounts',
                         'value'        => false,
                         'display_name' => 'Smart Collect'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testAddMerchantEsAutomaticFeatureOnTest' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'es_automatic' => '1',
+                ]
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => false,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => false,
+                        'display_name' => 'Route'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Smart Collect'
+                    ],
+                    [
+                        'feature'      => 'payout',
+                        'value'        => false,
+                        'display_name' => 'Payouts'
+                    ],
+                    [
+                        'feature'      => 'report_v2',
+                        'value'        => false,
+                        'display_name' => 'Report V2'
+                    ],
+                    [
+                        'feature'      => 'es_on_demand',
+                        'value'        => false,
+                        'display_name' => 'On demand Payout'
+                    ],
+                    [
+                        'feature'      => 'es_automatic',
+                        'value'        => true,
+                        'display_name' => 'Es Automatic'
                     ],
                 ]
             ],
@@ -710,6 +789,7 @@ return [
                     'card_transfer_refund',
                     'log_response',
                     'excess_order_amount',
+                    'disable_amount_check',
                     'subscription_v2',
                     'subscription_auth_v2',
                     'expose_arn_payment',
@@ -721,7 +801,7 @@ return [
                     'transaction_v2',
                     'es_on_demand',
                     'es_automatic',
-                    'headless',
+                    'headless_disable',
                     'first_data_s2s_flow',
                     'bin_issuer_validator',
                     'offer_private_auth',
@@ -900,7 +980,7 @@ return [
             'method'  => 'POST',
             'url'     => '/accounts/me/features',
             'content' => [
-                'names' => ['es_on_demand'],
+                'names' => ['zoho'],
             ],
         ],
         'response' => [

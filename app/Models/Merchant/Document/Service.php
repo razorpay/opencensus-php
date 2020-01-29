@@ -38,4 +38,20 @@ class Service extends Base\Service
     {
         return $this->core->uploadActivationFile($this->merchant, $input);
     }
+
+    public function fetchActivationFilesFromDocument(string $mid = null)
+    {
+        $mid = $mid ?? $this->merchant->getId();
+
+        return $this->core->fetchActivationFilesFromDocument($mid);
+    }
+
+    public function delete(string $id)
+    {
+        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $response = $this->core->delete($entity);
+
+        return $response;
+    }
 }

@@ -9,6 +9,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
 use RZP\Models\BankTransfer;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Account;
 use RZP\Exception\LogicException;
 use RZP\Models\VirtualAccount\Provider;
@@ -98,6 +99,49 @@ class TerminalProcessor extends Base\Core
             $payment->setAuthenticationGateway($gatewayInput['authenticate']['gateway']);
         }
     }
+
+    public function selectAuthenticationGatewayForTerminals(Payment\Entity $payment, array $terminals)
+    {
+        $this->payment = $payment;
+
+        $authenticationMap = [];
+
+        foreach ($terminals as $terminal)
+        {
+            $payment->associateTerminal($terminal);
+
+            $authenticationMap[$terminal->getId()] = [];
+
+            $input = [
+                'payment'   => $this->payment,
+                'merchant'  => $this->payment->merchant,
+            ];
+
+            if (($payment->isMoto() === false) and
+                ($payment->isSecondRecurring() === false))
+            {
+                try
+                {
+                    $paymentAuthSelect = new Terminal\AuthSelector($input);
+                    $authenticationMap[$terminal->getId()] = $paymentAuthSelect->select();
+                }
+                catch(\Throwable $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::CRITICAL,
+                        TraceCode::AUTH_SELECTION_FAILURE_V2,
+                        ['payment_id' => $payment->getId()]
+                    );
+                }
+            }
+        }
+
+        $payment->disassociateTerminal();
+
+        return $authenticationMap;
+    }
+
 
     public function getTerminalFromGatewayData(array $gatewayData = []): Terminal\Entity
     {

@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Address;
 
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -30,6 +32,12 @@ class Core extends Base\Core
             TraceCode::ADDRESS_CREATE_REQUEST,
             $input);
 
+        if ($entityType === Constants\Entity::PAYMENT)
+        {
+            // see php doc block of function for reason as to why why we are calling createForPayment()
+            return $this->createForPayment($entity, $input);
+        }
+
         $address = (new Entity)->build($input);
 
         $currentAddresses = $this->repo->address->fetchAddressesForEntity(
@@ -55,6 +63,24 @@ class Core extends Base\Core
 
             return $address;
         });
+    }
+
+    /*
+     * We cannot/dont use create() for 2 reasons
+     * 1) the validation rules for billing address for payment is different. Eg: state is optional for
+     *    billing address in payment creation. but state is compulsory in default address creation.
+     * 2) create() does a lot of other things like "MAX_ALLOWED_ADDRESSES" validation that does not apply in
+     *    payment create context
+     */
+    protected function createForPayment(Payment\Entity $payment, array $input)
+    {
+        $address = (new Entity)->buildForPayment($input);
+
+        $address->sourceAssociate($payment);
+
+        $this->repo->saveOrFail($address);
+
+        return $address;
     }
 
     public function setPrimaryAddress(Entity $address)

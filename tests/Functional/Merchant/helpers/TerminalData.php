@@ -1026,6 +1026,29 @@ return [
         ]
     ],
 
+    'testCreateMpgsTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'mpgs',
+                'gateway_merchant_id'       => 'MPGS0000000001202',
+                'card'                      => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl',
+                'gateway_acquirer'          => 'hdfc',
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'MPGS0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
@@ -1531,7 +1554,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1578,7 +1600,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1696,7 +1717,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1941,7 +1961,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -2157,18 +2176,20 @@ return [
             'content' => [
                 'merchant_id'               => '10000000000000',
                 'gateway'                   => 'worldline',
+                'expected'                  => '1',
+                'card'                      => '1',
                 'gateway_merchant_id'       => '037122003842039',
                 'gateway_terminal_id'       => '70374018',
                 'gateway_acquirer'          => 'axis',
-                'card'                      => 1,
                 'gateway_terminal_password' => '9900991100',
                 'mc_mpan'                   => '5122600004774122',
                 'visa_mpan'                 => '4604901004774122',
                 'rupay_mpan'                => '6100020004774141',
                 'vpa'                       => 'MAB.037122003842039@AXISBANK',
                 'type'                      => [
-                    'non_recurring' => '1',
-                    'bharat_qr' => '1',
+                    'non_recurring'                 => '1',
+                    'bharat_qr'                     => '1',
+                    'direct_settlement_with_refund' => '1'
                 ],
             ],
             'method' => 'POST'
@@ -2218,6 +2239,28 @@ return [
         ]
     ],
 
+
+    'testEnableTerminalFailedOnGateway'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'Terminal enable failed on gateway',
+                ],
+            ],
+            'status_code' => 502
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TERMINAL_ENABLE_FAILED
+        ],
+    ],
+
+
+
     'testDisableTerminal'  => [
         'request' => [
             'method' => 'PUT'
@@ -2225,7 +2268,7 @@ return [
         'response' => [
             'content' => [
                 'entity'              => 'terminal',
-                'status'              => 'activated',
+                'status'              => 'deactivated',
                 'enabled'             =>  false,
                 'notes'               =>  'some notes',
                 'mpan'                =>  [
@@ -2237,6 +2280,26 @@ return [
         ]
     ],
 
+    'testDisableTerminalFailedOnGateway'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'Terminal disable failed on gateway',
+                ],
+            ],
+            'status_code' => 502
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TERMINAL_DISABLE_FAILED
+        ],
+    ],
+
+
     'testOnlyActivatedTerminalShouldBeEnabled'  => [
         'request' => [
             'method' => 'PUT'
@@ -2245,14 +2308,14 @@ return [
             'content'  => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only terminals in activated state can be enabled',
+                    'description' => 'Only deactivated terminals can be enabled',
                 ],
             ],
             'status_code' => 400
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_DEACTIVATED_TERMINALS_CAN_BE_ENABLED
         ],
     ],
 
@@ -2369,8 +2432,288 @@ return [
                     'mc_mpan'       =>  '1234567880123456',
                     'rupay_mpan'    =>  '1234567890123457',
                     'visa_mpan'     =>  '1234567890123456'
+                ],
+            ]
+        ]
+    ],
+
+    'testTerminalOnboardingCreateTerminalWithSameFields' => [
+        'request' => [
+            'content' => [
+                'mpan' => [
+                  'mastercard'  => '1234567880123456',
+                  'visa'        => '1234567890123456',
+                  'rupay'       => '1234567890123457'
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'entity'   => 'terminal',
+                'enabled'  => false,
+                'status'   => 'created',
+                'mpan'     => [
+                    'mc_mpan'       =>  '1234567880123456',
+                    'rupay_mpan'    =>  '1234567890123457',
+                    'visa_mpan'     =>  '1234567890123456'
                 ]
 
+            ]
+        ]
+    ],
+
+    // Used in all cases
+    'testTerminalOnboardingCreationCron'    =>  [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/terminals/onboard/creation',
+            ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
+
+    'testTerminalOnboardingCreateTerminal2' => [
+        'request' => [
+            'content' => [
+                'mpan' => [
+                  'mastercard'  => '1234567880123458',
+                  'visa'        => '1234567890123458',
+                  'rupay'       => '1234567890123458'
+                ]
+            ],
+            'url'    => '/terminals',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'entity'   => 'terminal',
+                'enabled'  => false,
+                'status'   => 'created',
+                'mpan'     => [
+                    'mc_mpan'       =>  '1234567880123458',
+                    'rupay_mpan'    =>  '1234567890123458',
+                    'visa_mpan'     =>  '1234567890123458'
+                ]
+
+            ]
+        ]
+    ],
+
+    'testTerminalOnboardingVerificationCronCase1'    => [
+        'request' => [
+            'url'     => '/terminals/onboard/verification',
+            'content' => [
+                'count'    => 100,
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [
+                'activated_terminals'           =>  1,
+                'pending_terminals'             =>  0,
+                'activation_failed_terminals'   =>  0,
+                'not_applicable_terminals'      =>  0,
+                'verification_error_terminals'  =>  0,
+            ],
+            'status_code'  => 200,
+        ]
+    ],
+
+    'testTerminalOnboardingVerificationCronCase2'    => [
+        'request' => [
+            'url'     => '/terminals/onboard/verification',
+            'content' => [
+                'count'    => 100,
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [
+                'activated_terminals'           =>  0,
+                'pending_terminals'             =>  1,
+                'activation_failed_terminals'   =>  0,
+                'not_applicable_terminals'      =>  0,
+                'verification_error_terminals'  =>  0,
+            ],
+            'status_code'  => 200,
+        ]
+    ],
+
+    'testTerminalOnboardingVerificationCronCase3'    => [
+        'request' => [
+            'url'     => '/terminals/onboard/verification',
+            'content' => [
+                'count'    => 100,
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'      => [
+                'activated_terminals'           =>  0,
+                'pending_terminals'             =>  0,
+                'activation_failed_terminals'   =>  1,
+                'not_applicable_terminals'      =>  0,
+                'verification_error_terminals'  =>  0,
+            ],
+            'status_code'  => 200,
+        ]
+    ],
+
+    'testCreateTerminalWithWrongGatewayCase'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upI_airtel',
+                'gateway_merchant_id'       => 'MER0000000001202',
+                'upi'                       => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'MER0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testAssignUpiMindgateVirtualVPATerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'                     => 'upi_mindgate',
+                'gateway_acquirer'            => 'hdfc',
+                'gateway_merchant_id'         => '12345',
+                'gateway_merchant_id2'        => '12345678',
+                'gateway_terminal_password'   => 'password',
+                'upi'                         => 1,
+                'type'                        => [
+                    Terminal\Type::NON_RECURRING => '1',
+                    Terminal\Type::UPI_TRANSFER  => '1',
+                ],
+                'virtual_upi_root'            => 'rzpy.',
+                'virtual_upi_merchant_prefix' => 'payto00000',
+                'virtual_upi_handle'          => 'hdfcbank',
+            ],
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'hdfc',
+                'gateway_merchant_id' => '12345',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testAssignUpiMindgateVirtualVPATerminalWithoutConfig' => [
+        'request'   => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => 'password',
+                'upi'                       => 1,
+                'type'                      => [
+                    Terminal\Type::NON_RECURRING => '1',
+                    Terminal\Type::UPI_TRANSFER  => '1',
+                ],
+            ],
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testUpdateTerminalOnboardingStatus' => [
+        'request'   => [
+            'url'     => '/terminal_onboarding_update_status',
+            'content' => [
+                ['termianl_ids_array']
+            ],
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testCreateJuspayTerminal'                => [
+        'request' => [
+            'content' => [
+                'gateway'                       => 'upi_juspay',
+                'gateway_acquirer'              => 'axis',
+                'category'                      => '1234',
+                'gateway_merchant_id'           => 'MER0000000000111',
+                'gateway_merchant_id2'          => 'MERCHANNEL0000000000111',
+                'gateway_secure_secret'         => 'NotUsedAsOfNow',
+                'upi'                           => 1,
+                'vpa'                           => 'abcd@some'
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'MER0000000000111',
+                'gateway_acquirer'          =>  'axis',
+                'enabled'                   => true
+            ]
+        ]
+    ],
+
+    'testEditJuspayTerminal'                  => [
+        'request' => [
+            'content' => [
+                'category'                      => '1234',
+                'gateway_secure_secret'         => 'NotUsedAsOfNow',
+                'vpa'                           => 'abcd@some'
+            ],
+            'method' =>  'POST'
+        ],
+        'response'  => [
+            'content'   => [
+                'gateway_terminal_password'    => 'new_password',
+                'enabled'                      => true
+            ]
+        ]
+    ],
+    'testCreateJuspayIntentTerminal'           =>  [
+        'request'   => [
+            'content'   => [
+                'gateway'                       => 'upi_juspay',
+                'gateway_acquirer'              => 'axis',
+                'category'                      => '1234',
+                'gateway_merchant_id'           => 'MER0000000000111',
+                'gateway_merchant_id2'          => 'MERCHANNEL0000000000111',
+                'gateway_secure_secret'         => 'NotUsedAsOfNow',
+                'upi'                           => 1,
+                'vpa'                           => 'abcd@some',
+                'type'                          => [
+                    'non_recurring'             => '1',
+                    'pay'                       => '1'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'MER0000000000111',
+                'gateway_acquirer'          =>  'axis',
+                'enabled'                   => true
             ]
         ]
     ],

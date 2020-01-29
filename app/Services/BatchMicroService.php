@@ -428,16 +428,28 @@ class BatchMicroService
      */
     public function getBatchesFromBatchService(string $batchId = null, Merchant\Entity $merchant = null, array $inputQueryParams = null)
     {
-        $this->trace->info(TraceCode::GET_BATCHES_BATCH_SERVICE, ['batchId' => $batchId]);
+        $this->trace->info(
+            TraceCode::GET_BATCHES_BATCH_SERVICE,
+            [
+                'batchId'          => $batchId,
+                'inputQueryParams' => $inputQueryParams,
+            ]);
 
         $queryParams = [];
 
-        if (isset($inputQueryParams['type']))
+        if (isset($inputQueryParams['type']) and
+            empty($inputQueryParams['type']) === false)
         {
-            $queryParams = [
-                'batchTypeId' => $inputQueryParams['type'],
-            ];
+            $queryParams['batchTypeId'] = $inputQueryParams['type'];
         }
+
+        if (isset($inputQueryParams['types']) and
+            empty($inputQueryParams['types']) === false)
+        {
+            $queryParams['batchTypeIds'] = $inputQueryParams['types'];
+        }
+
+        $this->checkAndMergeBatchTypes($queryParams);
 
         $this->checkAndInsert('from', $inputQueryParams, $queryParams);
 
@@ -469,6 +481,16 @@ class BatchMicroService
         }
 
         return $response;
+    }
+
+    private function checkAndMergeBatchTypes(& $output)
+    {
+        if (isset($output['batchTypeId']) and
+           isset($output['batchTypeIds']))
+        {
+            array_push($output['batchTypeIds'], $output['batchTypeId']);
+            unset($output['batchTypeId']);
+        }
     }
 
     public function isMigratingBatchType(string $type): bool

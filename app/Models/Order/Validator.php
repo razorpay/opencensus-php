@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Order;
 
+use App;
+
 use RZP\Base;
 use RZP\Models\Payment;
 use RZP\Models\BankAccount;
@@ -10,9 +12,22 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
+use RZP\Models\SubscriptionRegistration;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
+    protected $trace;
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $app = App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
+    }
+
     protected static $createRules = [
         Entity::AMOUNT                             => 'required|integer|min:0',
         Entity::FIRST_PAYMENT_MIN_AMOUNT           => 'sometimes|nullable|integer|min_amount',
@@ -21,7 +36,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_CAPTURE                    => 'filled|boolean',
         Entity::CUSTOMER_ID                        => 'filled|public_id|size:19',
         Entity::NOTES                              => 'sometimes|notes',
-        Entity::METHOD                             => 'sometimes|in:netbanking,emandate,upi',
+        Entity::METHOD                             => 'sometimes|in:netbanking,emandate,upi,nach',
         Entity::BANK                               => 'filled',
         Entity::DISCOUNT                           => 'sometimes|boolean',
         Entity::OFFERS                             => 'sometimes|array',
@@ -59,7 +74,8 @@ class Validator extends Base\Validator
         $amount = $input['amount'];
 
         if ((isset($input[Entity::METHOD]) === false) or
-            ($input[Entity::METHOD] !== Payment\Method::EMANDATE))
+            (($input[Entity::METHOD] !== Payment\Method::EMANDATE) and
+                ($input[Entity::METHOD] !== Payment\Method::NACH)))
         {
             $this->validateInputValues('min_amount_check', $input);
         }
@@ -80,6 +96,10 @@ class Validator extends Base\Validator
 
         if ($amount > $maxAmountAllowed)
         {
+            $this->trace->count(Metric::ORDER_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
+                'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",
+            ]);
+
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 Entity::AMOUNT,
@@ -131,7 +151,7 @@ class Validator extends Base\Validator
         {
             $merchant = $this->entity->merchant;
 
-            if ($merchant->isFeeBearerCustomer() === true)
+            if ($merchant->isFeeBearerCustomerOrDynamic() === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Order creation failed. Please contact Razorpay for further assistance.');
@@ -161,12 +181,42 @@ class Validator extends Base\Validator
         $this->validateOrderBank($payment->getBank());
 
         $this->validateOrderMethod($payment->getMethod());
+
+        $this->validateOrderForNachMethod();
+    }
+
+    public function validateOrderForNachMethod()
+    {
+        if ($this->entity->getMethod() !== SubscriptionRegistration\Method::NACH)
+        {
+            return;
+        }
+
+        $payments = $this->entity->payments;
+
+        foreach ($payments as $payment)
+        {
+            if (($payment->isFailed() !== true) and
+                ($payment->isRecurringTypeAuto() === false))
+            {
+                throw new BadRequestValidationFailureException(
+                    'payment ' . $payment->getPublicId() . ' is not failed for the given order which is of method nach, can\'t create one more'
+                );
+            }
+        }
+
+        $tokenRegistration = $this->entity->getTokenRegistration();
+
+        if ($tokenRegistration !== null)
+        {
+            $tokenRegistration->getValidator()->validatePaymentCreation();
+        }
     }
 
     /**
      * Validates that order is not already paid.
      */
-    protected function validateOrderNotPaid()
+    public function validateOrderNotPaid()
     {
         $order = & $this->entity;
 
@@ -401,6 +451,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_BANK_INVALID);
+        }
+    }
+
+    public function validateLineItemsCount(int $lineItemsCount)
+    {
+        if ($lineItemsCount > 25)
+        {
+            $message = 'The order may not have more than ' . 25 . ' items in total.';
+
+            throw new BadRequestValidationFailureException($message);
         }
     }
 

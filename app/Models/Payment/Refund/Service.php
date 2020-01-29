@@ -15,6 +15,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Refund;
 use RZP\Jobs\ScroogeRefundUpdate;
 use Razorpay\Trace\Logger as Trace;
@@ -337,6 +338,9 @@ class Service extends Base\Service
      *               }
      *           }
      *       },
+     *   "extra_data":[
+     *       "ifsc_code"
+     *   ]
      *   "refund_ids":["C6rXXXXXXXX43","C6rQQL1KTvb43"]
      * }
      *
@@ -366,6 +370,9 @@ class Service extends Base\Service
      *                }
      *            }
      *        }
+     *       "extra_data": {
+     *           "ifsc_code": "HDFC0000001"
+     *       }
      *    }
      *}
      */
@@ -467,11 +474,33 @@ class Service extends Base\Service
                                 foreach ($values as $value)
                                 {
                                     $map[$value] = $entity[$value];
+
+                                    $getter = 'get' . studly_case($value);
+
+                                    if ((empty($map[$value]) === true) and
+                                        (method_exists($entity, $getter) === true))
+                                    {
+                                        $map[$value] = $entity->{$getter}();
+                                    }
                                 }
 
                                 $response[RefundConstants::ENTITIES][$key] = $map;
                             }
                         }
+                    }
+
+                    if (isset($input[RefundConstants::EXTRA_DATA]) === true)
+                    {
+                        $res = [];
+
+                        foreach ($input[RefundConstants::EXTRA_DATA] as $paramKey)
+                        {
+                            $func = 'getExtraData' . studly_case($paramKey);
+
+                            $res[$paramKey] = (method_exists($this, $func)) ? $this->$func($refund) : null;
+                        }
+
+                        $response[RefundConstants::EXTRA_DATA] = $res;
                     }
 
                     $responseArray[$id] = $response;
@@ -499,6 +528,11 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::SCROOGE_FETCH_ENTITIES, $traceData);
 
         return $responseArray;
+    }
+
+    protected function getExtraDataIfscCode(Entity $refund)
+    {
+        return BankCodes::getIfscForBankCode($refund->payment->getBank());
     }
 
     public function fetchMultiple($input)
@@ -1363,7 +1397,7 @@ class Service extends Base\Service
 
                         switch ($input['event'])
                         {
-                            case 'processed_event':
+                            case Refund\ScroogeEvents::PROCESSED_EVENT:
 
                                 $this->updateRefund($refund, $input);
 
@@ -1384,7 +1418,7 @@ class Service extends Base\Service
 
                                 break;
 
-                            case 'failed_event':
+                            case Refund\ScroogeEvents::FAILED_EVENT:
 
                                 $processor->reverseRefund($refund);
 
@@ -1408,7 +1442,7 @@ class Service extends Base\Service
 
                                 break;
 
-                            case 'fee_only_reversal_event':
+                            case Refund\ScroogeEvents::FEE_ONLY_REVERSAL_EVENT:
 
                                 //
                                 // In optimum flow - we would have debit amount + fees in the transaction,
@@ -1428,13 +1462,20 @@ class Service extends Base\Service
 
                                 $refund->setSpeedProcessed(RefundSpeed::NORMAL);
 
+                                $skipMerchantWebhooks = $input['skip_merchant_webhooks'] ?? false;
+
+                                if ($skipMerchantWebhooks === true)
+                                {
+                                    break;
+                                }
+
                                 $processor->eventRefundSpeedChanged($refund);
 
                                 $processor->eventRefundProcessed($refund);
 
                                 break;
 
-                            case 'processed_to_file_init_event':
+                            case Refund\ScroogeEvents::PROCESSED_TO_FILE_INIT_EVENT:
 
                                 $this->trace->info(
                                     TraceCode::REFUND_PROCESSED_TO_CREATED,
@@ -1550,7 +1591,7 @@ class Service extends Base\Service
      * @param array $input
      * @param string $event
      */
-    public function makeScroogeEditRefundRequest(Entity $refund, array $input, string $event = 'processed_event')
+    public function makeScroogeEditRefundRequest(Entity $refund, array $input, string $event = Refund\ScroogeEvents::PROCESSED_EVENT)
     {
         $refund->getValidator()->validateScroogeEditRefund($input);
 
@@ -1565,6 +1606,7 @@ class Service extends Base\Service
                         Entity::REFERENCE2 => $input[Entity::REFERENCE2] ?? '',
                     ],
                     'processed_source' => $input[Entity::MODE] ?? '',
+                    RefundConstants::FTA_UPDATE => $input[RefundConstants::FTA_UPDATE] ?? false,
                 ]
             ],
 
@@ -2570,15 +2612,15 @@ class Service extends Base\Service
 
             $scroogeResponse = $this->app['scrooge']->getPublicRefund($refundArray[Entity::ID], $queryParams);
 
-            $scroogeResponseCode = $scroogeResponse[RefundEntity::RESPONSE_CODE];
+            $scroogeResponseCode = $scroogeResponse[RefundConstants::RESPONSE_CODE];
 
             if ((in_array($scroogeResponseCode, [200, 201, 204], true) === false) or
-                (isset($scroogeResponse[RefundEntity::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME]) === false))
+                (isset($scroogeResponse[RefundConstants::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME]) === false))
             {
                 throw new Exception\RuntimeException('Unexpected response received from scrooge service');
             }
 
-            $speedChangeTime = $scroogeResponse[RefundEntity::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME];
+            $speedChangeTime = $scroogeResponse[RefundConstants::RESPONSE_BODY][RefundConstants::SPEED_CHANGE_TIME];
 
             if ($speedChangeTime !== null)
             {

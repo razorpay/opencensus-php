@@ -123,8 +123,13 @@ class Service extends Base\Service
         {
             $merchantInputData = [
                 Merchant\Entity::EMAIL => $user[Entity::EMAIL],
-                Merchant\Entity::NAME  => $businessName
+                Merchant\Entity::NAME  => $businessName,
             ];
+
+            if (isset($input[Merchant\Constants::PARTNER_INTENT]))
+            {
+                $merchantInputData[Merchant\Constants::PARTNER_INTENT] = $input[Merchant\Constants::PARTNER_INTENT];
+            }
 
             if (empty($tokenData) === false)
             {
@@ -137,7 +142,7 @@ class Service extends Base\Service
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
         }
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null);
+        (new Core)->trackOnboardingEvent($user[Entity::EMAIL], EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS);
 
         return $data;
     }
@@ -171,9 +176,11 @@ class Service extends Base\Service
 
         $this->updateUserMerchantMapping($userData['id'], $userMerchantMappingInputData);
 
-        $this->sendConfirmationMail($userData['id']);
+        $user = $this->repo->user->findOrFailPublic($userData['id']);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null);
+        $this->sendConfirmationMail($user);
+
+        (new Core)->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_SEND_VERIFICATION_EMAIL_SUCCESS);
 
         return [
             'id'    => $merchantData['id'],
@@ -183,14 +190,12 @@ class Service extends Base\Service
     }
 
     /**
-     * @param $userId
+     * @param Entity $user
      *
      * @return array
      */
-    public function sendConfirmationMail($userId)
+    public function sendConfirmationMail(Entity $user)
     {
-        $user = $this->repo->user->findOrFailPublic($userId);
-
         // Only send the confirmation email if the user isn't already confirmed
         if ($user->getConfirmedAttribute() === false)
         {
@@ -202,7 +207,15 @@ class Service extends Base\Service
 
             $requestOriginProduct = $this->auth->getRequestOriginProduct();
 
-            $confirmationMail = new UserMail\AccountVerification($user, $org, $requestOriginProduct);
+            // confirmation mail for RazorpayX is different. Handling it here based on the OriginProduct
+            if ($requestOriginProduct === Product::BANKING)
+            {
+                $confirmationMail = new UserMail\RazorpayX\AccountVerification($user->getId());
+            }
+            else
+            {
+                $confirmationMail = new UserMail\AccountVerification($user, $org, $requestOriginProduct);
+            }
 
             Mail::queue($confirmationMail);
         }
@@ -397,9 +410,11 @@ class Service extends Base\Service
     {
         $dashboardHeaders = $this->auth->getDashboardHeaders();
 
-        $data = $this->sendConfirmationMail($dashboardHeaders['user_id']);
+        $user = $this->repo->user->findOrFailPublic($dashboardHeaders['user_id']);
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS, $this->merchant, null);
+        $data = $this->sendConfirmationMail($user);
+
+        (new Core)->trackOnboardingEvent($user->getEmail(), EventCode::SIGNUP_RESEND_VERIFICATION_EMAIL_SUCCESS);
 
         return $data;
     }
@@ -554,6 +569,8 @@ class Service extends Base\Service
             $utmParams = json_decode(\Cookie::get('rzp_utm'), true);
             $data[Constants::CTA]       = $utmParams[Constants::CTA] ?? '';
             $data[Constants::WEBSITE]   = $utmParams[Constants::WEBSITE] ?? '';
+            $data[Constants::FC_SOURCE] = $utmParams[Constants::FC_SOURCE] ?? '';
+            $data[Constants::LC_SOURCE] = $utmParams[Constants::LC_SOURCE] ?? '';
 
             if (empty($utmParams[Constants::ATTRIBUTIONS]) === false)
             {
@@ -689,6 +706,13 @@ class Service extends Base\Service
         $this->user->getValidator()->validateSendOtpOperation($input);
 
         return $this->core()->sendOtp($input, $this->merchant, $this->user);
+    }
+
+    public function sendOtpWithContact(array $input)
+    {
+        $this->user->getValidator()->validateInput('sendOtpWithContact', $input);
+
+        return $this->core()->sendOtpWithContact($input, $this->merchant, $this->user);
     }
 
     public function verifyContactWithOtp(array $input): array

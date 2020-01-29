@@ -3,6 +3,7 @@
 namespace RZP\Models\Card;
 
 use Route;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -376,5 +377,10 @@ class Core extends Base\Core
         }
 
         return $cards[0];
+    }
+
+    public function getCardEntity($id)
+    {
+        return $this->repo->card->find($id);
     }
 }

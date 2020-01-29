@@ -1,7 +1,9 @@
 <?php
 
 use Carbon\Carbon;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\AssertionException;
 
 /**
@@ -841,5 +843,124 @@ if (! function_exists('get_diff_in_millisecond'))
         $requestTime = $requestTime * 1000;
 
         return (int) $requestTime;
+    }
+}
+
+if (!function_exists('get_similar_text_percent'))
+{
+    /**
+     * Returns the percentage of similar text between first & second string
+     * The percentage is in float. First and second strings are converted to
+     * lower case and removes any spaces/tabs if exists.
+     *
+     * @param string $first
+     * @param string $second
+     *
+     * @return float
+     */
+    function get_similar_text_percent(string $first, string $second) : float
+    {
+
+
+        $first = strtolower(preg_replace('/\s+/', '', $first));
+
+        $second = strtolower(preg_replace('/\s+/', '', $second));
+
+        $percent = 0;
+
+        similar_text($first, $second, $percent);
+
+        return $percent;
+    }
+}
+
+if (!function_exists('mask_phone'))
+{
+    /**
+     * Masks the phone-number string except the first 2 and the last 2 digits
+     * @param string|null $phone
+     * @return string|null
+     */
+    function mask_phone(string $phone = null)
+    {
+        if (empty($phone) === true)
+        {
+            return null;
+        }
+        $phoneLen = strlen($phone);
+
+        return substr($phone, 0, 2) .
+               str_repeat('*', $phoneLen - 4) .
+               substr($phone, $phoneLen - 2, 2);
+    }
+}
+
+if (!function_exists('mask_email'))
+{
+    /**
+     * Masks the customer email as follows
+     * Input: test_email@gmail.com
+     * Output: tes*****l@g****.com
+     *
+     * NOTE : for the default mask-percentage, if the
+     * length of email is less than 3 characters, then the whole email
+     * will get masked
+     *
+     * @param string $email
+     * @param float $percentageToMask
+     * @return mixed|string
+     */
+     function mask_email(string $email = null, float $percentageToMask = 0.7)
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $maskedEmail = $email;
+
+        if (empty($email) === true)
+        {
+            return null;
+        }
+        try
+        {
+            // assuming that if this is filled, then its a valid email
+            $email = explode('@', $email); // ex: test_email@gmail.com
+
+            $emailName = $email[0]; // test_email
+
+            $emailDomain = $email[1]; // gmail.com
+
+            $emailDomain = explode('.', $emailDomain);
+
+            $domain = $emailDomain[0]; // gmail
+
+            $topLevelDomain = $emailDomain[1]; // .com
+
+            $emailLen = strlen($emailName);
+
+            $lengthToMask = ceil($emailLen * $percentageToMask);
+
+            // replace the name except first 3 characters with *
+            $maskedEmailName = substr($emailName, 0, $emailLen - $lengthToMask) .
+                               str_repeat('*', $lengthToMask);
+
+            // replace the domain with *, except the first and the last character
+            $maskedDomain = $domain[0] .
+                            str_repeat('*', strlen($domain) - 2) .
+                            $domain[strlen($domain) - 1];
+
+            $maskedEmail = sprintf('%s@%s.%s', $maskedEmailName, $maskedDomain, $topLevelDomain);
+        } catch (\Exception $e)
+        {
+            // Do not want the page load to fail because the email was incorrect
+            $trace->traceException($e,
+                                   Trace::ERROR,
+                                   TraceCode::INVALID_EMAIL_CANNOT_MASK,
+                                   [
+                                       'email' => $email
+                                   ]
+            );
+        }
+
+        return $maskedEmail;
     }
 }

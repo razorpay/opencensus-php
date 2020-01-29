@@ -78,7 +78,6 @@ class TerminalAuthenticationTest extends TestCase
         $payment['card']['number'] = '5567630000002004';
         $payment['preferred_auth'] = ['3ds', 'otp'];
 
-        $this->fixtures->merchant->addFeatures(['headless']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -130,7 +129,7 @@ class TerminalAuthenticationTest extends TestCase
         $payment['card']['number'] = '5567630000002004';
         $payment['preferred_auth'] = ['3ds', 'otp'];
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -211,7 +210,7 @@ class TerminalAuthenticationTest extends TestCase
         ]);
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->fixtures->merchant->addFeatures(['axis_express_pay', 'headless']);
+        $this->fixtures->merchant->addFeatures(['axis_express_pay']);
         $this->mockCardVault();
 
         $this->fixtures->iin->create([
@@ -287,7 +286,7 @@ class TerminalAuthenticationTest extends TestCase
         $this->fixtures->iin->create([
             'iin'     => '414366',
             'country' => 'IN',
-            'issuer'  => 'ICIC',
+            'issuer'  => 'CBIN',
             'network' => 'Visa',
             'flows'   => [
                 '3ds'  => '1',
@@ -298,6 +297,7 @@ class TerminalAuthenticationTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '4143667057540458';
         $payment['preferred_auth'] = ['pin'];
+        $payment['bank']           = 'CBIN';
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
@@ -344,7 +344,6 @@ class TerminalAuthenticationTest extends TestCase
         $payment['card']['number'] = '5567630000002004';
         $payment['preferred_auth'] = ['3ds', 'otp'];
 
-        $this->fixtures->merchant->addFeatures(['headless']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -395,7 +394,7 @@ class TerminalAuthenticationTest extends TestCase
         $payment['card']['number'] = '5567630000002004';
         $payment['preferred_auth'] = ['3ds', 'otp'];
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -441,6 +440,7 @@ class TerminalAuthenticationTest extends TestCase
 
     public function testAuthenticationGatewayPaysecure()
     {
+        $this->markTestSkipped();
         TerminalOptions::setTestChance(1000);
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
@@ -502,7 +502,6 @@ class TerminalAuthenticationTest extends TestCase
         $payment['card']['number'] = '6073849700004947';
         $payment['preferred_auth'] = ['3ds'];
 
-        $this->fixtures->merchant->addFeatures(['headless']);
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -544,7 +543,7 @@ class TerminalAuthenticationTest extends TestCase
         $payment['card']['number'] = '5567630000002004';
         $payment['preferred_auth'] = ['3ds', 'otp'];
 
-        $this->fixtures->merchant->addFeatures(['headless']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -720,7 +719,7 @@ class TerminalAuthenticationTest extends TestCase
 
         $this->createGatewayRules($this->testData['testAuthenticationGateway3ds']);
 
-        $this->fixtures->merchant->addFeatures(['s2s','s2s_json', 'headless', 's2s_otp_json', 'otp_auth_default']);
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_json', 's2s_otp_json', 'otp_auth_default']);
 
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
             'type' => [

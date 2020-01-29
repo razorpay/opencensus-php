@@ -13,6 +13,8 @@ use RZP\Models\Merchant\MerchantUser;
 
 class Entity extends Base\PublicEntity
 {
+    const ID_LENGTH = 14;
+
     const ID                            = 'id';
     const NAME                          = 'name';
     const EMAIL                         = 'email';
@@ -176,6 +178,20 @@ class Entity extends Base\PublicEntity
                     ->orderByRaw($sql, [$this->getEmail()]);
     }
 
+    public function primaryMerchants()
+    {
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->withPivot([self::ROLE, self::PRODUCT])
+                    ->wherePivot(self::PRODUCT, 'primary');
+    }
+
+    public function bankingMerchants()
+    {
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->withPivot([self::ROLE, self::PRODUCT])
+                    ->wherePivot(self::PRODUCT, 'banking');
+    }
+
     public function invitations()
     {
         return $this->hasMany(Invitation\Entity::class, Invitation\Entity::EMAIL, Entity::EMAIL)
@@ -315,7 +331,9 @@ class Entity extends Base\PublicEntity
     protected function getSecondFactorAuthEnforcedAttribute(): bool
     {
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
-                    ->where(Merchant\Entity::SECOND_FACTOR_AUTH, '=', true)->count() > 0;
+                    ->where(Merchant\Entity::SECOND_FACTOR_AUTH, '=', true)
+                    ->limit(1)
+                    ->count() > 0;
     }
 
     protected function getSecondFactorAuthSetupAttribute(): bool
@@ -326,14 +344,15 @@ class Entity extends Base\PublicEntity
 
     protected function getRestrictedAttribute(): bool
     {
-        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID));
-        
+        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 2);
+
         if (count($merchantIds) !== 1)
         {
             return false;
         }
 
         $merchant = (new Merchant\Repository)->find($merchantIds[0]);
+
         return $merchant->getRestricted();
     }
 

@@ -1,19 +1,24 @@
 <?php
 
-
 namespace RZP\Models\Order;
 
 use RZP\Exception;
+use RZP\Models\Transfer;
+use RZP\Models\Currency\Currency;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Models\SubscriptionRegistration\Core as TokenRegistrationCore;
 
 class PreCreateHook extends Hook
 {
     protected $hooks = [
-        ExtraParams::TOKEN => 'validateTokenParams'
+        ExtraParams::TOKEN     => 'validateTokenParams',
+        ExtraParams::TRANSFERS => 'validateTransferParams'
     ];
 
     public function validateTokenParams(array $paramInput)
     {
+        $paramInput[SubscriptionRegistration\Entity::METHOD] = $this->orderInput[Entity::METHOD] ?? null;
+
         (new TokenRegistrationCore())->validateTokenInput($paramInput);
 
         $this->validateCustomerIdNonEmpty();
@@ -36,6 +41,34 @@ class PreCreateHook extends Hook
         if ($customerIdPresent === false)
         {
             throw new Exception\BadRequestValidationFailureException('Customer Id is required with token field');
+        }
+    }
+
+    public function validateTransferParams(array $input)
+    {
+        try
+        {
+            $partialPayment = boolval($this->orderInput[Entity::PARTIAL_PAYMENT] ?? false);
+
+            if ($partialPayment === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Partial payment not allowed for transfers');
+            }
+
+            if ($this->orderInput[Entity::CURRENCY] !== Currency::INR)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The currency should be INR for transfers');
+            }
+
+            (new Transfer\Core())->validateTransfersInput($this->orderInput[Entity::AMOUNT], $input);
+        }
+        catch (\Exception $e)
+        {
+            (new Transfer\Metric())->pushCreateFailedMetrics($e);
+
+            throw $e;
         }
     }
 }

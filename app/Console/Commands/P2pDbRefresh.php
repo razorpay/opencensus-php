@@ -41,9 +41,6 @@ class P2pDbRefresh extends RzpDbRefresh
 
         foreach ($databases as $database)
         {
-            $this->call('migrate:rollback',
-                ['--database' => $database, '--path' => 'database/migrations/p2p']);
-
             $this->call('migrate',
                 ['--database' => $database, '--path' => 'database/migrations/p2p']);
 

@@ -1,425 +1,749 @@
-pipeline:
-  restore_cache:
-    image: razorpay/containers:drone-s3-cache
-    restore: true
-    mount:
-      - .composer/cache
-    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
-    path: "/rzp/api/${DRONE_BUILD_CREATED:0:5}/"
-    secrets:
-      - aws_access_key_id
-      - aws_secret_access_key
-      - aws_region
-    when:
-      event: push
-  prepare_test:
+---
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: prepare_test
+    pull: always
     image: razorpay/onggi:php-7.2
-    pull: true
-    secrets: [docker_username, docker_password, git_token, rzp_api]
     commands:
       - cp ./environment/.env.drone ./environment/.env.testing
       - touch /etc/php7/conf.d/assertion.ini
-      - echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini
-      - echo "assert.exception=1" >> /etc/php7/conf.d/assertion.ini
+      - 'echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini'
+      - 'echo "assert.exception=1" >> /etc/php7/conf.d/assertion.ini'
       - php -m
-      - export COMPOSER_CACHE_DIR=".composer/cache"
-      - mkdir -p $COMPOSER_CACHE_DIR
       - chmod 777 -R storage
+      - git config --global user.name $GIT_USERNAME
       - composer config --global github-oauth.github.com $GIT_TOKEN
       - composer global require hirak/prestissimo
       - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      GIT_TOKEN:
+        from_secret: git_token
+      GIT_USERNAME:
+        from_secret: git_username
+      RZP_API:
+        from_secret: rzp_api
     when:
       event:
-        exclude: [deployment, tag, pull_request]
-        include: [push]
-  validate_php_7_2_syntax:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: validate_php_syntax
+    pull: default
     image: php:7.2-cli-alpine
     commands:
-      - find -path ./vendor -prune -o -iname '*.php'|xargs -n1 php -l
-    group: A
+      - "find -path ./vendor -prune -o -iname '*.php'|xargs -n1 php -l"
+    depends_on:
+      - prepare_test
     when:
       event:
-        exclude: [deployment, pull_request]
-        include: [push]
-# This suite is supposed to use default ES index
-  application_test_suite:
-    group: A
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: application_test_suite
+    pull: always
     image: razorpay/onggi:php-7.2
-    pull: true
-    secrets: [docker_username, docker_password, git_token, rzp_api]
-    environment:
-      - DB_LIVE_HOST=mysql
-      - DB_TEST_HOST=mysql
-      - DB_AUTH_HOST=mysql
-      - DB_LIVE_DATABASE=api_live_application
-      - DB_TEST_DATABASE=api_test_application
-      - DB_AUTH_DATABASE=api_auth_applicaiton
-      - REDIS_HOST=redis
-      - REDIS_LABS_HOST=redis
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
+    depends_on:
+      - prepare_test
     commands:
-      - sleep 10
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Application Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Application Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_applicaiton
+      DB_AUTH_HOST: mysql
+      DB_LIVE_DATABASE: api_live_application
+      DB_LIVE_HOST: mysql
+      DB_TEST_DATABASE: api_test_application
+      DB_TEST_HOST: mysql
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis
+      REDIS_LABS_HOST: redis
+      RZP_API:
+        from_secret: rzp_api
     when:
       event:
-        exclude: [deployment, tag, pull_request]
-        include: [push]
-  features_test_suite:
-    group: A
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: features_test_suite
+    pull: always
     image: razorpay/onggi:php-7.2
-    pull: true
-    secrets: [docker_username, docker_password, git_token, rzp_api]
-    environment:
-      - DB_LIVE_HOST=mysql
-      - DB_TEST_HOST=mysql
-      - DB_AUTH_HOST=mysql
-      - DB_LIVE_DATABASE=api_live_feature_1
-      - DB_TEST_DATABASE=api_test_feature_1
-      - DB_AUTH_DATABASE=api_auth_feature_1
-      - REDIS_HOST=redis2
-      - REDIS_LABS_HOST=redis2
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
-      - ES_ENTITY_INDEX_PREFIX=testing_features_1_
-      - ES_ENTITY_TYPE_PREFIX=testing_features_1_
     commands:
-      - sleep 10
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Features-1 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_feature_1
+      DB_AUTH_HOST: mysql
+      DB_LIVE_DATABASE: api_live_feature_1
+      DB_LIVE_HOST: mysql
+      DB_TEST_DATABASE: api_test_feature_1
+      DB_TEST_HOST: mysql
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_ENTITY_INDEX_PREFIX: testing_features_1_
+      ES_ENTITY_TYPE_PREFIX: testing_features_1_
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis2
+      REDIS_LABS_HOST: redis2
+      RZP_API:
+        from_secret: rzp_api
+    depends_on:
+      - prepare_test
     when:
       event:
-        exclude: [deployment, tag, pull_request]
-        include: [push]
-  feature_2_test_suite:
-    group: A
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: feature_2_test_suite
+    pull: always
     image: razorpay/onggi:php-7.2
-    pull: true
-    secrets: [docker_username, docker_password, git_token, rzp_api]
-    environment:
-      - DB_LIVE_HOST=mysql
-      - DB_TEST_HOST=mysql
-      - DB_AUTH_HOST=mysql
-      - DB_LIVE_DATABASE=api_live_feature_2
-      - DB_TEST_DATABASE=api_test_feature_2
-      - DB_AUTH_DATABASE=api_auth_feature_2
-      - REDIS_HOST=redis3
-      - REDIS_LABS_HOST=redis3
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
-      - ES_ENTITY_INDEX_PREFIX=testing_features_2_
-      - ES_ENTITY_TYPE_PREFIX=testing_features_2_
+    depends_on:
+      - prepare_test
     commands:
-      - sleep 10
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Features-2 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_feature_2
+      DB_AUTH_HOST: mysql
+      DB_LIVE_DATABASE: api_live_feature_2
+      DB_LIVE_HOST: mysql
+      DB_TEST_DATABASE: api_test_feature_2
+      DB_TEST_HOST: mysql
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_ENTITY_INDEX_PREFIX: testing_features_2_
+      ES_ENTITY_TYPE_PREFIX: testing_features_2_
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis3
+      REDIS_LABS_HOST: redis3
+      RZP_API:
+        from_secret: rzp_api
     when:
       event:
-        exclude: [deployment, tag, pull_request]
-        include: [push]
-  feature_3_test_suite:
-    group: A
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: feature_3_test_suite
+    pull: always
     image: razorpay/onggi:php-7.2
-    pull: true
-    secrets: [docker_username, docker_password, git_token, rzp_api]
-    environment:
-      - DB_LIVE_HOST=mysql2
-      - DB_TEST_HOST=mysql2
-      - DB_AUTH_HOST=mysql2
-      - DB_LIVE_DATABASE=api_live_feature_3
-      - DB_TEST_DATABASE=api_test_feature_3
-      - DB_AUTH_DATABASE=api_auth_feature_3
-      - REDIS_HOST=redis4
-      - REDIS_LABS_HOST=redis4
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
-      - ES_ENTITY_INDEX_PREFIX=testing_features_3_
-      - ES_ENTITY_TYPE_PREFIX=testing_features_3_
+    depends_on:
+      - prepare_test
     commands:
-      - sleep 10
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-3 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Features-3 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_feature_3
+      DB_AUTH_HOST: mysql2
+      DB_LIVE_DATABASE: api_live_feature_3
+      DB_LIVE_HOST: mysql2
+      DB_TEST_DATABASE: api_test_feature_3
+      DB_TEST_HOST: mysql2
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_ENTITY_INDEX_PREFIX: testing_features_3_
+      ES_ENTITY_TYPE_PREFIX: testing_features_3_
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis4
+      REDIS_LABS_HOST: redis4
+      RZP_API:
+        from_secret: rzp_api
     when:
       event:
-        exclude: [deployment, tag, pull_request]
-        include: [push]
-  feature_4_test_suite:
-    group: A
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: feature_4_test_suite
+    pull: always
     image: razorpay/onggi:php-7.2
-    pull: true
-    secrets: [docker_username, docker_password, git_token, rzp_api]
-    environment:
-      - DB_LIVE_HOST=mysql2
-      - DB_TEST_HOST=mysql2
-      - DB_AUTH_HOST=mysql2
-      - DB_LIVE_DATABASE=api_live_feature_4
-      - DB_TEST_DATABASE=api_test_feature_4
-      - DB_AUTH_DATABASE=api_auth_feature_4
-      - REDIS_HOST=redis5
-      - REDIS_LABS_HOST=redis5
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
-      - ES_ENTITY_INDEX_PREFIX=testing_features_4_
-      - ES_ENTITY_TYPE_PREFIX=testing_features_4_
+    depends_on:
+      - prepare_test
     commands:
-      - sleep 10
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-4 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Features-4 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_feature_4
+      DB_AUTH_HOST: mysql2
+      DB_LIVE_DATABASE: api_live_feature_4
+      DB_LIVE_HOST: mysql2
+      DB_TEST_DATABASE: api_test_feature_4
+      DB_TEST_HOST: mysql2
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_ENTITY_INDEX_PREFIX: testing_features_4_
+      ES_ENTITY_TYPE_PREFIX: testing_features_4_
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis5
+      REDIS_LABS_HOST: redis5
+      RZP_API:
+        from_secret: rzp_api
     when:
       event:
-        exclude: [deployment, tag, pull_request]
-        include: [push]
-  gateway_3_test_suite:
-    group: A
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: feature_6_test_suite
+    pull: always
     image: razorpay/onggi:php-7.2
-    pull: true
-    secrets: [docker_username, docker_password, git_token, rzp_api]
-    environment:
-      - DB_LIVE_HOST=mysql2
-      - DB_TEST_HOST=mysql2
-      - DB_AUTH_HOST=mysql2
-      - DB_LIVE_DATABASE=api_live_feature_5
-      - DB_TEST_DATABASE=api_test_feature_5
-      - DB_AUTH_DATABASE=api_auth_feature_5
-      - REDIS_HOST=redis6
-      - REDIS_LABS_HOST=redis6
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
-      - ES_ENTITY_INDEX_PREFIX=testing_features_5_
-      - ES_ENTITY_TYPE_PREFIX=testing_features_5_
+    depends_on:
+      - prepare_test
     commands:
-      - sleep 10
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-3 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Feature-6 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_feature_6
+      DB_AUTH_HOST: mysql4
+      DB_LIVE_DATABASE: api_live_feature_6
+      DB_LIVE_HOST: mysql4
+      DB_TEST_DATABASE: api_test_feature_6
+      DB_TEST_HOST: mysql4
+      DB_UPI_PAYMENTS_MOCKED: false
+      DB_UPI_PAYMENTS_LIVE_HOST: mysql4
+      DB_UPI_PAYMENTS_TEST_HOST: mysql4
+      SLAVE_DB_UPI_PAYMENTS_LIVE_HOST: mysql4
+      SLAVE_DB_UPI_PAYMENTS_TEST_HOST: mysql4
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_ENTITY_INDEX_PREFIX: testing_feature_6_
+      ES_ENTITY_TYPE_PREFIX: testing_feature_6_
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis5
+      REDIS_LABS_HOST: redis5
+      RZP_API:
+        from_secret: rzp_api
     when:
       event:
-        exclude: [deployment, tag, pull_request]
-        include: [push]
-  payment_test_suite:
-    group: A
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: gateway_3_test_suite
+    pull: always
     image: razorpay/onggi:php-7.2
-    pull: true
-    secrets: [docker_username, docker_password, git_token, rzp_api]
-    environment:
-      - DB_LIVE_HOST=mysql3
-      - DB_TEST_HOST=mysql3
-      - DB_AUTH_HOST=mysql3
-      - DB_LIVE_DATABASE=api_live_payment
-      - DB_TEST_DATABASE=api_test_payment
-      - DB_AUTH_DATABASE=api_auth_payment
-      - REDIS_HOST=redis7
-      - REDIS_LABS_HOST=redis7
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
-      - ES_ENTITY_INDEX_PREFIX=testing_payments_
-      - ES_ENTITY_TYPE_PREFIX=testing_payments_
+    depends_on:
+      - prepare_test
     commands:
-      - sleep 10
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Payment Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Gateway-3 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_feature_5
+      DB_AUTH_HOST: mysql2
+      DB_LIVE_DATABASE: api_live_feature_5
+      DB_LIVE_HOST: mysql2
+      DB_TEST_DATABASE: api_test_feature_5
+      DB_TEST_HOST: mysql2
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_ENTITY_INDEX_PREFIX: testing_features_5_
+      ES_ENTITY_TYPE_PREFIX: testing_features_5_
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis6
+      REDIS_LABS_HOST: redis6
+      RZP_API:
+        from_secret: rzp_api
     when:
       event:
-        exclude: [deployment, tag, pull_request]
-        include: [push]
-  gateway_1_test_suite:
-    group: A
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: payment_test_suite
+    pull: always
     image: razorpay/onggi:php-7.2
-    pull: true
-    secrets: [docker_username, docker_password, git_token, rzp_api]
-    environment:
-      - DB_LIVE_HOST=mysql3
-      - DB_TEST_HOST=mysql3
-      - DB_AUTH_HOST=mysql3
-      - DB_LIVE_DATABASE=api_live_gateway1
-      - DB_TEST_DATABASE=api_test_gateway1
-      - DB_AUTH_DATABASE=api_auth_gateway1
-      - REDIS_HOST=redis8
-      - REDIS_LABS_HOST=redis8
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
-      - ES_ENTITY_INDEX_PREFIX=testing_gateway_1_
-      - ES_ENTITY_TYPE_PREFIX=testing_gateway_1_
+    depends_on:
+      - prepare_test
     commands:
-      - sleep 10
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Payment Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_payment
+      DB_AUTH_HOST: mysql3
+      DB_LIVE_DATABASE: api_live_payment
+      DB_LIVE_HOST: mysql3
+      DB_TEST_DATABASE: api_test_payment
+      DB_TEST_HOST: mysql3
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_ENTITY_INDEX_PREFIX: testing_payments_
+      ES_ENTITY_TYPE_PREFIX: testing_payments_
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis7
+      REDIS_LABS_HOST: redis7
+      RZP_API:
+        from_secret: rzp_api
     when:
       event:
-        exclude: [deployment, tag, pull_request]
-        include: [push]
-  gateway_2_test_suite:
-    group: A
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: gateway_1_test_suite
+    pull: always
     image: razorpay/onggi:php-7.2
-    pull: true
-    secrets: [docker_username, docker_password, git_token, rzp_api]
-    environment:
-      - DB_LIVE_HOST=mysql3
-      - DB_TEST_HOST=mysql3
-      - DB_AUTH_HOST=mysql3
-      - DB_LIVE_DATABASE=api_live_gateway2
-      - DB_TEST_DATABASE=api_test_gateway2
-      - DB_AUTH_DATABASE=api_auth_gateway2
-      - REDIS_HOST=redis9
-      - REDIS_LABS_HOST=redis9
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
-      - ES_ENTITY_INDEX_PREFIX=testing_gateway_2_
-      - ES_ENTITY_TYPE_PREFIX=testing_gateway_2_
+    depends_on:
+      - prepare_test
     commands:
-      - sleep 10
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Gateway-1 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_gateway1
+      DB_AUTH_HOST: mysql3
+      DB_LIVE_DATABASE: api_live_gateway1
+      DB_LIVE_HOST: mysql3
+      DB_TEST_DATABASE: api_test_gateway1
+      DB_TEST_HOST: mysql3
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_ENTITY_INDEX_PREFIX: testing_gateway_1_
+      ES_ENTITY_TYPE_PREFIX: testing_gateway_1_
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis8
+      REDIS_LABS_HOST: redis8
+      RZP_API:
+        from_secret: rzp_api
     when:
       event:
-        exclude: [deployment, tag, pull_request]
-        include: [push]
-  build:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: gateway_2_test_suite
+    pull: always
+    image: razorpay/onggi:php-7.2
+    depends_on:
+      - prepare_test
+    commands:
+      - "php vendor/phpunit/phpunit/phpunit --testsuite \"Gateway-2 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
+    settings:
+    environment:
+      DB_AUTH_DATABASE: api_auth_gateway2
+      DB_AUTH_HOST: mysql3
+      DB_LIVE_DATABASE: api_live_gateway2
+      DB_LIVE_HOST: mysql3
+      DB_TEST_DATABASE: api_test_gateway2
+      DB_TEST_HOST: mysql3
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      ES_AUDIT_HOST: elasticsearch
+      ES_ENTITY_INDEX_PREFIX: testing_gateway_2_
+      ES_ENTITY_TYPE_PREFIX: testing_gateway_2_
+      ES_HOST: elasticsearch
+      GIT_TOKEN:
+        from_secret: git_token
+      REDIS_HOST: redis9
+      REDIS_LABS_HOST: redis9
+      RZP_API:
+        from_secret: rzp_api
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - tag
+          - pull_request
+
+  - name: build-app
+    pull: default
     image: plugins/docker
-    group: A
-    repo: razorpay/api
-    secrets: [docker_username, docker_password, git_token]
-    build_args_from_env: [git_token]
-    build_args:
-     - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
-    tags: ${DRONE_COMMIT_SHA}
-    when:
-      status: [success]
-      event:
-        exclude: [deployment, pull_request]
-        include: [push]
-  rebuild-cache:
-      image: razorpay/containers:drone-s3-cache
-      endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
-      path: "/rzp/api/${DRONE_BUILD_CREATED:0:5}/"
-      secrets:
-        - aws_region
-        - aws_access_key_id
-        - aws_secret_access_key
-      rebuild: true
-      mount:
-        - .composer/cache
-      when:
-        event: push
-  build-notify:
-    image: plugins/slack
-    secrets: [slack_webhook]
-    channel: tech_builds
-    username: drone
-    icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
-    template: >
-      {{#success build.status}}
-        Build succeeded.
-      {{else}}
-        Build failed.
-      {{/success}}
-        Build No:{{build.number}}
-        Branch: {{build.branch}}
-        Commit: {{build.commit}}
-        Author: {{build.author}}
-        Started at: {{build.started}}
-        Time taken: {{since build.started}}
-        Link: {{build.link}}
-    when:
-      event:
-        include: [push]
-  build-notify-master:
-      image: plugins/slack
-      secrets: [slack_webhook]
-      channel: tech_backend
-      username: drone
-      icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
-      template: >
-          Master Build failed.
-          Build No:{{build.number}}
-          Branch: {{build.branch}}
-          Commit: {{build.commit}}
-          Author: {{build.author}}
-          Started at: {{build.started}}
-          Time taken: {{since build.started}}
-          Link: {{build.link}}
-      when:
-        branch: master
-        status: [failure]
-services:
-  mysql:
-    image: mysql:5.7
+    settings:
+      build_args:
+        - "GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}"
+      build_args_from_env:
+        - GIT_TOKEN
+        - GIT_USERNAME
+      repo: razorpay/api
+      tags: "${DRONE_COMMIT_SHA}"
     environment:
-      - MYSQL_DATABASE=api
-      - MYSQL_ROOT_PASSWORD=root
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      GIT_TOKEN:
+        from_secret: git_token
+      GIT_USERNAME:
+        from_secret: git_username
     when:
       event:
-        exclude: [deployment, pull_request]
-        include: [push]
-  mysql2:
-      image: mysql:5.7
-      environment:
-        - MYSQL_DATABASE=api
-        - MYSQL_ROOT_PASSWORD=root
-      when:
-        event:
-          exclude: [deployment, pull_request]
-          include: [push]
-  mysql3:
-      image: mysql:5.7
-      environment:
-        - MYSQL_DATABASE=api
-        - MYSQL_ROOT_PASSWORD=root
-      when:
-        event:
-          exclude: [deployment, pull_request]
-          include: [push]
-  redis:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+      status:
+        - success
+
+  - name: build-checkout
+    pull: default
+    image: plugins/docker
+    settings:
+      build_args:
+        - "GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}"
+      repo: razorpay/api
+      tags: "checkout-${DRONE_COMMIT_SHA}"
+      dockerfile: Dockerfile.checkout
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+      status:
+        - success
+
+  - name: build-openresty
+    pull: default
+    image: plugins/docker
+    settings:
+      build_args:
+        - "GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}"
+      build_args_from_env:
+        - GIT_TOKEN
+        - GIT_USERNAME
+      repo: razorpay/api
+      tags: "openresty-${DRONE_COMMIT_SHA}"
+      dockerfile: Dockerfile.openresty
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      GIT_TOKEN:
+        from_secret: git_token
+      GIT_USERNAME:
+        from_secret: git_username
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+      status:
+        - success
+
+  - name: build-notify
+    pull: default
+    image: plugins/slack
+    settings:
+      channel: tech_builds
+      icon_url: "https://avatars2.githubusercontent.com/u/2181346?s=200&v=4"
+      template: "{{#success build.status}}\n  Build succeeded.\n{{else}}\n  Build failed.\n{{/success}}\n  Build No:{{build.number}}\n  Branch: {{build.branch}}\n  Commit: {{build.commit}}\n  Author: {{build.author}}\n  Started at: {{build.started}}\n  Time taken: {{since build.started}}\n  Link: {{build.link}}\n"
+      username: drone
+    environment:
+      SLACK_WEBHOOK:
+        from_secret: slack_webhook
+    depends_on:
+      - validate_php_syntax
+      - application_test_suite
+      - features_test_suite
+      - feature_2_test_suite
+      - feature_3_test_suite
+      - feature_4_test_suite
+      - gateway_3_test_suite
+      - payment_test_suite
+      - gateway_1_test_suite
+      - gateway_2_test_suite
+    when:
+      event:
+        - push
+
+  - name: build-notify-master
+    pull: default
+    image: plugins/slack
+    settings:
+      channel: tech_backend
+      icon_url: "https://avatars2.githubusercontent.com/u/2181346?s=200&v=4"
+      template: "Master Build failed. Build No:{{build.number}}\n Branch: {{build.branch}}\n Commit: {{build.commit}}\n Author: {{build.author}}\n Started at: {{build.started}}\n Time taken: {{since build.started}}\n Link: {{build.link}}\n"
+      username: drone
+    environment:
+      SLACK_WEBHOOK:
+        from_secret: slack_webhook
+    depends_on:
+      - build-app
+      - build-checkout
+      - build-openresty
+    when:
+      branch:
+        - master
+      status:
+        - failure
+services:
+  - name: mysql
+    pull: default
+    image: mysql:5.7
+    tmpfs:
+      - /var/lib/mysql
+    environment:
+      MYSQL_DATABASE: api
+      MYSQL_ROOT_PASSWORD: root
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: mysql2
+    pull: default
+    image: mysql:5.7
+    tmpfs:
+      - /var/lib/mysql
+    environment:
+      MYSQL_DATABASE: api
+      MYSQL_ROOT_PASSWORD: root
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: mysql3
+    pull: default
+    image: mysql:5.7
+    tmpfs:
+      - /var/lib/mysql
+    environment:
+      MYSQL_DATABASE: api
+      MYSQL_ROOT_PASSWORD: root
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: mysql4
+    pull: default
+    image: mysql:5.7
+    tmpfs:
+      - /var/lib/mysql
+    environment:
+      MYSQL_DATABASE: payments_upi
+      MYSQL_ROOT_PASSWORD: root
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: redis
+    pull: default
     image: redis
     when:
       event:
-        exclude: [deployment, pull_request]
-        include: [push]
-  redis2:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: redis2
+    pull: default
     image: redis
     when:
       event:
-        exclude: [deployment, pull_request]
-        include: [push]
-  redis3:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: redis3
+    pull: default
     image: redis
     when:
       event:
-        exclude: [deployment, pull_request]
-        include: [push]
-  redis4:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: redis4
+    pull: default
     image: redis
     when:
       event:
-        exclude: [deployment, pull_request]
-        include: [push]
-  redis5:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: redis5
+    pull: default
     image: redis
     when:
       event:
-        exclude: [deployment, pull_request]
-        include: [push]
-  redis6:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: redis6
+    pull: default
     image: redis
     when:
       event:
-        exclude: [deployment, pull_request]
-        include: [push]
-  redis7:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: redis7
+    pull: default
     image: redis
     when:
       event:
-        exclude: [deployment, pull_request]
-        include: [push]
-  redis8:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: redis8
+    pull: default
     image: redis
     when:
       event:
-        exclude: [deployment, pull_request]
-        include: [push]
-  redis9:
-      image: redis
-      when:
-        event:
-          exclude: [deployment, pull_request]
-          include: [push]
-  elasticsearch:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: redis9
+    pull: default
+    image: redis
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+
+  - name: elasticsearch
+    pull: default
     image: elasticsearch:5.2-alpine
     environment:
-     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
     when:
       event:
-        exclude: [deployment, pull_request]
-        include: [push]
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request

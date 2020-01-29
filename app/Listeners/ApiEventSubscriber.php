@@ -5,6 +5,7 @@ namespace RZP\Listeners;
 use Throwable;
 use Razorpay\Trace\Logger;
 
+use RZP\Error;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Jobs\WebHook;
@@ -15,8 +16,11 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transfer;
+use RZP\Models\PaymentLink;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\Terminal;
 use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
@@ -26,6 +30,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
 use RZP\Models\Merchant\Webhook\Metric as WebhookMetric;
@@ -102,7 +107,8 @@ class ApiEventSubscriber extends Base\Core
         WebhookEvent::PAYMENT_FAILED,
         WebhookEvent::PAYOUT_PROCESSED,
         WebhookEvent::PAYOUT_REVERSED,
-        WebhookEvent::ORDER_PAID
+        WebhookEvent::ORDER_PAID,
+        WebhookEvent::PAYMENT_CAPTURED,
     ];
 
     /**
@@ -230,6 +236,90 @@ class ApiEventSubscriber extends Base\Core
         return $event;
     }
 
+    protected function onAccountSuspended($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountInstantlyActivated($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountUnderReview($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountNeedsClarification($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountActivated($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountRejected($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountInternationalEnabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountInternationalDisabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountFundsHold($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountFundsUnhold($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountPaymentsEnabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onAccountPaymentsDisabled($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onPaymentAuthorized($payment)
     {
         $payload = $this->getPaymentPayload($payment);
@@ -260,6 +350,11 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onPaymentCaptured($payment)
     {
+        if ($payment->hasPaymentLink() === true)
+        {
+            (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
+        }
+
         $payload = $this->getPaymentPayload($payment);
 
         $this->prepareAndDispatchWebhook($payload);
@@ -303,6 +398,13 @@ class ApiEventSubscriber extends Base\Core
     protected function onOrderPaid($payment)
     {
         $payload = $this->getOrderPayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onTransferProcessed(Transfer\Entity $transfer)
+    {
+        $payload = $this->getTransferPayload($transfer);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -469,6 +571,48 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTransactionUpdated(Transaction\Entity $txn)
+    {
+        $payload = $this->getTransactionPayload($txn);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutLinkIssued(PayoutLinkEntity $payoutLink)
+    {
+        $payload = $this->getPayoutLinkPayload($payoutLink);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutLinkProcessed(PayoutLinkEntity $payoutLink)
+    {
+        $payload = $this->getPayoutLinkPayload($payoutLink);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutLinkProcessing(PayoutLinkEntity $payoutLink)
+    {
+        $payload = $this->getPayoutLinkPayload($payoutLink);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutLinkAttempted(PayoutLinkEntity $payoutLink)
+    {
+        $payload = $this->getPayoutLinkPayload($payoutLink);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutLinkCancelled(PayoutLinkEntity $payoutLink)
+    {
+        $payload = $this->getPayoutLinkPayload($payoutLink);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onPayoutCreated(Payout\Entity $payout)
     {
         $payload = $this->getPayoutPayload($payout);
@@ -529,6 +673,25 @@ class ApiEventSubscriber extends Base\Core
         }
     }
 
+    protected function onPayoutUpdated(Payout\Entity $payout)
+    {
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
+    protected function onPayoutRejected(Payout\Entity $payout)
+    {
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
     protected function onPayoutInitiated(Payout\Entity $payout)
     {
         if ($this->webhookEnabledForEvent === true)
@@ -555,6 +718,16 @@ class ApiEventSubscriber extends Base\Core
         }
     }
 
+    protected function onPayoutFailed(Payout\Entity $payout)
+    {
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
     protected function onPaymentDowntimeStarted(Downtime\Entity $downtime)
     {
         $payload = $this->getPaymentDowntimePayload($downtime);
@@ -565,6 +738,20 @@ class ApiEventSubscriber extends Base\Core
     protected function onPaymentDowntimeResolved(Downtime\Entity $downtime)
     {
         $payload = $this->getPaymentDowntimePayload($downtime);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onTerminalActivated(Terminal\Entity $terminal)
+    {
+        $payload = $this->getTerminalActivatedPayload($terminal);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onTerminalFailed(Terminal\Entity $terminal)
+    {
+        $payload = $this->getTerminalFailedPayload($terminal);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -648,6 +835,14 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+    protected function getTransferPayload(Transfer\Entity $transfer)
+    {
+        $partialPayload[Constants\Entity::TRANSFER] = [
+            'entity' => $transfer->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
     protected function getVirtualAccountPaymentPayload(Payment\Entity $payment)
     {
         $receiver = $payment->receiver;
@@ -681,6 +876,15 @@ class ApiEventSubscriber extends Base\Core
 
             $partialPayload[$bankTransfer->getEntity()] = [
                 'entity' => $bankTransfer->toArrayPublic(),
+            ];
+        }
+
+        if ($payment->isUpiTransfer() === true)
+        {
+            $upiTransfer = $payment->upiTransfer;
+
+            $partialPayload[$upiTransfer->getEntity()] = [
+                'entity' => $upiTransfer->toArrayPublic(),
             ];
         }
 
@@ -736,6 +940,20 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+    protected function getMerchantPayload($merchant)
+    {
+        //loading merchantDetail in memory
+        $merchant->merchantDetail;
+
+        $payload = [
+            Constants\Entity::ACCOUNT => [
+                'entity' => $merchant->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
     protected function getPaymentPayload($payment)
     {
         $payload = [
@@ -780,15 +998,39 @@ class ApiEventSubscriber extends Base\Core
         return $payload;
     }
 
-    protected function getPayoutPayload(Payout\Entity $payout): array
+    protected function getPayoutLinkPayload(PayoutLinkEntity $payoutLink): array
     {
-        $payload = [
-            Constants\Entity::PAYOUT => [
-                'entity' => $payout->toArrayPublic(),
+        return [
+            Constants\Entity::PAYOUT_LINK => [
+                'entity' => $payoutLink->toArrayPublic(),
             ],
         ];
+    }
 
-        return $payload;
+    protected function getPayoutPayload(Payout\Entity $payout): array
+    {
+        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::PAYOUTS_WEBHOOK_FILTER,
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            return [
+                Constants\Entity::PAYOUT => [
+                    'entity' => $payout->toArrayPublic(),
+                ],
+            ];
+        }
+
+        return [
+            Constants\Entity::PAYOUT => [
+                'entity' => $payout->toArrayWebhook(),
+            ],
+        ];
     }
 
     protected function getPaymentPayloadWithDispute($payment)
@@ -806,6 +1048,37 @@ class ApiEventSubscriber extends Base\Core
         $payload = [
             Constants\Entity::PAYMENT_DOWNTIME => [
                 'entity' => $downtime->toArrayPublic(),
+            ]
+        ];
+
+        return $payload;
+    }
+
+    protected function getTerminalActivatedPayload(Terminal\Entity $terminal): array
+    {
+        $payload = [
+            Constants\Entity::TERMINAL => [
+                'entity' => $terminal->toArrayPublic(),
+            ]
+        ];
+
+        return $payload;
+    }
+
+    protected function getTerminalFailedPayload(Terminal\Entity $terminal): array
+    {
+        $terminalOnboardingDetail = $terminal->terminalOnboardingDetail;
+
+        $terminalArray = $terminal->toArrayPublic();
+
+        // TODO: Instead of generic error code, add specific error codes.
+        $terminalArray['error_code'] = Error\TerminalOnboarding\ErrorCode::SERVER_ERROR_TERMINAL_ONBOARDING_FAILED;
+
+        $terminalArray['error_description'] = $terminalOnboardingDetail->getErrorDescription();
+
+        $payload = [
+            Constants\Entity::TERMINAL => [
+                'entity' => $terminalArray,
             ]
         ];
 
@@ -884,7 +1157,8 @@ class ApiEventSubscriber extends Base\Core
         // Send the signed account id of the merchant associated with the entity, along with the payload
         // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
         //
-        $signedAccountId = Merchant\Account\Entity::getSignedId($merchant->getId());
+        $listeningMerchant = $this->getListeningMerchant($entity);
+        $signedAccountId = Merchant\Account\Entity::getSignedId($listeningMerchant->getId());
 
         $attributes = array(
             Event\Entity::EVENT      => $eventFired,
@@ -1023,23 +1297,31 @@ class ApiEventSubscriber extends Base\Core
      */
     protected function getMerchantFromEntity(Base\PublicEntity $entity): Merchant\Entity
     {
+        $merchant = $this->getListeningMerchant($entity);
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $merchant = $merchant->parent;
+        }
+
+        return $merchant;
+    }
+
+    protected function getListeningMerchant(Base\PublicEntity $entity): Merchant\Entity
+    {
         if ($this->listeningMerchant !== null)
         {
             return $this->listeningMerchant;
         }
 
-        if (($entity instanceof Merchant\Account\Entity) === true)
+        if ((($entity instanceof Merchant\Account\Entity) === true) or
+            (($entity instanceof Merchant\Entity) === true))
         {
             $merchant = $entity;
         }
         else
         {
             $merchant = $entity->merchant;
-        }
-
-        if ($merchant->isLinkedAccount() === true)
-        {
-            $merchant = $merchant->parent;
         }
 
         return $merchant;

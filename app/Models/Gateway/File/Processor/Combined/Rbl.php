@@ -22,7 +22,7 @@ class Rbl extends Base
         ];
 
         $claimsFile = [];
-        $refundFile = [];
+        $refundsFile = [];
 
         if (isset($data['refunds']) === true)
         {

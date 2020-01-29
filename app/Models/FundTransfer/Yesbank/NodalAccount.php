@@ -43,10 +43,11 @@ class NodalAccount extends NodalBase\NodalAccount
      * Makes request to the bank for fund transfer for given attempts
      *
      * @param PublicCollection $attempts
+     * @param $forceFlag
      * @return array
      * @throws LogicException
      */
-    public function process(PublicCollection $attempts): array
+    public function process(PublicCollection $attempts, bool $forceFlag = false): array
     {
         $processedCount = 0;
 
@@ -62,14 +63,15 @@ class NodalAccount extends NodalBase\NodalAccount
             // Also, for other banks, settlements itself won't be even
             // initiated on non-working days/hours
             //
-
-            $isTransferAllowedToday = $this->isTransferAllowedToday($attempt);
-
-            if ($isTransferAllowedToday === false)
+            if ($forceFlag === false)
             {
-                continue;
-            }
+                $isTransferAllowedToday = $this->isTransferAllowedToday($attempt);
 
+                if ($isTransferAllowedToday === false)
+                {
+                    continue;
+                }
+            }
             //if BA is not present for attempt
             // marking FTA as failed, if source is settlement
             if($this->markFailedIfBANotExists($attempt) === true)
@@ -108,6 +110,21 @@ class NodalAccount extends NodalBase\NodalAccount
             }
             try
             {
+                $checkAttempt = clone $attempt;
+
+                $checkAttempt->reload();
+
+                if ($checkAttempt->getStatus() !== Attempt\Status::CREATED)
+                {
+                    $this->trace->info(TraceCode::NODAL_TRANSFER_REQUEST_DUPLICATE,
+                        [
+                            'channel'       => $this->channel,
+                            'attempt_id'    => $attempt->getId(),
+                        ]);
+
+                    continue;
+                }
+
                 // Calling init will reset all the data of previous request
                 $response = $transfer->setEntity($attempt)
                                      ->makeRequest($gateway);
@@ -222,14 +239,19 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
-        if (in_array($ifsc, Constants::VIRTUAL_ACCOUNT_IFSC, true) === true)
-        {
-            return Mode::NEFT;
-        }
-
         if (starts_with($ifscFirstFour, static::IFSC_IDENTIFIER) === true)
         {
-            return Mode::IFT;
+            $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+            if (is_numeric($ifscLastDigits) === true)
+            {
+                return Mode::IFT;
+            }
+            else
+            {
+                return Mode::NEFT;
+            }
+
         }
         else if ($amount < self::MAX_IMPS_AMOUNT)
         {

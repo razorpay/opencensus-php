@@ -4,6 +4,7 @@ namespace RZP\Jobs\Settlement;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Bucket\Core;
 
 class Bucket extends Job
@@ -66,13 +67,17 @@ class Bucket extends Job
                 $this->release(1);
             }
 
-            $this->trace->error(
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
                 TraceCode::FAILED_TO_ADD_MERCHANT_TO_SETTLEMENT_BUCKET,
                 [
-                    'merchant_id' => $this->merchantId,
-                    'settled_at'  => $this->settledAt,
-                    'attempt'     => $this->attempts(),
-                ]);
+                    'transaction_id' => $this->transactionId,
+                    'merchant_id'    => $this->merchantId,
+                    'settled_at'     => $this->settledAt,
+                    'attempt'        => $this->attempts(),
+                ]
+            );
         }
     }
 }

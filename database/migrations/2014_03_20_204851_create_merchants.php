@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Merchant\FeeModel;
+use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 
@@ -35,6 +36,9 @@ class CreateMerchants extends Migration
             $table->string(Merchant::EMAIL, 255);
 
             $table->char(Merchant::PARENT_ID, Merchant::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Merchant::LEGAL_ENTITY_ID, LegalEntity\Entity::ID_LENGTH)
                   ->nullable();
 
             $table->tinyInteger(Merchant::ACTIVATED)
@@ -172,6 +176,9 @@ class CreateMerchants extends Migration
             $table->string(Merchant::WHITELISTED_IPS_TEST, 255)
                   ->nullable();
 
+            $table->string(Merchant::WHITELISTED_DOMAINS, 255)
+                  ->nullable();
+
             $table->tinyInteger(Merchant::SECOND_FACTOR_AUTH)
                   ->default(0);
 
@@ -187,6 +194,9 @@ class CreateMerchants extends Migration
             $table->text(Merchant::PARTNERSHIP_URL)
                   ->nullable();
 
+            $table->string(Merchant::EXTERNAL_ID)
+                  ->nullable();
+
             $table->integer(Merchant::CREATED_AT);
 
             $table->integer(Merchant::UPDATED_AT);
@@ -194,6 +204,7 @@ class CreateMerchants extends Migration
             $table->index(Merchant::ACTIVATED_AT);
             $table->index(Merchant::ACTIVATED);
             $table->index(Merchant::LIVE);
+            $table->index(Merchant::LEGAL_ENTITY_ID);
             $table->index(Merchant::HOLD_FUNDS);
             $table->index(Merchant::CATEGORY);
             $table->index(Merchant::INTERNATIONAL);
@@ -202,6 +213,7 @@ class CreateMerchants extends Migration
             $table->index(Merchant::RISK_RATING);
             $table->index(Merchant::EMAIL);
             $table->index(Merchant::AUTO_REFUND_DELAY);
+            $table->index(Merchant::EXTERNAL_ID);
             $table->index(Merchant::CREATED_AT);
             $table->index(Merchant::UPDATED_AT);
         });

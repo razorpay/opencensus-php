@@ -76,9 +76,9 @@ class EventCode
         'name'  => 'payment.terminal.selection.processed'
     ];
 
-    const PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING    = [
+    const PAYMENT_TERMINALS_RECEIVED_FROM_SMART_ROUTING    = [
         'group' => 'internal_checks',
-        'name'  => 'payment.sorted.terminals.received.from.smart.routing'
+        'name'  => 'payment.terminals.received.from.smart.routing'
     ];
 
     const PAYMENT_CREATION_PROCESSED                    = [
@@ -253,6 +253,11 @@ class EventCode
         'name'  => 'settlement.creation.initiated'
     ];
 
+    const SETTLEMENT_CREATION_SKIPPED = [
+        'group' => 'skipped',
+        'name'  => 'settlement.creation.skipped'
+    ];
+
     const SETTLEMENT_CREATION_SUCCESS = [
         'group' => 'success',
         'name'  => 'settlement.creation.success'
@@ -293,19 +298,19 @@ class EventCode
         'name'  => 'batchFta.creation.failed'
     ];
 
-    const BEAM_FILE_PUSH_SUCCESS = [
+    const BEAM_FILE_PUSH_REQUEST_SUCCESS = [
         'group' => 'success',
-        'name'  => 'beam.push.success'
+        'name'  => 'beam.push.request.success'
     ];
 
-    const BEAM_FILE_PUSH_RETRY = [
+    const BEAM_FILE_PUSH_REQUEST_RETRY = [
         'group' => 'retry',
-        'name'  => 'beam.push.retry'
+        'name'  => 'beam.push.request.retry'
     ];
 
-    const BEAM_FILE_PUSH_FAILED = [
+    const BEAM_FILE_PUSH_REQUEST_FAILED = [
         'group' => 'failure',
-        'name'  => 'beam.push.failed'
+        'name'  => 'beam.push.request.failed'
     ];
 
     const FTA_UTR_UPDATED = [
@@ -333,6 +338,7 @@ class EventCode
         'name'  => 'reverse.feed.received'
     ];
 
+    // onboarding events
     const SIGNUP_CAPTCHA_VERIFICATION_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'signup.captcha_verification.success',
@@ -411,5 +417,50 @@ class EventCode
     const ACT_CHANGE_ACTIVATION_FLOW_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'act.change_activation_flow.success',
+    ];
+
+    const KYC_FORM_SUBMIT_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.form_submit.success',
+    ];
+
+    const KYC_SAVE_MODIFICATIONS_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.save_modifications.success',
+    ];
+
+    const KYC_VERIFIER_SERVICE_RESPONSE_TIME = [
+        'group' => 'onboarding',
+        'name' => 'kyc.verifier_service.response_time',
+    ];
+
+    const KYC_PENNY_TESTING_SUCCESS_RATE = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.penny_testing.success.rate',
+    ];
+
+    const KYC_UPLOAD_DOCUMENT_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.upload_document.success',
+    ];
+
+    const DOCUMENT_VERIFICATION_OCR = [
+        'group' => 'onboarding',
+        'name'  => 'document.verification.ocr',
+    ];
+
+    const KYC_UPLOAD_DOCUMENT_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.upload_document.failed',
+    ];
+
+    const KYC_SAVE_MODIFICATIONS_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'kyc.save_modifications.failed',
+    ];
+
+    const PAYMENT_PAGE_CREATED = [
+        'group' => 'payment_page',
+        'name'  => 'payment_page.created',
     ];
 }

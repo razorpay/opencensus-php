@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use DB;
 use Redis;
 use Carbon\Carbon;
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -837,6 +838,28 @@ class VerifyTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testVerifyGooglePayCardPayments()
+    {
+        $payment = $this->fixtures->create('payment', []);
+
+        $payment->setAuthenticationGateway('google_pay');
+        $payment->setStatus(Payment\Status::AUTHORIZED);
+
+        (new Payment\Repository)->saveOrFail($payment);
+
+        $request = array(
+            'url'     => '/gateway/google_pay/verify',
+            'method'  => 'get',
+            'content' => [
+                'pgTransactionRefId' => 'pay_' . $payment['id']
+            ],
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['STATUS'], 'SUCCESS');
+    }
+
     public function testInvalidFilter()
     {
         $this->setupRedisMock();
@@ -1247,6 +1270,50 @@ class VerifyTest extends TestCase
 
     }
 
+    public function testCaptureVerifyExcessOrderPayment()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->edit(
+            '10000000000000',
+            [
+                'auto_capture_late_auth' => true,
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['disable_amount_check']);
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $payments = $this->createMultipleFailedPaymentWithOrder($data);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(5);
+
+        Carbon::setTestNow($time);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getEntityById('payment', $payments[0], true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $payment = $this->getEntityById('payment', $payments[1], true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getDbLastEntityPublic('order');
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
     protected function setupRedisMock($paymentArray = [])
     {
         $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex', 'client'])
@@ -1572,5 +1639,49 @@ class VerifyTest extends TestCase
         $this->resetMockServer();
 
         return $payment;
+    }
+
+    protected function createMultipleFailedPaymentWithOrder($data)
+    {
+        $payments = [];
+
+        $this->getErrorInCallback();
+
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'amount' => 50000, 'payment_capture' => true]);
+
+        $this->assertEquals('created', $order['status']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+
+        $payment["order_id"] = 'order_' . $order["id"];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthAndCapturePayment($payment);
+            }
+        );
+        $paymentdata = $this->getDbLastEntityPublic('payment');
+
+        $payments[] = $paymentdata['id'];
+
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthAndCapturePayment($payment);
+            }
+        );
+
+        $paymentdata = $this->getDbLastEntityPublic('payment');
+
+        $payments[] = $paymentdata['id'];
+
+        $this->resetMockServer();
+
+        return $payments;
+
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use \RZP\Models\Merchant;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\BankAccount\Entity as BankAccount;
@@ -51,6 +52,47 @@ return [
     ],
 
     'testCreateValidationWithFundAccountId' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+                Validation::RECEIPT      => '12345667',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'contact_id'   => 'cont_1000000contact',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'ifsc'           => 'SBIN0007105',
+                        'bank_name'      => 'State Bank of India',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111',
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'notes'        => [],
+                'results'      => [
+                    'utr'             => null,
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateValidationWithExposeUTRNotSetInResponse' => [
         'request' => [
             'url'     => '/fund_accounts/validations',
             'method'  => 'post',
@@ -464,6 +506,193 @@ return [
                     'registered_name' => null,
                 ],
             ],
+        ],
+    ],
+    'testFundAccValidationWithAccountNumberAndVpa' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT    => [
+                    FundAccount::ID => '',
+                ],
+                Validation::NOTES           => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'contact_id'   => 'cont_1000000contact',
+                    'account_type' => 'vpa',
+                    'active'       => true,
+                    'details'      => [
+                        'address' => "withname@razorpay"
+                    ],
+                ],
+                'amount'       => null,
+                'currency'     => null,
+                'status'       => 'created',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
+    'testFixTransactionSettledAt' => [
+        'request' => [
+            'url'     => '/transactions/fund_account_validation/settled/fix',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+    'testFundAccValidationBankingFailedAccountTypeDirect' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::AMOUNT       => 100,
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Penny Testing is not supported for the given account number.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_SUPPORTED_BALANCE,
+        ],
+    ],
+    'testFundAccValidationBankingFailedAmountVpa' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::AMOUNT       => 100,
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'amount is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+    'testFundAccValidationBankingFailedCurrencyVpa' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'currency is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+    'testFundAccValidationBankingFailedMissingFundAccountId' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Jayesh Pawar',
+                        BankAccount::IFSC           => 'SBIN0010432',
+                    ],
+                ],
+                Validation::NOTES        => [],
+                Validation::AMOUNT       => '100',
+                Validation::CURRENCY     => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The fund account.id field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testFundAccValidationFailedFundAccountCardType' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid fund account type: card',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

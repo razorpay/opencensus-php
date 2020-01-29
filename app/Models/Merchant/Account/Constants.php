@@ -11,10 +11,16 @@ class Constants
     const MANAGED            = 'managed';
     const EMAIL              = 'email';
     const PHONE              = 'phone';
+    const LEGAL_ENTITY_ID    = 'legal_entity_id';
     const NOTES              = 'notes';
     const ACCOUNT_ACCESS     = 'account_access';
     const REVIEW_STATUS      = 'review_status';
     const CURRENT_STATE      = 'current_state';
+    const REQUIREMENTS       = 'requirements';
+    const BUSINESSES         = 'businesses';
+    const FIELDS             = 'fields';
+    const FIELD_NAME         = 'field_name';
+    const DOCUMENTS          = 'documents';
     const STATUS             = 'status';
     const PAYMENT_ENABLED    = 'payment_enabled';
     const SETTLEMENT_ENABLED = 'settlement_enabled';
@@ -50,11 +56,13 @@ class Constants
     const DISPUTE            = 'dispute';
     const BILLING_LABEL      = 'billing_label';
     const PAYMENT            = 'payment';
+    const REASON             = 'reason';
     const DISABLED_REASON    = 'disabled_reason';
     const FLASH_CHECKOUT     = 'flash_checkout';
     const EMI                = 'emi';
     const INTERNATIONAL      = 'international';
     const SETTLEMENT         = 'settlement';
+    const SETTINGS           = 'settings';
     const BALANCE_RESERVED   = 'balance_reserved';
     const FUND_ACCOUNT_ID    = 'fund_account_id';
     const SCHEDULES          = 'schedules';
@@ -65,11 +73,13 @@ class Constants
     const ACCOUNT_NUMBER     = 'account_number';
     const IFSC               = 'ifsc';
     const TNC                = 'tnc';
-    const ACCEPTED           = 'accepted';
-    const IP_ADDRESS         = 'ip_address';
-    const TIME               = 'time';
-    const USER_AGENT         = 'user_agent';
     const CREATED_AT         = 'created_at';
+    const OWNER_INFO         = 'owner_info';
+    const CONTACT_INFO       = 'contact_info';
+
+    // external ids
+    const EXTERNAL_ID       = 'external_id';
+    const LEGAL_EXTERNAL_ID = 'legal_external_id';
 
     // Values
     const ACCOUNT            = 'account';
@@ -83,14 +93,27 @@ class Constants
     // defaults
     const DEFAULT_ACCOUNT_COUNT = 20;
 
+    // reasons
+    const REQUIRED_DOCUMENT_MISSING = 'required_document_missing';
+    const REQUIRED_FIELD_MISSING    = 'required_field_missing';
+
     // business model values
     const B2B  = 'B2B';
     const B2C  = 'B2C';
     const B2BC = 'B2B+B2C';
 
+    // bank account statuses
+    const PENDING_VERIFICATION = 'pending_verification';
+    const ACTIVE               = 'active';
+
     public static $validBusinessModels = [
         self::B2B,
         self::B2C,
         self::B2BC,
+    ];
+
+    public static $validAddressTypes = [
+        self::REGISTERED,
+        self::OPERATION,
     ];
 }

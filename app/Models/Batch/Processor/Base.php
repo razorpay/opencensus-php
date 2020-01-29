@@ -505,10 +505,13 @@ class Base extends BaseModel\Core
 
                 $this->processEntry($entry);
 
-                // Set errors as null
+                if ($this->resetErrorOnSuccess() === true)
+                {
+                    // Set errors as null
 
-                $entry[Batch\Header::ERROR_CODE]        = null;
-                $entry[Batch\Header::ERROR_DESCRIPTION] = null;
+                    $entry[Batch\Header::ERROR_CODE]        = null;
+                    $entry[Batch\Header::ERROR_DESCRIPTION] = null;
+                }
 
                 $timeTaken = millitime() - $timeStarted;
 
@@ -543,8 +546,14 @@ class Base extends BaseModel\Core
             finally
             {
                 $this->batch->incrementProcessedCount();
+                $this->processFinally($entry);
             }
         }
+    }
+
+    protected function processFinally(& $entry)
+    {
+        return;
     }
 
     /**
@@ -859,8 +868,8 @@ class Base extends BaseModel\Core
 
     protected function deleteLocalFiles()
     {
-        $this->deleteFile($this->inputFileLocalPath);
-        $this->deleteFile($this->outputFileLocalPath);
+        //$this->deleteFile($this->inputFileLocalPath);
+        //$this->deleteFile($this->outputFileLocalPath);
     }
 
     protected function deleteFile(string $filePath = null)
@@ -1523,15 +1532,38 @@ class Base extends BaseModel\Core
             //
             $razorxTreatment = 'batch_service_' . $this->batch->getType() . '_migration';
 
-            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                        $razorxTreatment,
-                                                        $this->mode
-                                                        );
+            $variant = $this->getVariant($razorxTreatment);
 
             $result = (strtolower($variant) === 'on');
         }
 
         return $result;
+    }
+
+    /**
+     * @param $razorxTreatment
+     * @return mixed
+     */
+    protected function getVariant($razorxTreatment)
+    {
+        //
+        // For reconciliation batch type we are using gateway as key
+        // for other batch types the key is Merchant id
+        //
+
+        $key = $this->merchant->getId();
+
+        if ($this->batch->getType() === Batch\Type::RECONCILIATION)
+        {
+            $key = $this->batch->getGateway();
+        }
+
+        $variant = $this->app->razorx->getTreatment($key,
+            $razorxTreatment,
+            $this->mode
+        );
+
+        return $variant;
     }
 
     protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
@@ -1570,5 +1602,21 @@ class Base extends BaseModel\Core
     protected function getNumRowsToSkipExcelFile()
     {
         return 0;
+    }
+
+    /**
+     * In some cases error code and error description are required
+     * and These detail should not be reset .
+     *
+     * @return bool
+     */
+    protected function resetErrorOnSuccess(): bool
+    {
+        return true;
+    }
+
+    public function addSettingsIfRequired(& $input)
+    {
+        return;
     }
 }

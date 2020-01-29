@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
     const EXCEL_FILE_ID          = 'excel_file_id';
     const INITIATE_AT            = 'initiate_at';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
+    const GATEWAY_REF_NO         = 'gateway_ref_no';
 
     //Fund transfer retry constants
     const FILE                  = 'file';
@@ -105,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::IS_FTS,
         self::FTS_TRANSFER_ID,
+        self::GATEWAY_REF_NO,
         self::NARRATION,
         self::REMARKS,
         self::DATE_TIME,
@@ -338,6 +340,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::IS_FTS);
     }
 
+    public function getGatewayRefNo()
+    {
+        return $this->getAttribute(self::GATEWAY_REF_NO);
+    }
+
     public function hasBankAccount()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
@@ -420,6 +427,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::IS_FTS, $isFTS);
     }
 
+    public function setGatewayRefNo(string $gatewayRefNo)
+    {
+        $this->setAttribute(self::GATEWAY_REF_NO, $gatewayRefNo);
+    }
+
     // ------------------------------ modifiers --------------------------------
 
     protected function setRemarksAttribute($remarks)
@@ -444,6 +456,17 @@ class Entity extends Base\PublicEntity
             return;
         }
 
+        // The below logic to update the mode of FTA is being done specifically
+        // for Yesbank. Going forward all banks will be migrated to FTS and
+        // any such change of mode will happen at FTS layer. Till yesbank
+        // is being migrated this change is required for it. For other
+        // banks already on FTS we don't need to run mode logic to update banks.
+
+        if ($this->getIsFTS() === true)
+        {
+            return;
+        }
+
         // Assumption is that the validation would have happened already before this
         // step and hence we can assume that the bank account exists and is valid.
 
@@ -453,16 +476,18 @@ class Entity extends Base\PublicEntity
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
-        if (in_array($ifsc, Constants::VIRTUAL_ACCOUNT_IFSC, true) === true)
-        {
-            $this->setMode(Mode::NEFT);
-
-            return;
-        }
-
         if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
         {
-            $this->setMode(Mode::IFT);
+            $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+            if (is_numeric($ifscLastDigits) === true)
+            {
+                $this->setMode(Mode::IFT);
+            }
+            else
+            {
+                $this->setMode(Mode::NEFT);
+            }
         }
     }
 

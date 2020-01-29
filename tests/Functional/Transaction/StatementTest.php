@@ -2,19 +2,23 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
-use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 class StatementTest extends TestCase
 {
     use PaymentTrait;
+    use FundAccountTrait;
     use DbEntityFetchTrait;
     use VirtualAccountTrait;
     use TestsBusinessBanking;
+    use FundAccountValidationTrait;
 
     public function setUp()
     {
@@ -121,6 +125,70 @@ class StatementTest extends TestCase
         $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
     }
 
+    public function testFetchByUtr()
+    {
+        $this->createPayout(['utr' => 'Dq3XuFEay83Zlo']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?utr=' . $this->payout['utr'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchByUtrBankTransfer()
+    {
+        $this->createBankTransferTransaction();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?utr=' . $this->payout['utr'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchByType()
+    {
+        $this->createPayout();
+        $this->createBankTransferTransaction();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?type=payout';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $txn = $response['items'][0];
+
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
+    }
+
+    public function testFetchByInvalidType()
+    {
+        $this->createPayout();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?type=x';
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchByInvalidPaymentType()
+    {
+        $this->createPayout();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?type=settlement';
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchByContactName()
     {
         $this->createPayout();
@@ -203,11 +271,81 @@ class StatementTest extends TestCase
         $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
     }
 
+    public function testFAVBankAccountTransaction()
+    {
+        $this->ba->privateAuth();
+
+        $this->createFAVBankAccount();
+
+        $response = $this->startTest();
+
+        $txn = $response['items'][0];
+
+        $this->assertEquals("fund_account.validation", $txn['source']['entity']);
+        $this->assertEquals("fund_account", $txn['source']['fund_account']['entity']);
+        $this->assertEquals("bank_account", $txn['source']['fund_account']['account_type']);
+        $this->assertEquals("111000111", $txn['source']['fund_account']['bank_account']['account_number']);
+    }
 
     protected function createBankTransferTransaction()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         $this->payVirtualAccount($this->virtualAccount->getPublicId(), ['amount' => 25]);
+    }
+
+    public function testActionFilter()
+    {
+        $this->createPayout();
+
+        // Test debit filter after payout
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000');
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser->getId());
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=debit';
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+        $txn = $response['items'][0];
+        $this->assertEquals(count($response['items']), 1);
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction['amount'], $txn['debit']);
+
+        // test credit filter after payout
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=credit';
+        $response = $this->startTest();
+        $this->assertEquals(0, $response['count']);
+
+        // create reverse payout
+        $payout = $this->getDbEntity('payout');
+        $this->reversePayout($payout);
+
+        // test debit filter after reversal
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=debit';
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+        $txn = $response['items'][0];
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction['amount'], $txn['debit']);
+
+        // test credit filter after reversal
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=credit';
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+        $txn = $response['items'][0];
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction['amount'], $txn['credit']);
+    }
+
+    public function testActionFilterFailedPrivateAuth()
+    {
+        $this->createPayout();
+
+        $this->ba->privateAuth();
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=debit';
+
+        $this->startTest();
     }
 }

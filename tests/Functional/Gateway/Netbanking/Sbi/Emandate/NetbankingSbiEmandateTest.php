@@ -3,35 +3,37 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Sbi\EMandate;
 
 use Carbon\Carbon;
-use Mail;
-use Excel;
 
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
+use RZP\Models\Payment\Refund;
 use RZP\Models\FileStore\Type;
 use RZP\Gateway\Netbanking\Sbi;
 use RZP\Models\FileStore\Format;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Customer\Token\RecurringStatus;
-use Illuminate\Http\Testing\File as TestingFile;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Customer\Token\Entity as TokenEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Gateway\Netbanking\Sbi\Emandate\DebitFileHeadings;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
-use RZP\Gateway\Netbanking\Sbi\Emandate\RegisterFileHeadings;
+use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
 class NetbankingSbiEmandateTest extends TestCase
 {
-    use PaymentTrait;
     use FileHandlerTrait;
     use DbEntityFetchTrait;
+    use EmandateSbiTestTrait;
+    use AttemptTrait;
+    use AttemptReconcileTrait;
 
     protected $payment;
 
@@ -256,12 +258,98 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('created', $batch['status']);
 
+        $batch = $this->getEntityById('batch', $batch['id'], true);
+        $this->assertEquals('processed', $batch['status']);
+
         $registerFailureFile = $this->getRegisterFailureCsv($registerPayments);
         $batch = $this->uploadBatchFile($registerFailureFile, 'register');
         $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('created', $batch['status']);
 
+        $batch = $this->getEntityById('batch', $batch['id'], true);
+        $this->assertEquals('processed', $batch['status']);
+
         $this->assertRegistrationDetails($registerPayments);
+    }
+
+    public function testRegisterReconInvalidAccNo()
+    {
+        $registerPayments[] = [
+            'payment' => $this->createRegistrationPayment(),
+            'status'  => 'SUCCESS',
+            'umrn'    => '111111111111111',
+            'accNo'   => '12345678900000'
+        ];
+
+        $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
+
+        $batch = $this->uploadBatchFile($registerSuccessFile, 'register');
+
+        $this->assertEquals('emandate', $batch['type']);
+
+        $this->assertEquals('created', $batch['status']);
+
+        $batch = $this->getEntityById('batch', $batch['id'], true);
+
+        $this->assertEquals('partially_processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $registerPayments[0]['payment']['id']);
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $successNetbanking =$this->getDbEntity('netbanking', ['payment_id' => $registerPayments[0]['payment']['id']]);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('initiated', $token['recurring_status']);
+
+        $this->assertNull($token['gateway_token']);
+
+        $this->assertNull($successNetbanking['si_status']);
+
+        $this->assertNull($successNetbanking['si_token']);
+    }
+
+    public function testRegisterReconZeroPaddedAccNo()
+    {
+        $registerPayments[] = [
+            'payment' => $this->createRegistrationPayment(),
+            'status'  => 'SUCCESS',
+            'umrn'    => '111111111111111',
+            'accNo'   => '0012345678901234'
+        ];
+
+        $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
+
+        $batch = $this->uploadBatchFile($registerSuccessFile, 'register');
+
+        $this->assertEquals('emandate', $batch['type']);
+
+        $this->assertEquals('created', $batch['status']);
+
+        $successPayment = $this->getDbEntityById('payment', $registerPayments[0]['payment']['id']);
+
+        $successToken = $successPayment->getGlobalOrLocalTokenEntity();
+
+        $successNetbanking =$this->getDbEntity('netbanking', ['payment_id' => $registerPayments[0]['payment']['id']]);
+
+        $this->assertEquals('captured', $successPayment['status']);
+
+        $this->assertEquals('confirmed', $successToken['recurring_status']);
+
+        $this->assertNotNull($successToken['gateway_token']);
+
+        $this->assertEquals('confirmed', $successNetbanking['si_status']);
+
+        $this->assertNotNull($successNetbanking['si_token']);
+
+        $this->assertTrue($successNetbanking['received']);
+
+        $this->assertTrue($successPayment->transaction->isReconciled());
+
+        $batch = $this->getEntityById('batch', $batch['id'], true);
+
+        $this->assertEquals('processed', $batch['status']);
     }
 
     public function testEmandateDebit()
@@ -326,7 +414,7 @@ class NetbankingSbiEmandateTest extends TestCase
 
         $debitPayments[] = [
             'payment'       => $this->createSecondReccuringPayment($token),
-            'status'        => 'Failure',
+            'status'        => 'REJECTED',
             'return_reason' => 'Mandate does not Exist / Expired',
         ];
 
@@ -346,6 +434,120 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertEquals('created', $batch['status']);
 
         $this->assertDebitDetails($debitPayments);
+    }
+
+    // Use case where sbi appends additional 0s to the account number
+    public function testDebitFileReconWithModifiedAccNo()
+    {
+        $registerPayments[] = [
+            'payment' => $this->createRegistrationPayment(),
+            'status'  => 'SUCCESS',
+            'umrn'    => '111111111111111'
+        ];
+
+        $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
+        $this->uploadBatchFile($registerSuccessFile, 'register');
+
+        $token = $this->getLastEntity('token', true);
+
+        $debitPayments[] = [
+            'payment' => $this->createSecondReccuringPayment($token),
+            'status'  => 'Success',
+            'AccNo'   => '0012345678901234',
+        ];
+
+        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        foreach ($debitPayments as $entry)
+        {
+            $this->fixtures->edit('payment', $entry['payment']['id'], ['created_at' => $createdAt]);
+        }
+
+        $this->generateDebitGatewayFile();
+
+        $batch = $this->uploadDebitBatchFile($debitPayments);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals('processed', $batch['status']);
+
+        $successPayment = $this->getDbEntityById('payment', $debitPayments[0]['payment']['id']);
+        $successNetbanking =$this->getDbEntity('netbanking', ['payment_id' => $debitPayments[0]['payment']['id']]);
+
+        $this->assertEquals('captured', $successPayment['status']);
+        $this->assertTrue($successNetbanking['received']);
+        $this->assertEquals('Success', $successNetbanking['status']);
+        $this->assertTrue($successPayment->transaction->isReconciled());
+    }
+
+    public function testEmandateRefund()
+    {
+        $this->testDebitFileRecon();
+
+        $payment = $this->getEntities('payment', ['status' => 'captured', 'amount' => 3000, 'count' => 1], true);
+
+        $response = $this->refundPayment($payment['items'][0]['id']);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+
+        $this->assertEquals($payment['items'][0]['id'], $refund['payment_id']);
+
+        $this->assertEquals('initiated', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals('SBIN0000001', $bankAccount['ifsc_code']);
+
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
+
+        $this->assertEquals('12345678901234', $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+
+        $this->assertEquals('refund', $bankAccount['type']);
+
+        $channel = Channel::YESBANK;
+
+        $this->initiateTransfer(
+            $channel,
+            Attempt\Purpose::REFUND,
+            Attempt\Type::REFUND);
+
+        $this->reconcileOnlineSettlements($channel, false);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertNotNull($attempt['utr']);
+
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt[Attempt\Entity::STATUS]);
+
+        // Process entities
+
+        $this->reconcileEntitiesForChannel($channel);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->assertNotNull($attempt['utr']);
     }
 
     protected function assertRegistrationDetails($entities)
@@ -393,237 +595,5 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertEquals('failed', $failurePayment['status']);
         $this->assertEquals('Mandate does not Exist / Expired', $failureNetbanking['error_message']);
         $this->assertTrue($failureNetbanking['received']);
-    }
-
-    protected function getRegisterSuccessExcel($entities)
-    {
-        $items = [];
-
-        foreach ($entities as $index => $entity)
-        {
-            if ($entity['status'] === 'SUCCESS')
-            {
-                $amount = number_format($entity['payment']['amount'] / 100, '2', '.', '');
-
-                $items[] = [
-                    RegisterFileHeadings::SR_NO                => strval($index + 1),
-                    RegisterFileHeadings::EMANDATE_TYPE        => 'random',
-                    RegisterFileHeadings::UMRN                 => $entity['umrn'],
-                    RegisterFileHeadings::MERCHANT_ID          => 'test ID',
-                    RegisterFileHeadings::CUSTOMER_REF_NO      => $entity['payment']['id'],
-                    RegisterFileHeadings::SCHEME_NAME          => 'test Scheme',
-                    RegisterFileHeadings::SUB_SCHEME           => 'test subScheme',
-                    RegisterFileHeadings::DEBIT_CUSTOMER_NAME  => 'Test Account',
-                    RegisterFileHeadings::DEBIT_ACCOUNT_NUMBER => self::ACCOUNT_NUMBER,
-                    RegisterFileHeadings::DEBIT_ACCOUNT_TYPE   => 'random',
-                    RegisterFileHeadings::DEBIT_IFSC           => 'SBIN0000001',
-                    RegisterFileHeadings::DEBIT_BANK_NAME      => 'SBI',
-                    RegisterFileHeadings::AMOUNT               => $amount,
-                    RegisterFileHeadings::AMOUNT_TYPE          => 'Max',
-                    RegisterFileHeadings::CUSTOMER_ID          => '123456',
-                    RegisterFileHeadings::PERIOD               => 'random',
-                    RegisterFileHeadings::PAYMENT_TYPE         => 'ADHO',
-                    RegisterFileHeadings::FREQUENCY            => 'ADHO',
-                    RegisterFileHeadings::START_DATE           => Carbon::now(Timezone::IST)->format('d/m/Y'),
-                    RegisterFileHeadings::END_DATE             => Carbon::now(Timezone::IST)->addYears(10)->format('d/m/Y'),
-                    RegisterFileHeadings::MOBILE               => '0000000000',
-                    RegisterFileHeadings::EMAIL                => 'test@gmail.com',
-                    RegisterFileHeadings::OTHER_REF_NO         => 'test',
-                    RegisterFileHeadings::PAN_NUMBER           => '1234',
-                    RegisterFileHeadings::AUTO_DEBIT_DATE      => '',
-                    RegisterFileHeadings::AUTHENTICATION_MODE  => '',
-                    RegisterFileHeadings::DATE_PROCESSED       => Carbon::now(Timezone::IST)->format('d/m/Y'),
-                    RegisterFileHeadings::STATUS               => $entity['status'],
-                    RegisterFileHeadings::NO_OF_DAYS_PENDING   => '',
-                    RegisterFileHeadings::REJECT_REASON        => $entity['return_reason'] ?? 'random reason',
-                ];
-            }
-        }
-
-        $sheets = [
-            'sheet1' => [
-                'config' => [
-                    'start_cell' => 'A6',
-                ],
-                'items' => $items
-            ]
-        ];
-
-        $data = $this->getExcelString('Sbi Register Recon Emandate', $sheets);
-
-        $handle = tmpfile();
-        fwrite($handle, $data);
-        fseek($handle, 0);
-
-        return (new TestingFile('Sbi-Register-Recon-Emandate.xlsx', $handle));
-    }
-
-    protected function getRegisterFailureCsv($entities)
-    {
-        $data = [];
-
-        foreach ($entities as $entity)
-        {
-            if ($entity['status'] === 'FAILURE')
-            {
-                $data[] = [
-                    RegisterFileHeadings::TRANSACTION_DATE        => Carbon::now(Timezone::IST)->format('d/m/Y H:i:s'),
-                    RegisterFileHeadings::CUSTOMER_NAME           => 'test',
-                    RegisterFileHeadings::CUSTOMER_REF_NO         => $entity['payment']['id'],
-                    RegisterFileHeadings::CUSTOMER_ACCOUNT_NUMBER => self::ACCOUNT_NUMBER,
-                    RegisterFileHeadings::AMOUNT                  => '1.00',
-                    RegisterFileHeadings::MAX_AMOUNT              => '99999.00',
-                    RegisterFileHeadings::STATUS                  => $entity['status'],
-                    RegisterFileHeadings::STATUS_DESCRIPTION      => $entity['return_reason'],
-                    RegisterFileHeadings::START_DATE_REJECT_FILE  => '',
-                    RegisterFileHeadings::END_DATE_REJECT_FILE    => '',
-                    RegisterFileHeadings::FREQUENCY               => '',
-                    RegisterFileHeadings::UMRN_REJECT_RILE        => $entity['umrn'],
-                    RegisterFileHeadings::SBI_REFERENCE_NO        => $entity['umrn'],
-                    RegisterFileHeadings::MODE_OF_VERIFICATION    => 'DB',
-                    RegisterFileHeadings::AMOUNT_TYPE_REJECT_FILE => 'M',
-                ];
-            }
-        }
-
-        $txt = $this->generateTextWithHeadings($data, ',', false, array_keys(current($data)));
-
-        $handle = tmpfile();
-
-        fputs($handle, $txt);
-
-        fseek($handle, 0);
-
-        return (new TestingFile('Sbi-Register-Recon-Emandate.txt', $handle));
-    }
-
-    protected function uploadDebitBatchFile($entities)
-    {
-        $items = [];
-
-        foreach ($entities as $index => $entity)
-        {
-            if($entity['payment']['recurring_type'] === 'auto')
-            {
-                $amount = number_format($entity['payment']['amount'] / 100, '2', '.', '');
-
-                $items[] = [
-                    DebitFileHeadings::SERIAL_NUMBER            => $index + 1,
-                    DebitFileHeadings::EMANDATE_TYPE            => 'random',
-                    DebitFileHeadings::UMRN                     => '1234',
-                    DebitFileHeadings::SCHEME_NAME              => 'test Scheme',
-                    DebitFileHeadings::SUB_SCHEME_NAME          => 'test subScheme',
-                    DebitFileHeadings::MANDATE_HOLDER_NAME_RESP => 'Test Account',
-                    DebitFileHeadings::DEBIT_ACC_NO             => '12345678901234',
-                    DebitFileHeadings::DEBIT_BANK_IFSC          => 'SBIN0000001',
-                    DebitFileHeadings::DEBIT_DATE_RESP          => Carbon::now(Timezone::IST)->format('d/m/Y'),
-                    DebitFileHeadings::AMOUNT                   => $amount,
-                    DebitFileHeadings::JOURNAL_NUMBER           => '',
-                    DebitFileHeadings::PROCESSING_DATE          => Carbon::now(Timezone::IST)->format('d/m/Y'),
-                    DebitFileHeadings::CUSTOMER_REF_NO          => $entity['payment']['id'],
-                    DebitFileHeadings::DEBIT_STATUS             => $entity['status'],
-                    DebitFileHeadings::CREDIT_STATUS            => '',
-                    DebitFileHeadings::REASON                   => $entity['return_reason'] ?? 'random reason'
-                ];
-            }
-        }
-
-        $sheets = [
-            'sheet1' => [
-                'config' => [
-                    'start_cell' => 'A6',
-                ],
-                'items' => $items
-            ]
-        ];
-
-        $data = $this->getExcelString('Sbi Debit Recon Emandate', $sheets);
-
-        $handle = tmpfile();
-        fwrite($handle, $data);
-        fseek($handle, 0);
-        $file = (new TestingFile('Sbi-Debit-Recon-Emandate.xlsx', $handle));
-
-        return $this->uploadBatchFile($file, 'debit');
-    }
-
-    protected function createRegistrationPayment()
-    {
-        $payment = $this->payment;
-
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
-        $payment['order_id'] = $order->getPublicId();
-
-        $response = $this->doAuthPayment($payment);
-
-        return $this->getDbEntityById('payment', $response['razorpay_payment_id'])->toArray();
-    }
-
-    protected function createSecondReccuringPayment($token)
-    {
-        $paymentRequestArray = $this->payment;
-
-        $paymentRequestArray[Payment\Entity::TOKEN] = $token['id'];
-
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
-
-        $paymentRequestArray['amount'] = 3000;
-
-        $paymentRequestArray['order_id'] = $order->getPublicId();
-
-        $response = $this->doS2SRecurringPayment($paymentRequestArray);
-
-        return $this->getDbEntityById('payment', $response['razorpay_payment_id']);
-    }
-
-    protected function uploadBatchFile($file, $type)
-    {
-        $url = '/admin/batches';
-
-        $this->ba->adminAuth();
-
-        $request = [
-            'url'     => $url,
-            'method'  => 'POST',
-            'content' => [
-                'type'     => 'emandate',
-                'sub_type' => $type,
-                'gateway'  => 'sbi',
-            ],
-            'files'   => [
-                'file' => $file,
-            ],
-        ];
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function getExcelString($name, $sheets)
-    {
-        $excel = Excel::create(
-            $name,
-            function($excel) use ($sheets) {
-                foreach ($sheets as $sheetName => $data)
-                {
-                    $excel->sheet(
-                        $sheetName,
-                        function($sheet) use ($data) {
-                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
-                        }
-                    );
-                }
-            }
-        );
-
-        return $excel->string('xlsx');
-    }
-
-    protected function generateDebitGatewayFile()
-    {
-        $this->ba->adminAuth();
-
-        $testData = $this->testData['testEmandateDebit'];
-
-        return $this->runRequestResponseFlow($testData);
     }
 }

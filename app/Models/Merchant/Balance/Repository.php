@@ -58,6 +58,15 @@ class Repository extends Base\Repository
         return $balance;
     }
 
+    public function getMerchantBalances(string $merchantId) : Base\PublicCollection
+    {
+        $balances = $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->get();
+
+        return $balances;
+    }
+
     public function editMerchantAmountCredits($merchant, $amountCredits)
     {
         $channel = $merchant->getChannel();

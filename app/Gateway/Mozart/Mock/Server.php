@@ -5,7 +5,11 @@ namespace RZP\Gateway\Mozart\Mock;
 use Str;
 use RZP\App;
 use RZP\Gateway\Base;
+use phpseclib\Crypt\AES;
 use RZP\Constants\HashAlgo;
+use RZP\Gateway\Mozart\Action;
+use RZP\Gateway\Mozart\UpiJuspay;
+
 
 class Server extends Base\Mock\Server
 {
@@ -23,6 +27,13 @@ class Server extends Base\Mock\Server
         $gateway = $this->gateway;
 
         return $this->$gateway($input);
+    }
+
+    public function reconcile($input)
+    {
+        $reconcileObj = new ReconcileData();
+
+        return $this->processMockResponse($input, $reconcileObj, 'reconcile');
     }
 
     public function payInit($input)
@@ -74,6 +85,35 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $intentObj, 'intent');
     }
 
+    public function checkAccount($input)
+    {
+        $elligiblityObj = new CheckAccountData();
+
+        return $this->processMockResponse($input, $elligiblityObj, 'check_account');
+    }
+
+
+    public function authInit($input)
+    {
+        $mandateCreateObj = new AuthInitData();
+
+        return $this->processMockResponse($input, $mandateCreateObj, Action::AUTH_INIT);
+    }
+
+    public function authVerify($input)
+    {
+        $authVerifyObj = new AuthVerifyData();
+
+        return $this->processMockResponse($input, $authVerifyObj, Action::AUTH_VERIFY);
+    }
+
+    public function checkBalance($input)
+    {
+        $checkBalanceObj = new CheckBalanceData();
+
+        return $this->processMockResponse($input, $checkBalanceObj, Action::CHECK_BALANCE);
+    }
+
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
@@ -85,13 +125,13 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function processMockResponse($input, $actionClass, $action)
+    protected function processMockResponse($input, $actionClass, $action, $gateway = null)
     {
         $input = json_decode($input, true);
 
         $entities = $input['entities'];
 
-        $gateway = $this->getGateway($entities);
+        $gateway = $gateway === null ? $this->getGateway($entities) : $gateway;
 
         $response = $actionClass->$gateway($entities);
 
@@ -140,6 +180,44 @@ class Server extends Base\Mock\Server
                 }
 
                 $raw = json_encode(['PushNotificationToSSG' => $content]);
+                break;
+
+            case 'upi_juspay':
+                $content = [
+                    UpiJuspay\Fields::AMOUNT                    => $payment['amount'],
+                    UpiJuspay\Fields::CUSTOM_RESPONSE           => '{}',
+                    UpiJuspay\Fields::EXPIRY                    => '2016-11-25T00:10:00+05:30',
+                    UpiJuspay\Fields::GATEWAY_REFERENCE_ID      => '806115044725',
+                    UpiJuspay\Fields::GATEWAY_RESPONSE_CODE     => '00',
+                    UpiJuspay\Fields::GATEWAY_RESPONSE_MESSAGE  => 'Transaction is approved',
+                    UpiJuspay\Fields::GATEWAY_TRANSACTION_ID    => 'XYZd0c077f39c454979...',
+                    UpiJuspay\Fields::MERCHANT_CHANNEL_ID       => 'DEMOUATAPP',
+                    UpiJuspay\Fields::MERCHANT_ID               => 'DEMOUAT01',
+                    UpiJuspay\Fields::MERCHANT_REQUEST_ID       => $payment['id'],
+                    UpiJuspay\Fields::PAYEE_VPA                 => 'merchant@abc',
+                    UpiJuspay\Fields::PAYER_NAME                => 'Customer Name',
+                    UpiJuspay\Fields::PAYER_VPA                 => 'customer@xyz',
+                    UpiJuspay\Fields::TRANSACTION_TIMESTAMP     => '2016-11-25T00:00:00+05:30',
+                    UpiJuspay\Fields::TYPE                      => 'MERCHANT_CREDITED_VIA_COLLECT',
+                    UpiJuspay\Fields::UDF_PARAMETERS            => '{}',
+                ];
+
+                switch ($payment['description'])
+                {
+                    case 'failedCallback':
+                        $content[UpiJuspay\Fields::GATEWAY_RESPONSE_CODE]    = 'U69';
+                        $content[UpiJuspay\Fields::GATEWAY_RESPONSE_MESSAGE] = 'Transaction is failed';
+                        break;
+
+                    case 'intentPayment':
+                        $content[UpiJuspay\Fields::TYPE]  = 'MERCHANT_CREDITED_VIA_PAY';
+                        unset($content[UpiJuspay\Fields::EXPIRY]);
+                        break;
+                }
+                // TODO: Create proper signature
+                $server['HTTP_X-Merchant-Payload-Signature']                      = 'signature';
+                $raw = json_encode($content);
+                break;
         }
 
         return [
@@ -147,7 +225,7 @@ class Server extends Base\Mock\Server
             'method'    => $method,
             'raw'       => $raw,
             'server'    => $server,
-        ];;
+        ];
     }
 
     public function getAsyncCallbackContent(array $payment)
@@ -242,6 +320,28 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    protected function getsimpl($input)
+    {
+        $content = $input;
+
+        $content = [
+            'available_credit_in_paise'     => '10000000',
+            'merchant_payload'              => $content['paymentId'],
+            'success'                       => true,
+            'token'                         => '83hd48h387d83n78fn8rf83r7if83r'
+        ];
+
+        $this->content($content, 'authorize');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/v1/callback/getsimpl',
+            'content' => $content
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
     protected function netbanking_sib($input)
     {
         // this encrypted value is never used as the pay_verify response from mozart is mocked
@@ -253,6 +353,38 @@ class Server extends Base\Mock\Server
             'url'          => $input['callbackUrl'],
             'content'      => $content,
             'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function netbanking_ubi($input)
+    {
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+            'ENC_STR' => 'random_encrypted_string'
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'get',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function netbanking_scb($input)
+    {
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+            'ENC_STR' => 'random_encrypted_string'
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'get',
         ];
 
         return $this->makePostResponse($request);
@@ -274,6 +406,27 @@ class Server extends Base\Mock\Server
         $url = $this->route->getUrlWithPublicAuth(
             'gateway_payment_callback_yesb_post',
             [
+                'paymentId' => $input['paymentId'],
+                'amount'    => number_format($input['amount'] / 100, 2, '.', '')
+            ]);
+
+        $request = [
+            'url'     => $url,
+            'content' => ['encdata' => 'dummy_response_data'],
+            'method'  => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function netbanking_kvb($input)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'gateway_payment_static_callback_post',
+            [
+                'method'    => 'netbanking',
+                'gateway'   => 'netbanking_kvb',
+                'mode'      => 'test',
                 'paymentId' => $input['paymentId'],
                 'amount'    => number_format($input['amount'] / 100, 2, '.', '')
             ]);
@@ -320,7 +473,7 @@ class Server extends Base\Mock\Server
 
         return $this->makePostResponse($request);
     }
-    
+
     protected function netbanking_idbi($input)
     {
 
@@ -350,26 +503,300 @@ class Server extends Base\Mock\Server
 
     public function createTerminal($body)
     {
-        $response_body = [
-            'data' => [
-                'Description'   => "Success",
-                'Status'        => "00",
-                '_raw'          => "{\"TID\":\"9137251R\",\"REQRRN\":null,\"RESDTTM\":\"23082019134719\",\"RESCODE\":\"00\",\"RESDESC\":\"Success\",\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999122000040351\"}"
-            ],
-            'error'             => [],
-            'external_trace_id' => "",
-            'mozart_id'         => "blfq216r1gunssphbs01",
-            'next'              => null,
-            'success'           => true
-        ];
-        
-        $response = \Response::make($response_body);
-        
+        $mockCase = $this->app['config']->get('worldline_terminal_onboarding_creation.case');
+
+        switch ($mockCase)
+        {
+            case "1":
+            default:
+                $responseBody = [
+                    'data' => [
+                        'description'   => "SUCCESS",
+                        'res_code'      => "00",
+                        'retry'         =>  "false",
+                        'status'        => "terminal_creation_successful",
+                        '_raw'          => "{\"TID\":\"9137251R\",\"REQRRN\":null,\"RESDTTM\":\"23082019134719\",\"RESCODE\":\"00\",\"RESDESC\":\"Success\",\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999122000040351\"}"
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => "",
+                    'mozart_id'         => "blfq216r1gunssphbs01",
+                    'next'              => null,
+                    'success'           => true
+                ];
+                break;
+
+            case "2":
+                $responseBody = [
+                    'data'      =>  [],
+                    'error'     =>  [
+                        'description'               => "INPUT_VALIDATION_FAILED {\"component\":\"Validate\",\"data\":\"{\\\"entities.bank_details.account_number\\\":[\\\"The entities.bank_details.account_number field is required\\\"],\\\"entities.merchant_details.business_registered_address\\\":[\\\"The entities.merchant_details.business_registered_address field is required\\\"],\\\"entities.merchant_details.business_registered_city\\\":[\\\"The entities.merchant_details.business_registered_city field is required\\\"],\\\"entities.merchant_details.business_registered_pin\\\":[\\\"The entities.merchant_details.business_registered_pin field is required\\\"],\\\"entities.merchant_details.business_registered_state\\\":[\\\"The entities.merchant_details.business_registered_state field is required\\\"],\\\"entities.merchant_details.contact_mobile\\\":[\\\"The entities.merchant_details.contact_mobile field is required\\\"],\\\"entities.merchant_details.contact_name\\\":[\\\"The entities.merchant_details.contact_name field is required\\\"]}\",\"message\":\"Error performing validation\",\"step_name\":\"Validator\"}",
+                        'gateway_error_code'        =>  "",
+                        'gateway_error_description' =>  "",
+                        'gateway_status_code'       =>  0,
+                        'internal_error_code'       =>  "BAD_REQUEST_VALIDATION_FAILURE",
+                    ],
+                    'success'   => false,
+                 ];
+                 break;
+
+            case "3":
+                $responseBody = [
+                    'data'      =>  [
+                        '_raw'          =>  '{\"MID\":\"999122000040352\",\"TID\":\"9137251R\",\"REQRRN\":\"1000000131\",\"RESDTTM\":\"03092019115555\",\"RESCODE\":\"05\",\"RESDESC\":\"Invalid Terminal ID\",\"REQTYPE\":\"E\",\"BANKCODE\":\"00031\"}',
+                        'description'   =>  'Invalid Terminal ID',
+                        'retry'         =>  'false',
+                    ],
+                    'error'     =>  [
+                        'description'               =>  "",
+                        'gateway_error_code'        =>  '05',
+                        'gateway_error_description' =>  '(No error description was mapped for this error code)',
+                        'gateway_status_code'       =>  200,
+                        'internal_error_code'       =>  'GATEWAY_ERROR_UNKNOWN_ERROR',
+                    ],
+                    'success'   => false,
+                ];
+                break;
+
+            case "4":
+                $responseBody = [
+                    'data' => [],
+                    'error' =>[
+                        'description' =>  "Invalid route",
+                        'gateway_error_code' =>  "",
+                        'gateway_error_description' => "",
+                        'gateway_status_code' =>  0,
+                        'internal_error_code' =>  "SERVER_ERROR_LOGICAL_ERROR"
+                    ],
+                    'external_trace_id' => "a21c02be54abfc98f5421f001ba4ad4d",
+                    'mozart_id' => "bm8eb47cfeaesrbbagsg",
+                    'next' => [],
+                    'success' => false
+                ];
+                break;
+
+            case "5":
+                $responseBody = [
+                    "data" => [
+                    "_raw" => "{\"BANKCODE\":\"00031\",\"MID\":\"999000000000031\",\"TID\":\"12380040\",\"REQRRN\":\"DLze1ggH2WSxHi0\",\"RESDTTM\":\"24092019152250\",\"RESCODE\":\"05\",\"RESDESC\":\"Duplicate MVISAPAN\",\"REQTYPE\":\"N\"}",
+                    "description" => "Duplicate MVISAPAN",
+                    "res_code" => "05",
+                    "retry" => "false",
+                    "status" => "terminal_creation_failed"
+                    ],
+                    "error" =>  [
+                    "description" => "GATEWAY_ERROR",
+                    "gateway_error_code" => "05",
+                    "gateway_error_description" => "GATEWAY_ERROR",
+                    "gateway_status_code" => 200,
+                    "internal_error_code" => "GATEWAY_ERROR_INVALID_DATA"
+                    ],
+                    "next" => [],
+                    "success" => false
+                ];
+                break;
+            case "6":
+                $responseBody = [
+                    "data" => [
+                    "_raw" => "{\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999000000000069\",\"TID\":\"12380309\",\"REQRRN\":\"DrZX1T3gRojN470\",\"RESDTTM\":\"13122019104436\",\"RESCODE\":\"05\",\"RESDESC\":\"Duplicate Merchant code\"}",
+                    "description" => "Duplicate Merchant code",
+                    "res_code" => "05",
+                    "retry" => "false",
+                    "status" => "terminal_creation_failed"
+                    ],
+                    "error" =>  [
+                    "description" => "",
+                    "gateway_error_code" => "05",
+                    "gateway_error_description" => "(No error description was mapped for this error code)",
+                    "gateway_status_code" => 200,
+                    "internal_error_code" => "GATEWAY_ERROR_UNKNOWN_ERROR"
+                    ],
+                    "next" => [],
+                    "success" => false
+                ];
+                break;
+
+
+        }
+
+        $response = \Response::make($responseBody);
+
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
- 
+
         return $response;
     }
-    
+
+    public function verifyTerminal($body)
+    {
+        $mockCase = $this->app['config']->get('worldline_terminal_onboarding_verification.case');
+
+        switch ($mockCase)
+        {
+            case "1":
+            default:
+                $responseBody = [
+                    'data' => [
+                        'description'   => 'Success',
+                        'res_code'      => '00',
+                        'status'        => 'terminal_activation_successful',
+                        '_raw'          => '{\'TID\':\'9137251R\',\'REQRRN\':null,\'RESDTTM\':\'23082019134719\',\'RESCODE\':\'00\',\'RESDESC\':\'Success\',\'REQTYPE\':\'N\',\'BANKCODE\':\'00031\',\'MID\':\'999122000040351\'}'
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => true,
+                ];
+                break;
+            case "2":
+                $responseBody = [
+                    'data' => [
+                        'description'   => 'Failed',
+                        'res_code'      => '00',
+                        'status'        => 'terminal_activation_failed',
+                        '_raw'          => '{\'TID\':\'9137251R\',\'REQRRN\':null,\'RESDTTM\':\'23082019134719\',\'RESCODE\':\'00\',\'RESDESC\':\'Success\',\'REQTYPE\':\'N\',\'BANKCODE\':\'00031\',\'MID\':\'999122000040351\'}'
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => true,
+                ];
+                break;
+        }
+
+        $response = \Response::make($responseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
+    public function decrypt($input)
+    {
+        $decryptedMessage = [
+            'paymentMethod' => 'TOKENIZED_CARD',
+            'version'       => '1.0',
+            'paymentMethodDetails' => [
+                'dpan'            => '4444333322221111',
+                'expirationMonth' => '10',
+                'expirationYear'  => '2021',
+                'authMethod'      => '3DS',
+                '3dsCryptogram'   => 'AAAAAA',
+                '3dsEciIndicator' => 'eci indicator',
+            ],
+            'gatewayMerchantId' => '10000000000000',
+            'messageId'         => 'some message id',
+            'messageExpiration' => '1492343123',
+        ];
+
+        $responseBody = [
+            'data' => [
+                '_raw'             => '',
+                'decryptedMessage' => $decryptedMessage,
+            ],
+            'error'             => [],
+            'external_trace_id' => '',
+            'mozart_id'         => 'blfq216r1gunssphbs01',
+            'next'              => null,
+            'success'           => true,
+        ];
+
+        $response = \Response::make($responseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
+    public function disableTerminal($body)
+    {
+        $mockCase = $this->app['config']->get('worldline_terminal_onboarding_disable.case');
+
+        switch ($mockCase)
+        {
+            case "1":
+            default:
+                $responseBody = [
+                    'data' => [
+                    'description'   => 'Success',
+                    'res_code'      => '00',
+                    'status'        => 'terminal_deactivation_successful'
+                ],
+                'error'             => [],
+                'external_trace_id' => '',
+                'mozart_id'         => 'ckfw236r1gensdphqs51',
+                'next'              => null,
+                'success'           => true,
+            ];
+            break;
+            case "2":
+                $responseBody = [
+                    'data' => [
+                    'description'   => 'Failed',
+                    'res_code'      => '00',
+                    'status'        => 'terminal_deactivation_failed'
+                ],
+                'error'             => [],
+                'external_trace_id' => '',
+                'mozart_id'         => 'ckfw236r1gensdphqs51',
+                'next'              => null,
+                'success'           => false,
+            ];
+
+        }
+
+
+        $response = \Response::make($responseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
+    public function enableTerminal($body)
+    {
+        $mockCase = $this->app['config']->get('worldline_terminal_onboarding_enable.case');
+
+        switch ($mockCase)
+        {
+            case "1":
+            default:
+                $responseBody = [
+                    'data' => [
+                    'description'   => 'Success',
+                    'res_code'      => '00',
+                    'status'        => 'terminal_reactivation_successful'
+                ],
+                'error'             => [],
+                'external_trace_id' => '',
+                'mozart_id'         => 'wefw236r1wdf2hqs51',
+                'next'              => null,
+                'success'           => true,
+            ];
+            break;
+            case "2":
+                $responseBody = [
+                    'data' => [
+                    'description'   => 'Failed',
+                    'res_code'      => '00',
+                    'status'        => 'terminal_reactivation_failed'
+                ],
+                'error'             => [],
+                'external_trace_id' => '',
+                'mozart_id'         => 'wefw236r1wdf2hqs51',
+                'next'              => null,
+                'success'           => false,
+            ];
+            break;
+        }
+
+        $response = \Response::make($responseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
     protected function getUpiAirtelSecret()
     {
         return $this->app['config']->get('gateway.mozart.upi_airtel.test_hash_secret');
@@ -423,4 +850,144 @@ class Server extends Base\Mock\Server
         return $data;
     }
 
+    protected function getAsyncCallbackResponseMandateCreate($payment)
+    {
+        $response = [
+            'call_back_id'  => '1234',
+            'requestInfo'   => [
+                'pgMerchantid'  => 'HDFC000006002278',
+                'pspRefNo'      =>  $payment['id'],
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo'            => '987654321',
+                    'requestDate'          => '25 Jul 2019 03:20 PM',
+                    'referenceNumber'      => $payment['id'],
+                    'txnId'                => '',
+                    'remarks'              => '',
+                    'name'                 => '',
+                    'mandateType'          => 'CREATE',
+                    'amount'               => '20.00',
+                    'startDate'            => '25 July 2019',
+                    'endDate'              => '26 July 2019',
+                    'UMN'                  => '',
+                    'payerVpa'             => $payment['vpa'],
+                    'payerName'            => '',
+                    'payeeVpa'             => '',
+                    'payeeName'            => '',
+                    'status'               => 'ACTIVE',
+                    'debitIfsc'            => 'HSBC0001850',
+                    'debitAccount'         => '777777777777777',
+                    'creditIfsc'           => 'SBIN0000001',
+                    'creditAccount'        => '671176176817611',
+                    'noOfDebit'            => 0,
+                    'remainingDebit'       => 0,
+                    'onBehalf_Of'          => 'PAYER',
+                    'amt_rule'             => 'EXACT',
+                    'has_update_authority' => 'N',
+                    'shareToPayee'         => 'Y',
+                    'create_date_time'     => '25 Jul 2019 03:20 PM',
+                    'show_QR'              => 'Y',
+                    'callback_type'        => 'MANDATE_STATUS',
+                    'purpose_code'         => '00',
+                    'message'              => 'Mandate created successfully'
+                ]
+            ],
+        ];
+
+        $jsonResponse =  json_encode($response);
+
+        $content = $this->encrypt($jsonResponse);
+
+        $response = [
+            'pgMerchantId' => 'HDFC000006002278',
+            'payload'      => $content,
+        ];
+
+        return $response;
+    }
+
+    protected function getAsyncCallbackResponseMandateUpdate($payment)
+    {
+        $response = [
+            'call_back_id'  => '1234',
+            'requestInfo'   => [
+                'pgMerchantid'  => 'HDFC000006002278',
+                'pspRefNo'      =>  $payment['id'],
+            ],
+            'mandateDtls' => [
+                [
+                    'custRefNo'            => '987654321',
+                    'requestDate'          => '25 Jul 2019 03:20 PM',
+                    'referenceNumber'      => $payment['id'],
+                    'txnId'                => '',
+                    'remarks'              => '',
+                    'name'                 => '',
+                    'mandateType'          => 'UPDATE',
+                    'amount'               => '20.00',
+                    'startDate'            => '25 July 2019',
+                    'endDate'              => '26 July 2019',
+                    'UMN'                  => '',
+                    'payerVpa'             => $payment['vpa'],
+                    'payerName'            => '',
+                    'payeeVpa'             => '',
+                    'payeeName'            => '',
+                    'status'               => 'ACTIVE',
+                    'debitIfsc'            => 'HSBC0001850',
+                    'debitAccount'         => '777777777777777',
+                    'creditIfsc'           => 'SBIN0000001',
+                    'creditAccount'        => '671176176817611',
+                    'noOfDebit'            => 0,
+                    'remainingDebit'       => 0,
+                    'onBehalf_Of'          => 'PAYER',
+                    'amt_rule'             => 'EXACT',
+                    'has_update_authority' => 'N',
+                    'shareToPayee'         => 'Y',
+                    'create_date_time'     => '25 Jul 2019 03:20 PM',
+                    'show_QR'              => 'Y',
+                    'callback_type'        => 'MANDATE_UPDATE',
+                    'purpose_code'         => '00',
+                    'message'              => 'Mandate updated successfully'
+                ]
+            ],
+        ];
+
+        $jsonResponse =  json_encode($response);
+
+        $content = $this->encrypt($jsonResponse);
+
+        $response = [
+            'pgMerchantId' => 'HDFC000006002278',
+            'payload'      => $content,
+            'type'         => 'mandate_update'
+        ];
+
+        return $response;
+    }
+
+    protected function encrypt($plaintext)
+    {
+        $key = $this->getEncryptionKey();
+
+        $ciphertext = $this->getCipherInstance($key)
+            ->encrypt($plaintext);
+
+        return strtoupper(bin2hex($ciphertext));
+    }
+
+    protected function getEncryptionKey()
+    {
+        $key = config('gateway.upi_mindgate.gateway_encryption_key');
+
+        return hex2bin($key);
+    }
+
+    protected function getCipherInstance($key)
+    {
+        $cipher = new AES(AES::MODE_ECB);
+
+        $cipher->setKey($key);
+
+        return $cipher;
+    }
 }

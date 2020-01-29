@@ -49,6 +49,7 @@ class ProviderCode
     const CSBCASH            = 'csbcash';
     const CSBPAY             = 'csbpay';
     const CUB                = 'cub';
+    const DB                 = 'db';
     const DBS                = 'dbs';
     const DCB                = 'dcb';
     const DCBBANK            = 'dcbbank';
@@ -180,6 +181,7 @@ class ProviderCode
         self::CSBCASH            => IFSC::CSBK,
         self::CSBPAY             => IFSC::CSBK,
         self::CUB                => IFSC::CIUB,
+        self::DB                 => IFSC::DEUT,
         self::DBS                => IFSC::DBSS,
         self::DCB                => IFSC::DCBL,
         self::DCBBANK            => IFSC::DCBL,
@@ -274,9 +276,29 @@ class ProviderCode
         self::YESB               => IFSC::YESB,
     ];
 
+    /**
+     * PSP handle to app mapping
+     */
+
+    protected static $psp = [
+        self::OKAXIS        => 'google_pay',
+        self::OKHDFCBANK    => 'google_pay',
+        self::OKICICI       => 'google_pay',
+        self::OKSBI         => 'google_pay',
+        self::UPI           => 'bhim',
+        self::ICICI         => 'whatsapp',
+        self::PAYTM         => 'paytm',
+        self::YBL           => 'phonepe',
+    ];
+
     public static function getBankCode($provider)
     {
         return self::$bankCodes[$provider] ?? null;
+    }
+
+    public static function getPsp($vpaHandle)
+    {
+        return self::$psp[$vpaHandle] ?? null;
     }
 
     public static function validate(string $provider)

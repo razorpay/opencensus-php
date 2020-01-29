@@ -2,17 +2,29 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use App;
+
 use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorDescription;
-use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
 {
+    protected $env;
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $app = App::getFacadeRoot();
+
+        $this->env = $app['env'];
+    }
+
     const INVALID_REVIEWER                              = 'Invalid reviewer';
     const INVALID_MERCHANTS                             = 'Invalid merchants';
     const INVALID_STATUS_MESSAGE                        = 'Invalid status';
@@ -23,8 +35,12 @@ class Validator extends Base\Validator
     const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
     const INVALID_BUSINESS_CATEGORY                     = 'Invalid business category';
     const INVALID_BUSINESS_SUBCATEGORY                  = 'Invalid business subcategory';
+    const INVALID_PREDEFINED_REASON                     = 'Invalid Predefined Reason';
+    const INVALID_ADDITIONAL_DETAIL_FIELD               = 'Invalid additional detail field';
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
     const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
+    const INVALID_REASON_TYPE                           = 'Invalid reason type';
+    const ADDITIONAL_FIELD_NOT_REQUIRED                 = 'Not required additional field ';
 
     // Constant representing operations for which Validation rules exists
     const BULK_EDIT                                     = 'bulkEdit';
@@ -39,19 +55,24 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DESCRIPTION            => 'sometimes|string|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|string|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
+        Entity::ADDITIONAL_WEBSITE              => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_ADDRESS     => 'sometimes|max:255',
+        Entity::BUSINESS_REGISTERED_ADDRESS_L2  => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_STATE       => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_DISTRICT    => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|max:15',
+        Entity::BUSINESS_REGISTERED_COUNTRY     => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS      => 'sometimes|max:255',
+        Entity::BUSINESS_OPERATION_ADDRESS_L2   => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_STATE        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_DISTRICT     => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
+        Entity::BUSINESS_OPERATION_COUNTRY      => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|size:6',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                           => 'filled|string|size:15|nullable',
         Entity::P_GSTIN                         => 'filled|string|size:15',
@@ -98,6 +119,8 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes',
+        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:5',
+        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|url',
     ];
 
     protected static $editRules = [
@@ -110,6 +133,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DESCRIPTION            => 'filled|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
+        Entity::ADDITIONAL_WEBSITE              => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
@@ -119,14 +143,14 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_COUNTRY     => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_DISTRICT    => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|max:15',
+        Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS      => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_ADDRESS_L2   => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_STATE        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_COUNTRY      => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_DISTRICT     => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
+        Entity::BUSINESS_OPERATION_PIN          => 'sometimes|size:6',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                           => 'sometimes|string|size:15|nullable',
         Entity::P_GSTIN                         => 'sometimes|string|size:15',
@@ -180,11 +204,17 @@ class Validator extends Base\Validator
         Entity::INTERNAL_NOTES                  => 'sometimes|string',
         Entity::INTERNATIONAL_ACTIVATION_FLOW   => 'sometimes|custom',
         Entity::CUSTOM_FIELDS                   => 'filled|array',
+        Entity::LIVE_TRANSACTION_DONE           => 'filled|numeric|in:0,1,2',
+        Entity::KYC_CLARIFICATION_REASONS       => 'sometimes|array|custom',
+        Entity::KYC_ADDITIONAL_DETAILS          => 'sometimes|array|custom',
+        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:5',
+        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|url',
     ];
 
     protected static $preSignupRules = [
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
         Entity::COUPON_CODE                     => 'filled|string|max:10',
+        Entity::REFERRAL_CODE                   => 'filled|string',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::ROLE                            => 'sometimes|numeric|digits_between:1,6',
         Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,7',
@@ -221,11 +251,18 @@ class Validator extends Base\Validator
         'business_subcategory_for_category',
     ];
 
+    protected static $pennyTestingEventPayloadRules = [
+        Constants::MERCHANT_ID     => 'required|string|max:14',
+        Constants::ACCOUNT_STATUS  => 'required|string',
+        Constants::REGISTERED_NAME => 'sometimes|string',
+    ];
+
     protected static $instantActivationRules = [
         Entity::BUSINESS_CATEGORY           => 'required|max:255|custom',
         Entity::BUSINESS_SUBCATEGORY        => 'sometimes|max:255|custom',
         Entity::PROMOTER_PAN                => 'required|pan',
-        Entity::BUSINESS_NAME               => 'required|string|max:255',
+        Entity::PROMOTER_PAN_NAME           => 'sometimes|string|max:255',
+        Entity::BUSINESS_NAME               => 'sometimes|string|max:255',
         Entity::BUSINESS_MODEL              => 'sometimes|max:255',
         Entity::BUSINESS_WEBSITE            => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_DBA                => 'required|string|max:255',
@@ -233,32 +270,183 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_ADDRESS  => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_STATE    => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY     => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN      => 'sometimes|max:15',
+        Entity::BUSINESS_OPERATION_PIN      => 'sometimes|size:6',
         Entity::BUSINESS_REGISTERED_ADDRESS => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_STATE   => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY    => 'sometimes|alpha_space|max:255',
-        Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|max:15',
+        Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|size:6',
+    ];
+
+    protected static $instantActivationValidators = [
+        'registered_business_rules',
+        'unregistered_business_rules',
     ];
 
     protected static $websiteDetailsRules = [
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
     ];
 
-    protected static $patchMerchantDetailsRules = [
-        Entity::BUSINESS_OPERATION_ADDRESS    => 'filled|max:255',
-        Entity::BUSINESS_OPERATION_STATE      => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_CITY       => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN        => 'filled|max:15',
-        Entity::BUSINESS_CATEGORY             => 'sometimes|max:255|custom',
-        Entity::BUSINESS_SUBCATEGORY          => 'sometimes|max:255|custom',
-        Entity::BUSINESS_MODEL                => 'sometimes|max:255',
-        Entity::INTERNATIONAL_ACTIVATION_FLOW => 'filled|custom',
+    protected static $additionalWebsitesRules = [
+        Entity::ADDITIONAL_WEBSITE              => 'required|max:255|active_url',
     ];
+
+    protected static $patchMerchantDetailsRules = [
+        Entity::BUSINESS_OPERATION_ADDRESS       => 'filled|max:255',
+        Entity::BUSINESS_OPERATION_STATE         => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY          => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN           => 'filled|size:6',
+        Entity::BUSINESS_CATEGORY                => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY             => 'sometimes|max:255|custom',
+        Entity::BUSINESS_MODEL                   => 'sometimes|max:255',
+        Entity::INTERNATIONAL_ACTIVATION_FLOW    => 'filled|custom',
+        Entity::BANK_DETAILS_VERIFICATION_STATUS => 'filled|custom',
+        Entity::POA_VERIFICATION_STATUS          => 'filled|custom'
+    ];
+
+    public function validateBankDetailsVerificationStatus($attribute, $value)
+    {
+        // adding this check for qa automation
+        if($this->env !== 'func')
+        {
+            $this->validateActivationFormSubmitted();
+        }
+
+        $validBankDetailValidationStatuses = BankDetailsVerificationStatus::ALLOWED_NEXT_BANK_DETAIL_VERIFICATION_STATUSES_MAPPING;
+
+        $this->isAllowedStatusChange(
+            $this->entity->getBankDetailsVerificationStatus(),
+            $value,
+            $validBankDetailValidationStatuses,
+            ErrorCode::BAD_REQUEST_INVALID_BANK_DETAIL_VERIFICATION_STATUS_CHANGE);
+
+    }
+
+    public function validatePOAVerificationStatus($attribute, $value)
+    {
+        // adding this check for qa automation
+        if($this->env !== 'func')
+        {
+            $this->validateActivationFormSubmitted();
+        }
+
+        $validPoaValidationStatuses = PoaVerificationStatus::ALLOWED_NEXT_POA_VERIFICATION_STATUSES_MAPPING;
+
+        $this->isAllowedStatusChange(
+            $this->entity->getPoaVerificationStatus(),
+            $value,
+            $validPoaValidationStatuses,
+            ErrorCode::BAD_REQUEST_INVALID_POA_VERIFICATION_STATUS_CHANGE);
+    }
+
+    private function isAllowedStatusChange($currentStatus,
+                                           string $newStatus,
+                                           array $allowedStatus,
+                                           string $errorMessage)
+    {
+
+        if (empty($currentStatus) === true)
+        {
+            return;
+        }
+
+        if ((isset($allowedStatus[$currentStatus]) === false) or
+            (in_array($newStatus, $allowedStatus[$currentStatus], true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException($errorMessage, null,
+                                                                     [
+                                                                         "current_status" => $currentStatus,
+                                                                         "new_status"     => $newStatus
+                                                                     ]);
+        }
+
+    }
 
     protected static $bulkAssignReviewerRules = [
         Entity::REVIEWER_ID     => 'required|public_id|size:20',
         Entity::MERCHANTS       => 'filled|array',
         Entity::MERCHANTS . '*' => 'sometimes|public_id|size:14',
+    ];
+
+    protected static $merchantMtuUpdateRules = [
+        Entity::MERCHANTS               => 'filled|array|between:0,15',
+        Entity::MERCHANTS . '*'         => 'sometimes|public_id|size:14',
+        Entity::LIVE_TRANSACTION_DONE   => 'filled|numeric|in:0,1,2',
+    ];
+
+    protected function validateRegisteredBusinessRules(array $input)
+    {
+        if (BusinessType::isUnregisteredBusinessIndex($input[Entity::BUSINESS_TYPE]) === true)
+        {
+            return;
+        }
+
+        // if business is a registered business type, then business name is mandatory
+        if (empty($input[Entity::BUSINESS_NAME]) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_BUSINESS_NAME_REQUIRED);
+        }
+    }
+
+    protected function validateUnregisteredBusinessRules(array $input)
+    {
+        if (BusinessType::isUnregisteredBusinessIndex($input[Entity::BUSINESS_TYPE]) === false)
+        {
+            return;
+        }
+
+        $enabled = (new Merchant\Core())->isUnRegisteredOnBoardingEnabled($this->entity->merchant, true);
+
+        if ($enabled === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNREGISTERED_NOT_SUPPORTED);
+        }
+
+        $this->validateForUnregisteredBlackListedCategories($input);
+
+        if (empty($input[Entity::PROMOTER_PAN_NAME]) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_PAN_NAME_REQUIRED);
+        }
+    }
+
+    protected function validateForUnregisteredBlackListedCategories(array $input)
+    {
+        $category = array_key_exists(Entity::BUSINESS_CATEGORY, $input) ?
+            $input[Entity::BUSINESS_CATEGORY] : $this->entity->getBusinessCategory();
+
+        $subcategory = array_key_exists(Entity::BUSINESS_SUBCATEGORY, $input) ?
+            $input[Entity::BUSINESS_SUBCATEGORY] : $this->entity->getBusinessSubcategory();
+
+        $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
+
+        if ($subcategoryMetaData[BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW] === ActivationFlow::BLACKLIST)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY);
+        }
+    }
+
+    protected static $kycClarificationReasonRules = [
+        Entity::CLARIFICATION_REASONS     => 'filled|array|custom',
+        Entity::ADDITIONAL_DETAILS        => 'filled|array|custom:clarification_reasons',
+    ];
+
+    protected static $clarificationReasonJsonValidationRules = [
+        Merchant\Constants::REASON_TYPE => ['required','string','in:custom,predefined'],
+        Merchant\Constants::FIELD_VALUE => 'filled',
+        Merchant\Constants::FIELD_TYPE  => ['filled', 'in:document,text'],
+        Merchant\Constants::REASON      => 'required_if:reason_type,custom|string|max:100',
+        Merchant\Constants::REASON_CODE => 'required_if:reason_type,predefined|custom',
+    ];
+
+    protected static $predefinedClarificationReasonValuesRules = [
+        Merchant\Constants::REASON_TYPE => "required|string|in:predefined",
+        Merchant\Constants::FIELD_VALUE => 'filled',
+        Merchant\Constants::FIELD_TYPE  => ['filled', 'in:document,text'],
+        Merchant\Constants::REASON_CODE => 'required|custom',
+    ];
+
+    protected static $clarificationResponseRules = [
+        Merchant\Constants::FIELD_VALUE => 'required|string|max:200',
     ];
 
     /**
@@ -422,6 +610,99 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateKycAdditionalDetails(string $attribute, $value)
+    {
+        $merchantDetailCore = (new Core);
+
+        if (isset($value) === false)
+        {
+            return;
+        }
+
+        foreach ($value as $key => $values)
+        {
+            if ((NeedsClarificationMetaData::isValidPredefinedAdditionalField($key) == true) and
+                ($merchantDetailCore->isAdditionalFieldRequired($key) === true))
+            {
+
+                (new Validator())->validateInput("clarificationResponse", $values);
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    self::ADDITIONAL_FIELD_NOT_REQUIRED . ':' . $key,
+                    Merchant\Constants::FIELD_NAME,
+                    [
+                        Merchant\Constants::FIELD_NAME => $key
+                    ]
+                );
+
+            }
+        }
+    }
+
+    /**
+     * Custom function for validation of NEEDS_CLARIFICATION_REASON
+     *
+     * @param string $attribute
+     * @param        $value
+     *
+     */
+    public function validateKYCClarificationReasons(string $attribute, $value)
+    {
+        (new Validator())->validateInput("kycClarificationReason", $value);
+
+    }
+
+    /**
+     * @param string $attribute
+     * @param        $value
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateClarificationReasons(string $attribute, $value)
+    {
+        if (isset($value) === false)
+        {
+            return;
+        }
+
+        $arrayValues = array_values($value);
+
+        foreach ($arrayValues as $key => $values)
+        {
+            foreach ($values as $val)
+            {
+                if ((is_array($val)) === true)
+                {
+                    (new Validator)->validateInput('clarificationReasonJsonValidation', $val);
+                }
+                else
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        self::INVALID_REASON_TYPE,
+                        Merchant\Constants::REASON,
+                        [
+                            Merchant\Constants::REASON_TYPE => $value
+                        ]);
+                }
+            }
+        }
+    }
+
+    public function validateReasonCode(string $attribute, $predefinedReason)
+    {
+        if (NeedsClarificationReasonsList::isValidPredefinedReason($predefinedReason) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_PREDEFINED_REASON . ': ' . $predefinedReason,
+                Merchant\Constants::REASON,
+                [
+                    Merchant\Constants::REASON => $predefinedReason
+                ]);
+        }
+    }
+
     public function validateForm12aUrl($attribute, $value)
     {
         $form12aBusinessTypes = [BusinessType::SOCIETY, BusinessType::TRUST, BusinessType::NGO];
@@ -554,6 +835,9 @@ class Validator extends Base\Validator
 
     /**
      * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function performInstantActivationValidations(array $input)
     {
@@ -582,10 +866,12 @@ class Validator extends Base\Validator
      * In L2 activation form for Blacklist flow -> merchant can't fill L2 form ,
      * no detail will be save in db and validation exception will be thrown
      *
+     * @param Merchant\Entity $merchant
+     *
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function validateFullActivationForm()
+    public function validateFullActivationForm(Merchant\Entity $merchant)
     {
         $this->validateIsNotLocked();
 
@@ -593,7 +879,7 @@ class Validator extends Base\Validator
         {
             $activationFlowImpl = Factory::getActivationFlowImpl($this->entity);
 
-            $activationFlowImpl->validateFullActivationForm($this->entity);
+            $activationFlowImpl->validateFullActivationForm($merchant);
         }
     }
 
@@ -614,6 +900,20 @@ class Validator extends Base\Validator
                 Entity::INTERNATIONAL_ACTIVATION_FLOW,
                 [
                     Entity::INTERNATIONAL_ACTIVATION_FLOW => $internationalActivationFlow
+                ]);
+        }
+    }
+
+    public function validateMerchantHasRegisteredAddress()
+    {
+        // check that registered address is present
+        if ($this->entity->hasBusinessRegisteredAddress() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_REGISTRATION_ADDRESS_REQUIRED,
+                null,
+                [
+                    'account_id' => $this->entity->getKey(),
                 ]);
         }
     }

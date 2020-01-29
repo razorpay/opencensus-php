@@ -11,6 +11,7 @@ use RZP\Models\Risk;
 use RZP\Services\ShieldClient;
 use RZP\Constants\Shield as ShieldConstants;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Feature\Constants as Feature;
 
 class Shield
 {
@@ -82,16 +83,20 @@ class Shield
             case ShieldConstants::ACTION_BLOCK:
                 $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::CONFIRMED;
                 $riskData[Risk\Entity::REASON]     = Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD;
+                $riskData[Risk\Entity::RISK_SCORE] = $response[ShieldConstants::MAXMIND_SCORE];
 
                 break;
 
             case ShieldConstants::ACTION_REVIEW:
                 $riskData[Risk\Entity::FRAUD_TYPE] = Risk\Type::SUSPECTED;
                 $riskData[Risk\Entity::REASON]     = Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_SHEILD;
+                $riskData[Risk\Entity::RISK_SCORE] = $response[ShieldConstants::MAXMIND_SCORE];
 
                 break;
 
             default:
+                $riskData[Risk\Entity::RISK_SCORE] = $response[ShieldConstants::MAXMIND_SCORE];
+
                 break;
         }
 
@@ -129,6 +134,13 @@ class Shield
         $payloadDetails[ShieldConstants::MERCHANT_CATEGORY_CODE]  = (string) $merchant->getCategory();
         $payloadDetails[ShieldConstants::MERCHANT_RISK_THRESHOLD] = $merchant->getRiskThreshold();
         $payloadDetails[ShieldConstants::MERCHANT_WEBSITE]        = $merchant->merchantDetail->getWebsite();
+        $payloadDetails[ShieldConstants::MERCHANT_CREATED_AT]     = $merchant->getCreatedAt();
+        $payloadDetails[ShieldConstants::MERCHANT_ACTIVATED_AT]   = $merchant->getActivatedAt();
+
+        if ($merchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === true)
+        {
+            $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_DOMAINS] = (array) $merchant->getWhitelistedDomains();
+        }
     }
 
     protected function populatePaymentDetails(Payment\Entity $payment, array & $payloadDetails)
@@ -146,6 +158,22 @@ class Shield
         // add payment method details
         $payloadDetails[ShieldConstants::METHOD] = $payment->getMethod();
 
+        $payloadDetails[ShieldConstants::SUBSCRIPTION_ID] = $payment->getSubscriptionId() ?? '';
+        $payloadDetails[ShieldConstants::PAYMENT_LINK_ID] = $payment->getPaymentLinkId() ?? '';
+        $payloadDetails[ShieldConstants::ORDER_ID]        = $payment->getApiOrderId() ?? '';
+
+        $payloadDetails[ShieldConstants::AUTH_TYPE]     = $payment->getAuthType();
+        $payloadDetails[ShieldConstants::RECEIVER_TYPE] = $payment->getReceiverType();
+
+        $payloadDetails[ShieldConstants::INVOICE_TYPE]        = '';
+        $payloadDetails[ShieldConstants::INVOICE_ENTITY_TYPE] = '';
+
+        if ($payment->hasInvoice() == true)
+        {
+            $payloadDetails[ShieldConstants::INVOICE_TYPE] = $payment->invoice->getType();
+            $payloadDetails[ShieldConstants::INVOICE_ENTITY_TYPE] = $payment->invoice->getEntityType() ?? '';
+        }
+
         switch ($payloadDetails[ShieldConstants::METHOD])
         {
             case Payment\Method::NETBANKING:
@@ -159,7 +187,8 @@ class Shield
                 break;
 
             case Payment\Method::UPI:
-                $payloadDetails[ShieldConstants::VPA] = $payment->getVpa();
+                $payloadDetails[ShieldConstants::VPA]      = $payment->getVpa();
+                $payloadDetails[ShieldConstants::UPI_TYPE] = $payment->getMetadata('flow') ?? 'collect';
 
                 break;
 
@@ -167,6 +196,7 @@ class Shield
             case Payment\Method::EMI:
                 $card = $payment->card;
 
+                $payloadDetails[ShieldConstants::CARD_FP]           = $card->getGlobalFingerPrint();
                 $payloadDetails[ShieldConstants::CARD_IIN]          = $card->getIin();
                 $payloadDetails[ShieldConstants::CARD_NETWORK]      = $card->getNetworkCode();
                 $payloadDetails[ShieldConstants::CARD_TYPE]         = $card->getType();
@@ -187,7 +217,13 @@ class Shield
     {
         $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE] = $this->request->header('Accept-Language');
 
-        $paymentAnalytics = $payment->getMetadata("payment_analytics");
+        $shieldMetadata = $payment->getMetadata('shield');
+
+        if ((is_array($shieldMetadata) === true) && (isset($shieldMetadata['fhash']) === true)) {
+            $payloadDetails[ShieldConstants::FRONTEND_FP_HASH] = $shieldMetadata['fhash'];
+        }
+
+        $paymentAnalytics = $payment->getMetadata('payment_analytics');
 
         if (is_null($paymentAnalytics) === true)
         {
@@ -195,6 +231,7 @@ class Shield
         }
 
         $payloadDetails[ShieldConstants::IP]               = $paymentAnalytics->getIp();
+        $payloadDetails[ShieldConstants::CHECKOUT_ID]      = $paymentAnalytics->getCheckoutId();
         $payloadDetails[ShieldConstants::USER_AGENT]       = $paymentAnalytics->getUserAgent();
         $payloadDetails[ShieldConstants::REFERER]          = $paymentAnalytics->getReferer();
         $payloadDetails[ShieldConstants::BROWSER]          = $paymentAnalytics->getBrowser();
@@ -203,5 +240,8 @@ class Shield
         $payloadDetails[ShieldConstants::OS_VERSION]       = $paymentAnalytics->getOsVersion();
         $payloadDetails[ShieldConstants::DEVICE]           = $paymentAnalytics->getDevice();
         $payloadDetails[ShieldConstants::ATTEMPTS]         = $paymentAnalytics->getAttempts();
+        $payloadDetails[ShieldConstants::PLATFORM]         = $paymentAnalytics->getPlatform();
+        $payloadDetails[ShieldConstants::PLATFORM_VERSION] = $paymentAnalytics->getPlatformVersion();
+        $payloadDetails[ShieldConstants::INTEGRATION]      = $paymentAnalytics->getIntegration();
     }
 }

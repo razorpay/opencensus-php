@@ -60,44 +60,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         return $refundId;
     }
 
-    protected function getPaymentId(array $row)
-    {
-        $refundId = $this->getRefundId($row);
-
-        $gatewayEntity = $this->getGatewayRefund($refundId);
-
-        if ($gatewayEntity === null)
-        {
-            return null;
-        }
-
-        $paymentId = $gatewayEntity->getPaymentId();
-
-        return $paymentId;
-    }
-
-    protected function getGatewayRefund(string $refundId)
-    {
-        $gatewayEntities = $this->repo->hitachi->findSuccessfulRefundByRefundId($refundId);
-
-        if ($gatewayEntities->count() === 0)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'    => TraceCode::RECON_MISMATCH,
-                    'message'       => 'Gateway refund not found.',
-                    'refund_id'     => $refundId,
-                    'gateway'       => $this->gateway,
-               ]);
-
-            return null;
-        }
-
-        $refundEntity = $gatewayEntities->first();
-
-        return $refundEntity;
-    }
-
     protected function getArn(array $row)
     {
         if (empty($row[self::COLUMN_ARN]) === true)
@@ -171,15 +133,16 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 
-        if ($expectedCurrency !== $reconCurrency)
+        if (($expectedCurrency !== $reconCurrency) and ( empty($reconCurrency) !== true))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'message'           => 'Refund currency mismatch',
+                    'message'           => Base\InfoCode::CURRENCY_MISMATCH,
+                    'refund_id'         => $this->refund->getId(),
+                    'payment_id'        => $this->refund->payment->getId(),
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 

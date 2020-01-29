@@ -8,18 +8,19 @@ use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Models\Contact;
 use RZP\Models\Pricing;
 use RZP\Models\Reversal;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Feature\Constants as Features;
-use RZP\Models\Contact\Service as ContactService;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 
 use Razorpay\Trace\Logger as Trace;
@@ -28,7 +29,15 @@ class Service extends Base\Service
 {
     use Base\Traits\ProcessAccountNumber;
 
-    protected $contactService;
+    /**
+     * @var FundAccountService
+     */
+    protected $fundAccountService;
+
+    /**
+     * @var ContactCore
+     */
+    protected $contactCore;
 
     public function __construct()
     {
@@ -36,7 +45,9 @@ class Service extends Base\Service
 
         $this->core = new Payout\Core;
 
-        $this->contactService = new ContactService;
+        $this->contactCore = new Contact\Core;
+
+        $this->fundAccountService = new FundAccountService;
     }
 
     public function fundAccountPayout(array $input): array
@@ -68,7 +79,7 @@ class Service extends Base\Service
 
         (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
 
-        $payout = (new Core)->approvePayout($payout);
+        $payout = (new Core)->approvePayout($payout, $input);
 
         return $payout->toArrayPublic();
     }
@@ -96,7 +107,7 @@ class Service extends Base\Service
         {
             try
             {
-                $payout = (new Core)->approvePayout($payout);
+                $payout = (new Core)->approvePayout($payout, $input);
             }
             catch (\Throwable $e)
             {
@@ -116,7 +127,7 @@ class Service extends Base\Service
         ];
     }
 
-    public function rejectFundAccountPayout(string $id): array
+    public function rejectFundAccountPayout(string $id, array $input): array
     {
         $this->trace->info(TraceCode::PAYOUT_REJECT_REQUEST, ['id' => $id]);
 
@@ -125,7 +136,7 @@ class Service extends Base\Service
 
         $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 
-        $payout = (new Core)->rejectPayout($payout);
+        $payout = (new Core)->rejectPayout($payout, $input);
 
         return $payout->toArrayPublic();
     }
@@ -149,7 +160,7 @@ class Service extends Base\Service
         {
             try
             {
-                $payout = (new Core)->rejectPayout($payout);
+                $payout = (new Core)->rejectPayout($payout, $input);
             }
             catch (\Throwable $e)
             {
@@ -216,7 +227,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('merchant_payout_on_demand', $input);
 
-        //Here value true specifies payout on demand mode enabled
+        // Here value true specifies payout on demand mode enabled
         $input[Entity::TYPE] = Entity::ON_DEMAND;
 
         $payout = (new Payout\Core)->createPayoutToMerchant($input, $this->merchant);
@@ -238,8 +249,10 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
-        // Only allowed for Rx payouts, mandates account number
-        $this->processAccountNumber($input);
+        /** @var Merchant\Validator $merchantValidator */
+        $merchantValidator = $this->merchant->getValidator();
+
+        $merchantValidator->validateAndTranslateToAccountNumberForBankingIfApplicable($input);
 
         $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
 
@@ -290,33 +303,6 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
-    public function getQueuedPayoutsSummary()
-    {
-        $merchantId = $this->merchant->getId();
-
-        $currentBalance = $this->merchant->bankingBalance;
-
-        $queuedPayouts = $this->repo->payout->fetchQueuedPayouts([$merchantId]);
-
-        $totalAmount = $totalFees = 0;
-
-        foreach ($queuedPayouts as $payout)
-        {
-            $totalAmount += $payout->getAmount();
-
-            list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
-
-            $totalFees += $fees;
-        }
-
-        return [
-            'balance'       => $currentBalance,
-            'count'         => count($queuedPayouts),
-            'total_amount'  => $totalAmount,
-            'total_fees'    => $totalFees,
-        ];
-    }
-
     /**
      * Return a summary of workflows for RazorpayX dashboard consumption.
      *
@@ -361,16 +347,12 @@ class Service extends Base\Service
 
         if ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === true)
         {
-            $user = $this->auth->getUser();
-
-            $pending = $this->repo->payout->fetchSummaryOfPayoutsPendingOnUser($user, $this->merchant);
+            $pending = $this->getPendingPayoutsSummary();
         }
 
-        return [
-            'queued'    => $queued,
-            'pending'   => $pending,
-            'scheduled' => $scheduled,
-        ];
+        $completeSummary = $this->getCompleteSummary($pending, $queued, $scheduled);
+
+        return $completeSummary;
     }
 
     public function processDispatchForQueuedPayouts(array $input)
@@ -404,6 +386,7 @@ class Service extends Base\Service
      * @param array $input
      *
      * @return array
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function createBulkPayout(array $input): array
     {
@@ -419,6 +402,10 @@ class Service extends Base\Service
 
         $validator->validateBatchId($batchId);
 
+        // if any merchant wants to skip duplicate check
+        // and unique create contact and fund account everytime
+        $createDuplicate = $this->shouldCreateDuplicateForFundAccountAndContact();
+
         foreach ($input as $item)
         {
             try
@@ -430,7 +417,8 @@ class Service extends Base\Service
                         'input'          => $item
                     ]);
 
-                $this->repo->transaction(function() use (& $item,
+                $this->repo->transaction(function() use ($createDuplicate,
+                                                         & $item,
                                                          & $payoutBatch,
                                                          & $batchId,
                                                          & $idempotencyKey,
@@ -440,47 +428,52 @@ class Service extends Base\Service
 
                     $validator->validateIdempotencyKey($idempotencyKey, $batchId);
 
-                    $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+                    $result = $this->repo->payout->fetchByIdempotentKey($item[Entity::IDEMPOTENCY_KEY],
+                                                                        $this->merchant->getId(),
+                                                                        $batchId);
 
-                    $fundAccount = null;
-
-                    //
-                    // Check if fund_id is present in input and exists in DB
-                    // If yes skip contact and fund_account creation step
-                    //
-                    if (empty($fundAccountId) === false)
+                    if ($result !== null)
                     {
-                        $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId,
-                                                                                            $this->merchant);
-                    }
+                        $this->trace->info(TraceCode::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY,
+                                            ['input' => $result->toArrayPublic(),
+                                             Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY]]);
 
-                    // If fund_account is null then, it is not created before
-                    if ($fundAccount === null)
-                    {
-                        $contact = $this->contactService->processEntryForContact($item,
-                                                                                 $idempotencyKey,
-                                                                                 $batchId);
-
-                        $fundAccount = $this->contactService->processEntryForContactsFundAccount($item,
-                                                                                                 $contact,
-                                                                                                 $idempotencyKey,
-                                                                                                 $batchId);
+                        $payoutBatch->push($result->toArrayPublic() +
+                            [Entity::IDEMPOTENCY_KEY => $result->getIdempotencyKey()]);
                     }
                     else
                     {
-                        // convert to array
-                        $fundAccount = $fundAccount->toArrayPublic();
+                        $fundAccountId = $item[FundAccountHelper::FUND_ACCOUNT][FundAccountHelper::ID] ?? null;
+
+                        $fundAccount = null;
+
+                        //
+                        // Check if fund_id is present in input and exists in DB
+                        // If yes skip contact and fund_account creation step
+                        //
+                        if (empty($fundAccountId) === false)
+                        {
+                            $fundAccount = $this->fundAccountService->checkFundAccountExistence($fundAccountId);
+                        }
+                        else
+                        {
+                            $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
+
+                            $fundAccount = $this->fundAccountService->createFundAcccount($item,
+                                $contact,
+                                $batchId,
+                                $createDuplicate);
+                        }
+
+                        $payout = $this->processEntryForPayoutForFundAccount($item,
+                                                                             $fundAccount,
+                                                                             $batchId
+                        );
+
+                        $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
+
+                        $payoutBatch->push($payoutArr);
                     }
-
-                    $payout = $this->processEntryForPayoutForFundAccount($item,
-                                                                         $fundAccount,
-                                                                         $idempotencyKey,
-                                                                         $batchId
-                    );
-
-                    $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
-
-                    $payoutBatch->push($payoutArr);
                 });
 
             }
@@ -526,15 +519,147 @@ class Service extends Base\Service
         return $payoutBatch->toArrayWithItems();
     }
 
+    protected function getQueuedPayoutsSummary()
+    {
+        $queuedPayoutsSummary = [];
+
+        $merchantId = $this->merchant->getId();
+
+        $queuedPayouts = $this->repo->payout->fetchQueuedPayouts([$merchantId]);
+
+        $groupedQueuedPayouts = $queuedPayouts->groupBy(Entity::BALANCE_ID);
+
+        foreach ($groupedQueuedPayouts as $balanceId => $queuedPayouts)
+        {
+            $currentBalance = $queuedPayouts->first()->balance->getBalance();
+
+            $totalAmount = $totalFees = 0;
+
+            $bankingAccountId = $queuedPayouts->first()->bankingAccount->getPublicId();
+
+            foreach ($queuedPayouts as $payout)
+            {
+                $totalAmount += $payout->getAmount();
+
+                list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
+
+                $totalFees += $fees;
+            }
+
+            $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED] = [
+                'balance'       => $currentBalance,
+                'count'         => count($queuedPayouts),
+                'total_amount'  => $totalAmount,
+                'total_fees'    => $totalFees,
+            ];
+        }
+
+        return $queuedPayoutsSummary;
+    }
+
+    protected function getPendingPayoutsSummary()
+    {
+        $user = $this->auth->getUser();
+
+        $pending = $this->repo->payout->fetchPayoutsPendingOnUser($user, $this->merchant);
+
+        $groupedPendingPayouts = $pending->groupBy(Entity::BALANCE_ID);
+
+        $pendingPayoutsSummary = [];
+
+        foreach ($groupedPendingPayouts as $balanceId => $payouts)
+        {
+            $bankingAccountId = $payouts->first()->bankingAccount->getPublicId();
+
+            $amount = 0;
+
+            foreach ($payouts as $payout)
+            {
+                $amount += $payout->getAmount();
+            }
+
+            $pendingPayoutsSummary[$bankingAccountId][Status::PENDING] = [
+                'count'         => count($payouts),
+                'total_amount'  => $amount
+            ];
+        }
+
+        return $pendingPayoutsSummary;
+    }
+
+    /**
+     * @param array $pending
+     * @param array $queued
+     * @param array $scheduled
+     * @return array
+     */
+    protected function getCompleteSummary(array $pending, array $queued, array $scheduled): array
+    {
+        $bankingAccountList = $this->merchant->activeBankingAccounts;
+
+        $completeSummary = [];
+
+        $allBankingAccounts = [];
+
+        foreach ($bankingAccountList as $bankingAccount)
+        {
+            $allBankingAccounts[$bankingAccount->getPublicId()] = $bankingAccount->balance->getBalance();
+        }
+
+        foreach ($allBankingAccounts as $bankingAccountId => $balance)
+        {
+            $completeSummary[$bankingAccountId]= [
+                Status::QUEUED =>   [
+                    'balance'       => $balance,
+                    'count'         => 0,
+                    'total_amount'  => 0,
+                    'total_fees'    => 0,
+                ],
+                Status::PENDING =>  [
+                    'count'         => 0,
+                    'total_amount'  => 0,
+                ],
+            ];
+        }
+
+        foreach ($pending as $bankingAccountId => $pendingSummary)
+        {
+            $completeSummary[$bankingAccountId] = array_merge($completeSummary[$bankingAccountId], $pendingSummary);
+        }
+
+        foreach ($queued as $bankingAccountId => $queuedSummary)
+        {
+            $completeSummary[$bankingAccountId] = array_merge($completeSummary[$bankingAccountId], $queuedSummary);
+        }
+
+        foreach ($scheduled as $bankingAccountId => $scheduledSummary)
+        {
+            $completeSummary[$bankingAccountId] = array_merge($completeSummary[$bankingAccountId], $scheduledSummary);
+        }
+
+        return $completeSummary;
+    }
+
     protected function processEntryForPayoutForFundAccount(array $entry,
-                                                           array $fundAccount,
-                                                           string $idempotencyKey,
+                                                           FundAccount\Entity $fundAccount,
                                                            string $batchId): Entity
     {
-        $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount, $this->merchant);
+        $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount->toArrayPublic(), $this->merchant);
 
-        $input[Entity::IDEMPOTENCY_KEY] = $idempotencyKey;
+        return $this->core->createPayoutToFundAccount($input, $this->merchant, $batchId);
+    }
 
-        return $this->core->createPayoutToFundAccount($input, $this->merchant, null, $batchId);
+    // ToDo https://razorpay.atlassian.net/browse/RX-849
+    protected function shouldCreateDuplicateForFundAccountAndContact()
+    {
+        $merchant = $this->merchant;
+
+        $variant  = $this->app['razorx']->getTreatment($merchant->getId(),
+                                                       Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
+                                                       $this->mode);
+
+        $flag = ($variant === 'create_duplicate') ? true : false;
+
+        return $flag;
     }
 }

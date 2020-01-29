@@ -41,12 +41,21 @@ class Gateway extends Base\Gateway
         Base\Entity::RECEIVED                => Base\Entity::RECEIVED,
         ResponseFields::BANK_REF_NO          => Base\Entity::BANK_PAYMENT_ID,
         ResponseFields::STATUS               => Base\Entity::STATUS,
+        ResponseFields::STATUS_DESC          => Base\Entity::ERROR_MESSAGE,
 
         /**
          *  Fields from emandate authorize response
          */
         ResponseFields::MANDATE_SBI_STATUS   => Base\Entity::STATUS,
         ResponseFields::MANDATE_SBI_REF      => Base\Entity::BANK_PAYMENT_ID,
+
+        /**
+         * Refund fields
+         */
+        Base\Entity::REFUND_ID               => Base\Entity::REFUND_ID,
+        Base\Entity::AMOUNT                  => Base\Entity::AMOUNT,
+        Base\Entity::REFERENCE1              => Base\Entity::REFERENCE1
+
     ];
 
     public function setGatewayParams($input, $mode, $terminal)
@@ -129,6 +138,8 @@ class Gateway extends Base\Gateway
 
         // unsetting here as we do not want the amount to be updated again
         unset($gatewayInput[ResponseFields::AMOUNT]);
+        // unsetting here as we do not want to set error_message in case of successful payment
+        unset($gatewayInput[ResponseFields::STATUS_DESC]);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayInput);
 
@@ -137,9 +148,7 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    //------------------- Verify --------------------------------------------//
-
-    public function verify(array $input): array
+    public function verify(array $input)
     {
         parent::verify($input);
 
@@ -193,6 +202,20 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $attributes = [
+            Base\Entity::REFUND_ID  => $input['refund']['id'],
+            Base\Entity::AMOUNT     => $input['refund']['amount'],
+            Base\Entity::STATUS     => Status::SENT,
+            Base\Entity::REFERENCE1 => $input['refund']['reference3']
+        ];
+
+        $this->createGatewayPaymentEntity($attributes);
+    }
+
     //-------------------------- Authorize helper ---------------------------//
 
     // returns all the params for creating gateway payment entity
@@ -210,14 +233,17 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequest(array $input)
     {
-        $request = $this->getStandardRequestArray([], 'post', $this->action . '_' . $this->mode);
 
         if ($this->isFirstRecurringPayment($input) === true)
         {
+            $request = $this->getStandardRequestArray([], 'post', $this->action . '_MANDATE_' .$this->mode);
+
             $requestArray = $this->getEmandateParams($input);
         }
         else
         {
+            $request = $this->getStandardRequestArray([], 'post', $this->action . '_' . $this->mode);
+
             $requestArray = [
                 RequestFields::REF_NO       => $input['payment'][Payment\Entity::ID],
                 RequestFields::AMOUNT       => $input['payment'][Payment\Entity::AMOUNT] / 100,
@@ -551,6 +577,49 @@ class Gateway extends Base\Gateway
         return VerifyResult::STATUS_MATCH;
     }
 
+    //--------------------force authorize---------------------------//
+    /**
+     * This function is implemented to enable force auth through dashboard i.e manual force auth. By default this
+     * is not used and we rely on verify to convert payments from failed to authorized state. This may be usd in the
+     * extreme case when verify is broken from bank end. In that case this is initiated manually as per the call taken
+     * by the finops team.
+     *
+     * @param $input
+     * @return bool
+     * @throws Exception\BadRequestException
+     */
+
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return back.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Status::SUCCESS))
+        {
+            return true;
+        }
+
+        if (empty($input['gateway']['gateway_payment_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING,
+                null,
+                $input);
+        }
+
+        $attributes = [
+            Base\Entity::STATUS          => Status::SUCCESS,
+            Base\Entity::BANK_PAYMENT_ID => $input['gateway']['gateway_payment_id'],
+        ];
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
+
     //--------------------Common Helper functions ---------------------------//
 
     protected function processGatewayResponse($gatewayResponse): array
@@ -661,6 +730,20 @@ class Gateway extends Base\Gateway
         if ($this->bankingType === BankingType::RECURRING)
         {
             $secret = $this->config['test_hash_secret_recurring'];
+        }
+
+        return $secret;
+    }
+
+    protected function getLiveSecret()
+    {
+        if ($this->bankingType === BankingType::RECURRING)
+        {
+            $secret = $this->input['terminal']['gateway_secure_secret'];
+        }
+        else
+        {
+            $secret = $this->config['live_hash_secret'];
         }
 
         return $secret;

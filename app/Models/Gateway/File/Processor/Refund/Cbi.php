@@ -88,61 +88,18 @@ class Cbi extends Base
         return static::FILE_NAME . $dateTime;
     }
 
-    protected function formatDataForMail(array $data)
+    protected function collectPaymentData(Payment\Entity $payment): array
     {
+        $terminal = $payment->terminal;
 
-        $file = $this->gatewayFile
-                     ->files()
-                     ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                     ->first();
+        $merchant = $payment->merchant;
 
-        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+        $col['payment'] = $payment->toArray();
 
-        $totalAmount = array_reduce($data, function ($carry, $item)
-        {
-            $carry += ($item['refund']['amount'] / 100);
+        $col['terminal'] = $terminal->toArray();
 
-            return $carry;
-        });
+        $col['merchant'] = $merchant;
 
-        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
-
-        $mailData = [
-            'file_name'  => $file->getLocation(),
-            'signed_url' => $signedUrl,
-            'count'      => count($data),
-            'amount'     => number_format($totalAmount, 2, '.', ''),
-            'date'       => $today
-        ];
-
-        return $mailData;
-    }
-
-    public function generateData(PublicCollection $refunds)
-    {
-        $data = [];
-
-        foreach ($refunds as $refund)
-        {
-            $payment = $refund->payment;
-
-            $terminal = $payment->terminal;
-
-            $merchant = $payment->merchant;
-
-            $col['refund'] = $refund->toArray();
-
-            $col['payment'] = $payment->toArray();
-
-            $col['terminal'] = $terminal->toArray();
-
-            $col['merchant'] = $merchant;
-
-            $data[] = $col;
-        }
-
-        $data = $this->addGatewayEntitiesToData($data, $refunds);
-
-        return $data;
+        return $col;
     }
 }

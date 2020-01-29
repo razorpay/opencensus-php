@@ -43,6 +43,9 @@ class CreateTokens extends Migration
             $table->char(Token::CARD_ID, Token::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Token::VPA_ID, Token::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Token::BANK, 6)
                   ->nullable();
 
@@ -86,6 +89,9 @@ class CreateTokens extends Migration
                   ->nullable();
 
             $table->text(Token::RECURRING_FAILURE_REASON)
+                  ->nullable();
+
+            $table->integer(Token::START_TIME)
                   ->nullable();
 
             $table->integer(Token::CONFIRMED_AT)

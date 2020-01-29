@@ -10,7 +10,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Currency\Currency;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\SubReconciliator;
-
+use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
 
 class RefundReconciliate extends SubReconciliator\RefundReconciliate
 {
@@ -18,7 +18,12 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     public function getRefundId(array $row)
     {
-        $refundId = $row[ReconciliationFields::MERCHANT_TRACK_ID] ?? null;
+        $columnRefundId = array_first(ReconciliationFields::MERCHANT_TRACK_ID, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        $refundId = $row[$columnRefundId] ?? null;
 
         return trim(str_replace("'", '', $refundId));
     }
@@ -48,14 +53,19 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     protected function getGatewaySettledAt(array $row)
     {
-        if (empty($row[ReconciliationFields::PAYMENT_DATE]) === true)
+        $columnGatewaySettledDate = array_first(ReconciliationFields::GATEWAY_SETTLED_DATE, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        if (empty($row[$columnGatewaySettledDate]) === true)
         {
             return null;
         }
 
         $gatewaySettledAtTimestamp = null;
 
-        $settledAt = $row[ReconciliationFields::PAYMENT_DATE];
+        $settledAt = $row[$columnGatewaySettledDate];
 
         try
         {
@@ -83,18 +93,33 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
      */
     protected function getGatewayTransactionId(array $row)
     {
-        return trim(str_replace("'", '', $row[ReconciliationFields::PG_TRANSACTION_ID] ?? null));
+        $columnPgTranId = array_first(ReconciliationFields::PG_TRANSACTION_ID, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        return trim(str_replace("'", '', $row[$columnPgTranId] ?? null));
     }
 
     protected function getArn(array $row)
     {
-        $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR];
+        $columnOnusIndicator = array_first(ReconciliationFields::ONUS_INDICATOR, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
 
-        $rrn = trim(str_replace("'", '',  ($row[ReconciliationFields::RRN] ?? null)));
+        $onusIndicator = $row[$columnOnusIndicator] ?? '';
+
+        $columnRrn = array_first(ReconciliationFields::RRN, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        $rrn = trim(str_replace("'", '',  ($row[$columnRrn] ?? null)));
 
         if (empty($rrn) === true)
         {
-            $this->reportMissingColumn($row, ReconciliationFields::RRN);
+            $this->reportMissingColumn($row, implode(',', ReconciliationFields::RRN));
         }
 
         if (strtolower($onusIndicator) === self::ONUS_INDICATOR_VALUE)
@@ -107,14 +132,12 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     protected function getReconRefundAmount(array $row)
     {
-        if (isset($row[ReconciliationFields::TRANSACTION_AMOUNT]) === false)
+        $columnAmount = array_first(ReconciliationFields::TRANSACTION_AMOUNT, function ($col) use ($row)
         {
-            return null;
-        }
+            return (isset($row[$col]) === true);
+        });
 
-        $refundAmount = SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
-
-        return abs($refundAmount);
+        return Helper::getIntegerFormattedAmount($row[$columnAmount] ?? null);
     }
 
     protected function validateRefundAmountEqualsReconAmount(array $row)
@@ -156,7 +179,12 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     protected function getReconCurrencyCode($row)
     {
-        return $row[ReconciliationFields::TRANSACTION_CURRENCY_CODE] ?? null;
+        $columnReconCurrency = array_first(ReconciliationFields::TRANSACTION_CURRENCY_CODE, function ($col) use ($row)
+        {
+            return (empty($row[$col]) === false);
+        });
+
+        return trim($row[$columnReconCurrency] ?? null);
     }
 
     protected function validateRefundCurrencyEqualsReconCurrency(array $row) : bool
@@ -167,7 +195,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 
-        if ($expectedCurrency !== $reconCurrency)
+        if (($expectedCurrency !== $reconCurrency) and ( empty($reconCurrency) !== true))
         {
             $this->messenger->raiseReconAlert(
                 [
@@ -175,7 +203,8 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
                     'info_code'         => InfoCode::CURRENCY_MISMATCH,
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
-                    'row'               => $row,
+                    'refund_id'         => $this->refund->getId(),
+                    'amount'            => $this->refund->getAmount(),
                     'gateway'           => $this->gateway
                 ]);
 

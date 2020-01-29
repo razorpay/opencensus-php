@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use RZP\Models\Base;
+use RZP\Constants\Es;
 
 /**
  * Class EsRepository
@@ -14,24 +15,65 @@ class EsRepository extends Base\EsRepository
     /**
      * {@inheritDoc}
      */
+    protected $queryFields = [
+        Entity::ID,
+        Entity::CONTACT_NAME,
+        Entity::CONTACT_EMAIL,
+        Entity::CONTACT_TYPE,
+        Entity::PRODUCT,
+        Entity::PURPOSE,
+        Entity::STATUS,
+        Entity::CREATED_AT,
+        Entity::REVERSED_AT,
+        Entity::METHOD,
+        Entity::MODE,
+    ];
+
+    /**
+     * {@inheritDoc}
+     */
     protected $indexedFields = [
         Entity::ID,
         Entity::MERCHANT_ID,
         Entity::BALANCE_ID,
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
+        Entity::REVERSED_AT,
+        Entity::CONTACT_TYPE,
+        Entity::PRODUCT,
         Entity::TYPE,
         Entity::METHOD,
+        Entity::MODE,
+        Entity::PURPOSE,
         Entity::STATUS,
         Entity::CREATED_AT,
     ];
 
-    /**
-     * {@inheritDoc}
-     */
-    protected $queryFields = [
-        Entity::ID,
-        Entity::CONTACT_NAME,
-        Entity::CONTACT_EMAIL,
-    ];
+    protected function buildQueryForReversedFrom(array & $query, $value)
+    {
+        if (empty($value) === true)
+        {
+            return;
+        }
+
+        $clause = [Es::GTE => $value];
+
+        $filter = [Es::RANGE => [Entity::REVERSED_AT => $clause]];
+
+        $this->addFilter($query, $filter);
+    }
+
+    protected function buildQueryForReversedTo(array & $query, $value)
+    {
+        if (empty($value) === true)
+        {
+            return;
+        }
+
+        $clause = [Es::LTE => $value];
+
+        $filter = [Es::RANGE => [Entity::REVERSED_AT => $clause]];
+
+        $this->addFilter($query, $filter);
+    }
 }

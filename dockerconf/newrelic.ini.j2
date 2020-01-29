@@ -106,10 +106,10 @@ newrelic.loglevel = "info"
 ;          for each account / license key.
 ;
 {% if env == "prod"  %}
-    {% if ENV['INSTANCE_TYPE']  == 'canary' %}
-        newrelic.appname = "canary-api;kube-{{ env }}-api"
+    {% if ENV['INSTANCE_TYPE']  != null %}
+        newrelic.appname = "{{ ENV['INSTANCE_TYPE'] }}-api;kube-{{ env }}-api"
     {% else  %}
-        newrelic.appname = "{{env}}-api;kube-{{ env }}-api"
+        newrelic.appname = "{{ env }}-api;kube-{{ env }}-api"
     {% endif %}
 {% else %}
  newrelic.appname = "kube-{{ env }}-api"

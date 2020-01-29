@@ -12,10 +12,14 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\Channel;
+use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Settlement\Channel as BankChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
+use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 
 class Validator extends Base\Validator
 {
@@ -27,6 +31,12 @@ class Validator extends Base\Validator
     const MAX_BULK_PAYOUTS_LIMIT = 15;
 
     const CALCULATE_ES_ON_DEMAND_FEES = 'calculate_es_on_demand_fees';
+
+    // The max payout amount allowed for merchant payouts is 80 L
+    const MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT = 800000000;
+
+    // The max payout amount allowed for merchant payouts on demand is 2 Cr
+    const MAX_LIMIT_MERCHANT_ON_DEMAND_PAYOUT_AMOUNT = 2000000000;
 
     //
     // This is required for build. Currently, build does not
@@ -57,15 +67,16 @@ class Validator extends Base\Validator
      */
     protected static $fundAccountPayoutRules = [
         Entity::PURPOSE              => 'required|filled|string|max:30|alpha_dash_space',
-        Entity::AMOUNT               => 'required|integer|min:100|max:10000000000',
+        Entity::AMOUNT               => 'required|integer|min:100|max:' . Entity::MAX_PAYOUT_LIMIT,
         Entity::CURRENCY             => 'required|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
         Entity::BALANCE_ID           => 'sometimes|filled|size:14',
         Entity::FUND_ACCOUNT_ID      => 'required|public_id',
-        Entity::MODE                 => 'sometimes|nullable|string',
+        Entity::MODE                 => 'required|string|custom',
         Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Entity::NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
+        Entity::PAYOUT_LINK_ID       => 'sometimes|filled|public_id',
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
@@ -80,31 +91,34 @@ class Validator extends Base\Validator
         Entity::NARRATION       => 'sometimes|nullable|string|max:30|alpha_space_num',
     ];
 
+    // Both regular(type:default) and on demand(type:on_demand) payouts are validated through merchantPayoutRules.
     protected static $merchantPayoutRules = [
         Entity::PURPOSE         => 'required|string|max:30|in:payout',
         Entity::METHOD          => 'sometimes|string',
-        Entity::AMOUNT          => 'required|integer|max:800000000',
+        Entity::AMOUNT          => 'required|integer',
         Entity::CURRENCY        => 'required|size:3',
         Entity::TYPE            => 'required|string|max:30|in:default,on_demand',
         Entity::BALANCE_ID      => 'sometimes|filled|size:14',
     ];
 
+    // On calling merchant/payout merchantRules gets used for validation of input.
     protected static $merchantRules = [
         Entity::MERCHANT_ID    => 'required|string|size:14',
-        Entity::AMOUNT         => 'sometimes|integer|max:800000000',
+        Entity::AMOUNT         => 'sometimes|integer|max:' . self::MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT,
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',
         Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
     ];
 
+    // On calling merchant/payout/demand merchantPayoutOnDemandRules gets used for validation of input.
+    protected static $merchantPayoutOnDemandRules = [
+        Entity::AMOUNT   => 'required|integer|min:100|max:' . self::MAX_LIMIT_MERCHANT_ON_DEMAND_PAYOUT_AMOUNT,
+        Entity::CURRENCY => 'required|size:3',
+    ];
+
     protected static $createPurposeRules = [
         Entity::PURPOSE      => 'required|filled|string|max:30|alpha_dash_space',
         Entity::PURPOSE_TYPE => 'required|filled|string|in:refund,settlement',
-    ];
-
-    protected static $merchantPayoutOnDemandRules = [
-        Entity::AMOUNT   => 'required|integer|min:100',
-        Entity::CURRENCY => 'required|size:3',
     ];
 
     protected static $calculateEsOnDemandFeesRules = [
@@ -113,19 +127,22 @@ class Validator extends Base\Validator
     ];
 
     protected static $bulkApproveRules = [
-        Entity::PAYOUT_IDS       => 'required|array',
-        Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
-        User\Entity::OTP         => 'required|filled|min:4',
-        User\Entity::TOKEN       => 'required|unsigned_id',
+        Entity::PAYOUT_IDS          => 'required|array',
+        Entity::PAYOUT_IDS. '.*'    => 'required|public_id|size:19',
+        User\Entity::OTP            => 'required|filled|min:4',
+        User\Entity::TOKEN          => 'required|unsigned_id',
+        ActionChecker::USER_COMMENT => 'sometimes|string|max:255',
     ];
 
     protected static $bulkRejectRules = [
-        Entity::PAYOUT_IDS       => 'required|array',
-        Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
+        Entity::PAYOUT_IDS          => 'required|array',
+        Entity::PAYOUT_IDS. '.*'    => 'required|public_id|size:19',
+        ActionChecker::USER_COMMENT => 'sometimes|string|max:255',
     ];
 
-    protected static $fundAccountPayoutValidators = [
-        'fund_account_mode',
+    // Both regular and on demand payouts are validated through the merchantPayoutValidators.
+    protected static $merchantPayoutValidators = [
+        'type_and_amount',
     ];
 
     protected function validateMethod($attribute, $method)
@@ -133,11 +150,49 @@ class Validator extends Base\Validator
         Method::validateMethod($method);
     }
 
-    protected function validateFundAccountMode($input)
+    protected function validateMode($attribute, $value)
+    {
+        PayoutMode::validateMode($value);
+    }
+
+    protected function validateTypeAndAmount($input)
+    {
+
+        // We have different limits for both regular and on demand payouts. They need to be validated accordingly.
+        $type = $input[Entity::TYPE];
+
+        $amount = $input[Entity::AMOUNT];
+
+        // Validation in case of type 'on demand'
+        if (($type === Entity::ON_DEMAND) and
+            ($amount > self::MAX_LIMIT_MERCHANT_ON_DEMAND_PAYOUT_AMOUNT))
+        {
+            $message = 'The amount may not be greater than ' . self::MAX_LIMIT_MERCHANT_ON_DEMAND_PAYOUT_AMOUNT . '.';
+            throw new Exception\BadRequestValidationFailureException(
+                $message,
+                Entity::AMOUNT,
+                $amount
+            );
+        }
+
+        // Validation in case of type 'default'
+        if (($type === Entity::DEFAULT) and
+            ($amount > self::MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT))
+        {
+            $message = 'The amount may not be greater than ' . self::MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT . '.';
+            throw new Exception\BadRequestValidationFailureException(
+                $message,
+                Entity::AMOUNT,
+                $amount
+            );
+        }
+        // Noticed during dev that data field sent with the above calls to BadRequestValidationFailureException came out at other end (log/response) as null
+    }
+
+    public function validateFundAccountMode($input)
     {
         /** @var Entity $payout */
         $payout = $this->entity;
-
         //
         // We use mode from the entity and not from the input, because
         // in case of UPI, we set the mode to UPI in modifiers (called in build).
@@ -153,27 +208,9 @@ class Validator extends Base\Validator
 
         $accountType = $fundAccount->getAccountType();
 
-        if (empty($mode) === true)
-        {
-            // Going forward, we want to make `mode` mandatory for all payouts, irrespective of anything.
-            if ($accountType === FundAccount\Type::CARD)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The mode field is required for card payouts',
-                    Entity::MODE,
-                    [
-                        'input' => $input
-                    ]);
-            }
-
-            return;
-        }
-
         Mode::validateModeOfAccountType($mode, $accountType);
 
         $this->validateCardAccountType($payout);
-
-        $this->validateVpaAccountType($payout);
 
         $this->validateModeAndAmount($input, $payout);
     }
@@ -193,36 +230,6 @@ class Validator extends Base\Validator
             $networkCode = $fundAccount->account->getNetworkCode();
 
             Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
-        }
-    }
-
-    protected function validateVpaAccountType(Entity $payout)
-    {
-        $fundAccount = $payout->fundAccount;
-
-        $mode = $payout->getMode();
-
-        $accountType = $fundAccount->getAccountType();
-
-        if (($accountType === FundAccount\Type::VPA) or
-            ($mode === Mode::UPI))
-        {
-            $balance = $payout->balance;
-
-            if (($balance->isTypeBanking() === true) and
-                ($balance->getAccountType() === AccountType::DIRECT) and
-                ($balance->getChannel() === Channel::RBL))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'UPI is not supported for RBL Banking Payouts currently',
-                    Entity::MODE,
-                    [
-                        'balance_id'    => $balance->getId(),
-                        'mode'          => $mode,
-                        'account_type'  => $accountType,
-                        'payout_id'     => $payout->getId(),
-                    ]);
-            }
         }
     }
 

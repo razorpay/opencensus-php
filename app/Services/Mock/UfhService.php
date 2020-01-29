@@ -81,5 +81,20 @@ class UfhService extends BaseUfhClient
         ];
     }
 
+    public function getSignedUrl(string $fileId, array $params = [], $merchantId = null)
+    {
+        return [
+            'id'            => 'file_DczOEmU9U0FFsb',
+            'type'          => 'delivery_proof',
+            'name'          => 'myfile2.pdf',
+            'bucket'        => 'test_bucket',
+            'mime'          => 'text/csv',
+            'extension'     => 'csv',
+            'merchant_id'   => '10000000000000',
+            'store'         => 's3',
+            'signed_url'    => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf'
+        ];
+    }
+
     public function deletefile(string $fileId) {}
 }

@@ -97,7 +97,8 @@ class AuthLink
 
         $input = [];
 
-        if ($method == SubscriptionRegistration\Method::EMANDATE)
+        if (($method == SubscriptionRegistration\Method::EMANDATE) or
+            ($method == SubscriptionRegistration\Method::NACH))
         {
             $input = self::buildBankAccountFromBatchInput($entry);
         }
@@ -152,6 +153,12 @@ class AuthLink
 
     public static function buildBankAccountFromBatchInput(array & $entry): array
     {
+        if ((is_double($entry[Batch\Header::AUTH_LINK_ACCOUNT_NUMBER]) === true)
+            or (is_float($entry[Batch\Header::AUTH_LINK_ACCOUNT_NUMBER]) === true))
+        {
+            $entry[Batch\Header::AUTH_LINK_ACCOUNT_NUMBER] = (int)$entry[Batch\Header::AUTH_LINK_ACCOUNT_NUMBER];
+        }
+
         $output = [];
 
         $keys = array_keys(self::$batchFieldsToBankMapping);

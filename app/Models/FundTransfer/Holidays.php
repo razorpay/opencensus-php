@@ -3,7 +3,6 @@
 
 namespace RZP\Models\FundTransfer;
 
-
 use Carbon\Carbon;
 
 class Holidays
@@ -51,8 +50,66 @@ class Holidays
                 25 => 'Christmas',
             ],
         ],
+
+        2020 => [
+            4  => [
+                1  => 'Annual closing of banks',
+                10 => 'Good Friday',
+            ],
+            5  => [
+                25 => 'Ramzan Id (Id-Ul-Fitr) (Shawal-1)',
+            ],
+            8  => [
+                1  => 'Bakri ID (Id-Ul-Zuha)',
+                15 => 'Independence Day',
+            ],
+            10 => [
+                2  => 'Mahatma Gandhi Jayanti',
+                30 => 'Id-E-Milad (Milad-un-Nabi)/Baravafat/Lakshmi Puja',
+            ],
+            12 => [
+                25 => 'Christmas',
+            ],
+        ],
     ];
 
+    /**
+     * getNextWorkingDay, getNthWorkingDayFrom
+     * Given a Carbon Date get the next/Nth working date from a given date
+     *
+     * This includes checks for bank holidays, non working saturday, sundays
+     *
+     * @param Carbon $date input date
+     * @param bool   $ignoreBankHolidays
+     *
+     * @return Carbon $date Next working date
+     */
+    public static function getNextWorkingDay($date, $ignoreBankHolidays = false): Carbon
+    {
+        $countDays = 1;
+
+        return self::getNthWorkingDayFrom($date, $countDays, $ignoreBankHolidays);
+    }
+
+    public static function getNthWorkingDayFrom(
+        $date,
+        $countDays,
+        $ignoreBankHolidays = false): Carbon
+    {
+        $workingDay = $date->copy()->hour(0)->minute(0)->second(0);
+
+        while ($countDays > 0)
+        {
+            $workingDay->addDay();
+
+            if (self::isWorkingDay($workingDay, $ignoreBankHolidays) === true)
+            {
+                $countDays--;
+            }
+        }
+
+        return $workingDay;
+    }
 
     /**
      * Check if the given date is a working day or not

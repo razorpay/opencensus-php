@@ -4,25 +4,21 @@ namespace RZP\Models\VirtualAccount;
 
 use App;
 
-use RZP\Exception;
-use RZP\Models\BankAccount\Generator;
-use RZP\Models\QrCode;
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
+use RZP\Models\Vpa;
 use RZP\Models\Base;
+use RZP\Models\QrCode;
+use RZP\Models\BankAccount\Generator;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Receiver extends Base\Core
 {
     const BANK_ACCOUNT      = 'bank_account';
-    // const VPA               = 'vpa';
+    const VPA               = 'vpa';
     const QR_CODE           = 'qr_code';
 
     const TYPES = [
         self::BANK_ACCOUNT,
-        // self::VPA,
+        self::VPA,
         self::QR_CODE,
     ];
 
@@ -53,6 +49,21 @@ class Receiver extends Base\Core
         return (empty($invalidTypes) === true);
     }
 
+    /**
+     * If the QR options are provided and with specific flags which are
+     * card = false and upi = true, we consider this to be UPI QR
+     *
+     * @param array $options
+     * @return bool
+     */
+    public static function isOnlyUpiQrCode(array $options): bool
+    {
+        $isCard = filter_var($options['method']['card'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $isUpi  = filter_var($options['method']['upi'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        return ($isCard === false and $isUpi === true);
+    }
+
     public function buildBankAccount(Entity $virtualAccount, array $options): BankAccount
     {
         $validator = $virtualAccount->getValidator();
@@ -71,11 +82,22 @@ class Receiver extends Base\Core
         return $qrCode;
     }
 
+    public function buildVPA(Entity $virtualAccount, array $options): Vpa\Entity
+    {
+        $validator = $virtualAccount->getValidator();
+
+        $validator->validateInput('vpaReceiverOption', $options);
+
+        return (new Vpa\Generator($this->merchant, $options))->generate($virtualAccount);
+    }
+
     protected function getQrCodeEntityParams(Entity $virtualAccount, array $options): array
     {
+        $provider = self::isOnlyUpiQrCode($options) ? Provider::UPI_QR : Provider::BHARAT_QR;
+
         $input = [
             // For now it is set bharat qr as default
-            QrCode\Entity::PROVIDER  => Provider::BHARAT_QR,
+            QrCode\Entity::PROVIDER  => $provider,
             QrCode\Entity::AMOUNT    => $virtualAccount->getAmountExpected(),
         ];
 
@@ -85,5 +107,15 @@ class Receiver extends Base\Core
         }
 
         return $input;
+    }
+
+    public function getVpaConfigs(Entity $virtualAccount)
+    {
+        return (new Vpa\Generator($this->merchant, []))->getConfigs($virtualAccount);
+    }
+
+    public function getBankAccountConfigs(Entity $virtualAccount)
+    {
+        return (new Generator($this->merchant, []))->getConfigs($virtualAccount);
     }
 }
