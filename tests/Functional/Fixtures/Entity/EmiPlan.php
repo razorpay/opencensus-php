@@ -197,6 +197,15 @@ class EmiPlan extends Base
             'merchant_id'       => '10000000000000',
             'bank'              => null,
         ],
+        [
+            'id'                => '60101010101012',
+            'duration'          => '9',
+            'rate'              => '1300',
+            'methods'           => 'creditcard',
+            'network'           => 'AMEX',
+            'min_amount'        => '2000000',
+            'merchant_id'       => '10000000000000',
+        ]
     ];
 
     public function createDefaultEmiPlans()

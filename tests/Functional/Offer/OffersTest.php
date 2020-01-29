@@ -196,7 +196,7 @@ class OffersTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
-        $this->fixtures->create('emi_plan:default_emi_plans');
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
 
         $this->startTest();
     }
