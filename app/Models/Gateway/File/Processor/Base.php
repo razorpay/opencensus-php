@@ -44,8 +44,6 @@ abstract class Base extends Core
         $this->refundCore = new Refund\Core;
 
         $this->increaseAllowedSystemLimits();
-
-        $this->resetFileProcessorAttributes();
     }
 
     protected function increaseAllowedSystemLimits()
@@ -94,6 +92,9 @@ abstract class Base extends Core
     {
         try
         {
+            // Resetting any global variables being used since this is a singleton class
+            $this->resetFileProcessorAttributes();
+
             $entities = $this->repo->useSlave(function ()
             {
                 return $this->fetchEntities();
