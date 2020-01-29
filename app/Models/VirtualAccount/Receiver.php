@@ -108,4 +108,14 @@ class Receiver extends Base\Core
 
         return $input;
     }
+
+    public function getVpaConfigs(Entity $virtualAccount)
+    {
+        return (new Vpa\Generator($this->merchant, []))->getConfigs($virtualAccount);
+    }
+
+    public function getBankAccountConfigs(Entity $virtualAccount)
+    {
+        return (new Generator($this->merchant, []))->getConfigs($virtualAccount);
+    }
 }
