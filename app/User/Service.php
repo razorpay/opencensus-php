@@ -888,7 +888,8 @@ class Service extends Base\Service
             'vpa_enabled',
             'async_reports',
             'new_pp_success_modal',
-            'hide_company_name'
+            'hide_company_name',
+            'rx_test_mode',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
