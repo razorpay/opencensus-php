@@ -4,6 +4,7 @@ import {
   getActionName as getFetchActionName,
   makeActionCollectionReducer,
   updateEntityInList,
+  appendEntityToList,
   fetchAll,
 } from 'merchant/reducers/collection';
 
@@ -12,6 +13,8 @@ const MERCHANT_LOGS = 'MERCHANT_LOGS';
 
 const getLoadMoreActionName = entity => entity + '_LOAD_MORE';
 const getPollLogActionName = entity => entity + '_POLLING';
+const getLogCreateActionName = entity =>
+  `${entity.substring(0, entity.length - 1)}_CREATE`;
 
 const partnerLogFetchAction = getFetchActionName(PARTNER_LOGS);
 const merchantLogFetchAction = getFetchActionName(MERCHANT_LOGS);
@@ -20,6 +23,9 @@ const merchantLogLoadMoreAction = getLoadMoreActionName(MERCHANT_LOGS);
 
 const merchantReportPollLogAction = getPollLogActionName(MERCHANT_LOGS);
 const partnerReportPollLogAction = getPollLogActionName(PARTNER_LOGS);
+
+const merchantReportLogCreateAction = getLogCreateActionName(MERCHANT_LOGS);
+const partnerReportLogCreateAction = getLogCreateActionName(PARTNER_LOGS);
 
 const filterSameObjects = (state, action) => {
   const existingIds = state.items.map(({ id }) => id);
@@ -48,12 +54,19 @@ const handleLoadMoreLogsSuccess = (state, action) => ({
   items: [...state.items, ...action.payload.data.items],
 });
 
+const appendEntityIfNotDuplicated = (state, action) =>
+  action.payload.is_already_present
+    ? { ...state }
+    : appendEntityToList(state, action);
+
 export const fetchPartnerReportLogs = params =>
   fetchAll(params, Log, PARTNER_LOGS);
+
 export const partnerLogListReducer = makeActionCollectionReducer(PARTNER_LOGS, {
   [`${partnerLogFetchAction}::PENDING`]: handleFetchLogsPending,
   [`${partnerLogFetchAction}::SUCCESS`]: handleFetchLogsSuccess,
   [`${partnerReportPollLogAction}::SUCCESS`]: updateEntityInList,
+  [`${partnerReportLogCreateAction}::SUCCESS`]: appendEntityIfNotDuplicated,
 });
 
 export const fetchMerchantReportLogs = params =>
@@ -65,6 +78,7 @@ export const merchantLogListReducer = makeActionCollectionReducer(
     [`${merchantLogFetchAction}::SUCCESS`]: handleFetchLogsSuccess,
     [`${merchantLogLoadMoreAction}::SUCCESS`]: handleLoadMoreLogsSuccess,
     [`${merchantReportPollLogAction}::SUCCESS`]: updateEntityInList,
+    [`${merchantReportLogCreateAction}::SUCCESS`]: appendEntityIfNotDuplicated,
   }
 );
 
