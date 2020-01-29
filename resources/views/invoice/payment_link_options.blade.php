@@ -113,9 +113,7 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
             }
 
             analytics.init(['ga', 'hotjar', 'lj'], {
-                lj: data.is_test_mode
-                ? '96df432a283745908a06f711acd9e5eb' // 'feb51cc8168711ea8d71362b9e155667' Please add this key when data analytics issue fixed
-                : '96df432a283745908a06f711acd9e5eb'
+                lj: "{{ $data['lumberjack_key'] }}"
             });
 
             analytics.track('ga', 'pageview');
@@ -140,7 +138,7 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
                     },
                     {
                         propertyName:'page_id',
-                        value: data.invoice.id
+                        value: "{{ $invoice_data['id'] }}"
                     }
                 ],
             });
