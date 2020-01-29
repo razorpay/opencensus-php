@@ -224,6 +224,11 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvalidEmiDurationForIssuer()
+    {
+        $this->startTest();
+    }
+
     public function testCreateOfferWithCorporateOrRetailIssuer()
     {
         $this->startTest();

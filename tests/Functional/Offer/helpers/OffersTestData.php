@@ -1106,6 +1106,40 @@ return [
         ]
     ],
 
+    'testInvalidEmiDurationForIssuer' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'payment_network'     => 'AMEX',
+                'emi_subvention'      => true,
+                'emi_durations'       => [3],
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details',
+                'block'               =>  1,
+                'type'                => 'instant'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid emi durations given 3'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
     'testAddIinsToCardOffer' => [
         'request' => [
             'content' => [
