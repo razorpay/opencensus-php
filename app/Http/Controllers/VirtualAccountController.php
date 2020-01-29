@@ -62,4 +62,11 @@ class VirtualAccountController extends Controller
 
         return ApiResponse::json($va);
     }
+
+    public function getReceiverConfigs()
+    {
+        $data = $this->service()->getConfigsForVirtualAccount();
+
+        return ApiResponse::json($data);
+    }
 }

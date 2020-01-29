@@ -36,8 +36,10 @@ class PublicErrorDescription
 
     const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                 = 'Terminal disable failed on gateway';
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                  = 'Terminal enable failed on gateway';
-    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Card not enrolled';
-
+    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Card is not enrolled for 3D Secure authentication';
+    const GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED                         = 'Card is not enrolled for 3D Secure authentication';
+    const GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED                            = 'Card is not enrolled for 3D Secure authentication';
+    const BAD_REQUEST_PAYMENT_CARDHOLDER_NOT_ENROLLED_IN_3DSECURE_AUTH          = 'Card is not enrolled for 3D Secure authentication';
     const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
@@ -711,6 +713,8 @@ class PublicErrorDescription
     const BAD_REQUEST_ACTION_NOT_APPROVED                                       = 'The requested action is not in approved state';
     const BAD_REQUEST_ACTION_ALREADY_EXECUTED                                   = 'The requested action has already been executed';
     const BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED                     = 'Updating or Deleting a workflow is not allowed when there are open actions';
+    const BAD_REQUEST_WORKFLOW_RULES_UPDATE_OR_DELETE_NOT_ALLOWED               = 'Workflow payout amount rules have already been created';
+    const BAD_REQUEST_WORKFLOW_NOT_ACCESSIBLE                                   = 'Workflow does not belong to one merchant';
     const BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE                              = 'The levels in the steps should be increment of one';
     const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                           = 'The role and level combination should be unique';
     const BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED                    = 'Permissions associated with a workflow cannot be removed';
@@ -723,6 +727,7 @@ class PublicErrorDescription
     const BAD_REQUEST_WORKFLOW_DUTY_TYPE_INVALID                                = 'Workflow requests listing duty/type params are invalid';
     const BAD_REQUEST_WORKFLOW_ENTITY_VALIDATOR_RULE_NOT_FOUND                  = 'Workflow entity validator not found';
     const BAD_REQUEST_INVALID_STATE                                             = 'Invalid state passed in query parameters';
+    const BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT                               = 'Workflow does not have create_payout permission';
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';
 
@@ -759,6 +764,7 @@ class PublicErrorDescription
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                       = 'Error occurred trying to create file';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE                          = 'Error occurred while sending file';
     const SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS                  = 'Combined file not sent as claims is lesser than refunds';
+    const SERVER_ERROR_GATEWAY_FILE_LOGICAL_ERROR_REFUNDS_OUT_OF_RANGE          = 'Refunds out of expected date range';
 
     const BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME                             = 'The merchant request name is invalid';
     const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                      = 'The merchant request submissions are missing';
@@ -806,6 +812,10 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_MODE_REQUIRED                                      = 'Mode is required for payout';
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                       = 'Payout mode is invalid';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
+    const BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED              = 'Creating/Updating an internal Razorpay Contact is not permitted';
+    const BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED                  = 'Cancelling a Fee Recovery Payout is not permitted';
+    const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED                = 'Updating an internal Razorpay Fund Account is not permitted';
+    const BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED              = 'Creating a fund account for an Internal Razopay contact is not permitted';
 
     // payout links
     const BAD_REQUEST_CANNOT_GENERATE_OTP_WITHOUT_PHONE_AND_EMAIL              = 'Provided contact neither has email nor phone number';
@@ -846,6 +856,8 @@ class PublicErrorDescription
     const SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE                             = 'Batch file upload failed due to batch server error';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
+
+    const BAD_REQUEST_MERCHANT_ID_NOT_PASSED                                    = 'Merchant id should be passed for this permission';
 
     const BAD_REQUEST_PAYMENT_REDIRECT_INVALID_AUTH                             = 'Payment failed';
     const BAD_REQUEST_PAYMENT_REDIRECT_NO_INPUT_DETAILS                         = 'Payment failed';
