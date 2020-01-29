@@ -169,7 +169,10 @@ export default class TransactionsContainer extends Component {
         ) : (
           <TestModeBanner />
         )}
-        {settlement_ux_revamp && nextSettlement ? (
+        {settlement_ux_revamp &&
+        nextSettlement &&
+        no_settlement &&
+        no_settlement.caption === 'Settlements are on hold' ? (
           <OnHoldBanner
             ctaOnClick={() => {
               this.props.openModal({
