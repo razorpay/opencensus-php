@@ -499,6 +499,7 @@ class Constants
         self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
+        self::SKIP_WORKFLOWS_FOR_API          => true,
     ];
 
     // Entity type constants
@@ -633,6 +634,11 @@ class Constants
             'display_name'  => 'D2C Credit score campaign',
             'documentation' => '',
         ],
+        self::SKIP_WORKFLOWS_FOR_API    => [
+            'feature'       => self::SKIP_WORKFLOWS_FOR_API,
+            'display_name'  => 'Skip Workflow for API',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -650,6 +656,7 @@ class Constants
         self::VIRTUAL_ACCOUNTS,
         self::ES_AUTOMATIC,
         self::SHOW_CREDIT_SCORE,
+        self::SKIP_WORKFLOWS_FOR_API,
     ];
 
     /*
