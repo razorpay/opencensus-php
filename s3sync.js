@@ -70,7 +70,14 @@ glob(
         });
       }
 
-      s3.putObject(fileParams, err => console.log(err || fileParams.Key));
+      s3.putObject(fileParams, (err, data) => {
+        if (err) {
+          console.error(err);
+          process.exit(1);
+        } else {
+          console.log(fileParams.Key);
+        }
+      });
     });
   }
 );
