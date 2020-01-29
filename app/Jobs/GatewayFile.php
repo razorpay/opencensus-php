@@ -17,8 +17,13 @@ class GatewayFile extends Job
 
     protected $mode;
 
+    /**
+     * @var $gatewayFile File\Entity
+     */
+    protected $gatewayFile;
+
     // time (in seconds) after which the job is killed.
-    public $timeout = 1500;
+    public $timeout = 3600;
 
     public function __construct(string $gatewayFileId, string $mode)
     {
@@ -42,6 +47,8 @@ class GatewayFile extends Job
             $gatewayFile = $this->repoManager
                                 ->gateway_file
                                 ->findOrFailPublic($this->gatewayFileId);
+
+            $this->gatewayFile = $gatewayFile;
 
             $gatewayFileCore = new File\Core;
 
@@ -91,6 +98,15 @@ class GatewayFile extends Job
         $this->trace->traceException(
             $e, Trace::ERROR, TraceCode::GATEWAY_FILE_JOB_ERROR, [File\Entity::ID => $this->gatewayFileId]);
 
+        try
+        {
+            $this->resetGatewayFileState();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+        }
+
         if (($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS) or
             (($e instanceof BadRequestException) and
             ($e->getError()->getInternalErrorCode() !== ErrorCode::BAD_REQUEST_GATEWAY_FILE_ANOTHER_OPERATION_IN_PROGRESS)))
@@ -101,5 +117,19 @@ class GatewayFile extends Job
         {
             $this->release(self::RELEASE_WAIT_SECS);
         }
+    }
+
+    protected function resetGatewayFileState()
+    {
+        $this->gatewayFile->setProcessing(false);
+
+        $this->repoManager->saveOrFail($this->gatewayFile);
+    }
+
+    protected function beforeJobKillCleanUp()
+    {
+        $this->resetGatewayFileState();
+
+        parent::beforeJobKillCleanUp();
     }
 }
