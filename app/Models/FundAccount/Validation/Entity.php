@@ -83,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CREATED_AT,
+        self::UTR,
     ];
 
     protected $public = [
@@ -95,6 +96,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::RESULTS,
         self::CREATED_AT,
+        self::UTR,
     ];
 
     protected $publicSetters = [

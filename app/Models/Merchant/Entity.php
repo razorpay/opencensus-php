@@ -79,6 +79,7 @@ class Entity extends Base\PublicEntity
     const RECEIPT_EMAIL_ENABLED          = 'receipt_email_enabled';
     const CHANNEL                        = 'channel';
     const WEBSITE                        = 'website';
+    const EXTERNAL_ID                    = 'external_id';
 
     // this is same as mcc in legal entity table.
     // This will be removed after migrating to legal entity
@@ -144,6 +145,9 @@ class Entity extends Base\PublicEntity
     // List of tags this entity is tagged as.
     const TAG_LIST                  = 'tag_list';
 
+    // key used to pass external legal entity id when creating merchant
+    const LEGAL_EXTERNAL_ID         = 'legal_external_id';
+
     /**
      * Constants for merchant analytics keys
      */
@@ -157,6 +161,7 @@ class Entity extends Base\PublicEntity
 
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
+    const AUTO_REFUND_DELAY_FOR_NACH = 1728000; // 20 days
     const DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
     const INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 7;
     // 30 minutes in seconds
@@ -288,6 +293,7 @@ class Entity extends Base\PublicEntity
         self::DASHBOARD_WHITELISTED_IPS_TEST,
         self::DEFAULT_REFUND_SPEED,
         self::PARTNERSHIP_URL,
+        self::EXTERNAL_ID,
     ];
 
     const CONFIG_LIST = [
@@ -371,6 +377,7 @@ class Entity extends Base\PublicEntity
         self::RESTRICTED,
         self::DEFAULT_REFUND_SPEED,
         self::PARTNERSHIP_URL,
+        self::EXTERNAL_ID,
      ];
 
     protected $defaults = [
@@ -605,6 +612,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
     }
+    public function isDisplayParentPaymentId(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::DISPLAY_LA_PARENT_PAYMENT_ID);
+    }
 
     public function isAxisExpressPayEnabled(): bool
     {
@@ -812,8 +823,15 @@ class Entity extends Base\PublicEntity
     public function activate()
     {
         $this->setAttribute(self::ACTIVATED, true);
-        $this->setAttribute(self::LIVE, true);
+        $this->liveEnable();
         $this->setAttribute(self::ACTIVATED_AT, time());
+    }
+
+    public function deactivate()
+    {
+        $this->setAttribute(self::ACTIVATED, false);
+        $this->liveDisable();
+        $this->holdFunds();
     }
 
     /**
@@ -997,7 +1015,7 @@ class Entity extends Base\PublicEntity
         return $this->hasOne(Balance\Entity::class)
             ->where(Balance\Entity::TYPE, Balance\Type::RESERVE_PRIMARY);
     }
-    
+
     public function reserveBankingBalance()
     {
         return $this->hasOne(Balance\Entity::class)
@@ -1237,6 +1255,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_PLAN_ID);
     }
 
+    public function getExternalId()
+    {
+        return $this->getAttribute(self::EXTERNAL_ID);
+    }
+
     public function offers()
     {
         return $this->hasMany('RZP\Models\Offer\Entity');
@@ -1245,6 +1268,11 @@ class Entity extends Base\PublicEntity
     public function bankingAccounts()
     {
         return $this->hasMany(BankingAccount\Entity::class);
+    }
+
+    public function hasBankingAccounts()
+    {
+        return ($this->bankingAccounts->count() > 0);
     }
 
     public function activeBankingAccounts()
@@ -1636,6 +1664,13 @@ class Entity extends Base\PublicEntity
     public function isPartner(): bool
     {
         return $this->isAttributeNotNull(self::PARTNER_TYPE);
+    }
+
+    public function isInheritanceParent(): bool
+    {
+        $inheritanceMap = (new InheritanceMap\Repository)->getInheritanceMapByParentMerchantId($this->getId());
+
+        return (sizeof($inheritanceMap) !== 0);
     }
 
     public function isFullyManagedPartner(): bool

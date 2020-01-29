@@ -49,6 +49,7 @@ class Validator extends Base\Validator
         Entity::ADMINS                      => 'sometimes|array',
         Entity::COUPON_CODE                 => 'sometimes|string',
         Constants::PARTNER_INTENT           => 'sometimes|boolean',
+        Entity::EXTERNAL_ID                 => 'sometimes|string|max:255',
     ];
 
     protected static $editRules = [
@@ -518,10 +519,13 @@ class Validator extends Base\Validator
         if ($merchants->count() > 0)
         {
             // throw exception if merchant by that email already exists
+            $description = PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS . $merchants->pluck(Entity::ID)->first();
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
                 Entity::EMAIL,
-                $merchants->pluck(Entity::ID)->toArray()
+                $merchants->pluck(Entity::ID)->toArray(),
+                $description
             );
         }
     }

@@ -340,6 +340,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::IS_FTS);
     }
 
+    public function getGatewayRefNo()
+    {
+        return $this->getAttribute(self::GATEWAY_REF_NO);
+    }
+
     public function hasBankAccount()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));

@@ -81,6 +81,26 @@ class VerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function paylater_icici($entities)
+    {
+        $response = [
+            'error'             => null,
+            'next'              => [],
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data' => [
+                '_raw'            => 'dummy_raw_value',
+                'bank_payment_id' => "0000000000",
+                'status'          => 'verification_successful',
+                'paymentId'       => $entities['payment']['id'],
+                'amount'          => $entities['payment']['amount']
+            ],
+        ];
+
+        return $response;
+    }
+
     public function netbanking_kvb($entities)
     {
         $response = [

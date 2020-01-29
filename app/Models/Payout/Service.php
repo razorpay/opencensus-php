@@ -79,7 +79,7 @@ class Service extends Base\Service
 
         (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
 
-        $payout = (new Core)->approvePayout($payout);
+        $payout = (new Core)->approvePayout($payout, $input);
 
         return $payout->toArrayPublic();
     }
@@ -107,7 +107,7 @@ class Service extends Base\Service
         {
             try
             {
-                $payout = (new Core)->approvePayout($payout);
+                $payout = (new Core)->approvePayout($payout, $input);
             }
             catch (\Throwable $e)
             {
@@ -127,7 +127,7 @@ class Service extends Base\Service
         ];
     }
 
-    public function rejectFundAccountPayout(string $id): array
+    public function rejectFundAccountPayout(string $id, array $input): array
     {
         $this->trace->info(TraceCode::PAYOUT_REJECT_REQUEST, ['id' => $id]);
 
@@ -136,7 +136,7 @@ class Service extends Base\Service
 
         $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 
-        $payout = (new Core)->rejectPayout($payout);
+        $payout = (new Core)->rejectPayout($payout, $input);
 
         return $payout->toArrayPublic();
     }
@@ -160,7 +160,7 @@ class Service extends Base\Service
         {
             try
             {
-                $payout = (new Core)->rejectPayout($payout);
+                $payout = (new Core)->rejectPayout($payout, $input);
             }
             catch (\Throwable $e)
             {

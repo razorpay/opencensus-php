@@ -16,17 +16,19 @@ class Response extends Core
         $accountDetails = $account->merchantDetail;
 
         $data = [
-            Constants::ENTITY          => Constants::ACCOUNT,
-            Constants::ID              => Entity::getSignedId($account->getId()),
-            Constants::MANAGED         => 1,
-            Constants::NOTES           => $account->getNotes(),
-            Constants::BUSINESS_ENTITY => $accountDetails->getBusinessType(),
-            Constants::LEGAL_ENTITY_ID => $account->getLegalEntityId(),
-            Constants::EMAIL           => $account->getEmail(),
-            Constants::REVIEW_STATUS   => $this->getReviewStatusData($account),
-            Constants::PROFILE         => $this->getProfileData($account),
-            Constants::PAYMENT         => $this->getPaymentData($account),
-            Constants::CREATED_AT      => $account->getCreatedAt(),
+            Constants::ENTITY            => Constants::ACCOUNT,
+            Constants::ID                => Entity::getSignedId($account->getId()),
+            Constants::MANAGED           => 1,
+            Constants::EXTERNAL_ID       => $account->getExternalId(),
+            Constants::NOTES             => $account->getNotes(),
+            Constants::BUSINESS_ENTITY   => $accountDetails->getBusinessType(),
+            Constants::LEGAL_ENTITY_ID   => $account->getLegalEntityId(),
+            Constants::LEGAL_EXTERNAL_ID => $account->legalEntity->getExternalId(),
+            Constants::EMAIL             => $account->getEmail(),
+            Constants::REVIEW_STATUS     => $this->getReviewStatusData($account),
+            Constants::PROFILE           => $this->getProfileData($account),
+            Constants::PAYMENT           => $this->getPaymentData($account),
+            Constants::CREATED_AT        => $account->getCreatedAt(),
         ];
 
         $contactMobile =  $accountDetails->getContactMobile();

@@ -31,6 +31,8 @@ use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 /**
  * @group dns-sensitive
+ *
+ * todo, need to add test cases for VA Emails (https://razorpay.atlassian.net/browse/RX-1025)
  */
 class ActivationTest extends OAuthTestCase
 {

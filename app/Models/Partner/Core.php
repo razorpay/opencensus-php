@@ -4,9 +4,12 @@ namespace RZP\Models\Partner;
 
 use Razorpay\OAuth;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
@@ -80,5 +83,36 @@ class Core extends Base\Core
         return ((empty($partner) === false) and
                 ($subMerchantDetails->getBusinessInternational() === true) and
                 ($partner->forceGreyListInternational() === true));
+    }
+
+    public function validateExternalIdForPartnerSubmerchant(Merchant\Entity $partner, string $externalId)
+    {
+        $merchantCore = new Merchant\Core;
+
+        $appIds = $merchantCore->getPartnerApplicationIds($partner);
+
+        $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS,
+                           [
+                               'partner_id'  => $partner->getId(),
+                               'app_ids'     => $appIds,
+                               'external_id' => $externalId,
+                           ]);
+
+        $params = [
+            Merchant\Entity::EXTERNAL_ID => $externalId,
+        ];
+
+        $merchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds, $params);
+
+        if ($merchants->isNotEmpty() === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_DUPLICATE_EXTERNAL_ID,
+                Merchant\Entity::EXTERNAL_ID,
+                [
+                    'partner_id' => $partner->getId(),
+                    'merchants'  => $merchants->pluck(Merchant\Entity::ID)->toArray(),
+                ]);
+        }
     }
 }

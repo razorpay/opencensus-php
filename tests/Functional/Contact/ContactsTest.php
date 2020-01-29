@@ -5,9 +5,11 @@ namespace RZP\Tests\Functional\Contacts;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class ContactsTest extends TestCase
 {
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -437,4 +439,42 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testAddCustomContactTypeRZPFees()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateRZPFeesTypeContact()
+    {
+        $this->startTest();
+    }
+
+    public function testUpdateRZPFeesContact()
+    {
+        $this->testCreateContact();
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->fixtures->edit('contact', $contact->getId(), ['type' => 'rzp_fees']);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/contacts/' . $contact->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testUpdateContactTypeToRZPFeesContact()
+    {
+        $this->testCreateContact();
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/contacts/' . $contact->getPublicId();
+
+        $this->startTest();
+    }
 }

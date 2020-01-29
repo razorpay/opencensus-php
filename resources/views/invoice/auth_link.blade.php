@@ -19,9 +19,9 @@
         config: {
             api: "{{env('APP_URL')}}/"
         }
-    }
-
+    };
 </script>
+<script type="text/javascript" src='https://cdn.razorpay.com/static/analytics/bundle.js'></script>
 <script type="text/javascript" src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script type="text/javascript" src="{{env('AWS_CF_CDN_URL')}}/static/auth_link/bundle.js"></script>
 </html>

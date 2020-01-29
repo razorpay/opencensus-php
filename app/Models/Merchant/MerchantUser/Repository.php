@@ -31,4 +31,13 @@ class Repository extends Base\Repository
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
     }
+
+    public function findByRolesAndMerchantId(array $roles, string $merchantId): Base\PublicCollection
+    {
+        return $this->newQuery()
+                        ->select()
+                        ->where(Entity::MERCHANT_ID, $merchantId)
+                        ->whereIn(Constants\Entity::ROLE, $roles)
+                        ->get();
+    }
 }

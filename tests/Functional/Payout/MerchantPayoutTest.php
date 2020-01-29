@@ -81,6 +81,30 @@ class MerchantPayoutTest extends TestCase
         return $payout;
     }
 
+    public function testCreateMerchantPayoutOnDemandAmountInCrores()
+    {
+        // Es on demand should be immune to 80 L limit applied to merchant/payouts.
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantPayoutOnDemandExceedAmountLimit()
+    {
+        // Es on demand should fail for amounts that exceed 2 cr.
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testRetryMerchantOnDemandPayout()
     {
         $payout = $this->testCreateMerchantPayoutOnDemand();
@@ -139,6 +163,8 @@ class MerchantPayoutTest extends TestCase
         return $newPayout;
     }
 
+
+
     public function testCreateMerchantPayout()
     {
         $this->ba->appAuth();
@@ -195,6 +221,14 @@ class MerchantPayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateMerchantPayoutExceedAmountLimit()
+    {
+        // Merchant payouts should fail for amounts that exceed 80 L.
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testOnDemandPayoutFetchFees()
     {
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
@@ -207,7 +241,7 @@ class MerchantPayoutTest extends TestCase
 
     public function testCreateMerchantPayoutOnDemandWithFtsRampFailure()
     {
-        $this->mockRazorxTreatment();
+        $this->mockRazorxTreatment('yesbank','on');
 
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
@@ -234,7 +268,7 @@ class MerchantPayoutTest extends TestCase
 
     public function testCreateMerchantPayoutOnDemandWithFtsRampSuccess()
     {
-        $this->mockRazorxTreatment();
+        $this->mockRazorxTreatment('yesbank','on');
 
         $this->testCreatePayout();
 

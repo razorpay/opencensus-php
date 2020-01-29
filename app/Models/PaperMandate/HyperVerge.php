@@ -320,7 +320,7 @@ class HyperVerge extends Base\Core
 
         $input[self::IFSCCode] = $bankAccount->getIfscCode();
 
-        $input[self::ACCOUNT_NUMBER] = $bankAccount->getAccountNumber();
+        $input[self::ACCOUNT_NUMBER] = stringify($bankAccount->getAccountNumber());
 
         if (empty($bankAccount->getBeneficiaryName()) === false)
         {
@@ -394,9 +394,14 @@ class HyperVerge extends Base\Core
 
     protected function getCompanyName(Entity $paperMandate): string
     {
-        $terminal = $paperMandate->terminal;
+        $merchant = $paperMandate->terminal->merchant;
 
-        return $terminal->merchant->getName();
+        if ($merchant->getId() === Constants::SHARED_TERMINAL_MERCHANT_ID)
+        {
+            return Constants::SHARED_TERMINAL_MERCHANT_NAME;
+        }
+
+        return $merchant->getName();
     }
 
     protected function getFormattedContactNumber($number)

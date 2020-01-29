@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
+
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Batch;
@@ -18,6 +19,7 @@ use RZP\Models\Payout\Status;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Balance\Type as ProductType;
@@ -105,6 +107,7 @@ class Base extends BaseCore
 
             $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                            $payout,
+                                                           $this->mode,
                                                            $this->fundTransferDestination);
 
             $downstreamProcessor->process();
@@ -146,6 +149,7 @@ class Base extends BaseCore
 
                         $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                                        $payout,
+                                                                       $this->mode,
                                                                        $this->fundTransferDestination);
 
                         //
@@ -208,6 +212,7 @@ class Base extends BaseCore
 
                 $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                                $payout,
+                                                               $this->mode,
                                                                $this->fundTransferDestination);
 
                 $downstreamProcessor->process();
@@ -446,8 +451,8 @@ class Base extends BaseCore
      * Create Payout will drive the payout cycle for merchant/customer.
      *
      * @param array $input
-     *
      * @return Payout\Entity
+     * @throws BadRequestException | Exception\BadRequestValidationFailureException
      */
     protected function createPayoutEntity(array $input)
     {

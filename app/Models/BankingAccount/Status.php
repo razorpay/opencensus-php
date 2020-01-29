@@ -81,6 +81,7 @@ class Status
       self::UNSERVICEABLE,
       self::REJECTED,
       self::CANCELLED,
+      self::ACTIVATED,
     ];
 
     public static function isValidStatus(string $status = null)

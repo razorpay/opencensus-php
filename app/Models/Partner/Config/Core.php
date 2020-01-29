@@ -4,6 +4,7 @@ namespace RZP\Models\Partner\Config;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Merchant\AccessMap;
@@ -41,6 +42,13 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($config);
+
+        $this->trace->info(
+            TraceCode::PARTNER_CONFIG_CREATED,
+            [
+                'input' => $input,
+                'id'    => $config->getId(),
+            ]);
 
         return $config;
     }
@@ -149,6 +157,13 @@ class Core extends Base\Core
         (new Validator)->validatePaymentMethodsForPartnerType($partner, $input);
 
         $this->repo->saveOrFail($config);
+
+        $this->trace->info(
+            TraceCode::PARTNER_CONFIG_EDITED,
+            [
+                'input' => $input,
+                'id'    => $config->getId(),
+            ]);
 
         return $config;
     }

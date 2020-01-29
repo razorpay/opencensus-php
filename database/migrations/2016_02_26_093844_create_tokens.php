@@ -43,6 +43,9 @@ class CreateTokens extends Migration
             $table->char(Token::CARD_ID, Token::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Token::VPA_ID, Token::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Token::BANK, 6)
                   ->nullable();
 

@@ -25,4 +25,20 @@ class UpiController extends Controller
 
         return $this->response($response);
     }
+
+    public function sendReminder()
+    {
+        $input['handle'] = $this->request()->route('handle');
+        $input['entity'] = $this->request()->route('entity');
+        $input['id']     = $this->request()->route('id');
+        $input['action'] = $this->request()->route('action');
+
+        $this->app['trace']->info(TraceCode::P2P_REMINDER_CALLBACK, [
+           'input' => $input
+        ]);
+
+        return [
+            'success' => true,
+        ];
+    }
 }
