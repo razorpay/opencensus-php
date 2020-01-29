@@ -2151,6 +2151,22 @@ class PayoutTest extends TestCase
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
     }
 
+    public function testGetPayoutMetaWorkflowProxyAuth()
+    {
+        $merchantUser = $this->fixtures->user->createUserForMerchant('100000Razorpay');
+
+        $this->ba->proxyAuth('rzp_test_100000Razorpay', $merchantUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetPayoutMetaWorkflowPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testAddCustomPurposeRZPFees()
     {
         $this->startTest();
@@ -2175,5 +2191,4 @@ class PayoutTest extends TestCase
 
         $this->startTest();
     }
-
 }
