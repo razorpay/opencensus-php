@@ -2565,6 +2565,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const TRACE_FOR_INCREASED_RESPONSE_TIMES                    = 'TRACE_FOR_INCREASED_RESPONSE_TIMES';
 
+    const AMOUNT_THRESHOLD_FOR_BANKING_ALERT                    = 'AMOUNT_THRESHOLD_FOR_BANKING_ALERT';
+
     const TRACE_REQUEST_METRIC                                  = 'TRACE_REQUEST_METRIC';
 
     protected static $messages = [
