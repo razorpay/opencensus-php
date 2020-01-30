@@ -44,10 +44,6 @@ class Activation extends Mailable
                 $this->view('emails.merchant.activation_heimdall');
             }
         }
-        else if ($this->data['merchant']['activation_source'] === Product::BANKING)
-        {
-            $this->view('emails.merchant.activation_banking');
-        }
         else
         {
             $this->view('emails.merchant.activation');

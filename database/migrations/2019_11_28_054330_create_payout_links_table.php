@@ -109,33 +109,33 @@ class CreatePayoutLinksTable extends Migration
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 
             // todo, pl uncomment this after going live, to skip FKs entry in prod DB
-//            $table->foreign(Entity::MERCHANT_ID)
-//                  ->references(Merchant::ID)
-//                  ->on(Table::MERCHANT)
-//                  ->on_delete('restrict');
-//
-//            $table->foreign(Entity::CONTACT_ID)
-//                  ->references(Contact::ID)
-//                  ->on(Table::CONTACT)
-//                  ->on_delete('restrict');
-//
-//            $table->foreign(Entity::FUND_ACCOUNT_ID)
-//                  ->references(FundAccount::ID)
-//                  ->on(Table::FUND_ACCOUNT)
-//                  ->on_delete('restrict');
-//
-//            $table->foreign(Entity::BALANCE_ID)
-//                  ->references(Balance\Entity::ID)
-//                  ->on(Table::BALANCE)
-//                  ->on_delete('restrict');
+            $table->foreign(Entity::MERCHANT_ID)
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+
+            $table->foreign(Entity::CONTACT_ID)
+                  ->references(Contact::ID)
+                  ->on(Table::CONTACT)
+                  ->on_delete('restrict');
+
+            $table->foreign(Entity::FUND_ACCOUNT_ID)
+                  ->references(FundAccount::ID)
+                  ->on(Table::FUND_ACCOUNT)
+                  ->on_delete('restrict');
+
+            $table->foreign(Entity::BALANCE_ID)
+                  ->references(Balance\Entity::ID)
+                  ->on(Table::BALANCE)
+                  ->on_delete('restrict');
         });
 
         Schema::table(Table::PAYOUT, function($table)
         {
-//            $table->foreign(\RZP\Models\Payout\Entity::PAYOUT_LINK_ID)
-//                  ->references(Entity::ID)
-//                  ->on(Table::PAYOUT_LINK)
-//                  ->on_delete('restrict');
+            $table->foreign(\RZP\Models\Payout\Entity::PAYOUT_LINK_ID)
+                  ->references(Entity::ID)
+                  ->on(Table::PAYOUT_LINK)
+                  ->on_delete('restrict');
         });
     }
 

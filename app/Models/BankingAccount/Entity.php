@@ -7,6 +7,8 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\BankingAccount\State;
+use RZP\Models\Base\PublicCollection;
 
 /**
  * @property Merchant\Entity            $merchant
@@ -188,6 +190,7 @@ class Entity extends Base\PublicEntity
         // 'banking_account_details' works fine
         //
         'bankingAccountDetails',
+        self::PASSWORD,
     ];
 
     protected $public = [
@@ -413,6 +416,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE1);
     }
 
+    public function getBankInternalStatus()
+    {
+        return $this->getAttribute(self::BANK_INTERNAL_STATUS);
+    }
+
     public function getDetailsDataUsingKey($key)
     {
         return $this->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY, $key)
@@ -436,6 +444,23 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Balance\Entity::class);
     }
 
+    public function activationStates()
+    {
+        return $this->hasMany('\RZP\Models\BankingAccount\State\Entity');
+    }
+
+    /**
+     * This function is used for getting the activation status change log of a banking account
+     * @param Entity $bankingAccount
+     *
+     * @return PublicCollection
+     */
+    public function getActivationStatusChangeLog(): PublicCollection
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT)
+                    ->get();
+    }
     public function bankingAccountDetails()
     {
         return $this->hasMany(Detail\Entity::class, Detail\Entity::BANKING_ACCOUNT_ID, self::ID);

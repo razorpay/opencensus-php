@@ -243,7 +243,6 @@ class GatewayController extends Controller
             case Gateway::WALLET_FREECHARGE:
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
-            case Gateway::UPI_AIRTEL:
             case Gateway::WALLET_PHONEPE:
             case Gateway::UPI_CITI:
             case 'axis_corporate':
@@ -274,6 +273,7 @@ class GatewayController extends Controller
                 break;
 
             case Gateway::UPI_ICICI:
+            case Gateway::UPI_AIRTEL:
                 $input = Request::getContent();
 
                 $data = $this->processServerCallback($input, $gateway);

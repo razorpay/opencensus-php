@@ -612,6 +612,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
     }
+    public function isDisplayParentPaymentId(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::DISPLAY_LA_PARENT_PAYMENT_ID);
+    }
 
     public function isAxisExpressPayEnabled(): bool
     {
@@ -819,8 +823,15 @@ class Entity extends Base\PublicEntity
     public function activate()
     {
         $this->setAttribute(self::ACTIVATED, true);
-        $this->setAttribute(self::LIVE, true);
+        $this->liveEnable();
         $this->setAttribute(self::ACTIVATED_AT, time());
+    }
+
+    public function deactivate()
+    {
+        $this->setAttribute(self::ACTIVATED, false);
+        $this->liveDisable();
+        $this->holdFunds();
     }
 
     /**
@@ -1259,6 +1270,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany(BankingAccount\Entity::class);
     }
 
+    public function hasBankingAccounts()
+    {
+        return ($this->bankingAccounts->count() > 0);
+    }
+
     public function activeBankingAccounts()
     {
         return $this->bankingAccounts()
@@ -1648,6 +1664,13 @@ class Entity extends Base\PublicEntity
     public function isPartner(): bool
     {
         return $this->isAttributeNotNull(self::PARTNER_TYPE);
+    }
+
+    public function isInheritanceParent(): bool
+    {
+        $inheritanceMap = (new InheritanceMap\Repository)->getInheritanceMapByParentMerchantId($this->getId());
+
+        return (sizeof($inheritanceMap) !== 0);
     }
 
     public function isFullyManagedPartner(): bool

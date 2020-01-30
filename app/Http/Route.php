@@ -340,9 +340,9 @@ final class Route
         'virtual_account_fetch'                    => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
         'virtual_account_fetch_multiple'           => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
         'virtual_account_fetch_payments'           => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
-        'virtual_account_refund_excess'            => ['post',     'virtual_accounts/refund/excess',                 'VirtualAccountController@refundExcessPayments'                     ],
         'virtual_account_close_cron'               => ['post',     'virtual_accounts/close',                         'VirtualAccountController@closeVirtualAccountsByCloseBy'            ],
         'virtual_account_add_receiver'             => ['patch',    'virtual_accounts/{id}/receiver',                 'VirtualAccountController@addReceiver'                              ],
+        'virtual_account_configs'                  => ['get',      'virtual_account/configs',                        'VirtualAccountController@getReceiverConfigs'                                     ],
         'upi_transfer_process'                     => ['post',     'live/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'upi_transfer_process_test'                => ['post',     'test/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'payment_upi_transfer_fetch'               => ['get',      'payments/{id}/upi_transfer',                     'UpiTransferController@fetchForPayment'                             ],
@@ -353,6 +353,7 @@ final class Route
         'webhook_fetch_multiple'                   => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
         'oauth_app_webhook_create'                 => ['post',     'oauth/applications/{id}/webhooks',               'MerchantController@postOAuthApplicationWebhook'                    ],
         'webhook_stork_migrate'                    => ['post',     'webhooks/migrate/stork',                         'WebhookController@webhookStorkMigrate'                             ],
+        'webhook_deactivate'                       => ['post',     'webhooks/{id}/deactivate',                       'WebhookController@webhookDeactivate'                               ],
         'merchant_create_key'                      => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                      => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'merchant_replace_key'                     => ['put',      'keys/{id}',                                      'KeyController@putKeys'                                             ],
@@ -403,6 +404,7 @@ final class Route
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
         'toggle_transaction_hold'                  => ['patch',    'transactions/hold',                              'TransactionController@toggleTransactionHold'                       ],
         'toggle_transaction_release'               => ['patch',    'transactions/release',                           'TransactionController@toggleTransactionRelease'                    ],
+        'mdr_adjustment'                          => ['post',      'transactions/mdr_adjustment_calculation',        'TransactionController@mdrAdjustmentCalculation'                    ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
@@ -807,6 +809,9 @@ final class Route
         'action_request_execute'                   => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
+        'workflow_payout_amount_rules_get_admin'   => ['get',      'admin-workflows/rules/payout_amount',            'WorkflowController@getWorkflowPayoutAmountRules'                   ],
+        'workflow_payout_amount_rules_create'      => ['post',     'workflows/rules/payout_amount',                  'WorkflowController@postWorkflowPayoutAmountRules'                  ],
+        'workflow_merchants_create_payout_get'     => ['get',      'merchants/workflows/permissions/create_payout',  'WorkflowController@getMerchantIdsForCreatePayoutWorkflowPermission'],
 
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -901,6 +906,7 @@ final class Route
         'reversal_fetch_multiple_la'               => ['get',      'la-reversals',                                   'ReversalController@getLinkedAccountReversals'                      ],
         'reversal_fetch_la'                        => ['get',      'la-reversals/{id}',                              'ReversalController@getLinkedAccountReversal'                       ],
         'transfer_fetch_multiple_la'               => ['get',      'la-transfers',                                   'TransferController@getLinkedAccountTransfers'                      ],
+        'transfer_fetch_payment_la'                => ['get',      'la-transfers/payment/{id}',                      'TransferController@getPaymentIdForLinkedAccountTransfer'           ],
         'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLinkedAccountTransfer'                       ],
         'la_transfer_create_reversal'              => ['post',     'la-transfers/{id}/reversal' ,                    'TransferController@postLinkedAccountTransferReversal'              ],
         'la_fetch'                                 => ['get',      'linked_accounts',                                'AccountController@listLinkedAccounts'                              ],
@@ -1134,6 +1140,7 @@ final class Route
         'account_create'                           => ['post',     'accounts',                                       'AccountController@createAccount'                                   ],
         'account_list'                             => ['get',      'accounts',                                       'AccountController@listAccounts'                                    ],
         'account_fetch'                            => ['get',      'accounts/{id}',                                  'AccountController@fetchAccount'                                    ],
+        'account_fetch_by_external_id'             => ['get',      'accounts/external/{id}',                         'AccountController@fetchByExternalId'                               ],
         'account_edit'                             => ['patch',    'accounts/{id}',                                  'AccountController@editAccount'                                     ],
         'account_action'                           => ['patch',    'accounts/{id}/{action}',                         'AccountController@performAction'                                   ],
 
@@ -1354,6 +1361,9 @@ final class Route
         'banking_account_webhook_account_info'
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
 
+        'banking_account_activation_status_'
+        . 'change_log'                            => ['get',      'banking_accounts/activation/{id}/status_change_log',        'BankingAccountController@getActivationStatusChangeLog'   ],
+
         'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
         'banking_account_statement_generate'      => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                ],
         'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
@@ -1383,6 +1393,7 @@ final class Route
         'p2p_admin_add_handle'                    => ['post',     'p2p/handles',                                               'P2p\VpaController@createHandle'],
         'p2p_admin_update_handle'                 => ['put',      'p2p/handles/{code}',                                        'P2p\VpaController@updateHandle'],
         'p2p_admin_manage_banks'                  => ['post',     'p2p/banks/bulk/manage',                                     'P2p\BankAccountController@manageBulkBanks'],
+        'p2p_reminder_send'                       => ['post',     'p2p/reminders/send/{handle}/{entity}/{id}/{action}',        'P2p\UpiController@sendReminder'],
 
         // Mpan related routes
         'mpans_issue'                             => ['post',     'mpans/issue',                                               'MpanController@issueMpans'],
@@ -1756,6 +1767,7 @@ final class Route
         'account_create',
         'account_list',
         'account_fetch',
+        'account_fetch_by_external_id',
         'account_edit',
         'account_action',
         'subscription_registration_auto_charge',
@@ -1786,6 +1798,7 @@ final class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'merchant_inheritance_parent_set_bulk',
+        'mdr_adjustment',
         'pricing_add_plan_rule_bulk',
         'admin_lead_verify',
         'admin_authentication',
@@ -1858,6 +1871,7 @@ final class Route
         'scrooge_verify_refund_call',
         'refund_fetch_status',
         'reminder_send',
+        'p2p_reminder_send',
         'scrooge_entities',
         'fund_transfer_attempt_modes',
         'schedule_migration',
@@ -1891,7 +1905,6 @@ final class Route
         'user_reset_password_create',
         'user_reset_password_token',
         'razorx_guest',
-        'virtual_account_refund_excess',
         'virtual_account_close_cron',
         'fund_transfer_attempt_process',
         'daily_reconciliation_summary_fetch',
@@ -1947,6 +1960,7 @@ final class Route
         'transfer_pending_process',
         'transfer_failed_process',
         'merchant_mtu_update',
+        'webhook_deactivate',
         'transaction_settled_data_fix',
     ];
 
@@ -1999,6 +2013,7 @@ final class Route
         'account_fetch',
         'account_edit',
         'account_action',
+        'account_fetch_by_external_id',
         'merchant_activation_status_partner',
         'merchant_activation_update_partner',
 
@@ -2042,6 +2057,7 @@ final class Route
         'transfer_fetch_la',
         'la_transfer_create_reversal',
         'transfer_fetch_multiple_la',
+        'transfer_fetch_payment_la',
         'transfer_fetch_reversals_la',
         'bank_account_fetch',
         'merchant_edit_config',
@@ -2251,6 +2267,7 @@ final class Route
         //balance configs
         'fetch_merchant_balance_configs',
         'get_merchant_balance_config',
+        'virtual_account_configs',
     ];
 
     //
@@ -2333,6 +2350,9 @@ final class Route
         'workflow_get_multiple',
         'workflow_update',
         'workflow_delete',
+        'workflow_payout_amount_rules_get_admin',
+        'workflow_merchants_create_payout_get',
+        'workflow_payout_amount_rules_create',
         'action_checker_create',
         'action_diff_get',
         'action_request_execute',
@@ -2660,6 +2680,7 @@ final class Route
         'banking_account_update',
         'banking_account_activate',
         'banking_account_webhook_account_info_internal',
+        'banking_account_activation_status_change_log',
 
         'governor_create_namespace_v1',
         'governor_get_client_v1',
@@ -2831,8 +2852,11 @@ final class Route
         'feature_delete_entity'                    => Permission::DELETE_MERCHANT_FEATURES,
         'feature_get'                              => Permission::VIEW_MERCHANT_FEATURES,
         'workflow_create'                          => Permission::CREATE_WORKFLOW, // Fix permissions
+        'workflow_payout_amount_rules_create'      => Permission::CREATE_WORKFLOW,
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
+        'workflow_payout_amount_rules_get_admin'   => Permission::VIEW_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
+        'workflow_merchants_create_payout_get'     => Permission::VIEW_ALL_WORKFLOW,
         'workflow_update'                          => Permission::EDIT_WORKFLOW,
         'workflow_delete'                          => Permission::DELETE_WORKFLOW,
         'action_checker_create'                    => '*',
@@ -3281,6 +3305,8 @@ final class Route
         'webhook_stork_migrate'                    => Permission::STORK_WRITE_OPERATION,
 
         'banking_account_yesb_bulk_create'         => Permission::BANKING_UPDATE_ACCOUNT,
+        'banking_account_activation_status_'
+        . 'change_log'                             => '*',
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
 
@@ -3321,6 +3347,8 @@ final class Route
         'merchant_inheritance_parent_set'                    =>  '*',
         'merchant_inheritance_parent_set_bulk'               =>  '*',
         'merchant_inheritance_parent_delete'                 =>  '*',
+
+        'mdr_adjustment'                                     => '*',
 
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
@@ -3566,7 +3594,6 @@ final class Route
             'bank_transfer_refund_retry',
             'reports_transaction_dsp',
             'schedule_process_tasks',
-            'virtual_account_refund_excess',
             'merchant_create_invoice_entities',
             'merchant_invoice_entities_verify',
             'merchant_payout',
@@ -3728,7 +3755,8 @@ final class Route
         ],
 
         'reminders' => [
-            'reminder_send'
+            'reminder_send',
+            'p2p_reminder_send'
         ],
 
         'batch' => [
@@ -3748,12 +3776,14 @@ final class Route
             'virtual_account_create',
             'oauth_token_create',
             'merchant_inheritance_parent_set_bulk',
+            'mdr_adjustment',
         ],
 
         'stork' => [
             // Storks needs connected applications against a merchant to fan
             // out the same event to former entities as well.
             'merchant_get_app_access_mapping',
+            'webhook_deactivate'
         ],
 
         'mtu_lambda' => [
@@ -3844,6 +3874,7 @@ final class Route
         'virtual_account_fetch'                => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_configs'              => [Feature::VIRTUAL_ACCOUNTS],
         'bharat_qr_pay_test'                   => [Feature::VIRTUAL_ACCOUNTS, Feature::BHARAT_QR],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
         'payment_validate_vpa_old'             => [Feature::ENABLE_VPA_VALIDATE],
@@ -3865,6 +3896,7 @@ final class Route
         'account_create'                       => [Feature::SUBMERCHANT_ONBOARDING],
         'account_list'                         => [Feature::SUBMERCHANT_ONBOARDING],
         'account_fetch'                        => [Feature::SUBMERCHANT_ONBOARDING],
+        'account_fetch_by_external_id'         => [Feature::SUBMERCHANT_ONBOARDING],
         'account_edit'                         => [Feature::SUBMERCHANT_ONBOARDING],
         'account_action'                       => [Feature::SUBMERCHANT_ONBOARDING],
         'merchant_activation_update_partner'   => [Feature::PARTNER_ACTIVATE_MERCHANT],

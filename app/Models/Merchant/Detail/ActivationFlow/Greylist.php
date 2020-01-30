@@ -2,8 +2,11 @@
 
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
+use Mail;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Models\Merchant\Entity;
+use RZP\Mail\Merchant\RazorpayX\RequestKyc;
 
 /**
  * Class GreylistActivationFlow
@@ -27,7 +30,19 @@ class Greylist extends Base implements ActivationFlowInterface
     {
         $this->trace->info(TraceCode::MERCHANT_PROCESS_GREYLIST_ACTIVATION);
 
+        $this->sendKycRequestEmail($merchant);
+
         return;
+    }
+
+    public function sendKycRequestEmail(Entity $merchant)
+    {
+        $product = $this->app['basicauth']->getRequestOriginProduct();
+
+        if ($product === Product::BANKING)
+        {
+            Mail::queue(new RequestKyc($merchant->getEntityName(), $merchant->getEmail()));
+        }
     }
 
     /**

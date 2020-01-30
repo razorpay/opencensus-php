@@ -52,6 +52,13 @@ class Constants
     const PAPER_NACH_CITI       = 'paper_nach_citi';
 
     /**
+     * Scrooge file based refunds related constants
+     */
+    const QUERY_LIMIT              = 50000;
+    const SCROOGE_MAX_ATTEMPTS     = 1;
+    const FETCH_FROM_SCROOGE_COUNT = 500;
+
+    /**
      * Stores a mapping of valid banks for each file type
      */
     const SUPPORTED_TARGETS = [

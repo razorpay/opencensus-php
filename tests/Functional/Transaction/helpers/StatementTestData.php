@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\InvalidArgumentException;
 
 return [
     'testFetchMultipleStatements' => [
@@ -193,6 +194,122 @@ return [
         ],
         'response' => [
             'content' => [],
+        ],
+    ],
+
+    'testFetchByUtr' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1590,
+                        'currency'       => 'INR',
+                        'credit'         => 0,
+                        'debit'          => 1590,
+                        'balance'        => 98410,
+                        'source'         => [
+                            'entity'         => 'payout',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByUtrBankTransfer' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'currency'       => 'INR',
+                        'source'         => [
+                            'entity'         => 'bank_transfer',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByType' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+
+    'testFetchByInvalidType' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\InvalidArgumentException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+        ],
+    ],
+
+    'testFetchByInvalidPaymentType' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not a valid banking transaction type : settlement',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

@@ -24,11 +24,15 @@ class Mutex
 
     const PREFIX = 'mutex:';
 
+    protected $acquiredResources;
+
     public function __construct($app)
     {
         $this->requestId = $app['request']->getId();
 
         $this->trace = $app['trace'];
+
+        $this->acquiredResources = [];
     }
 
     /**
@@ -189,6 +193,8 @@ class Mutex
             // If acquired then get out of loop
             if ($acquired === true)
             {
+                $this->acquiredResources += [$resource => 1];
+
                 break;
             }
 
@@ -219,6 +225,8 @@ class Mutex
 
         try
         {
+            unset($this->acquiredResources[$resource]);
+
             $resourceValue = $this->redis->get($resource);
 
             $requestId = $this->getRequestIdWithoutCount($resourceValue);
@@ -237,6 +245,14 @@ class Mutex
         }
 
         return false;
+    }
+
+    public function releaseAllAcquired()
+    {
+        foreach ($this->acquiredResources as $acquiredResource)
+        {
+            $this->release($acquiredResource);
+        }
     }
 
     public function acquireAndRelease(

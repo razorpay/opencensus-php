@@ -97,7 +97,8 @@ class AuthLink
 
         $input = [];
 
-        if ($method == SubscriptionRegistration\Method::EMANDATE)
+        if (($method == SubscriptionRegistration\Method::EMANDATE) or
+            ($method == SubscriptionRegistration\Method::NACH))
         {
             $input = self::buildBankAccountFromBatchInput($entry);
         }

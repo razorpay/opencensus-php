@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Models\Contact;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccount\Entity;
@@ -124,7 +125,23 @@ class BankingAccountTest extends TestCase
             ]
         ];
 
-        return $this->startTest($dataToReplace);
+        $response = $this->startTest($dataToReplace);
+
+        $changeLogRequest  = [
+            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($changeLogRequest);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('processed', $logs['items'][1]['status']);
+        $this->assertEquals('closed', $logs['items'][1]['bank_status']);
+
+        return $response;
     }
 
     public function testAccountInfoWebhookWithIncorrectAndThenCorrectDetails()
@@ -222,6 +239,12 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
+        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
+            'account_number'        => '1234567890',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+        ]);
+
         $this->setupDataForActivation($bankingAccount);
 
         $dataToReplace = [
@@ -262,7 +285,45 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($balance[RZP\Models\Merchant\Balance\Entity::ID],
                             $bankingAccount[RZP\Models\BankingAccount\Entity::BALANCE_ID]);
 
-         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+
+        $request  = [
+            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('activated', $logs['items'][1]['status']);
+
+        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+
+        $contact = $this->getDbLastEntity('contact')->toArray();
+
+        $this->assertEquals($contact['type'], Contact\Type::RZP_FEES);
+        $this->assertEquals($contact['active'], true);
+        $this->assertEquals($contact['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($contact['name'],  config('banking_account.razorpayx_fee_details.name'));
+
+        $fundAccount = $this->getDbLastEntity('fund_account')->toArray();
+
+        $this->assertEquals($fundAccount['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($fundAccount['source_type'], 'contact');
+        $this->assertEquals($fundAccount['source_id'], $contact['id']);
+        $this->assertEquals($fundAccount['active'], true);
+
+        $account = $this->getDbLastEntity('bank_account')->toArray();
+
+        $this->assertEquals($account['account_number'], config('banking_account.razorpayx_fee_details.account_number'));
+        $this->assertEquals($account['name'], config('banking_account.razorpayx_fee_details.name'));
+        $this->assertEquals($account['ifsc'], config('banking_account.razorpayx_fee_details.ifsc'));
+        $this->assertEquals($account['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($account['entity_id'], $contact['id']);
     }
 
     public function testActivateFailedDueToFtsFailure()
@@ -302,7 +363,11 @@ class BankingAccountTest extends TestCase
 
     public function testActivateFailedDueToMissingData()
     {
-        $this->ba->proxyAuth();
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
         $this->createBankingAccount();
 
@@ -349,6 +414,19 @@ class BankingAccountTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
+
+        $request  = [
+            'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('initiated', $logs['items'][1]['status']);
     }
 
     public function testUpdateBankingAccountStatusAsProcessed()
@@ -745,6 +823,60 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(Unserviceable::class);
     }
 
+    public function testUpdateOnDiffBankInternalStatus()
+    {
+        $bankingAccount = $this->createBankingAccount();
+
+        $request  = [
+            'url'     => '/banking_accounts/' . $bankingAccount['id'],
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'initiated',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $request  = [
+            'url'     => '/banking_accounts/' . $bankingAccount['id'],
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'processing',
+                ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $request  = [
+            'url'     => '/banking_accounts/' . $bankingAccount['id'],
+            'method'  => 'PATCH',
+            'content' => [
+                'status'               => 'processing',
+                'bank_internal_status' => 'open'
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $bankingAccount = $this->getLastEntity('banking_account', true);
+
+        $changeLogRequest  = [
+            'url'     => '/banking_accounts/activation/' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $logs = $this->makeRequestAndGetContent($changeLogRequest);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('initiated', $logs['items'][1]['status']);
+        $this->assertEquals('processing', $logs['items'][2]['status']);
+        $this->assertNull($logs['items'][2]['bank_status']);
+        $this->assertEquals('processing', $logs['items'][3]['status']);
+        $this->assertEquals('open', $logs['items'][3]['bank_status']);
+    }
     public function testUpdatedStatusFromProcessingToRejected()
     {
         $bankingAccount = $this->createBankingAccount();

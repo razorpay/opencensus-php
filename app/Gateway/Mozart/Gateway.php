@@ -717,7 +717,7 @@ class Gateway extends Base\Gateway
         switch ($gateway)
         {
             case Payment\Gateway::UPI_AIRTEL:
-                return json_decode($input[0], true);
+                return json_decode($input, true);
             case Payment\Gateway::UPI_JUSPAY:
             case Payment\Gateway::UPI_CITI:
                 return $input;

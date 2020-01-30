@@ -164,4 +164,46 @@ class Repository extends Base\Repository
                     ->where(Entity::SOURCE_ID, $sourceId)
                     ->update([Entity::STATUS => $status]);
     }
+
+    /**
+     * Query for fetching the transfers by paymentId
+     *
+     * @param string $sourceType
+     * @param string $sourceId
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function getTransfersByPayments(string $sourceId, string $merchantId)
+    {
+        $relations = ['recipientSettlement'];
+
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->where(Entity::TO_ID,$merchantId)
+                    ->with($relations)
+                    ->get();
+    }
+
+    /**
+     * Query for fetching transfer by payment and transferId
+     *
+     * @param string $sourceType
+     * @param string $sourceId
+     * @param string $merchantId
+     * @param string $transId
+     *
+     * @return mixed
+     */
+    public function getTransfersByPaymentsAndTransId(string $sourceId, string $merchantId, string $transId)
+    {
+        $relations = ['recipientSettlement'];
+
+        return $this->newQuery()
+                    ->where(Entity::ID,$transId)
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->where(Entity::TO_ID,$merchantId)
+                    ->with($relations)
+                    ->get();
+    }
 }

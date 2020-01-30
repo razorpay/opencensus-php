@@ -419,6 +419,13 @@ return [
         ],
     ],
 
+    E::WORKFLOW_PAYOUT_AMOUNT_RULES => [
+        Type::ADMIN_AUTH => [
+            [
+            ],
+        ],
+    ],
+
     E::GEO_IP => [
         Type::PRIVILEGE_AUTH => [
             [
