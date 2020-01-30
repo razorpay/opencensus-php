@@ -14,7 +14,7 @@ class Repository extends Base\Repository
 {
     protected $entity = 'workflow';
 
-    const DEFAULT_FETCH_LIMIT = 10;
+    const DEFAULT_FETCH_LIMIT = 1000;
     const DEFAULT_FETCH_OFFSET = 0;
 
     protected $adminFetchParamRules = [
