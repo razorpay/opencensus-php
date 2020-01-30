@@ -36,7 +36,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Returns merchant ids of merchants who have workflow/s with create_payout permission
+     * Fetches workflows by orgId and permission name
      *
      * @param string $orgId
      * @param array $params
