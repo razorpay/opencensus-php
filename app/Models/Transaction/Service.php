@@ -264,12 +264,12 @@ class Service extends Base\Service
 
             $response = array_merge($response, $transaction->toArrayPublic());
 
-            if (isset($response['notes']))
+            if (isset($response['notes']) === true)
             {
                 unset($response['notes']);
             }
 
-            if (isset($response['description']))
+            if (isset($response['description']) === true)
             {
                 unset($response['description']);
             }
