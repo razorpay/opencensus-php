@@ -1182,7 +1182,7 @@ class Core extends Base\Core
             'reversal_payout_id_' . $payout->getId(),
             function () use ($payout, $reverseReason)
             {
-                // reloading the payout here to ensure if another any process
+                // reloading the payout here to ensure if any other process
                 // gets a mutex on payout resource, it gets a fresh copy
                 // of payout to work.
                 $payout->reload();
