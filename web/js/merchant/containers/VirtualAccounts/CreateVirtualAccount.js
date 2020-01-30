@@ -14,14 +14,20 @@ import {
   getKeysSeparatedByPipe,
   classList,
 } from 'common/utils/rzp-utils';
-import { validateVABankAccount } from 'common/utils/validators';
+import {
+  validateAlphanumericWithMaxLength,
+  validateAlphanumericWithStrictLength,
+} from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/modals';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { luminateRow } from 'merchant/reducers/app';
 import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
-import { saveVirtualAccount } from 'merchant/reducers/virtualaccounts';
+import {
+  saveVirtualAccount,
+  fetchConfigForVirtualAccount,
+} from 'merchant/reducers/virtualaccounts';
 
 import CustomerCreation from 'merchant/views/Customers/New';
 
@@ -40,6 +46,16 @@ const CustomCustomerOption = ({ option }) => {
   );
 };
 
+import {
+  DESCRIPTOR_LENGTH_BANK_ACCOUNT,
+  DESCRIPTOR_LENGTH_VPA,
+  getStyle_DescriptorInput_BankAccount,
+  getStyle_AddOnBefore_BankAccount,
+  getStyle_DescriptorInput_VPA,
+  getStyle_AddOnBefore_VPA,
+  getStyle_AddOnAfter_VPA,
+} from 'merchant/components/VirtualAccounts/helpers';
+
 @withRouter
 @connect(
   state => {
@@ -50,6 +66,7 @@ const CustomCustomerOption = ({ option }) => {
       customersLoading: state.customers.loading,
       ...state.config.config,
       user: state.session.user,
+      va_config: state.virtualaccounts.va_config,
     };
   },
   {
@@ -58,6 +75,7 @@ const CustomCustomerOption = ({ option }) => {
     showNotification,
     saveVirtualAccount,
     fetchCustomersForAutocomplete,
+    fetchConfigForVirtualAccount,
     ...ModalActions,
   }
 )
@@ -73,6 +91,11 @@ export default class CreateVirtualAccount extends Component {
 
   componentDidMount() {
     this.props.closeModal(); // Close if previous AccountDetailsSummary modal is opened
+
+    // Make call only when va_config is not available in store, or call failed last time when CreateVirtualAccount modal was opened
+    if (!this.props.va_config || !Object.keys(this.props.va_config).length) {
+      this.props.fetchConfigForVirtualAccount();
+    }
 
     this.props.fetchCustomersForAutocomplete();
 
@@ -229,12 +252,12 @@ export default class CreateVirtualAccount extends Component {
   setRefForm = el => (this.formEl = el);
 
   render() {
-    const {
-      handle = '',
+    let {
       customers = [],
       customersLoading,
       onClose,
       user,
+      va_config,
     } = this.props;
 
     const IS_MODAL_VIEW = !!onClose;
@@ -243,13 +266,27 @@ export default class CreateVirtualAccount extends Component {
     const disableSubmit =
       customersLoading || (!_internals.hasVPA && !_internals.hasBankAccount);
 
-    let descriptorLimit;
+    let descriptorLimit_BankAccount, descriptorLimit_VPA;
 
-    if (handle) {
-      if (handle.length === 3) {
-        descriptorLimit = 10;
-      } else if (handle.length === 4) {
-        descriptorLimit = 9;
+    if (va_config && Object.keys(va_config).length) {
+      if (
+        va_config.hasOwnProperty('bank_account') &&
+        va_config.bank_account.isDescriptorEnabled
+      ) {
+        let bankAccountHandle = va_config.bank_account.prefix;
+
+        descriptorLimit_BankAccount =
+          DESCRIPTOR_LENGTH_BANK_ACCOUNT - bankAccountHandle.length;
+      }
+
+      if (
+        va_config.hasOwnProperty('vpa') &&
+        va_config.vpa.isDescriptorEnabled
+      ) {
+        let vpaHandle =
+          va_config.vpa.prefix && va_config.vpa.prefix.split('.')[1];
+
+        descriptorLimit_VPA = DESCRIPTOR_LENGTH_VPA - vpaHandle.length;
       }
     }
 
@@ -280,7 +317,7 @@ export default class CreateVirtualAccount extends Component {
                       })
                     }
                   />
-                  {!!handle && (
+                  {!!descriptorLimit_BankAccount && (
                     <Input
                       name="descriptorBankAccount"
                       label={() => (
@@ -288,17 +325,26 @@ export default class CreateVirtualAccount extends Component {
                           Account Descriptor
                         </span>
                       )}
-                      size="half_big"
-                      placeholder={`Alphanumberic, upto ${descriptorLimit} characters`}
+                      size="vpa_custom"
                       validator={val => {
-                        if (!validateVABankAccount(val, descriptorLimit)) {
-                          return `Enter only Alphanumberic, upto ${descriptorLimit} characters`;
+                        if (
+                          !validateAlphanumericWithMaxLength(
+                            val,
+                            descriptorLimit_BankAccount
+                          )
+                        ) {
+                          return `Enter only Alphanumeric, upto ${descriptorLimit_BankAccount} characters`;
                         }
                       }}
                       onChange={e => {
                         let val = e.target.value;
 
-                        if (validateVABankAccount(val, descriptorLimit)) {
+                        if (
+                          validateAlphanumericWithMaxLength(
+                            val,
+                            descriptorLimit_BankAccount
+                          )
+                        ) {
                           e.target.value = val.toUpperCase();
                         }
                       }}
@@ -308,13 +354,21 @@ export default class CreateVirtualAccount extends Component {
                           : null
                       }
                       disabled={!_internals.hasBankAccount}
+                      style={getStyle_DescriptorInput_BankAccount(va_config)}
+                      addonBefore={
+                        <span
+                          style={getStyle_AddOnBefore_BankAccount(va_config)}
+                        >
+                          {va_config.bank_account.prefix}
+                        </span>
+                      }
                     />
                   )}
                 </div>
 
                 {!!user.isVPAFeatureEnabled && (
                   <>
-                    {!!handle && <br />}
+                    {!!descriptorLimit_BankAccount && <br />}
 
                     <div>
                       <Input.Check
@@ -330,19 +384,43 @@ export default class CreateVirtualAccount extends Component {
                           })
                         }
                       />
-                      <Input
-                        name="descriptorVPA"
-                        label={() => (
-                          <span style={{ fontWeight: 'normal' }}>UPI ID</span>
-                        )}
-                        size="half_big"
-                        description={
-                          _internals.hasVPA
-                            ? 'If left blank, a UPI ID will be auto generated'
-                            : null
-                        }
-                        disabled={!_internals.hasVPA}
-                      />
+
+                      {!!descriptorLimit_VPA && (
+                        <Input
+                          name="descriptorVPA"
+                          label={() => (
+                            <span style={{ fontWeight: 'normal' }}>UPI ID</span>
+                          )}
+                          size="vpa_custom"
+                          validator={val => {
+                            if (
+                              !validateAlphanumericWithMaxLength(
+                                val,
+                                descriptorLimit_VPA
+                              )
+                            ) {
+                              return `Enter only Alphanumeric, ${descriptorLimit_VPA} characters`;
+                            }
+                          }}
+                          description={
+                            _internals.hasVPA
+                              ? 'If left blank, a UPI ID will be auto generated'
+                              : null
+                          }
+                          disabled={!_internals.hasVPA}
+                          style={getStyle_DescriptorInput_VPA(va_config)}
+                          addonBefore={
+                            <span style={getStyle_AddOnBefore_VPA(va_config)}>
+                              {va_config.vpa.prefix}
+                            </span>
+                          }
+                          addonAfter={
+                            <span style={getStyle_AddOnAfter_VPA(va_config)}>
+                              @{va_config.vpa.handle}
+                            </span>
+                          }
+                        />
+                      )}
                     </div>
                   </>
                 )}

@@ -40,7 +40,7 @@ export default class extends React.Component {
           updateVirtualAccountDetails={this.updateVirtualAccountDetails}
         />
       ),
-      size: 'small',
+      size: 'medium',
     });
   };
 
