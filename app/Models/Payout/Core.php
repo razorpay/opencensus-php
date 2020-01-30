@@ -52,6 +52,8 @@ class Core extends Base\Core
 
     const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
 
+    const PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT = 6000;
+
     /**
      * @var Mutex
      */
@@ -1213,7 +1215,7 @@ class Core extends Base\Core
                         }
                     });
             },
-            240,
+            self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
     }
