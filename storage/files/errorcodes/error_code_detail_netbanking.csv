@@ -1,7 +1,7 @@
 internal_error_code,error_description,code_detail,failure_type,point_of_failure,next_best_action,failure_stage,recoverable
 BAD_REQUEST_PAYMENT_TIMED_OUT,Payment was not completed on time.,payment_time_out,Technical,Customer,,,
 BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,Payment processing cancelled by user,user_cancelled,Business,Customer,,,N
-BAD_REQUEST_PAYMENT_FAILED,Payment failed,payment_failed,Technical,,,,D
+BAD_REQUEST_PAYMENT_FAILED,Payment failed,payment_failed,Technical,Gateway,,,D
 BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,Payment processing via netbanking cancelled by user by clicking cancel on bank transfer page,user_cancelled,Business,Customer,,,N
 GATEWAY_ERROR_REQUEST_TIMEOUT,The gateway request to submit payment information timed out. Please submit your details again,request_time_out,Technical,Gateway,,,I
 GATEWAY_ERROR_UNKNOWN_ERROR,Payment processing failed due to error at bank or wallet gateway,payment_failed,Technical,Gateway,,,I
@@ -34,58 +34,3 @@ BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION,Payment processing cancelled by user,u
 BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,Payment declined because it didn't pass all risk checks,risk_decline,Business,Customer,,,N
 BAD_REQUEST_ERROR,Bad request,bad_request,Technical,Customer,,,D
 GATEWAY_ERROR_INVALID_RESPONSE,Payment processing failed due to error at bank or wallet gateway,invalid_response,Technical,Gateway,,,I
-GATEWAY_ERROR_INVALID_BENEFICIARY_CREDENTIALS,Business,invalid_beneficiary,Customer,Beneficiary credentials are invalid,,N
-BAD_REQUEST_USER_NOT_FOUND,Business,invalid_user,Customer,User not found with the given input,,N
-BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA,Business,transaction_decline,Customer,Payment failed because transactions are not allowed on this VPA,,N
-GATEWAY_ERROR_BENEFICIARY_CUTOFF_IN_PROGRESS,Business,invalid_beneficiary,Customer,Payment processing failed due to error at bank or wallet gateway,,N
-GATEWAY_ERROR_REMITTER_COMPLIANCE_VIOLATION,Business,compliance_violation,Customer,Payment processing failed due to error at bank or wallet gateway,,N
-GATEWAY_ERROR_INVALID_FORMAT,Technical,invalid_request,,Payment processing failed due to error at bank or wallet gateway,,D
-BAD_REQUEST_UPI_INVALID_ATM_PIN,Business,authorization_failure,Customer,Invalid PIN entered.,,N
-BAD_REQUEST_ACCOUNT_BLOCKED,Business,bank_decline,Customer,Bank Account is blocked.,,N
-BAD_REQUEST_UPI_INVALID_BANK_ACCOUNT,Business,invalid_account,Customer,Payment failed because Account linked to VPA is invalid,,N
-BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND,Business,invalid_account,Customer,Registered Mobile number linked to the account has been changed/removed,,N
-GATEWAY_ERROR_BENEFICIARY_CBS_OFFLINE,Technical,bank_server_unavailable,Bank,Payment processing failed due to error at bank or wallet gateway,,I
-GATEWAY_ERROR_INVALID_RESPONSE,Technical,invalid_response,Gateway,Payment processing failed due to error at bank or wallet gateway,,I
-GATEWAY_ERROR_INVALID_TRANSACTION_INAPPROPRIATE_CODE_BENEFICIARY,Technical,invalid_beneficiary,Customer,Payment processing failed due to error at bank or wallet gateway,,N
-GATEWAY_ERROR_DEBIT_FAILED_AT_BANK,Technical,payment_failed,Bank,Payment processing failed due to error at bank or wallet gateway,,I
-BAD_REQUEST_UPI_MPIN_NOT_SET,Business,no_pin,Customer,Payment failed because UPI PIN is not set,,D
-GATEWAY_ERROR_VALIDATION_ERROR,Technical,validation_failed,Gateway,Payment failed due to validation failure at bank or wallet gateway,,D
-GATEWAY_ERROR_REVERSAL_FAILURE,Technical,reversal_failed,Gateway,Payment processing failed due to error at bank or wallet gateway,,I
-SERVER_ERROR_ASSERTION_ERROR,Technical,server_error,Gateway,The server encountered an error. The incident has been reported to admins.,,I
-GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT,Technical,reversal_timeout,Gateway,Credit reversal is timed out,,I
-SERVER_ERROR_LOGICAL_ERROR,Technical,server_error,Gateway,The server encountered an error. The incident has been reported to admins.,,I
-BAD_REQUEST_VALIDATION_FAILURE,Technical,validation_failed,Gateway,Validation Failure,,D
-GATEWAY_ERROR_PAYMENT_FAILED,Technical,payment_failed,Gateway,Payment processing failed due to error at bank or wallet gateway,,I
-SERVER_ERROR,Technical,server_error,Gateway,The server encountered an error. The incident has been reported to admins.,,I
-GATEWAY_ERROR_ENCRYPTION_ERROR,Technical,server_error,Gateway,Payment processing failed due to error at bank or wallet gateway,,D
-SERVER_ERROR_RUNTIME_ERROR,Technical,server_error,Gateway,The server encountered an error. The incident has been reported to admins.,,I
-BAD_REQUEST_EXPIRED_VPA,Business,invalid_vpa,Customer,Payment failed because VPA is marked as Expired,,N
-BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,Business,risk_decline,Customer,Payment declined because it didn't pass all risk checks,,N
-BAD_REQUEST_PSP_DOESNT_EXIST,Technical,invalid_psp,PSP,Invalid VPA. Please enter a valid Virtual Payment Address,,N
-GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,Technical,invalid_request,Customer,Payment processing failed due to error at bank or wallet gateway,,D
-GATEWAY_ERROR_NO_ORIGINAL_DEBIT_CREDIT_REQUEST_FOUND,,,Customer,Payment processing failed due to error at bank or wallet gateway,,N
-BAD_REQUEST_PSP_ERROR,Technical,psp_error,PSP,Payment failed at PSP,,D
-GATEWAY_ERROR_BENEFICIARY_TRANSACTION_NOT_PERMITTED,Business,transaction_not_permitted,Customer,Transaction not permitted to cardholder on beneficiary side,,N
-GATEWAY_ERROR_DO_NOT_HONOUR_REMITTER,Business,bank_decline,Customer,Payment processing failed due to error at bank or wallet gateway,,N
-GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_CREDIT,Technical,request_timeout,Gateway,Payment processing failed due to error at bank or wallet gateway,,I
-GATEWAY_ERROR_INACTIVE_DORMANT_BENEFICIARY_ACCOUNT,Business,invalid_beneficiary,Customer,Beneficiary account is inactive or dormant,,N
-BAD_REQUEST_INVALID_CARD_DETAILS,Business,invalid_card,Customer,Invalid card details,,N
-BAD_REQUEST_ERROR,Technical,invalid_request,Customer,Bad request,,D
-BAD_REQUEST_PAYMENT_UPI_MOBILE_NUMBER_MAPPED_TO_MULTIPLE_CUSTOMERS,Business,invalid_user,Customer,Mobile number registered with multiple customers,,D
-BAD_REQUEST_PAYMENT_UPI_FUNCTION_NOT_SUPPORTED,Technical,upi_not_supported,Customer,The requested UPI function is not supported,,N
-GATEWAY_ERROR_NPCI_RESPONSE_TIMEOUT,Technical,response_timeout,Gateway,Payment processing failed due to error at bank or wallet gateway,,I
-GATEWAY_ERROR_VPA_RESOLUTION_FAILED,Technical,invalid_vpa,Gateway,Payment processing failed due to error at bank or wallet gateway,,D
-GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_BENEFICARY,Business,risk_decline,Bank,Suspected fraud or transaction is declined based on risk score by bank,,N
-BAD_REQUEST_P2P_REGISTRATION_CARD_EXPIRED,Business,debit_card_expired,Customer,Card used while setting UPI PIN has expired. Please use another debit card to reset UPI PIN or use another bank account for payment,,N
-GATEWAY_ERROR_REMITTER_DUPLICATE_RRN_FOUND,Technical,duplicate_transaction,Gateway,Payment processing failed due to error at bank or wallet gateway,,D
-GATEWAY_ERROR_INTERNAL_FORMAT_ERROR,Technical,invalid_request,Gateway,Payment processing failed due to error at bank or wallet gateway,,N
-BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED,Business,multiple_account_linked,Customer,Payment failed since account linked with multiple names,,N
-BAD_REQUEST_PAYMENT_UPI_DEVICE_MISSING,Technical,invalid_device,Customer,UPI device must be present,,N
-GATEWAY_ERROR_CARD_INVALID_AMOUNT,Business,invalid_amount,Customer,Payment processing failed due to error at bank or wallet gateway,,N
-GATEWAY_ERROR_AUTHORIZATION_FAILED,Technical,authorization_failed,Gateway,Payment processing failed due to error at bank or wallet gateway,,I
-GATEWAY_ERROR_SYSTEM_UNAVAILABLE,Technical,system_unavailable,Gateway,Payment processing failed due to error at bank or wallet gateway,,D
-SERVER_ERROR_INVALID_ARGUMENT,Technical,invalid_request,Gateway,The server encountered an error. The incident has been reported to admins.,,N
-BAD_REQUEST_ACCOUNT_CLOSED,Business,invalid_beneficiary,Customer,Bank Account is closed.,,N
-BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,Business,insufficient_funds,Customer,Account Balance is insufficient,,N
-GATEWAY_ERROR_BENEFICIARY_ACCOUNT_DOES_NOT_EXIST,Business,invalid_beneficiary,Customer,Beneficiary account does not exist,,N
-GATEWAY_ERROR_BENEFICIARY_INTERNAL_EXCEPTION,Technical,server_error,Gateway,Payment processing failed due to error at bank or wallet gateway,,I
