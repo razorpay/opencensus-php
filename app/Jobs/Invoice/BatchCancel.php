@@ -3,6 +3,7 @@
 namespace RZP\Jobs\Invoice;
 
 use RZP\Jobs\Job;
+use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Invoice as InvoiceModel;
@@ -81,6 +82,8 @@ class BatchCancel extends Job
         }
 
         $this->trace->debug(TraceCode::INVOICE_BATCH_CANCEL_SUMMARY, $summary);
+
+        (new Batch\Core())->fetchBatchAndSetCancelled($this->batchId);
     }
 
     protected function cancel(InvoiceModel\Entity $invoice, array & $summary)

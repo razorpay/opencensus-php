@@ -77,7 +77,7 @@ class Service extends Base\Service
     {
         $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id, $this->merchant);
 
-        if ($responseBatch != null)
+        if ($responseBatch !== null)
         {
             $this->app->batchService->prepareBatchItemResponse($responseBatch);
 
@@ -115,7 +115,7 @@ class Service extends Base\Service
 
         $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id);
 
-        if ($responseBatch != null)
+        if ($responseBatch !== null)
         {
             $this->app->batchService->prepareBatchItemResponse($responseBatch);
 
