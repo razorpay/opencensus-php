@@ -394,7 +394,7 @@ export default class CreateVirtualAccount extends Component {
                           size="vpa_custom"
                           validator={val => {
                             if (
-                              !validateAlphanumericWithMaxLength(
+                              !validateAlphanumericWithStrictLength(
                                 val,
                                 descriptorLimit_VPA
                               )

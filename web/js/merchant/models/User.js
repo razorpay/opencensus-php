@@ -461,7 +461,9 @@ export default class User {
   }
 
   get isVPAFeatureEnabled() {
-    return this.getExpStatus('vpa_enabled');
+    const isLiveMode = getMode() === 'live';
+
+    return isLiveMode && this.getExpStatus('vpa_enabled');
   }
 
   get isCompanyNameHiddenRazorX() {
