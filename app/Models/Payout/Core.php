@@ -1174,16 +1174,17 @@ class Core extends Base\Core
 
         $this->mutex = $app['api.mutex'];
 
-        // Keeping the TTL high in below case. Since mutliple entities are being
-        // created inside txn and so there is chance mutex gets released before
-        // everything gets saved in the DB.
+        // Keeping the mutex TTL high while updating the payout to reversed.
+        // This is to ensure that the process that is working on the payout
+        // resource, releases mutex on the payout only once all entities are
+        // saved in the database.
         $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
             function () use ($payout, $reverseReason)
             {
-                // reloading the payout here to ensure if another process
-                // gets the mutex, they work on current state of payout
-
+                // reloading the payout here to ensure if another any process
+                // gets a mutex on payout resource, it gets a fresh copy
+                // of payout to work.
                 $payout->reload();
 
                 if ($payout->isStatusReversed() === true)
