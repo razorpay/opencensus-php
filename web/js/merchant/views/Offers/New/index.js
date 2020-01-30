@@ -546,7 +546,9 @@ export default class CreateOfferWizard extends React.Component {
 
           //analytics event tracking
           this.props.tracking.trackEvent(
-            window.rzpQ.merchantActions().success('Offer_create')
+            window.rzpQ.merchantActions().success('Offer_create', {
+              offer_id: savedOffer.id,
+            })
           );
           const entityId = savedOffer.id;
           if (this.IS_MODAL_VIEW) {
