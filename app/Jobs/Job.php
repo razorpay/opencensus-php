@@ -8,6 +8,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
 
@@ -71,6 +72,11 @@ class Job implements ShouldQueue
     protected $taskId;
 
     protected $cache;
+
+    /**
+     * @var $mutex Mutex
+     */
+    protected $mutex;
 
     /**
      * Default timeout value for a job is 60s.
@@ -169,6 +175,8 @@ class Job implements ShouldQueue
 
         $this->cache = $app['cache'];
 
+        $this->mutex = $app['api.mutex'];
+
         // Task Id needs to be set in trace
         $this->trace->processor('web')->setTaskId($this->taskId);
 
@@ -229,6 +237,16 @@ class Job implements ShouldQueue
             // signals supported in recent versions of PHP to accomplish it conveniently.
             //
             pcntl_signal(SIGALRM, function () use ($app){
+
+                try
+                {
+                    $this->beforeJobKillCleanUp();
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e);
+                }
+
                 $this->trace->error(
                     TraceCode::QUEUE_JOB_TIMEOUT,
                     [
@@ -239,5 +257,10 @@ class Job implements ShouldQueue
                 $app['queue.worker']->kill(1);
             });
         }
+    }
+
+    protected function beforeJobKillCleanUp()
+    {
+        $this->mutex->releaseAllAcquired();
     }
 }
