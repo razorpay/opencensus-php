@@ -52,7 +52,7 @@ class Core extends Base\Core
 
     const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
 
-    const PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT = 6000;
+    const PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT = 3600;
 
     /**
      * @var Mutex
