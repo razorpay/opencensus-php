@@ -297,7 +297,7 @@ export default class SettlementsListContainer extends ListContainer {
           {settlement_ux_revamp &&
           nextSettlement === null &&
           no_settlement &&
-          no_settlement.caption === 'Settlements are on hold' ? (
+          no_settlement.on_hold === true ? (
             <OnHoldBanner
               ctaOnClick={() => {
                 this.props.openModal({

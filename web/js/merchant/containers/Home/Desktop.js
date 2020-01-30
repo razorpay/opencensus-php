@@ -347,7 +347,7 @@ class AnalyticsDesktop extends Component {
         {settlement_ux_revamp &&
         nextSettlement &&
         no_settlement &&
-        no_settlement.caption === 'Settlements are on hold' ? (
+        no_settlement.on_hold === true ? (
           <OnHoldBanner
             ctaOnClick={() => {
               this.props.openModal({
