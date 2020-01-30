@@ -278,7 +278,6 @@ class Service extends Base\Service
     {
         $batchId = $batch[Entity::ID];
 
-        // There is confusion here, needs to be clarified.
         if ($batch[Entity::STATUS] === Status::PROCESSED)
         {
             $this->trace->info(
@@ -292,13 +291,6 @@ class Service extends Base\Service
             return true;
         }
 
-        $this->trace->info(
-            TraceCode::STOP_BATCH_PROCESS_BATCH_SERVICE,
-            [
-                'batch_id' => $batchId,
-            ]
-        );
-
-        return $this->app->batchService->performActionInBatchService($batchId, 'cancel');
+        return $this->app->batchService->cancelBatchInBatchService($batchId);
     }
 }

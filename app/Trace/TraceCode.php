@@ -2307,10 +2307,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SERVICE_IIN_BULK_REQUEST                        = 'BATCH_SERVICE_IIN_BULK_REQUEST';
     const BATCH_SERVICE_IIN_BULK_RESPONSE                       = 'BATCH_SERVICE_IIN_BULK_RESPONSE';
     const STOP_BATCH_PROCESS_NOT_REQUIRED                       = 'STOP_BATCH_PROCESS_NOT_REQUIRED';
-    const STOP_BATCH_PROCESS_BATCH_SERVICE                      = 'STOP_BATCH_PROCESS_BATCH_SERVICE';
-    const STOP_BATCH_PROCESS_SUCCESS                            = 'STOP_BATCH_PROCESS_SUCCESS';
-    const STOP_BATCH_PROCESS_FAILED                             = 'STOP_BATCH_PROCESS_FAILED';
-    const PERFORM_ACTION_BATCH_SERVICE                          = 'PERFORM_ACTION_BATCH_SERVICE';
+    const BATCH_SERVICE_CANCEL_BATCH                            = 'BATCH_SERVICE_CANCEL_BATCH';
+    const BATCH_SERVICE_CANCEL_BATCH_SUCCESS                    = 'BATCH_SERVICE_CANCEL_BATCH_SUCCESS';
+    const BATCH_SERVICE_CANCEL_BATCH_FAILED                     = 'BATCH_SERVICE_CANCEL_BATCH_FAILED';
 
     const PAYMENT_ON_HOLD                                       = 'PAYMENT_ON_HOLD';
     const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';

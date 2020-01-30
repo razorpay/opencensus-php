@@ -934,23 +934,18 @@ class Core extends Base\Core
      */
     public function cancelInvoicesOfBatch(array $batch)
     {
-        if ($batch[Batch\Entity::STATUS] !== Batch\Status::FAILED)
+        (new Validator)->validateCancelInvoicesOfBatch($batch);
+
+        if ((new Batch\Service())->stopBatchProcessIfRequired($batch) === false)
         {
-            if ((new Batch\Service())->stopBatchProcessIfRequired($batch) === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
-                    null,
-                    [
-                        'batch_id' => $batch[Batch\Entity::ID],
-                    ],
-                    'Unable to stop batch processing'
-                );
-            }
-        }
-        else
-        {
-            (new Validator)->validateCancelInvoicesOfBatch($batch);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
+                null,
+                [
+                    'batch_id' => $batch[Batch\Entity::ID],
+                ],
+                'Unable to stop batch processing'
+            );
         }
 
         $batchId = $batch[Batch\Entity::ID];
