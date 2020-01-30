@@ -264,6 +264,16 @@ class Service extends Base\Service
             $this->trace->info(TraceCode::MDR_ADJUSTMENT_CALCULATION_COMPLETE, $response);
 
             $response = array_merge($response, $transaction->toArrayPublic());
+
+            if (isset($response['notes']))
+            {
+                unset($response['notes']);
+            }
+
+            if (isset($response['description']))
+            {
+                unset($response['description']);
+            }
         }
         catch (Exception\BaseException $e)
         {
