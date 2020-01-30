@@ -27,8 +27,16 @@ export default class ReportHome extends React.PureComponent {
         generated_by: this.props.user.current,
       })
       .then(data => {
-        if (data && data.id) {
-          this.props.pollLog(data.id);
+        if (data) {
+          if (data.is_already_present) {
+            this.props.showNotification({
+              type: 'info',
+              message:
+                'Request with same report type and date range is in processing. Please check your request history',
+            });
+          } else if (data.id) {
+            this.props.pollLog(data.id);
+          }
         }
       })
       .catch(({ errors }) => {
