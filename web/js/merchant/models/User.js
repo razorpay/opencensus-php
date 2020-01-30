@@ -482,7 +482,7 @@ export default class User {
   }
 
   get isSupportCallEnabled() {
-    return this.getExpStatus('support_call');
+    return this.getExpStatus('support_call') && this.isActivated;
   }
 
   get isUnregisteredBusiness() {
