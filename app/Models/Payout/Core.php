@@ -1168,26 +1168,22 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
             ]);
 
-        if ($payout->isStatusReversed() === true)
-        {
-            throw new Exception\LogicException(
-                'Attempted to reverse an already reversed payout',
-                null,
-                [
-                    'payout_id'      => $payout->getId(),
-                    'status'         => $payout->getStatus(),
-                    'reverse_reason' => $reverseReason,
-                ]);
-        }
-
         $app = App::getFacadeRoot();
 
         $this->mutex = $app['api.mutex'];
 
+        // Keeping the TTL high in below case. Since mutliple entities are being
+        // created inside txn and so there is chance mutex gets released before
+        // everything gets saved in the DB.
         $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
             function () use ($payout, $reverseReason)
             {
+                // reloading the payout here to ensure if another process
+                // gets the mutex, they work on current state of payout
+
+                $payout->reload();
+
                 if ($payout->isStatusReversed() === true)
                 {
                     $this->trace->info(TraceCode::PAYOUT_ALREADY_REVERSED,
@@ -1199,6 +1195,7 @@ class Core extends Base\Core
 
                     return;
                 }
+
                 $this->repo->transaction(
                     function() use ($payout, $reverseReason) {
                         $reversal = (new Reversal\Core)->reverseForPayout($payout);
@@ -1216,7 +1213,7 @@ class Core extends Base\Core
                         }
                     });
             },
-            60,
+            240,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
     }
