@@ -10,14 +10,26 @@ class Status
     const DEBIT_SUCCESS = '1';
     const DEBIT_REJECT  = '0';
 
-    const REGISTRATION_SUCCESS          = 'accept';
-    const REGISTRATION_FAILURE          = 'reject';
+    const REGISTRATION_SUCCESS          = 'accepted';
+    const REGISTRATION_FAILURE          = 'rejected';
+    const REGISTRATION_INITIAL_FAILURE  = 'initial reject';
     const REGISTRATION_ACKNOWLEDGED     = 'initial';
+    const REGISTRATION_PENDING          = 'pending';
+    const REGISTRATION_PENDING_BANK     = 'pending for confirmation from destination bank';
 
     const REGISTRATION_FILE_STATUSES = [
         self::REGISTRATION_SUCCESS,
         self::REGISTRATION_FAILURE,
         self::REGISTRATION_ACKNOWLEDGED,
+        self::REGISTRATION_INITIAL_FAILURE,
+        self::REGISTRATION_PENDING,
+        self::REGISTRATION_PENDING_BANK,
+    ];
+
+    const REGISTRATION_ACKNOWLEDGED_STATUSES = [
+        self::REGISTRATION_PENDING,
+        self::REGISTRATION_ACKNOWLEDGED,
+        self::REGISTRATION_PENDING_BANK,
     ];
 
     const DEBIT_FILE_STATUSES = [
@@ -59,7 +71,7 @@ class Status
                 ['content' => $content]);
         }
 
-        return ($status === self::REGISTRATION_ACKNOWLEDGED);
+        return (in_array($status, self::REGISTRATION_ACKNOWLEDGED_STATUSES) === true);
     }
 
     /**

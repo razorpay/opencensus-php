@@ -13,6 +13,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use \RZP\Models\Terminal\Shared;
 use RZP\Exception;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 
 class TerminalTest extends TestCase
@@ -181,8 +182,12 @@ class TerminalTest extends TestCase
             'used'        => true,
         ];
         // Create a numeric terminal with shared merchant
-        $this->fixtures->create(
+        $terminal = $this->fixtures->create(
             'terminal:bank_account_terminal', $attributes);
+
+        $errorDescription = PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS . $terminal['id'];
+
+        $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $errorDescription;
 
         // Now try creating the same numeric terminal against the merchant
         $url = '/merchants/'.$merchant->getKey().'/terminals';
@@ -239,7 +244,11 @@ class TerminalTest extends TestCase
 
     public function testReassignBharatQrTerminal()
     {
-        $this->fixtures->create('terminal:bharat_qr_terminal');
+        $terminal = $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $errorDescription = PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS . $terminal['id'];
+
+        $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $errorDescription;
 
         $this->startTest();
     }
@@ -251,7 +260,11 @@ class TerminalTest extends TestCase
 
     public function testReassignUpiBharatQrTerminal()
     {
-        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+        $terminal = $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $errorDescription = PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS . $terminal['id'];
+
+        $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $errorDescription;
 
         $this->startTest();
     }

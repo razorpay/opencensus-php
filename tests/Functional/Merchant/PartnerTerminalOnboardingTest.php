@@ -329,7 +329,7 @@ class PartnerTerminalOnboardingTest extends TestCase
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionCode(
-            ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS);
+            ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS);
 
         $this->expectExceptionMessage(
             'A terminal with the same field exists');
@@ -355,37 +355,25 @@ class PartnerTerminalOnboardingTest extends TestCase
 
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
-        $terminal = $this->fixtures->create('terminal', [
-            'category'          => '5399',
-            'merchant_id'       => $subMerchantId,
-            'enabled'           => false,
-            'gateway'           => 'worldline',
-            'gateway_acquirer'  => null,
-            'mc_mpan'           => '1234567880123456',
-            'visa_mpan'         => '1234567890123456',
-            'rupay_mpan'        => '1234567890123457',
-            'status'            => 'failed',
-            'type'              => [
-                                    'non_recurring'=> '1',
-                                    'bharat_qr'=> '1',
-                                    ]
-        ]);
-
         $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
 
         $url = '/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $terminalId = substr($response['id'], 5);
 
         $this->expectException(BadRequestException::class);
 
         $this->expectExceptionCode(
-            ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS);
+            ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS);
+
+        $description = 'A terminal with the same field exists - ' . $terminalId;
 
         $this->expectExceptionMessage(
-            'A terminal with the same field exists');
+            $description);
 
         $this->startTest();
     }
