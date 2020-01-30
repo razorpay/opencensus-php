@@ -294,8 +294,7 @@ export default class SettlementsListContainer extends ListContainer {
           ) : (
             <TestModeBanner />
           )}
-          {settlement_ux_revamp &&
-          nextSettlement === null &&
+          {nextSettlement === null &&
           no_settlement &&
           no_settlement.on_hold === true ? (
             <OnHoldBanner
@@ -321,7 +320,7 @@ export default class SettlementsListContainer extends ListContainer {
             <div class="content-wrapper">
               <HeaderAction>
                 <React.Fragment>
-                  {settlement_ux_revamp && (
+                  {
                     <div
                       class="btn btn-link settlement-doc-btn"
                       onClick={this.viewSettlementCycle}
@@ -336,7 +335,7 @@ export default class SettlementsListContainer extends ListContainer {
                       />
                       View Settlement Cycle
                     </div>
-                  )}
+                  }
                   {this.props.user.isOndemandSettlementEnabled &&
                     this.props.user.isAllowedView('early_settlement') && (
                       <div className="box-left-pad10-inline">
@@ -411,24 +410,22 @@ export default class SettlementsListContainer extends ListContainer {
                           )}
                         </span>
                         <br />
-                        {settlement_ux_revamp &&
-                          no_settlement && (
-                            <span style={{ fontSize: '13px' }}>
-                              {no_settlement.caption}
-                              {no_settlement.reason && (
-                                <>
-                                  <i class="i i-info-circle" />
-                                  <Popover theme="dark" align="left">
-                                    <PopoverBody>
-                                      <div>{no_settlement.reason}</div>
-                                    </PopoverBody>
-                                  </Popover>
-                                </>
-                              )}
-                            </span>
-                          )}
-                        {settlement_ux_revamp &&
-                          nextSettlement &&
+                        {no_settlement && (
+                          <span style={{ fontSize: '13px' }}>
+                            {no_settlement.caption}
+                            {no_settlement.reason && (
+                              <>
+                                <i class="i i-info-circle" />
+                                <Popover theme="dark" align="left">
+                                  <PopoverBody>
+                                    <div>{no_settlement.reason}</div>
+                                  </PopoverBody>
+                                </Popover>
+                              </>
+                            )}
+                          </span>
+                        )}
+                        {nextSettlement &&
                           !no_settlement && (
                             <span style={{ fontSize: '13px' }}>
                               <span>&nbsp;</span>

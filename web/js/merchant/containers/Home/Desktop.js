@@ -244,7 +244,7 @@ class AnalyticsDesktop extends Component {
                         )}
                       </span>
                       <br />
-                      {no_settlement && settlement_ux_revamp ? (
+                      {no_settlement ? (
                         <div class="text-right" style={{ width: '100%' }}>
                           {no_settlement.caption}
                           {no_settlement.reason && (
@@ -261,9 +261,7 @@ class AnalyticsDesktop extends Component {
                           )}
                         </div>
                       ) : null}
-                      {!no_settlement &&
-                      !nextSettlement &&
-                      settlement_ux_revamp ? (
+                      {!no_settlement && !nextSettlement ? (
                         <div class="text-right" style={{ width: '100%' }}>
                           <strong>
                             <Amount
@@ -344,10 +342,7 @@ class AnalyticsDesktop extends Component {
             </div>
           </Header>
         </Sticky>
-        {settlement_ux_revamp &&
-        nextSettlement &&
-        no_settlement &&
-        no_settlement.on_hold === true ? (
+        {nextSettlement && no_settlement && no_settlement.on_hold === true ? (
           <OnHoldBanner
             ctaOnClick={() => {
               this.props.openModal({

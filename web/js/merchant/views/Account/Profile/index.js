@@ -351,7 +351,7 @@ export default class Profile extends Component {
           ) : null}
 
           {!this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
-          {settlement_ux_revamp && <SettlementDetails />}
+          {<SettlementDetails />}
         </div>
       </div>
     );
