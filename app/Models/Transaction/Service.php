@@ -261,9 +261,20 @@ class Service extends Base\Service
 
             $response['errorDescription']   = '';
 
-            $this->trace->info(TraceCode::MDR_ADJUSTMENT_CALCULATION_COMPLETE, $response);
 
             $response = array_merge($response, $transaction->toArrayPublic());
+
+            if (isset($response['notes']) === true)
+            {
+                unset($response['notes']);
+            }
+
+            if (isset($response['description']) === true)
+            {
+                unset($response['description']);
+            }
+
+            $this->trace->info(TraceCode::MDR_ADJUSTMENT_CALCULATION_COMPLETE, $response);
         }
         catch (Exception\BaseException $e)
         {
