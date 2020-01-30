@@ -659,7 +659,7 @@ class BatchMicroService
             ]
         );
 
-        $relativeUrl = self::BATCH_URLS['batch'] . '/' . Batch\Entity::verifyIdAndStripSign($id) . '/' . $action;
+        $relativeUrl = self::BATCH_URLS['batch'] . '/' . Batch\Entity::verifyIdAndStripSign($id) . '/cancel';
 
         try
         {
@@ -723,7 +723,7 @@ class BatchMicroService
             usleep(1000000); // 1 second
 
             $time += 1;
-        }while ($time<=$timeout);
+        }while ($time <= $timeout);
 
         $this->trace->error(
             TraceCode::BATCH_SERVICE_CANCEL_BATCH_FAILED,
