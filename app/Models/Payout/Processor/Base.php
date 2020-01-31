@@ -372,7 +372,7 @@ class Base extends BaseCore
 
         $hasSkipWorkflowFeature = $this->merchant->isFeatureEnabled(Features::SKIP_WORKFLOWS_FOR_API);
 
-        $isApiRequest = ($this->app['basicauth']->getRequestOriginProduct() !== ProductType::BANKING) ? true : false;
+        $isApiRequest = $this->app['basicauth']->isStrictPrivateAuth();
 
         //
         // Skip workflow if its not enabled for the merchant or
