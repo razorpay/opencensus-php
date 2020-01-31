@@ -288,7 +288,7 @@ export default class UploadNACHForm extends React.Component {
             </EntityDetailRow>
             <EntityDetailRow label="Debit from">{startAt}</EntityDetailRow>
             <EntityDetailRow label="Debit To">
-              {endAt && 'Until cancelled'}
+              {endAt ? endAt : 'Until cancelled'}
             </EntityDetailRow>
           </AccordionItemContent>
         </AccordionItem>
