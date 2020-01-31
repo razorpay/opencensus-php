@@ -73,6 +73,11 @@ class Validator extends Base\Validator
     {
         $amount = $input['amount'];
 
+        if(isset($input['currency']) and $input['currency'] != Currency::INR)
+        {
+            $amount = (new CurrencyCore)->getBaseAmount($amount, $input['currency']);
+        }
+
         if ((isset($input[Entity::METHOD]) === false) or
             (($input[Entity::METHOD] !== Payment\Method::EMANDATE) and
                 ($input[Entity::METHOD] !== Payment\Method::NACH)))
