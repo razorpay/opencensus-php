@@ -364,14 +364,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
         ],
     ],
 
@@ -511,14 +511,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
         ],
     ],
 
@@ -565,14 +565,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
         ],
     ],
 
@@ -636,6 +636,17 @@ return [
         'request' => [
             'url' => '/merchants/10abcdefghsdfs/terminals/testatomrandom',
             'method' => 'DELETE'
+        ],
+        'response' => [
+              'content' => [
+            ]
+        ],
+    ],
+
+    'testDeleteTerminal2' => [
+        'request' => [
+            'url' => '/terminals/testatomrandom',
+            'method' => 'DELETE',
         ],
         'response' => [
               'content' => [
@@ -1083,7 +1094,8 @@ return [
     'testToggleTerminal' => [
         'request' => [
             'content' => [
-                'toggle' => '0'
+                'toggle' => '0',
+                'remarks'  => 'Disabling terminal because of some reason',
             ],
         'method' => 'PUT'
         ],

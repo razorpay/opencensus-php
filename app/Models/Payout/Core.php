@@ -53,6 +53,8 @@ class Core extends Base\Core
 
     const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
 
+    const PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT = 3600;
+
     /**
      * @var Mutex
      */
@@ -1180,26 +1182,23 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
             ]);
 
-        if ($payout->isStatusReversed() === true)
-        {
-            throw new Exception\LogicException(
-                'Attempted to reverse an already reversed payout',
-                null,
-                [
-                    'payout_id'      => $payout->getId(),
-                    'status'         => $payout->getStatus(),
-                    'reverse_reason' => $reverseReason,
-                ]);
-        }
-
         $app = App::getFacadeRoot();
 
         $this->mutex = $app['api.mutex'];
 
+        // Keeping the mutex TTL high while updating the payout to reversed.
+        // This is to ensure that the process that is working on the payout
+        // resource, releases mutex on the payout only once all entities are
+        // saved in the database.
         $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
             function () use ($payout, $reverseReason)
             {
+                // reloading the payout here to ensure if any other process
+                // gets a mutex on payout resource, it gets a fresh copy
+                // of payout to work.
+                $payout->reload();
+
                 if ($payout->isStatusReversed() === true)
                 {
                     $this->trace->info(TraceCode::PAYOUT_ALREADY_REVERSED,
@@ -1211,6 +1210,7 @@ class Core extends Base\Core
 
                     return;
                 }
+
                 $this->repo->transaction(
                     function() use ($payout, $reverseReason) {
                         $reversal = (new Reversal\Core)->reverseForPayout($payout);
@@ -1228,7 +1228,7 @@ class Core extends Base\Core
                         }
                     });
             },
-            60,
+            self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
     }
