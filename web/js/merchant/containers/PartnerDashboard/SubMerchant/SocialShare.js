@@ -6,7 +6,7 @@ let whatsappBase;
 if (isMobileAndTablet()) {
   whatsappBase = 'whatsapp://send?text=';
 } else {
-  whatsappBase = 'https://web.whatsapp.com//send?text=';
+  whatsappBase = 'https://api.whatsapp.com//send?text=';
 }
 
 export const mediaWindowUrl = ({ type, title, url, description }) => {
