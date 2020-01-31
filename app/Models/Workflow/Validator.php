@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action\Checker;

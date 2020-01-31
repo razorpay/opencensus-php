@@ -69,6 +69,15 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(CreateAccount::class);
     }
 
+    public function testCreateFundAccountBankAccountPublic()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
+    }
+
     public function testCreateFundAccountBankAccountBeneficiaryVerified()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
@@ -301,6 +310,13 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkFundAccountWithPrivateAuthFailed()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testBulkFundAccountWithSameContact()
     {
         $this->ba->batchAuth();
@@ -502,6 +518,37 @@ class FundAccountsTest extends TestCase
         $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
 
         Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testFundAccountsWithExpiredKey()
+    {
+        $this->fixtures->key->edit('TheTestAuthKey', ['expired_at' => time()]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        // Create Contact
+        $data['request']['url'] = '/fund_accounts';
+        $data['request']['method'] = 'POST';
+
+        $this->startTest($data);
+
+        // Fetch Contacts
+        $data['request']['url'] = '/fund_accounts';
+        $data['request']['method'] = 'GET';
+
+        $this->startTest($data);
+
+        // GET Contact
+        $data['request']['url'] = '/fund_accounts/100000000000fa';
+        $data['request']['method'] = 'GET';
+
+        $this->startTest($data);
+
+        // GET Contact
+        $data['request']['url'] = '/fund_accounts/100000000000fa';
+        $data['request']['method'] = 'PATCH';
+
+        $this->startTest($data);
     }
 
     public function testCreateFundAccountInvalidAccountType()

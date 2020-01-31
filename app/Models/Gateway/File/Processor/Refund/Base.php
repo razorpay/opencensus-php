@@ -15,6 +15,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -28,7 +29,7 @@ class Base extends BaseProcessor
      *
      * @var int
      */
-    protected $fetchFromScroogeCount = 500;
+    protected $fetchFromScroogeCount = Constants::FETCH_FROM_SCROOGE_COUNT;
 
     /**
      * For gateways onboarded on scrooge - we will fetch the refunds from scrooge, these will be populated here
@@ -49,20 +50,38 @@ class Base extends BaseProcessor
      *
      * @var int
      */
-    protected $scroogeMaxAttempts = 1;
+    protected $scroogeMaxAttempts = Constants::SCROOGE_MAX_ATTEMPTS;
 
     /**
      * Being used to store the number of elements that can be passed in the fetch query
      *
      * @var int
      */
-    protected $queryLimit = 50000;
+    protected $queryLimit = Constants::QUERY_LIMIT;
 
     /**
      * @var bool
      * For gateways onboarded on scrooge - we will fetch the refunds from scrooge.
      */
-    protected $fetchRefundsFromScrooge;
+    protected $fetchRefundsFromScrooge = false;
+
+    /**
+     * Resetting all the global variables before use -
+     * since this is being used as a singleton class
+     *
+     * @return BaseProcessor|void
+     */
+    public function resetFileProcessorAttributes()
+    {
+        $this->queryLimit              = Constants::QUERY_LIMIT;
+        $this->scroogeRefunds          = [];
+        $this->scroogeMaxAttempts      = Constants::SCROOGE_MAX_ATTEMPTS;
+        $this->fetchFromScroogeCount   = Constants::FETCH_FROM_SCROOGE_COUNT;
+        $this->scroogeRefundPaymentIds = [];
+        $this->fetchRefundsFromScrooge = false;
+
+        parent::resetFileProcessorAttributes();
+    }
 
     public function fetchEntities(): PublicCollection
     {
@@ -134,6 +153,7 @@ class Base extends BaseProcessor
      * @param  PublicCollection $entities
      *
      * @return array
+     * @throws GatewayFileException
      */
     public function generateData(PublicCollection $entities)
     {
@@ -209,6 +229,8 @@ class Base extends BaseProcessor
 
             $data = $this->addGatewayEntitiesToData($data, $entities);
         }
+
+        $this->checkIfRefundsAreInValidDateRange($data);
 
         return $data;
     }
@@ -390,8 +412,9 @@ class Base extends BaseProcessor
     }
 
     /**
-     * @param $from
-     * @param $to
+     * @param int $from
+     * @param int $to
+     * @param array $refundIds
      * @throws GatewayFileException
      */
     protected function populateScroogeRefunds(int $from, int $to, $refundIds = [])
@@ -422,7 +445,8 @@ class Base extends BaseProcessor
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_FETCHING_FROM_SCROOGE,
                 [
                     'id' => $this->gatewayFile->getId(),
-                ]);
+                ]
+            );
         }
 
         $this->scroogeRefunds = array_merge($this->scroogeRefunds, $refunds);
@@ -604,5 +628,41 @@ class Base extends BaseProcessor
         );
 
         return $refunds;
+    }
+
+    /**
+     * Refunds should be in expected date ranges
+     *
+     * @param array $data
+     * @throws GatewayFileException
+     */
+    protected function checkIfRefundsAreInValidDateRange(array $data)
+    {
+        // This check is applicable only for Scrooge refunds
+        // SBI - is handling older failed refunds as well - so this check won't be applicable for this gateway
+        if (empty($this->scroogeRefunds) === false)
+        {
+            //
+            // Adding checks to ensure refunds are in expected date range - if not throwing exception
+            //
+
+            $refundData = array_column($data, RefundConstants::REFUND);
+
+            if (empty($refundData) === false)
+            {
+                $refundCreatedAtRange = array_column($refundData, RefundConstants::SCROOGE_CREATED_AT);
+
+                if ((max($refundCreatedAtRange) > $this->gatewayFile->getEnd()) or
+                    (min($refundCreatedAtRange) < $this->gatewayFile->getBegin()))
+                {
+                    throw new GatewayFileException(
+                        ErrorCode::SERVER_ERROR_GATEWAY_FILE_LOGICAL_ERROR_REFUNDS_OUT_OF_RANGE,
+                        [
+                            'id' => $this->gatewayFile->getId(),
+                        ]
+                    );
+                }
+            }
+        }
     }
 }

@@ -138,7 +138,7 @@ class Table
     const ROLE                  = 'roles';
     const PERMISSION            = 'permissions';
     const PERMISSION_MAP        = 'permission_map';
-    const GROUP                 = 'groups';
+    const GROUP                 = 'org_groups';
     const ADMIN                 = 'admins';
     const GROUP_MAP             = 'group_map';
     const MERCHANT_MAP          = 'merchant_map';

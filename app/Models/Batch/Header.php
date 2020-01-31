@@ -136,6 +136,11 @@ class Header
     const MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID        = 'Merchant Id';
 
     //
+    // Mdr adjustment headers
+    //
+    const MDR_ADJUSTMENT_TRANSACTION_ID = 'transaction_id';
+
+    //
     // Virtual Account Bulk Creation Headers
     //
     const VA_CUSTOMER_ID         = 'customer_id';
@@ -227,6 +232,8 @@ class Header
     const CITI_NACH_REGISTER_STATUS                        = CitiNachRegisterHeadings::STATUS;
     const CITI_NACH_REGISTER_REMARKS                       = CitiNachRegisterHeadings::REMARKS;
     const CITI_NACH_REGISTER_UMRN                          = CitiNachRegisterHeadings::UMRN;
+    const CITI_NACH_REGISTER_LOT                           = CitiNachRegisterHeadings::LOT;
+    const CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE       = CitiNachRegisterHeadings::SOFT_COPY_RECEIVED_DATE;
     //
     // Citi Nach Debit Response File Headers
     //
@@ -766,6 +773,7 @@ class Header
     const PRICING_RULE_AMOUNT_RANGE_ACTIVE = 'amount_range_active';
     const PRICING_RULE_AMOUNT_RANGE_MIN    = 'amount_range_min';
     const PRICING_RULE_AMOUNT_RANGE_MAX    = 'amount_range_max';
+    const PRICING_RULE_FIXED_RATE          = 'fixed_rate';
 
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
@@ -1692,6 +1700,8 @@ class Header
                 self::CITI_NACH_REGISTER_BANK_NAME,
                 self::CITI_NACH_REGISTER_BANK_IFSC,
                 self::CITI_NACH_REGISTER_AMOUNT,
+                self::CITI_NACH_REGISTER_LOT,
+                self::CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE,
                 self::CITI_NACH_REGISTER_STATUS,
                 self::CITI_NACH_REGISTER_REMARKS,
                 self::CITI_NACH_REGISTER_UMRN,
@@ -1710,6 +1720,8 @@ class Header
                 self::CITI_NACH_REGISTER_BANK_NAME,
                 self::CITI_NACH_REGISTER_BANK_IFSC,
                 self::CITI_NACH_REGISTER_AMOUNT,
+                self::CITI_NACH_REGISTER_LOT,
+                self::CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE,
                 self::CITI_NACH_REGISTER_STATUS,
                 self::CITI_NACH_REGISTER_REMARKS,
                 self::CITI_NACH_REGISTER_UMRN,
@@ -2403,6 +2415,7 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_FIXED_RATE,
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
@@ -2416,6 +2429,7 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_FIXED_RATE,
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
@@ -2446,6 +2460,12 @@ class Header
              * Reason is this batch is entirely migrated to batch micro service.
              */
         ],
+
+        Type::MDR_ADJUSTMENT => [
+            self::INPUT => [
+                self::MDR_ADJUSTMENT_TRANSACTION_ID,
+            ],
+        ]
     ];
 
     /**

@@ -116,7 +116,16 @@ t.oninput = () => {
 }
 
 $('#keys').onclick = t.onkeypress = e => {
-  var source = window.location.hostname.toLowerCase().indexOf('beta-api') >= 0 ? 'checkout.stage.razorpay.in' : 'checkout.razorpay.com';
+  var isBeta = window.location.hostname.toLowerCase().indexOf('beta-api') >= 0;
+  var isDark = window.location.hostname.toLowerCase().indexOf('api-dark') >= 0;
+  var source = 'checkout.razorpay.com';
+
+  if (isBeta) {
+    source = 'checkout.stage.razorpay.in';
+  } else if (isDark) {
+    source = 'checkout-dark.razorpay.com';
+  }
+
   if (e.type === 'click' || (e.code === "Enter" && (e.ctrlKey||e.metaKey||e.shiftKey||e.altKey))) {
     i.className = 'open';
     i.contentDocument.write(`

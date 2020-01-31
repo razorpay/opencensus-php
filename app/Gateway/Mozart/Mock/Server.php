@@ -250,7 +250,7 @@ class Server extends Base\Mock\Server
 
         $response['hash'] = $hash;
 
-        return [json_encode($response)];
+        return json_encode($response);
     }
 
     public function getFailedAsyncCallbackContent(array $payment)
@@ -275,7 +275,7 @@ class Server extends Base\Mock\Server
 
         $response['hash'] = $hash;
 
-        return [json_encode($response)];
+        return json_encode($response);
     }
 
     protected function wallet_phonepe($input)
