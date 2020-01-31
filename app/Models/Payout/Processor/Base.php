@@ -286,18 +286,12 @@ class Base extends BaseCore
      */
     protected function handleWorkflowsIfApplicable(callable $createPayoutCallback)
     {
-        $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
-
-        $hasSkipWorkflowFeature = $this->merchant->isFeatureEnabled(Features::SKIP_WORKFLOWS_FOR_API);
-
-        $isApiRequest = ($this->app['basicauth']->getRequestOriginProduct() !== ProductType::BANKING) ? true : false;
-
         //
         // Skip workflow if its not enabled for the merchant or
         // if the workflow is enabled, check if the request if from API and merchant wants to
         // skip workflow for requests through API
         //
-        if ($this->isWorkflowEnabled() === false)
+        if ($this->isWorkflowApplicable() === false)
         {
             //
             // Workflows feature was not enabled.
@@ -372,7 +366,8 @@ class Base extends BaseCore
      *
      * @return bool
      */
-    protected function isWorkflowEnabled(){
+    protected function isWorkflowApplicable()
+    {
         $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
 
         $hasSkipWorkflowFeature = $this->merchant->isFeatureEnabled(Features::SKIP_WORKFLOWS_FOR_API);
