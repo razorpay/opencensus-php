@@ -482,7 +482,7 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
-                    'code_detail' => 'Risk Declined',
+                    'code_detail' => 'risk_decline',
                 ],
             ],
             'status_code' => 400,

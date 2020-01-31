@@ -265,7 +265,7 @@ class Error extends Support\Fluent
 
         if (array_key_exists($code, $errorCodeMap))
         {
-            $this->setDesc($errorCodeMap[$code][0]);
+            //$this->setDesc($errorCodeMap[$code][0]);
 
             $this->setCodeDetail($errorCodeMap[$code][1]);
 
