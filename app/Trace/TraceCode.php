@@ -415,6 +415,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_EDIT                                         = 'TERMINAL_EDIT';
     const TERMINAL_ENABLE                                       = 'TERMINAL_ENABLE';
     const TERMINAL_DISABLE                                      = 'TERMINAL_DISABLE';
+    const TERMINAL_DELETE                                       = 'TERMINAL_DELETE';  // delete with mid and tid
+    const TERMINAL_DELETE2                                      = 'TERMINAL_DELETE2'; // delete with only tid
     const TERMINAL_AUTO_DISABLE                                 = 'TERMINAL_AUTO_DISABLE';
     const TERMINAL_FAIL_SORT                                    = 'TERMINAL_FAIL_SORT';
     const TERMINAL_BOOST_INVALID                                = 'TERMINAL_BOOST_INVALID';

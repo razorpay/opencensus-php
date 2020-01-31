@@ -13,6 +13,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use \RZP\Models\Terminal\Shared;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 
@@ -455,6 +456,32 @@ class TerminalTest extends TestCase
         $this->ba->getAdmin()->merchants()->attach($merchant);
 
         $content = $this->startTest();
+    }
+
+    public function testDeleteTerminal2()
+    {
+        $this->ba->adminAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => false,
+            'gateway'     => 'worldline',
+            'status'      => 'pending'
+        ]);
+        
+        $terminalId = $terminal->getId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/' . $terminalId;
+
+        $terminal = $this->getEntityById('terminal', $terminalId, true);
+            
+        $content = $this->startTest();
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_INVALID_ID);
+
+        $terminal = $this->getEntityById('terminal', $terminalId, true);
     }
 
     public function testRestoreTerminal()
