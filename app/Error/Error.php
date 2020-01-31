@@ -50,6 +50,10 @@ class Error extends Support\Fluent
 
     const ERROR_CODE_CACHE_KEY  = 'error_code_map_cache_%s';
 
+    const CACHE_EXPIRY          = 14400;
+
+    const REDIS_EXPIRY_PARAM    = 'ex';
+
     protected $attributes = array();
 
     protected $trace;
@@ -237,9 +241,9 @@ class Error extends Support\Fluent
 
         $cacheKey = sprintf(self::ERROR_CODE_CACHE_KEY,$method);
 
-        if ($this->redis->get($cacheKey) !== null)
+        if ($this->redis->has($cacheKey) === true)
         {
-            $errorCodeMap = json_decode($this->redis->get($cacheKey));
+            $errorCodeMap = get_object_vars($this->redis->get($cacheKey));
         }
         else
         {
@@ -268,9 +272,7 @@ class Error extends Support\Fluent
                     $errorCodeMap[$key] = $row;
                 }
 
-                $this->redis->set($cacheKey, json_encode($errorCodeMap));
-
-                $errorCodeMap = json_decode($this->redis->get($cacheKey));
+                $this->redis->set($cacheKey, json_encode($errorCodeMap), self::REDIS_EXPIRY_PARAM, self::CACHE_EXPIRY);
             }
             catch (\Exception $exception)
             {
