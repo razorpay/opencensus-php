@@ -20,8 +20,6 @@ log_format openresty-api escape=json
 server {
     listen 8080;
 
-    client_max_body_size 10m;
-
     {% set qa = ['perf', 'func','automation'] %}
     {% if env in qa  %}
         server_name {{ env }}-api.stage.razorpay.in {{ env }}-invoices.stage.razorpay.in;
