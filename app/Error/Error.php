@@ -241,7 +241,7 @@ class Error extends Support\Fluent
 
         $cacheKey = sprintf(self::ERROR_CODE_CACHE_KEY,$method);
 
-        if ($this->redis->has($cacheKey) === true)
+        if ($this->redis->exists($cacheKey) === 1)
         {
             $errorCodeMap = get_object_vars($this->redis->get($cacheKey));
         }
