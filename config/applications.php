@@ -184,7 +184,8 @@ return [
         'secret'        => env('LUMBERJACK_SECRET'),
         'key'           => env('LUMBERJACK_KEY'),
         'mock'          => env('LUMBERJACK_MOCK', false),
-        'identifier'    => env('LUMBERJACK_API_IDENTIFIER')
+        'identifier'    => env('LUMBERJACK_API_IDENTIFIER'),
+        'static_key'    => env('LUMBERJACK_STATIC_KEY'),
     ],
 
     'harvester' => [
