@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Exception\BadRequestValidationFailureException;
 
