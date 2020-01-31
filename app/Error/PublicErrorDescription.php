@@ -990,4 +990,7 @@ class PublicErrorDescription
 
     //FTS
     const BAD_REQUEST_ERROR_SOURCE_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED             = 'Fund Account could not be created for source account';
+
+    //Invalid Bank Account
+    const BAD_REQUEST_INVALID_BANK_ACCOUNT                                          =  'The bank account entered is invalid';
 }

@@ -86,7 +86,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN                    => 'sometimes|pan',
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
-        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,20',
+        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,20|custom',
         Entity::BANK_ACCOUNT_NAME               => 'sometimes|string|min:4|max:120',
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
@@ -164,7 +164,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN                    => 'sometimes|pan',
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
-        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,22',
+        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,22|custom',
         Entity::BANK_ACCOUNT_NAME               => 'sometimes|string|min:4|max:120',
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
@@ -917,4 +917,14 @@ class Validator extends Base\Validator
                 ]);
         }
     }
+
+    public function validateBankAccountNumber($attribute, $bankAccountNumber)
+    {
+        if(\RZP\Models\BankAccount\Validator::isBlacklistedAccountNumber($bankAccountNumber))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_BANK_ACCOUNT);
+        }
+    }
+
 }
