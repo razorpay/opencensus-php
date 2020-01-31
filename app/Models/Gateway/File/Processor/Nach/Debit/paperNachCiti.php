@@ -412,7 +412,7 @@ class PaperNachCiti extends Debit\Base
             if (($ignoreLastNewline === false) or
                 ($ignoreLastNewline === true))
             {
-                $txt .= "\r\n";
+                $txt .= "\n";
             }
         }
 
