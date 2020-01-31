@@ -48,9 +48,13 @@ class Error extends Support\Fluent
 
     const ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_code_detail_%s.csv';
 
+    const ERROR_CODE_CACHE_KEY  = 'error_code_map_cache_%s';
+
     protected $attributes = array();
 
     protected $trace;
+
+    protected $redis;
 
     public function __construct(
         $code,
@@ -63,6 +67,8 @@ class Error extends Support\Fluent
         $app = App::getFacadeRoot();
 
         $this->trace = $app['trace'];
+
+        $this->redis = $app['redis']->connection();
     }
 
     public function fill($code, $desc = null, $field = null, $data = null, $internalDesc = null)
@@ -227,40 +233,53 @@ class Error extends Support\Fluent
             return;
         }
 
-        $filePath = storage_path(sprintf(self::ERROR_CODE_FILE_PATH, $method));
-
-        if (file_exists($filePath) === false)
-        {
-            return;
-        }
-
-        $handle = fopen($filePath,"r");
-
-        if ($handle === false)
-        {
-            return;
-        }
-
         $errorCodeMap = array();
 
-        try
-        {
-            $header = fgetcsv($handle);
+        $cacheKey = sprintf(self::ERROR_CODE_CACHE_KEY,$method);
 
-            while ($row = fgetcsv($handle))
+        if ($this->redis->get($cacheKey) !== null)
+        {
+            $errorCodeMap = json_decode($this->redis->get($cacheKey));
+        }
+        else
+        {
+            $filePath = storage_path(sprintf(self::ERROR_CODE_FILE_PATH, $method));
+
+            if (file_exists($filePath) === false)
             {
-                $key = array_shift($row);
-
-                $errorCodeMap[$key] = $row;
+                return;
             }
-        }
-        catch (\Exception $exception)
-        {
-            $this->trace->info(TraceCode::FILE_OPERATION_FAILED, ['payment_method' => $method]);
-        }
-        finally
-        {
-            fclose($handle);
+
+            $handle = fopen($filePath,"r");
+
+            if ($handle === false)
+            {
+                return;
+            }
+
+            try
+            {
+                $header = fgetcsv($handle);
+
+                while ($row = fgetcsv($handle))
+                {
+                    $key = array_shift($row);
+
+                    $errorCodeMap[$key] = $row;
+                }
+
+                $this->redis->set($cacheKey, json_encode($errorCodeMap));
+
+                $errorCodeMap = json_decode($this->redis->get($cacheKey));
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->info(TraceCode::FILE_OPERATION_FAILED, ['payment_method' => $method]);
+            }
+            finally
+            {
+                fclose($handle);
+            }
         }
 
         if (array_key_exists($code, $errorCodeMap))
