@@ -97,6 +97,11 @@ jobs:
     docker:
       - image: circleci/php:7.3-node
 
+  php74:
+    <<: *unit-config
+    docker:
+      - image: circleci/php:7.4-node
+
   integration:
     docker:
       - image: circleci/php:7.2-node
@@ -197,4 +202,5 @@ workflows:
       - php71
       - php72
       - php73
+      - php74
       - integration

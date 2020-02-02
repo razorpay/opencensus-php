@@ -2,7 +2,7 @@
 OpenCensus Trace: Providing integer as name
 --SKIPIF--
 <?php
-	if (version_compare(PHP_VERSION, '7.4.0') >= 0) echo 'skip';
+	if (version_compare(PHP_VERSION, '7.4.0') < 0) echo 'skip';
 ?>
 --FILE--
 <?php
@@ -23,4 +23,8 @@ var_dump($span->name());
 
 ?>
 --EXPECTF--
-%s fatal error: Object of class UncastableObject could not be converted to string in %s/name_uncastable_object.php on line %d
+Fatal error: %s: Object of class UncastableObject could not be converted to string in %s/name_uncastable_object_74.php:%d
+Stack trace:
+#0 %s/name_uncastable_object_74.php(%d): opencensus_trace_begin('foo', Array)
+#1 {main}
+  thrown in %s/name_uncastable_object_74.php on line %d
