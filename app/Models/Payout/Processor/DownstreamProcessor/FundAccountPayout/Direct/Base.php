@@ -55,6 +55,8 @@ class Base extends FundAccountPayout\Base
                                         Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
                                         Entity::MERCHANT_ID => $this->merchant->getId(),
                                         ]);
+
+            $merchantBankingAccount->reload();
         }
 
         $merchantBalance = $merchantBankingAccount->getTempBalance();

@@ -415,9 +415,11 @@ class Core extends Base\Core
                     (new BankingAccount\Core)->fetchAndUpdateGatewayBalance(
                         [
                             Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
-                            Entity::MERCHANT_ID => $this->merchant->getId(),
+                            Entity::MERCHANT_ID => $balanceEntity->getMerchantId(),
                         ]
                     );
+
+                    $merchantBankingAccount->reload();
                 }
 
                 $balanceAmount = $merchantBankingAccount->getTempBalance();
