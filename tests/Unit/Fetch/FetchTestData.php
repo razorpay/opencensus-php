@@ -513,4 +513,12 @@ return [
             ],
         ],
     ],
+
+    E::MERCHANT_FRESHDESK_TICKETS => [
+        Type::PROXY_AUTH => [
+            [
+                'type'        => str_random(),
+            ],
+        ],
+    ]
 ];

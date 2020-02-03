@@ -1,0 +1,22 @@
+<?php
+
+namespace RZP\Models\Merchant\FreshdeskTicket;
+
+class TicketStatus
+{
+    const PROCESSING             = 'Processing';
+    const PENDING                = 'Pending';
+    const RESOLVED               = 'Resolved';
+    const CLOSED                 = 'Closed';
+    const WAITING_ON_CUSTOMER    = 'Waiting on Customer';
+    const WAITING_ON_THIRD_PARTY = 'Waiting on Third Party';
+
+    static $ticketStatusMapping = [
+        2 => self::PROCESSING,
+        3 => self::PENDING,
+        4 => self::RESOLVED,
+        5 => self::CLOSED,
+        6 => self::WAITING_ON_CUSTOMER,
+        7 => self::WAITING_ON_THIRD_PARTY,
+    ];
+}
