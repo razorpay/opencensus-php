@@ -3367,6 +3367,50 @@ return [
         ]
     ],
 
+    'testEnableEsScheduledSuccessWithKAMMail' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testEnableEsScheduledMailExpectedRoleTypesOnly' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testEnableEsScheduledUnauthorizedUserAccess' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The input action is not supported for the merchant user',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+        ]
+    ],
+
     'testEnableEsScheduledUnknownScheduleFailure' => [
         'request' => [
             'url' => '/es/scheduled',
@@ -5452,6 +5496,18 @@ return [
         ],
     ],
 
+    'testGetInheritanceParentIfNotPresent'     =>  [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 400,
+        ],
+    ],
+
     'testDeleteInheritanceParent'     =>  [
         'request'   => [
             'method'    => 'DELETE',
@@ -5461,6 +5517,18 @@ return [
             'content'   => [
             ],
             'status_code'           => 200,
+        ],
+    ],
+
+    'testDeleteInheritanceParentIfNotPresent'     =>  [
+        'request'   => [
+            'method'    => 'DELETE',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 400,
         ],
     ],
 

@@ -35,6 +35,8 @@ class Initiator extends Base\Core
 
     const MUTEX_RESOURCE                    = 'FUND_TRANSFER_PROCESSING_%s_%s_%s_%s';
 
+    const FILE_BASED_MUTEX_TIMEOUT          = 60;
+
     const REQUEST_TIMEOUT                   = 30;
 
     const MUTEX_FTS_RESOURCE                = 'MUTEX_FTS_RESOURCE_%s_%s_%s';
@@ -77,7 +79,7 @@ class Initiator extends Base\Core
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, $input[Entity::PURPOSE], $input[Entity::SOURCE_TYPE]);
 
         // Default timeout to be used for file based channels.
-        $mutexTimeout = self::REQUEST_TIMEOUT;
+        $mutexTimeout = self::FILE_BASED_MUTEX_TIMEOUT;
 
         $apiChannels = Channel::getApiBasedChannels();
 

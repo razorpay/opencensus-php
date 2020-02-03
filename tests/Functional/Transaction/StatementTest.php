@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Transaction;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -122,6 +123,70 @@ class StatementTest extends TestCase
         $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
         $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
+    }
+
+    public function testFetchByUtr()
+    {
+        $this->createPayout(['utr' => 'Dq3XuFEay83Zlo']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?utr=' . $this->payout['utr'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchByUtrBankTransfer()
+    {
+        $this->createBankTransferTransaction();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?utr=' . $this->payout['utr'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchByType()
+    {
+        $this->createPayout();
+        $this->createBankTransferTransaction();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?type=payout';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $txn = $response['items'][0];
+
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
+    }
+
+    public function testFetchByInvalidType()
+    {
+        $this->createPayout();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?type=x';
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchByInvalidPaymentType()
+    {
+        $this->createPayout();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?type=settlement';
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 
     public function testFetchByContactName()

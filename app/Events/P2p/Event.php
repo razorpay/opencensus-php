@@ -29,6 +29,8 @@ abstract class Event extends Events\Event
 
     abstract public function getNotificationPayload();
 
+    abstract public function getReminderPayload();
+
     public function __construct(Context $context, Base\Entity $entity)
     {
         $this->context = $context;

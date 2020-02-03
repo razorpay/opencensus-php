@@ -41,13 +41,6 @@ class VirtualAccountController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function refundExcessPayments()
-    {
-        $data = $this->service()->refundExcessPayments();
-
-        return ApiResponse::json($data);
-    }
-
     public function addReceiver(string $id)
     {
         $input = Request::all();

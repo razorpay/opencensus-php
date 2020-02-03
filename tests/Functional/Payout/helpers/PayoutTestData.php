@@ -2743,6 +2743,50 @@ return [
         ],
     ],
 
+    'testAddCustomPurposeRZPFees' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'       => 'rzp_fees',
+                'purpose_type'  => 'settlement',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Purpose \'rzp_fees\' is an internal purpose used by Razorpay and cannot be added.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCancelRZPFeesPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED,
+        ],
+    ],
+
+
     'testCreatingPendingPayoutsForRblWithUnsupportedModeChannelDestinationTypeCombo' => [
         'request' => [
             'url'     => '/payouts',

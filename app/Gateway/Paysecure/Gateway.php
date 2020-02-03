@@ -743,4 +743,14 @@ class Gateway extends Base\Gateway
 
         return $acquirer;
     }
+
+    protected function getCacheKey($input)
+    {
+        return sprintf(self::CACHE_KEY, $input['payment']['id']);
+    }
+
+    protected function getCardCacheTtl($input)
+    {
+        return 60 * 24 * 10;
+    }
 }

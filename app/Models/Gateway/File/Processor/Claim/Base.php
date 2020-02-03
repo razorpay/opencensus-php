@@ -30,7 +30,8 @@ class Base extends BaseProcessor
         Constants::ALLA,
         Constants::CUB,
         Constants::KVB,
-        Constants::SCBL
+        Constants::SCBL,
+        Constants::CBI,
     ];
 
     public function fetchEntities(): PublicCollection

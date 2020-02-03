@@ -178,6 +178,20 @@ class Entity extends Base\PublicEntity
                     ->orderByRaw($sql, [$this->getEmail()]);
     }
 
+    public function primaryMerchants()
+    {
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->withPivot([self::ROLE, self::PRODUCT])
+                    ->wherePivot(self::PRODUCT, 'primary');
+    }
+
+    public function bankingMerchants()
+    {
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->withPivot([self::ROLE, self::PRODUCT])
+                    ->wherePivot(self::PRODUCT, 'banking');
+    }
+
     public function invitations()
     {
         return $this->hasMany(Invitation\Entity::class, Invitation\Entity::EMAIL, Entity::EMAIL)
@@ -331,7 +345,7 @@ class Entity extends Base\PublicEntity
     protected function getRestrictedAttribute(): bool
     {
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 2);
-        
+
         if (count($merchantIds) !== 1)
         {
             return false;

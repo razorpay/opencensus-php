@@ -16,6 +16,7 @@ use RZP\Services\FTS\Constants;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\FTS\CreateAccount;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -29,17 +30,20 @@ class Core extends Base\Core
      * @param array $input
      * @param Merchant\Entity $merchant
      * @param Base\PublicEntity|null $source
-     * @param string $batchId
      * @param bool $createDuplicate
+     * @param string|null $batchId
+     * @param bool $allowRZPFeesFundAccountCreation
      *
      * @return Entity
-     * @throws BadRequestValidationFailureException
+     *
+     * @throws BadRequestException
      */
     public function create(array $input,
                            Merchant\Entity $merchant,
                            Base\PublicEntity $source = null,
                            bool $createDuplicate = false,
-                           string $batchId = null): Entity
+                           string $batchId = null,
+                           bool $allowRZPFeesFundAccountCreation = false): Entity
     {
         $traceRequest = $this->unsetSensitiveCardDetails($input);
 
@@ -57,6 +61,28 @@ class Core extends Base\Core
             }
         }
 
+        // allowRZPFeesFundAccountCreation is only set to true when fund account is created at merchant activation.
+        if ($allowRZPFeesFundAccountCreation === false)
+        {
+            // If the corresponding contact is of type 'rzp_fees', we won't allow the merchant to create the fund account
+            if ((empty($source) === false) and
+                ($source->getEntityName() === Entity::CONTACT))
+            {
+                $contactType = $source->getType();
+
+                if (Contact\Type::isInInternal($contactType) === true)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED,
+                        null,
+                        [
+                            'contact_id'   => $source->getId(),
+                            'input'        => $traceRequest
+                        ]);
+                }
+            }
+        }
+
         if (($merchant->getId() === Merchant\Account::MEDLIFE) or
             ($merchant->getId() === Merchant\Account::OKCREDIT))
         {
@@ -69,7 +95,7 @@ class Core extends Base\Core
             ($createDuplicate === false))
         {
             $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input,
-                                                                                       $this->merchant,
+                                                                                       $merchant,
                                                                                        $source);
 
             if (empty($fundAccount) === false)
@@ -222,6 +248,24 @@ class Core extends Base\Core
                 'input'  => $input,
             ]);
 
+        // If the corresponding contact is of type 'rzp_fees', we won't allow the merchant to update the fund account
+        if (($fundAccount->getSourceType() === Entity::CONTACT) and
+            (empty($fundAccount->getSourceId()) === false))
+        {
+            $contactType = $fundAccount->contact->getType();
+
+            if (Contact\Type::isInInternal($contactType) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_UPDATE_NOT_PERMITTED,
+                    null,
+                    [
+                        'fund_account_id' => $fundAccount->getId(),
+                        'input' => $input
+                    ]);
+            }
+        }
+
         $fundAccount->edit($input);
 
         $this->repo->saveOrFail($fundAccount);
@@ -231,6 +275,7 @@ class Core extends Base\Core
 
     public function delete(Entity $fundAccount)
     {
+        // If we ever decide to make this public. Will need to make sure that Internal fund account cannot be deleted.
         $this->trace->info(TraceCode::FUND_ACCOUNT_DELETE_REQUEST, ['id' => $fundAccount->getId()]);
 
         return $this->repo->deleteOrFail($fundAccount);
@@ -292,6 +337,25 @@ class Core extends Base\Core
                     'data' => $input,
                 ]);
         }
+    }
 
+    public function createRZPFeesFundAccount(Merchant\Entity $merchant, $contact)
+    {
+        $this->trace->info(TraceCode::RZP_FEES_FUND_ACCOUNT_CREATE_REQUEST,
+                           [
+                               'contact_id' => $contact->getId()
+                           ]);
+
+        $fundAccountData = [
+            'account_type'  => 'bank_account',
+            'contact_id'    => $contact->getPublicId(),
+            'bank_account'  => [
+                'name'              => $this->config['banking_account.razorpayx_fee_details.name'],
+                'ifsc'              => $this->config['banking_account.razorpayx_fee_details.ifsc'],
+                'account_number'    => $this->config['banking_account.razorpayx_fee_details.account_number'],
+            ]
+        ];
+
+        $this->create($fundAccountData, $merchant, $contact, false, null, true);
     }
 }

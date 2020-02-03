@@ -92,22 +92,22 @@ class Service extends Base\Service
                                               ->feature
                                               ->fetchByEntityTypeAndEntityId($entityType, $entityId);
 
-        // all_features is a list of currently available features in the system
-        $response['all_features'] = array_keys(Constants::$featureValueMap);
+        $response['all_features'] =  array_keys(Constants::$featureValueMap);
 
         return $response;
     }
 
     /**
-     * Delete the feature association with an entity
-     *
-     * @param string $routeEndpoint
-     * @param string $entityId
-     * @param string $featureName
-     * @param array  $input
-     *
-     * @return array
-     */
+    * Delete the feature association with an entity
+    *
+    * @param string $routeEndpoint
+    * @param string $entityId
+    * @param string $featureName
+    * @param array $input
+    *
+    * @return array
+    * @throws Exception\BadRequestException
+    */
     public function deleteEntityFeature(
         string $routeEndpoint,
         string $entityId,
