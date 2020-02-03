@@ -295,6 +295,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_FUND_TRANSFER_FILE_DETAIL_UPDATED               = 'BATCH_FUND_TRANSFER_FILE_DETAIL_UPDATED';
     const PAYMENT_RECURRING_INVALID_STATUS                      = 'PAYMENT_RECURRING_INVALID_STATUS';
     const GATEWAY_TOKEN_MISMATCH                                = 'GATEWAY_TOKEN_MISMATCH';
+    const GATEWAY_DECRYPTION_FAILED                             = 'GATEWAY_DECRYPTION_FAILED';
     const CHECK_ACCOUNT_REQUEST                                 = 'CHECK_ACCOUNT_REQUEST';
     const CHECK_ACCOUNT_RESPONSE                                = 'CHECK_ACCOUNT_RESPONSE';
     const AUTH_INIT_REQUEST                                     = 'AUTH_INIT_REQUEST';
