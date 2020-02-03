@@ -243,7 +243,7 @@ class Error extends Support\Fluent
 
         if ($this->redis->exists($cacheKey) === 1)
         {
-            $errorCodeMap = get_object_vars($this->redis->get($cacheKey));
+            $errorCodeMap = get_object_vars(json_decode($this->redis->get($cacheKey)));
         }
         else
         {
