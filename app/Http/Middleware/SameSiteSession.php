@@ -16,9 +16,9 @@ class SameSiteSession
 
         $userAgent = $app['request']->userAgent();
 
-        $regex = "/(iPhone; CPU iPhone OS \/1[0-2]|iPad; CPU OS \/1[0-2]|iPod touch; CPU iPhone OS \/1[0-2]|Macintosh; Intel Mac OS X.*Version\/1[0-2].*Safari)/";
+        $regex = "/(iPhone; CPU iPhone OS 1[0-2]|iPad; CPU OS 1[0-2]|iPod touch; CPU iPhone OS 1[0-2]|Macintosh; Intel Mac OS X.*Version\\x2F1[0-2].*Safari)/";
 
-        if (preg_match($regex, $userAgent) === 0)
+        if (preg_match($regex, $userAgent, $matches, PREG_OFFSET_CAPTURE, 0) === 0)
         {
             Config::set('session.same_site', 'none');
         }
