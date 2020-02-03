@@ -42,8 +42,6 @@ class BankingAccountStatement extends Job
     {
         $this->params = $params;
 
-        $this->basCore = new BAS\Core;
-
         //$this->setQueueConfigKeyForChannelType($this->params['channel']);
 
         parent::__construct($mode);
@@ -60,7 +58,7 @@ class BankingAccountStatement extends Job
                 'accountNumber' => $this->params['accountNumber']
             ]);
 
-            $result = $this->basCore->processStatementForAccount($this->params);
+            $result = (new BAS\Core)->processStatementForAccount($this->params);
 
             $this->delete();
         }

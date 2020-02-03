@@ -85,6 +85,6 @@ class Repository extends Base\Repository
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->orderBy(Entity::LAST_STATEMENT_ATTEMPT_AT, 'asc')
                     ->limit($limit)
-                    ->get(['account_number']);
+                    ->pluck(Entity::ACCOUNT_NUMBER);
     }
 }
