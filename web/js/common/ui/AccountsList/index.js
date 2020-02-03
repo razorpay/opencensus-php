@@ -33,7 +33,9 @@ class AccountsList extends React.Component {
   handleSelect = ({ option }) => {
     this.typeAheadSkin.classList.remove('hide');
 
-    this.props.onChange(option);
+    if (typeof this.props.onChange === 'function') {
+      this.props.onChange(option);
+    }
   };
 
   searchInAccountList(val) {
