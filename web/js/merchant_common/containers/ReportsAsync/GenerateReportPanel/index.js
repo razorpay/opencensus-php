@@ -5,6 +5,7 @@ import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { isPresent } from 'common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
+import SelectAccount from 'common/ui/AccountsList';
 
 import SelectConfig from './SelectConfig';
 import SelectPeriod from './SelectPeriod';
@@ -13,10 +14,29 @@ import EmailReport from './EmailReport';
 
 @RTracking(() => window.rzpQ.component('GenerateReportPanel'))
 export default class GenerateReportPanel extends React.PureComponent {
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { accounts } = nextProps;
+    const { selectedAccount } = prevState;
+    if (
+      accounts &&
+      (!selectedAccount && !accounts.loading && isPresent(accounts.accounts))
+    ) {
+      return {
+        selectedAccount: accounts.accounts[0],
+      };
+    }
+
+    return null;
+  }
+
   state = {};
 
   onConfigChange = selectedConfig => {
     this.setState({ selectedConfig });
+  };
+
+  onAccountChange = selectedAccount => {
+    this.setState({ selectedAccount });
   };
 
   onDateRangeChanges = (startAt, endAt) => {
@@ -41,13 +61,17 @@ export default class GenerateReportPanel extends React.PureComponent {
     }
   })
   onGenerateReport = () => {
-    const { selectedConfig } = this.state;
+    const { selectedConfig, selectedAccount = {} } = this.state;
     if (selectedConfig.type === 'custom') {
       return this.generateCustomConfigReport();
     }
 
     const [startTime, endTime] = this.selectPeriod.getDateRange();
     const emails = this.emailReport.getWrappedInstance().getValue();
+
+    const accountId =
+      marketplaceConfigTypes.includes(selectedConfig.type) &&
+      (!selectedAccount.current ? selectedAccount.id : undefined);
 
     const payload = {
       config_id: selectedConfig.id,
@@ -57,7 +81,7 @@ export default class GenerateReportPanel extends React.PureComponent {
       ...this.selectFormat.getValue(),
     };
 
-    return this.props.onGenerateReport(payload);
+    return this.props.onGenerateReport(payload, accountId);
   };
 
   generateCustomConfigReport = () => {
@@ -72,8 +96,8 @@ export default class GenerateReportPanel extends React.PureComponent {
   };
 
   render() {
-    const { configs, customConfigs } = this.props;
-    const { selectedConfig, dateRangeError } = this.state;
+    const { configs, customConfigs, accounts, showSelectAccount } = this.props;
+    const { selectedConfig, dateRangeError, selectedAccount } = this.state;
     const allConfigs = [...configs.items, ...customConfigs];
 
     const isCustomConfig = (selectedConfig || {}).type === 'custom';
@@ -95,6 +119,18 @@ export default class GenerateReportPanel extends React.PureComponent {
             onConfigChange={this.onConfigChange}
             selectedConfig={selectedConfig}
           />
+
+          {showSelectAccount &&
+            marketplaceConfigTypes.includes((selectedConfig || {}).type) &&
+            (accounts.loading ? (
+              'Loading Accounts...'
+            ) : (
+              <SelectAccount
+                accounts={accounts.accounts}
+                onChange={this.onAccountChange}
+                selectedAccount={selectedAccount || {}}
+              />
+            ))}
 
           <SelectPeriod
             avlblPeriodOptions={defaultPeriodOptions}
@@ -148,6 +184,13 @@ const defaultPeriodOptions = [
   { label: 'Daily', name: 'daily' },
   { label: 'Monthly', name: 'monthly' },
   { label: 'Custom', name: 'dateRange' },
+];
+
+const marketplaceConfigTypes = [
+  'transactions',
+  'payments',
+  'refunds',
+  'settlements',
 ];
 
 function getDateRangeError(startAt, endAt) {

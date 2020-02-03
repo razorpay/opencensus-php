@@ -14,18 +14,25 @@ export default class ReportHome extends React.PureComponent {
     this.props.fetchConfigs();
     this.props.fetchLogs({ count: 5 });
 
+    if (this.props.showSelectAccount) {
+      this.props.fetchAccounts();
+    }
+
     if (typeof window.hj === 'function') {
       window.hj('trigger', 'report-async-started');
       window.hj('tagRecording', ['report-async-started']);
     }
   }
 
-  onGenerateReport = payload => {
+  onGenerateReport = (payload, accountId) => {
     return this.props
-      .createLog({
-        ...payload,
-        generated_by: this.props.user.current,
-      })
+      .createLog(
+        {
+          ...payload,
+          generated_by: this.props.user.current,
+        },
+        accountId
+      )
       .then(data => {
         if (data) {
           if (data.is_already_present) {
@@ -93,6 +100,8 @@ export default class ReportHome extends React.PureComponent {
                     onGenerateReport={this.onGenerateReport}
                     emailReportOptions={otherProps.emailReportOptions}
                     mode={otherProps.mode}
+                    showSelectAccount={otherProps.showSelectAccount}
+                    accounts={otherProps.accounts}
                   />
                   <div class="m-t" />
                   <LogList

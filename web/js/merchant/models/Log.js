@@ -20,11 +20,25 @@ export default class Log extends GenericEntity {
       ...props,
       ...(this.reportType && {
         httpData: {
-          headers: {
-            ['X-Report-Type']: this.reportType,
-          },
+          headers: appendHeadersIfRequired(this),
         },
       }),
     });
   }
+}
+
+const possibleHeaders = [
+  { headerKey: 'X-Report-type', entityKey: 'reportType' },
+  { headerKey: 'X-Razorpay-Account', entityKey: 'accountId' },
+];
+
+function appendHeadersIfRequired(log) {
+  const headers = {};
+  possibleHeaders.forEach(({ headerKey, entityKey }) => {
+    if (!!log[entityKey]) {
+      headers[headerKey] = log[entityKey];
+    }
+  });
+
+  return headers;
 }

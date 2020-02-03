@@ -90,9 +90,9 @@ export const loadMoreMerchantLogs = params => ({
 
 const createLog = reportType => {
   const actionName = `${reportType.toUpperCase()}_LOG_CREATE`;
-  return payload => ({
+  return (payload, accountId) => ({
     type: actionName,
-    payload: new Log({ reportType }).save(payload).then(data => ({
+    payload: new Log({ reportType, accountId }).save(payload).then(data => ({
       ...data,
       isNew: true,
     })),

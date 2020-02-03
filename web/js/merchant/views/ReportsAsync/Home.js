@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import Reports from 'merchant_common/containers/ReportsAsync/Home';
+import { prefixEntityValue } from 'merchant_common/helpers/data';
 
 import { pickProps, uniqueArray } from 'common/utils/rzp-utils';
 import {
@@ -8,6 +9,8 @@ import {
   loadMoreMerchantLogs as loadMore,
   pollMerchantReportLog as pollLog,
 } from 'merchant/reducers/reports/logs';
+
+import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 import { fetchMerchantConfigs as fetchConfigs } from 'merchant/reducers/reports/configs';
 
 const mapStateToProps = state => {
@@ -22,11 +25,28 @@ const mapStateToProps = state => {
 
   const customConfigs = getCustomConfigs(sessionUser);
 
+  const showSelectAccount = sessionUser.isMarketplaceEnabled;
+
+  const defaultAccount = {
+    name: sessionUser.name || sessionUser.user.name,
+    id: prefixEntityValue('account', sessionUser.current),
+    email: sessionUser.email,
+    tag: 'My Account',
+    tagIcon: 'i-account',
+    current: true,
+  };
+
+  const accounts = showSelectAccount
+    ? getAccounts(state.accounts, defaultAccount)
+    : undefined;
+
   return {
     ...state.merchantReports,
     user: pickProps(sessionUser, ['current']),
     emailReportOptions: uniqueArray(emailReportOptions),
     mode: state.session.mode,
+    showSelectAccount,
+    accounts,
     customConfigs,
   };
 };
@@ -34,6 +54,7 @@ const mapStateToProps = state => {
 export default connect(mapStateToProps, {
   fetchLogs,
   fetchConfigs,
+  fetchAccounts,
   createLog,
   loadMore,
   pollLog,
@@ -59,6 +80,16 @@ function getCustomConfigs(sessionUser) {
   }
 
   return customConfigs;
+}
+
+function getAccounts(accountsData, defaultAccount) {
+  const { accounts, loading } = accountsData;
+  return loading
+    ? accountsData
+    : {
+        ...accountsData,
+        accounts: [defaultAccount, ...accounts],
+      };
 }
 
 const customConfigMap = {
