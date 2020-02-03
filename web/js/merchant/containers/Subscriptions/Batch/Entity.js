@@ -48,6 +48,7 @@ export default class RegistrationLinksBatchEntityContainer extends React.Compone
         fetchBatchDetails={this.props.fetchBatchDetails}
         renderDetails={renderBatchDetails}
         gaEvents={gaEvents}
+        downloadReportText={getDownloadReportText}
       />
     );
   }
@@ -61,4 +62,12 @@ function getStatsTable(stats) {
       { title: 'Rows Failed', value: stats.failureCount },
     ],
   ];
+}
+
+function getDownloadReportText(props) {
+  const { type } = props.batch || {};
+
+  return `Download the report containing all ${
+    type === 'auth_link' ? 'Auth' : 'Recurring Debit'
+  } Links data.`;
 }

@@ -34,8 +34,20 @@ export default class SettlementDetail extends Component {
     }
   };
 
+  isOnHold = () => {
+    if (
+      this.props.settlementAmount.next_settlement_time === null &&
+      this.props.settlementAmount.no_settlement &&
+      this.props.settlementAmount.no_settlement.on_hold === true
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   render() {
-    const isOnHold = !this.props.settlementAmount.next_settlement_time;
+    const isOnHold = this.isOnHold();
     const onHoldReason = this.props.settlementAmount.no_settlement;
 
     return (

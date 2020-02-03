@@ -462,7 +462,9 @@ export default class User {
   }
 
   get isVPAFeatureEnabled() {
-    return this.getExpStatus('vpa_enabled');
+    const isLiveMode = getMode() === 'live';
+
+    return isLiveMode && this.getExpStatus('vpa_enabled');
   }
 
   get isCompanyNameHiddenRazorX() {
@@ -481,7 +483,7 @@ export default class User {
   }
 
   get isSupportCallEnabled() {
-    return this.getExpStatus('support_call');
+    return this.getExpStatus('support_call') && this.isActivated;
   }
 
   get isUnregisteredBusiness() {

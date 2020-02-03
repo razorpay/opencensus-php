@@ -17,7 +17,6 @@ const HDFC_restrictedModules = [
 const HDFC_restrictedFeatures = [
   'flashcheckout',
   'current_balance',
-  'card_refunds',
   'external_links',
 ];
 
@@ -32,8 +31,8 @@ const Bajaj_restrictedModules = [
 const Bajaj_restrictedFeatures = ['monthlyInvoice', 'external_links'];
 
 /*
-* Map of orgs having restrictions on corresponding modules/features
-* */
+ * Map of orgs having restrictions on corresponding modules/features
+ * */
 
 export const antiOrgsModules = {
   hdfc: HDFC_restrictedModules,

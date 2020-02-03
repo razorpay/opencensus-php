@@ -213,8 +213,14 @@ export function validateSlug(val) {
   return slugRegex.test(val);
 }
 
-export function validateVABankAccount(value, maxLength) {
+export function validateAlphanumericWithMaxLength(value, maxLength) {
   let regex = new RegExp(`^[a-z0-9]{0,${maxLength}}$`, 'i');
+
+  return regex.test(value);
+}
+
+export function validateAlphanumericWithStrictLength(value, length) {
+  let regex = new RegExp(`^[a-z0-9]{${length}}$`, 'i');
 
   return regex.test(value);
 }

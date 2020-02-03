@@ -1,4 +1,5 @@
 import { set } from 'common/utils/immutable';
+import { merchantFetch } from 'merchant/utils/ajax';
 import VirtualAccount from 'merchant/models/VirtualAccount';
 import {
   makeActionCollectionReducer,
@@ -14,6 +15,16 @@ const VIRTUAL_ACCOUNT_EDIT = 'VIRTUAL_ACCOUNT_EDIT';
 const VIRTUAL_ACCOUNT_DELETE = 'VIRTUAL_ACCOUNT_DELETE';
 const VIRTUAL_ACCOUNT_FETCH = 'VIRTUAL_ACCOUNT_FETCH';
 const VIRTUAL_ACCOUNT_PAYMENTS_FETCH = 'VIRTUAL_ACCOUNT_PAYMENTS_FETCH';
+const VIRTUAL_ACCOUNT_CONFIG = 'VIRTUAL_ACCOUNT_CONFIG';
+
+export const fetchConfigForVirtualAccount = () => {
+  return {
+    type: VIRTUAL_ACCOUNT_CONFIG,
+    payload: merchantFetch({
+      url: `virtual_account/configs`,
+    }),
+  };
+};
 
 export const fetchVirtualAccounts = params => {
   if (!params.notes) {
@@ -70,9 +81,27 @@ export const createTestPayment = params => {
   };
 };
 
+// Virtual Accounts Details Reducer
+let listInitialState = {
+  va_config: null, // null => data is loading
+
+  // Below are same as in defaultInitialState of makeActionCollectionReducer
+  loading: true,
+  items: [],
+  error: null,
+};
+
 // List Reducer
 export const virtualAccountsReducer = makeActionCollectionReducer(
-  'VIRTUAL_ACCOUNTS'
+  'VIRTUAL_ACCOUNTS',
+  {
+    [`${VIRTUAL_ACCOUNT_CONFIG}::SUCCESS`]: (state, action) => {
+      return set(state, 'va_config', action.payload.data);
+    },
+    [`${VIRTUAL_ACCOUNT_CONFIG}::ERROR`]: (state, action) => {
+      return set(state, 'va_config', {}); // Set empty config
+    },
+  }
 );
 
 // Virtual Accounts Details Reducer
