@@ -53,7 +53,7 @@ class Base extends FundAccountPayout\Base
         {
             (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
                                         Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
-                                        Entity::MERCHANT_ID => $this->merchant->getId(),
+                                        Entity::MERCHANT_ID => $merchantBankingAccount->getMerchantId(),
                                         ]);
 
             $merchantBankingAccount->reload();
