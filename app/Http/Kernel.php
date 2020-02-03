@@ -29,7 +29,6 @@ class Kernel extends HttpKernel
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             Middleware\SameSiteSession::class,
             \Illuminate\Session\Middleware\StartSession::class,
-
             Middleware\TemporaryStartSession::class,
             // \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             // \RZP\Http\Middleware\VerifyCsrfToken::class,
@@ -65,8 +64,6 @@ class Kernel extends HttpKernel
         Middleware\SameSiteSession::class,
         \Illuminate\Session\Middleware\StartSession::class,
         Middleware\TemporaryStartSession::class,
-
-
     ];
 
     /**
