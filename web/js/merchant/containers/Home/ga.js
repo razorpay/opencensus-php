@@ -100,6 +100,13 @@ const iaWelcomeTrack = setTrackData({
   eventCategory: 'Dashboard - Instant Activations Welcome',
 });
 
+export const trackGoToActivationFromError = () => {
+  iaWelcomeTrack({
+    eventAction: 'Go To - L1 Form',
+    eventLabel: 'From error banner',
+  });
+};
+
 export const trackActivateAccount = () => {
   iaWelcomeTrack({
     eventAction: 'Click - Activate Account',

@@ -148,34 +148,31 @@ export default class extends React.Component {
                   />
                 </div>
 
-                {!isClosed &&
-                  !bankAccount && (
-                    <>
-                      <br />
+                {!isClosed && !bankAccount && (
+                  <>
+                    <br />
 
-                      <button
-                        class="btn btn-default"
-                        onClick={this.openEnableTransferModeModal}
-                      >
-                        Enable Account Transfer
-                      </button>
-                    </>
-                  )}
+                    <button
+                      class="btn btn-default"
+                      onClick={this.openEnableTransferModeModal}
+                    >
+                      Enable Account Transfer
+                    </button>
+                  </>
+                )}
 
-                {!isClosed &&
-                  !upiAddress &&
-                  user.isVPAFeatureEnabled && (
-                    <>
-                      <br />
+                {!isClosed && !upiAddress && user.isVPAFeatureEnabled && (
+                  <>
+                    <br />
 
-                      <button
-                        class="btn btn-default"
-                        onClick={this.openEnableTransferModeModal}
-                      >
-                        Enable UPI Transfer
-                      </button>
-                    </>
-                  )}
+                    <button
+                      class="btn btn-default"
+                      onClick={this.openEnableTransferModeModal}
+                    >
+                      Enable UPI Transfer
+                    </button>
+                  </>
+                )}
 
                 <div style={{ margin: '24px 0' }}>
                   <EntityDetailRow label="Amount Paid">

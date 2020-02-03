@@ -31,8 +31,8 @@ const Bajaj_restrictedModules = [
 const Bajaj_restrictedFeatures = ['monthlyInvoice', 'external_links'];
 
 /*
-* Map of orgs having restrictions on corresponding modules/features
-* */
+ * Map of orgs having restrictions on corresponding modules/features
+ * */
 
 export const antiOrgsModules = {
   hdfc: HDFC_restrictedModules,

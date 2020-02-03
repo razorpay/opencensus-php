@@ -274,6 +274,7 @@ export default class ActivationWizard extends React.Component {
           twiData: 'o1ua0',
           quoraData: 'AddToWishlist',
           redditData: 'AddToWishlist',
+          fbData: 'activation_complete_success',
         }); //fb = false, bing, linkedin, twitter, quora, reddit events are fired
 
         this.props.sendEventsForSubMerchantView(
@@ -485,11 +486,10 @@ export default class ActivationWizard extends React.Component {
 
     const isValid =
       data !== void 0 &&
-      FORM_TABS.every(
-        c =>
-          Array.isArray(c)
-            ? c.every(d => isFieldValid(d, this, data))
-            : isFieldValid(c, this, data)
+      FORM_TABS.every(c =>
+        Array.isArray(c)
+          ? c.every(d => isFieldValid(d, this, data))
+          : isFieldValid(c, this, data)
       );
 
     if (this.onFormValidityChange) {

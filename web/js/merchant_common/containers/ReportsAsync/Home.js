@@ -52,7 +52,8 @@ export default class ReportHome extends React.PureComponent {
                   target="_blank"
                 >
                   here
-                </NavLink>.
+                </NavLink>
+                .
               </>
             ),
             closeTimeout: 5000,

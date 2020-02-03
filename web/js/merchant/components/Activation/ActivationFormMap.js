@@ -796,9 +796,9 @@ export const getBusinessTypeOptions = activation => {
 };
 
 /*
-* Note: If some Form Tab is removed from `tabsData`, then it's corresponding fields must also be removed from formNamesMeta.
-* The same you can check for data.need_kyc LA accounts
-*/
+ * Note: If some Form Tab is removed from `tabsData`, then it's corresponding fields must also be removed from formNamesMeta.
+ * The same you can check for data.need_kyc LA accounts
+ */
 export const mainFormFieldNamesMeta = (function() {
   const formNames = [];
 

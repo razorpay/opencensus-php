@@ -5,15 +5,13 @@ import {
   trackL1FormError,
 } from 'merchant/containers/Activation/ga_new';
 import BingDataObj from 'common/utils/bingDataObj';
-
 import {
   trackhubsContactUpdate,
   fireAnalyticsEvents,
 } from 'common/utils/googleAnalytics';
 
-function L1FormSuccess(props) {
-  trackL1FormSuccess(props.activation_flow);
-  props.tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form')); // updating contact propteries of hubspot contact
+function fireL1FormSuccessEvents() {
+  // updating contact properties of hubspot contact
   updateHubSpotContactsProperties(
     {
       ...data,
@@ -23,11 +21,23 @@ function L1FormSuccess(props) {
     {},
     'l1_'
   );
+  fireAnalyticsEvents({
+    bingData: new BingDataObj('activationform', 'complete', 'success', 1),
+    liData: 987404,
+    twiData: 'o1ua0',
+    fbData: 'activation_complete_success',
+  });
+  trackL1FormSuccess(props.activation_flow);
+}
+
+function handleInstantActivationSuccess(props) {
+  props.tracking.trackEvent(window.rzpQ.onbr().initiated('act.submit_form'));
 
   if (props.business_type == 11) {
     const { poi_verification_status } = props;
     if (poi_verification_status == 'verified') {
       props.showPANStatusModal();
+      fireL1FormSuccessEvents();
     }
   } else {
     const {
@@ -37,18 +47,12 @@ function L1FormSuccess(props) {
     } = props.instantActivation;
     if (isWhitelistFlow) {
       props.showInstantActivationSuccessModal();
-      fireAnalyticsEvents({ fbData: 'activation_complete_success' });
+      fireL1FormSuccessEvents();
     } else if (isGraylistFlow) {
       props.showKYCDetailsModal();
+      fireL1FormSuccessEvents();
     }
   }
-
-  let data = new BingDataObj('activationform', 'complete', 'success', 1);
-  fireAnalyticsEvents({
-    bingData: data,
-    liData: 987404,
-    twiData: 'o1ua0',
-  }); //fb = false, bing, linkedin, twitter
 }
 
 function L1FormError() {
@@ -245,7 +249,7 @@ function hasSelectedBlacklistedCategory(activation) {
 }
 
 export {
-  L1FormSuccess,
+  handleInstantActivationSuccess,
   L1FormError,
   updateHubSpotContactsProperties,
   differentAddress,

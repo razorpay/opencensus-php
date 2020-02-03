@@ -246,10 +246,10 @@ export const objectDiff = (oldObj = {}, newObj = {}) => {
 };
 
 /*
-  * Convert the object to url query string
-  * Don't allow undefined, null and empty string as values
-  * Note: It doesn't handle nested object
-*/
+ * Convert the object to url query string
+ * Don't allow undefined, null and empty string as values
+ * Note: It doesn't handle nested object
+ */
 export const stringifyQueryParams = params => {
   let queryString;
   let queryElements = [];
@@ -272,7 +272,7 @@ export const stringifyQueryParams = params => {
  * Convert the location into query params object
  * Usually, passing url = this.props.location.search
  * Use Case: utilize to populate filter form
-*/
+ */
 export const getURLQueryParams = (url = document.location.hash) => {
   let search = url.split('?')[1];
   let params = {};
@@ -421,7 +421,7 @@ export const getPercentage = (divident, divisor) => {
   let value = 0;
 
   if (divident) {
-    value = getFixedNumber(divisor / divident * 100);
+    value = getFixedNumber((divisor / divident) * 100);
   }
 
   return Number(value);
@@ -466,7 +466,7 @@ export const getEMI = (principle, length, rate) => {
 
   var multiplier = Math.pow(1 + rate, length);
 
-  return parseInt(principle * rate * multiplier / (multiplier - 1), 10);
+  return parseInt((principle * rate * multiplier) / (multiplier - 1), 10);
 };
 
 export const arrayToCsv = array => {
@@ -892,11 +892,11 @@ export const loadImage = (src, onLoad, onError) => {
 };
 
 /*
-* Reference: https://github.com/facebook/react/issues/10135#issuecomment-314441175
-*
-* This is helper fn. as a work around for dispatching manual events on native elements.
-*
-* */
+ * Reference: https://github.com/facebook/react/issues/10135#issuecomment-314441175
+ *
+ * This is helper fn. as a work around for dispatching manual events on native elements.
+ *
+ * */
 export function setNativeValue(element, value) {
   const valueSetter = Object.getOwnPropertyDescriptor(element, 'value').set;
   const prototype = Object.getPrototypeOf(element);

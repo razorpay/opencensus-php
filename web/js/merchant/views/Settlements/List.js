@@ -13,7 +13,10 @@ import { fetchSettlements as fetchAll } from 'merchant/reducers/collection';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import {
+  getKeysSeparatedByPipe,
+  handleNegativeBalanceLimit,
+} from 'common/utils/rzp-utils';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -23,6 +26,7 @@ import { trackEarlySettlementRequests, trackOndemand } from './ga';
 import {
   fetchCurrentBalance,
   fetchSettlementAmount,
+  fetchBalanceConfig,
 } from 'merchant/reducers/home';
 import {
   fetchSchedule,
@@ -36,8 +40,6 @@ import ScheduledBanner from 'merchant/views/Settlements/components/ScheduledBann
 import SettlementSchedule from 'merchant/views/Settlements/components/SettlementSchedule';
 import SettlementDetail from 'merchant/views/Settlements/components/SettlementDetail';
 import Time from 'common/ui/Time';
-import { fetchBalanceConfig } from 'merchant/reducers/home';
-import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(
@@ -83,7 +85,7 @@ export default class SettlementsListContainer extends ListContainer {
   popupIfSettle() {
     if (this.props.location.hash === '#settlenow') {
       this.resetHash();
-      let balance = this.props.current_balance.data.balance || 0;
+      const balance = this.props.current_balance.data.balance || 0;
       if (balance < 100) {
         this.props.showNotification({
           type: 'error',
@@ -196,7 +198,7 @@ export default class SettlementsListContainer extends ListContainer {
 
   showOndemandSettlementForm = e => {
     trackOndemand.trackSettleNow('Settlements');
-    let balance = this.props.current_balance.data.balance;
+    const balance = this.props.current_balance.data.balance;
 
     this.props.openModal({
       component: (
@@ -224,8 +226,8 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items, error, current_balance, user, mode } = this.props,
-      { showInstantActivation, isSubmitted } = user;
+    const { loading, items, error, current_balance, user, mode } = this.props;
+    const { showInstantActivation, isSubmitted } = user;
     let balance = current_balance.data.balance || 0;
     let negativeBalanceClassName = '';
 
@@ -256,7 +258,7 @@ export default class SettlementsListContainer extends ListContainer {
           >
             Your balance went into negative value. Add funds to avoid the
             transaction failures.{' '}
-            <Link to={'/addfunds'} target="_blank">
+            <Link to="/addfunds" target="_blank">
               {' '}
               Add Funds
             </Link>
@@ -275,7 +277,7 @@ export default class SettlementsListContainer extends ListContainer {
             Your current balance had reached the maximum negative limit.
             Transactions will start to fail now. Please add funds to avoid
             transaction failures.{' '}
-            <Link to={'/addfunds'} target="_blank">
+            <Link to="/addfunds" target="_blank">
               {' '}
               Add Funds
             </Link>
@@ -317,16 +319,16 @@ export default class SettlementsListContainer extends ListContainer {
             />
           ) : null}
           <content>
-            <div class="content-wrapper">
+            <div className="content-wrapper">
               <HeaderAction>
                 <React.Fragment>
                   {
                     <div
-                      class="btn btn-link settlement-doc-btn"
+                      className="btn btn-link settlement-doc-btn"
                       onClick={this.viewSettlementCycle}
                     >
                       <span
-                        class="icon i-info-outline"
+                        className="icon i-info-outline"
                         style={{
                           marginRight: '5px',
                           position: 'relative',
@@ -367,134 +369,127 @@ export default class SettlementsListContainer extends ListContainer {
                 {this.props.user.isOrgAllowedFunctionality(
                   'current_balance'
                 ) && (
-                  <Fragment>
-                    <div class="flex text-right">
-                      <div>
-                        <span class="settlement-balance-amount">
-                          Current Balance:{' '}
-                          <Amount
-                            value={balance}
-                            currency={'INR'}
-                            className={negativeBalanceClassName}
-                          />
-                          {this.props.user.isOndemandSettlementEnabled &&
-                            this.props.user.isAllowedView(
-                              'early_settlement'
-                            ) && (
-                              <div className="box-left-pad10-inline">
-                                <Button.Primary
-                                  class="settle-btn"
-                                  onClick={this.showOndemandSettlementForm}
-                                  disabled={
-                                    current_balance.loading || balance < 100
-                                  }
-                                >
-                                  <i className="i i-early-settlement settle-now-early" />
-                                  Settle Now
-                                </Button.Primary>
-                              </div>
-                            )}
-                          {this.props.user.isAutomaticSettlementEnabled && (
+                  <div className="flex text-right">
+                    <div>
+                      <span className="settlement-balance-amount">
+                        Current Balance:{' '}
+                        <Amount
+                          value={balance}
+                          currency="INR"
+                          className={negativeBalanceClassName}
+                        />
+                        {this.props.user.isOndemandSettlementEnabled &&
+                          this.props.user.isAllowedView('early_settlement') && (
+                            <div className="box-left-pad10-inline">
+                              <Button.Primary
+                                class="settle-btn"
+                                onClick={this.showOndemandSettlementForm}
+                                disabled={
+                                  current_balance.loading || balance < 100
+                                }
+                              >
+                                <i className="i i-early-settlement settle-now-early" />
+                                Settle Now
+                              </Button.Primary>
+                            </div>
+                          )}
+                        {this.props.user.isAutomaticSettlementEnabled && (
+                          <i className="i i-early-settlement settle-current-icon">
+                            <Popover align="left" theme="dark">
+                              <PopoverBody>
+                                <span>
+                                  Early Settlment has been enabled with your
+                                  account.
+                                </span>
+                              </PopoverBody>
+                            </Popover>
+                          </i>
+                        )}
+                      </span>
+                      <br />
+                      {no_settlement && (
+                        <span style={{ fontSize: '13px' }}>
+                          {no_settlement.caption}
+                          {no_settlement.reason && (
                             <>
-                              <i className="i i-early-settlement settle-current-icon">
-                                <Popover align="left" theme="dark">
-                                  <PopoverBody>
-                                    <span>
-                                      Early Settlment has been enabled with your
-                                      account.
-                                    </span>
-                                  </PopoverBody>
-                                </Popover>
-                              </i>
+                              <i className="i i-info-circle" />
+                              <Popover theme="dark" align="left">
+                                <PopoverBody>
+                                  <div>{no_settlement.reason}</div>
+                                </PopoverBody>
+                              </Popover>
                             </>
                           )}
                         </span>
-                        <br />
-                        {no_settlement && (
-                          <span style={{ fontSize: '13px' }}>
-                            {no_settlement.caption}
-                            {no_settlement.reason && (
-                              <>
-                                <i class="i i-info-circle" />
-                                <Popover theme="dark" align="left">
-                                  <PopoverBody>
-                                    <div>{no_settlement.reason}</div>
-                                  </PopoverBody>
-                                </Popover>
-                              </>
-                            )}
-                          </span>
-                        )}
-                        {nextSettlement &&
-                          !no_settlement && (
-                            <span style={{ fontSize: '13px' }}>
-                              <span>&nbsp;</span>
-                              <strong>
-                                <Amount
-                                  value={
-                                    this.props.settlement_amount.data
-                                      .settlement_amount
-                                  }
-                                  currency={'INR'}
-                                />
-                              </strong>{' '}
-                              will be settled on{' '}
-                              <Time
-                                value={
-                                  this.props.settlement_amount.data
-                                    .next_settlement_time
-                                }
-                                format={'DD MMM YYYY, hh:mm:ss a'}
-                              />
-                              {this.props.settlement_amount.data
-                                .reason_for_delay && (
-                                <>
-                                  <i class="i i-info-circle" />
-                                  <Popover theme="dark" align="left">
-                                    <PopoverBody>
-                                      <div>
-                                        {
-                                          this.props.settlement_amount.data
-                                            .reason_for_delay
-                                        }
-                                      </div>
-                                    </PopoverBody>
-                                  </Popover>
-                                </>
-                              )}
-                              <span
-                                onClick={() => {
-                                  this.props.openModal({
-                                    size: 'medium',
-                                    component: (
-                                      <SettlementDetail
-                                        settlementAmount={
-                                          this.props.settlement_amount.data
-                                        }
-                                      />
-                                    ),
-                                  });
-
-                                  window.rzpAnalytics({
-                                    eventCategory: 'Settlement Revamp',
-                                    eventAction: 'Know more - Next Settlement',
-                                    eventLabel: `Settlements`,
-                                  });
-                                }}
-                                class="btn-link pointer"
-                                style={{ marginLeft: '5px' }}
-                              >
-                                <b>Know More</b>
-                              </span>
-                            </span>
+                      )}
+                      {nextSettlement && !no_settlement && (
+                        <span style={{ fontSize: '13px' }}>
+                          <span>&nbsp;</span>
+                          <strong>
+                            <Amount
+                              value={
+                                this.props.settlement_amount.data
+                                  .settlement_amount
+                              }
+                              currency="INR"
+                            />
+                          </strong>{' '}
+                          will be settled on{' '}
+                          <Time
+                            value={
+                              this.props.settlement_amount.data
+                                .next_settlement_time
+                            }
+                            format="DD MMM YYYY, hh:mm:ss a"
+                          />
+                          {this.props.settlement_amount.data
+                            .reason_for_delay && (
+                            <>
+                              <i className="i i-info-circle" />
+                              <Popover theme="dark" align="left">
+                                <PopoverBody>
+                                  <div>
+                                    {
+                                      this.props.settlement_amount.data
+                                        .reason_for_delay
+                                    }
+                                  </div>
+                                </PopoverBody>
+                              </Popover>
+                            </>
                           )}
-                      </div>
+                          <span
+                            onClick={() => {
+                              this.props.openModal({
+                                size: 'medium',
+                                component: (
+                                  <SettlementDetail
+                                    settlementAmount={
+                                      this.props.settlement_amount.data
+                                    }
+                                  />
+                                ),
+                              });
+
+                              window.rzpAnalytics({
+                                eventCategory: 'Settlement Revamp',
+                                eventAction: 'Know more - Next Settlement',
+                                eventLabel: `Settlements`,
+                              });
+                            }}
+                            className="btn-link pointer"
+                            style={{ marginLeft: '5px' }}
+                          >
+                            <b>Know More</b>
+                          </span>
+                        </span>
+                      )}
                     </div>
-                  </Fragment>
+                  </div>
                 )}
               </div>
 
-              <div class="clearfix" />
+              <div className="clearfix" />
 
               {error && <Alert type="error" message={error} />}
 
@@ -511,8 +506,8 @@ export default class SettlementsListContainer extends ListContainer {
                 onClick={this.paginate}
               />
 
-              <div class="settlement-row">
-                <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
+              <div className="settlement-row">
+                <div className="col-md-6 col-md-offset-3 col-sm-12 text-center">
                   <div>
                     The amount that gets settled to your bank account will show
                     up here.
@@ -520,7 +515,7 @@ export default class SettlementsListContainer extends ListContainer {
                   <div>
                     {user.isOrgAllowedFunctionality('external_links') ? (
                       <a
-                        class="btn-link"
+                        className="btn-link"
                         target="_blank"
                         href="http://razorpay.com/settlement"
                       >

@@ -131,16 +131,15 @@ export default props => {
                   value={() => (
                     <div>
                       <InvoiceStatusLabel status={invoice.status} />
-                      {isRoleAllowedEdit &&
-                        isIssued && (
-                          <Button.Transparent
-                            class="Button--Link"
-                            style={{ marginLeft: 12 }}
-                            onClick={props.onCancel}
-                          >
-                            Cancel Link
-                          </Button.Transparent>
-                        )}
+                      {isRoleAllowedEdit && isIssued && (
+                        <Button.Transparent
+                          class="Button--Link"
+                          style={{ marginLeft: 12 }}
+                          onClick={props.onCancel}
+                        >
+                          Cancel Link
+                        </Button.Transparent>
+                      )}
                     </div>
                   )}
                 />
@@ -154,42 +153,40 @@ export default props => {
                       value={() => (
                         <div>
                           {isPartialPayment ? 'Enabled' : 'Disabled'}
-                          {isRoleAllowedEdit &&
-                            isIssued && (
-                              <AsyncBtn.Transparent
-                                onClick={() => {
-                                  const toEnablePartialPayment = +!isPartialPayment;
-                                  editPaymentLink({
-                                    partial_payment: toEnablePartialPayment,
-                                  });
+                          {isRoleAllowedEdit && isIssued && (
+                            <AsyncBtn.Transparent
+                              onClick={() => {
+                                const toEnablePartialPayment = +!isPartialPayment;
+                                editPaymentLink({
+                                  partial_payment: toEnablePartialPayment,
+                                });
 
-                                  trackTogglePartialPayment(
-                                    invoice.id,
-                                    'Toggle Partial Payment',
-                                    toEnablePartialPayment
-                                  );
-                                }}
-                                class="Button--Link"
-                                style={{ marginLeft: 12 }}
-                                pendingState={
-                                  isPartialPayment ? 'Disabling' : 'Enabling'
-                                }
-                              >
-                                {isPartialPayment ? 'Disable' : 'Enable'}
-                              </AsyncBtn.Transparent>
-                            )}
-                          {isMinimumFirstPaymentEnabled &&
-                            isPartialPayment && (
-                              <EditMinimumAmount
-                                value={invoice.first_payment_min_amount}
-                                maximum={invoice.amount}
-                                currency={invoice.currency}
-                                entityId={invoice.id}
-                                editFn={editPaymentLink}
-                                trackerFn={() => {}}
-                                isRoleAllowedEdit={isRoleAllowedEdit}
-                              />
-                            )}
+                                trackTogglePartialPayment(
+                                  invoice.id,
+                                  'Toggle Partial Payment',
+                                  toEnablePartialPayment
+                                );
+                              }}
+                              class="Button--Link"
+                              style={{ marginLeft: 12 }}
+                              pendingState={
+                                isPartialPayment ? 'Disabling' : 'Enabling'
+                              }
+                            >
+                              {isPartialPayment ? 'Disable' : 'Enable'}
+                            </AsyncBtn.Transparent>
+                          )}
+                          {isMinimumFirstPaymentEnabled && isPartialPayment && (
+                            <EditMinimumAmount
+                              value={invoice.first_payment_min_amount}
+                              maximum={invoice.amount}
+                              currency={invoice.currency}
+                              entityId={invoice.id}
+                              editFn={editPaymentLink}
+                              trackerFn={() => {}}
+                              isRoleAllowedEdit={isRoleAllowedEdit}
+                            />
+                          )}
                         </div>
                       )}
                     />;
@@ -230,58 +227,56 @@ export default props => {
                   <CustomerDetails invoice={invoice} />
                 </EntityDetailRow>
 
-                {user.isRemindersEnabled &&
-                  isPaymentLinksRemindersEnabled && (
-                    <EntityDetailRow label="Reminders">
-                      <React.Fragment>
-                        <span>
-                          <Input.Check
-                            name="auto_reminders"
-                            fieldLabel="Send auto reminders"
-                            checked={isRemindersEnabled}
-                            disabled={
-                              !isContactDetailsAvl ||
-                              isPaymentLinkClosed ||
-                              isAutoRemindersUpdating
-                            }
-                            onChange={onChangeSendAutoReminder}
-                            autoRender
-                          />
-                          {!isContactDetailsAvl && (
-                            <Popover theme="dark" align="bottom">
-                              <PopoverBody>
-                                No contact details present for reminders to be
-                                sent
-                              </PopoverBody>
-                            </Popover>
-                          )}
-                        </span>
-
-                        {isContactDetailsAvl && (
-                          <ReminderStepsDetails
-                            isRemindersEnabled={isRemindersEnabled}
-                            nextReminders={nextReminders}
-                            isAutoRemindersUpdating={isAutoRemindersUpdating}
-                            isPaymentLinkClosed={isPaymentLinkClosed}
-                          />
+                {user.isRemindersEnabled && isPaymentLinksRemindersEnabled && (
+                  <EntityDetailRow label="Reminders">
+                    <React.Fragment>
+                      <span>
+                        <Input.Check
+                          name="auto_reminders"
+                          fieldLabel="Send auto reminders"
+                          checked={isRemindersEnabled}
+                          disabled={
+                            !isContactDetailsAvl ||
+                            isPaymentLinkClosed ||
+                            isAutoRemindersUpdating
+                          }
+                          onChange={onChangeSendAutoReminder}
+                          autoRender
+                        />
+                        {!isContactDetailsAvl && (
+                          <Popover theme="dark" align="bottom">
+                            <PopoverBody>
+                              No contact details present for reminders to be
+                              sent
+                            </PopoverBody>
+                          </Popover>
                         )}
-                      </React.Fragment>
-                    </EntityDetailRow>
-                  )}
+                      </span>
 
-                {user.isRemindersEnabled &&
-                  !isPaymentLinksRemindersEnabled && (
-                    <EntityDetailRow label="Reminders">
-                      <div class="Input-content">
-                        Reminders are not set for payment links.
-                        <br />
-                        Set it up{' '}
-                        <Link target="_blank" to="/reminders">
-                          here
-                        </Link>
-                      </div>
-                    </EntityDetailRow>
-                  )}
+                      {isContactDetailsAvl && (
+                        <ReminderStepsDetails
+                          isRemindersEnabled={isRemindersEnabled}
+                          nextReminders={nextReminders}
+                          isAutoRemindersUpdating={isAutoRemindersUpdating}
+                          isPaymentLinkClosed={isPaymentLinkClosed}
+                        />
+                      )}
+                    </React.Fragment>
+                  </EntityDetailRow>
+                )}
+
+                {user.isRemindersEnabled && !isPaymentLinksRemindersEnabled && (
+                  <EntityDetailRow label="Reminders">
+                    <div class="Input-content">
+                      Reminders are not set for payment links.
+                      <br />
+                      Set it up{' '}
+                      <Link target="_blank" to="/reminders">
+                        here
+                      </Link>
+                    </div>
+                  </EntityDetailRow>
+                )}
 
                 <EntityDetailRow
                   label="Receipt No."
