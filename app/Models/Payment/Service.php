@@ -2207,9 +2207,21 @@ class Service extends Base\Service
 
         $payments = $cards = $cardsWithoutFingerprint = [];
 
-        if($migrateMissingFingerprintCards)
+        $startTime = $this->app['cache']->get(Processor\Processor::FINGERPRINT_MIGRATION_CACHE_KEY, 1546300800);
+
+        $timeWindow = $input['time_window'] ?? 86400;
+
+        if($migrateMissingFingerprintCards and $startTime < time())
         {
-            $cardsWithoutFingerprint = $this->repo->card->findCardsWithoutFingerprint($limit);
+            $cardsWithoutFingerprint = $this->repo->card->findCardsWithoutFingerprint($limit, $startTime, $timeWindow);
+
+            // Update start time in redis if no records are found for migration in the window
+            if (count($cardsWithoutFingerprint) === 0)
+            {
+                $startTime = $startTime + $timeWindow;
+
+                $this->app['cache']->forever(Processor\Processor::FINGERPRINT_MIGRATION_CACHE_KEY, $startTime);
+            }
         }
         else
         {
@@ -2225,6 +2237,8 @@ class Service extends Base\Service
             [
                 'payments_count' => count($payments),
                 'cards_count'    => count($cards) + count($cardsWithoutFingerprint),
+                'start_time'     => $startTime,
+                'end_time'       => $startTime + $timeWindow,
             ]);
 
         $result = [
