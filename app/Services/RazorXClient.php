@@ -85,7 +85,7 @@ class RazorXClient
      */
     public function getCachedTreatment(...$args): string
     {
-        // Case- From withing same http request scope.
+        // Case- From within same http request scope.
         $this->localUniqueId = self::getLocalUniqueId(...$args);
         if (($storedVariant = $this->getStoredVariant()) !== null)
         {
@@ -95,13 +95,23 @@ class RazorXClient
         // Todo: Ensure some approach to invalidate cache on feature/experiment
         // in raxorx side because with big merchants we can not live with delay.
         // Case- Between different http request scope.
-        return Cache::remember(
-            self::CACHED_TREATMENT_PREFIX.implode(':', $args),
-            self::CACHED_TREATMENT_TTL,
-            function () use ($args) {
-                return $this->getTreatment(...$args);
-            }
-        );
+        try
+        {
+            $treatment = Cache::remember(
+                self::CACHED_TREATMENT_PREFIX.implode(':', $args),
+                self::CACHED_TREATMENT_TTL,
+                function () use ($args) {
+                    return $this->getTreatment(...$args);
+                }
+            );
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+            $treatment = $this->getTreatment(...$args);
+        }
+
+        return $treatment;
     }
 
     public function getTreatment(string $id, string $featureFlag, string $mode): string
