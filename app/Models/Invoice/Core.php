@@ -5,7 +5,6 @@ namespace RZP\Models\Invoice;
 use Config;
 use Carbon\Carbon;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Batch;
@@ -935,18 +934,6 @@ class Core extends Base\Core
     public function cancelInvoicesOfBatch(array $batch)
     {
         (new Validator)->validateCancelInvoicesOfBatch($batch);
-
-        if ((new Batch\Service())->stopBatchProcessIfRequired($batch) === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
-                null,
-                [
-                    'batch_id' => $batch[Batch\Entity::ID],
-                ],
-                'Unable to stop batch processing'
-            );
-        }
 
         $batchId = $batch[Batch\Entity::ID];
 

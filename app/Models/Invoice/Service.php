@@ -545,4 +545,11 @@ class Service extends Base\Service
                 'This operation can only be performed by the creator');
         }
     }
+
+    public function getStatusInvoicesOfBatch($batchId)
+    {
+        $batch = (new Batch\Service())->getBatchById($batchId);
+
+        return $batch[Batch\Entity::STATUS];
+    }
 }

@@ -274,17 +274,17 @@ class Service extends Base\Service
         return $result->toArray();
     }
 
-    public function stopBatchProcessIfRequired(array $batch): bool
+    public function stopBatchProcessIfRequired(string $batchId): bool
     {
-        $batchId = $batch[Entity::ID];
+        $batch = $this->fetchBatchById($batchId);
 
         if ($batch[Entity::STATUS] === Status::PROCESSED)
         {
             $this->trace->info(
                 TraceCode::STOP_BATCH_PROCESS_NOT_REQUIRED,
                 [
-                    'batch_id' => $batchId,
-                    'status' => $batch[Entity::STATUS],
+                    'batch_id'  => $batchId,
+                    'status'    => $batch[Entity::STATUS],
                 ]
             );
 
