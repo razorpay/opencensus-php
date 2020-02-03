@@ -38,7 +38,6 @@ class GatewayPriorityTest extends TestCase
     public function testSaveGatewayPriorityWithException()
     {
         Redis::shouldReceive('connection')
-            ->times(3)
             ->andReturnUsing(function ()
             {
                 return null;
@@ -94,7 +93,6 @@ class GatewayPriorityTest extends TestCase
         config(['app.data_store.mock' => false]);
 
         Redis::shouldReceive('connection')
-            ->times(3)
             ->andReturnUsing(function ()
             {
                return null;
@@ -154,7 +152,6 @@ class GatewayPriorityTest extends TestCase
     public function testRemoveGatewayPriorityWithException()
     {
         Redis::shouldReceive('connection')
-            ->times(3)
             ->andReturnUsing(function ()
             {
                 return null;
