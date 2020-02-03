@@ -62,7 +62,7 @@ class Validator extends Base\Validator
         'description'                   => 'sometimes|nullable|string|max:255|utf8',
         'email'                         => 'sometimes|nullable|email',
         'upi_provider'                  => 'sometimes_if:method,upi|filled|string|custom',
-        'contact'                       => 'sometimes|nullable|contact_syntax',
+        'contact'                       => 'sometimes|nullable|contact_syntax|regex:/^([0-9\s\-\+\(\)]*)$/',
         'billing_address'               => 'sometimes',
         'signature'                     => 'sometimes|nullable|string',
         'notes'                         => 'sometimes|notes',
