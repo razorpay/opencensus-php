@@ -643,6 +643,17 @@ return [
         ],
     ],
 
+    'testDeleteTerminal2' => [
+        'request' => [
+            'url' => '/terminals/testatomrandom',
+            'method' => 'DELETE',
+        ],
+        'response' => [
+              'content' => [
+            ]
+        ],
+    ],
+
     'testCopySharedTerminal' => [
         'response' => [
             'content' => [
@@ -1083,7 +1094,8 @@ return [
     'testToggleTerminal' => [
         'request' => [
             'content' => [
-                'toggle' => '0'
+                'toggle' => '0',
+                'remarks'  => 'Disabling terminal because of some reason',
             ],
         'method' => 'PUT'
         ],

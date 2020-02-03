@@ -773,6 +773,7 @@ class Header
     const PRICING_RULE_AMOUNT_RANGE_ACTIVE = 'amount_range_active';
     const PRICING_RULE_AMOUNT_RANGE_MIN    = 'amount_range_min';
     const PRICING_RULE_AMOUNT_RANGE_MAX    = 'amount_range_max';
+    const PRICING_RULE_FIXED_RATE          = 'fixed_rate';
 
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
@@ -2414,6 +2415,7 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_FIXED_RATE,
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
@@ -2427,6 +2429,7 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_FIXED_RATE,
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,

@@ -944,9 +944,9 @@ return [
             'content' => [
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
-                'payment_network'     => 'AMEX',
+                'issuer'              => 'HDFC',
                 'emi_subvention'      => true,
-                'emi_durations'       => ['9', '9'],
+                'emi_durations'       => ['6'],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
@@ -963,10 +963,10 @@ return [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
-                'payment_network'     => 'AMEX',
+                'issuer'              => 'HDFC',
                 'max_payment_count'   => 2,
-                'min_amount'          => 316389,
-                'emi_durations'       => [9],
+                'min_amount'          => 26366,
+                'emi_durations'       => [6],
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details'
             ]
@@ -1015,7 +1015,7 @@ return [
                 'payment_method'      => 'emi',
                 'payment_network'     => 'BAJAJ',
                 'emi_subvention'      => true,
-                'emi_durations'       => [3,6,9,12],
+                'emi_durations'       => [9],
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details',
@@ -1095,7 +1095,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid emi durations given 7, 5'
+                    'description' => 'Invalid emi durations given 3, 7, 5'
                 ]
             ],
             'status_code' => 400,

@@ -3068,7 +3068,7 @@ final class Route
         'merchant_create'                          => '*',
         'merchant_create_terminal'                 => Permission::ASSIGN_MERCHANT_TERMINAL,
         'merchant_onboard_terminal'                => Permission::ASSIGN_MERCHANT_TERMINAL,
-        'merchant_delete_terminal'                 => '*',
+        'merchant_delete_terminal'                 => Permission::DELETE_TERMINAL,
         'merchant_edit_free_credits'               => '*',
         'merchant_fetch_multiple'                  => '*',
         'merchant_fetch_webhooks'                  => '*',
