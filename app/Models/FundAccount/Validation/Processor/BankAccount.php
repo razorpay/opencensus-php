@@ -152,7 +152,7 @@ class BankAccount extends Base
             return;
         }
 
-        $beneficiaryName = $input['beneficiary_name'];
+        $beneficiaryName = $input['beneficiary_name'] ?? '';
 
         if ((empty($beneficiaryName) === false) and ($beneficiaryName !== 'NA'))
         {

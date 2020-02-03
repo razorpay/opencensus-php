@@ -31,6 +31,12 @@ class SourceUpdater
                                     string $previousStatus = null,
                                     string $expectedCurrentStatus = null)
     {
+        $payoutLink = $payout->payoutLink;
+
+        if ($payoutLink === null)
+        {
+            return;
+        }
 
         $trace = App::getFacadeRoot()['trace'];
 
@@ -40,13 +46,6 @@ class SourceUpdater
                          'previous_status'         => $previousStatus,
                          'expected_current_status' => $expectedCurrentStatus
                      ]);
-
-        $payoutLink = $payout->payoutLink;
-
-        if ($payoutLink === null)
-        {
-            return;
-        }
 
         PayoutSourceUpdaterJob::dispatch($mode,
                                          $payout->getPublicId(),
