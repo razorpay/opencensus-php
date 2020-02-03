@@ -37,6 +37,13 @@ class GatewayPriorityTest extends TestCase
 
     public function testSaveGatewayPriorityWithException()
     {
+        Redis::shouldReceive('connection')
+            ->times(3)
+            ->andReturnUsing(function ()
+            {
+                return null;
+            });
+
         Redis::shouldReceive('zadd')
                 ->once()
                 ->andReturnUsing(function()
@@ -85,6 +92,13 @@ class GatewayPriorityTest extends TestCase
     {
         // Setting the config to false here so that real service is used for fetch
         config(['app.data_store.mock' => false]);
+
+        Redis::shouldReceive('connection')
+            ->times(3)
+            ->andReturnUsing(function ()
+            {
+               return null;
+            });
 
         Redis::shouldReceive('zrevrange')
             ->once()
@@ -139,6 +153,13 @@ class GatewayPriorityTest extends TestCase
 
     public function testRemoveGatewayPriorityWithException()
     {
+        Redis::shouldReceive('connection')
+            ->times(3)
+            ->andReturnUsing(function ()
+            {
+                return null;
+            });
+
         Redis::shouldReceive('zrem')
                 ->once()
                 ->with('gateway_priority:card', ['hdfc'])
