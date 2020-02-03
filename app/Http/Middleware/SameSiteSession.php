@@ -16,11 +16,9 @@ class SameSiteSession
 
         $userAgent = $app['request']->userAgent();
 
-        $containsSafari = Str::contains($userAgent, ['Safari']);
+        $regex = "/(iPhone; CPU iPhone OS \/1[0-2]|iPad; CPU OS \/1[0-2]|iPod touch; CPU iPhone OS \/1[0-2]|Macintosh; Intel Mac OS X.*Version\/1[0-2].*Safari)/";
 
-        $containsSafariVersion = Str::contains($userAgent, ['Version']);
-
-        if (($containsSafari and $containsSafariVersion) === false)
+        if (preg_match($regex, $userAgent) === 0)
         {
             Config::set('session.same_site', 'none');
         }
