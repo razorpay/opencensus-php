@@ -104,7 +104,7 @@ class Metadata
     const WOOCOMMERCE   = 'woocommerce';
     const MAGENTO       = 'magento';
     const CSCART        = 'cscart';
-    const OPEN_CART     = 'open_cart';
+    const OPENCART      = 'opencart';
     const SHOPIFY       = 'shopify';
     const WHMCS         = 'whmcs';
     const ARASTTA       = 'arastta';
@@ -115,7 +115,7 @@ class Metadata
         self::WOOCOMMERCE   => 1,
         self::MAGENTO       => 2,
         self::CSCART        => 3,
-        self::OPEN_CART     => 4,
+        self::OPENCART      => 4,
         self::SHOPIFY       => 5,
         self::WHMCS         => 6,
         self::ARASTTA       => 7,
