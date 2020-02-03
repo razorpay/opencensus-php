@@ -103,7 +103,7 @@ class Metadata
 
     const WOOCOMMERCE   = 'woocommerce';
     const MAGENTO       = 'magento';
-    const CS_CART       = 'cs_cart';
+    const CSCART        = 'cscart';
     const OPEN_CART     = 'open_cart';
     const SHOPIFY       = 'shopify';
     const WHMCS         = 'whmcs';
@@ -114,7 +114,7 @@ class Metadata
     const INTEGRATION_VALUES = [
         self::WOOCOMMERCE   => 1,
         self::MAGENTO       => 2,
-        self::CS_CART       => 3,
+        self::CSCART        => 3,
         self::OPEN_CART     => 4,
         self::SHOPIFY       => 5,
         self::WHMCS         => 6,
