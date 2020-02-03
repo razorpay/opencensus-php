@@ -400,6 +400,14 @@ class Core extends Base\Core
 
             $balanceEntity = $payouts->first()->balance;
 
+            // In case of current accounts(direct), balance in balance entity is stale since in our system we create
+            // transactions only when we fetch account statement from bank.So for current account we can't use balance
+            // from balance table.
+            // So before making payout we need to get balance amount in account from gateway.
+            // We check if account type is direct or not. If direct then fetch balance from gateway if balance last
+            // fetched at was a while ago(using threshold to decide that).Use this balance amount to dispatch payout.
+            // If account type shared then use balance amount from balance entity.
+
             if ($balanceEntity->getAccountType() === Merchant\Balance\AccountType::DIRECT)
             {
                 $merchantBankingAccount = $balanceEntity->bankingAccount;
@@ -419,6 +427,7 @@ class Core extends Base\Core
                         ]
                     );
 
+                    //need reload since we are updating banking account entity because of above call
                     $merchantBankingAccount->reload();
                 }
 

@@ -560,7 +560,8 @@ class Core extends Base\Core
 
     /**
      * for CA, balance needs to be fetched from balance api provided by respective banks/gateways at regular frequency
-     * which is agreed upon in SLA
+     * which is agreed upon in SLA. This function will be used to fetch balance from gateway before making normal/queued
+     * payouts depending upon balance_last_fetched_at.
      *
      * @param array $input
      *
@@ -596,8 +597,10 @@ class Core extends Base\Core
             );
         }
 
+        // every gateway processor must implement fetchGatewayBalance function. This function sends Mozart request
+        // to fetch balance from gateway and return balance.
         $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
-//TODO:// add migration
+
         $updateRequestParams = [
             Entity::TEMP_BALANCE            => $balance,
             Entity::BALANCE_LAST_FETCHED_AT => Carbon::now()->getTimestamp(),
