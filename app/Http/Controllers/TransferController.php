@@ -34,6 +34,15 @@ class TransferController extends Controller
         return ApiResponse::json($transfers);
     }
 
+    public function getPaymentIdForLinkedAccountTransfer(string $id)
+    {
+        $input = Request::all();
+
+        $transfer = $this->service()->fetchLinkedAccountTransferByPaymentId($id, $input);
+
+        return ApiResponse::json($transfer);
+    }
+
     public function getLinkedAccountTransfer(string $id)
     {
         $transfer = $this->service()->fetchLinkedAccountTransfer($id);
@@ -91,10 +100,17 @@ class TransferController extends Controller
         return ApiResponse::json($transfer);
     }
 
-    public function processOrderTransfers()
+    public function processPendingOrderTransfers()
     {
-        $transfer = $this->service()->processOrderTransfers();
+        $orderIds = $this->service()->processPendingOrderTransfers();
 
-        return ApiResponse::json($transfer);
+        return ApiResponse::json($orderIds);
+    }
+
+    public function processFailedOrderTransfers()
+    {
+        $orderIds = $this->service()->processFailedOrderTransfers();
+
+        return ApiResponse::json($orderIds);
     }
 }

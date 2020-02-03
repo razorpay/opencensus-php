@@ -321,6 +321,53 @@ class PaysecureGatewayTest extends TestCase
         );
     }
 
+    public function testInititiate2CardEnrollmentError()
+    {
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'initiate2')
+                {
+                    $content['status']      = 'failure';
+                    $content['errorcode']   = '412';
+                    $content['errormsg']    = 'Not Authenticated';
+                    $content['RedirectURL'] = '';
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'failed',
+                'amount'  => 50000,
+                'method'  => 'card',
+                'gateway' => $this->paymentEntityGateway,
+            ],
+            $payment
+        );
+
+        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertArraySelectiveEquals(
+            [
+                Entity::STATUS        => 'failure',
+                Entity::ACTION        => 'authorize',
+                Entity::ERROR_CODE    => '412',
+                Entity::ERROR_MESSAGE => 'Not Authenticated',
+            ],
+            $gatewayPayment
+        );
+    }
+
     public function testCallbackFailure()
     {
         $this->mockServerContentFunction(

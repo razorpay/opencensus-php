@@ -16,6 +16,7 @@ use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
 
 use RZP\Exception;
+use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Models\User;
@@ -45,9 +46,9 @@ use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Merchant\Webhook\Stork;
-use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Constants\{Mode, Entity as CE, Product};
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
@@ -1821,45 +1822,45 @@ class Service extends Base\Service
 
     public function enableScheduledEs(): array
     {
-        $this->repo->transactionOnLiveAndTest(function ()
+        $userRole = $this->repo
+                         ->merchant
+                         ->getMerchantUserMapping(
+                            $this->merchant->getId(),
+                            $this->user->getId(),
+                            null,
+                            Product::PRIMARY)
+                         ->pivot
+                         ->role;
+
+        if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER))
         {
-            $userRole = $this->repo
-                             ->merchant
-                             ->getMerchantUserMapping(
-                                 $this->merchant->getId(),
-                                 $this->user->getId(),
-                                 null,
-                                 Product::PRIMARY)
-                             ->pivot
-                             ->role;
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+                                                    'role',
+                                                    $userRole);
+        }
 
-            if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER) and ($userRole !== User\Role::FINANCE))
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
-                                                        'role',
-                                                        $userRole);
-            }
+        $pricingForMerchant = $this->getScheduledEarlySettlementPricingForMerchant();
 
-            $this->getScheduledEarlySettlementPricingForMerchant();
+        $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
+                                                Schedule\Period::HOURLY,
+                                                1,
+                                                null,
+                                                0,
+                                                0,
+                                                ScheduleTask\Type::SETTLEMENT);
 
-            $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
+        if ($schedule === null)
+        {
+            throw new Exception\LogicException(
+                'Schedule for Scheduled Automatic settlement was not found.',
+                ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE
+            );
+        }
 
-            $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
-                                                    Schedule\Period::HOURLY,
-                                                    1,
-                                                    null,
-                                                    0,
-                                                    0,
-                                                    ScheduleTask\Type::SETTLEMENT);
+        $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant, false);
 
-            if ($schedule === null)
-            {
-                throw new Exception\LogicException(
-                    'Schedule for Scheduled Automatic settlement was not found.',
-                    ErrorCode::BAD_REQUEST_UNKNOWN_SCHEDULE
-                );
-            }
-
+        $this->repo->transactionOnLiveAndTest(function () use($schedule, $scheduledTasks)
+        {
             foreach ($scheduledTasks as $scheduledTask)
             {
                 $input = [
@@ -1881,26 +1882,95 @@ class Service extends Base\Service
                                                         Feature\Constants::ES_AUTOMATIC => 1
                                                     ],
                                                     Feature\Entity::SHOULD_SYNC => 1]);
-
-            $tags = $this->merchant->tagNames();
-
-            array_walk($tags, function(& $tag)
-            {
-                $tag = substr($tag, 0, 2);
-            });
-
-            if (in_array('KA', $tags) === true)
-            {
-                // for key accounts, send Feature enabled mail to Capital product team
-                $data['merchant'] = $this->merchant->toArrayPublic();
-
-                $esNotifyEmail = new EsEnabledNotify($data);
-
-                Mail::queue($esNotifyEmail);
-            }
         });
 
+
+        // All the mail sending steps are taken out of the transactionOnLiveAndTest. We want the flow to not get disturbed or reverted for any issues that may happen with mailer.
+        try
+        {
+            $this->sendMailsPostEnableScheduledEs($pricingForMerchant);
+        }
+
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FEATURE_ENABLE_EARLY_SETTLEMENT_MAIL_FAILED,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'user_id' => $this->user->getId()
+                ]);
+        }
+
         return ['success' => true];
+    }
+
+    public function sendMailsPostEnableScheduledEs(array $pricingForMerchant = null)
+    {
+        // Check merchant corresponding tags to see if it is a key account
+        $tags = $this->merchant->tagNames();
+
+        array_walk($tags, function(& $tag)
+        {
+            $tag = substr($tag, 0, 2);
+        });
+        if (in_array('KA', $tags) === true)
+        {
+            // For key accounts, send feature enabled mail to Capital product team
+            $kamMailerData[EsEnabledNotify::TO_EMAIL] = EsEnabledNotify::KAM_MAILING_LIST_EMAILS;
+
+            $kamMailerData[EsEnabledNotify::TO_NAME] = EsEnabledNotify::KAM_MAILING_LIST_NAMES;
+
+            $kamMailerData[EsEnabledNotify::SUBJECT] = EsEnabledNotify::KAM_MAILER_SUBJECT;
+
+            $kamMailerData[EsEnabledNotify::VIEW] = EsEnabledNotify::KAM_MAILER_VIEW;
+
+            $kamMailerData[EsEnabledNotify::MERCHANT_DATA] = $this->merchant->toArrayPublic();
+
+            $esNotifyKAMEmail = new EsEnabledNotify($kamMailerData);
+
+            Mail::queue($esNotifyKAMEmail);
+        }
+
+        if (isset($pricingForMerchant) === true)
+        {
+            // Fetch all userIds which belong to the merchant and are either owner, finance or admin type
+            $merchantOwnerAdminUsersCollections = (new MerchantUser\Repository)->findByRolesAndMerchantId([User\Entity::OWNER,
+                                                                                                           User\Entity::ADMIN,
+                                                                                                           User\Role::FINANCE],
+                                                                                                           $this->merchant->getId());
+
+            $merchantOwnerAdminUsers = array_unique($merchantOwnerAdminUsersCollections
+                                                    ->pluck(User\Entity::USER_ID)
+                                                    ->toArray());
+
+            // Fetch their corresponding names and email id's
+            $userNamesAndEmailsCollections = (new User\Repository)->findMany($merchantOwnerAdminUsers, [User\Entity::NAME, User\Entity::EMAIL]);
+
+            $userNamesAndEmails = $userNamesAndEmailsCollections->pluck(User\Entity::NAME, User\Entity::EMAIL)->toArray();
+
+            $pricingForMerchantPercentRate = number_format(floatval($pricingForMerchant[Pricing\Entity::PERCENT_RATE]) / 100, 2);
+
+            $merchantMailerData[EsEnabledNotify::TO_EMAIL] = array_keys($userNamesAndEmails);
+
+            // Add capital support to receiver's list
+            array_push($merchantMailerData[EsEnabledNotify::TO_EMAIL], MailConstants::MAIL_ADDRESSES[MailConstants::CAPITAL_SUPPORT]);
+
+            $merchantMailerData[EsEnabledNotify::TO_NAME] = array_values($userNamesAndEmails);
+
+            array_push($merchantMailerData[EsEnabledNotify::TO_NAME], MailConstants::HEADERS[MailConstants::CAPITAL_SUPPORT]);
+
+            $merchantMailerData[Pricing\Entity::PERCENT_RATE] = $pricingForMerchantPercentRate;
+
+            $merchantMailerData[EsEnabledNotify::SUBJECT] = EsEnabledNotify::MERCHANT_MAILER_SUBJECT;
+
+            $merchantMailerData[EsEnabledNotify::VIEW] = EsEnabledNotify::MERCHANT_MAILER_VIEW;
+
+            $esNotifyMerchantEmail = new EsEnabledNotify($merchantMailerData);
+
+            Mail::queue($esNotifyMerchantEmail);
+        }
     }
 
     public function addOrRemoveMerchantFeatures(array $input)
@@ -2355,6 +2425,8 @@ class Service extends Base\Service
 
             // Fetch formatted merchant details.
             $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
+
+            $data['is_inheritance_parent']  =  $merchant->isInheritanceParent();
 
             $data['tags'] = $merchant->tagNames();
         }

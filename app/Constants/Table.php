@@ -43,6 +43,7 @@ class Table
     const LEGAL_ENTITY          = 'legal_entity';
     const COMMISSION            = 'commissions';
     const PAYMENT_LINK          = 'payment_links';
+    const PAYOUT_LINK           = 'payout_links';
     const PAYMENT_PAGE_ITEM     = 'payment_page_items';
     const FUND_ACCOUNT          = 'fund_accounts';
     const ENTITY_ORIGIN         = 'entity_origins';
@@ -137,7 +138,7 @@ class Table
     const ROLE                  = 'roles';
     const PERMISSION            = 'permissions';
     const PERMISSION_MAP        = 'permission_map';
-    const GROUP                 = 'groups';
+    const GROUP                 = 'org_groups';
     const ADMIN                 = 'admins';
     const GROUP_MAP             = 'group_map';
     const MERCHANT_MAP          = 'merchant_map';
@@ -221,6 +222,7 @@ class Table
     const BANKING_ACCOUNT                 = 'banking_accounts';
     const BANKING_ACCOUNT_DETAIL          = 'banking_account_details';
     const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
+    const BANKING_ACCOUNT_STATE           = 'banking_account_state';
 
     // P2P Service Tables
     const P2P_DEVICE            = 'p2p_devices';

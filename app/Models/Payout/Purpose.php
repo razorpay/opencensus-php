@@ -17,6 +17,7 @@ class Purpose
     const UTILITY_BILL = 'utility bill';
     const VENDOR_BILL  = 'vendor bill';
     const PAYOUT       = 'payout';
+    const RZP_FEES     = 'rzp_fees';
 
     protected static $default = [
         self::REFUND,
@@ -36,9 +37,37 @@ class Purpose
         self::VENDOR_BILL  => FTAPurpose::SETTLEMENT,
     ];
 
+    protected static $internalPurposeTypeMap = [
+        self::RZP_FEES  => FTAPurpose::SETTLEMENT,
+    ];
+
     public static function isInDefaults(string $purpose): bool
     {
         return (in_array($purpose, array_keys(self::$defaultPurposeTypeMap), true) === true);
+    }
+
+    public static function isInInternal(string $purpose = null): bool
+    {
+        return (in_array($purpose, array_keys(self::$internalPurposeTypeMap), true) === true);
+    }
+
+    public function setPurposeAndTypeForInternalPayout(Entity $payout, string $purpose)
+    {
+        if (self::isInInternal($purpose) === true)
+        {
+            $payout->setPurpose($purpose);
+            $payout->setPurposeType(self::$internalPurposeTypeMap[$purpose]);
+
+            return;
+        }
+
+        throw new BadRequestValidationFailureException(
+            'Invalid purpose: ' . $purpose,
+            Entity::PURPOSE,
+            [
+                'payout_id' => $payout->getId(),
+                'purpose'   => $purpose
+            ]);
     }
 
     public function setPurposeAndTypeForPayout(Entity $payout, string $purpose)
@@ -74,6 +103,38 @@ class Purpose
             'Invalid purpose: ' . $purpose,
             Entity::PURPOSE,
             ['payout_id' => $payout->getId()]);
+    }
+
+    public function validatePurpose(Merchant\Entity $merchant, string $purpose)
+    {
+        if(self::isInDefaults($purpose) === true)
+        {
+            return;
+        }
+
+        //
+        // If purpose sent is not one of the defaults defined. We hence fetch and
+        // check against the custom list, if available.
+        //
+        $custom = $this->getCustom($merchant);
+
+        if (isset($custom[$purpose]) === true)
+        {
+            return;
+        }
+
+        //
+        // If not found anywhere, throw an exception. We expect payout purpose to be
+        // defined before being used.
+        //
+        throw new BadRequestValidationFailureException(
+            'Invalid purpose: ' . $purpose,
+            null,
+            [
+                Entity::MERCHANT_ID => $merchant->getPublicId(),
+                Entity::PURPOSE     => $purpose
+
+            ]);
     }
 
     public function getAll(Merchant\Entity $merchant): array
@@ -113,6 +174,14 @@ class Purpose
             throw new BadRequestValidationFailureException(
                 "You have reached the maximum limit ($maxPurposes) of custom payout purposes that can be created.",
                 Entity::PURPOSE_TYPE);
+        }
+
+        // If purpose is 'rzp_fees' we won't allow adding it as a custom purpose
+        if (self::isInInternal($purpose) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                "Purpose '$purpose' is an internal purpose used by Razorpay and cannot be added.",
+                Entity::PURPOSE);
         }
 
         if ((self::isInDefaults(strtolower($purpose))) or

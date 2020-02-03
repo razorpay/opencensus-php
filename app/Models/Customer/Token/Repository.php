@@ -28,7 +28,7 @@ class Repository extends Base\Repository
         Entity::RECURRING_STATUS    => 'sometimes|alpha|max:20',
     ];
 
-    public function getByCustomer($customer)
+    public function getByCustomer($customer, bool $withVpas = false)
     {
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
@@ -38,6 +38,7 @@ class Repository extends Base\Repository
                         $query->whereNull(Token\Entity::EXPIRED_AT)
                               ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
                     })
+                    ->withVpaTokens($withVpas)
                     ->orderBy(Token\Entity::CREATED_AT, 'desc')
                     ->orderBy(Token\Entity::ID, 'desc')
                     ->get();

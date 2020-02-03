@@ -38,7 +38,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         try
         {
-            $gatewayPayment = $this->repo->atom->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
+            if ($this->payment->isRoutedThroughNbPlus() === false)
+            {
+                $gatewayPayment = $this->repo->atom->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
+            }
         }
         catch (DbQueryException $ex)
         {

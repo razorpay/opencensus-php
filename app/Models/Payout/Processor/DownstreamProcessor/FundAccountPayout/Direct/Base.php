@@ -82,6 +82,7 @@ class Base extends FundAccountPayout\Base
     }
 
     /**
+     * ADDING for BACKWARD COMPATIBILITY
      * This function makes sure that we don't queue something that will fail when picked up for processing.
      * Ideally, this logic should stay with FTS, but in that case merchants get a bad experience.
      * TODO: Need to keep this check at FTS level itself

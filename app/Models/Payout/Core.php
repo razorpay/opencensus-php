@@ -31,6 +31,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -55,6 +56,8 @@ class Core extends Base\Core
     const MUTEX_LOCK_TIMEOUT                = 300;
 
     const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
+
+    const PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT = 3600;
 
     /**
      * @var Mutex
@@ -482,6 +485,17 @@ class Core extends Base\Core
 
     public function cancelPayout(Entity $payout): Entity
     {
+        // If Payout has purpose 'rzp_fees' we won't allow merchant to cancel that
+        if (Purpose::isInInternal($payout->getPurpose()) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                ]);
+        }
+
         return $this->mutex->acquireAndRelease(
                 $payout->getId(),
                 function() use ($payout)
@@ -498,21 +512,21 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
-    public function approvePayout(Entity $payout): Entity
+    public function approvePayout(Entity $payout, array $input): Entity
     {
-        $payout = $this->processWorkflowActionOnPayout($payout, true);
+        $payout = $this->processWorkflowActionOnPayout($payout, true, $input);
 
         return $payout;
     }
 
-    public function rejectPayout(Entity $payout): Entity
+    public function rejectPayout(Entity $payout, array $input): Entity
     {
-        $payout = $this->processWorkflowActionOnPayout($payout, false);
+        $payout = $this->processWorkflowActionOnPayout($payout, false, $input);
 
         return $payout;
     }
 
-    protected function processWorkflowActionOnPayout(Entity $payout, bool $approve): Entity
+    protected function processWorkflowActionOnPayout(Entity $payout, bool $approve, array $input): Entity
     {
         /** @var Workflow\Action\Entity|null $workflowAction */
         $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
@@ -528,12 +542,19 @@ class Core extends Base\Core
         }
 
         $payout = $this->repo->transaction(
-            function() use ($payout, $workflowAction, $approve, $action)
+            function() use ($payout, $workflowAction, $approve, $action, $input)
             {
+                $userComment = $input[Workflow\Action\Checker\Entity::USER_COMMENT] ?? null;
+
                 $actionCheckerCreateParams = [
-                    Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
-                    Workflow\Action\Checker\Entity::APPROVED  => ($approve === true) ? 1 : 0, // 1 = true
+                    Workflow\Action\Checker\Entity::ACTION_ID    => $workflowAction->getId(),
+                    Workflow\Action\Checker\Entity::APPROVED     => ($approve === true) ? 1 : 0, // 1 = true
                 ];
+
+                if ($userComment !== null)
+                {
+                    $actionCheckerCreateParams[Workflow\Action\Checker\Entity::USER_COMMENT] = $userComment;
+                }
 
                 $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
 
@@ -990,7 +1011,7 @@ class Core extends Base\Core
                 //
                 $clonedPayout->setShouldValidateAndUpdateBalancesFlag(false);
 
-                (new DownstreamProcessor('fund_account_payout', $clonedPayout))->processTransaction();
+                (new DownstreamProcessor('fund_account_payout', $clonedPayout, $this->mode))->processTransaction();
 
                 $dummyTransaction = $clonedPayout->transaction;
 
@@ -1191,26 +1212,23 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
             ]);
 
-        if ($payout->isStatusReversed() === true)
-        {
-            throw new Exception\LogicException(
-                'Attempted to reverse an already reversed payout',
-                null,
-                [
-                    'payout_id'      => $payout->getId(),
-                    'status'         => $payout->getStatus(),
-                    'reverse_reason' => $reverseReason,
-                ]);
-        }
-
         $app = App::getFacadeRoot();
 
         $this->mutex = $app['api.mutex'];
 
+        // Keeping the mutex TTL high while updating the payout to reversed.
+        // This is to ensure that the process that is working on the payout
+        // resource, releases mutex on the payout only once all entities are
+        // saved in the database.
         $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
             function () use ($payout, $reverseReason)
             {
+                // reloading the payout here to ensure if any other process
+                // gets a mutex on payout resource, it gets a fresh copy
+                // of payout to work.
+                $payout->reload();
+
                 if ($payout->isStatusReversed() === true)
                 {
                     $this->trace->info(TraceCode::PAYOUT_ALREADY_REVERSED,
@@ -1222,6 +1240,7 @@ class Core extends Base\Core
 
                     return;
                 }
+
                 $this->repo->transaction(
                     function() use ($payout, $reverseReason) {
                         $reversal = (new Reversal\Core)->reverseForPayout($payout);
@@ -1239,7 +1258,7 @@ class Core extends Base\Core
                         }
                     });
             },
-            60,
+            self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
     }
@@ -1458,6 +1477,8 @@ class Core extends Base\Core
                 $payout->setStatus(Status::REJECTED);
 
                 $this->repo->saveOrFail($payout);
+
+                $this->app->events->fire('api.payout.rejected', [$payout]);
 
                 return $payout;
             },

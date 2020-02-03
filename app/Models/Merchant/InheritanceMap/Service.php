@@ -87,16 +87,19 @@ class Service extends Base\Service
 
     public function getInheritanceParent($merchantId)
     {
-        $inheritanceMap = $this->repo->merchant_inheritance_map->fetchInheritanceMapByMerchantId($merchantId);
+        $inheritanceMap = $this->repo->merchant_inheritance_map->findInheritanceMapByMerchantIdOrFailPublic($merchantId);
 
         return $inheritanceMap;
     }
 
     public function deleteInheritanceParent($merchantId)
     {
-        $inheritanceMap = $this->repo->merchant_inheritance_map->fetchInheritanceMapByMerchantId($merchantId);
+        $inheritanceMap = $this->repo->merchant_inheritance_map->findInheritanceMapByMerchantIdOrFailPublic($merchantId);
 
-        $this->repo->deleteOrFail($inheritanceMap);
+        $this->repo->transactionOnLiveAndTest(function() use ($inheritanceMap)
+        {
+            $this->repo->merchant_inheritance_map->deleteOrFail($inheritanceMap);
+        });
 
         return $inheritanceMap->toArrayDeleted();
     }

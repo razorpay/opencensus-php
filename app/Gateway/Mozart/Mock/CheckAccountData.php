@@ -36,6 +36,25 @@ class CheckAccountData extends Base\Mock\Server
         }
     }
 
+    public function paylater_icici($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'account_number'            => '2847381947',
+                    '_raw'                      => '',
+                    'success'                   => true,
+                    'status'                    => 'check_account_successful',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
     public function otpFlow()
     {
         $response = [

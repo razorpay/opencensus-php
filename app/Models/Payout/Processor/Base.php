@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
+
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Batch;
@@ -18,9 +19,12 @@ use RZP\Models\Payout\Status;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+
 
 /**
  * Payouts base where we will have a generic flow for the customer/merchants payouts.
@@ -103,6 +107,7 @@ class Base extends BaseCore
 
             $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                            $payout,
+                                                           $this->mode,
                                                            $this->fundTransferDestination);
 
             $downstreamProcessor->process();
@@ -144,6 +149,7 @@ class Base extends BaseCore
 
                         $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                                        $payout,
+                                                                       $this->mode,
                                                                        $this->fundTransferDestination);
 
                         //
@@ -206,6 +212,7 @@ class Base extends BaseCore
 
                 $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                                $payout,
+                                                               $this->mode,
                                                                $this->fundTransferDestination);
 
                 $downstreamProcessor->process();
@@ -279,9 +286,12 @@ class Base extends BaseCore
      */
     protected function handleWorkflowsIfApplicable(callable $createPayoutCallback)
     {
-        $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
-
-        if ($areWorkflowsEnabled === false)
+        //
+        // Skip workflow if its not enabled for the merchant or
+        // if the workflow is enabled, check if the request if from API and merchant wants to
+        // skip workflow for requests through API
+        //
+        if ($this->isWorkflowApplicable() === false)
         {
             //
             // Workflows feature was not enabled.
@@ -351,6 +361,37 @@ class Base extends BaseCore
     }
 
     /**
+     * Check if workflow is enabled for merchant
+     * Additionally check if the call is from API and merchant has disabled the workflow for API request
+     *
+     * @return bool
+     */
+    protected function isWorkflowApplicable()
+    {
+        $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
+
+        $hasSkipWorkflowFeature = $this->merchant->isFeatureEnabled(Features::SKIP_WORKFLOWS_FOR_API);
+
+        $isApiRequest = $this->app['basicauth']->isStrictPrivateAuth();
+
+        //
+        // Skip workflow if its not enabled for the merchant or
+        // if the workflow is enabled, check if the request if from API and merchant wants to
+        // skip workflow for requests through API
+        //
+        if (($areWorkflowsEnabled === false) or
+            (($isApiRequest === true) and
+                ($hasSkipWorkflowFeature === true)))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    /**
      * Set the customer relation for the Payout.
      * To be used only for the customer wallet use case: customer_id is treated
      * as a Payout source
@@ -405,14 +446,16 @@ class Base extends BaseCore
      * Create Payout will drive the payout cycle for merchant/customer.
      *
      * @param array $input
-     *
      * @return Payout\Entity
+     * @throws BadRequestException | Exception\BadRequestValidationFailureException
      */
     protected function createPayoutEntity(array $input)
     {
         $payout = (new Payout\Entity);
 
         $this->runInputValidations($payout, $input);
+
+        $this->processPayoutLinkId($payout, $input);
 
         $payout->merchant()->associate($this->merchant);
 
@@ -453,6 +496,18 @@ class Base extends BaseCore
         (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose());
 
         return $payout;
+    }
+
+    protected function processPayoutLinkId(Payout\Entity & $payout, array & $input)
+    {
+        $payoutLinkId = array_pull($input , Payout\Entity::PAYOUT_LINK_ID);
+
+        if (empty($payoutLinkId) === false)
+        {
+            $payoutLink = $this->repo->payout_link->findByPublicIdAndMerchant($payoutLinkId, $this->merchant);
+
+            $payout->payoutLink()->associate($payoutLink);
+        }
     }
 
     protected function preValidations()

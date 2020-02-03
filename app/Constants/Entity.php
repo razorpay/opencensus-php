@@ -76,6 +76,7 @@ class Entity
     const TRANSACTION               = 'transaction';
     const FEE_BREAKUP               = 'fee_breakup';
     const CREDITNOTE                = 'creditnote';
+    const PAYOUT_LINK               = 'payout_link';
     const PAYMENT_LINK              = 'payment_link';
     const PAYMENT_PAGE_ITEM         = 'payment_page_item';
     const GATEWAY_RULE              = 'gateway_rule';
@@ -139,6 +140,7 @@ class Entity
 
     const D2C_BUREAU_DETAIL          = 'd2c_bureau_detail';
     const D2C_BUREAU_REPORT          = 'd2c_bureau_report';
+    const BANKING_ACCOUNT_STATE      = 'banking_account_state';
 
     // heimdall
     const ORG                   = 'org';
@@ -258,6 +260,7 @@ class Entity
     const GOOGLE_PAY             = 'google_pay';
     const WORLDLINE              = 'worldline';
     const GETSIMPL               = 'getsimpl';
+    const PAYLATER_ICICI         = 'paylater_icici';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -380,6 +383,7 @@ class Entity
         self::SUBSCRIPTION,
         self::PAYMENT_LINK,
         self::OPTIONS,
+        self::PAYOUT_LINK
     ];
 
     /**
@@ -440,6 +444,7 @@ class Entity
         self::BANK_ACCOUNT              => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION              => \RZP\Models\Plan\Subscription::class,
         self::PAYMENT_LINK              => \RZP\Models\PaymentLink::class,
+        self::PAYOUT_LINK               => \RZP\Models\PayoutLink::class,
         self::PAYMENT_PAGE_ITEM         => \RZP\Models\PaymentLink\PaymentPageItem::class,
         self::GATEWAY_TOKEN             => \RZP\Models\Customer\GatewayToken::class,
         self::ENTITY_ORIGIN             => \RZP\Models\EntityOrigin::class,
@@ -448,6 +453,7 @@ class Entity
         self::MERCHANT_DETAIL           => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION           => \RZP\Models\Terminal\Action::class,
         self::BANKING_ACCOUNT           => \RZP\Models\BankingAccount::class,
+        self::BANKING_ACCOUNT_STATE     => \RZP\Models\BankingAccount\State::class,
         self::MERCHANT_REQUEST          => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE          => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME          => \RZP\Models\Gateway\Downtime::class,
@@ -568,7 +574,7 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::MOZART                 => \RZP\Gateway\Mozart::class,
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
-        self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
+        self::GOOGLE_PAY             => \RZP\Gateway\GooglePay::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
@@ -577,6 +583,7 @@ class Entity
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
         self::GETSIMPL               => \RZP\Gateway\Mozart::class,
+        self::PAYLATER_ICICI         => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,
@@ -619,6 +626,10 @@ class Entity
         self::COMMISSION_INVOICE    => \RZP\Models\Partner\Commission\Invoice::class,
 
         self::OPTIONS               => \RZP\Models\Options::class,
+
+        self::PAYMENTS_UPI_VPA              => \RZP\Models\PaymentsUpi\Vpa::class,
+        self::PAYMENTS_UPI_BANK_ACCOUNT     => \RZP\Models\PaymentsUpi\BankAccount::class,
+        self::PAYMENTS_UPI_VPA_BANK_ACCOUNT => \RZP\Models\PaymentsUpi\Vpa\BankAccount::class
     ];
 
     protected static $repository = [
@@ -677,6 +688,7 @@ class Entity
         self::NODAL_STATEMENT        => \RZP\Models\Nodal\Statement::class,
 
         self::PAYMENT_DOWNTIME       => \RZP\Models\Payment\Downtime::class,
+        self::BANKING_ACCOUNT_STATE  => \RZP\Models\BankingAccount\State::class,
     ];
 
     protected static $externalServiceClass = [

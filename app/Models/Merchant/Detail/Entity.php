@@ -7,6 +7,7 @@ use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Constants\IndianStates;
+use RZP\Models\Merchant\AutoKyc;
 
 /**
  * Class Entity
@@ -15,7 +16,7 @@ use RZP\Constants\IndianStates;
  *
  * @package RZP\Models\Merchant\Detail
  */
-class Entity extends Base\PublicEntity
+class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 {
     const MERCHANT_ID                        = 'merchant_id';
     const CONTACT_NAME                       = 'contact_name';
@@ -131,6 +132,7 @@ class Entity extends Base\PublicEntity
     const KYC_ADDITIONAL_DETAILS             = 'kyc_additional_details';
     const CLARIFICATION_REASONS              = 'clarification_reasons';
     const ADDITIONAL_DETAILS                 = 'additional_details';
+    const KYC_ID                             = 'kyc_id';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING                     = 'fields_pending';
@@ -1015,5 +1017,20 @@ class Entity extends Base\PublicEntity
     public function getIssueFields()
     {
         return $this->getAttribute(self::ISSUE_FIELDS);
+    }
+
+    public function getKycId()
+    {
+        return $this->getAttribute(self::KYC_ID);
+    }
+
+    public function setKycId(string $kycId)
+    {
+        $this->setAttribute(self::KYC_ID, $kycId);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getMerchantId();
     }
 }

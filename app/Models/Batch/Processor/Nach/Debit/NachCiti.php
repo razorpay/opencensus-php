@@ -80,6 +80,15 @@ class NachCiti extends Base
         return $data;
     }
 
+    protected function generateTextWithHeadings($data, $glue = '~', $ignoreLastNewline = false, array $headings = [])
+    {
+        array_shift($data);
+
+        array_unshift($data, array_combine($headings, $headings));
+
+        return $this->generateText($data, $glue, $ignoreLastNewline);
+    }
+
     /**
      * @param array $content
      * @return bool

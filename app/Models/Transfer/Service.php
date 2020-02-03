@@ -102,11 +102,12 @@ class Service extends Base\Service
             [
                 'transfer_id' => $id,
                 'input'       => $input,
-            ]);
+            ]
+        );
 
         $transfer =  $this->repo
-                          ->transfer
-                          ->findByPublicIdAndMerchant($id, $this->merchant);
+                           ->transfer
+                           ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $transfer = $this->core->edit($transfer, $input);
 
@@ -120,7 +121,8 @@ class Service extends Base\Service
             [
                 'transfer_id' => $id,
                 'input'       => $input
-            ]);
+            ]
+        );
 
         try
         {
@@ -149,7 +151,8 @@ class Service extends Base\Service
             [
                 'transfer_id' => $id,
                 'input'       => $input
-            ]);
+            ]
+        );
 
         try
         {
@@ -184,29 +187,66 @@ class Service extends Base\Service
         return $this->createTransferResponseFromPayment($payment);
     }
 
-    public function fetchLinkedAccountTransfers(array $input): array
+    public function fetchLinkedAccountTransferByPaymentId(string $paymentId, array $input = []): array
     {
-        (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
-        $merchantId = $this->merchant->getId();
+        if (self::checkIsRazorxFlagEnabled() and $this->merchant->isDisplayParentPaymentId())
+        {
+            (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
-        $input['expand'] = ['transfer', 'transfer.recipient_settlement'];
+            Payment\Entity::verifyIdAndStripSign($paymentId);
 
-        // fetching by payments fetch to handle notes search.
-        $payments = $this->repo->payment->fetch($input, $merchantId);
+            $transferId = null;
 
-        $transfers = $this->createResponse($payments);
+            if (isset($input["id"]))
+            {
+                $transferId = Transfer\Entity::verifyIdAndStripSign($input["id"]);
 
-        $transfers = new Base\PublicCollection($transfers);
+            }
+
+            return $this->createTransferResponseFromParentPaymentAndTransfer($paymentId,$transferId);
+
+        }
+
+        $response = [];
+
+        $transfers =  new Base\PublicCollection($response);
 
         return $transfers->toArrayWithItems();
+    }
+
+
+    public function fetchLinkedAccountTransfers(array $input): array
+    {
+
+        if (isset($input["parent_payment_id"]))
+        {
+
+            return $this->fetchLinkedAccountTransferByPaymentId($input["parent_payment_id"],$input);
+        }
+        else
+        {
+            (new Merchant\Validator)->validateLinkedAccount($this->merchant);
+
+            $merchantId = $this->merchant->getId();
+
+            $input['expand'] = ['transfer', 'transfer.recipient_settlement'];
+
+            // fetching by payments fetch to handle notes search.
+            $payments = $this->repo->payment->fetch($input, $merchantId);
+
+            $transfers = $this->createResponse($payments);
+
+            $transfers = new Base\PublicCollection($transfers);
+
+            return $transfers->toArrayWithItems();
+        }
     }
 
     private function createResponse($payments): array
     {
         $transfers = [];
-        foreach ($payments as $payment)
-        {
+        foreach ($payments as $payment) {
             $transferData = $this->createTransferResponseFromPayment($payment);
 
             $transfers[] = $transferData;
@@ -215,50 +255,160 @@ class Service extends Base\Service
         return $transfers;
     }
 
+    /**
+     * @param $payment
+     * @param $parentPaymentId
+     * @param $transId
+     * @return array
+     */
+    private function createTransferResponseFromParentPaymentAndTransfer($parentPaymentId, $transId) : array
+    {
+
+        $transferData = [];
+
+        $merchantId = $this->merchant->getId();
+
+        if ($transId == null)
+        {
+
+            $paymentTransfers =  $this->repo->transfer->getTransfersByPayments($parentPaymentId, $merchantId);
+
+            if ($paymentTransfers->count() == 0)
+            {
+                $payment = $this->repo->payment->findOrFailPublicWithRelations($parentPaymentId);
+
+                $orderId = $payment->getApiOrderId();
+
+                $paymentTransfers =  $this->repo->transfer->getTransfersByPayments($orderId, $merchantId);
+            }
+
+        }
+        else
+        {
+            $paymentTransfers =  $this->repo->transfer->getTransfersByPaymentsAndTransId($parentPaymentId, $merchantId,$transId);
+
+            if ($paymentTransfers->count() == 0)
+            {
+                $payment = $this->repo->payment->findOrFailPublicWithRelations($parentPaymentId);
+
+                $orderId = $payment->getApiOrderId();
+
+                $paymentTransfers =  $this->repo->transfer->getTransfersByPaymentsAndTransId($orderId, $merchantId,$transId);
+            }
+
+        }
+
+        foreach ($paymentTransfers as  $trans)
+        {
+
+            $transferPublic = $trans->toArrayPublic();
+
+            if ($this->merchant->isDisplayParentPaymentId())
+            {
+
+                $transferPublic[Transfer\Entity::PARENT_PAYMENT_ID] = Payment\Entity::getSignedId($parentPaymentId);
+            }
+
+            $transferData [] = $transferPublic;
+        }
+
+        $transfers = new Base\PublicCollection($transferData);
+
+        return $transfers->toArrayWithItems();
+
+    }
+
+
+    /**
+     * @param $payment
+     * @return array
+     */
     private function createTransferResponseFromPayment($payment): array
     {
         $result = $payment->toArrayPublic();
 
+        $merchant = $this->merchant;
+
         $transferData = $result[Payment\Entity::TRANSFER];
+
         $transferData[Transfer\Entity::NOTES] = $result[Payment\Entity::NOTES];
+
+
+        if (self::checkIsRazorxFlagEnabled() and  $merchant->isDisplayParentPaymentId())
+        {
+
+            $transferData[Transfer\Entity::PARENT_PAYMENT_ID] = $payment->transfer->parentpaymentId;
+        }
 
         return $transferData;
     }
 
-    public function processOrderTransfers()
+    private function  checkIsRazorxFlagEnabled() : bool
+    {
+        $app = $this->app;
+
+        $variant = $app['razorx']->getTreatment($this->merchant->getId(),
+            Merchant\RazorxTreatment::DISPLAY_PARENT_PAYMENT_ID,
+            $app['basicauth']->getMode()
+        );
+
+        return strtolower($variant) === 'on';
+    }
+
+    public function processPendingOrderTransfers()
+    {
+        $orderIds = $this->repo->transfer->fetchPendingTransfersToRetry(EntityConstant::ORDER);
+
+        $this->trace->info(
+            TraceCode::PENDING_ORDER_TRANSFER_PROCESS,
+            [
+                'order_ids' => $orderIds,
+            ]
+        );
+
+        return $this->processOrderTransfers($orderIds);
+    }
+
+    public function processFailedOrderTransfers()
+    {
+        $orderIds = $this->repo->transfer->fetchFailedTransfersToRetry(EntityConstant::ORDER);
+
+        $this->trace->info(
+            TraceCode::FAILED_ORDER_TRANSFER_PROCESS,
+            [
+                'order_ids' => $orderIds,
+            ]
+        );
+
+        return $this->processOrderTransfers($orderIds);
+    }
+
+    protected function processOrderTransfers(array $orderIds)
     {
         $transferOrderIds = [];
 
-        $orderIds = $this->repo->transfer->fetchTransfersToRetry();
-
-        $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY_STARTED,
-                           [
-                               'order_ids' => $orderIds
-                           ]);
-
         foreach ($orderIds as $orderId)
         {
-            $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY,
-                               [
-                                   'order_id' => $orderId
-                               ]);
+            $this->trace->info(
+                TraceCode::ORDER_TRANSFER_PROCESS_RETRY,
+                [
+                    'order_id' => $orderId,
+                ]
+            );
 
             $order = $this->repo->order->find($orderId);
 
-            if ($order === null)
-            {
+            if ($order === null) {
                 continue;
             }
 
             $payment = $this->repo->payment->getCapturedPaymentForOrder($order->getId());
 
-            if ($payment === null)
-            {
+            if ($payment === null) {
                 continue;
             }
 
-            if ((new PaymentProcessor($payment->merchant))->shouldProcessOrderTransfer($payment) === false)
-            {
+            if ((new PaymentProcessor($payment->merchant))->shouldProcessOrderTransfer($payment) === false) {
                 continue;
             }
 
@@ -270,7 +420,8 @@ class Service extends Base\Service
                         'order_id'   => $payment->getApiOrderId(),
                         'payment_id' => $payment->getId(),
                         'mode'       => $this->mode,
-                    ]);
+                    ]
+                );
 
                 Jobs\OrderTransferProcess::dispatch($this->mode, $payment);
 
@@ -284,14 +435,17 @@ class Service extends Base\Service
                         'order_id'   => $payment->getApiOrderId(),
                         'payment_id' => $payment->getId(),
                         'message'    => $e->getMessage(),
-                    ]);
+                    ]
+                );
             }
         }
 
-        $this->trace->info(TraceCode::ORDER_TRANSFER_PROCESS_RETRY_DONE,
-                           [
+        $this->trace->info(
+            TraceCode::ORDER_TRANSFER_PROCESS_RETRY_DONE,
+            [
                                'processed_order_ids' => $transferOrderIds
-                           ]);
+            ]
+        );
 
         return $transferOrderIds;
     }

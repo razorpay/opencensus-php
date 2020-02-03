@@ -9,6 +9,8 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Repository extends Base\Repository
 {
+    const FETCH_LIMIT = 100;
+
     protected $entity = 'fund_transfer_attempt';
 
     protected $signedIds = [
@@ -24,7 +26,8 @@ class Repository extends Base\Repository
         Entity::UTR                    => 'sometimes|alpha_num',
         Entity::BATCH_FUND_TRANSFER_ID => 'sometimes|alpha_num|size:14',
         Entity::VERSION                => 'sometimes|string',
-        Entity::CHANNEL                => 'sometimes|string'
+        Entity::CHANNEL                => 'sometimes|string',
+        Entity::GATEWAY_REF_NO         => 'sometimes|string',
     ];
 
     protected function validateSourceType($attribute, $value)
@@ -398,5 +401,15 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function fetchFtsAttemptUsingId(array $ids)
+    {
+        $query = $this->newQuery()
+                      ->whereIn(Entity::ID, $ids)
+                      ->where(Entity::IS_FTS, '=', 1)
+                      ->limit(self::FETCH_LIMIT);
 
+        $query->with(['source']);
+
+        return $query->get();
+    }
 }

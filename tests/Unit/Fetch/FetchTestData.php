@@ -292,6 +292,9 @@ return [
         ],
     ],
 
+    E::PAYOUT_LINK => [
+    ],
+
     E::PLAN => [
         Type::PROXY_AUTH => [
             [
@@ -412,6 +415,13 @@ return [
         Type::ADMIN_AUTH => [
             [
                 'org_id' => 'organization12'
+            ],
+        ],
+    ],
+
+    E::WORKFLOW_PAYOUT_AMOUNT_RULES => [
+        Type::ADMIN_AUTH => [
+            [
             ],
         ],
     ],

@@ -43,10 +43,6 @@ class InstantActivation extends Mailable
         {
             $this->view('emails.merchant.instant_activation_heimdall');
         }
-        else if ($this->data['merchant']['activation_source'] === Product::BANKING)
-        {
-            $this->view('emails.merchant.instant_activation_banking');
-        }
         else
         {
             $this->view('emails.merchant.instant_activation');
@@ -67,7 +63,7 @@ class InstantActivation extends Mailable
 
     protected function addSubject()
     {
-        $subject = "Start accepting payments with " . $this->data['merchant']['org']['business_name'];
+        $subject = 'Start accepting payments with ' . $this->data['merchant']['org']['business_name'];
 
         $this->subject($subject);
 

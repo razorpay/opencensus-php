@@ -50,6 +50,8 @@ class Workflow
         Permission::MANAGE_RAZORX_OPERATIONS,
         Permission::CREATE_PAYOUT,
         Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+        Permission::DELETE_TERMINAL,
+        Permission::TOGGLE_TERMINAL,
     ];
 
     protected $app;

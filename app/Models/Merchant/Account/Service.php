@@ -119,6 +119,13 @@ class Service extends Merchant\Service
         return $this->getResponseObject()->generateResponse($account);
     }
 
+    public function fetchAccountByExternalId(string $externalId)
+    {
+        $account = $this->core()->fetchAccountByExternalId($this->merchant, $externalId);
+
+        return $this->getResponseObject()->generateResponse($account);
+    }
+
     public function createAccount(array $input): array
     {
         $account = $this->core()->createAccount($this->merchant, $input);
@@ -139,8 +146,6 @@ class Service extends Merchant\Service
 
     public function listAccounts(array $input): array
     {
-        $input[Merchant\Constants::COUNT] = $input[Merchant\Constants::COUNT] ?? Constants::DEFAULT_ACCOUNT_COUNT;
-
         $accounts = $this->core()->listAccounts($this->merchant, $input);
 
         return $accounts->map(function($account) {

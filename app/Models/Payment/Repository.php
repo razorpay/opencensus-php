@@ -1613,16 +1613,12 @@ class Repository extends Base\Repository
         bool $isCorrection = false)
     {
         //
-        // will consider only those payments which are being settled by razorpay
+        // will consider all the payments
         //
         $query = $this->newQuery()
                       ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                       ->whereBetween(Entity::CAPTURED_AT, [$start, $end])
-                      ->whereNotNull(Entity::TRANSACTION_ID)
-                      ->where(function($query) {
-                          $query->where(Entity::SETTLED_BY, Org\Constants::RAZORPAY)
-                                ->orWhereNull(Entity::SETTLED_BY);
-                      });
+                      ->whereNotNull(Entity::TRANSACTION_ID);
 
         //
         // If correction is true then data will be fetched which are created and captured in given time frame
@@ -1798,6 +1794,37 @@ class Repository extends Base\Repository
         $obj = $this->connection(Mode::TEST)->newQuery()->where(Entity::GATEWAY, $gateway)->find($id);
 
         if ($obj !== null)
+        {
+            return Mode::TEST;
+        }
+
+        //
+        // We need to set connection to null
+        // because it will be set to test if the
+        // id is not found in any of the database.
+        // So even if the db connection is later set
+        // to live, query connection will be set to
+        // test.
+        //
+        $this->connection(null);
+
+        return null;
+    }
+
+    public function determineLiveOrTestModeForEntityWithNotNullGateway($id, $gateway)
+    {
+        $obj = $this->connection(Mode::LIVE)->newQuery()->find($id);
+
+        if (($obj !== null) and
+            ($obj->getGateway() !== null))
+        {
+            return Mode::LIVE;
+        }
+
+        $obj = $this->connection(Mode::TEST)->newQuery()->find($id);
+
+        if (($obj !== null) and
+            ($obj->getGateway() !== null))
         {
             return Mode::TEST;
         }

@@ -100,6 +100,20 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $mandateCreateObj, Action::AUTH_INIT);
     }
 
+    public function authVerify($input)
+    {
+        $authVerifyObj = new AuthVerifyData();
+
+        return $this->processMockResponse($input, $authVerifyObj, Action::AUTH_VERIFY);
+    }
+
+    public function checkBalance($input)
+    {
+        $checkBalanceObj = new CheckBalanceData();
+
+        return $this->processMockResponse($input, $checkBalanceObj, Action::CHECK_BALANCE);
+    }
+
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
@@ -236,7 +250,7 @@ class Server extends Base\Mock\Server
 
         $response['hash'] = $hash;
 
-        return [json_encode($response)];
+        return json_encode($response);
     }
 
     public function getFailedAsyncCallbackContent(array $payment)
@@ -261,7 +275,7 @@ class Server extends Base\Mock\Server
 
         $response['hash'] = $hash;
 
-        return [json_encode($response)];
+        return json_encode($response);
     }
 
     protected function wallet_phonepe($input)
@@ -657,10 +671,70 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    public function decrypt($input)
+    {
+        $data = json_decode($input, true);
+
+        $signature = $data['signature'];
+
+        $decryptedMessage = [
+            'paymentMethod' => 'TOKENIZED_CARD',
+            'version'       => '1.0',
+            'paymentMethodDetails' => [
+                'dpan'            => '4444333322221111',
+                'expirationMonth' => '10',
+                'expirationYear'  => '2021',
+                'authMethod'      => '3DS',
+                '3dsCryptogram'   => 'AAAAAA',
+                '3dsEciIndicator' => 'eci indicator',
+            ],
+            'gatewayMerchantId' => '10000000000000',
+            'messageId'         => 'some message id',
+            'messageExpiration' => '1492343123',
+        ];
+
+        $responseBody = [];
+
+        switch ($signature)
+        {
+            Case "MEQCID2npCOWMBWTr5hfCzT2cou0UcZou3drDTA8wC3eXi78AiAhJefYECEw6AnyWbpTbOhwXQ1fSEQMiOxXkOJtmrw5sg==":
+                $responseBody = [
+                    'data' => [
+                        '_raw'             => '',
+                        'decryptedMessage' => $decryptedMessage,
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => true,
+                ];
+                break;
+            Case "MEQCID2npCOWMBWTr5hfCzT2cou0UcZou3drDTA8wC3eXi78AiAhJefYECEw6AnyWbpTbOhwXQ1fSEQMiOxXkOJtmrw5sg==2":
+                $responseBody = [
+                    'data' => [
+                        '_raw'             => '',
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => false,
+                ];
+                break;
+        }
+
+        $response = \Response::make($responseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
     public function disableTerminal($body)
     {
         $mockCase = $this->app['config']->get('worldline_terminal_onboarding_disable.case');
-        
+
         switch ($mockCase)
         {
             case "1":
@@ -677,7 +751,7 @@ class Server extends Base\Mock\Server
                 'next'              => null,
                 'success'           => true,
             ];
-            break; 
+            break;
             case "2":
                 $responseBody = [
                     'data' => [
@@ -694,17 +768,18 @@ class Server extends Base\Mock\Server
 
         }
 
+
         $response = \Response::make($responseBody);
 
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-        
+
         return $response;
     }
 
     public function enableTerminal($body)
     {
         $mockCase = $this->app['config']->get('worldline_terminal_onboarding_enable.case');
-        
+
         switch ($mockCase)
         {
             case "1":
@@ -721,7 +796,7 @@ class Server extends Base\Mock\Server
                 'next'              => null,
                 'success'           => true,
             ];
-            break; 
+            break;
             case "2":
                 $responseBody = [
                     'data' => [
@@ -741,7 +816,7 @@ class Server extends Base\Mock\Server
         $response = \Response::make($responseBody);
 
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-        
+
         return $response;
     }
 

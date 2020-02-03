@@ -18,6 +18,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\GooglePay;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Status;
 use RZP\Models\Customer\Token;
@@ -104,6 +105,8 @@ trait Callback
                 ]);
         }
 
+        $this->performSkippedValidations($gatewayInput, $payment);
+
         $this->mutex->acquireAndRelease(
             $this->getCallbackMutexResource($payment),
             function() use ($payment, $gatewayInput)
@@ -131,6 +134,8 @@ trait Callback
                 $isS2sCallback = true;
 
                 $this->processPaymentCallback($payment, $gatewayInput, $isS2sCallback);
+
+                $this->postPaymentAuthorizeOfferProcessing($payment);
 
                 $this->autoCapturePaymentIfApplicable($payment);
             },
@@ -510,8 +515,9 @@ trait Callback
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
                 null,
                 [
-                    'payment_id' => $this->payment->getId(),
-                    'status' => $status
+                    'payment_id'  => $this->payment->getPublicId(),
+                    'order_id'    => $this->payment->getPublicOrderId(),
+                    'status'      => $status
                 ]);
         }
 
@@ -546,6 +552,9 @@ trait Callback
     protected function updatePaymentOnExceptionAndThrow($e)
     {
         $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+        $e->setData(['payment_id'  => $this->payment->getPublicId(),
+                     'order_id'    => $this->payment->getPublicOrderId()]);
 
         if (Error\Error::hasAction($internalErrorCode) === false)
         {
@@ -631,5 +640,50 @@ trait Callback
         $cardNumber = (new Card\CardVault)->getCardNumber($cardToken);
 
         return $cardNumber;
+    }
+
+    public function performSkippedValidations($data, $payment)
+    {
+        if ((isset($payment['authentication_gateway']) === true) and
+            ($payment['authentication_gateway'] === 'google_pay'))
+        {
+            $this->createAndAssociateCard($data, $payment);
+
+            $this->runInternationalChecks($payment);
+
+            $this->runFraudChecksIfApplicable($payment);
+        }
+    }
+
+    protected function createAndAssociateCard($data, $payment)
+    {
+        $cardType           = $data[GooglePay\RequestFields::CARD_TYPE];
+        $cardNetwork        = $data[GooglePay\RequestFields::CARD_NETWORK];
+
+        $cardNumber         = $data[GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS][GooglePay\RequestFields::CARD_NUMBER];
+        $expirationMonth    = $data[GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS][GooglePay\RequestFields::CARD_EXPIRY_MONTH];
+        $expirationYear     = $data[GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::METHOD_DETAILS][GooglePay\RequestFields::CARD_EXPIRT_YEAR];
+
+        $merchantId         = $data[GooglePay\RequestFields::TOKEN][GooglePay\RequestFields::MERCHANT_ID];
+        $merchant           = (new Merchant\Repository)->findOrFail($merchantId);
+
+        $cardInput          = [
+            Card\Entity::NUMBER       => $cardNumber,
+            Card\Entity::EXPIRY_MONTH => $expirationMonth,
+            Card\Entity::EXPIRY_YEAR  => $expirationYear,
+            Card\Entity::CVV          => Card\Entity::DUMMY_CVV,
+            Card\Entity::NAME         => Card\Entity::DUMMY_NAME,
+        ];
+
+        $this->repo->transaction(function() use ($cardInput, $payment, $merchant, $cardType, $cardNetwork)
+        {
+            $card = (new Card\Core)->create($cardInput, $merchant, $payment->isRecurring());
+            $card->setType($cardType);
+            $card->setNetwork($cardNetwork);
+            $this->repo->saveOrFail($card);
+
+            $this->payment->card()->associate($card);
+            $this->repo->saveOrFail($payment);
+        });
     }
 }
