@@ -2812,7 +2812,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED,
         ],
     ],
-    
+
     'testCreatingPendingPayoutsForRblWithUnsupportedModeChannelDestinationTypeCombo' => [
         'request' => [
             'url'     => '/payouts',
@@ -2974,6 +2974,22 @@ return [
                 ],
             ],
             'status_code' => 200
+        ],
+    ],
+
+    'testFiringOfWebhookOnRejectionOfPayoutEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payout.rejected',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity' => 'payout',
+                    'status' => 'rejected',
+                ],
+            ],
         ],
     ],
 ];

@@ -122,6 +122,7 @@ class Event
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
         self::PAYOUT_UPDATED,
+        self::PAYOUT_REJECTED,
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
@@ -281,7 +282,8 @@ class Event
         self::ACCOUNT_PAYMENTS_DISABLED         => 58,
         self::TRANSACTION_UPDATED               => 59,
         self::PAYOUT_UPDATED                    => 60,
-        self::PAYMENT_CREATED                   => 61,
+        self::PAYOUT_REJECTED                   => 61,
+        self::PAYMENT_CREATED                   => 62,
     ];
 
     /**
@@ -346,6 +348,7 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED          => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_DISABLED         => [Product::PRIMARY],
         self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
+        self::PAYOUT_REJECTED                   => [Product::PRIMARY, Product::BANKING],
         self::PAYMENT_CREATED                   => [Product::PRIMARY],
     ];
 

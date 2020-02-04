@@ -2628,6 +2628,20 @@ class DatabaseSeeder extends Seeder
             'created_at'                 => time(),
             'updated_at'                 => time()
         ]);
+        DB::table(Table::TERMINAL)->insert([
+            'id'                         => Terminal\Shared::CARDLESS_EMI_ZESTMONEY_TERMINAL,
+            'merchant_id'                => Account::TEST_ACCOUNT,
+            'category'                   => 123,
+            'gateway'                    => Gateway::CARDLESS_EMI,
+            'gateway_merchant_id'        => '35',
+            'gateway_merchant_id2'       => 'NMIMS',
+            'gateway_acquirer'           => 'zestmoney',
+            'gateway_terminal_password'  => '1234',
+            'cardless_emi'               => 1,
+            'mode'                       => 1,
+            'created_at'                 => time(),
+            'updated_at'                 => time()
+        ]);
     }
 
     protected function createPayLaterTerminal()
