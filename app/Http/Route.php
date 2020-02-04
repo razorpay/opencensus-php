@@ -1962,6 +1962,7 @@ final class Route
         'merchant_mtu_update',
         'webhook_deactivate',
         'transaction_settled_data_fix',
+        'banking_account_gateway_balance_fetch_and_update',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.

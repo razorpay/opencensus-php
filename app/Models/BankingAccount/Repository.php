@@ -93,6 +93,6 @@ class Repository extends Base\Repository
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->orderBy(Entity::BALANCE_LAST_FETCHED_AT, 'asc')
                     ->limit($limit)
-                    ->get([Entity::MERCHANT_ID]);
+                    ->pluck(Entity::MERCHANT_ID);
     }
 }

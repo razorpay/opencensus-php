@@ -24,16 +24,9 @@ class BankingAccountGatewayBalanceUpdateJob extends Job
      */
     protected $params;
 
-    /**
-     *  @var BankingAccount\Core
-     */
-    protected $baCore;
-
     public function __construct(string $mode, array $params)
     {
         $this->params = $params;
-
-        $this->baCore = new BankingAccount\Core;
 
         parent::__construct($mode);
     }
@@ -51,7 +44,7 @@ class BankingAccountGatewayBalanceUpdateJob extends Job
                     'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
                 ]);
 
-            $response = $this->baCore->fetchAndUpdateGatewayBalance($this->params);
+            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance($this->params);
 
             $this->delete();
         }
