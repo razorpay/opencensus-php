@@ -95,18 +95,16 @@ class Validator extends Base\Validator
 
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
-        $currency = isset($input['currency']) ? $input['currency'] : null;
+        $currency = $input['currency'];
 
-        $amountInINR = $amount;
+        $baseAmount = $amount;
 
-        if($currency != null and
-            $currency != Currency::INR
-            and (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === true))
+        if ($currency != Currency::INR)
         {
-            $amountInINR = (new CurrencyCore)->getBaseAmount($amount, $currency);
+            $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
         }
 
-        if ($amountInINR > $maxAmountAllowed)
+        if (($baseAmount > $maxAmountAllowed) === true)
         {
             $this->trace->count(Metric::ORDER_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
                 'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",
