@@ -616,7 +616,7 @@ class Core extends Base\Core
             $this->dispatchBankingAccountStatementJob($channel, $accountNumber);
         }
 
-        return $accountNumbers;
+        return ['account_processed' => $accountNumbers];
     }
 
     public function dispatchBankingAccountStatementJob(string $channel, string $accountNumber)
