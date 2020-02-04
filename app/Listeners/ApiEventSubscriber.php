@@ -3,7 +3,9 @@
 namespace RZP\Listeners;
 
 use Throwable;
+use Carbon\Carbon;
 use Razorpay\Trace\Logger;
+use RZP\Constants\Timezone;
 
 use RZP\Error;
 use RZP\Constants;
@@ -356,6 +358,15 @@ class ApiEventSubscriber extends Base\Core
         }
 
         $payload = $this->getPaymentPayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPaymentCreated($payment)
+    {
+        $payload = $this->getPaymentPayload($payment);
+
+        $payment->setAttribute('updated_at', Carbon::now(Timezone::IST)->getTimestamp());
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -1152,13 +1163,13 @@ class ApiEventSubscriber extends Base\Core
         $eventFired = $this->event;
         $entity     = $this->mainEntity;
         $merchant   = $this->getMerchantFromEntity($entity);
-
         //
         // Send the signed account id of the merchant associated with the entity, along with the payload
         // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
         //
         $listeningMerchant = $this->getListeningMerchant($entity);
         $signedAccountId = Merchant\Account\Entity::getSignedId($listeningMerchant->getId());
+
 
         $attributes = array(
             Event\Entity::EVENT      => $eventFired,

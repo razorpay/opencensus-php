@@ -309,6 +309,8 @@ class Processor
 
             $payment = $this->payment;
 
+            $this->eventPaymentCreated();
+
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
@@ -340,6 +342,15 @@ class Processor
 
             throw $e;
         }
+    }
+
+    protected function eventPaymentCreated()
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $this->payment,
+        ];
+
+        $this->app['events']->fire('api.payment.created', $eventPayload);
     }
 
     protected function appendMetadataForPayment(array & $input)

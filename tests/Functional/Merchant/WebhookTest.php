@@ -666,6 +666,19 @@ class WebhookTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
     }
 
+    public function testWebhookPaymentCreated()
+    {
+        $this->ba->privateAuth();
+
+        $this->createMerchantWebhook(['events' => ['payment.created' => "1"]]);
+
+        $this->mockMozartWebhookTranslateRequest(null, 0);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
     public function testOrderPaidWebhookEventData()
     {
         $this->createWebhook(['events' => ['order.paid' => "1"]]);
@@ -1535,7 +1548,7 @@ class WebhookTest extends TestCase
                 'submitted'   => true,
                 'locked'      => true
             ]);
-        
+
         (new BaseFixture)->createEntityInTestAndLive('merchant_detail', [
             'merchant_id' => '10000000000000',
             'submitted'   => true,
