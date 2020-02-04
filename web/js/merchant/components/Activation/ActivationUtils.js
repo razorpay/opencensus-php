@@ -10,24 +10,24 @@ import {
   fireAnalyticsEvents,
 } from 'common/utils/googleAnalytics';
 
-function fireL1FormSuccessEvents() {
-  // updating contact properties of hubspot contact
+function fireL1FormSuccessEvents(activation_flow) {
+  let data = new BingDataObj('activationform', 'complete', 'success', 1);
   updateHubSpotContactsProperties(
     {
       ...data,
-      activation_flow: props.activation_flow,
+      activation_flow: activation_flow,
       completed: true,
     },
     {},
     'l1_'
   );
   fireAnalyticsEvents({
-    bingData: new BingDataObj('activationform', 'complete', 'success', 1),
+    bingData: data,
     liData: 987404,
     twiData: 'o1ua0',
     fbData: 'activation_complete_success',
   });
-  trackL1FormSuccess(props.activation_flow);
+  trackL1FormSuccess(activation_flow);
 }
 
 function handleInstantActivationSuccess(props) {
@@ -37,7 +37,7 @@ function handleInstantActivationSuccess(props) {
     const { poi_verification_status } = props;
     if (poi_verification_status == 'verified') {
       props.showPANStatusModal();
-      fireL1FormSuccessEvents();
+      fireL1FormSuccessEvents(props.activation_flow);
     }
   } else {
     const {
@@ -47,10 +47,10 @@ function handleInstantActivationSuccess(props) {
     } = props.instantActivation;
     if (isWhitelistFlow) {
       props.showInstantActivationSuccessModal();
-      fireL1FormSuccessEvents();
+      fireL1FormSuccessEvents(props.activation_flow);
     } else if (isGraylistFlow) {
       props.showKYCDetailsModal();
-      fireL1FormSuccessEvents();
+      fireL1FormSuccessEvents(props.activation_flow);
     }
   }
 }
