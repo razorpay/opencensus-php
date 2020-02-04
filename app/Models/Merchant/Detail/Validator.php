@@ -303,6 +303,12 @@ class Validator extends Base\Validator
         Entity::POA_VERIFICATION_STATUS          => 'filled|custom'
     ];
 
+    protected static $updateEntityBatchActionRules = [
+        Entity::BUSINESS_NAME               => 'filled|max:255',
+        Entity::BUSINESS_REGISTERED_ADDRESS => 'filled|max:255',
+        Entity::BUSINESS_REGISTERED_STATE   => 'filled|max:255',
+    ];
+
     public function validateBankDetailsVerificationStatus($attribute, $value)
     {
         // adding this check for qa automation

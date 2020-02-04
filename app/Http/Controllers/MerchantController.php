@@ -1530,4 +1530,36 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+
+    /**
+     * @return mixed
+     */
+    public function merchantsBulkUpdate()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->merchantsBulkUpdate($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBatchActionEntities()
+    {
+        $response = $this->service()->getBatchActionEntities();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBatchActions()
+    {
+        $response = $this->service()->getBatchActions();
+
+        return ApiResponse::json($response);
+    }
 }
