@@ -276,7 +276,8 @@ class Error extends Support\Fluent
             }
             catch (\Exception $exception)
             {
-                $this->trace->info(TraceCode::FILE_OPERATION_FAILED, ['payment_method' => $method]);
+                $this->trace->traceException($exception, null, TraceCode::ERROR_RESPONSE_FILE_READING_FAILED,
+                    ['payment_method'  => $method, 'cacheKey'  => $cacheKey]);
             }
             finally
             {
@@ -284,21 +285,33 @@ class Error extends Support\Fluent
             }
         }
 
-        if (array_key_exists($code, $errorCodeMap))
+        $this->setErrorParamsIfApplicable($errorCodeMap, $code);
+    }
+
+    protected function setErrorParamsIfApplicable($errorCodeMap, $code)
+    {
+        try
         {
-            //$this->setDesc($errorCodeMap[$code][0]);
+            if (array_key_exists($code, $errorCodeMap))
+            {
+                //$this->setDesc($errorCodeMap[$code][0]);
 
-            $this->setCodeDetail($errorCodeMap[$code][1]);
+                $this->setCodeDetail($errorCodeMap[$code][1]);
 
-            $this->setFailureType($errorCodeMap[$code][2]);
+                $this->setFailureType($errorCodeMap[$code][2]);
 
-            $this->setPointOfFailure($errorCodeMap[$code][3]);
+                $this->setPointOfFailure($errorCodeMap[$code][3]);
 
-            $this->setNextBestAction($errorCodeMap[$code][4]);
+                $this->setNextBestAction($errorCodeMap[$code][4]);
 
-            $this->setFailureStage($errorCodeMap[$code][5]);
+                $this->setFailureStage($errorCodeMap[$code][5]);
 
-            $this->setRecoverable($errorCodeMap[$code][6]);
+                $this->setRecoverable($errorCodeMap[$code][6]);
+            }
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->info(TraceCode::ERROR_RESPONSE_MAPPING_READ_FAILED, $errorCodeMap[$code]);
         }
     }
 
