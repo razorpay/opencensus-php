@@ -3228,6 +3228,73 @@ class RefundTest extends TestCase
         $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
     }
 
+    public function testInstantRefundSuccessfulSetFtaInitiateAt()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        // Adding IMPS pricing as well to assert that the extra pricing rule is not affecting those refunds
+        // without a mode decisioned
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        // Sunday
+        Carbon::setTestNow(Carbon::createFromTimestamp(1578810600));
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            ['speed' => 'optimum', 'is_fta' => true, 'mode_requested' => 'NEFT']
+        );
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+
+        // Monday 8:15 AM
+        $this->assertEquals(1578883500, $fta['initiate_at']);
+    }
+
     //Negative Balance Tests
     public function testRefundWithZeroBalance()
     {
@@ -3292,20 +3359,7 @@ class RefundTest extends TestCase
 
         $this->startTest($payment['id'], (string) $payment['amount']);
 
-        Mail::assertQueued(NegativeBalanceAlert::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('test@razorpay.com', $viewData['email']);
-
-            $this->assertEquals(10000000000000, $viewData['merchant_id']);
-
-            $this->assertEquals(-54800, $viewData['balance']);
-
-            $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
-
-            return true;
-        });
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
     }
 
     //refund flow allowed for negative
@@ -3341,20 +3395,7 @@ class RefundTest extends TestCase
 
         $this->startTest($payment['id'], (string) $payment['amount']);
 
-        Mail::assertQueued(NegativeBalanceAlert::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('test@razorpay.com', $viewData['email']);
-
-            $this->assertEquals(10000000000000, $viewData['merchant_id']);
-
-            $this->assertEquals(-54800, $viewData['balance']);
-
-            $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
-
-            return true;
-        });
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
     }
 
     //refund flow allowed for negative
@@ -3601,5 +3642,44 @@ class RefundTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
             ->willReturn('on');
+    }
+
+    public function testRazorxRefundRampOnFts()
+    {
+        list($payment, $order) = $this->tpvPayment();
+
+        $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
+
+        $this->enableRazorXTreatmentForRazorXRefund();
+
+        $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+
+        // Atom has been on boarded to Scrooge,
+        // Changing this since in scrooge flow it will remain in created until cron picks up FTA for processing
+        $this->assertEquals('created', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('icici', $fundTransferAttempt['channel']);
+
+        $this->assertEquals(1, $fundTransferAttempt['is_fts']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals('SBIN0010411', $bankAccount['ifsc_code']);
+
+        $this->assertEquals($order['account_number'], $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
+        $this->assertEquals('refund', $bankAccount['type']);
     }
 }

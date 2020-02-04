@@ -19,6 +19,8 @@ trait EventsTrait
 
     protected $mockedRavenRequest;
 
+    protected $mockedRemindersRequest;
+
     protected function setEventsForMerchant()
     {
         (new Webhook())->create([
@@ -70,6 +72,32 @@ trait EventsTrait
             });
 
         $this->app->instance('raven', $raven);
+    }
+
+    protected function mockReminder()
+    {
+        $reminders = Mockery::mock('RZP\Services\Reminders')->makePartial();
+
+        $this->app->instance('reminders', $reminders);
+
+        $reminders->shouldReceive('createReminder')
+            ->with(Mockery::type('array'), Mockery::type('string'))
+            ->andReturnUsing(function ($request, $merchantId){
+                $this->mockedRemindersRequest = [$request, $merchantId];
+
+                $response = [
+                    'success'   => true
+                ];
+
+                return $response;
+            });
+
+        $this->app->instance('reminders', $reminders);
+    }
+
+    protected function assertMockReminder(callable $inputHandler)
+    {
+        $inputHandler($this->mockedRemindersRequest[0], $this->mockedRemindersRequest[1]);
     }
 
     protected function assertRavenRequest(callable $inputHandler, $method = 'post', $route = 'sms')

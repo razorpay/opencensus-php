@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\Functional\Helpers\Payout;
 
+use RZP\Models\Admin;
+use RZP\Models\Feature\Constants;
+
 trait PayoutTrait
 {
     protected function makePayoutSummaryRequest()
@@ -23,6 +26,7 @@ trait PayoutTrait
         $bankingAccount = $this->fixtures->create('banking_account', [
             'id'                    => $attributes["id"] ?? 'ABCde1234ABCde',
             'account_number'        => $attributes["account_number"] ?? '2224440041626905',
+            'account_ifsc'          => $attributes["account_ifsc"] ?? 'RATN0000088',
             'account_type'          => $attributes["account_type"] ?? 'current',
             'merchant_id'           => $attributes["merchant_id"] ?? '10000000000000',
             'channel'               => $attributes["channel"] ?? 'rbl',
@@ -63,5 +67,42 @@ trait PayoutTrait
 
         $this->assertNotNull($response['id']);
         $this->assertNotEquals($id, $response['id']);
+    }
+
+    protected function createPayoutWithWorkflow($workflow, $payoutAttributes = [])
+    {
+        $this->app['config']->set('heimdall.workflows.mock', false);
+        $this->app['config']->set('heimdall.permissions.payouts.create_payout.assignable', true);
+
+        $workflowDefaultPermissions = (new Admin\Permission\Repository())
+                                       ->retrieveIdsByNames([Admin\Permission\Name::CREATE_PAYOUT]);
+
+        // Attach permissions to the default workflow
+        $workflow->permissions()->sync($workflowDefaultPermissions);
+
+        return $this->createQueuedOrPendingPayout($payoutAttributes);
+    }
+
+    protected function createQueuedOrPendingPayout(array $attributes = [])
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'        => $attributes["account_number"] ?? '2224440041626905',
+                'amount'                => $attributes["amount"] ?? 10000,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000000fa',
+                'mode'                  => 'NEFT',
+                'queue_if_low_balance'  => $attributes["queue_if_low_balance"] ?? 0,
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
     }
 }

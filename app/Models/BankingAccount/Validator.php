@@ -146,7 +146,6 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_ADDRESS3            => 'sometimes|string',
         Entity::BENEFICIARY_MOBILE              => 'sometimes|string',
         Entity::BENEFICIARY_EMAIL               => 'sometimes|email',
-        Entity::BENEFICIARY_NAME                => 'sometimes|string',
         Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
     ];
 

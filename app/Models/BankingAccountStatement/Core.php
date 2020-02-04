@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccountStatement;
 
 use Mail;
 use File;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -66,6 +67,8 @@ class Core extends Base\Core
         $accountStatementDetails = $processor->fetchAccountStatementDetails($input);
 
         $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant);
+
+        $bankingAccount->balance->updateLastFetchedAt();
 
         return ['processed' => true];
     }
@@ -418,7 +421,7 @@ class Core extends Base\Core
             return null;
         }
 
-        (new DownstreamProcessor('fund_account_payout', $payout))->processTransaction();
+        (new DownstreamProcessor('fund_account_payout', $payout, $this->mode))->processTransaction();
 
         $this->repo->saveOrFail($payout);
 
@@ -557,5 +560,4 @@ class Core extends Base\Core
                 ]);
         }
     }
-
 }

@@ -61,7 +61,9 @@ class Service extends Base\Service
 
         (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
 
-        $account = $this->core->updateBankingAccount($bankingAccount, $input);
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $account = $this->core->updateBankingAccount($bankingAccount, $input, $admin);
 
         $currentStatus = $bankingAccount->getStatus();
 
@@ -99,7 +101,9 @@ class Service extends Base\Service
 
         $this->checkIfAccountAlreadyActivated($bankingAccount);
 
-        $bankingAccount = $this->core->activate($bankingAccount, $input);
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $bankingAccount = $this->core->activate($bankingAccount, $input, $admin);
 
         return $bankingAccount->toArrayPublic();
     }
@@ -136,18 +140,6 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function checkIfAccountAlreadyActivated(Entity $bankingAccount)
-    {
-        if ($bankingAccount->getStatus() === Status::ACTIVATED)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED,
-                null,
-                ['id' => $bankingAccount->getId()]
-            );
-        }
-    }
-
     public function bulkCreateBankingAccountsForYesbank(array $input)
     {
         $this->trace->info(
@@ -169,5 +161,27 @@ class Service extends Base\Service
         $response = $this->core->dispatchGatewayBalanceUpdateForMerchants($input);
 
         return $response;
+    }
+
+    public function getActivationStatusChangeLog(string $bankingAccountId)
+    {
+        /** @var Entity $bankingAccount */
+        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+
+        $activationStatusChangeLog = $this->core->getActivationStatusChangeLog($bankingAccount);
+
+        return $activationStatusChangeLog->toArrayPublic();
+    }
+
+    protected function checkIfAccountAlreadyActivated(Entity $bankingAccount)
+    {
+        if ($bankingAccount->getStatus() === Status::ACTIVATED)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED,
+                null,
+                ['id' => $bankingAccount->getId()]
+            );
+        }
     }
 }

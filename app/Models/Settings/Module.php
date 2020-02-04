@@ -24,8 +24,10 @@ class Module
     const PAYMENT_LINK          = 'payment_link';
     const PAYMENT_PAGE_ITEM     = 'payment_page_item';
     const PAYOUT_PURPOSE        = 'payout_purpose';
+    const PAYOUT_LINK           = 'payout_link';
     const CONTACT_TYPE          = 'contact_type';
     const D2C_BUREAU_CAMPAIGN   = 'd2c_bureau_campaign';
+    const BALANCE               = 'balance';
 
     /**
      * @param string $module

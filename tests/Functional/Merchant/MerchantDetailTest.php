@@ -307,6 +307,14 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
 
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->isActivated());
+
+        $this->assertFalse($merchant->isLive());
+
+        $this->assertTrue($merchant->getHoldFunds());
+
         Mail::assertQueued(Rejection::class, function ($mail)
         {
             $this->assertEquals('emails.merchant.rejection_notification', $mail->view);

@@ -10,10 +10,13 @@ use RZP\Models\Admin\ConfigKey;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
+use RZP\Models\Contact;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Admin;
 use RZP\Models\BankAccount;
+use RZP\Models\FundAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
@@ -221,6 +224,19 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($bankingAccount);
 
+        $stateCore = new State\Core;
+
+        $content = [Entity::STATUS => $bankContent[Entity::STATUS]];
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
+            [
+                'id'    => $bankingAccount->getId(),
+                'input' => $content,
+            ]);
+
+        $stateCore->createForMakerAndEntity($content, $merchant, $bankingAccount);
+
         return $bankingAccount;
     }
 
@@ -257,7 +273,7 @@ class Core extends Base\Core
                         'channel'   => $channel,
                     ]);
 
-                $this->updateBankingAccount($bankingAccount, $attributes);
+                $this->updateBankingAccount($bankingAccount, $attributes, $bankingAccount->merchant);
             }
 
             $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::PROCESSED);
@@ -279,16 +295,25 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function updateBankingAccount(Entity $bankingAccount, array $input)
+    public function updateBankingAccount(Entity $bankingAccount, array $input, Base\PublicEntity $entity = null)
     {
         $channel = $bankingAccount->getChannel();
+
+        $traceRequest = $input;
+
+        // details array may contain sensitive information
+        // like merchant password and other gateway specific
+        // fields. These will be handled by the gateway module
+        // hence redacting from here.
+        unset($traceRequest[Entity::DETAILS]);
+        unset($traceRequest[Entity::PASSWORD]);
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_EDIT,
             [
                 'id'      => $bankingAccount->getId(),
                 'channel' => $channel,
-                'input'   => $input,
+                'input'   => $traceRequest,
             ]);
 
         $processor = $this->getProcessor($channel);
@@ -297,14 +322,20 @@ class Core extends Base\Core
 
         $input = $processor->formatInputParametersIfRequired($input);
 
+        $oldStatus = $bankingAccount->getStatus();
+
         $bankingAccount->edit($input);
+
+        // we need to store change log only when the
+        // status has changed.
+        $bankInternalStatusChanged = $bankingAccount->isDirty(Entity::BANK_INTERNAL_STATUS);
+
+        $bankingAccountStatusChanged = $bankingAccount->isDirty(Entity::STATUS);
 
         if (empty($input[Entity::STATUS]) === false)
         {
             $bankingAccount->setStatus($input[Entity::STATUS]);
         }
-
-        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
         $this->repo->transaction(function() use ($bankingAccount, $input, $processor)
         {
@@ -336,37 +367,25 @@ class Core extends Base\Core
         // relations. So explicitly fetching this relation here
         $bankingAccount->load('bankingAccountDetails');
 
-        return $bankingAccount;
-    }
+        if (($bankInternalStatusChanged === true) or
+            ($bankingAccountStatusChanged === true))
+        {
+            $stateCore = new State\Core;
 
-    protected function createYesbankBankingAccount(
-        array $input,
-        Merchant\Entity $merchant,
-        Merchant\Balance\Entity $balance): Entity
-    {
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_CREATE,
-            [
-                'channel' => Channel::YESBANK,
-                'input'   => $input,
-            ]);
+            $content = [
+                Entity::STATUS              => $bankingAccount->getStatus(),
+                State\Entity::BANK_STATUS   => $bankingAccount->getBankInternalStatus()
+            ];
 
-        (new Validator)->validateInput(Validator::YESBANK_CREATE, $input);
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
+                [
+                    'id'    => $bankingAccount->getId(),
+                    'input' => $content,
+                ]);
 
-        $input[Entity::CHANNEL] = Channel::YESBANK;
-
-        $bankingAccount = new Entity;
-
-        $bankingAccount->build($input);
-
-        $bankingAccount->merchant()->associate($merchant);
-
-        $bankingAccount->balance()->associate($balance);
-
-        // Yesbank accounts are always created in the processed state
-        $bankingAccount->setStatus(Status::ACTIVATED);
-
-        $this->repo->saveOrFail($bankingAccount);
+            $stateCore->createForMakerAndEntity($content, $entity, $bankingAccount);
+        }
 
         return $bankingAccount;
     }
@@ -411,15 +430,15 @@ class Core extends Base\Core
         $processor->deleteServiceablePincodes($pincodes);
     }
 
-    public function activate(Entity $bankingAccount, array $input)
+    public function activate(Entity $bankingAccount, array $input, Admin\Entity $admin)
     {
-        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
+        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount);
 
         //
         // This is in a transaction because, BankingAccount entity update
         // and Balance entity creation, both should succeed or fail
         //
-        $bankingAccount = $this->repo->transaction(function () use ($bankingAccount, $input)
+        $bankingAccount = $this->repo->transaction(function () use ($bankingAccount, $input, $admin)
         {
             $channel = $bankingAccount->getChannel();
 
@@ -435,16 +454,39 @@ class Core extends Base\Core
 
             $balance = (new Merchant\Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
 
+            // Creating a contact of type 'rzp_fees' and a fund account related to it. To be used for fees recovery.
+            $this->createRZPFeesContactAndFundAccount($merchant);
+
             $bankingAccount->balance()->associate($balance);
 
             $this->repo->saveOrFail($bankingAccount);
 
-            $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
+            $stateCore = new State\Core;
+
+            $content = [
+                Entity::STATUS => Status::ACTIVATED,
+            ];
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_UPDATE_ACTIVATION_STATUS,
+                [
+                    'id'    => $bankingAccount->getId(),
+                    'input' => $content,
+                ]);
+
+            $stateCore->createForMakerAndEntity($content, $admin, $bankingAccount);
 
             return $bankingAccount;
         });
 
         return $bankingAccount;
+    }
+
+    protected function createRZPFeesContactAndFundAccount(Merchant\Entity $merchant)
+    {
+        $contact = (new Contact\Core)->createRZPFeesContact($merchant);
+
+        (new FundAccount\Core)->createRZPFeesFundAccount($merchant, $contact);
     }
 
     public function bulkCreateBankingAccountsForYesbank(array $input)
@@ -521,7 +563,8 @@ class Core extends Base\Core
 
     /**
      * for CA, balance needs to be fetched from balance api provided by respective banks/gateways at regular frequency
-     * which is agreed upon in SLA
+     * which is agreed upon in SLA. This function will be used to fetch balance from gateway before making normal/queued
+     * payouts depending upon balance_last_fetched_at.
      *
      * @param array $input
      *
@@ -544,8 +587,7 @@ class Core extends Base\Core
         $gatewayProcessor = $this->getGatewayProcessorClass($channel);
 
         $bankingAccount = $this->repo->banking_account
-                                     ->getBankingAccountByMerchantIdAndChannel($merchantId,
-                                                                               $channel);
+                                     ->getBankingAccountByMerchantIdAndChannel($merchantId, $channel);
 
         if ($bankingAccount === null)
         {
@@ -558,8 +600,10 @@ class Core extends Base\Core
             );
         }
 
+        // every gateway processor must implement fetchGatewayBalance function. This function sends Mozart request
+        // to fetch balance from gateway and return balance.
         $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
-//TODO:// add migration
+
         $updateRequestParams = [
             Entity::TEMP_BALANCE            => $balance,
             Entity::BALANCE_LAST_FETCHED_AT => Carbon::now()->getTimestamp(),
@@ -597,7 +641,10 @@ class Core extends Base\Core
 
     protected function getGatewayProcessorClass($channel)
     {
-        $gatewayProcessor = __NAMESPACE__ . '\\' . studly_case(self::GATEWAY) . '\\' . studly_case($channel) . '\\' . studly_case(self::Processor);
+        $gatewayProcessor = __NAMESPACE__ . '\\' .
+                            studly_case(self::GATEWAY) . '\\' .
+                            studly_case($channel) . '\\' .
+                            studly_case(self::Processor);
 
         if (class_exists($gatewayProcessor) === true)
         {
@@ -612,6 +659,11 @@ class Core extends Base\Core
                     'channel' => $channel,
                 ]);
         }
+    }
+
+    public function getActivationStatusChangeLog(Entity $bankingAccount)
+    {
+        return $bankingAccount->getActivationStatusChangeLog();
     }
 
     protected function getBalanceAttributesToSave(Entity $bankingAccount)
@@ -634,35 +686,54 @@ class Core extends Base\Core
      *
      * @throws BadRequestValidationFailureException
      */
-    protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount, array $input)
+    protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount)
     {
-        $this->redactSecrets($input);
+        $merchant = $bankingAccount->merchant;
 
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_ACTIVATION_REQUEST,
+        $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
+
+        if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED,
+                Entity::STATUS,
+                [
+                    'merchant_activation_status' => $merchant->merchantDetail->getActivationStatus(),
+                    'banking_account'            => $bankingAccount->getId(),
+                ]);
+        }
+    }
+
+    protected function createYesbankBankingAccount(
+        array $input,
+        Merchant\Entity $merchant,
+        Merchant\Balance\Entity $balance): Entity
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_CREATE,
             [
-                'id'      => $bankingAccount->getId(),
-                'channel' => $bankingAccount->getChannel(),
+                'channel' => Channel::YESBANK,
                 'input'   => $input,
             ]);
 
-        $merchant = $bankingAccount->merchant;
+        (new Validator)->validateInput(Validator::YESBANK_CREATE, $input);
 
-        if ((isset($input[Entity::STATUS]) === true) and
-            ($input[Entity::STATUS] === Status::ACTIVATED))
-        {
-            $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
+        $input[Entity::CHANNEL] = Channel::YESBANK;
 
-            if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED,
-                    Entity::STATUS,
-                    [
-                        'merchant_activation_status' => $merchant->merchantDetail->getActivationStatus(),
-                        'banking_account'            => $bankingAccount->getId(),
-                    ]);
-            }
-        }
+        $bankingAccount = new Entity;
+
+        $bankingAccount->build($input);
+
+        $bankingAccount->merchant()->associate($merchant);
+
+        $bankingAccount->balance()->associate($balance);
+
+        // Yesbank accounts are always created in the processed state
+        $bankingAccount->setStatus(Status::ACTIVATED);
+
+        $this->repo->saveOrFail($bankingAccount);
+
+        return $bankingAccount;
     }
 
     protected function getProcessor(string $channel): Gateway\Processor

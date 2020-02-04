@@ -7,6 +7,7 @@ use Cache;
 use Config;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Diag\EventCode;
 use RZP\Models\Terminal;
@@ -508,6 +509,18 @@ class Selector extends Base\Core
 
             $merchant = $this->input['merchant'];
 
+            if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD) === true)
+            {
+                $this->trace->info(
+                    TraceCode::SKIPPING_HITACHI_AUTOMATIC_ONBOARDING,
+                    [
+                        'payment'             => $payment,
+                        'merchant'            => $merchant,
+                    ]);
+
+                return;
+            }
+
             if (($payment->isMethod(Method::CARD) === true) and ($payment->isBharatQr() === false)
                 and (in_array($merchant->getCategory(), GatewayProcessor::HITACHI_BLACKLISTED_MCC) === false))
             {
@@ -575,7 +588,8 @@ class Selector extends Base\Core
 
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
 
-            if (in_array($paymentData['method'], [Method::CARD, Method::UPI, Method::EMI]) === true )
+            if ((in_array($paymentData['method'], [Method::CARD, Method::UPI, Method::EMI]) === true ) and
+                ($payment->isGooglePayCard() === false))
             {
                 $downtimes = $this->repo->useSlave(function () use ($allTerminals) {
                     return (new Downtime\Core)->getApplicableDowntimesForPayment($allTerminals, $this->input);

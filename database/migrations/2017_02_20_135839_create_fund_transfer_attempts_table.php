@@ -95,6 +95,9 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->integer(FundTransferAttempt::FTS_TRANSFER_ID)
                   ->nullable();
 
+            $table->string(FundTransferAttempt::GATEWAY_REF_NO, 255)
+                  ->nullable();
+
             $table->index([FundTransferAttempt::SOURCE_ID, FundTransferAttempt::SOURCE_TYPE]);
 
             $table->index(FundTransferAttempt::CHANNEL);
@@ -110,6 +113,8 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->index(FundTransferAttempt::BANK_ACCOUNT_ID);
 
             $table->index(FundTransferAttempt::VPA_ID);
+
+            $table->unique(FundTransferAttempt::GATEWAY_REF_NO);
 
             $table->foreign(FundTransferAttempt::MERCHANT_ID)
                   ->references(Merchant::ID)

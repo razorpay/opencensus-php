@@ -126,8 +126,7 @@ class Core extends Base\Core
 
         $validationResult = $this->validateExtractedData($extractedPaperMandateData, $paperMandate);
 
-        $uploadedFileId = (new FileUploader)->uploadEnhancedForm(
-            $paperMandate,
+        $uploadedFileId = (new FileUploader($paperMandate))->uploadEnhancedForm(
             $extractedPaperMandateData[Entity::ENHANCED_IMAGE]
         );
 
@@ -363,11 +362,6 @@ class Core extends Base\Core
 
         $extractedMerchant = $extractedPaperMandateData[Entity::MERCHANT];
 
-        if (strtoupper($merchant->getName()) !== $extractedMerchant[Merchant\Entity::NAME])
-        {
-            $notMatching[] = Entity::MERCHANT . '.' . BankAccount\Entity::NAME;
-        }
-
         $extractedData[] = [
             self::KEY             => Entity::MERCHANT . '.' . BankAccount\Entity::NAME,
             self::EXPECTED_VALUE  => strtoupper($merchant->getName()),
@@ -384,19 +378,6 @@ class Core extends Base\Core
         $customer = $paperMandate->customer;
 
         $extractedCustomer = $extractedPaperMandateData[Entity::CUSTOMER];
-
-        if (($extractedCustomer[Entity::TERTIARY_SIGNATURE_PRESENT] === true) and
-            ($extractedCustomer[Entity::SECONDARY_SIGNATURE_PRESENT] === false))
-        {
-            throw new BadRequestValidationFailureException(
-                'tertiary signature can\'t be present without secondary signature',
-                Entity::SECONDARY_SIGNATURE_PRESENT,
-                [
-                    'paper_mandate'  => $paperMandate->toArrayPublic(),
-                    'extracted_data' => $extractedPaperMandateData,
-                ]
-            );
-        }
 
         if ($extractedCustomer[Entity::SIGNATURE_PRESENT] === false)
         {
@@ -441,7 +422,7 @@ class Core extends Base\Core
 
         $data = (new HyperVerge)->generatePaperMandateForm($paperMandate);
 
-        $generatedFileId = (new FileUploader)->saveCreatedMandateAndFileId($paperMandate, $data[Entity::GENERATED_IMAGE]);
+        $generatedFileId = (new FileUploader($paperMandate))->saveCreatedMandateAndFileId($data[Entity::GENERATED_IMAGE]);
 
         $this->trace->info(
             TraceCode::PAPER_MANDATE_FORM_GENERATED,

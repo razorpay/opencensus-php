@@ -244,6 +244,34 @@ class Core extends Base\Core
         $this->updateBalanceAccountNumberForBanking($virtualAccount);
     }
 
+    public function getConfigsForVirtualAccount(array $receivers)
+    {
+        $virtualAccount = $this->createEntityAndAssociate($this->merchant);
+
+        $vaConfig = [];
+
+        $receiverHelper = $virtualAccount->getReceiverBuilder();
+
+        foreach ($receivers[Entity::RECEIVER_TYPES] as $receiverType)
+        {
+            $receiverConfig = [];
+
+            if (($receiverType === Receiver::VPA) or
+                ($receiverType === Receiver::BANK_ACCOUNT))
+            {
+                $this->validateReceiver($receiverType, $virtualAccount);
+
+                $func = 'get' . studly_case($receiverType) . 'Configs';
+
+                $receiverConfig = $receiverHelper->$func($virtualAccount);
+            }
+
+            $vaConfig[$receiverType] = $receiverConfig;
+        }
+
+        return $vaConfig;
+    }
+
     /**
      * Updates balance's account number if applicable per below condition.
      * @param Entity $virtualAccount

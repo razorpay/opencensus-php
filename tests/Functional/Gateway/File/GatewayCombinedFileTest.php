@@ -79,6 +79,40 @@ class GatewayCombinedFileTest extends TestCase
         Mail::assertSent(DailyFileMail::class);
     }
 
+    public function testGenerateCombinedFileWithRefundsOutOfRange()
+    {
+        Mail::fake();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('UTIB');
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Refund out of range
+        $refundEntity['created_at'] = Carbon::yesterday()->getTimestamp();
+
+        // Netbanking Axis refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNull($content[File\Entity::SENT_AT]);
+        $this->assertNotNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        Mail::assertNotSent(DailyFileMail::class);
+    }
+
     public function testGenerateCombinedFileWithNoRefundOrClaims()
     {
         Mail::fake();

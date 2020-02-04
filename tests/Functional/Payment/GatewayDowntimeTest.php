@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Constants\Timezone;
+use RZP\Http\RequestHeader;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\MockHttpResponseTrait;
@@ -27,6 +28,8 @@ class GatewayDowntimeTest extends TestCase
 
     protected $statusCakeToken;
 
+    protected $dopplerToken;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/GatewayDowntimeTestData.php';
@@ -38,6 +41,12 @@ class GatewayDowntimeTest extends TestCase
         $statusCakeApiKey = $this->app['config']->get('applications.gateway_downtime.statuscake.api_key');
 
         $this->statusCakeToken = md5($statusCakeUserName . $statusCakeApiKey);
+
+        $dopplerkey = $this->app['config']->get('application.doppler.key');
+
+        $dopplerSecret = $this->app['config']->get('application.doppler.secret');
+
+        $this->dopplerToken = "basic ".base64_encode($dopplerkey.":".$dopplerSecret);
 
         $this->ba->adminAuth();
     }
@@ -1343,6 +1352,10 @@ class GatewayDowntimeTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
 
+        $headers = [
+            'HTTP_Authorization'    => $this->dopplerToken,
+        ];
+
         $request = [
             'content' => [
                 'gateway' => 'upi_mindgate',
@@ -1353,7 +1366,8 @@ class GatewayDowntimeTest extends TestCase
                 'begin' => strval(Carbon::now()->subMinutes(60)->timestamp)
             ],
             'method' => 'POST',
-            'url' => '/gateway/downtimes/dummy/webhook'
+            'url' => '/gateway/downtimes/dummy/webhook',
+            'server'    => $headers
         ];
 
         $this->ba->directAuth();
@@ -1369,6 +1383,10 @@ class GatewayDowntimeTest extends TestCase
     {
         $this->ba->directAuth();
 
+        $headers = [
+            'HTTP_Authorization'    => $this->dopplerToken,
+        ];
+
         $request = [
             'content' => [
                 'method'    => 'upi',
@@ -1378,6 +1396,7 @@ class GatewayDowntimeTest extends TestCase
             ],
             'url'   => '/gateway/downtimes/doppler/webhook',
             'method'    => 'POST',
+            'server'    => $headers
         ];
 
         $response = $this->makeRequestAndGetContent($request);
@@ -1395,6 +1414,7 @@ class GatewayDowntimeTest extends TestCase
             ],
             'url'   => '/gateway/downtimes/doppler/webhook',
             'method'    => 'POST',
+            'server'    => $headers
         ];
 
         $response = $this->makeRequestAndGetContent($request);
@@ -1406,6 +1426,10 @@ class GatewayDowntimeTest extends TestCase
     {
         $this->ba->directAuth();
 
+        $headers = [
+            'HTTP_Authorization'    => $this->dopplerToken,
+        ];
+
         $request = [
             'content' => [
                 'method'    => 'upi',
@@ -1415,6 +1439,7 @@ class GatewayDowntimeTest extends TestCase
             ],
             'url'   => '/gateway/downtimes/doppler/webhook',
             'method'    => 'POST',
+            'server'    => $headers
         ];
 
         $response = $this->makeRequestAndGetContent($request);
@@ -1432,6 +1457,7 @@ class GatewayDowntimeTest extends TestCase
             ],
             'url'   => '/gateway/downtimes/doppler/webhook',
             'method'    => 'POST',
+            'server'    => $headers
         ];
 
         $response = $this->makeRequestAndGetContent($request);

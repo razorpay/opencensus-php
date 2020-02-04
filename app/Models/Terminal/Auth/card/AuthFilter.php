@@ -73,6 +73,7 @@ class AuthFilter extends Terminal\Auth\Base
     protected function canRunIvrFlow(Payment\Entity $payment): bool
     {
         if (($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === true) and
+            (is_null($payment->card) === false) and
             ($payment->card->iinRelation !== null) and
             ($this->isAuthTypeOtp($payment) === true) and
             ($payment->card->iinRelation->supports(IIN\Flow::IVR) === true))
@@ -86,6 +87,7 @@ class AuthFilter extends Terminal\Auth\Base
     protected function canRunAxisExpressPay(Payment\Entity $payment): bool
     {
         if (($payment->merchant->isAxisExpressPayEnabled() === true) and
+            (is_null($payment->card) === false) and
             ($payment->card->iinRelation !== null) and
             ($payment->card->iinRelation->getIssuer() === IFSC::UTIB) and
             ($this->isAuthTypeOtp($payment) === true) and
@@ -101,13 +103,13 @@ class AuthFilter extends Terminal\Auth\Base
     {
        if (($this->isAuthTypeOtp($payment) === true) and
            ($this->merchant->isHeadlessEnabled() === true) and
+           (is_null($payment->card) === false) and
            ($payment->card->iinRelation !== null) and
            ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true) and
            (Payment\Gateway::supportsHeadlessBrowser($payment->getGateway(), $payment->card->iinRelation->getNetworkCode()) === true))
-
-        {
+       {
             return true;
-        }
+       }
 
         return false;
     }
@@ -115,6 +117,7 @@ class AuthFilter extends Terminal\Auth\Base
     protected function canRunPinFlow(Payment\Entity $payment): bool
     {
         if (($this->merchant->isFeatureEnabled(Feature\Constants::ATM_PIN_AUTH) === true) and
+            (is_null($payment->card) === false) and
             ($payment->card->iinRelation !== null) and
             ($payment->card->iinRelation->supports(IIN\Flow::PIN) === true) and
             ($payment->terminal->isPin() === true))

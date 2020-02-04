@@ -92,6 +92,9 @@ abstract class Base extends Core
     {
         try
         {
+            // Resetting any global variables being used since this is a singleton class
+            $this->resetFileProcessorAttributes();
+
             $entities = $this->repo->useSlave(function ()
             {
                 return $this->fetchEntities();
@@ -132,6 +135,11 @@ abstract class Base extends Core
     {
         $this->gatewayFile = $gatewayFile;
 
+        return $this;
+    }
+
+    public function resetFileProcessorAttributes()
+    {
         return $this;
     }
 

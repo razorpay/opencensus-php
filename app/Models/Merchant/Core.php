@@ -8,7 +8,6 @@ use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
 use Razorpay\OAuth\Application as OAuthApp;
-use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Exception;
 use RZP\Models\Emi;
@@ -16,6 +15,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Jobs\EsSync;
 use RZP\Models\Batch;
+use RZP\Models\Partner;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -49,11 +49,11 @@ use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
-use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
+use RZP\Models\Merchant\Detail\InternationalActivationFlow;
 
 class Core extends Base\Core
 {
@@ -178,6 +178,15 @@ class Core extends Base\Core
     {
         $aggregatorMerchant->getValidator()->validateSubMerchantInput($input, $linkedAccount);
 
+        // validate that external id passed is unique for that partner
+        if (empty($input[Entity::EXTERNAL_ID]) === false)
+        {
+            (new Partner\Core)->validateExternalIdForPartnerSubmerchant($aggregatorMerchant, $input[Entity::EXTERNAL_ID]);
+        }
+
+        $legalEntity           = null;
+        $externalLegalEntityId = null;
+
         $input['email'] = $input['email'] ?? $aggregatorMerchant->getEmail();
 
         if ($accountEntity === true)
@@ -187,6 +196,19 @@ class Core extends Base\Core
         else
         {
             $entity = new Entity;
+
+            if (empty($input[Entity::LEGAL_ENTITY_ID]) === false)
+            {
+                $legalEntity = $this->repo->legal_entity->findOrFailPublic($input[Entity::LEGAL_ENTITY_ID]);
+
+                unset($input[Entity::LEGAL_ENTITY_ID]);
+            }
+            else if (empty($input[Entity::LEGAL_EXTERNAL_ID]) === false)
+            {
+                $externalLegalEntityId = $input[Entity::LEGAL_EXTERNAL_ID];
+
+                unset($input[Entity::LEGAL_EXTERNAL_ID]);
+            }
         }
 
         $subMerchant = $entity->build($input);
@@ -222,13 +244,25 @@ class Core extends Base\Core
             $subMerchant->org()->associate($org);
         }
 
+        if (empty($legalEntity) === false)
+        {
+            $subMerchant->legalEntity()->associate($legalEntity);
+        }
+
         $this->repo->saveOrFail($subMerchant);
 
         $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant);
 
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
 
-        $this->upsertLegalEntity($subMerchant, []);
+        $legalEntityInput = [];
+
+        if (empty($externalLegalEntityId) === false)
+        {
+            $legalEntityInput[LegalEntity\Entity::EXTERNAL_ID] = $externalLegalEntityId;
+        }
+
+        $this->upsertLegalEntity($subMerchant, $legalEntityInput);
 
         return $subMerchant;
     }
@@ -2539,31 +2573,30 @@ class Core extends Base\Core
 
 
     /**
-     * Enable international and set convert currency as false, if applicable
+     * Activates/Deactivates (international) as applicable
+     *
+     * We allow changing business type between L1 and L2 form .
+     * As international activation flow is function of business type,
+     * So disable international if  not allowed
+     *
      *
      * @param Entity        $merchant
      * @param Detail\Entity $merchantDetails
      *
      * @throws BadRequestException
+     * @throws Exception\LogicException
      */
-    public function activateInternationalIfApplicable(Entity $merchant, Detail\Entity $merchantDetails)
+    public function updateInternationalIfApplicable(Entity $merchant, Detail\Entity $merchantDetails)
     {
         $shouldActivateInternational = $this->shouldActivateInternational($merchant, $merchantDetails);
 
         if ($shouldActivateInternational === true)
         {
-            $merchant->enableInternational();
-
-            $merchant->setCurrencyConversion(false);
-
-            $this->trace->info(
-                TraceCode::MERCHANT_UPDATE_INTERNATIONAL,
-                [
-                    'category'      => $merchantDetails->getBusinessCategory(),
-                    'subcategory'   => $merchantDetails->getBusinessSubCategory(),
-                ]);
-
-            $this->trace->count(Metric::INTERNATIONAL_ACTIVATION);
+            (new Detail\InternationalCore())->activateInternational($merchant);
+        }
+        elseif ($merchant->isInternational() === true)
+        {
+            (new Detail\InternationalCore())->deactivateInternational($merchant);
         }
     }
 
@@ -2630,11 +2663,13 @@ class Core extends Base\Core
 
     /**
      * Check if merchant is eligible for international payments
+     *
      * @param Entity        $merchant
      * @param Detail\Entity $merchantDetails
      *
      * @return bool
-     * @throws \RZP\Exception\BadRequestException
+     * @throws BadRequestException
+     * @throws Exception\LogicException
      */
     protected function shouldActivateInternational(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
@@ -2645,39 +2680,23 @@ class Core extends Base\Core
             return false;
         }
 
-        $category = $merchantDetails->getBusinessCategory();
-
-        $subcategory = $merchantDetails->getBusinessSubCategory();
-
-        $websitePresent = $this->validateWebsiteCheckForInternationalActivation($merchant, $merchantDetails);
-
-        if (($merchant->isInternational() === true) or
-            (empty($category) === true) or $websitePresent === false)
+        //
+        // Enable international for merchant if
+        // 1) Merchant has a valid website
+        // 2) If international activation flow is set
+        //
+        if (($this->validateWebsiteCheckForInternationalActivation($merchant, $merchantDetails) === false) or
+            (empty($merchantDetails->getInternationalActivationFlow()) === true))
         {
             return false;
         }
 
-        $internationalActivationFlowFromCategory = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
-            BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
-            $category,
-            $subcategory,
-            ActivationFlow::BLACKLIST);
-
-        $featureValue = $merchantDetails->getInternationalActivationFlow() ?: $internationalActivationFlowFromCategory;
-
         //
-        // Conditions being checked:
-        // 1: If international_activation is whitelist, return true
-        // 2: If international_activation is greylist and merchant is kyc verifed, return true
+        // $activationFlowImpl will be an instance of the ActivationFlowInterface
         //
-        if (($featureValue === ActivationFlow::WHITELIST) or
-            (($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED) and
-            ($featureValue === ActivationFlow::GREYLIST)))
-        {
-            return true;
-        }
+        $activationFlowImpl = InternationalActivationFlow\Factory::getActivationFlowImpl($merchant);
 
-        return false;
+        return $activationFlowImpl->shouldActivateInternational();
     }
 
     public function validateWebsiteCheckForInternationalActivation(Entity $merchant, Detail\Entity $merchantDetails): bool
@@ -2714,6 +2733,8 @@ class Core extends Base\Core
      * Auto Enable International for merchant if
      *  1) Merchant belongs to Razorpay org Or
      *  2) Merchant is not in unregistered business onBoarding flow
+     *  3) If Submerchant is getting activated using a submerchant batch and if the submerchant
+     *     batch parameters define to not auto-enable international attribute, false will be returned.
      *
      * @param Entity        $merchant
      *
@@ -2840,26 +2861,24 @@ class Core extends Base\Core
         return $merchantIdToPartnerBankAccountMap;
     }
 
+    /**
+     * @param Entity $merchant
+     *
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
     protected function internationalEnable(Entity $merchant)
     {
-        if ($merchant->isInternational() === true)
+        (new Validator())->validateBeforeEnablingInternationalByMerchant($merchant);
+
+        $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
+
+        $shouldActivateInternational = $this->shouldActivateInternational($merchant, $merchantDetails);
+
+        if ($shouldActivateInternational === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_INTERNATIONAL);
+            (new Detail\InternationalCore())->activateInternational($merchant);
         }
-
-        $merchantDetails = $merchant->merchantDetail;
-
-        // Since website is not synced between merchant and merchant_detail,
-        // thereofre checking for both
-        if ((empty($merchant->getWebsite()) === true) and
-            (empty($merchantDetails->getWebsite()) === true))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET);
-        }
-
-        $this->activateInternationalIfApplicable($merchant, $merchantDetails);
 
         $this->repo->saveOrFail($merchant);
     }
@@ -2872,9 +2891,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED);
         }
 
-        $merchant->disableInternational();
-
-        $merchant->setCurrencyConversion(null);
+        (new Detail\InternationalCore())->deactivateInternational($merchant);
 
         $this->repo->saveOrFail($merchant);
     }

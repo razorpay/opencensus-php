@@ -140,6 +140,8 @@ class Kotak extends Base
             $data = $this->addGatewayEntitiesToData($data, $entities);
         }
 
+        $this->checkIfRefundsAreInValidDateRange($data);
+
         return $data;
     }
 

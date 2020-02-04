@@ -1389,6 +1389,7 @@ return [
                             ],
                     ]
                 ],
+                'is_inheritance_parent' =>  false,
             ],
         ],
     ],

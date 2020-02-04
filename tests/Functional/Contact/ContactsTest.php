@@ -5,9 +5,11 @@ namespace RZP\Tests\Functional\Contacts;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class ContactsTest extends TestCase
 {
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -24,12 +26,22 @@ class ContactsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     public function testFetchContacts()
     {
         $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);
         $this->fixtures->create('contact', ['id' => '1000002contact', 'name' => 'Contact Y']);
+
+        $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -47,6 +59,42 @@ class ContactsTest extends TestCase
     public function testCreateContact()
     {
         $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testContactsWithExpiredKey()
+    {
+        $this->fixtures->key->edit('TheTestAuthKey', ['expired_at' => time()]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        // Create Contact
+        $data['request']['url'] = '/contacts';
+        $data['request']['method'] = 'POST';
+
+        $this->startTest($data);
+
+        // Fetch Contacts
+        $data['request']['url'] = '/contacts';
+        $data['request']['method'] = 'GET';
+
+        $this->startTest($data);
+
+        // GET Contact
+        $data['request']['url'] = '/contacts/1000000contact';
+        $data['request']['method'] = 'GET';
+
+        $this->startTest($data);
+
+        // GET Contact
+        $data['request']['url'] = '/contacts/1000000contact';
+        $data['request']['method'] = 'PATCH';
+
+        $this->startTest($data);
     }
 
     public function testCreateContactWithoutName()
@@ -131,11 +179,21 @@ class ContactsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
 
         $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     public function testDeleteContact()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -306,6 +364,36 @@ class ContactsTest extends TestCase
         return $this->runRequestResponseFlow($testdata);
     }
 
+    public function testGetContactPublic()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Contact X']);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactBulk()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testCreateContactBulkPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testDeactivateContact()
     {
         $this->testCreateContact();
@@ -411,6 +499,20 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateContactBulkWithoutBatchId()
+    {
+        $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
     public function testCreateBulkContactsInvalidName()
     {
         $this->ba->batchAuth();
@@ -437,4 +539,58 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddCustomContactTypeRZPFees()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateRZPFeesTypeContact()
+    {
+        $this->startTest();
+    }
+
+    public function testUpdateRZPFeesContact()
+    {
+        $this->testCreateContact();
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->fixtures->edit('contact', $contact->getId(), ['type' => 'rzp_fees']);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/contacts/' . $contact->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testUpdateContactTypeToRZPFeesContact()
+    {
+        $this->testCreateContact();
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/contacts/' . $contact->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithAlphabet()
+    {
+        $this->startTest();
+    }
+
+    public function testUpdateContactWithAlphabet()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
+
+        $this->startTest();
+
+        // Test with Proxy Auth
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
 }

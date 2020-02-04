@@ -43,4 +43,31 @@ class TransactionController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function toggleTransactionHold()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->toggleTransactionHold($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function toggleTransactionRelease()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->toggleTransactionRelease($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function mdrAdjustmentCalculation()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->mdrAdjustmentCalculation($input);
+
+        return ApiResponse::json($response);
+    }
 }

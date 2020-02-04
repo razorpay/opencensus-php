@@ -360,4 +360,16 @@ class Generator extends Base\Core
 
         $this->options[self::NUMERIC] = boolval($this->options[self::NUMERIC]);
     }
+
+    public function getConfigs(VirtualAccount\Entity $virtualAccount)
+    {
+        $bankAccount = $this->buildBankAccountEntity($virtualAccount);
+
+        $terminal = $this->getTerminalForBankAccount($bankAccount);
+
+        return [
+            'prefix'              => $this->getRoot($terminal) . $this->getHandle($terminal),
+            'isDescriptorEnabled' => ($terminal->isShared() === false),
+        ];
+    }
 }

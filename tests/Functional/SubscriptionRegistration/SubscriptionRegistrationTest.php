@@ -234,6 +234,8 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($payment->getPublicId(), $content['razorpay_payment_id']);
 
         $this->assertEquals($payment->getAmount(), 2000);
+
+        $this->assertArrayNotHasKey('order_id', $content);
     }
 
     public function testChargeEmandateToken()
@@ -557,5 +559,28 @@ class SubscriptionRegistrationTest extends TestCase
         $invoice = $this->fixtures->create('invoice', $invoiceAtrributes);
 
         $this->startTest();
+    }
+
+    public function testChargeTokenFromBatch()
+    {
+        $paymentRequest = $this->setupPaymentRequest();
+
+        $this->doAuthPayment($paymentRequest);
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->ba->batchAuth();
+
+        $chargeContent = ['amount' => 2000, 'receipt' => '1234', 'description' => 'abc'];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/subscription_registration/tokens/'.$token->getPublicId().'/charge',
+            'content' => $chargeContent
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($content['order_id']);
     }
 }

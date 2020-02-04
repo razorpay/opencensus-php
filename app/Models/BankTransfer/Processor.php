@@ -4,11 +4,15 @@ namespace RZP\Models\BankTransfer;
 
 use App;
 use Cache;
+use Config;
 use Exception;
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Admin\ConfigKey;
@@ -23,6 +27,12 @@ use RZP\Models\Payment\Processor\TerminalProcessor;
 class Processor extends VirtualAccount\Processor
 {
     const PAYER_BANK_ACCOUNT_MAX_LENGTH = 20;
+
+    /*
+     * This constant is to raise an alert to the finops team if merchant loads an amount greater than or equal to
+     * 5000000000 (5cr in paise) to his virtual account (for banking product).
+     */
+    const AMOUNT_THRESHOLD_FOR_BANKING = 5000000000;
 
     /**
      * Check if the UTR received has ever been encountered before for the same
@@ -174,6 +184,34 @@ class Processor extends VirtualAccount\Processor
         $this->virtualAccount->updateWithBankTransferForBanking($bankTransfer);
 
         $this->repo->saveOrFail($this->virtualAccount);
+
+        if ($bankTransfer->getAmount() >= self::AMOUNT_THRESHOLD_FOR_BANKING)
+        {
+            $this->trace->info(TraceCode::AMOUNT_THRESHOLD_FOR_BANKING_ALERT,
+                [
+                    'bank_transfer_id'   => $bankTransfer->getId(),
+                    'virtual_account_id' => $this->virtualAccount->getId(),
+                    'amount'             => $bankTransfer->getAmount(),
+                    'merchant_id'        => $bankTransfer->getMerchantId(),
+                    'time'               => Carbon::now(Timezone::IST)->getTimestamp(),
+                ]);
+
+            $message = "Merchant load greater than " . self::AMOUNT_THRESHOLD_FOR_BANKING . " for banking product";
+
+            $data = [
+                'amount'      => $bankTransfer->getAmount(),
+                'merchant_id' => $bankTransfer->getMerchantId(),
+                'time'        => Carbon::now(Timezone::IST)->getTimestamp(),
+            ];
+
+            $this->app['slack']->queue(
+                $message,
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.x_finops'),
+                ]
+            );
+        }
     }
 
     protected function setGateway(Payment\Entity $payment, string $provider)

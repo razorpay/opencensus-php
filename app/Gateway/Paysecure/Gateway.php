@@ -637,6 +637,16 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ErrorCodes\ErrorCodes::getInternalErrorCode($response);
 
+            $safeRetry = true;
+
+            if (($errorCode === ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE) and
+                ($response[Fields::ERROR_CODE] === ErrorCodes\ErrorCodes::EC_412))
+            {
+                $safeRetry = false;
+
+                $errorCode = ErrorCode::GATEWAY_ERROR_CARD_NOT_ENROLLED;
+            }
+
             // If the request fails in any of the s2s requests with error code
             // we should not add these payments in verify cron, since the transaction
             // status api only works
@@ -651,7 +661,7 @@ class Gateway extends Base\Gateway
                 ],
                 null,
                 Action::AUTHENTICATE,
-                true);
+                $safeRetry);
         }
     }
 
@@ -732,5 +742,15 @@ class Gateway extends Base\Gateway
         ];
 
         return $acquirer;
+    }
+
+    protected function getCacheKey($input)
+    {
+        return sprintf(self::CACHE_KEY, $input['payment']['id']);
+    }
+
+    protected function getCardCacheTtl($input)
+    {
+        return 60 * 24 * 10;
     }
 }

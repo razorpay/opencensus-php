@@ -149,6 +149,8 @@ class ErrorCodeMapping
         'NRE_ACCOUNT'                    => 'Beneficiary Account is NRE. Please check and retry.',
         'BENEFICIARY_NAME_MISMATCH'      => 'Beneficiary Name Mismatch. Please check and retry.',
         'INVALID_BENEFICIARY_ACCOUNT'    => 'Invalid Beneficiary Account. Please check and retry.',
+        'TECHNICAL_ERROR_FAILURE'        => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
+        'PBANK_BENE_NOT_REGISTERED'      => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
     ];
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)

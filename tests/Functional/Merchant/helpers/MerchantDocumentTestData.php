@@ -177,6 +177,28 @@ return [
             'content' => [
                 'document_type' => ''
             ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'documents' => [
+                ],
+            ]
+        ]
+    ],
+
+    'testDocUploadAndCheckOcrStatusSuccess' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => ''
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [

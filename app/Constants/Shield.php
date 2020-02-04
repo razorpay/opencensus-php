@@ -18,6 +18,8 @@ final class Shield
     const MERCHANT_RISK_THRESHOLD      = 'merchant_risk_threshold';
     const MERCHANT_WEBSITE             = 'merchant_website';
     const MERCHANT_WHITELISTED_DOMAINS = 'whitelisted_domains';
+    const MERCHANT_CREATED_AT          = 'merchant_created_at';
+    const MERCHANT_ACTIVATED_AT        = 'merchant_activated_at';
     const ID                           = 'id';
     const AMOUNT                       = 'amount';
     const CURRENCY                     = 'currency';
@@ -60,6 +62,14 @@ final class Shield
     const CHECKOUT_ID                  = 'checkout_id';
     const FRONTEND_FP_HASH             = 'frontend_fp_hash';
     const UPI_TYPE                     = 'upi_type';
+    const SUBSCRIPTION_ID              = 'subscription_id';
+    const PAYMENT_LINK_ID              = 'payment_link_id';
+    const ORDER_ID                     = 'order_id';
+    const AUTH_TYPE                    = 'auth_type';
+    const RECEIVER_TYPE                = 'receiver_type';
+    const INVOICE_TYPE                 = 'invoice_type';
+    const INVOICE_ENTITY_TYPE          = 'invoice_entity_type';
+    const INTEGRATION                  = 'integration';
 
     // Response constants
     const ACTION_KEY              = 'action';

@@ -63,6 +63,11 @@ class BeamJob extends Job
     protected $mock;
 
     /**
+     * @var int time (in seconds) after which the job is killed.
+     */
+    public $timeout = 300;
+
+    /**
      * BeamJob constructor.
      * Here, mailinfo requires [recipient,subject,body]
      * @param array $request

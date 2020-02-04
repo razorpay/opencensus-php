@@ -29,7 +29,12 @@ class IrctcBatch extends Job
      */
     protected $batches;
 
-    public $timeout = 3600;
+    /**
+     * Increasing timeout to 2 hrs to avoid
+     * termination of batches.
+     * @var int
+     */
+    public $timeout = 7200;
 
     public function __construct(string $mode, array $batches)
     {
