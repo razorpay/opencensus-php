@@ -271,54 +271,51 @@ export default class ActivationWizard extends React.Component {
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
     const prepareFileFields = a => {
-      if (a._cmp === undefined || a._cmp === Input.File) {
-        a._cmp = Input.File;
-        a._accept = ['pdf', 'image'];
-        a._showAcceptInfo = false;
-        a._showStagedFileStatus = false;
+      a._cmp = Input.File;
+      a._accept = ['pdf', 'image'];
+      a._showAcceptInfo = false;
+      a._showStagedFileStatus = false;
 
-        if (!a.hasOwnProperty('required')) {
-          a.required = true;
-        }
-
-        a.onChange = (file, progressTracker) => {
-          const filename = a.getName ? a.getName(this) : a.name;
-          tracking.trackEvent(
-            window.rzpQ.onbr().initiated(`kyc.upload_document_${filename}`, {
-              name: filename,
-            })
-          );
-
-          return props
-            .saveFile(
-              filename,
-              file,
-              progressTracker,
-              a.destinationUrl || null,
-              a.uploadAs || null
-            )
-            .then(() => {
-              updateHubSpotContactsProperties({
-                [filename]: true,
-              });
-
-              tracking.trackEvent(
-                window.rzpQ.onbr().initiated('kyc.upload_document', {
-                  name: filename,
-                })
-              );
-
-              this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-              this.updateFileInDirty(filename);
-            });
-        };
+      if (!a.hasOwnProperty('required')) {
+        a.required = true;
       }
+
+      a.onChange = (file, progressTracker) => {
+        const filename = a.getName ? a.getName(this) : a.name;
+        tracking.trackEvent(
+          window.rzpQ.onbr().initiated(`kyc.upload_document_${filename}`, {
+            name: filename,
+          })
+        );
+
+        return props
+          .saveFile(
+            filename,
+            file,
+            progressTracker,
+            a.destinationUrl || null,
+            a.uploadAs || null
+          )
+          .then(() => {
+            updateHubSpotContactsProperties({
+              [filename]: true,
+            });
+
+            tracking.trackEvent(
+              window.rzpQ.onbr().initiated('kyc.upload_document', {
+                name: filename,
+              })
+            );
+
+            this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+            this.updateFileInDirty(filename);
+          });
+      };
     };
     /*
      * All document fields in activation form to have same footprint.
      * Adding onChange listener to all document upload fields.
      * */
-
     DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(prepareFileFields);
     NEEDS_CLARIFICATION_STEP &&
@@ -1243,10 +1240,12 @@ export default class ActivationWizard extends React.Component {
             // Input fields are uncontrolled, so needs to be updated directly. Updating dependent field visible in view.
             document.querySelector(
               `.form-container [name=${cityField}]`
-            ).value = data.city;
+            ).value =
+              data.city;
             document.querySelector(
               `.form-container [name=${stateField}]`
-            ).value = data.state_code;
+            ).value =
+              data.state_code;
 
             this.setState({
               dirty: {
@@ -1497,11 +1496,12 @@ export default class ActivationWizard extends React.Component {
           </main-title>
 
           {/* Alert: For linked account if activated */}
-          {this.isLinkedAccountForm && isFormActivated && (
-            <Alert.Info iconBefore="i-done-all">
-              The account has been activated
-            </Alert.Info>
-          )}
+          {this.isLinkedAccountForm &&
+            isFormActivated && (
+              <Alert.Info iconBefore="i-done-all">
+                The account has been activated
+              </Alert.Info>
+            )}
 
           {/* Alerts: for MAIN activation form */}
           {do {
@@ -1619,23 +1619,24 @@ export default class ActivationWizard extends React.Component {
         </main>
 
         {/* Submit form overlay view, Lock check not necessary here. Just ensured, 'Submit Form' checkbox must be disabled if locked */}
-        {!isFormSubmitted && this.state.showSubmitLayer && (
-          <main
-            className={classList(
-              'overlay-container',
-              isFormLocked && 'main--full'
-            )}
-          >
-            <SubmitForm
-              closeActivationForm={() => {
-                this.goto(FORM_TABS.length - 1);
-              }}
-              isFormLocked={isFormLocked}
-              isLinkedAccount={this.isLinkedAccountForm}
-              submitActivationForm={this.submitForm}
-            />
-          </main>
-        )}
+        {!isFormSubmitted &&
+          this.state.showSubmitLayer && (
+            <main
+              className={classList(
+                'overlay-container',
+                isFormLocked && 'main--full'
+              )}
+            >
+              <SubmitForm
+                closeActivationForm={() => {
+                  this.goto(FORM_TABS.length - 1);
+                }}
+                isFormLocked={isFormLocked}
+                isLinkedAccount={this.isLinkedAccountForm}
+                submitActivationForm={this.submitForm}
+              />
+            </main>
+          )}
 
         {/* Form Footer, to show actions btns / saving state */}
         {!isFormLocked && (
@@ -1665,16 +1666,20 @@ export default class ActivationWizard extends React.Component {
                   ))}
 
                 {/* Action Button 3 */}
-                {isLastTab && activeTab == BUSINESS_DETAILS_STEP && (
-                  <AsyncBtn.Primary
-                    disabled={!this.canSubmitL1Form || this.state.callingAPI}
-                    onClick={this.submitL1}
-                    pendingState={this.isUnregBiz ? 'Verifying' : 'Submitting'}
-                    name="submit-and-verify"
-                  >
-                    {this.isUnregBiz ? 'Submit and Verify' : 'Submit'}
-                  </AsyncBtn.Primary>
-                )}
+                {isLastTab &&
+                  activeTab == BUSINESS_DETAILS_STEP &&
+                  !this.isLinkedAccountForm && (
+                    <AsyncBtn.Primary
+                      disabled={!this.canSubmitL1Form || this.state.callingAPI}
+                      onClick={this.submitL1}
+                      pendingState={
+                        this.isUnregBiz ? 'Verifying' : 'Submitting'
+                      }
+                      name="submit-and-verify"
+                    >
+                      {this.isUnregBiz ? 'Submit and Verify' : 'Submit'}
+                    </AsyncBtn.Primary>
+                  )}
 
                 {/* Action Button 4 */}
                 {isLastTab &&
@@ -1721,10 +1726,11 @@ export default class ActivationWizard extends React.Component {
     if (i === NEEDS_CLARIFICATION_STEP) {
       return false;
     }
-    return FORM_TABS_CONTENT[i].every(c =>
-      Array.isArray(c)
-        ? c.every(d => isFieldValid(d, this))
-        : isFieldValid(c, this)
+    return FORM_TABS_CONTENT[i].every(
+      c =>
+        Array.isArray(c)
+          ? c.every(d => isFieldValid(d, this))
+          : isFieldValid(c, this)
     );
   }
 }
@@ -1887,16 +1893,18 @@ function ActivationField(field) {
   }
   return (
     <>
-      {this.isOnKYCTab() && rest.reasons && rest.reasons.length > 0 && (
-        <div className="ndc-reasons">
-          {rest.reasons.map((r, i) => (
-            <div key={i}>
-              <i className="i i-info-circle" />
-              <div>{r}</div>
-            </div>
-          ))}
-        </div>
-      )}
+      {this.isOnKYCTab() &&
+        rest.reasons &&
+        rest.reasons.length > 0 && (
+          <div className="ndc-reasons">
+            {rest.reasons.map((r, i) => (
+              <div key={i}>
+                <i className="i i-info-circle" />
+                <div>{r}</div>
+              </div>
+            ))}
+          </div>
+        )}
       <Component
         key={key}
         data-name={_name}
