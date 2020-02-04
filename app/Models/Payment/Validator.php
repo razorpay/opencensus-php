@@ -683,7 +683,8 @@ class Validator extends Base\Validator
 
         $baseAmount = $amount;
 
-        if ($currency != Currency::INR)
+        if (($currency != Currency::INR) and
+            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === true))
         {
             $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
         }
