@@ -315,11 +315,11 @@ class Service extends Base\Service
 
     private function fillFeeBreakupValues(& $response, $prefix, $feeBreakups)
     {
-        $response[$prefix . "payment"] = 0;
+        $response[$prefix . 'payment'] = 0;
 
-        $response[$prefix . "tax"] = 0;
+        $response[$prefix . 'tax'] = 0;
 
-        $response[$prefix . "esautomatic"] = 0;
+        $response[$prefix . 'esautomatic'] = 0;
 
 
         foreach ($feeBreakups as $feeBreakup)
