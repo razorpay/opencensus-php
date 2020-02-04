@@ -26,8 +26,8 @@ use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
-use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
+use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
 
 class Core extends Base\Core
 {
@@ -429,7 +429,12 @@ class Core extends Base\Core
                                 $input[Entity::SOURCE_TYPE],
                                 true);
 
-                $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
+                // Set fts_transfer_id only in live mode
+                // because in test mode we don't call FTS service
+                if ($this->isLiveMode() === true)
+                {
+                    $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
+                }
             }
 
             if (AttemptStatus::isValidStateTransition($fta->getStatus(), $input[Entity::STATUS]) === false) {

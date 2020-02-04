@@ -173,4 +173,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updateTestPayoutStatus(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateTestPayoutStatus($id, $input);
+
+        return ApiResponse::json($response);
+    }
 }

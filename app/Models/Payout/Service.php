@@ -36,7 +36,7 @@ class Service extends Base\Service
     protected $fundAccountService;
 
     /**
-     * @var ContactCore
+     * @var Contact\Core
      */
     protected $contactCore;
 
@@ -521,6 +521,32 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::BATCH_SERVICE_PAYOUT_BULK_REQUEST, $payoutBatch->toArrayWithItems());
 
         return $payoutBatch->toArrayWithItems();
+    }
+
+    /**
+     * This route has been added to update payout status in test mode
+     * Since we don't actually hit the banks in test mode
+     * In live mode this is taken care of by FTS
+     *
+     * @param string $id
+     * @param array  $input
+     * @return array
+     */
+    public function updateTestPayoutStatus(string $id, array $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_STATUS_UPDATE_REQUEST,
+            [
+                'payout_id' => $id,
+                'input'     => $input
+            ]);
+
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payout = $this->core->updateTestPayoutStatus($payout, $input);
+
+        return $payout->toArrayPublic();
     }
 
     protected function getQueuedPayoutsSummary()
