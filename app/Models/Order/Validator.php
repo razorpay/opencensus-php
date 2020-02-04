@@ -56,9 +56,9 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         Entity::ACCOUNT_NUMBER,
         Entity::BANK,
+        Entity::CURRENCY,
         Entity::AMOUNT,
         'method_fee_bearer',
-        Entity::CURRENCY,
         Entity::DISCOUNT,
     ];
 
@@ -99,8 +99,7 @@ class Validator extends Base\Validator
 
         $baseAmount = $amount;
 
-        if (($currency != Currency::INR) and
-            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === true))
+        if ($currency != Currency::INR)
         {
             $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
         }
