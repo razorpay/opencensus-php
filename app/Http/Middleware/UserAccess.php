@@ -204,11 +204,17 @@ class UserAccess
      *
      * @param $route
      *
-     * @return void
      */
-    private function validateBankingUserRoutePolicy($route) : string
+    private function validateBankingUserRoutePolicy($route)
     {
         $userRole = $this->ba->getUserRole();
+
+        // If no role was sent in the headers
+        if (empty($userRole) === true)
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING);
+        }
 
         // Get Role Permissions
         $userRolePermissions = $this->userRolePermissionsMap->getRolePermissions($userRole);
@@ -229,14 +235,12 @@ class UserAccess
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
 
-        // If route permission in role permissions then allow or deny
-        if (in_array($routePermission, $userRolePermissions, true) === true)
+        // If route permission not in role permissions then deny otherwise allow
+        if (in_array($routePermission, $userRolePermissions, true) === false)
         {
-            return;
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
-
-        return ApiResponse::unauthorized(
-            ErrorCode::BAD_REQUEST_UNAUTHORIZED);
     }
 
     private function getRoutePermission(string $routeName)
