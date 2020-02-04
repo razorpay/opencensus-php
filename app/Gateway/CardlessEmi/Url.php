@@ -25,6 +25,7 @@ class Url
     const CAPTURE_ZESTMONEY          = '/payments/capture';
     const VERIFY_ZESTMONEY           = '/payments/verify';
     const REFUND_ZESTMONEY           = '/payments/refund';
+    const VERIFY_REFUND_ZESTMONEY    = '/refunds/verify';
 
     // Flex Money Urls
     const TEST_DOMAIN_FLEXMONEY      = 'https://staging.instacred.me/app';
