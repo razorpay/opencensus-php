@@ -72,6 +72,7 @@ class RblBankingAccountStatementTest extends TestCase
             'bank_reference_number' => '',
             'account_ifsc'          => 'RATN0000156',
             'balance_id'            => $balanceId,
+            'status'                => 'activated'
         ]);
     }
 
