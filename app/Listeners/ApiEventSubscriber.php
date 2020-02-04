@@ -1170,7 +1170,6 @@ class ApiEventSubscriber extends Base\Core
         $listeningMerchant = $this->getListeningMerchant($entity);
         $signedAccountId = Merchant\Account\Entity::getSignedId($listeningMerchant->getId());
 
-
         $attributes = array(
             Event\Entity::EVENT      => $eventFired,
 
