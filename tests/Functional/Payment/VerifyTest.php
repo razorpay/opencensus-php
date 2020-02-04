@@ -1390,8 +1390,11 @@ class VerifyTest extends TestCase
         Redis::shouldReceive('incr')
             ->andReturn(1);
 
-         Redis::shouldReceive('expire')
+        Redis::shouldReceive('expire')
             ->andReturn(true);
+
+        Redis::shouldReceive('exists')
+            ->andReturn(0);
 
         $redisMock->method('set')->will($this->returnCallback(function ($resourceId, $requestId) use ($paymentArray)
         {
