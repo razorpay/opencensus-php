@@ -25,6 +25,7 @@ class CardPaymentService
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
     const X_RAZORPAY_MODE_HEADER   = 'X-Razorpay-Mode';
     const X_REQUEST_ID             = 'X-Request-ID';
+    const X_TESTCASE_ID            = 'X-TESTCASE-ID';
 
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
@@ -75,6 +76,16 @@ class CardPaymentService
         $defaultHeaders = $this->getDefaultHeaders();
 
         $defaultOptions = $this->getDefaultOptions();
+
+
+        if ($this->app->environment('production') === false)
+        {
+            $this->trace->info(TraceCode::PAYMENT_NEW_REQUEST, [$this->app['request']]);
+            $testCaseId = $this->app['request']->header('X-TESTCASE-ID') ?? null;
+            $defaultHeaders[self::X_TESTCASE_ID ] = $testCaseId ;
+            $this->trace->info(TraceCode::PAYMENT_NEW_REQUEST, $defaultHeaders);
+        }
+
 
         $request = new Requests_Session($baseUrl, $defaultHeaders, [], $defaultOptions);
 
@@ -127,6 +138,8 @@ class CardPaymentService
             self::ACCEPT_HEADER            => self::APPLICATION_JSON,
             self::X_RAZORPAY_APP_HEADER    => 'api',
         ];
+
+
 
         return $headers;
     }
@@ -224,6 +237,14 @@ class CardPaymentService
                 self::X_REQUEST_ID             => $this->app['request']->getId(),
             ],
         ];
+
+        if ($this->app->environment('production') === false)
+        {
+
+            $testCaseId = $this->app['request']->header('X-TESTCASE-ID') ?? null;
+            $request['headers'][self::X_TESTCASE_ID] = $testCaseId ;
+            $this->trace->info(TraceCode::PAYMENT_NEW_REQUEST, [ "my input" , $request]);
+        }
 
         $this->traceRequest($request);
 

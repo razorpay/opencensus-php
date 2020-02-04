@@ -58,4 +58,8 @@ class RequestHeader
 
     const AUTHORIZATION                 = 'AUTHORIZATION';
     const BEARER                        = 'Bearer';
+
+    // For testing purpose
+    const X_TESTCASE_ID                   = 'X-TESTCASE-ID';
+
 }
