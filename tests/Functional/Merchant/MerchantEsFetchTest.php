@@ -231,6 +231,20 @@ class MerchantEsFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMerchantsFromEsByActivationSource()
+    {
+        $this->fixtures->merchant->edit('10000000000014', ['activation_source' => 'banking']);
+
+        Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'merchant']);
+        Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'merchant']);
+
+        $requestToken = $this->getAdminRequestToken('10000000000011');
+
+        $this->ba->adminAuth('test', $requestToken);
+
+        s($this->startTest());
+    }
+
     /**
      * - Start tests for given callee after setting up authentication for given
      *   admin id.
