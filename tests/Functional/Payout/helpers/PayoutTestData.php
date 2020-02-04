@@ -1723,7 +1723,7 @@ return [
                         'fund_account_id' => 'fa_100000000000fa',
                         'narration'       => 'Batman',
                         'purpose'         => 'refund',
-                        'status'          => 'processed',
+                        'status'          => 'processing',
                         'tax'             => 162,
                         'fees'            => 1062,
                         'notes'           => [
@@ -1863,7 +1863,7 @@ return [
                         'currency'                  => 'INR',
                         'fees'                      => 590,
                         'tax'                       => 90,
-                        'status'                    => 'processed',
+                        'status'                    => 'processing',
                         'purpose'                   => 'refund',
                         'user_id'                   => null,
                         'mode'                      => 'IMPS',

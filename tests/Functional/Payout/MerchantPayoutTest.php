@@ -107,6 +107,8 @@ class MerchantPayoutTest extends TestCase
 
     public function testRetryMerchantOnDemandPayout()
     {
+        $this->markTestSkipped();
+
         $payout = $this->testCreateMerchantPayoutOnDemand();
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);

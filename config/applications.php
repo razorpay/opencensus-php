@@ -219,6 +219,15 @@ return [
         'appId'     => env('EXCHANGE_APP_ID')
     ],
 
+    'freshdesk' => [
+        'url'           => env('FRESHDESK_URL'),
+        'sandbox'       => env('FRESHDESK_SANDBOX', false),
+        'sandbox_url'   => env('FRESHDESK_SANDBOX_URL'),
+        'token'         => env('FRESHDESK_TOKEN'),
+        'sandbox_token' => env('FRESHDESK_SANDBOX_TOKEN'),
+        'mock'          => env('FRESHDESK_MOCK', false),
+    ],
+
     'zoho' => [
         'header'    => env('ZOHO_HEADER'),
     ],
