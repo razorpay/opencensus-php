@@ -602,12 +602,6 @@ class VerifyTest extends TestCase
     {
         $this->setupRedisMock();
 
-        Redis::shouldReceive('exists')
-            ->andReturnUsing(function ()
-            {
-                return null;
-            });
-
         $data = $this->testData['testTimeoutPaymentVerify'];
 
         $this->getErrorInCallback();
@@ -651,12 +645,6 @@ class VerifyTest extends TestCase
     public function testErrorPaymentVerify()
     {
         $this->setupRedisMock();
-
-        Redis::shouldReceive('exists')
-            ->andReturnUsing(function ()
-            {
-                return null;
-            });
 
         $data = $this->testData['testTimeoutPaymentVerify'];
 
@@ -728,12 +716,6 @@ class VerifyTest extends TestCase
     public function testTimeoutPaymentVerify()
     {
         $this->setupRedisMock();
-
-        Redis::shouldReceive('exists')
-            ->andReturnUsing(function ()
-            {
-                return null;
-            });
 
         $data = $this->testData['testTimeoutPaymentVerify'];
 
@@ -1006,12 +988,6 @@ class VerifyTest extends TestCase
     {
         $this->setupRedisMock();
 
-        Redis::shouldReceive('exists')
-            ->andReturnUsing(function ()
-            {
-                return null;
-            });
-
         $filter = 'payments_failed';
 
         $data = $this->testData['testTimeoutPaymentVerify'];
@@ -1078,12 +1054,6 @@ class VerifyTest extends TestCase
     public function testPaymentVerifyRetry()
     {
         $this->setupRedisMock();
-
-        Redis::shouldReceive('exists')
-            ->andReturnUsing(function ()
-            {
-                return null;
-            });
 
         $filter = 'payments_failed';
 
