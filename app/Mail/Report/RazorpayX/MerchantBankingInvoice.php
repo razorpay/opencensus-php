@@ -48,9 +48,9 @@ class MerchantBankingInvoice extends Mailable
 
         return $this->with('month', $this->getMonthName($this->data[self::MONTH]))
                     ->with('year', $this->data[self::YEAR])
-                    ->with('amount', $this->data[BankingInvoiceReport::SUMMARY_TITLE]
-                                                [BankingInvoiceReport::ROWS]
-                                                [BankingInvoiceReport::AMOUNT])
+                    ->with('amount', $this->data[BankingInvoiceReport::ROWS]
+                                                [BankingInvoiceReport::COMBINED]
+                                                [BankingInvoiceReport::GRAND_TOTAL])
                     ->with('invoice_link', $this->data[self::FILE_DOWNLOAD_URL])
                     ->with('ticket', self::SUPPORT_TICKET_URL);
     }
