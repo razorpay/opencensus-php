@@ -233,7 +233,12 @@ class Service extends Base\Service
 
             $pricingFee->setMerchant($payment->merchant);
 
-            [$newFee, $newTax] = $pricingFee->calculateMerchantFees($payment);
+            [$newFee, $newTax, $newFeeSplit] = $pricingFee->calculateMerchantFees($payment);
+
+            $this->fillFeeBreakupValues($response, 'new_', $newFeeSplit);
+
+            $this->fillFeeBreakupValues($response, 'old_', (new FeeBreakup\Repository)->fetchByTransactionId($transactionId));
+
 
             $isDebitLessThan2k = $payment->getBaseAmount() < 2000 * 100 ? true : false;
 
@@ -305,5 +310,21 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    private function fillFeeBreakupValues(& $response, $prefix, $feeBreakups)
+    {
+        $response[$prefix . "payment"] = 0;
+
+        $response[$prefix . "tax"] = 0;
+
+        $response[$prefix . "esautomatic"] = 0;
+
+
+        foreach ($feeBreakups as $feeBreakup)
+        {
+            $response[$prefix . $feeBreakup->getName()] = $feeBreakup->getAmount();
+        }
+
     }
 }
