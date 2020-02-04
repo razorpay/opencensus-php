@@ -1,14 +1,19 @@
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import Form from 'common/new-ui/Form';
 import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Alert from 'common/new-ui/Alert';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
-import { autoPrefixUrls, isPresent, prevent } from 'common/utils/rzp-utils';
+import {
+  autoPrefixUrls,
+  isPresent,
+  prevent,
+  classList,
+} from 'common/utils/rzp-utils';
 import { trackDiffInFormFields } from 'merchant/utils/track-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { classList } from 'common/utils/rzp-utils';
+
 import {
   addDropShield,
   removeDropShield,
@@ -41,7 +46,7 @@ import {
   submitL1FormSuccess,
 } from 'merchant/reducers/activationWizard';
 import User from 'merchant/models/User';
-import { withRouter } from 'react-router-dom';
+
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   validatePANCardUnregBiz,
@@ -114,14 +119,14 @@ function defaultFieldProps(f) {
   }
 }
 
-let NEEDS_CLARIFICATION_STEP; // To handle specific case for needs clarification screen
-let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
-let BANK_ACCOUNT_TAB; // To handle specific case for bank account step
+let NEEDS_CLARIFICATION_STEP, // To handle specific case for needs clarification screen
+  DOCUMENT_UPLOAD_STEP, // To handle specific case for document step
+  BANK_ACCOUNT_TAB; // To handle specific case for bank account step
 const BUSINESS_TYPE_FORM_STEP = 1; // If NGO is selected, then Document Upload would have 2 more fields
 const BUSINESS_DETAILS_STEP = 2;
-let FORM_TABS; // Maintains naming of the tabs
-let FORM_TABS_CONTENT; // Actual tab content corresponding to FORM_TABS
-let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
+let FORM_TABS, // Maintains naming of the tabs
+  FORM_TABS_CONTENT, // Actual tab content corresponding to FORM_TABS
+  FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
 const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
 
@@ -224,8 +229,8 @@ export default class ActivationWizard extends React.Component {
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
       if (
-        props.data['activation_status'] === 'needs_clarification' &&
-        props.data['kyc_clarification_reasons']
+        props.data.activation_status === 'needs_clarification' &&
+        props.data.kyc_clarification_reasons
       ) {
         if (FORM_TABS.indexOf('Needs Clarification') === -1) {
           FORM_TABS.push('Needs Clarification');
@@ -365,10 +370,10 @@ export default class ActivationWizard extends React.Component {
 
   setInitialTab() {
     let firstInValid = null;
-    let isFormSubmitted = !!this.props.data.submitted; // Linked accounts form can still be seen after activation.
+    const isFormSubmitted = !!this.props.data.submitted; // Linked accounts form can still be seen after activation.
 
     for (let i = 0; i < FORM_TABS.length; i++) {
-      let tabStatusValid = this.tabValidity(i);
+      const tabStatusValid = this.tabValidity(i);
 
       if (!tabStatusValid && firstInValid === null) {
         firstInValid = i;
@@ -398,8 +403,8 @@ export default class ActivationWizard extends React.Component {
   }
 
   markTabIfActive(updatedTabId) {
-    let isValid = this.tabValidity(updatedTabId);
-    let tabs = this.state.tabs.slice();
+    const isValid = this.tabValidity(updatedTabId);
+    const tabs = this.state.tabs.slice();
 
     tabs[updatedTabId] = isValid;
 
@@ -558,7 +563,7 @@ export default class ActivationWizard extends React.Component {
       activeTab: newActiveTab,
     });
 
-    let shouldSave = Object.keys(this.state.dirty).length ? true : null;
+    const shouldSave = Object.keys(this.state.dirty).length ? true : null;
     if (!shouldSave) {
       this.updateFEOnlyValues();
 
@@ -799,12 +804,12 @@ export default class ActivationWizard extends React.Component {
 
   get canSubmitL1Form() {
     const promoterPan =
-      this.state.dirty['promoter_pan'] || this.props.data['promoter_pan'];
-    let showCompanyName = this.props.user.isCompanyNameHiddenRazorX,
-      businessName =
-        this.state.dirty['business_name'] || this.props.data['business_name'],
-      contactName =
-        this.state.dirty['contact_name'] || this.props.data['contact_name'];
+      this.state.dirty.promoter_pan || this.props.data.promoter_pan;
+    const showCompanyName = this.props.user.isCompanyNameHiddenRazorX;
+    const businessName =
+      this.state.dirty.business_name || this.props.data.business_name;
+    const contactName =
+      this.state.dirty.contact_name || this.props.data.contact_name;
 
     return (
       !hasSelectedBlacklistedCategory(this) &&
@@ -825,7 +830,7 @@ export default class ActivationWizard extends React.Component {
     if (isTabSwitched) {
       const latestDirty = { ...this.state.dirty };
 
-      delete latestDirty['bank_account_number']; // Remove 'bank_account_number', so there is no attempt to save repeatedly
+      delete latestDirty.bank_account_number; // Remove 'bank_account_number', so there is no attempt to save repeatedly
 
       this.setState({
         dirty: latestDirty,
@@ -923,7 +928,7 @@ export default class ActivationWizard extends React.Component {
     this.setState({ callingAPI: true });
 
     try {
-      let response = await this.props.submitL1Form({
+      const response = await this.props.submitL1Form({
         data,
         accountId: this.props.accountId,
       });
@@ -1044,7 +1049,7 @@ export default class ActivationWizard extends React.Component {
             type: false,
           });
       } else {
-        let compAllData = new BingDataObj('kycform', 'complete', 'all', 1);
+        const compAllData = new BingDataObj('kycform', 'complete', 'all', 1);
 
         /**
          * Fire fb, bing, linkedin, quora, reddit & twitter events
@@ -1059,10 +1064,10 @@ export default class ActivationWizard extends React.Component {
         });
 
         let conversionId, txnId;
-        if ('greylist' === data.data.activation_flow) {
+        if (data.data.activation_flow === 'greylist') {
           conversionId = 987428;
           txnId = 'o1ua4';
-          let greylistData = new BingDataObj(
+          const greylistData = new BingDataObj(
             'kycform',
             'complete',
             'greylist',
@@ -1074,10 +1079,10 @@ export default class ActivationWizard extends React.Component {
             liData: conversionId,
             twiData: txnId,
           });
-        } else if ('whitelist' === data.data.activation_flow) {
+        } else if (data.data.activation_flow === 'whitelist') {
           conversionId = 987436;
           txnId = 'o1ua5';
-          let whitelistData = new BingDataObj(
+          const whitelistData = new BingDataObj(
             'kycform',
             'complete',
             'whitelist',
@@ -1170,10 +1175,10 @@ export default class ActivationWizard extends React.Component {
   };
 
   onChange = ({ target }) => {
-    let stateName = target.getAttribute('data-name');
+    const stateName = target.getAttribute('data-name');
     let fieldValue = target.value;
-    let fieldName = target.name;
-    let sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
+    const fieldName = target.name;
+    const sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
     const { dirty } = this.state;
     const { data } = this.props;
 
@@ -1183,36 +1188,35 @@ export default class ActivationWizard extends React.Component {
      * */
     if (stateName === 'same_address' && target.checked) {
       // Checking the box, sets the ALL operation fields also dirty.
-      sideEffectFieldsToUpdate['business_operation_address'] =
-        dirty['business_registered_address'] ||
-        data['business_registered_address'];
-      sideEffectFieldsToUpdate['business_operation_pin'] =
-        dirty['business_registered_pin'] || data['business_registered_pin'];
-      sideEffectFieldsToUpdate['business_operation_city'] =
-        dirty['business_registered_city'] || data['business_registered_city'];
-      sideEffectFieldsToUpdate['business_operation_state'] =
-        dirty['business_registered_state'] || data['business_registered_state'];
+      sideEffectFieldsToUpdate.business_operation_address =
+        dirty.business_registered_address || data.business_registered_address;
+      sideEffectFieldsToUpdate.business_operation_pin =
+        dirty.business_registered_pin || data.business_registered_pin;
+      sideEffectFieldsToUpdate.business_operation_city =
+        dirty.business_registered_city || data.business_registered_city;
+      sideEffectFieldsToUpdate.business_operation_state =
+        dirty.business_registered_state || data.business_registered_state;
     }
 
     /*
      * Step 2: If user marks no GSTIN from radio box
      * */
     if (stateName === 'has_gstin' && fieldValue === '1') {
-      sideEffectFieldsToUpdate['gstin'] = '';
+      sideEffectFieldsToUpdate.gstin = '';
     } else if (stateName === 'has_url' && fieldValue === '1') {
-      sideEffectFieldsToUpdate['business_website'] = '';
+      sideEffectFieldsToUpdate.business_website = '';
     }
 
     /* Step 3: If same_address is already ticked and any of business_registered fields are changed, then mark operational fields dirty;'.*/
     if (this.state.same_address == '1') {
       if (fieldName === 'business_registered_pin') {
-        sideEffectFieldsToUpdate['business_operation_pin'] = fieldValue;
+        sideEffectFieldsToUpdate.business_operation_pin = fieldValue;
       } else if (fieldName === 'business_registered_city') {
-        sideEffectFieldsToUpdate['business_operation_city'] = fieldValue;
+        sideEffectFieldsToUpdate.business_operation_city = fieldValue;
       } else if (fieldName === 'business_registered_state') {
-        sideEffectFieldsToUpdate['business_operation_state'] = fieldValue;
+        sideEffectFieldsToUpdate.business_operation_state = fieldValue;
       } else if (fieldName === 'business_registered_address') {
-        sideEffectFieldsToUpdate['business_operation_address'] = fieldValue;
+        sideEffectFieldsToUpdate.business_operation_address = fieldValue;
       }
     }
 
@@ -1224,15 +1228,15 @@ export default class ActivationWizard extends React.Component {
       if (fieldValue.length === 6) {
         this.props.getPincodeDetails(fieldValue).then(data => {
           if (data) {
-            const cityField = fieldName.slice(0, -3) + 'city'; // It can be operation_ / registered_
-            const stateField = fieldName.slice(0, -3) + 'state';
+            const cityField = `${fieldName.slice(0, -3)}city`; // It can be operation_ / registered_
+            const stateField = `${fieldName.slice(0, -3)}state`;
 
             // Update dependent values
             sideEffectFieldsToUpdate[cityField] = data.city;
             sideEffectFieldsToUpdate[stateField] = data.state_code;
             if (this.state.same_address == '1') {
-              sideEffectFieldsToUpdate['business_operation_city'] = data.city;
-              sideEffectFieldsToUpdate['business_operation_state'] =
+              sideEffectFieldsToUpdate.business_operation_city = data.city;
+              sideEffectFieldsToUpdate.business_operation_state =
                 data.state_code;
             }
 
@@ -1259,8 +1263,8 @@ export default class ActivationWizard extends React.Component {
     /* Step 5: Business category and sub category are always marked dirty in pairs. BE validates them in pair. */
     if (fieldName === 'business_category') {
       // Set first option in new set of subcategory. It remains '', it would convert to null before making api call.
-      sideEffectFieldsToUpdate['business_subcategory'] = '';
-      sideEffectFieldsToUpdate['business_model'] = ''; // Reset Business Model as well.
+      sideEffectFieldsToUpdate.business_subcategory = '';
+      sideEffectFieldsToUpdate.business_model = ''; // Reset Business Model as well.
 
       // Update Business Subcategory in view
       let el = document.querySelector(
@@ -1274,8 +1278,8 @@ export default class ActivationWizard extends React.Component {
     }
 
     if (fieldName === 'business_subcategory') {
-      sideEffectFieldsToUpdate['business_category'] =
-        dirty['business_category'] || data['business_category'];
+      sideEffectFieldsToUpdate.business_category =
+        dirty.business_category || data.business_category;
     }
 
     /* Step 6: Business website must have http/https prepended */
@@ -1383,10 +1387,9 @@ export default class ActivationWizard extends React.Component {
 
     const isCurrentTabValid = this.state.tabs[activeTab];
 
-    let isLastTab = activeTab == FORM_TABS.length - 1;
+    const isLastTab = activeTab == FORM_TABS.length - 1;
 
-    let content;
-    let documentContent; // Document content will always be shown so that upload progress is maintained in DOM
+    let content, documentContent; // Document content will always be shown so that upload progress is maintained in DOM
 
     if (activeTab !== DOCUMENT_UPLOAD_STEP) {
       content = FORM_TABS_CONTENT[activeTab].map((field, i) => {
@@ -1415,7 +1418,7 @@ export default class ActivationWizard extends React.Component {
 
         return ActivationField.call(this, field);
       });
-    let moreTabs = [];
+    const moreTabs = [];
     if (this.props.user.instantActivation.isL1Submitted && !isFormSubmitted) {
       moreTabs.push(
         <li
@@ -1423,7 +1426,7 @@ export default class ActivationWizard extends React.Component {
           onClick={
             this.isIndividualTypeLock ? undefined : this.toggleSubmitLayer
           }
-          class={classList(
+          className={classList(
             (!this.isAllTabsValid() || this.isIndividualTypeLock) && 'disabled',
             this.state.showSubmitLayer && 'active',
             'li--submit'
@@ -1431,14 +1434,14 @@ export default class ActivationWizard extends React.Component {
         >
           Submit Form
           {!this.isAllTabsValid() && (
-            <div class="description small">Complete the form to submit</div>
+            <div className="description small">Complete the form to submit</div>
           )}
         </li>
       );
     }
 
     return (
-      <div class="Activation--wizard Wizard">
+      <div className="Activation--wizard Wizard">
         {/* Activation form tabs */}
         <ModalAsideNav
           title={this.formName}
@@ -1463,7 +1466,7 @@ export default class ActivationWizard extends React.Component {
 
         {/* Activation form Content */}
         <main
-          class={classList(
+          className={classList(
             'form-container',
             this.state.showSubmitLayer && 'block-scroll',
             isFormLocked && 'main--full'
@@ -1479,16 +1482,18 @@ export default class ActivationWizard extends React.Component {
               />
             )}
             <span
-              class={classList(
+              className={classList(
                 'device--mobile main-title-icon',
                 isCurrentTabValid && 'text-success '
               )}
             >
-              <i class={classList('i-check', isCurrentTabValid && 'drishy')} />
+              <i
+                className={classList('i-check', isCurrentTabValid && 'drishy')}
+              />
               {FORM_TABS[activeTab]}
             </span>
 
-            <span class="device--desktop">{FORM_TABS[activeTab]}</span>
+            <span className="device--desktop">{FORM_TABS[activeTab]}</span>
           </main-title>
 
           {/* Alert: For linked account if activated */}
@@ -1523,7 +1528,7 @@ export default class ActivationWizard extends React.Component {
                 );
               } else if (this.isNeedsClarificationMode()) {
                 // **2. Alert: Need clarification
-                let clarificationMode = this.props.data.clarification_mode;
+                const clarificationMode = this.props.data.clarification_mode;
                 let subMsg;
                 if (clarificationMode.toLowerCase() === 'email') {
                   subMsg =
@@ -1534,7 +1539,7 @@ export default class ActivationWizard extends React.Component {
 
                 icon = 'i-warning';
                 Component = Alert.Warning;
-                msg = 'There are issues with your activation form. ' + subMsg;
+                msg = `There are issues with your activation form. ${subMsg}`;
                 secondaryMsg = (
                   <React.Fragment>
                     In case of any queries, please {ticketLink}
@@ -1574,7 +1579,7 @@ export default class ActivationWizard extends React.Component {
                 msg && (
                   <Component iconBefore={icon}>
                     {msg}
-                    <div class="side-description">{secondaryMsg}</div>
+                    <div className="side-description">{secondaryMsg}</div>
                   </Component>
                 );
               }
@@ -1605,7 +1610,7 @@ export default class ActivationWizard extends React.Component {
                 className="text-primary"
                 target="_blank"
                 href="https://razorpay.com/terms/"
-                onClick={onAction.trackTnCClick}
+                onClick={() => onAction && onAction.trackTnCClick()}
               >
                 Terms and Conditions
               </a>
@@ -1616,7 +1621,10 @@ export default class ActivationWizard extends React.Component {
         {/* Submit form overlay view, Lock check not necessary here. Just ensured, 'Submit Form' checkbox must be disabled if locked */}
         {!isFormSubmitted && this.state.showSubmitLayer && (
           <main
-            class={classList('overlay-container', isFormLocked && 'main--full')}
+            className={classList(
+              'overlay-container',
+              isFormLocked && 'main--full'
+            )}
           >
             <SubmitForm
               closeActivationForm={() => {
@@ -1651,8 +1659,8 @@ export default class ActivationWizard extends React.Component {
                       iconAfter="chevron-right"
                       onClick={this.next}
                     >
-                      <span class="device--desktop">Save & Next</span>
-                      <span class="device--mobile">Next</span>
+                      <span className="device--desktop">Save & Next</span>
+                      <span className="device--mobile">Next</span>
                     </Button.Primary>
                   ))}
 
@@ -1662,7 +1670,7 @@ export default class ActivationWizard extends React.Component {
                     disabled={!this.canSubmitL1Form || this.state.callingAPI}
                     onClick={this.submitL1}
                     pendingState={this.isUnregBiz ? 'Verifying' : 'Submitting'}
-                    name={'submit-and-verify'}
+                    name="submit-and-verify"
                   >
                     {this.isUnregBiz ? 'Submit and Verify' : 'Submit'}
                   </AsyncBtn.Primary>
@@ -1696,8 +1704,8 @@ export default class ActivationWizard extends React.Component {
                 !this.hasFilledClarificationDetails || this.state.callingApi
               }
               onClick={this.submitClarifications}
-              pendingState={'Submitting...'}
-              name={'Submit Clarifications'}
+              pendingState="Submitting..."
+              name="Submit Clarifications"
             >
               Submit Clarifications
             </AsyncBtn.Primary>
@@ -1727,31 +1735,33 @@ export default class ActivationWizard extends React.Component {
  * */
 function Loader({ isSaving, defaultMsg }) {
   if (isSaving === LOADING.INITIAL) {
-    return <span class="Loader" />;
+    return <span className="Loader" />;
   }
 
   return (
-    <span class="Loader Loader--visible">
+    <span className="Loader Loader--visible">
       {do {
         if (isSaving === LOADING.PENDING) {
           <React.Fragment>
-            <span class="spin-btn" />
-            <span class="device--desktop">Saving Changes...</span>
-            <span class="device--mobile">Saving</span>
+            <span className="spin-btn" />
+            <span className="device--desktop">Saving Changes...</span>
+            <span className="device--mobile">Saving</span>
           </React.Fragment>;
         } else if (isSaving === LOADING.SUCCESS) {
           <React.Fragment>
-            <i class="i-check text-success" />
-            <span class="text-success device--desktop">All changes saved</span>
-            <span class="text-success device--mobile">Saved</span>
+            <i className="i-check text-success" />
+            <span className="text-success device--desktop">
+              All changes saved
+            </span>
+            <span className="text-success device--mobile">Saved</span>
           </React.Fragment>;
         } else if (isSaving === LOADING.ERROR) {
           <React.Fragment>
-            <i class="i-close text-danger" />
-            <span class="text-danger device--desktop">
+            <i className="i-close text-danger" />
+            <span className="text-danger device--desktop">
               Recent changes were not saved!
             </span>
-            <span class="text-danger device--mobile">Not Saved!</span>
+            <span className="text-danger device--mobile">Not Saved!</span>
           </React.Fragment>;
         } else if (isSaving === LOADING.DEFAULT) {
           {
@@ -1764,7 +1774,7 @@ function Loader({ isSaving, defaultMsg }) {
 }
 
 function ActivationField(field) {
-  let {
+  const {
     _cmp: Component,
     _name,
     _when,
@@ -1858,7 +1868,7 @@ function ActivationField(field) {
     defaultValue =
       (documents &&
         documents[`${rest.name}`] &&
-        documents[`${rest.name}`][0]['id']) ||
+        documents[`${rest.name}`][0].id) ||
       null;
   } else if (rest._type == 'address_proof_upload_doc') {
     defaultValue = this.state.dirty[rest.name] || null;
@@ -1881,7 +1891,7 @@ function ActivationField(field) {
         <div className="ndc-reasons">
           {rest.reasons.map((r, i) => (
             <div key={i}>
-              <i class="i i-info-circle" />
+              <i className="i i-info-circle" />
               <div>{r}</div>
             </div>
           ))}
@@ -1902,7 +1912,7 @@ function ActivationField(field) {
 
 function isFieldValid(field, activation) {
   const { props } = activation;
-  let data = props.data;
+  const data = props.data;
   if (!field.name) {
     // what isn't submissible is valid
     return true;
@@ -1915,9 +1925,9 @@ function isFieldValid(field, activation) {
   }
 
   const name = field.getName ? field.getName(activation) : field.name;
-  let value =
+  const value =
     data[name] ||
-    (data.documents && data.documents[name] && data.documents[name][0]['id']);
+    (data.documents && data.documents[name] && data.documents[name][0].id);
 
   let isFieldRequired = field.required;
 
@@ -1963,7 +1973,7 @@ class SubmitForm extends React.Component {
 
   render() {
     return (
-      <div class="SubmitForm-modal">
+      <div className="SubmitForm-modal">
         <main-title>
           <Button
             class="device--mobile btn--back"
@@ -1973,8 +1983,8 @@ class SubmitForm extends React.Component {
           SUBMIT FORM
         </main-title>
 
-        <div class="SubmitForm-content">
-          <div class="tnc-text">
+        <div className="SubmitForm-content">
+          <div className="tnc-text">
             {/* Confirmation checkbox*/}
             <Input.Check
               disabled={this.props.isFormLocked}
@@ -2004,7 +2014,7 @@ class SubmitForm extends React.Component {
                 <a
                   href="https://razorpay.com/terms/"
                   target="_blank"
-                  class="highlight"
+                  className="highlight"
                   onClick={() =>
                     onAction && onAction.trackLinkClick('Terms of use')
                   }
@@ -2017,7 +2027,7 @@ class SubmitForm extends React.Component {
                   !user.isOrgAllowedFunctionality('external_links')
                 }
               >
-                <span class="highlight">Terms & Conditions</span>
+                <span className="highlight">Terms & Conditions</span>
               </ShowWhen>
               ,{' '}
               <ShowWhen
@@ -2028,7 +2038,7 @@ class SubmitForm extends React.Component {
                 <a
                   href="https://razorpay.com/agreement/"
                   target="_blank"
-                  class="highlight"
+                  className="highlight"
                   onClick={() =>
                     onAction && onAction.trackLinkClick('Merchant Agreement')
                   }
@@ -2041,7 +2051,7 @@ class SubmitForm extends React.Component {
                   !user.isOrgAllowedFunctionality('external_links')
                 }
               >
-                <span class="highlight">Merchant Agreement</span>
+                <span className="highlight">Merchant Agreement</span>
               </ShowWhen>{' '}
               and the{' '}
               <ShowWhen
@@ -2052,7 +2062,7 @@ class SubmitForm extends React.Component {
                 <a
                   href="https://razorpay.com/privacy/"
                   target="_blank"
-                  class="highlight"
+                  className="highlight"
                   onClick={() =>
                     onAction && onAction.trackLinkClick('Privacy Policy')
                   }
@@ -2065,7 +2075,7 @@ class SubmitForm extends React.Component {
                   !user.isOrgAllowedFunctionality('external_links')
                 }
               >
-                <span class="highlight">Privacy Policy</span>
+                <span className="highlight">Privacy Policy</span>
               </ShowWhen>
               . By submitting the form, I agree to abide by the rules at all
               times.
@@ -2073,7 +2083,7 @@ class SubmitForm extends React.Component {
           </div>
 
           {/* Secondary copy */}
-          <p class="text-fade">
+          <p className="text-fade">
             Please review the form before submitting. For any changes after
             submission, you can <Link to="#ticket">write to support</Link>
           </p>
@@ -2082,7 +2092,7 @@ class SubmitForm extends React.Component {
           <AsyncBtn.Primary
             disabled={!this.state.allowSubmit}
             onClick={this.submit}
-            pendingState={'Submitting...'}
+            pendingState="Submitting..."
           >
             Submit Form
           </AsyncBtn.Primary>
