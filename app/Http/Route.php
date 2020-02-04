@@ -871,6 +871,8 @@ final class Route
         'payout_links_verify_customer_otp_cors'    => ['options',      'payout-links/{x_entity_id}'
                                                                     . '/verify-customer-otp',                         'PayoutLinkController@allowCors'                                    ],
         'payout_links_cancel'                      => ['post',      'payout-links/{id}/cancel',                       'PayoutLinkController@cancel'                                       ],
+        'payout_links_status'                      => ['get',       'payout-links/{x_entity_id}/status',              'PayoutLinkController@getStatus'                                    ],
+        'payout_links_status_cors'                 => ['options',   'payout-links/{x_entity_id}/status',              'PayoutLinkController@allowCors'                                    ],
         'payout_update_pull_payout_status'         => ['post',      'payout-links/{id}/pullPayoutStatus',             'PayoutLinkController@pullPayoutStatus'                             ],
         'payout_links_customer_hosted_page'        => ['get',       'payout-links/{x_entity_id}/view',                'PayoutLinkController@viewHostedPage'                               ],
         // Below is a POST request, for reasons listed in the Controller
@@ -1548,6 +1550,8 @@ final class Route
         'payout_links_verify_customer_otp_cors',
         'payout_links_initiate_cors',
         'payout_links_added_fund_accounts_cors',
+        'payout_links_status',
+        'payout_links_status_cors'
     ];
 
     public static $device = [
