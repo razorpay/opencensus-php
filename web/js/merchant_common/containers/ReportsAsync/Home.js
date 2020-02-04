@@ -42,7 +42,9 @@ export default class ReportHome extends React.PureComponent {
                 'Request with same report type and date range is in processing. Please check your request history',
             });
           } else if (data.id) {
-            this.props.pollLog(data.id);
+            const accountId =
+              data.generated_by !== data.consumer ? data.consumer : undefined;
+            this.props.pollLog(data.id, accountId);
           }
         }
       })
