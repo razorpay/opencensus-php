@@ -550,6 +550,8 @@ class Service extends Base\Service
     {
         $batch = (new Batch\Service())->getBatchById($batchId);
 
-        return $batch[Batch\Entity::STATUS];
+        $batchStatus = $batch[Batch\Entity::STATUS];
+
+        return [$batchStatus];
     }
 }
