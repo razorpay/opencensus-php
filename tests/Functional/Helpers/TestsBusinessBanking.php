@@ -238,6 +238,7 @@ trait TestsBusinessBanking
     protected function mockRazorxTreatment(string $channel = 'yesbank',
                                            string $ftsEnabled = 'off',
                                            string $webhookViaStork = 'off',
+                                           string $webhookArrayPublicPayload = 'on',
                                            string $defaultBehaviour = 'off')
     {
         // Mock Razorx
@@ -250,7 +251,12 @@ trait TestsBusinessBanking
 
         $this->app->razorx->method('getTreatment')
                           ->will($this->returnCallback(
-                function ($mid, $feature, $mode) use ($channel, $ftsEnabled, $defaultBehaviour)
+                function ($mid, $feature, $mode) use (
+                    $channel,
+                    $ftsEnabled,
+                    $webhookArrayPublicPayload,
+                    $defaultBehaviour
+                )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
                     {
@@ -260,6 +266,11 @@ trait TestsBusinessBanking
                     if (starts_with($feature, 'fts_'))
                     {
                         return strtolower($ftsEnabled);
+                    }
+
+                    if ($feature === 'payouts_webhook_filter')
+                    {
+                        return strtolower($webhookArrayPublicPayload);
                     }
 
                     return strtolower($defaultBehaviour);
