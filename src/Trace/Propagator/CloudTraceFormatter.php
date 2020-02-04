@@ -89,7 +89,7 @@ class CloudTraceFormatter implements FormatterInterface
         $result = '';
 
         for ($i = 0; $i < $length; $i++) {
-            $number[$i] = strpos($chars, $numstring{$i});
+            $number[$i] = strpos($chars, $numstring[$i]);
         }
 
         do {
@@ -105,7 +105,7 @@ class CloudTraceFormatter implements FormatterInterface
                 }
             }
             $length = $newlen;
-            $result = $newstring{$divide} . $result;
+            $result = $newstring[$divide] . $result;
         } while ($newlen != 0);
 
         return $result;
