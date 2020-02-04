@@ -190,6 +190,8 @@ final class Route
         'merchant_daily_report'                    => ['post',     'merchants/report',                               'MerchantController@sendDailyReport'                                ],
         'merchant_create'                          => ['post',     'merchants',                                      'MerchantController@postCreateMerchant'                             ],
         'merchant_product_switch'                  => ['post',     'merchants/product-switch',                       'MerchantController@postSwitchProductMerchant'                      ],
+        // Below route is a temporary route and should be deleted after the migration is completed
+        'migration_x_test_mode'                    => ['post',     'merchants/banking-product-switch',               'MerchantController@enableBusinessBankingTestMode'                           ],
         'merchant_fetch'                           => ['get',      'merchants/{id}',                                 'MerchantController@getMerchant'                                    ],
         'merchant_edit'                            => ['put',      'merchants/{id}',                                 'MerchantController@putMerchant'                                    ],
         'merchant_edit_config'                     => ['put',      'account/config',                                 'MerchantController@putMerchantConfig'                              ],
@@ -1464,6 +1466,10 @@ final class Route
 
         'fd_reserve_balance_ticket'                 => ['post',      'fd/reserve_balance/tickets',                                    'FreshdeskTicketController@postReserveBalanceTicketDetails'   ],
         'fd_reserve_balance_ticket_status'          => ['get',       'fd/reserve_balance/tickets/status',                            'FreshdeskTicketController@getReserveBalanceTicketStatus'      ],
+
+        'entity_bulk_update'                      => ['post',      'entities/bulk-update',                                         'MerchantController@merchantsBulkUpdate'                    ],
+        'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
+        'fetch_batch_action_entities'             => ['get',       'batch_action_entities',                                  'MerchantController@getBatchActionEntities'                 ],
     ];
 
     public static $public = [
@@ -1936,6 +1942,7 @@ final class Route
         'update_fts_nodal_beneficiary',
         'create_fts_nodal_beneficiary',
         'payouts_process_queued',
+        'migration_x_test_mode',
         'update_fts_fund_transfer',
         'fund_account_validation_retry',
         'setl_initiate_adhoc',
@@ -2275,6 +2282,8 @@ final class Route
 
         'fd_reserve_balance_ticket',
         'fd_reserve_balance_ticket_status',
+
+        'entity_bulk_update',
     ];
 
     //
@@ -2797,7 +2806,10 @@ final class Route
 
         // Offline QR
         'register_offline_device',
-    ];
+
+        'fetch_batch_actions',
+        'fetch_batch_action_entities',
+        ];
 
     public static $routePermission = [
         'payout_update_pull_payout_status'             => '*',
@@ -3360,6 +3372,9 @@ final class Route
         'toggle_transaction_hold'                      => Permission::EDIT_MERCHANT_RISK_THRESHOLD,
         'toggle_transaction_release'                   => Permission::EDIT_MERCHANT_RISK_THRESHOLD,
         'register_offline_device'                      => '*',
+      
+        'fetch_batch_action_entities'                  => Permission::ADMIN_BATCH_CREATE,
+        'fetch_batch_actions'                          => Permission::ADMIN_BATCH_CREATE,
 
         // Banking API Permissions
 
@@ -3695,6 +3710,7 @@ final class Route
             'payment_page_items_migrate_min_purchase',
             'scrooge_refund_verify_bulk',
             'payouts_process_queued',
+            'migration_x_test_mode',
             'scrooge_tagging_backfill',
             'payments_downtime_trigger_cron',
             'payment_card_vault_migrate',
@@ -3851,6 +3867,7 @@ final class Route
             'oauth_token_create',
             'merchant_inheritance_parent_set_bulk',
             'mdr_adjustment',
+            'entity_bulk_update',
         ],
 
         'stork' => [

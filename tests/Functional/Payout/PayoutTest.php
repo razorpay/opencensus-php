@@ -1028,9 +1028,31 @@ class PayoutTest extends TestCase
 
     public function testCreatePayoutFundsOnHold()
     {
-        $this->ba->privateAuth();
+        $this->liveSetUp();
+
+        // Merchant needs to be activated to make live requests
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->merchant->holdFunds();
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutFundsOnHoldOnTestMode()
+    {
+        $contactId = $this->getDbLastEntity('contact')->getId();
+
+        $this->fixtures->create('fund_account:vpa', [
+            'id'            => '100000000003fa',
+            'source_type'   => 'contact',
+            'source_id'     => $contactId,
+        ]);
 
         $this->fixtures->merchant->holdFunds();
+
+        $this->ba->privateAuth();
 
         $this->startTest();
     }

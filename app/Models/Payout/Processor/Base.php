@@ -516,8 +516,11 @@ class Base extends BaseCore
         // If SKIP_HOLD_FUNDS_ON_PAYOUT feature is enabled for merchant,
         // then we don't check the merchant funds_on_hold and proceed with payout creation
         //
-        if (($this->merchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false) and
-            ($this->merchant->getHoldFunds() === true))
+        // We check funds_on_hold only for live mode. We don't care about funds on hold in test mode.
+        //
+        if (($this->isLiveMode() === true) and
+            ($this->merchant->getHoldFunds() === true) and
+            ($this->merchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);

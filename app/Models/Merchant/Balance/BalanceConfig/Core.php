@@ -4,10 +4,10 @@ namespace RZP\Models\Merchant\Balance\BalanceConfig;
 
 use Mail;
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\FeatureEnabled;
@@ -172,7 +172,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($balanceConfig);
 
-        // send Negative Balance Feature Enabled mail, if previously balance config existed 
+        // send Negative Balance Feature Enabled mail, if previously balance config existed
         // but auto and manual limit in balance config were both zero and now they have been set to non-zero value.
         if (($oldAutoLimit === 0) and
             ($oldManualLimit === 0))
@@ -254,5 +254,28 @@ class Core extends Base\Core
                 Feature\Entity::NEW_FEATURE         => self::NEGATIVE_BALANCE_FEATURE_DISPLAY_NAME,
                 PublicEntity::ID                    => $balanceConfig->getId(),
             ]);
+    }
+
+    public function isNegativeBalanceEnabledForTxnAndMerchant(string $txnType, string $merchantId, string $balanceType = Balance\Type::PRIMARY) : bool
+    {
+        if (in_array($txnType, Balance\Core::NEGATIVE_FLOWS[$balanceType]) === false)
+        {
+            return false;
+        }
+
+        $mode = $this->mode ?? 'live';
+
+        $response = $this->app->razorx->getTreatment($merchantId, self::NEGATIVE_BALANCE_FEATURE,
+            $mode);
+
+        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
+            [
+                'mode'          => $mode,
+                'merchant_id'   => $merchantId,
+                'response'      => $response
+            ]
+        );
+
+        return $response === 'on';
     }
 }

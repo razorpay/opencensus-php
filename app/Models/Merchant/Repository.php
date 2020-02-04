@@ -56,6 +56,7 @@ class Repository extends Base\Repository
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
         Entity::EXTERNAL_ID             => 'sometimes|string',
+        Entity::ACTIVATION_SOURCE       => 'sometimes|string',
     ];
 
     protected $adminFetchParamRules = [

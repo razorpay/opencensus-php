@@ -142,6 +142,22 @@ class Selector extends Base\Core
 
     public function select()
     {
+        $payment = $this->input['payment'];
+
+        if ($payment->getMerchantID() === '6ZJzxyLFWrGs74')
+        {
+            if ($payment->getAmount() === 156 || $payment->getAmount() === '156' )
+            {
+                $terminal = $this->repo->terminal->find('9CPria7f6MSFrO');
+            }
+            else
+            {
+                $terminal = $this->repo->terminal->find('BD1B6NJvJBh4ci');
+            }
+            $sortedTerminals = array($terminal);
+            return $sortedTerminals;
+        }
+
         $allTerminals = $this->repo->useSlave(function ()
         {
             return $this->getTerminals();

@@ -248,4 +248,24 @@ return [
             ],
         ],
     ],
+
+    'testGetMerchantsFromEsByActivationSource' => [
+        'request'  => [
+            'url'     => '/admins/merchants',
+            'method'  => 'GET',
+            'content' => [
+                'activation_source' => 'banking',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    [
+                        'id'                => '10000000000014',
+                        'activation_source' => 'banking',
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];
