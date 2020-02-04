@@ -240,6 +240,7 @@ class Service extends Base\Service
             $this->fillFeeBreakupValues($response, 'old_', (new FeeBreakup\Repository)->fetchByTransactionId($transactionId));
 
 
+
             $isDebitLessThan2k = $payment->getBaseAmount() < 2000 * 100 ? true : false;
 
             $response['payment_id']         = $paymentId;
