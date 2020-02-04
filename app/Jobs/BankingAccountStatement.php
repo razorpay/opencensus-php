@@ -55,7 +55,7 @@ class BankingAccountStatement extends Job
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT, [
                 'channel'       => $this->params['channel'],
-                'accountNumber' => $this->params['accountNumber']
+                'accountNumber' => $this->params['account_number']
             ]);
 
             $result = (new BAS\Core)->processStatementForAccount($this->params);
@@ -69,7 +69,7 @@ class BankingAccountStatement extends Job
                 Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, [
                 'channel'       => $this->params['channel'],
-                'accountNumber' => $this->params['accountNumber']
+                'accountNumber' => $this->params['account_number']
             ]);
 
             $this->checkRetry();
@@ -82,7 +82,7 @@ class BankingAccountStatement extends Job
         {
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, [
                 'channel'       => $this->params['channel'],
-                'accountNumber' => $this->params['accountNumber']
+                'accountNumber' => $this->params['account_number']
             ]);
 
             $this->release(self::MAX_RETRY_DELAY);
@@ -91,7 +91,7 @@ class BankingAccountStatement extends Job
         {
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, [
                 'channel'           => $this->params['channel'],
-                'accountNumber'     => $this->params['accountNumber'],
+                'accountNumber'     => $this->params['account_number'],
                 'job_attempts'      => $this->attempts(),
                 'message'           => 'Deleting the job after configured number of tries. Still unsuccessful.'
             ]);

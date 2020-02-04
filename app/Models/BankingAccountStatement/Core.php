@@ -625,13 +625,13 @@ class Core extends Base\Core
             TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_REQUEST,
             [
                 'channel'        => $channel,
-                'accountNumber'  => $accountNumber,
+                'account_number'  => $accountNumber,
             ]);
 
         BankingAccountStatementJob::dispatch($this->mode,
                                              [
                                                  'channel'       => $channel,
-                                                 'accountNumber' => $accountNumber
+                                                 'account_number' => $accountNumber
                                              ]);
     }
 }
