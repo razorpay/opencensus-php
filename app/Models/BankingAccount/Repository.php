@@ -81,7 +81,6 @@ class Repository extends Base\Repository
 
     public function fetchAccountNumberByChannel($channel, $limit)
     {
-        var_dump(Status::ACTIVATED);
         return $this->newQuery()
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->where(Entity::STATUS, '=', Status::ACTIVATED)
