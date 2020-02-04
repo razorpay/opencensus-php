@@ -147,12 +147,6 @@ class CardVault
 
         $response = $this->sendRequest('token/migrate', 'post', $input);
 
-        if (empty($response[self::TOKEN]) === true)
-        {
-            throw new Exception\RuntimeException(
-                'Tokenize request failed', ['data' => $response]);
-        }
-
         return $response;
     }
 
@@ -212,7 +206,7 @@ class CardVault
 
         $response = $this->sendCardVaultRequest($request);
 
-        $this->checkErrors(json_decode($response->body, true));
+        $this->checkErrors($response);
 
         return json_decode($response->body, true);
     }
@@ -303,20 +297,28 @@ class CardVault
 
     protected function checkErrors($response)
     {
-        $success = $response[self::SUCCESS];
+        $responseBody = json_decode($response->body, true);
+
+        $success = $responseBody[self::SUCCESS];
 
         // in detokenize response will contain card number
-        unset($response[self::VALUE]);
+        unset($responseBody[self::VALUE]);
 
         $this->trace->info(
             TraceCode::CARD_VAULT_RESPONSE,
             [
-                'response' => $response
+                'response' => $responseBody
             ]);
+
+        if ($response->status_code >= 500)
+        {
+            throw new Exception\RuntimeException(
+                'Vault request failed', ['data' => $responseBody]);
+        }
 
         if ($success === false)
         {
-            $error = $response[self::ERROR];
+            $error = $responseBody[self::ERROR];
 
             // case where validate token return success false because of invalid token
             // error will be empty

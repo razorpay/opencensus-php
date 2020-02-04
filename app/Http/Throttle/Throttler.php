@@ -80,15 +80,13 @@ class Throttler
         {
             return;
         }
-        $instanceType = env('INSTANCE_TYPE');
+
         // Update: Now for private/proxy requests we do throttling at nginx
         // layer itself and hence must not repeat here. Keeping this flow in
         // unit tests still. Not sure.
-        //Adding canary instance type check to make prod in sanity
-        if ($instanceType === "canary" and
-            ($this->reqCtx->isAuthFlowTypeKey() and
+        if ($this->reqCtx->isAuthFlowTypeKey() and
             $this->reqCtx->isAuthTypePrivate() and
-            ($this->runningUnitTests === false)))
+            ($this->runningUnitTests === false))
         {
             return;
         }

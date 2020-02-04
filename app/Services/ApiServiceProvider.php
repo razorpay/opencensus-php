@@ -48,6 +48,7 @@ use RZP\Models\Plan\Subscription;
 use RZP\Models\Partner\Commission;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
+use RZP\Services\FreshdeskTicketClient;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\PaymentLink\PaymentPageItem;
@@ -352,6 +353,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMozart();
 
         $this->registerHyperVerge();
+
+        $this->registerFreshdeskTicketService();
     }
 
     /**
@@ -401,6 +404,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'mozart',
             'hubspot',
             'salesforce',
+            'freshdesk_client'
         ];
     }
 
@@ -888,6 +892,21 @@ class ApiServiceProvider extends BaseServiceProvider
             $implementation = $mock ? Mock\FTS\FundTransfer::class : FTS\FundTransfer::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerFreshdeskTicketService()
+    {
+        $this->app->singleton('freshdesk_client', function($app)
+        {
+            $ticketMock = $app['config']->get('applications.freshdesk.mock');
+
+            if ($ticketMock === true)
+            {
+                return new Mock\FreshdeskTicketClient($app);
+            }
+
+            return new FreshDeskTicketClient($app);
         });
     }
 }

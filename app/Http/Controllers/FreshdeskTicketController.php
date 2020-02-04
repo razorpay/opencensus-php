@@ -1,0 +1,41 @@
+<?php
+
+namespace RZP\Http\Controllers;
+
+use Request;
+use ApiResponse;
+use RZP\Models\Merchant\FreshdeskTicket\Service as FreshdeskTicketService;
+
+/**
+ * Freshdesk TicketController to get the support tickets details for Frontend
+ *
+ * @package RZP\Http\Controllers
+ */
+class FreshdeskTicketController extends Controller
+{
+    /**
+     * Get FreshdeskTicket status for the given $ticketId
+     *
+     * @return mixed
+     */
+    public function getReserveBalanceTicketStatus()
+    {
+        $response = (new FreshdeskTicketService)->getReserveBalanceTicketStatus();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Store ticket details in Merchant Freshdesk tickets table
+     *
+     * @return mixed
+     */
+    public function postReserveBalanceTicketDetails()
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->postReserveBalanceTicketDetails($input);
+
+        return ApiResponse::json($response);
+    }
+}

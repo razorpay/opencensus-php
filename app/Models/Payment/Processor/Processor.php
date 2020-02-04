@@ -160,6 +160,8 @@ class Processor
      */
     const SECURE_3D_INTERNATIONAL = 'secure_3d_international';
 
+    const FINGERPRINT_MIGRATION_CACHE_KEY = 'fingerprint_migration';
+
     /**
      * @var Merchant\Entity
      */
