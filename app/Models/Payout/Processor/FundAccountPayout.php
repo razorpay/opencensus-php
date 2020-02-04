@@ -147,8 +147,7 @@ class FundAccountPayout extends Base
     }
 
     /*
-     * This channel selection DOESN'T handle channel preference, the one whose experiment would be created first
-     * would be preferred. So, its preferred to NOT have same  MIDs in 2 different experiments for the same behaviour.
+     * One MID can't have more than one variant for same experiment, so there will be no clash.
      */
     protected function getChannelForSharedAccountFundTransfer(Payout\Entity $payout)
     {

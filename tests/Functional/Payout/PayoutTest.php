@@ -863,6 +863,14 @@ class PayoutTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
+        $this->mockRazorxTreatment('yesbank', 'on');
+
+        $this->createWebhook(['events' => ['payout.rejected' => '1']]);
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
         // Approve with Checker role user
         $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
@@ -886,6 +894,14 @@ class PayoutTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        $this->mockRazorxTreatment('yesbank', 'on');
+
+        $this->createWebhook(['events' => ['payout.rejected' => '1']]);
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
 
         // Approve with Checker role user
         $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
@@ -913,6 +929,14 @@ class PayoutTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
+        $this->mockRazorxTreatment('yesbank', 'on');
+
+        $this->createWebhook(['events' => ['payout.rejected' => '1']]);
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey, $eventTestDataKey]);
+
         // Approve with Checker role user
         $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
 
@@ -936,6 +960,14 @@ class PayoutTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        $this->mockRazorxTreatment('yesbank', 'on');
+
+        $this->createWebhook(['events' => ['payout.rejected' => '1']]);
+
+        $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey, $eventTestDataKey]);
 
         // Approve with Checker role user
         $this->ba->proxyAuth('rzp_test_10000000000000', $this->checkerRoleUser->getId());
@@ -1990,7 +2022,7 @@ class PayoutTest extends TestCase
     {
         $this->setupMockDns();
 
-        $this->mockRazorxTreatment('yesbank', 'on', 'off', 'off');
+        $this->mockRazorxTreatment('yesbank', 'on');
 
         $this->testCreatePayout();
 
@@ -2059,7 +2091,7 @@ class PayoutTest extends TestCase
     {
         $this->setupMockDns();
 
-        $this->mockRazorxTreatment('yesbank', 'on', 'off', 'off');
+        $this->mockRazorxTreatment('yesbank', 'on');
 
         $this->testCreatePayout();
 
