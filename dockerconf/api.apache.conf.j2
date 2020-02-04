@@ -17,6 +17,14 @@
   ServerAlias invoices.razorpay.com
   {% endif %}
 
+  <IfModule status_module>
+    <Location /server-status>
+        SetHandler server-status
+        Require local
+        Require ip 127
+    </Location>
+  </IfModule>
+
   DocumentRoot /app/public
   <Directory /app/public>
     # This is to allow Authorization header raw access
@@ -29,6 +37,7 @@
     <IfModule mod_rewrite.c>
       Options -MultiViews
       RewriteEngine On
+      RewriteCond %{REQUEST_URI} !=/server-status
       RewriteCond %{REQUEST_FILENAME} !-f
       RewriteRule ^ index.php [L]
     </IfModule>
