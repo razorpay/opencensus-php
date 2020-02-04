@@ -3528,6 +3528,32 @@ class Service extends Base\Service
         });
     }
 
+    public function enableBusinessBankingTestMode(array $input)
+    {
+        $merchantIds = $input['merchant_ids'] ?? [];
+        $skip        = $input['skip'] ?? 0;
+        $limit       = $input['limit'] ?? 500;
+
+        $bankingAccounts = $this->repo->banking_account->fetchBankingAccounts($merchantIds, $skip, $limit);
+
+        foreach ($bankingAccounts as $bankingAccount)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_X_TEST_MODE_MIGRATION,
+                [
+                    'banking_account_id'  => $bankingAccount->getId(),
+                    'merchant_id'         => $bankingAccount->merchant->getId(),
+                ]
+            );
+
+            $this->app['basicauth']->setMerchant($bankingAccount->merchant);
+
+            (new Activate)->activateBusinessBankingIfApplicable($bankingAccount->merchant);
+        }
+
+        return ['processed' => count($bankingAccounts)];
+    }
+
     /**
      * Checks if a merchant exists with the input email
      * and if it is marked as a partner
