@@ -53,15 +53,15 @@ class Core extends Base\Core
     {
         try
         {
-            $channel = array_pull($input, Entity::CHANNEL);
+            $channel = array_get($input, Entity::CHANNEL);
 
-            $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
+            $accountNumber = array_get($input, Entity::ACCOUNT_NUMBER);
 
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
                 [
                     'channel'        => $channel,
-                    'account_number' => $accountNumber,
+                    'accountNumber' => $accountNumber,
                 ]);
 
             // Taking lock after taking trace info of request process
