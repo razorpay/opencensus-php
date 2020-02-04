@@ -38,7 +38,7 @@ class Error extends Support\Fluent
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_DESC    = 'gateway_error_desc';
     const METADATA              = 'metadata';
-    const CODE_DETAIL           = 'code_detail';
+    const REASON                = 'reason';
     const FAILURE_TYPE          = 'failure_type';
     const POINT_OF_FAILURE      = 'point_of_failure';
     const FAILURE_STAGE         = 'failure_stage';
@@ -46,7 +46,7 @@ class Error extends Support\Fluent
     const PAYMENT_METHOD        = 'payment_method';
     const RECOVERABLE           = 'recoverable';
 
-    const ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_code_detail_%s.csv';
+    const ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_reason_%s.csv';
 
     const ERROR_CODE_CACHE_KEY  = 'error_code_map_cache_%s';
 
@@ -296,7 +296,7 @@ class Error extends Support\Fluent
             {
                 //$this->setDesc($errorCodeMap[$code][0]);
 
-                $this->setCodeDetail($errorCodeMap[$code][1]);
+                $this->setReason($errorCodeMap[$code][1]);
 
                 $this->setFailureType($errorCodeMap[$code][2]);
 
@@ -315,9 +315,9 @@ class Error extends Support\Fluent
         }
     }
 
-    protected function setCodeDetail($codeDetail)
+    protected function setReason($reason)
     {
-        $this->setAttribute(self::CODE_DETAIL, $codeDetail);
+        $this->setAttribute(self::REASON, $reason);
     }
 
     protected function setFailureType($failureType)
@@ -490,7 +490,7 @@ class Error extends Support\Fluent
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
-            self::CODE_DETAIL       => $this->getAttribute(self::CODE_DETAIL),
+            self::REASON       => $this->getAttribute(self::REASON),
             self::METADATA          => $this->getAttribute(self::METADATA)
         );
 

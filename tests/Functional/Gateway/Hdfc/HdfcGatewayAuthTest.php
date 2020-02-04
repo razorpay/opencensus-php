@@ -295,7 +295,7 @@ class HdfcGatewayAuthTest extends TestCase
 
         $this->assertArrayHasKey('payment_id', $content['error']['metadata']);
 
-        $this->assertArrayHasKey('code_detail', $content['error']);
+        $this->assertArrayHasKey('reason', $content['error']);
 
     }
 
