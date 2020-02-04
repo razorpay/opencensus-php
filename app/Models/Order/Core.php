@@ -217,6 +217,11 @@ class Core extends Base\Core
             $data += [
                 Entity::BANK           => $order->getBank(),
             ];
+
+            if ($orderMethod !== null)
+            {
+                $data += [Entity::METHOD => $orderMethod];
+            }
         }
 
         $tokenRegistration = $order->getTokenRegistration();
