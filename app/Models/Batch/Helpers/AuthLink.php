@@ -65,7 +65,8 @@ class AuthLink
 
         $method = $entry[Batch\Header::AUTH_LINK_METHOD];
 
-        if ($method === SubscriptionRegistration\Method::EMANDATE)
+        if (($method === SubscriptionRegistration\Method::EMANDATE) or
+            ($method === SubscriptionRegistration\Method::NACH))
         {
             if ($amount > 0)
             {
@@ -148,6 +149,11 @@ class AuthLink
 
         $input[Entity::BANK_ACCOUNT] = $bankInput;
 
+        if ($method === SubscriptionRegistration\Method::NACH)
+        {
+            $input[SubscriptionRegistration\Entity::NACH] = self::getNachFormData($entry);
+        }
+
         return $input;
     }
 
@@ -203,5 +209,27 @@ class AuthLink
      */
     public static function fromExcelToEpoch($value) {
         return ($value - 25569) * 86400;
+    }
+
+    protected static function getNachFormData(array & $entry): array
+    {
+        $nachFormData = [];
+
+        if (empty($entry[Batch\Header::AUTH_LINK_NACH_REFERENCE1]) === false)
+        {
+            $nachFormData[SubscriptionRegistration\Entity::FORM_REFERENCE1] = $entry[Batch\Header::AUTH_LINK_NACH_REFERENCE1];
+        }
+
+        if (empty($entry[Batch\Header::AUTH_LINK_NACH_REFERENCE2]) === false)
+        {
+            $nachFormData[SubscriptionRegistration\Entity::FORM_REFERENCE2] = $entry[Batch\Header::AUTH_LINK_NACH_REFERENCE2];
+        }
+
+        if (isset($entry[Batch\Header::AUTH_LINK_NACH_CREATE_FORM]) === true)
+        {
+            $nachFormData[SubscriptionRegistration\Entity::CREATE_FORM] = boolval($entry[Batch\Header::AUTH_LINK_NACH_CREATE_FORM]);
+        }
+
+        return $nachFormData;
     }
 }

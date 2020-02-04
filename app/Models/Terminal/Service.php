@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -58,11 +59,22 @@ class Service extends Base\Service
 
     public function deleteTerminal($mid, $tid)
     {
+        $this->trace->info(
+            TraceCode::TERMINAL_DELETE,
+            [
+                'merchant_id'       => $mid,
+                'terminal_id'       => $tid,
+            ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
 
         Entity::verifyIdAndSilentlyStripSign($tid);
 
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
+
+        $this->app['workflow']
+             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+             ->handle($terminal, (new \stdClass));
 
         $terminal = $this->repo->deleteOrFail($terminal);
 
@@ -74,9 +86,19 @@ class Service extends Base\Service
 
     public function deleteTerminal2($id)
     {
+        $this->trace->info(
+            TraceCode::TERMINAL_DELETE2,
+            [
+                'terminal_id' => $id,
+            ]);
+
         Entity::verifyIdAndSilentlyStripSign($id);
 
         $terminal = $this->repo->terminal->findOrFailPublic($id);
+
+        $this->app['workflow']
+             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+             ->handle($terminal, (new \stdClass));
 
         $terminal = $this->repo->deleteOrFail($terminal);
 
@@ -173,6 +195,27 @@ class Service extends Base\Service
         $terminal = $this->repo->terminal->getById($id);
 
         $toggle = (bool) $input['toggle'];
+
+        $terminalStatusTrace = ($toggle) ? TraceCode::TERMINAL_ENABLE : TraceCode::TERMINAL_DISABLE;
+
+        $this->trace->info(
+            $terminalStatusTrace,
+            [
+                'terminal_id' => $terminal->getId(),
+                'input'       => $input,
+            ]);
+
+        $enabled = $terminal->isEnabled();
+
+        // Workflow
+        list($original, $dirty) = [
+            ['terminal_enable' => $enabled],
+            ['terminal_enable' => !$enabled],
+        ];
+        
+        $this->app['workflow']
+             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+             ->handle($original, $dirty);
 
         (new Terminal\Core)->toggle($terminal, $toggle);
 

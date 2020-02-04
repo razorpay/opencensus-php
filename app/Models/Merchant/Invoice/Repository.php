@@ -38,21 +38,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchBankingInvoiceReportData(string $merchantId, int $month, int $year, $balanceId)
+    public function fetchBankingInvoiceReportData(string $merchantId, int $month, int $year)
     {
-        $balanceIDColumn = $this->repo->merchant_invoice->dbColumn(Entity::BALANCE_ID);
-
         $typeColumn = $this->repo->merchant_invoice->dbColumn(Entity::TYPE);
 
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where($typeColumn, '=', Type::RX_TRANSACTIONS)
-                    ->where($balanceIDColumn, '=', $balanceId)
                     ->where(Entity::MONTH, '=', $month)
                     ->where(Entity::YEAR, '=', $year)
-                    // We do first only for banking invoice report data since we know
-                    // there will be exactly one row only for now - rx_transactions
-                    ->first();
+                    ->get();
     }
 
     /**

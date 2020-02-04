@@ -1208,11 +1208,12 @@ class Gateway extends Base\Gateway
             ($PaRes['Message']['PARes']['TX']['status'] === 'N'))
         {
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                Error\ErrorCode::GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED,
                 null,
                 null,
                 [
-                    'txn_data' => $PaRes['Message']['PARes']['TX']
+                    'txn_data'     => $PaRes['Message']['PARes']['TX'],
+                    'pares_status' => $PaRes['Message']['PARes']['TX']['status'] ?? 'N',
                 ],
                 null,
                 Base\Action::AUTHENTICATE);

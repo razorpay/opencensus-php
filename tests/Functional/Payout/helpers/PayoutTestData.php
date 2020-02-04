@@ -1723,7 +1723,7 @@ return [
                         'fund_account_id' => 'fa_100000000000fa',
                         'narration'       => 'Batman',
                         'purpose'         => 'refund',
-                        'status'          => 'processed',
+                        'status'          => 'processing',
                         'tax'             => 162,
                         'fees'            => 1062,
                         'notes'           => [
@@ -1863,7 +1863,7 @@ return [
                         'currency'                  => 'INR',
                         'fees'                      => 590,
                         'tax'                       => 90,
-                        'status'                    => 'processed',
+                        'status'                    => 'processing',
                         'purpose'                   => 'refund',
                         'user_id'                   => null,
                         'mode'                      => 'IMPS',
@@ -2397,6 +2397,33 @@ return [
         ],
     ],
 
+    'testGetPayoutMetaWorkflowProxyAuth' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/workflows',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetPayoutMetaWorkflowPrivateAuth' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/workflows',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testCreatePayoutWithWrongFundAccountId' => [
         'request'  => [
             'method'  => 'POST',
@@ -2786,7 +2813,6 @@ return [
         ],
     ],
 
-
     'testCreatingPendingPayoutsForRblWithUnsupportedModeChannelDestinationTypeCombo' => [
         'request' => [
             'url'     => '/payouts',
@@ -2814,6 +2840,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
         ],
     ],
+
     'testCreatingPendingPayoutsForRblWithSupportedModeChannelDestinationTypeCombo' => [
         'request' => [
             'url'     => '/payouts',
@@ -2836,6 +2863,132 @@ return [
                 'status'          => 'pending',
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
+            ],
+        ],
+    ],
+
+    'testWorkflowTriggerForBankingRequest' => [
+        'request' => [
+            'url'    => '/payouts_with_otp',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'token'           => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'pending',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testDefaultWorkflowBehaviourForAPIRequest' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'pending',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testSkipWorkflowForAPIRequest' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testFiringOfWebhookOnRejectionOfPayoutEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payout.rejected',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity' => 'payout',
+                    'status' => 'rejected',
+                ],
             ],
         ],
     ],

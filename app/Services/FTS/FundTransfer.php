@@ -682,26 +682,40 @@ class FundTransfer extends Base
 
     public function addInitiateAtIfRequired()
     {
-        if (($this->fta->getSourceType() === FundTransferAttempt\Type::PAYOUT) and
-            ($this->fta->source->isBalanceTypeBanking() === true))
-        {
-            $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
+        $minuteOffset = random_int(15, 59);
+
+        if ($this->fta->source->isBalanceTypeBanking() === true)
+        {
             if (($currentTime < $this->bankingStartTime) &&
                 (TransferHoliday::isWorkingDay(Carbon::now(Timezone::IST)) === true))
             {
-                $this->fta->setInitiateAt($this->bankingStartTime);
+                $this->fta->setInitiateAt(Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, $minuteOffset, 0, Timezone::IST)
+                          ->getTimestamp());
             }
             else
             {
                 $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
-                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->addMinutes(15)->getTimestamp());
+                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->addMinutes($minuteOffset)->getTimestamp());
             }
-
-            return true;
+        }
+        else
+        {
+            if (($currentTime < $this->bankingStartTime) &&
+                (SettlementHoliday::isWorkingDay(Carbon::now(Timezone::IST)) === true))
+            {
+                $this->fta->setInitiateAt(Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, $minuteOffset, 0, Timezone::IST)
+                          ->getTimestamp());
+            }
+            else
+            {
+                $this->fta->setInitiateAt(SettlementHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
+                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->addMinutes($minuteOffset)->getTimestamp());
+            }
         }
 
-        return false;
+        return true;
     }
 
     public function initialize(string $ftaId)

@@ -1254,10 +1254,12 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->app->instance('card.cardVault', $cardVault);
 
+        $created_at = $this->app['cache']->get('fingerprint_migration', 1546300800);
+
         $card = $this->fixtures->create('card', [
             'vault'       => 'rzpvault',
             'vault_token' => 'NDAwMDQwMDAwMDAwMDAwNA==',
-            'created_at'  => Carbon::now()->getTimestamp() - 3600,
+            'created_at'  => $created_at + 3600,
         ]);
 
         $this->ba->cronAuth();

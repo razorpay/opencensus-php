@@ -657,8 +657,9 @@ abstract class Base extends BaseCore
         {
             if ($newBalance < 0)
             {
-                $dimensions = (new Balance\Metric)->getBalanceNegativeDimensions($this->merchantBalance->merchant,
-                                                                                 $this->merchantBalance,
+                $dimensions = (new Balance\Metric)->getBalanceNegativeDimensions($this->merchantBalance->merchant->getId(),
+                                                                                 $this->merchantBalance->getType(),
+                                                                                 $this->merchantBalance->getBalance(),
                                                                                  $this->txn->getType());
 
                 $this->trace->count(Balance\Metric::BALANCE_NEGATIVE, $dimensions);
