@@ -2039,6 +2039,7 @@
                 }
             ],
             "description": "Provides a simple API and specification that abstracts away the details of HTTP into a single PHP function.",
+            "abandoned": true,
             "time": "2015-05-20T03:37:09+00:00"
         },
         {
@@ -2089,6 +2090,7 @@
                 "Guzzle",
                 "stream"
             ],
+            "abandoned": true,
             "time": "2014-10-12T19:18:40+00:00"
         },
         {
@@ -2295,7 +2297,7 @@
             "time": "2017-06-27T06:30:13+00:00"
         },
         {
-            "name": "jeremeamia/SuperClosure",
+            "name": "jeremeamia/superclosure",
             "version": "2.3.0",
             "source": {
                 "type": "git",
@@ -4016,6 +4018,7 @@
                 "cron",
                 "schedule"
             ],
+            "abandoned": "dragonmantank/cron-expression",
             "time": "2017-01-23T04:29:33+00:00"
         },
         {
@@ -5985,16 +5988,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.4.10",
+            "version": "1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "01a17b0a0f5c528a19b7f2366b5da9b45515756f"
+                "reference": "28c33217a2850e50da1b1338b55cc2309f0f84fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/01a17b0a0f5c528a19b7f2366b5da9b45515756f",
-                "reference": "01a17b0a0f5c528a19b7f2366b5da9b45515756f",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/28c33217a2850e50da1b1338b55cc2309f0f84fe",
+                "reference": "28c33217a2850e50da1b1338b55cc2309f0f84fe",
                 "shasum": ""
             },
             "require": {
@@ -6028,7 +6031,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2020-01-02T08:49:15+00:00"
+            "time": "2020-02-03T10:04:33+00:00"
         },
         {
             "name": "razorpay/lqext",

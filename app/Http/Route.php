@@ -1461,6 +1461,8 @@ final class Route
         'offline_qr_poll_test_order_status'       => ['get',       't/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusTest'                  ],
         'offline_qr_poll_live_order_status'       => ['get',       'l/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusLive'                  ],
 
+        'fd_reserve_balance_ticket'                 => ['post',      'fd/reserve_balance/tickets',                                    'FreshdeskTicketController@postReserveBalanceTicketDetails'   ],
+        'fd_reserve_balance_ticket_status'          => ['get',       'fd/reserve_balance/tickets/status',                            'FreshdeskTicketController@getReserveBalanceTicketStatus'      ],
     ];
 
     public static $public = [
@@ -2268,6 +2270,9 @@ final class Route
         'fetch_merchant_balance_configs',
         'get_merchant_balance_config',
         'virtual_account_configs',
+
+        'fd_reserve_balance_ticket',
+        'fd_reserve_balance_ticket_status',
     ];
 
     //
@@ -3068,7 +3073,7 @@ final class Route
         'merchant_create'                          => '*',
         'merchant_create_terminal'                 => Permission::ASSIGN_MERCHANT_TERMINAL,
         'merchant_onboard_terminal'                => Permission::ASSIGN_MERCHANT_TERMINAL,
-        'merchant_delete_terminal'                 => '*',
+        'merchant_delete_terminal'                 => Permission::DELETE_TERMINAL,
         'merchant_edit_free_credits'               => '*',
         'merchant_fetch_multiple'                  => '*',
         'merchant_fetch_webhooks'                  => '*',

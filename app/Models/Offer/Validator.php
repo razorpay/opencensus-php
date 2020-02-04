@@ -70,7 +70,7 @@ class Validator extends Base\Validator
         Entity::ISSUER              => 'required_without:payment_network|filled',
         Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX,BAJAJ|filled',
         Entity::EMI_SUBVENTION      => 'required|boolean|in:1',
-        Entity::EMI_DURATIONS       => 'sometimes|array|custom',
+        Entity::EMI_DURATIONS       => 'sometimes|array',
         Entity::MIN_AMOUNT          => 'filled|integer|min:0',
         Entity::MAX_PAYMENT_COUNT   => 'filled|integer|min:1',
         Entity::PROCESSING_TIME     => 'filled|integer',
@@ -115,6 +115,7 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT,
         self::OFFER_PERIOD,
         self::EMI_ISSUER,
+        Entity::EMI_DURATIONS,
     ];
 
     protected static $editValidators = [
@@ -379,11 +380,30 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateEmiDurations(string $attribute, array $emiDurations)
+    protected function validateEmiDurations(array $input)
     {
-        $validDurations = Emi\Entity::VALID_DURATIONS;
+        if (isset($input[Entity::EMI_DURATIONS]) === false)
+        {
+            return;
+        }
+        
+        $emiRepo = new Emi\Repository();
 
-        $diff = array_diff($emiDurations, $validDurations);
+        $validDurations = [];
+
+        if (isset($input[Entity::ISSUER]) === true)
+        {
+            $validDurations = $emiRepo->fetchDurationsByMerchantAndIssuer($this->entity->merchant->getId(),
+                $input[Entity::ISSUER]);
+        }
+
+        if (isset($input[Entity::PAYMENT_NETWORK]) === true)
+        {
+            $validDurations = $emiRepo->fetchDurationsByMerchantAndNetwork($this->entity->merchant->getId(),
+                $input[Entity::PAYMENT_NETWORK]);
+        }
+
+        $diff = array_diff($input[Entity::EMI_DURATIONS], $validDurations);
 
         if (empty($diff) === false)
         {

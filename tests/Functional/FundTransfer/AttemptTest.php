@@ -428,11 +428,7 @@ class AttemptTest extends TestCase
             'content'   => $content
         ];
 
-        Queue::fake();
-
         $this->makeRequestAndGetContent($request);
-
-        Queue::assertPushed(FtsFundTransfer::class, 1);
 
         $payout = $this->getLastEntity('payout', true);
 
@@ -511,11 +507,7 @@ class AttemptTest extends TestCase
             'content'   => $content
         ];
 
-        Queue::fake();
-
         $this->makeRequestAndGetContent($request);
-
-        Queue::assertPushed(FtsFundTransfer::class, 1);
 
         $payout = $this->getLastEntity('payout', true);
 
@@ -604,11 +596,7 @@ class AttemptTest extends TestCase
             'content'   => $content
         ];
 
-        Queue::fake();
-
         $this->makeRequestAndGetContent($request);
-
-        Queue::assertPushed(FtsFundTransfer::class, 1);
 
         $payout = $this->getLastEntity('payout', true);
 

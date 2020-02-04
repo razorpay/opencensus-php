@@ -227,19 +227,6 @@ class Channel
     }
 
     /**
-     * TODO: To yesbank for QA testing. Will remove when ramping and use razorx
-     *
-     * Supported FTS channels for payouts
-     * @return array
-     */
-    public static function getFtsSupportedPayoutChannels()
-    {
-        return [
-            self::RBL,
-        ];
-    }
-
-    /**
      * Supported FTA (API based) channels for razorpayX payouts
      * @return array
      */

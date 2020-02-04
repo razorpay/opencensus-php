@@ -949,7 +949,9 @@ class Core extends Base\Core
         {
             if ($newBalance < 0)
             {
-                $dimensions = (new Balance\Metric)->getBalanceNegativeDimensions($this->merchant, $merchantBalance,
+                $dimensions = (new Balance\Metric)->getBalanceNegativeDimensions($this->merchant->getId(),
+                                                                                 $merchantBalance->getType(),
+                                                                                  $merchantBalance->getBalance(),
                                                                                   $txn->getType());
 
                 $this->trace->count(Balance\Metric::BALANCE_NEGATIVE, $dimensions);

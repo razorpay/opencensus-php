@@ -1084,32 +1084,6 @@ class MerchantBankingInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
-
-    public function testFetchMultipleBankingInvoicesGivenAccountNumber()
-    {
-        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
-
-        Carbon::setTestNow($oldDateTime);
-
-        $this->createDataForFetchingBankingInvoices();
-
-        $this->ba->appAuth();
-
-        $request = [
-            'url'     => '/merchants/invoice/create',
-            'method'  => 'POST',
-            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year],
-        ];
-
-        $this->makeRequestAndGetContent($request);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-
-        Carbon::setTestNow();
-    }
-
     public function testFetchMultipleBankingInvoicesGivenNoInputs()
     {
         $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);

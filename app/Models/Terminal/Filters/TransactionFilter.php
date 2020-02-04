@@ -204,7 +204,8 @@ class TransactionFilter extends Terminal\Filter
 
         // This filter should run only in production environment, else tests for
         // cybersource would fail.
-        if (($this->isLiveMode() === true) and ($payment->isMethodCardOrEmi() === true))
+        if (($this->isLiveMode() === true) and ($payment->isMethodCardOrEmi() === true)
+            and ($payment->isGooglePayCard() === false))
         {
             if ($terminal->getGateway() === Gateway::CYBERSOURCE)
             {
@@ -696,7 +697,7 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if ($payment->isMethodCardOrEmi() === false)
+        if (($payment->isMethodCardOrEmi() === false) or ($payment->isGooglePayCard() === true))
         {
             return true;
         }
@@ -971,6 +972,11 @@ class TransactionFilter extends Terminal\Filter
     public function capabilityFilter(Terminal\Entity $terminal)
     {
         $payment = $this->input['payment'];
+
+        if ($payment->isGooglePayCard() === true)
+        {
+            return true;
+        }
 
         if ((Payment\Gateway::isOnlyAuthorizationGateway($terminal->getGateway()) === true) or
             ($terminal->getCapability() === Terminal\Capability::AUTHORIZE))

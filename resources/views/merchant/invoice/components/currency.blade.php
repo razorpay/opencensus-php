@@ -3,4 +3,4 @@
 @endif
 @if(isset($currency)){{{ $currency }}}@else₹
 @endif
-{{$absValue/(isSet($isRupees) ? 1 : 100)}}
+<?php echo number_format($absValue /(isSet($isRupees) ? 1 : 100), '2', '.', '') ?>
