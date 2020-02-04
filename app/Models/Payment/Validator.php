@@ -63,7 +63,7 @@ class Validator extends Base\Validator
         'description'                   => 'sometimes|nullable|string|max:255|utf8',
         'email'                         => 'sometimes|nullable|email',
         'upi_provider'                  => 'sometimes_if:method,upi|filled|string|custom',
-        'contact'                       => 'sometimes|nullable|contact_syntax',
+        'contact'                       => 'sometimes|nullable|contact_syntax|regex:/^([0-9\s\-\+\(\)]*)$/',
         'billing_address'               => 'sometimes',
         'signature'                     => 'sometimes|nullable|string',
         'notes'                         => 'sometimes|notes',
@@ -220,7 +220,8 @@ class Validator extends Base\Validator
 
     protected static $paymentCardMigrateRules = [
         'limit'                             => 'sometimes|integer',
-        'migrate_missing_fingerprint_cards' => 'sometimes|boolean'
+        'migrate_missing_fingerprint_cards' => 'sometimes|boolean',
+        'time_window'                       => 'sometimes|integer',
     ];
 
     protected static $mandateUpdateRules = [

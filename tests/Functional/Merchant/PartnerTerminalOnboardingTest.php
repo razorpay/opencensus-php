@@ -337,6 +337,23 @@ class PartnerTerminalOnboardingTest extends TestCase
         $this->startTest();
     }
 
+    public function testTerminalOnboardingCreateTerminalForNonActivatedMerchant()
+    {
+        $this->app['config']->set('gateway.mock_mozart', true);
+
+        $this->ba->adminAuth();
+
+        $this->setUpPartnerAuthAndGetSubMerchantId($activated = false);
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $url = '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     // We should be able to create terminal with same fields if existing terminal is failed
     public function testTerminalOnboardingCreateTerminalWithSameFields()
     {

@@ -34,6 +34,8 @@ class Processor extends VirtualAccount\Processor
      */
     const AMOUNT_THRESHOLD_FOR_BANKING = 5000000000;
 
+    const DATE_FORMAT = 'd/m/Y h:i A';
+
     /**
      * Check if the UTR received has ever been encountered before for the same
      * account. If it has, this is a duplicate payment, being processed again.
@@ -187,21 +189,25 @@ class Processor extends VirtualAccount\Processor
 
         if ($bankTransfer->getAmount() >= self::AMOUNT_THRESHOLD_FOR_BANKING)
         {
+            $time = Carbon::now(Timezone::IST)->getTimestamp();
+
             $this->trace->info(TraceCode::AMOUNT_THRESHOLD_FOR_BANKING_ALERT,
                 [
                     'bank_transfer_id'   => $bankTransfer->getId(),
                     'virtual_account_id' => $this->virtualAccount->getId(),
-                    'amount'             => $bankTransfer->getAmount(),
-                    'merchant_id'        => $bankTransfer->getMerchantId(),
-                    'time'               => Carbon::now(Timezone::IST)->getTimestamp(),
+                    Entity::AMOUNT       => $bankTransfer->getAmount(),
+                    Entity::MERCHANT_ID  => $bankTransfer->getMerchantId(),
+                    Entity::TIME         => $time,
                 ]);
 
             $message = "Merchant load greater than " . self::AMOUNT_THRESHOLD_FOR_BANKING . " for banking product";
 
+            $time = Carbon::createFromTimestamp($time, Timezone::IST)->format(self::DATE_FORMAT);
+
             $data = [
-                'amount'      => $bankTransfer->getAmount(),
-                'merchant_id' => $bankTransfer->getMerchantId(),
-                'time'        => Carbon::now(Timezone::IST)->getTimestamp(),
+                Entity::AMOUNT      => $bankTransfer->getAmount(),
+                Entity::MERCHANT_ID => $bankTransfer->getMerchantId(),
+                Entity::TIME        => $time,
             ];
 
             $this->app['slack']->queue(

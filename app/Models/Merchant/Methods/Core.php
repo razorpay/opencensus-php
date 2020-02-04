@@ -347,7 +347,7 @@ class Core extends Base\Core
                 $methods->setCreditCard(true);
                 $methods->setDebitCard(true);
                 $methods->setPrepaidCard(true);
-                $methods->setMobikwik(false);
+                $methods->setMobikwik(true);
                 $methods->setPayzapp(true);
                 $methods->setPayumoney(true);
                 // OlaMoney is facing fraud issues, not going to
@@ -355,9 +355,12 @@ class Core extends Base\Core
                 // Ref: https://razorpay.slack.com/archives/C0X84TUTH/p1568200366022300
                 // $methods->setOlamoney(false);
                 $methods->setFreecharge(true);
-                $methods->setAirtelmoney(false);
+                $methods->setAirtelmoney(true);
                 $methods->setAmazonpay(false);
                 $methods->setBankTransfer(true);
+                $methods->setAmex(true);
+                $methods->setJiomoney(true);
+                $methods->setPayLater(true);
                 // Initializing Disabled bank with empty array
                 $methods->setDisabledBanks([]);
             }

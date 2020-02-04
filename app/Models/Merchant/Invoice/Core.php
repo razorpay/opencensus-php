@@ -247,7 +247,6 @@ class Core extends Base\Core
         return $count;
     }
 
-
     public function generateInvoiceReport($input)
     {
         $data = (new BankingInvoiceReport)->getInvoiceReport($input);
