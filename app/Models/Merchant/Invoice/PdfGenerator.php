@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Invoice;
 
 use View;
 use Carbon\Carbon;
+
+use mikehaertl\tmp\File;
 use mikehaertl\wkhtmlto\Pdf;
 
 use RZP\Exception;
@@ -15,19 +17,20 @@ use RZP\Models\Report\Types\BankingInvoiceReport;
 
 class PdfGenerator extends Base\Core
 {
-    const TEMPLATE_FILE_NAME    =   'merchant.invoice.invoice';
-    const DATE_FORMAT           =   'd/m/Y h:i A';
-    const DATA                  =   'data';
+    const TEMPLATE_FILE_NAME = 'merchant.invoice.invoice';
+    const HEADER_FILE_NAME   = 'resources/views/merchant/invoice/components/header';
 
-    const TEMP_PATH             =   '/tmp/';
+    const DATE_FORMAT        = 'd/m/Y h:i A';
+    const DATA               = 'data';
 
-    const SUMMARY               =   'summary';
-    const ISSUED_TO             =   'issued_to';
-    const PAGES                 =   'pages';
-    const INVOICE_NUMBER        =   'invoice_number';
-    const INVOICE_DATE          =   'invoice_date';
-    const GSTIN                 =   'gstin';
-    const BILLING_PERIOD        =   'billing_period';
+    const TEMP_PATH = '/tmp/';
+
+    const ISSUED_TO      = 'issued_to';
+    const ROWS           = 'rows';
+    const INVOICE_NUMBER = 'invoice_number';
+    const INVOICE_DATE   = 'invoice_date';
+    const GSTIN          = 'gstin';
+    const BILLING_PERIOD = 'billing_period';
 
     protected $data;
 
@@ -63,9 +66,8 @@ class PdfGenerator extends Base\Core
     protected function getPdfContent($data)
     {
         $html = View::make(self::TEMPLATE_FILE_NAME)
-                    ->with(self::SUMMARY, $data[BankingInvoiceReport::SUMMARY_TITLE])
                     ->with(self::ISSUED_TO, $data[BankingInvoiceReport::ISSUED_TO])
-                    ->with(self::PAGES, $data[BankingInvoiceReport::PAGES])
+                    ->with(self::ROWS, $data[BankingInvoiceReport::ROWS])
                     ->with(self::INVOICE_NUMBER, $data[BankingInvoiceReport::INVOICE_NUMBER])
                     ->with(self::INVOICE_DATE, $data[BankingInvoiceReport::INVOICE_DATE])
                     ->with(self::GSTIN, $data[BankingInvoiceReport::GSTIN])
@@ -73,6 +75,8 @@ class PdfGenerator extends Base\Core
 
         $options = [
             'print-media-type',
+            'header-html'      => new File(self::HEADER_FILE_NAME, '.html'),
+            'header-spacing'   => '-18',
             'footer-font-size' => '6',
             'footer-right'     => 'Page [page] of [topage]',
             'footer-left'      => 'Date and Time: ' . Carbon::createFromTimestamp(Carbon::now()->getTimestamp(),

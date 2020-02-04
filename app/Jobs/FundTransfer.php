@@ -286,7 +286,6 @@ class FundTransfer extends Job
         $duration = $currentTime - $fta->getCreatedAt();
 
         if ((empty($sla) === false) and
-            ($fta->getSourceType() === Attempt\Type::PAYOUT) and
             (((int) $sla) <= $duration))
         {
             $this->trace->info(
