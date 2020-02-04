@@ -53,9 +53,9 @@ class Core extends Base\Core
     {
         try
         {
-            $channel = array_get($input, Entity::CHANNEL);
+            $channel = array_pull($input, Entity::CHANNEL);
 
-            $accountNumber = array_get($input, Entity::ACCOUNT_NUMBER);
+            $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
 
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
