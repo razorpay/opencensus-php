@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Feature\Constants;
+use RZP\Models\User\Role;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
@@ -96,7 +97,17 @@ class PayoutTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->privateAuth();
+        $adminRoleUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], Role::ADMIN);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $adminRoleUser->id,
+            'merchant_id' => '10000000000000',
+            'role'        => Role::ADMIN,
+            'product'     => 'banking',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $adminRoleUser->getId());
+//        $this->ba->proxyAuth();
 
         (new Admin\Service)->setConfigKeys(
             [
@@ -2175,5 +2186,76 @@ class PayoutTest extends TestCase
 
         $this->startTest();
     }
+    
+    public function testCreatePayoutWithRoles()
+    {
+        $merchantId = '10000000000000';
+        $adminRoleUser = $this->fixtures->user->createUserForMerchant($merchantId, [], Role::ADMIN);
 
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $adminRoleUser->id,
+            'merchant_id' => $merchantId,
+            'role'        => Role::ADMIN,
+            'product'     => 'banking',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $adminRoleUser->getId());
+
+        $testData = $this->testData['testCreatePayout'];
+
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->startTest($testData);
+    }
+
+    public function testCreatePayoutWithRoles()
+    {
+        $merchantId = '10000000000000';
+        $adminRoleUser = $this->fixtures->user->createUserForMerchant($merchantId, [], Role::ADMIN);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $adminRoleUser->id,
+            'merchant_id' => $merchantId,
+            'role'        => Role::ADMIN,
+            'product'     => 'banking',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $adminRoleUser->getId());
+
+        $testData = $this->testData['testCreatePayout'];
+
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->startTest($testData);
+    }
+
+    protected function createPayoutWithWorkflowHavingPayoutRules(){
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        $workflow = $this->getDbLastEntity('workflow');
+
+        $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
+            'min_amount' => '0', 'max_amount' => '5000000']);
+
+        $this->createPayoutWithWorkflow($workflow);
+    }
+
+    protected function createPayoutWithWorkflow($workflow, $payoutAttributes = [])
+    {
+        $this->app['config']->set('heimdall.workflows.mock', false);
+
+        $this->app['config']->set('heimdall.permissions.payouts.create_payout.assignable', true);
+
+        $workflowDefaultPermissions = (new Admin\Permission\Repository())
+            ->retrieveIdsByNames([Admin\Permission\Name::CREATE_PAYOUT]);
+
+        // Attach permissions to the default workflow
+        $workflow->permissions()->sync($workflowDefaultPermissions);
+
+        return $this->createQueuedOrPendingPayout($payoutAttributes);
+    }
 }

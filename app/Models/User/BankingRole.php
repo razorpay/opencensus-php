@@ -19,6 +19,8 @@ class BankingRole
     const OWNER = Role::OWNER;
     const ADMIN = Role::ADMIN;
 
+    const VIEW_ONLY = 'view_only';
+
     //
     // Dynamic Roles:
     // These roles are linked to workflows on the banking product, used by

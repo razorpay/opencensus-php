@@ -4,12 +4,13 @@ namespace RZP\Http\Middleware;
 
 use Closure;
 use ApiResponse;
-
+use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\UserRolesScope;
 use Illuminate\Http\Request;
+use RZP\Http\UserRolePermissionsMap;
 use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 
@@ -41,6 +42,8 @@ class UserAccess
         $this->router = $app['router'];
 
         $this->userRoleScope = new UserRolesScope();
+
+        $this->userRolePermissionsMap = new UserRolePermissionsMap();
     }
 
     /**
@@ -93,7 +96,14 @@ class UserAccess
             // when merchant (not admin) is hitting the route
             if ($this->ba->isProxyAuth() === true)
             {
-                $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
+                if ($this->ba->isProductBanking())
+                {
+                    $routeUserRolePolicy = $this->validateBankingUserRoutePolicy($route);
+                }
+                else
+                {
+                    $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
+                }
 
                 // If there's an exception then return and fail
                 if ($routeUserRolePolicy !== null)
@@ -185,5 +195,60 @@ class UserAccess
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
+    }
+
+    /**
+     * Banking API request will be validated based on whitelisted permissions
+     * Roles are assigned with set of permissions and route is also assigned with permission
+     * If user role has current route permission then allow otherwise deny
+     *
+     * @param $route
+     *
+     * @return void
+     */
+    private function validateBankingUserRoutePolicy($route) : string
+    {
+        $userRole = $this->ba->getUserRole();
+
+        // Get Role Permissions
+        $userRolePermissions = $this->userRolePermissionsMap->getRolePermissions($userRole);
+
+        if ($userRolePermissions === null)
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_USER_PERMISSIONS_MISSING);
+        }
+
+        // Get current route permissions
+        try
+        {
+            $routePermission = $this->getRoutePermission($route);
+        } catch (Exception\BadRequestException $e)
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
+
+        // If route permission in role permissions then allow or deny
+        if (in_array($routePermission, $userRolePermissions, true) === true)
+        {
+            return;
+        }
+
+        return ApiResponse::unauthorized(
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+    }
+
+    private function getRoutePermission(string $routeName)
+    {
+        $routePermissionList = Route::$routePermission;
+
+        if (isset($routePermissionList[$routeName]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
+        }
+
+        return $routePermissionList[$routeName];
     }
 }

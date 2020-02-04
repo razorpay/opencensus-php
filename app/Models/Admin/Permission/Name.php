@@ -267,6 +267,57 @@ class Name
 
     const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';
 
+    const CREATE_PAYOUT_BULK                  = 'create_payout_bulk';
+    const APPROVE_PAYOUT_BULK                 = 'approve_payout_bulk';
+    const REJECT_PAYOUT_BULK                  = 'reject_payout_bulk';
+    const APPROVE_PAYOUT                      = 'approve_payout';
+    const REJECT_PAYOUT                       = 'reject_payout';
+    const VIEW_PAYOUT                         = 'view_payout';
+    const CANCEL_PAYOUT                       = 'cancel_payout';
+    const VIEW_PAYOUT_PURPOSE                 = 'view_payout_purpose';
+    const CREATE_PAYOUT_PURPOSE               = 'create_payout_purpose';
+    const VIEW_PAYOUT_REVERSAL                = 'view_payout_reversal';
+    const PROCESS_PAYOUT_QUEUED               = 'process_payout_queued';
+    const VIEW_PAYOUT_SUMMARY                 = 'view_payout_summary';
+    const VIEW_PAYOUT_WORKFLOW_SUMMARY        = 'view_payout_workflow_summary';
+    const VIEW_PAYOUT_LINKS                   = 'view_payout_links';
+    const CREATE_PAYOUT_LINKS                 = 'create_payout_links';
+    const CANCEL_PAYOUT_LINKS                 = 'cancel_payout_links';
+    const VIEW_CONTACT                        = 'view_contact';
+    const CREATE_CONTACT                      = 'create_contact';
+    const CREATE_CONTACT_BULK                 = 'create_contact_bulk';
+    const UPDATE_CONTACT                      = 'update_contact';
+    const DELETE_CONTACT                      = 'delete_contact';
+    const VIEW_CONTACT_TYPE                   = 'view_contact_type';
+    const CREATE_CONTACT_TYPE                 = 'create_contact_type';
+    const FUND_ACCOUNT_VALIDATION             = 'fund_account_validation';
+    const RETRY_FUND_ACCOUNT_VALIDATION       = 'retry_fund_account_validation';
+    const VIEW_FUND_ACCOUNT_VALIDATION        = 'view_fund_account_validation';
+    const VALIDATE_FUND_ACCOUNT               = 'validate_fund_account';
+    const RETRY_BULK_FUND_ACCOUNT_VALIDATION  = 'retry_bulk_fund_account_validation';
+
+    const VIEW_FUND_ACCOUNT                   = 'view_fund_account';
+    const CREATE_FUND_ACCOUNT                 = 'create_fund_account';
+    const CREATE_FUND_ACCOUNT_BULK            = 'create_fund_account_bulk';
+    const CREATE_MERCHANT_KEY                 = 'create_merchant_key';
+    const VIEW_MERCHANT_KEY                   = 'view_merchant_key';
+    const VIEW_MERCHANT_INVOICE               = 'view_merchant_invoice';
+    const UPDATE_USER_PROFILE                 = 'update_user_profile';
+    const VIEW_USER                           = 'view_user';
+    const VIEW_MERCHANT_USER                  = 'view_merchant_user';
+    const CREATE_WEBHOOK                      = 'create_webhook';
+    const UPDATE_WEBHOOK                      = 'update_webhook';
+    const VIEW_WEBHOOK                        = 'view_webhook';
+    const VIEW_WEBHOOK_EVENT                  = 'view_webhook_event';
+    const VIEW_REPORTING                      = 'view_reporting';
+    const CREATE_REPORTING                    = 'create_reporting';
+    const VIEW_TRANSACTION_STATEMENT          = 'view_transaction_statement';
+    const CREATE_INVITATION                   = 'create_invitation';
+    const VIEW_INVITATION                     = 'view_invitation';
+    const RESEND_INVITATION                   = 'resend_invitation';
+    const UPDATE_INVITATION                   = 'update_invitation';
+    const DELETE_INVITATION                   = 'delete_invitation';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
