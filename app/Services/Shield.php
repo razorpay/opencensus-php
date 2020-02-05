@@ -246,41 +246,41 @@ class Shield
 
         $method = $payment->getMethod();
 
-        if ($payment->hasInvoice() == true)
+        if ($payment->hasInvoice() === true)
         {
             $invoiceType = $payment->invoice->getType();
             $invoiceEntityType = $payment->invoice->getEntityType();
         }
 
-        if ($invoiceType == 'link' && is_null($subscriptionId) == true && empty($invoiceEntityType) == true)
+        if ($invoiceType === 'link' && is_null($subscriptionId) === true && empty($invoiceEntityType) === true)
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_LINKS;
         }
-        else if ($invoiceType == 'invoice' and is_null($subscriptionId) == true)
+        else if ($invoiceType === 'invoice' and is_null($subscriptionId) === true)
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_INVOICES;
         }
-        else if ($invoiceType == 'ecod')
+        else if ($invoiceType === 'ecod')
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_EPOS;
         }
-        else if (is_null($subscriptionId) == false)
+        else if (is_null($subscriptionId) === false)
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_SUBSCRIPTIONS;
         }
-        else if (is_null($paymentLinkId) == false)
+        else if (is_null($paymentLinkId) === false)
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_LINKS;
         }
-        else if ($method == 'transfer')
+        else if ($method === 'transfer')
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_ROUTE;
         }
-        else if (empty($receiverType) == false && in_array($receiverType, ['bank_account', 'qr_code']) == true)
+        else if (empty($receiverType) === false && in_array($receiverType, ['bank_account', 'qr_code']) === true)
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_SMART_COLLECT;
         }
-        else if (($payment->isRecurring() && is_null($subscriptionId) == false) || (empty($authType) == false && $authType == 'skip'))
+        else if (($payment->isRecurring() === true && is_null($subscriptionId) === false) || (empty($authType) === false && $authType === 'skip'))
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_CAW;
         }
