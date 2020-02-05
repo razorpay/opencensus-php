@@ -207,7 +207,15 @@ class Service extends Base\Service
 
             $requestOriginProduct = $this->auth->getRequestOriginProduct();
 
-            $confirmationMail = new UserMail\AccountVerification($user, $org, $requestOriginProduct);
+            // confirmation mail for RazorpayX is different. Handling it here based on the OriginProduct
+            if ($requestOriginProduct === Product::BANKING)
+            {
+                $confirmationMail = new UserMail\RazorpayX\AccountVerification($user->getId());
+            }
+            else
+            {
+                $confirmationMail = new UserMail\AccountVerification($user, $org, $requestOriginProduct);
+            }
 
             Mail::queue($confirmationMail);
         }
@@ -561,6 +569,8 @@ class Service extends Base\Service
             $utmParams = json_decode(\Cookie::get('rzp_utm'), true);
             $data[Constants::CTA]       = $utmParams[Constants::CTA] ?? '';
             $data[Constants::WEBSITE]   = $utmParams[Constants::WEBSITE] ?? '';
+            $data[Constants::FC_SOURCE] = $utmParams[Constants::FC_SOURCE] ?? '';
+            $data[Constants::LC_SOURCE] = $utmParams[Constants::LC_SOURCE] ?? '';
 
             if (empty($utmParams[Constants::ATTRIBUTIONS]) === false)
             {

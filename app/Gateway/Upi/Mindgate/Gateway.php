@@ -144,14 +144,25 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function authorizeIntent(array $input)
+    public function getIntentUrl(array $input)
+    {
+        // We can call authorize intent with persist false
+        return $this->authorizeIntent($input, false);
+    }
+
+    protected function authorizeIntent(array $input, bool $persist = true)
     {
         $attributes = [
             Entity::TYPE                => Base\Type::PAY,
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
         ];
 
-        $payment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
+        // No need to save the entity for Virtual Account, a corresponding
+        // entity will be created when a payment will be made for the VA.
+        if ($persist === true)
+        {
+            $payment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
+        }
 
         $request = $this->getIntentRequest($input);
 
@@ -386,6 +397,7 @@ class Gateway extends Base\Gateway
             UpiTransfer\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::CALLBACK_RESPONSE_PGMID],
             UpiTransfer\GatewayResponseParams::NPCI_REFERENCE_ID     => $input[ResponseFields::NPCI_UPI_TXN_ID],
             UpiTransfer\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
+            UpiTransfer\GatewayResponseParams::TRANSACTION_REFERENCE => $input[ResponseFields::PAYMENT_ID],
         ];
 
         return [
@@ -1219,7 +1231,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
 
-        $this->checkResponseStatus($content[ResponseFields::STATUS], [Status::SUCCESS, Status::PENDING]);
+        $this->checkResponseStatus($content[ResponseFields::STATUS], [Status::SUCCESS]);
     }
 
     public function getParsedDataFromUnexpectedCallback($callbackData)

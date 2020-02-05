@@ -48,12 +48,13 @@ class TransactionFilter extends Terminal\Filter
         'fee_bearer',
         'shared_terminal',
         'mcc',
-        'upi_transfer',
+        'application',
     ];
 
     public function methodFilter($terminal)
     {
-        $method = $this->input['payment']->getMethod();
+        $method  = $this->input['payment']->getMethod();
+        $payment = $this->input['payment'];
 
         switch ($method)
         {
@@ -114,7 +115,8 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if ($payment->isMethodCardOrEmi() === true)
+        if (($payment->isMethodCardOrEmi() === true) and
+            ($payment->isGooglePayCard() === false))
         {
             $network = $payment->card->getNetworkCode();
             $gateway = $terminal->getGateway();
@@ -202,7 +204,8 @@ class TransactionFilter extends Terminal\Filter
 
         // This filter should run only in production environment, else tests for
         // cybersource would fail.
-        if (($this->isLiveMode() === true) and ($payment->isMethodCardOrEmi() === true))
+        if (($this->isLiveMode() === true) and ($payment->isMethodCardOrEmi() === true)
+            and ($payment->isGooglePayCard() === false))
         {
             if ($terminal->getGateway() === Gateway::CYBERSOURCE)
             {
@@ -347,15 +350,21 @@ class TransactionFilter extends Terminal\Filter
 
         if ($payment->isUpi() === true)
         {
+            if ($payment->isUpiTransfer() !== $terminal->isUpiTransfer())
+            {
+                return false;
+            }
+
             $flow = $payment->getMetadata('flow', 'collect');
 
-            if ($payment->isBharatQr() === true)
+            if (($payment->isBharatQr() === true) and ($payment->isFlowIntent() === false))
             {
                 if (empty($terminal->getVpa()) === true)
                 {
                     return false;
                 }
             }
+            // Flow is intent for UPI QR on VA and direct payments
             else if ($flow === 'intent')
             {
                 $gateway = $terminal->getGateway();
@@ -369,6 +378,13 @@ class TransactionFilter extends Terminal\Filter
                     // corresponsing omnichannel terminal exist otherwise it's normal intent flow and we return true.
                     if (empty($upiProvider))
                     {
+                        // For UPI QR Terminal has to be intent enabled, yet we are putting
+                        // extra check only to make sure implementation is there for gateway
+                        if ($payment->isUpiQr())
+                        {
+                            return in_array($gateway, Gateway::$upiQrGateways, true);
+                        }
+
                         return true;
                     }
 
@@ -681,7 +697,7 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if ($payment->isMethodCardOrEmi() === false)
+        if (($payment->isMethodCardOrEmi() === false) or ($payment->isGooglePayCard() === true))
         {
             return true;
         }
@@ -824,6 +840,11 @@ class TransactionFilter extends Terminal\Filter
 
     public function bharatQrFilter($terminal)
     {
+        if (($this->input['payment']->isFlowIntent()) === true)
+        {
+            // We have already verified that terminal is intent enabled in UPI Filter
+            return true;
+        }
         if ($this->input['payment']->isBharatQr() === true)
         {
             return ($terminal->isBharatQr() === true);
@@ -832,26 +853,6 @@ class TransactionFilter extends Terminal\Filter
         {
             return ($terminal->isBharatQr() === false);
         }
-    }
-
-    protected function upiTransferFilter($terminal)
-    {
-        if ($this->input['payment']->isUpiTransfer() === true)
-        {
-            if ((empty($terminal->getVirtualUpiHandle()) === true) or
-                (empty($terminal->getVirtualUpiRoot()) === true) or
-                (empty($terminal->getVirtualUpiMerchantPrefix()) === true))
-            {
-                return false;
-            }
-
-            if ($terminal->isUpiTransfer() === false)
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public function directSettlementFilter($terminal, $applicableTerminals)
@@ -972,6 +973,11 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
+        if ($payment->isGooglePayCard() === true)
+        {
+            return true;
+        }
+
         if ((Payment\Gateway::isOnlyAuthorizationGateway($terminal->getGateway()) === true) or
             ($terminal->getCapability() === Terminal\Capability::AUTHORIZE))
         {
@@ -1005,6 +1011,22 @@ class TransactionFilter extends Terminal\Filter
             }
 
             return false;
+        }
+
+        return true;
+    }
+
+    public function applicationFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+        $application = $payment->getApplication();
+
+        switch ($application)
+        {
+            case 'google_pay':
+                return ($terminal->isTokenizationSupported() === true);
+            default:
+                return true;
         }
 
         return true;

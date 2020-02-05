@@ -569,6 +569,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UPI);
     }
 
+    public function isTokenizationSupported()
+    {
+        if (in_array($this->getAttribute(self::GATEWAY), Gateway::$tokenizationGateways) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function isOmnichannelEnabled()
     {
         return $this->getAttribute(self::OMNICHANNEL);

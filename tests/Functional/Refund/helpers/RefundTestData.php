@@ -752,4 +752,197 @@ return [
             ],
         ],
     ],
+
+
+    'testRefundWithZeroBalance' => [
+        'request'   => [
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE
+        ]
+    ],
+
+    'testRefundWithZeroBalanceRefundFlow' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testRefundWithNegativeBalance' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testRefundWithNegativeBalanceCrossingThreshold' => [
+        'request'   => [
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bad request'
+                ],
+            ],
+            'status_code' => 400,
+            ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
+        ]
+    ],
+
+    'testRefundWithNegativeBalanceMultipleBreach' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testRefundWithNegativeBalanceAndReserveBalance' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testRefundWithNegativeBalanceAndReserveBalanceCrossThreshold' => [
+        'request'   => [
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bad request'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
+        ]
+    ],
+
+    'testRefundWithZeroRefundCredits' => [
+        'request'   => [
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough credits to carry out the refund operation.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS
+        ]
+    ],
+
+    'testRefundWithZeroRefundCreditsRefundFlow' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testRefundWithNegativeRefundCredits' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testRefundWithNegativeRefundCreditsCrossingThreshold' => [
+        'request'   => [
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bad request'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
+        ]
+    ],
+
+    'testRefundWithNegativeRefundCreditsAndReserveBalance' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testRefundWithNegativeRefundCreditsAndReserveBalanceCrossThreshold' => [
+        'request'   => [
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bad request'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
+        ]
+    ],
 ];

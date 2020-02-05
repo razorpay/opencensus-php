@@ -190,6 +190,11 @@ class WebhookTest extends TestCase
 
     public function testCreateWebhookForProductBanking()
     {
+        // This is required, because this is going to on board the merchant on X on the test mode
+        // which requires the terminal entity to be present
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
         $this->fixtures->merchant->addFeatures(['payout']);
 
         $this->startTest();
@@ -197,6 +202,11 @@ class WebhookTest extends TestCase
 
     public function testCreateWebhookForProductBankingWithInvalidEvents()
     {
+        // This is required, because this is going to on board the merchant on X on the test mode
+        // which requires the terminal entity to be present
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
         $this->fixtures->merchant->addFeatures(['payout']);
 
         $this->startTest();
@@ -341,6 +351,11 @@ class WebhookTest extends TestCase
 
     public function testGetWebhookEventsForProductBanking()
     {
+        // This is required, because this is going to on board the merchant on X on the test mode
+        // which requires the terminal entity to be present
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
         $this->fixtures->merchant->addFeatures(['payout']);
 
         $this->startTest();
@@ -1535,7 +1550,7 @@ class WebhookTest extends TestCase
                 'submitted'   => true,
                 'locked'      => true
             ]);
-        
+
         (new BaseFixture)->createEntityInTestAndLive('merchant_detail', [
             'merchant_id' => '10000000000000',
             'submitted'   => true,
@@ -1674,6 +1689,39 @@ class WebhookTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testWebhookDeactivate()
+    {
+        Mail::fake();
+
+        $this->createMerchantWebhook();
+
+        $webhook = $this->getLastEntity('webhook', false);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'] . '/deactivate';
+
+        $this->startTest();
+
+        // test webhook deactivate
+        $webhookExpected = $this->getEntityById('webhook',$webhook['id']);
+
+        $this->assertEquals($webhookExpected['active'],false);
+
+        $testData = $this->testData[__FUNCTION__.'Data'];
+
+        // test mail sent
+        Mail::assertQueued(WebhookMail::class, function ($mail) use ($testData)
+        {
+            $this->assertEquals($mail->viewData['url'], $testData['url']);
+
+            $this->assertEquals($mail->viewData['mode'], $testData['mode']);
+
+            $this->assertEquals($mail->viewData['subject'], $testData['subject']);
+
+            return ($mail->hasFrom('alerts@razorpay.com') and ($mail->hasTo('test@razorpay.com')));
+        });
+    }
+
 
     protected function createTransferEntity($payment, $account)
     {

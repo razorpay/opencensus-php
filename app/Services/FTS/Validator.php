@@ -12,15 +12,19 @@ class Validator extends Base\Validator
         'id'               => 'sometimes|alpha_num|size:14',
         'type'             => 'filled|string|required|in:bank_account,banking_account',
         'config'           => 'required|array',
-        'product'          => 'filled|string|required|in:payout,refund,payout_refund,settlement,penny_testing,',
+        'product'          => 'filled|string|required|in:payout,refund,payout_refund,settlement,penny_testing',
         'channel'          => 'filled|string|required|in:yesbank,icici,citi',
         'credentials'      => 'required|array',
         'mozartIdentifier' => 'filled|string|required|in:V1,V2',
-
+        'sourceAccountType'=> 'filled|string|required|in:current,nodal'
     ];
 
     protected static $deleteSourceAccountRules = [
-        'product'          => 'filled|string|required|in:PAYOUT,REFUND,PAYOUT_REFUND,SETTLEMENT,PENNY_TESTING',
-        'fund_account_id'  => 'filled|required|integer'
+        'source_account_id'  => 'filled|required|integer'
+    ];
+
+    protected static $fetchTransferStatusRules = [
+        'fta_ids'   => 'required|array|min:1,max:100',
+        'fta_ids.*' => 'required|string|filled|size:14'
     ];
 }

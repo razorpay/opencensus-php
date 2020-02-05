@@ -27,8 +27,8 @@ class Fetch extends Transaction\Fetch
             Entity::FUND_ACCOUNT_ID   => 'sometimes|public_id|size:17',
             Entity::UTR               => 'sometimes|string',
             Entity::MODE              => 'sometimes|string|custom',
-            // Commenting out for now since the `explain` was scary
-            // Entity::ACTION          => 'sometimes|string|in:debit,credit',
+            Entity::TYPE              => 'sometimes|string|custom',
+            Entity::ACTION            => 'sometimes|string|in:debit,credit',
             EsRepository::QUERY       => 'sometimes|string|min:2|max:100',
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
@@ -50,10 +50,10 @@ class Fetch extends Transaction\Fetch
             EsRepository::QUERY,
             // EsRepository::SEARCH_HITS,
             Entity::MODE,
+            Entity::TYPE,
         ],
         AuthType::PROXY_AUTH => [
-            // Commenting out for now since the `explain` was scary
-            // Entity::ACTION
+             Entity::ACTION,
         ],
     ];
 
@@ -66,7 +66,6 @@ class Fetch extends Transaction\Fetch
     const ES_FIELDS = [
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
-        Entity::UTR,
         EsRepository::QUERY,
         // EsRepository::SEARCH_HITS,
     ];
@@ -75,10 +74,16 @@ class Fetch extends Transaction\Fetch
         Entity::ID,
         Entity::MERCHANT_ID,
         Entity::BALANCE_ID,
+        Entity::UTR,
     ];
 
     protected function validateMode(string $attribute, string $value)
     {
         Mode::validateMode($value);
+    }
+
+    protected function validateType(string $attribute, string $value)
+    {
+        Transaction\Type::validateBankingType($value);
     }
 }

@@ -3,6 +3,7 @@
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testGetContact' => [
@@ -60,6 +61,19 @@ return [
                     ],
                 ],
             ]
+        ],
+    ],
+
+    'testContactsWithExpiredKey' => [
+        'request'  => [],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED,
+                ],
+            ],
+            'status_code' => 401,
         ],
     ],
 
@@ -564,5 +578,663 @@ return [
             ],
             'status_code' => '201'
         ],
+    ],
+
+    'testGetContactPublic' => [
+        'request'  => [
+            'url'    => '/contacts/cont_1000000contact/public',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'id' => "cont_1000000contact",
+                'name' => "Contact X"
+            ],
+        ],
+    ],
+
+    'testCreateContactBulk' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp1',
+                        'account_IFSC'      => 'SBIN0007106',
+                        'account_number'    => '1234567890',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'vendor',
+                        'name'              => 'Test rzp1',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'abc123',
+                        'place'             => 'Bangalore',
+                        'state'             => 'Karnataka'
+                    ],
+                    'idempotency_key'       => 'batch_abc123'
+                ],
+                [
+                    'fund'  => [
+                        'account_type'      => 'vpa',
+                        'account_name'      => 'Sample rzp2',
+                        'account_IFSC'      => '',
+                        'account_number'    => '',
+                        'account_vpa'       => '123@ybl'
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'customer',
+                        'name'              => 'Test rzp2',
+                        'email'             => '',
+                        'mobile'            => '',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => '',
+                        'place'             => '',
+                        'state'             => ''
+                    ],
+                    'idempotency_key'       => 'batch_abc124'
+                ],
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp3',
+                        'account_IFSC'      => 'HDFC0003780',
+                        'account_number'    => '1234567891',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'customer',
+                        'name'              => 'Test rzp3',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'xyz123',
+                        'place'             => 'Hyderabad',
+                        'state'             => 'Telengana'
+                    ],
+                    'idempotency_key'       => 'batch_abc125'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 3,
+                'items'  => [
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'bank_account',
+                        'bank_account'          => [
+                            'ifsc'              => 'SBIN0007106',
+                            'bank_name'         => 'State Bank of India',
+                            'name'              => 'Sample rzp1',
+                            'account_number'    => '1234567890',
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc123'
+                    ],
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'vpa',
+                        'vpa'                   => [
+                            'address'           => '123@ybl',
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc124'
+                    ],
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'bank_account',
+                        'bank_account'          => [
+                            'ifsc'              => 'HDFC0003780',
+                            'bank_name'         => 'HDFC Bank',
+                            'name'              => 'Sample rzp3',
+                            'account_number'    => '1234567891',
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc125'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateContactBulkWithoutBatchId' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'   => 'bank_account',
+                        'account_name'   => 'Sample rzp1',
+                        'account_IFSC'   => 'SBIN0007106',
+                        'account_number' => '1234567890',
+                        'account_vpa'    => ''
+                    ],
+                    'contact' => [
+                        'id'             => '',
+                        'type'           => 'vendor',
+                        'name'           => 'Test rzp1',
+                        'email'          => 'sample@example.com',
+                        'mobile'         => '9988998897',
+                        'reference_id'   => ''
+                    ],
+                    'notes' => [
+                        'code'           => 'abc123',
+                        'place'          => 'Bangalore',
+                        'state'          => 'Karnataka'
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'entity' => "collection",
+                'count' => 1,
+                'items' => [
+                    [
+                        'http_status_code' => 400,
+                        'error' => [
+                            'description' => "idempotency_key not present",
+                            'code' => "BAD_REQUEST_ERROR"
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateContactBulkPrivateAuth' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp1',
+                        'account_IFSC'      => 'SBIN0007106',
+                        'account_number'    => '1234567890',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'id'                => 'cont_1000001contact',
+                        'type'              => 'vendor',
+                        'name'              => 'Test rzp1',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'idempotency_key'       => 'batch_abc123',
+                    'contact_id'            => 'cont_1000001contact'
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testGetContactTypes' => [
+        'request'  => [
+            'url'     => '/contacts/types',
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => "collection",
+                'count'     => 4,
+                'items'     => [
+                    [
+                        'type' => "customer",
+                    ],
+                    [
+                        'type' => "employee",
+                    ],
+                    [
+                        'type' => "vendor",
+                    ],
+                    [
+                        'type' => "self",
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAddCustomContactType' => [
+        'request'  => [
+            'content' => [
+                'type' => 'Payouts to Mehul'
+            ],
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ],
+
+        'response' => [
+            'content' => [
+                'entity'    => "collection",
+                'count'     => 5,
+                'items'     => [
+                    [
+                        'type' => "customer",
+                    ],
+                    [
+                        'type' => "employee",
+                    ],
+                    [
+                        'type' => "vendor",
+                    ],
+                    [
+                        'type' => "self",
+                    ],
+                    [
+                        'type' => "Payouts to Mehul",
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAddCustomContactTypeThatAlreadyExists' => [
+        'request'  => [
+            'content' => [
+                'type' => 'Payouts to Mehul'
+            ],
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Type \'Payouts to Mehul\' is already defined and cannot be added.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAdd101CustomContactTypes' => [
+        'request'  => [
+            'content' => [
+                'type' => 'Payouts to Mehul'
+            ],
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You have reached the maximum limit (100) of custom contact types that can be created.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateBulkContactsMoreThanAllowedNumber' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Current batch size 16, max limit of Bulk Fund Account is 15',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateBulkContactsInvalidType' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp1',
+                        'account_IFSC'      => 'SBIN0007106',
+                        'account_number'    => '1234567890',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'RZP Employees',
+                        'name'              => 'Test rzp1',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'abc123',
+                        'place'             => 'Bangalore',
+                        'state'             => 'Karnataka'
+                    ],
+                    'idempotency_key'       => 'batch_abc123'
+                ],
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp3',
+                        'account_IFSC'      => 'HDFC0003780',
+                        'account_number'    => '1234567891',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'customer',
+                        'name'              => 'Test rzp3',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'xyz123',
+                        'place'             => 'Hyderabad',
+                        'state'             => 'Telengana'
+                    ],
+                    'idempotency_key'       => 'batch_abc125'
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'error' => [
+                            'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                            'description' => 'Invalid type: RZP Employees',
+                        ],
+                        'http_status_code' => 400,
+                        'idempotency_key'       => 'batch_abc123'
+                    ],
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'bank_account',
+                        'bank_account'          => [
+                            'ifsc'              => 'HDFC0003780',
+                            'bank_name'         => 'HDFC Bank',
+                            'name'              => 'Sample rzp3',
+                            'account_number'    => '1234567891',
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc125'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateBulkContactsInvalidName' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'      => 'bank_account',
+                        'account_name'      => 'Sample rzp1',
+                        'account_IFSC'      => 'SBIN0007106',
+                        'account_number'    => '1234567890',
+                        'account_vpa'       => ''
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'vendor',
+                        'name'              => 'A name can only be 50 characters long and this is more than that',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'abc123',
+                        'place'             => 'Bangalore',
+                        'state'             => 'Karnataka'
+                    ],
+                    'idempotency_key'       => 'batch_abc123'
+                ],
+                [
+                    'fund'  => [
+                        'account_type'      => 'vpa',
+                        'account_name'      => 'Sample rzp2',
+                        'account_IFSC'      => '',
+                        'account_number'    => '',
+                        'account_vpa'       => '123@ybl'
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'customer',
+                        'name'              => 'Test rzp2',
+                        'email'             => '',
+                        'mobile'            => '',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => '',
+                        'place'             => '',
+                        'state'             => ''
+                    ],
+                    'idempotency_key'       => 'batch_abc124'
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'error' => [
+                            'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                            'description' => 'The name may not be greater than 50 characters.',
+                        ],
+                        'http_status_code' => 400,
+                        'idempotency_key'       => 'batch_abc123'
+                    ],
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'vpa',
+                        'vpa'                   => [
+                            'address'           => '123@ybl',
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc124'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAddCustomContactTypeRZPFees' =>  [
+        'request'  => [
+            'content' => [
+                'type'  => 'rzp_fees',
+            ],
+            'url'     => '/contacts/types',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Type \'rzp_fees\' is an internal contact type used by Razorpay and cannot be added.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateRZPFeesContact' => [
+        'request'  => [
+            'content' => [
+                'type'      => 'self',
+                'active'    => 0,
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
+        ],
+    ],
+
+    'testUpdateContactTypeToRZPFeesContact' => [
+        'request'  => [
+            'content' => [
+                'type'  => 'rzp_fees',
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid type: rzp_fees',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateRZPFeesTypeContact' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'rzp_fees',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
+        ],
+    ],
+
+    'testCreateContactWithAlphabet' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123A5C789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'contact',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateContactWithAlphabet' => [
+        'request'  => [
+            'content' => [
+                'type'         => 'employee',
+                'contact'      => '9123A5C789',
+                'reference_id' => '213',
+            ],
+            'url'     => '/contacts/cont_1000000contact',
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'contact',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
     ],
 ];

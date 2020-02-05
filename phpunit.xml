@@ -33,6 +33,7 @@
           <exclude>./tests/Functional/Payment/</exclude>
           <exclude>./tests/Functional/PaymentLink/</exclude>
           <exclude>./tests/Functional/Payout/</exclude>
+          <exclude>./tests/Functional/PayoutLink/</exclude>
           <exclude>./tests/Functional/Pricing/</exclude>
           <exclude>./tests/Functional/Promotion/</exclude>
           <exclude>./tests/Functional/RazorX/</exclude>
@@ -53,6 +54,7 @@
           <exclude>./tests/Unit/</exclude>
           <exclude>./tests/Functional/Gateway/</exclude>
           <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
+          <exclude>./tests/Functional/PaymentsUpi</exclude>
       </testsuite>
       <testsuite name="Features-1 Test Suite">
           <directory>./tests/Functional/Currency/</directory>
@@ -81,6 +83,7 @@
           <directory>./tests/Functional/Order/</directory>
           <directory>./tests/Functional/PaymentLink/</directory>
           <directory>./tests/Functional/Payout/</directory>
+          <directory>./tests/Functional/PayoutLink/</directory>
           <directory>./tests/Functional/Pricing/</directory>
           <directory>./tests/Functional/Promotion/</directory>
           <directory>./tests/Functional/RazorX/</directory>
@@ -103,6 +106,11 @@
           <directory>./tests/Unit/</directory>
           <directory>./tests/Functional/Refund/</directory>
           <file>./tests/Functional/Merchant/MerchantTest.php</file>
+          <exclude>./tests/Unit/PaymentsUpi</exclude>
+      </testsuite>
+      <testsuite name="Feature-6 Test Suite">
+          <directory>./tests/Unit/PaymentsUpi</directory>
+          <directory>./tests/Functional/PaymentsUpi</directory>
       </testsuite>
       <testsuite name="Payment Test Suite">
           <directory>./tests/Functional/Payment/</directory>

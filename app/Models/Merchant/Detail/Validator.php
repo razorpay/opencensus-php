@@ -60,14 +60,18 @@ class Validator extends Base\Validator
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_ADDRESS     => 'sometimes|max:255',
+        Entity::BUSINESS_REGISTERED_ADDRESS_L2  => 'sometimes|max:255',
         Entity::BUSINESS_REGISTERED_STATE       => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_CITY        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_DISTRICT    => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_REGISTERED_COUNTRY     => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_PIN         => 'sometimes|size:6',
         Entity::BUSINESS_OPERATION_ADDRESS      => 'sometimes|max:255',
+        Entity::BUSINESS_OPERATION_ADDRESS_L2   => 'sometimes|max:255',
         Entity::BUSINESS_OPERATION_STATE        => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_DISTRICT     => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_COUNTRY      => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|size:6',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::GSTIN                           => 'filled|string|size:15|nullable',
@@ -82,7 +86,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN                    => 'sometimes|pan',
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
-        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,20',
+        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,20|custom',
         Entity::BANK_ACCOUNT_NAME               => 'sometimes|string|min:4|max:120',
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
@@ -160,7 +164,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN                    => 'sometimes|pan',
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
-        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,22',
+        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,22|custom',
         Entity::BANK_ACCOUNT_NAME               => 'sometimes|string|min:4|max:120',
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
@@ -210,7 +214,7 @@ class Validator extends Base\Validator
     protected static $preSignupRules = [
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
         Entity::COUPON_CODE                     => 'filled|string|max:10',
-        Entity::REFERRAL_CODE                   => 'filled|string|max:14',
+        Entity::REFERRAL_CODE                   => 'filled|string',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::ROLE                            => 'sometimes|numeric|digits_between:1,6',
         Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,7',
@@ -297,6 +301,12 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL_ACTIVATION_FLOW    => 'filled|custom',
         Entity::BANK_DETAILS_VERIFICATION_STATUS => 'filled|custom',
         Entity::POA_VERIFICATION_STATUS          => 'filled|custom'
+    ];
+
+    protected static $updateEntityBatchActionRules = [
+        Entity::BUSINESS_NAME               => 'filled|max:255',
+        Entity::BUSINESS_REGISTERED_ADDRESS => 'filled|max:255',
+        Entity::BUSINESS_REGISTERED_STATE   => 'filled|max:255',
     ];
 
     public function validateBankDetailsVerificationStatus($attribute, $value)
@@ -913,4 +923,14 @@ class Validator extends Base\Validator
                 ]);
         }
     }
+
+    public function validateBankAccountNumber($attribute, $bankAccountNumber)
+    {
+        if(\RZP\Models\BankAccount\Validator::isBlacklistedAccountNumber($bankAccountNumber))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_BANK_ACCOUNT);
+        }
+    }
+
 }

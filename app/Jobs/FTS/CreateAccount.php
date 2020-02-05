@@ -34,6 +34,11 @@ class CreateAccount extends Job
     protected $status;
 
     /**
+     * @var int
+     */
+    public $timeout = 60;
+
+    /**
      * @var string
      */
     protected $queueConfigKey = 'fts_create_account';
@@ -76,9 +81,22 @@ class CreateAccount extends Job
 
             $accountService->initialize($this->id, $this->type, $this->product, $this->status);
 
-            $createFundAccount = $accountService->isAccountCreatedInFts();
+            if (empty($accountService->getAccount()) === true)
+            {
+                $this->trace->info(TraceCode::FTS_CREATE_ACCOUNT_INVALID_ID,
+                    [
+                        'id'      => $this->id,
+                        'type'    => $this->type,
+                    ]);
 
-            if ($createFundAccount === false)
+                $this->delete();
+
+                return;
+            }
+
+            $isAccountCreatedInFts = $accountService->isAccountCreatedInFts();
+
+            if ($isAccountCreatedInFts === true)
             {
                 $this->trace->info(TraceCode::FTS_CREATE_ACCOUNT_DUPLICATE,
                     [
@@ -88,6 +106,8 @@ class CreateAccount extends Job
                     ]);
 
                 $this->delete();
+
+                return;
             }
 
             $ftsResponse = $accountService->createFundAccount();

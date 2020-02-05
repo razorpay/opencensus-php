@@ -292,6 +292,9 @@ return [
         ],
     ],
 
+    E::PAYOUT_LINK => [
+    ],
+
     E::PLAN => [
         Type::PROXY_AUTH => [
             [
@@ -416,6 +419,13 @@ return [
         ],
     ],
 
+    E::WORKFLOW_PAYOUT_AMOUNT_RULES => [
+        Type::ADMIN_AUTH => [
+            [
+            ],
+        ],
+    ],
+
     E::GEO_IP => [
         Type::PRIVILEGE_AUTH => [
             [
@@ -485,4 +495,30 @@ return [
     E::CREDITNOTE => [],
 
     E::MPAN => [],
+
+    E::UPI_TRANSFER => [],
+
+    E::BALANCE_CONFIG => [
+        Type::PROXY_AUTH => [
+            [
+                'balance_id' => str_random(14)
+            ],
+        ],
+    ],
+
+    E::BALANCE => [
+        Type::PROXY_AUTH => [
+            [
+                'type' => 'banking'
+            ],
+        ],
+    ],
+
+    E::MERCHANT_FRESHDESK_TICKETS => [
+        Type::PROXY_AUTH => [
+            [
+                'type'        => str_random(),
+            ],
+        ],
+    ]
 ];

@@ -7,6 +7,7 @@ use Cache;
 use Config;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Diag\EventCode;
 use RZP\Models\Terminal;
@@ -209,17 +210,6 @@ class Selector extends Base\Core
                 {
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
 
-                    // temporary - needs to be removed once parity analysis is complete
-                    $this->trace->info(
-                        TraceCode::SMART_ROUTING_TERMINALS_COUNT_IS_ZERO,
-                        [
-                            'terminals_from_smart_routing'  => $newSelectedTerminals,
-                            'is_error_timeout'              => $terminalSetReceivedFromSmartRouting != null ? false : true,
-                            'payment_id'                    => $payment->getId(),
-
-                        ]);
-
-
                     if (empty($sortedTerminals) === false)
                     {
                         $this->trace->error(
@@ -228,6 +218,7 @@ class Selector extends Base\Core
                                 'terminals_from_api'            => $sortedTerminals,
                                 'terminals_from_smart_routing'  => $newSelectedTerminals,
                                 'payment_id'                    => $payment->getId(),
+                                'method'                        => $payment->getMethod(),
 
                             ]);
                     }
@@ -326,10 +317,23 @@ class Selector extends Base\Core
 
     protected function getTerminals()
     {
-        // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
-        $merchantTerminals = $this->repo
-                                  ->terminal
-                                  ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
+        $response = $this->app->razorx->getTreatment($this->input['merchant']->getId(), 'payments_fetch_config_parent_terminal',
+                    $this->mode);
+
+        if ($response === 'on')
+        {
+            // Fetch all terminals (enabled/disabled) for both the current merchant, parent merchant and the shared Merchant
+            $merchantTerminals = $this->repo
+                                      ->terminal
+                                      ->getTerminalForMerchantParentMerchantAndSharedMerchant($this->input['merchant']);
+        }
+        else
+        {
+            // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
+            $merchantTerminals = $this->repo
+                                      ->terminal
+                                      ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
+        }
 
         $payment = $this->input['payment'];
 
@@ -505,6 +509,18 @@ class Selector extends Base\Core
 
             $merchant = $this->input['merchant'];
 
+            if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD) === true)
+            {
+                $this->trace->info(
+                    TraceCode::SKIPPING_HITACHI_AUTOMATIC_ONBOARDING,
+                    [
+                        'payment'             => $payment,
+                        'merchant'            => $merchant,
+                    ]);
+
+                return;
+            }
+
             if (($payment->isMethod(Method::CARD) === true) and ($payment->isBharatQr() === false)
                 and (in_array($merchant->getCategory(), GatewayProcessor::HITACHI_BLACKLISTED_MCC) === false))
             {
@@ -572,7 +588,8 @@ class Selector extends Base\Core
 
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
 
-            if (in_array($paymentData['method'], [Method::CARD, Method::UPI, Method::EMI]) === true )
+            if ((in_array($paymentData['method'], [Method::CARD, Method::UPI, Method::EMI]) === true ) and
+                ($payment->isGooglePayCard() === false))
             {
                 $downtimes = $this->repo->useSlave(function () use ($allTerminals) {
                     return (new Downtime\Core)->getApplicableDowntimesForPayment($allTerminals, $this->input);
@@ -607,6 +624,7 @@ class Selector extends Base\Core
                     'filtered_terminals'  => $data['filtered_terminals'],
                     'gateway_downtime'    => $data['gateway_downtime'],
                     'failed_terminals'    => $data['failed_terminals'],
+                    'execution_type'      => $executionType,
                 ]);
 
             if ($executionType === self::EXECUTION_TYPE_SYNC)

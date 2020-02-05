@@ -112,7 +112,9 @@ class Shared
     const CARDLESS_EMI_RAZORPAY_TERMINAL     = '1CrdlesEmiTrml';
     const CARDLESS_EMI_RAZORPAY_TERMINAL2    = '10CrdlesEmiTml';
     const CARDLESS_EMI_FLEXMONEY_TERMINAL    = '20CrdlesEmiTml';
+    const CARDLESS_EMI_ZESTMONEY_TERMINAL    = '30CrdlesEmiTml';
     const PAYLATER_EPAYLATER_TERMINAL        = '10PayLaterTrml';
+    const PAYLATER_ICICI_TERMINAL            = '10PLaterIciTml';
     const ALLA_TPV_TERMINAL                  = '1000alltpvTrml';
     const IDFB_TPV_TERMINAL                  = '100idfctpvTrml';
     const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';
@@ -179,6 +181,7 @@ class Shared
         self::ENSTAGE_TERMINAL,
         self::CARDLESS_EMI_RAZORPAY_TERMINAL,
         self::CARDLESS_EMI_FLEXMONEY_TERMINAL,
+        self::CARDLESS_EMI_ZESTMONEY_TERMINAL,
         self::WORLDLINE_TERMINAL,
         self::NACH_CITI_TERMINAL,
     );
@@ -243,7 +246,9 @@ class Shared
         self::ENSTAGE_TERMINAL                   => Gateway::MPI_ENSTAGE,
         self::CARDLESS_EMI_RAZORPAY_TERMINAL     => Gateway::CARDLESS_EMI,
         self::CARDLESS_EMI_FLEXMONEY_TERMINAL    => Gateway::CARDLESS_EMI,
+        self::CARDLESS_EMI_ZESTMONEY_TERMINAL    => Gateway::CARDLESS_EMI,
         self::PAYLATER_EPAYLATER_TERMINAL        => Gateway::PAYLATER,
+        self::PAYLATER_ICICI_TERMINAL            => Gateway::PAYLATER_ICICI,
         self::WORLDLINE_TERMINAL                 => Gateway::WORLDLINE,
         self::NACH_CITI_TERMINAL                 => Gateway::NACH_CITI,
     ];

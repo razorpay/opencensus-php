@@ -5,9 +5,11 @@ namespace RZP\Tests\Functional\Offer;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class OffersTest extends TestCase
 {
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -194,7 +196,7 @@ class OffersTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
-        $this->fixtures->create('emi_plan:default_emi_plans');
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
 
         $this->startTest();
     }
@@ -239,6 +241,15 @@ class OffersTest extends TestCase
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->fixtures->create('offer:emi_subvention');
+
+        $this->startTest();
+    }
+
+    public function testCreateOfferBajaj()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
 
         $this->startTest();
     }

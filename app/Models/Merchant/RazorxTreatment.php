@@ -55,4 +55,31 @@ final class RazorxTreatment
 
     // Decides if payout.created webhook should be fired for the merchant
     const PAYOUTS_CREATED_WEBHOOK = 'payouts_created_webhook';
+
+    //Decides to hit KYC Service or Mozart for KYC verification
+    const KYC_SERVICE_VERIFICATION = 'kyc_service_verification';
+
+    // Decides if the Settlement UX changes are displayed to the merchant
+    const SETTLEMENT_UX_REVAMP = 'settlement_ux_revamp';
+
+    // Decides payout channel based on IMPS mode
+    const IMPS_MODE_PAYOUT_FILTER = 'imps_mode_payout_filter';
+
+    // Decides payout channel based on NEFT mode
+    const NEFT_MODE_PAYOUT_FILTER = 'neft_mode_payout_filter';
+
+    // Decides payout channel based on RTGS mode
+    const RTGS_MODE_PAYOUT_FILTER = 'rtgs_mode_payout_filter';
+
+    // Decides payout channel based on UPI mode
+    const UPI_MODE_PAYOUT_FILTER = 'upi_mode_payout_filter';
+
+    // Decides payout channel based on IFT mode
+    const IFT_MODE_PAYOUT_FILTER = 'ift_mode_payout_filter';
+
+    // Decides whether or not to display tr attribute in upi_transfer entity
+    const UPI_TRANSFER_TR = 'upi_transfer_tr';
+
+    // Display Parent Payment Id
+    const DISPLAY_PARENT_PAYMENT_ID = 'display_parent_payment_id';
 }

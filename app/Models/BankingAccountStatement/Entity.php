@@ -41,6 +41,13 @@ class Entity extends Base\PublicEntity
     const RECONCILED_AT         = 'reconciled_at';
     const PONUM                 = 'ponum';
 
+    // Used to find out which format the banking account statement is to be generated
+    const FORMAT                = 'format';
+    const SEND_EMAIL            = 'send_email';
+    const FROM_DATE             = 'from_date';
+    const TO_DATE               = 'to_date';
+    const TO_EMAIL_LIST         = 'to_emails';
+
     const UTR                   = 'utr';
 
     // Relation names/attributes
@@ -144,6 +151,11 @@ class Entity extends Base\PublicEntity
     public function transaction()
     {
         return $this->belongsTo(Transaction\Entity::class);
+    }
+
+    public function statement()
+    {
+        return $this->belongsTo(Transaction\Statement\Entity::class);
     }
 
     public function source()

@@ -1,0 +1,74 @@
+<?php
+
+namespace RZP\Mail\Invoice;
+
+use RZP\Models\Merchant;
+use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Constants;
+use RZP\Constants\Entity as E;
+
+class PaymentLinkServiceBase extends Mailable
+{
+    protected $data;
+
+    public function __construct(array $data)
+    {
+        parent::__construct();
+
+        $this->data = $data;
+    }
+
+    protected function addSender()
+    {
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+
+        $fromHeader = $this->data[E::MERCHANT][Merchant\Entity::NAME];
+
+        $this->from($fromEmail, $fromHeader);
+
+        return $this;
+    }
+
+    protected function addRecipients()
+    {
+        $customerEmail = $this->data['to'];
+
+        $this->to($customerEmail);
+
+        return $this;
+    }
+
+    protected function addSubject()
+    {
+        $subject = $this->data['subject'];
+
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addReplyTo()
+    {
+        $email = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+
+        $header = Constants::HEADERS[Constants::NOREPLY];
+
+        $this->replyTo($email, $header);
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $this->with($this->data);
+
+        return $this;
+    }
+
+    protected function addHtmlView()
+    {
+        $this->view($this->data['view']);
+
+        return $this;
+    }
+}

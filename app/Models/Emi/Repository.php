@@ -63,11 +63,31 @@ class Repository extends Base\Repository
             $query->where(Entity::BANK, $bank);
         }
 
-        if ($network === Network::AMEX)
+        if (empty($network) === false)
         {
             $query->where(Entity::NETWORK, $network);
         }
 
         return $query->get();
+    }
+
+    public function fetchDurationsByMerchantAndIssuer(string $merchantId, string $issuer)
+    {
+        return $this->newQuery()
+            ->select(Entity::DURATION)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::BANK, '=', $issuer)
+            ->pluck(Entity::DURATION)
+            ->all();
+    }
+
+    public function fetchDurationsByMerchantAndNetwork(string $merchantId, string $paymentNetwork)
+    {
+        return $this->newQuery()
+            ->select(Entity::DURATION)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::NETWORK, '=', $paymentNetwork)
+            ->pluck(Entity::DURATION)
+            ->all();
     }
  }

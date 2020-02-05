@@ -93,6 +93,8 @@ class MerchantCreateTest extends TestCase
 
         $this->checkBalances();
 
+        $this->checkBalanceConfigs();
+
         $this->checkNetbankingBanks();
 
         $this->checkMethods();
@@ -139,6 +141,16 @@ class MerchantCreateTest extends TestCase
         $this->runRequestResponseFlow($this->testData['testBalanceInLiveAfterCreatedMerchant']);
     }
 
+    protected function checkBalanceConfigs()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
+
+        $this->runRequestResponseFlow($this->testData['testBalanceConfigInTestAfterCreatedMerchant']);
+    }
+
+
     protected function checkNetbankingBanks()
     {
         $this->checkNetbankingBanksInMode(Mode::TEST);
@@ -153,9 +165,12 @@ class MerchantCreateTest extends TestCase
         $methods = $this->getEntityById('methods', '1X4hRFHFx4UiXt', true);
 
         $expectedMethods = [
-            'amex'     => false,
-            'mobikwik' => false,
-            'paytm'    => false
+            'amex'          => true,
+            'mobikwik'      => true,
+            'paytm'         => false,
+            'jiomoney'      => true,
+            'airtelmoney'   => true,
+            'paylater'      => true,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methods);
@@ -1331,7 +1346,7 @@ class MerchantCreateTest extends TestCase
     {
         foreach (['test', 'live'] as $mode)
         {
-            $otpAuthFeature = $this->getDbEntity('feature', [], $mode);
+            $otpAuthFeature = $this->getDbEntity('feature', ['name' => 'otp_auth_default'], $mode);
 
             $this->assertEquals(FeatureConstants::OTP_AUTH_DEFAULT, $otpAuthFeature->getName());
         }

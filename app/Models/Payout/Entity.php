@@ -3,19 +3,20 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
-
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Batch;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
+use RZP\Models\PayoutLink;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
@@ -24,7 +25,6 @@ use RZP\Models\BankingAccount;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -86,6 +86,7 @@ class Entity extends Base\PublicEntity
     const BATCH_ID               = 'batch_id';
     const IDEMPOTENCY_KEY        = 'idempotency_key';
     const INITIATED_AT           = 'initiated_at';
+    const PAYOUT_LINK_ID         = 'payout_link_id';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -138,6 +139,8 @@ class Entity extends Base\PublicEntity
     const TRANSACTION     = 'transaction';
     const REVERSAL        = 'reversal';
     const WORKFLOW_ACTION = 'workflow_action';
+
+    const MAX_PAYOUT_LIMIT = 10000000000;
 
     protected $queueFlag = false;
 
@@ -319,10 +322,6 @@ class Entity extends Base\PublicEntity
         // This is because we might have intermittent failure reasons even
         // when the payout is not completely processed (succeeded/failed)
         self::FAILURE_REASON,
-        // Sometimes, we get the UTR even if the payout has not been processed.
-        // This might cause confusions and hence we show UTR only when either
-        // the payout is in processed or reversed state.
-        self::UTR,
         self::INITIATED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
@@ -392,6 +391,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function payoutLink()
+    {
+        return $this->belongsTo(PayoutLink\Entity::class);
     }
 
     public function destination()
@@ -851,6 +855,11 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::STATUS, $status);
+
+        // pushing a message in the queue to update the source for payout
+         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+
+         SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
     }
 
     protected function setStatusAttribute($status)
@@ -1019,7 +1028,9 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        if (($basicAuth->getUser() === null) or
+        // Workflows are not enabled on test mode for now
+        if ((app('rzp.mode') === Mode::TEST) or
+            ($basicAuth->getUser() === null) or
             ($this->merchant === null) or
             ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === false))
         {
@@ -1048,7 +1059,9 @@ class Entity extends Base\PublicEntity
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 
-        if ($basicAuth->isStrictPrivateAuth() === true)
+        // Workflows are not enabled on test mode for now
+        if ((app('rzp.mode') === Mode::TEST) or
+            ($basicAuth->isStrictPrivateAuth() === true))
         {
             unset($attributes[self::WORKFLOW_HISTORY]);
 
@@ -1186,14 +1199,6 @@ class Entity extends Base\PublicEntity
         if ($this->isStatusReversedOrFailed() === false)
         {
             $attributes[self::FAILURE_REASON] = null;
-        }
-    }
-
-    public function setPublicUtrAttribute(array & $attributes)
-    {
-        if ($this->isStatusProcessedOrReversed() === false)
-        {
-            $attributes[self::UTR] = null;
         }
     }
 
@@ -1542,11 +1547,12 @@ class Entity extends Base\PublicEntity
             }
 
             $checkersData[] = [
-                'id'       => $checker['id'],
-                'user_id'  => $userData['id'],
-                'name'     => $userData['name'] ?? '',
-                'email'    => $userData['email'] ?? '',
-                'approved' => $checker['approved'],
+                'id'           => $checker['id'],
+                'user_id'      => $userData['id'],
+                'name'         => $userData['name'] ?? '',
+                'email'        => $userData['email'] ?? '',
+                'approved'     => $checker['approved'],
+                'user_comment' => $checker['user_comment'],
             ];
         }
 

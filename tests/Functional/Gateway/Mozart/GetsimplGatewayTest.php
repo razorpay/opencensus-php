@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -110,6 +111,52 @@ class GetsimplGatewayTest extends TestCase
         $this->assertequals($getsimplEntity['data']['status'], 'payment_successful');
 
         $this->assertequals($getsimplEntity['data']['data']['transaction']['status'], 'CLAIMED');
+    }
+
+    public function testRedirectionPaymentFlowNoToken()
+    {
+        $payment = $this->payment;
+
+        $payment['contact'] = '8602579721';
+
+        $request = $this->buildAuthPaymentRequest($payment);
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestParent($request);
+
+        try
+        {
+            $this->processStaticCallback(null,'error',null);
+        }
+
+        catch( BadRequestException $e)
+        {
+            self::assertNotNull($e->getError());
+        }
+    }
+
+    public function testRedirectionPaymentFlowTokenNull()
+    {
+        $payment = $this->payment;
+
+        $payment['contact'] = '8602579721';
+
+        $request = $this->buildAuthPaymentRequest($payment);
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestParent($request);
+
+        try
+        {
+            $this->processStaticCallback(null,'token',"null");
+        }
+
+        catch( BadRequestException $e)
+        {
+            self::assertNotNull($e->getError());
+        }
     }
 
     public function testRefund()
@@ -253,7 +300,7 @@ class GetsimplGatewayTest extends TestCase
             });
     }
 
-    public function processStaticCallback($key = null)
+    public function processStaticCallback($key = null, $tkey = 'token', $tval = 'Test_Token')
     {
         $getsimplEntity = $this->getLastEntity('mozart', true);
 
@@ -261,7 +308,7 @@ class GetsimplGatewayTest extends TestCase
             'available_credit_in_paise' => 1999400,
             'merchant_payload'          => $getsimplEntity['payment_id'],
             'success'                   => true,
-            'token'                     => 'Test_Token'
+             $tkey                      => $tval
         ];
 
         $request = [

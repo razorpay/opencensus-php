@@ -5284,6 +5284,25 @@ return [
                 'idempotency_key'  => 'B24Y8gjypHOVOm'
             ],
         ],
+    ],
+
+    'testCreateSendEmailForPaymentLinkService' => [
+        'request'  => [
+            'url'     => '/payment_links/send_email',
+            'method'  => 'post',
+            'content' => [
+                'invoice' => [
+                    'id' => '30000000000000',
+                ],
+                'to' => 'r@g.c',
+                'subject' => 'erhewhjhjrewjer',
+                'view' => 'emails.invoice.customer.expiring'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
     ]
+
     // ----------------------------------------------------------------------
 ];

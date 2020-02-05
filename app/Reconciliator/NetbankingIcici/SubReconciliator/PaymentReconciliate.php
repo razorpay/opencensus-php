@@ -42,15 +42,26 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
-        $dbReferenceNumber = trim($gatewayPayment->getBankPaymentId());
+        if ($this->payment->getGateway() === Payment\Gateway::PAYLATER)
+        {
+            $data = json_decode($gatewayPayment['raw'], true);
+
+            $dbReferenceNumber = $data['bank_payment_id'] ?? null;
+        }
+        else
+        {
+            $dbReferenceNumber = trim($gatewayPayment->getBankPaymentId());
+        }
 
         if ((empty($dbReferenceNumber) === false) and
             ($dbReferenceNumber !== $referenceNumber))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->trace->info(
                 TraceCode:: RECON_MISMATCH,
                 [
-                    'info_code'              => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'info_code'              => $infoCode,
                     'payment_id'             => $this->payment->getId(),
                     'amount'                 => $this->payment->getAmount(),
                     'db_reference_number'    => $dbReferenceNumber,
@@ -60,14 +71,30 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             );
         }
 
-        $gatewayPayment->setBankPaymentId($referenceNumber);
+        if ($this->payment->getGateway() === Payment\Gateway::PAYLATER)
+        {
+            $data['bank_payment_id'] = $referenceNumber;
+
+            $raw = json_encode($data);
+
+            $gatewayPayment->setRaw($raw);
+        }
+        else
+        {
+            $gatewayPayment->setBankPaymentId($referenceNumber);
+        }
     }
 
     public function getGatewayPayment($paymentId)
     {
-        return $this->repo->netbanking->findByPaymentIdActionAndStatus($paymentId,
-                                                                     Action::AUTHORIZE,
-                                                                     [Icici\Confirmation::YES]);
+        if ($this->payment->getGateway() === Payment\Gateway::PAYLATER)
+        {
+            return $this->repo->mozart->findByPaymentIdAndAction($paymentId, Payment\Action::CAPTURE);
+        }
+        else
+        {
+            return $this->repo->netbanking->findByPaymentIdActionAndStatus($paymentId, Action::AUTHORIZE, [Icici\Confirmation::YES]);
+        }
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)

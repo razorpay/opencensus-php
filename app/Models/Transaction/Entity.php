@@ -262,6 +262,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DEBIT);
     }
 
+    public function isCredit()
+    {
+        return ($this->getCredit() > 0);
+    }
+
+    public function isDebit()
+    {
+        return ($this->getDebit() > 0);
+    }
+
     public function getNetAmount()
     {
         return $this->getCredit() - $this->getDebit();
@@ -538,9 +548,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ESCROW_BALANCE, $balance);
     }
 
-    public function setBalance($balance)
+    public function setBalance($balance, bool $negativeBalanceEnabled = false)
     {
-        assertTrue ($balance >= 0);
+        if ($negativeBalanceEnabled === false)
+        {
+            assertTrue ($balance >= 0);
+        }
 
         $this->setAttribute(self::BALANCE, $balance);
     }

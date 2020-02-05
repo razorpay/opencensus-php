@@ -104,7 +104,7 @@ trait AttemptTrait
     }
 
     protected function createDataAndAssertInitiateOnlineTransferResponse(
-        string $channel, string $purpose, int $setlCount, string $sourceType, bool $failureTest)
+        string $channel, string $purpose, int $setlCount, string $sourceType, $failureTest)
     {
         $this->createDataForChannel($channel, $purpose, $setlCount, $sourceType);
 
@@ -130,6 +130,15 @@ trait AttemptTrait
 
         $this->assertEntitiesAfterInitiateTransfer($channel, $purpose, $sourceType, $setlCount);
 
+        $setl = $this->getLastEntity('settlement', true);
+
+        if (empty($setl) === false)
+        {
+            $bta = $this->getLastEntity('fund_transfer_attempt', true);
+
+            $this->validationSettlementDestination($setl['id'], Entity::FUND_TRANSFER_ATTEMPT, $bta['id']);
+        }
+
         return $content;
     }
 
@@ -139,7 +148,7 @@ trait AttemptTrait
 
         $this->createDataAndAssertInitiateOnlineTransferResponse($channel, $purpose, $setlCount, $sourceType, $failureTest);
 
-        $this->assertEntitiesAfterInitiateOnlineTransfer($channel, $purpose, $sourceType, $setlCount);
+        $this->assertEntitiesAfterInitiateOnlineTransfer($channel, $purpose, $sourceType, $setlCount, $failureTest);
     }
 
     protected function createDataAndAssertInitiateOnlineTransferSuccessForVpa(string $channel, int $setlCount, string $sourceType, bool $failureTest)
@@ -148,7 +157,7 @@ trait AttemptTrait
 
         $this->createDataAndAssertInitiateOnlineTransferResponseForVpa($channel, $purpose, $setlCount, $sourceType, $failureTest);
 
-        $this->assertEntitiesAfterInitiateOnlineTransfer($channel, $purpose, $sourceType, $setlCount);
+        $this->assertEntitiesAfterInitiateOnlineTransfer($channel, $purpose, $sourceType, $setlCount, $failureTest);
     }
 
     protected function assertEntitiesAfterInitiateTransfer(
@@ -209,19 +218,21 @@ trait AttemptTrait
     }
 
     protected function assertEntitiesAfterInitiateOnlineTransfer(
-        string $channel, string $purpose, string $sourceType, int $sourceCount)
+        string $channel, string $purpose, string $sourceType, int $sourceCount, bool $failureTest = false)
     {
         // Verify Batch
         $batch = $this->getLastEntity(Entity::BATCH_FUND_TRANSFER, true);
 
         $attempt = $this->getLastEntity(Entity::FUND_TRANSFER_ATTEMPT, true);
 
-        $batchTestData = 'testFileCreation' . ucfirst($sourceType);
+        $suffix = ($failureTest === true) ? 'Failure' : '';
+
+        $batchTestData = 'testFileCreation' . ucfirst($sourceType) . 'Api' . $suffix;
 
         // for VPA recon happens instantly
         if (empty($attempt['vpa_id']) === false)
         {
-            $batchTestData = $batchTestData . 'Vpa';
+            $batchTestData = 'testFileCreation' . ucfirst($sourceType) . 'Vpa';
         }
 
         $this->assertTestResponse($batch, $batchTestData);
@@ -235,7 +246,7 @@ trait AttemptTrait
         {
             $this->assertEquals($batch['id'], $source['batch_fund_transfer_id']);
 
-            $expectedStatus = Attempt\Status::INITIATED;
+            $expectedStatus = ($failureTest === true) ? Attempt\Status::FAILED : Attempt\Status::PROCESSED;
 
             if ($sourceType === Entity::PAYOUT)
             {
@@ -253,7 +264,7 @@ trait AttemptTrait
         {
             $expectedStatus = (empty($attempt['vpa_id']) === false) ?
                 Payout\Status::PROCESSED:
-                Payout\Status::INITIATED;
+                (($failureTest === true) ? Attempt\Status::FAILED : Attempt\Status::PROCESSED);
 
             $this->assertEquals($batch['id'], $fta['batch_fund_transfer_id']);
             $this->assertEquals($expectedStatus, $fta[Attempt\Entity::STATUS]);
@@ -388,5 +399,18 @@ trait AttemptTrait
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function validationSettlementDestination(string $settlementId, string $destinationType, string $destinationId)
+    {
+        $destinationPrefix = ($destinationType === Entity::FUND_TRANSFER_ATTEMPT) ? 'fta_' : 'stf_';
+
+        $content = $this->getLastEntity('settlement_destination', true);
+
+        $this->assertEquals($settlementId, 'setl_' . $content['settlement_id']);
+
+        $this->assertEquals($destinationType, $content['destination_type']);
+
+        $this->assertEquals($destinationId, $destinationPrefix . $content['destination_id']);
     }
 }

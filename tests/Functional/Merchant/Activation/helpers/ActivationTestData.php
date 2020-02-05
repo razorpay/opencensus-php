@@ -2240,7 +2240,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2262,6 +2262,33 @@ return [
         'status_code' => 200,
     ],
 
+    'testWhitelistInternationalForRiskyBusinessType' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'insurance',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+                'business_website'     => 'https://example.com',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'                  => 'ABCDE0000Z',
+                'business_category'             => 'financial_services',
+                'business_subcategory'          => 'insurance',
+                'international_activation_flow' => 'greylist',
+                'international'                 => false,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'testWhitelistInternationalWithNoWebsite' => [
         'request'     => [
             'method'  => 'POST',
@@ -2272,7 +2299,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => '',
             ],
@@ -2304,7 +2331,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
             ],
         ],
@@ -2335,7 +2362,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://www.example.com',
             ],
@@ -2367,7 +2394,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2399,7 +2426,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2431,7 +2458,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2463,7 +2490,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2495,7 +2522,7 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
-                'business_type'        => 1,
+                'business_type'        => 4,
                 'business_model'       => '1245',
                 'business_website'     => 'https://example.com',
             ],
@@ -2602,6 +2629,25 @@ return [
         ],
     ],
 
+    'testValidateNeedsClarificationStatusChange' => [
+        'request'  => [
+            'content' => [
+                'submit' => true
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+
+        ],
+        'response' => [
+            'content' => [
+                'submitted'         => true,
+                'activation_status' => 'under_review',
+                'can_submit'        => true,
+                'locked'            => true,
+            ],
+        ],
+    ],
+
     'testNeedsClarificationResponseForAdminAuth' => [
         'request'  => [
             'method' => 'GET',
@@ -2612,7 +2658,7 @@ return [
                 'contact_name'         => [
                     'reasons' => [
                         'provide_poc' => [
-                            'description' => 'Please provide a provide a POC that we can reach out to in case of issues associated with your account.',
+                            'description' => 'Please provide a POC that we can reach out to in case of issues associated with your account.',
                         ],
                     ],
                 ],
@@ -2630,20 +2676,6 @@ return [
                         ],
                     ],
                 ],
-                'business_category'    => [
-                    'reasons' => [
-                        'services_offered' => [
-                            'description' => 'What are some of the services/products that are offered?',
-                        ],
-                    ],
-                ],
-                'business_subcategory' => [
-                    'reasons' => [
-                        'services_offered' => [
-                            'description' => 'What are some of the services/products that are offered?',
-                        ],
-                    ],
-                ],
                 'business_website'     => [
                     'reasons' => [
                         'website_not_live' => [
@@ -2653,9 +2685,12 @@ return [
                 ],
                 'promoter_pan'         => [
                     'reasons' => [
-                        'update_director_pan' => [
+                        'update_director_pan'   => [
                             'description' => 'Please update PAN details of a director listed by MCA',
                         ],
+                        'update_propreitor_pan' => [
+                            'description' => 'Please update PAN of the Propreitor.'
+                        ]
                     ],
                 ],
                 'company_pan_name'     => [
@@ -2725,6 +2760,9 @@ return [
                         'unable_to_validate_ifsc'             => [
                             'description' => 'We\'re unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',
                         ],
+                        'resubmit_cancelled_cheque'           => [
+                            'description' => 'The statements or cancelled cheque attached is not legible. Please resubmit a clear copy.',
+                        ],
                     ],
                 ],
                 'promoter_address_url' => [
@@ -2743,6 +2781,19 @@ return [
                         ],
                         'address_proof_outdated'                 => [
                             'description' => 'The validity of the address proof attached has elapsed. Please submit the updated document',
+                        ],
+                        'submit_driving_license'                 => [
+                            'description' => 'Please submit both photo ID and address page of the driving license- merged as one document.',
+                        ],
+                    ],
+                ],
+                'business_pan_url'     => [
+                    'reasons' => [
+                        'submit_company_pan'    => [
+                            'description' => 'Please submit a copy of the Company PAN Card',
+                        ],
+                        'submit_proprietor_pan' => [
+                            'description' => 'Please submit a copy of the Proprietor PAN Card.',
                         ],
                     ],
                 ],

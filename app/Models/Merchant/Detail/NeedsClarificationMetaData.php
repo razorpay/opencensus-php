@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type as DocumentType;
 use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList as ReasonList;
 
@@ -16,10 +15,10 @@ class NeedsClarificationMetaData
         Entity::CONTACT_NAME               => [ReasonList::PROVIDE_POC],
         Entity::CONTACT_MOBILE             => [ReasonList::INVALID_CONTACT_NUMBER],
         Entity::BUSINESS_TYPE              => [ReasonList::IS_COMPANY_REG],
-        Entity::BUSINESS_CATEGORY          => [ReasonList::SERVICES_OFFERED],
-        Entity::BUSINESS_SUBCATEGORY       => [ReasonList::SERVICES_OFFERED],
         Entity::BUSINESS_WEBSITE           => [ReasonList::WEBSITE_NOT_LIVE],
-        Entity::PROMOTER_PAN               => [ReasonList::UPDATE_DIRECTOR_PAN],
+        Entity::PROMOTER_PAN               => [ReasonList::UPDATE_DIRECTOR_PAN,
+                                               ReasonList::UPDATE_PROPREITOR_PAN,
+        ],
         Entity::COMPANY_PAN_NAME           => [ReasonList::UPDATE_DIRECTOR_PAN],
         Entity::BANK_ACCOUNT_NUMBER        => [ReasonList::UNABLE_TO_VALIDATE_ACC_NUMBER],
         Entity::BANK_ACCOUNT_NAME          => [ReasonList::UNABLE_TO_VALIDATE_BENEFICIARY_NAME],
@@ -33,15 +32,20 @@ class NeedsClarificationMetaData
                                                ReasonList::ILLEGIBLE_DOC,
                                                ReasonList::SUBMIT_REG_BUSINESS_PAN_CARD,
         ],
+        Entity::BUSINESS_PAN_URL           => [ReasonList::SUBMIT_COMPANY_PAN,
+                                               ReasonList::SUBMIT_PROPTIETOR_PAN,
+        ],
         Entity::ADDRESS_PROOF_URL          => [ReasonList::UNABLE_TO_VALIDATE_ACC_NUMBER,
                                                ReasonList::UNABLE_TO_VALIDATE_BENEFICIARY_NAME,
-                                               ReasonList::UNABLE_TO_VALIDATE_IFSC
+                                               ReasonList::UNABLE_TO_VALIDATE_IFSC,
+                                               ReasonList::RESUBMIT_CANCELLED_CHEQUE,
         ],
         Entity::PROMOTER_ADDRESS_URL       => [ReasonList::SUBMIT_COMPLETE_DIRECTOR_ADDRESS_PROOF,
                                                ReasonList::SUBMIT_COMPLETE_AADHAAR,
                                                ReasonList::SUBMIT_COMPLETE_PASSPORT,
                                                ReasonList::SUBMIT_COMPLETE_ELECTION_CARD,
-                                               ReasonList::ADDRESS_PROOF_OUTDATED
+                                               ReasonList::ADDRESS_PROOF_OUTDATED,
+                                               ReasonList::SUBMIT_DRIVING_LICENSE,
         ],
         DocumentType::AADHAR_BACK          => [ReasonList::ILLEGIBLE_DOC],
         DocumentType::AADHAR_FRONT         => [ReasonList::ILLEGIBLE_DOC],
@@ -51,7 +55,12 @@ class NeedsClarificationMetaData
         DocumentType::DRIVER_LICENSE_FRONT => [ReasonList::ILLEGIBLE_DOC],
         DocumentType::PASSPORT_FRONT       => [ReasonList::ILLEGIBLE_DOC],
         DocumentType::PASSPORT_BACK        => [ReasonList::ILLEGIBLE_DOC],
-        DocumentType::CANCELLED_CHECK      => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::CANCELLED_CHEQUE     => [ReasonList::ILLEGIBLE_DOC,
+                                               ReasonList::UNABLE_TO_VALIDATE_ACC_NUMBER,
+                                               ReasonList::UNABLE_TO_VALIDATE_BENEFICIARY_NAME,
+                                               ReasonList::UNABLE_TO_VALIDATE_IFSC,
+                                               ReasonList::RESUBMIT_CANCELLED_CHEQUE,
+        ],
     ];
 
     // Supported additional text fields from merchants

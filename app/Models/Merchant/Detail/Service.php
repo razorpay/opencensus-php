@@ -63,6 +63,8 @@ class Service extends Base\Service
 
         $this->app->hubspot->trackPreSignupEvent($input, $this->merchant);
 
+        (new User\Service)->addUtmParameters($input);
+
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null, $input);
 
         return $response;
@@ -814,7 +816,12 @@ class Service extends Base\Service
 
             $partner = $this->repo->merchant->findOrFailPublic($partnerId);
 
-            (new Merchant\Core)->createPartnerSubmerchantAccessMap($partner, $subMerchant);
+            $merchantCore = new Merchant\Core;
+
+            $merchantCore->createPartnerSubmerchantAccessMap($partner, $subMerchant);
+
+            // update merchant pricing plan to the one specified by partner in partner config if applicable
+            $merchantCore->assignSubMerchantPricingPlan($partner, $subMerchant);
         }
 
         unset($input[Entity::REFERRAL_CODE]);

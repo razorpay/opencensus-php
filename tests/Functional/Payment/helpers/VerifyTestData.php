@@ -156,4 +156,36 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_PARAMETERS,
         ],
     ],
+
+    'testVerifyGooglePayCardPaymentNotFound' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+        ],
+    ],
+
+    'testVerifyGooglePayCardPaymentNotOfGooglePay' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+        ],
+    ],
 ];

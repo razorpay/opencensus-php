@@ -15,6 +15,7 @@ use RZP\Gateway\Upi\Sbi\RefundFile;
 use RZP\Models\Base\PublicCollection;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class UpiSbi extends Base
 {
@@ -24,15 +25,49 @@ class UpiSbi extends Base
     const GATEWAY         = Payment\Gateway::UPI_SBI;
     const BEAM_FILE_TYPE  = 'refund';
 
-    public function fetchEntities(): PublicCollection
+    /**
+     * @param int $begin
+     * @param int $end
+     * @return PublicCollection
+     */
+    protected function fetchRefundsFromAPI(int $begin, int $end): PublicCollection
     {
-        $begin = $this->gatewayFile->getBegin();
-
-        $end = $this->gatewayFile->getEnd();
+        //
+        // Regular flow - fetching refunds from API DB
+        //
 
         $refunds = $this->repo->refund->findBetweenTimestampsForGateway($begin, $end, static::GATEWAY);
 
         return $refunds;
+    }
+
+    /**
+     * @param int $from
+     * @param int $to
+     * @param array $refundIds
+     * @return array
+     */
+    protected function getScroogeQuery(int $from, int $to, $refundIds = []): array
+    {
+        $input = [
+            RefundConstants::SCROOGE_QUERY => [
+                RefundConstants::SCROOGE_REFUNDS => [
+                    RefundConstants::SCROOGE_GATEWAY    => static::GATEWAY,
+                    RefundConstants::SCROOGE_CREATED_AT => [
+                        RefundConstants::SCROOGE_GTE => $from,
+                        RefundConstants::SCROOGE_LTE => $to,
+                    ],
+                ],
+            ],
+            RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
+        ];
+
+        if (empty($refundIds) === false)
+        {
+            $input[RefundConstants::SCROOGE_QUERY][RefundConstants::SCROOGE_REFUNDS][RefundConstants::SCROOGE_ID] = $refundIds;
+        }
+
+        return $input;
     }
 
     protected function formatDataForFile(array $data)
@@ -41,14 +76,22 @@ class UpiSbi extends Base
 
         foreach ($data as $index => $row)
         {
+            $pgMerchantId = trim(RefundFile::PG_MERCHANT_ID, '"');
+            $refReqNo     = trim(RefundFile::REFUND_REQ_NO, '"');
+            $txnRefNo     = trim(RefundFile::TRANS_REF_NO, '"');
+            $custRefNo    = trim(RefundFile::CUSTOMER_REF_NO, '"');
+            $orderNo      = trim(RefundFile::ORDER_NO, '"');
+            $refAmt       = trim(RefundFile::REFUND_REQ_AMT, '"');
+            $refRemark    = trim(RefundFile::REFUND_REMARK, '"');
+
             $formattedData[] = [
-                RefundFile::PG_MERCHANT_ID  => $row['gateway']['gateway_merchant_id'],
-                RefundFile::REFUND_REQ_NO   => $row['refund']['id'],
-                RefundFile::TRANS_REF_NO    => $row['gateway']['npci_reference_id'],
-                RefundFile::CUSTOMER_REF_NO => $row['gateway']['gateway_payment_id'],
-                RefundFile::ORDER_NO        => $row['payment']['id'],
-                RefundFile::REFUND_REQ_AMT  => $row['refund']['amount'] / 100,
-                RefundFile::REFUND_REMARK   => 'Refund for ' . $row['payment']['id'],
+                $pgMerchantId  => trim($row['gateway']['gateway_merchant_id'], '"'),
+                $refReqNo      => trim($row['refund']['id'], '"'),
+                $txnRefNo      => trim($row['gateway']['npci_reference_id'], '"'),
+                $custRefNo     => trim($row['gateway']['gateway_payment_id'], '"'),
+                $orderNo       => trim($row['payment']['id'], '"'),
+                $refAmt        => trim($row['refund']['amount'] / 100, '"'),
+                $refRemark     => trim('Refund for ' . $row['payment']['id'], '"'),
             ];
         }
 
@@ -57,6 +100,10 @@ class UpiSbi extends Base
 
     public function createFile($data)
     {
+        $defaultExcelEnclosure = $this->config->get('excel.csv.enclosure');
+
+        $this->config->set('excel.csv.enclosure', '');
+
         if ($this->isFileGenerated() === true)
         {
             return;
@@ -97,6 +144,8 @@ class UpiSbi extends Base
                 ],
                 $e);
         }
+
+        $this->config->set('excel.csv.enclosure', $defaultExcelEnclosure);
     }
 
     public function sendFile($data)
@@ -111,7 +160,7 @@ class UpiSbi extends Base
         ];
 
         // In seconds
-        $timelines = [];
+        $timelines = [600, 1800, 3600];
 
         $mailInfo = [
             'fileInfo'  => $fileInfo,

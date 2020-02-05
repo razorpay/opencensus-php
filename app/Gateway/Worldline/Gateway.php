@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Worldline;
 
 use RZP\Gateway\Base;
+use RZP\Gateway\Mozart;
 use RZP\Exception;
 use RZP\Models\BharatQr;
 use RZP\Gateway\Base\Verify;
@@ -34,14 +35,6 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input, $isBharatQr = false): array
     {
-        throw new Exception\LogicException(
-            'Not a supported action',
-            null,
-            [
-                'input'     => $input,
-                'gateway'   => $this->gateway
-            ]);
-
         if ($isBharatQr === true)
         {
             $qrData = $this->getQrData($input);
@@ -58,14 +51,6 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
-
-        throw new Exception\LogicException(
-            'Not a supported action',
-            null,
-            [
-                'input'     => $input,
-                'gateway'   => $this->gateway
-            ]);
 
         if ($this->isBharatQrPayment() === true)
         {
@@ -86,14 +71,6 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
-
-        throw new Exception\LogicException(
-            'Not a supported action',
-            null,
-            [
-                'input'     => $input,
-                'gateway'   => $this->gateway
-            ]);
 
         $verify = new Verify($this->gateway, $input);
 
@@ -473,7 +450,7 @@ class Gateway extends Base\Gateway
         {
             $response = [
                 'status'    => 'Failure',
-                'errorMsg'  => $exception->getMessage(),
+                'errorMsg'  => '',
             ];
         }
 
@@ -673,11 +650,22 @@ class Gateway extends Base\Gateway
 
     public function createTerminal(array $input)
     {
-        return $this->app['gateway']->call(BaseEntity::MOZART, Base\Action::CREATE_TERMINAL, $input, $this->getMode());
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::CREATE_TERMINAL, $input, $this->getMode());
     }
 
     public function verifyTerminal(array $input)
     {
-        return $this->app['gateway']->call(BaseEntity::MOZART, Base\Action::VERIFY_TERMINAL, $input, $this->getMode());
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::VERIFY_TERMINAL, $input, $this->getMode());
     }
+
+    public function disableTerminal(array $input)
+    {
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::DISABLE_TERMINAL, $input, $this->getMode());
+    }
+
+    public function enableTerminal(array $input)
+    {
+        return $this->app['gateway']->call(BaseEntity::MOZART, Mozart\Action::ENABLE_TERMINAL, $input, $this->getMode());
+    }
+
 }

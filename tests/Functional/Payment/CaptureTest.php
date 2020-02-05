@@ -10,16 +10,22 @@ use Mail;
 use Queue;
 
 use RZP\Jobs\Capture as CaptureJob;
+use RZP\Mail\Merchant\BalancePositiveAlert;
+use RZP\Mail\Merchant\FeeCreditsAlert;
+use RZP\Mail\Merchant\NegativeBalanceAlert;
+use RZP\Mail\Merchant\NegativeBalanceThresholdAlert;
 use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Dashboard\Payment;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor;
 use RZP\Models\Payment as Payments;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 /**
  * Tests for capture payments
@@ -37,6 +43,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class CaptureTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $testData = null;
 
@@ -1389,6 +1396,363 @@ class CaptureTest extends TestCase
         $this->assertEquals(500, $transaction['fee']);
     }
 
+    //Negative Balance Tests
+    public function testEmandateCaptureWithSufficientBalance()
+    {
+        Mail::fake();
+
+        $paymentId = $this->setUpEmandateFixtures(5000, 0);
+
+        $this->startTest();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $balance = $this->getDbEntityById('balance', '10000000000000');
+
+        $this->assertEquals('pay_'.$paymentId, $transaction['entity_id']);
+        $this->assertEquals('payment', $transaction['type']);
+        $this->assertEquals(0, $transaction['credit'] );
+        $this->assertEquals(1180, $transaction['debit']);
+        $this->assertEquals(1180, $transaction['fee']);
+        $this->assertEquals(1180, $transaction['mdr']);
+        $this->assertEquals(180, $transaction['tax']);
+        $this->assertEquals(3820, $transaction['balance']);
+
+        $this->assertEquals($balance['id'], $transaction['balance_id']);
+
+        $this->assertEquals($transaction['fee_model'], 'prepaid');
+
+        $this->assertEquals(3820, $balance['balance']);
+        $this->assertEquals('primary', $balance['type']);
+        $this->assertEquals(0, $balance['fee_credits']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+        Mail::assertNotQueued(NegativeBalanceThresholdAlert::class);
+        Mail::assertNotQueued(BalancePositiveAlert::class);
+    }
+
+    public function testEmandateCaptureWithZeroBalance()
+    {
+        Mail::fake();
+
+        $paymentId = $this->setUpEmandateFixtures(0,0);
+
+        $this->startTest();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $balance = $this->getDbEntityById('balance', '10000000000000');
+
+        $this->assertEquals('pay_'.$paymentId, $transaction['entity_id']);
+        $this->assertEquals('payment', $transaction['type']);
+        $this->assertEquals(0, $transaction['credit'] );
+        $this->assertEquals(1180, $transaction['debit']);
+        $this->assertEquals(1180, $transaction['fee']);
+        $this->assertEquals(1180, $transaction['mdr']);
+        $this->assertEquals(180, $transaction['tax']);
+        $this->assertEquals(-1180, $transaction['balance']);
+
+        $this->assertEquals('10000000000000', $transaction['balance_id']);
+
+        $this->assertEquals($transaction['fee_model'], 'prepaid');
+
+        $this->assertEquals(-1180, $balance['balance']);
+        $this->assertEquals('primary', $balance['type']);
+        $this->assertEquals(0, $balance['fee_credits']);
+
+        Mail::assertQueued(NegativeBalanceAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('test@razorpay.com', $viewData['email']);
+
+            $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+            $this->assertEquals(-1180 , $viewData['balance']);
+
+            $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testEmandateCaptureWithNegativeBalance()
+    {
+        Mail::fake();
+
+        $paymentId = $this->setUpEmandateFixtures(-248820, 0);
+
+        $this->startTest();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $balance = $this->getDbEntityById('balance', '10000000000000');
+
+        $this->assertEquals('pay_'.$paymentId, $transaction['entity_id']);
+        $this->assertEquals('payment', $transaction['type']);
+        $this->assertEquals(0, $transaction['credit'] );
+        $this->assertEquals(1180, $transaction['debit']);
+        $this->assertEquals(1180, $transaction['fee']);
+        $this->assertEquals(1180, $transaction['mdr']);
+        $this->assertEquals(180, $transaction['tax']);
+        $this->assertEquals(-250000, $transaction['balance']);
+
+        $this->assertEquals($balance['id'], $transaction['balance_id']);
+
+        $this->assertEquals($transaction['fee_model'], 'prepaid');
+
+        $this->assertEquals(-250000, $balance['balance']);
+        $this->assertEquals('primary', $balance['type']);
+        $this->assertEquals(0, $balance['fee_credits']);
+
+        Mail::assertQueued(NegativeBalanceThresholdAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('test@razorpay.com', $viewData['email']);
+
+            $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+            $this->assertEquals(50, $viewData['percentage']);
+
+            $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testEmandateCaptureWithNegativeBalanceCrossingThreshold()
+    {
+        Mail::fake();
+
+        $this->setUpEmandateFixtures(-500000, 0);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+        Mail::assertNotQueued(NegativeBalanceThresholdAlert::class);
+        Mail::assertNotQueued(BalancePositiveAlert::class);
+    }
+
+    public function testEmandateCaptureWithNegativeAndReserveBalance()
+    {
+        Mail::fake();
+
+        $paymentId = $this->setUpEmandateFixtures(-399000, 0);
+
+        $this->fixtures->create('balance',
+            [
+                'type'          => 'reserve_primary',
+                'balance'       => 200000,
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+        $this->startTest();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $balance = $this->getDbEntityById('balance', 10000000000000);
+
+        $this->assertEquals('pay_'.$paymentId, $transaction['entity_id']);
+        $this->assertEquals('payment', $transaction['type']);
+        $this->assertEquals(0, $transaction['credit'] );
+        $this->assertEquals(1180, $transaction['debit']);
+        $this->assertEquals(1180, $transaction['fee']);
+        $this->assertEquals(1180, $transaction['mdr']);
+        $this->assertEquals(180, $transaction['tax']);
+        $this->assertEquals(-400180, $transaction['balance']);
+
+        $this->assertEquals($balance['id'], $transaction['balance_id']);
+
+        $this->assertEquals($transaction['fee_model'], 'prepaid');
+
+        $this->assertEquals(-400180, $balance['balance']);
+        $this->assertEquals('primary', $balance['type']);
+        $this->assertEquals(0, $balance['fee_credits']);
+
+        Mail::assertQueued(NegativeBalanceThresholdAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('test@razorpay.com', $viewData['email']);
+
+            $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+            $this->assertEquals(80, $viewData['percentage']);
+
+            $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testEmandateCaptureWithSufficientFeeCredits()
+    {
+        Mail::fake();
+
+        $paymentId = $this->setUpEmandateFixtures(0, 5000);
+
+        $this->startTest();
+
+        $credit_txn = $this->getLastEntity('credit_transaction', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $balance = $this->getDbEntityById('balance', '10000000000000');
+
+        $this->assertEquals($credit_txn['credits_used'], 1180);
+
+        $this->assertEquals('pay_'.$paymentId, $transaction['entity_id']);
+        $this->assertEquals('payment', $transaction['type']);
+        $this->assertEquals(0, $transaction['credit'] );
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals(1180, $transaction['fee']);
+        $this->assertEquals(1180, $transaction['mdr']);
+        $this->assertEquals(180, $transaction['tax']);
+        $this->assertEquals(0, $transaction['balance']);
+
+        $this->assertEquals($balance['id'], $transaction['balance_id']);
+
+        $this->assertEquals($transaction['fee_model'], 'prepaid');
+        $this->assertEquals($transaction['credit_type'], 'fee');
+
+        $this->assertEquals(0, $balance['balance']);
+        $this->assertEquals('primary', $balance['type']);
+        $this->assertEquals(3820, $balance['fee_credits']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+        Mail::assertNotQueued(NegativeBalanceThresholdAlert::class);
+        Mail::assertNotQueued(BalancePositiveAlert::class);
+    }
+
+    public function testEmandateCaptureWithInSufficientFeeCredits()
+    {
+        Mail::fake();
+
+        $paymentId = $this->setUpEmandateFixtures(0, 700);
+
+        $this->startTest();
+
+        $credit_txn = $this->getLastEntity('credit_transaction', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($credit_txn);
+
+        $balance = $this->getDbEntityById('balance', 10000000000000);
+
+        $this->assertEquals('pay_'.$paymentId, $transaction['entity_id']);
+        $this->assertEquals('payment', $transaction['type']);
+        $this->assertEquals(0, $transaction['credit'] );
+        $this->assertEquals(1180, $transaction['debit']);
+        $this->assertEquals(1180, $transaction['fee']);
+        $this->assertEquals(1180, $transaction['mdr']);
+        $this->assertEquals(180, $transaction['tax']);
+        $this->assertEquals(-1180, $transaction['balance']);
+
+        $this->assertEquals($balance['id'], $transaction['balance_id']);
+
+        $this->assertEquals($transaction['fee_model'], 'prepaid');
+
+        $this->assertEquals(-1180, $balance['balance']);
+        $this->assertEquals('primary', $balance['type']);
+        $this->assertEquals(700, $balance['fee_credits']);
+
+        Mail::assertQueued(NegativeBalanceAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('test@razorpay.com', $viewData['email']);
+
+            $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+            $this->assertEquals(-1180 , $viewData['balance']);
+
+            $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testEmandateCaptureWithFeeCreditsAndReserveBalance()
+    {
+        Mail::fake();
+        $paymentId = $this->setUpEmandateFixtures(0, 2000);
+
+        $this->fixtures->create('balance',
+            [
+                'type'          => 'reserve_primary',
+                'balance'       => 200000,
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+        $this->startTest();
+
+        $credit_txn = $this->getLastEntity('credit_transaction', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $balance = $this->getDbEntityById('balance', 10000000000000);
+
+        $this->assertEquals($credit_txn['credits_used'], 1180);
+
+        $this->assertEquals('pay_'.$paymentId, $transaction['entity_id']);
+        $this->assertEquals('payment', $transaction['type']);
+        $this->assertEquals(0, $transaction['credit'] );
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals(1180, $transaction['fee']);
+        $this->assertEquals(1180, $transaction['mdr']);
+        $this->assertEquals(180, $transaction['tax']);
+        $this->assertEquals(0, $transaction['balance']);
+
+        $this->assertEquals($balance['id'], $transaction['balance_id']);
+
+        $this->assertEquals($transaction['fee_model'], 'prepaid');
+        $this->assertEquals($transaction['credit_type'], 'fee');
+
+        $this->assertEquals(0, $balance['balance']);
+        $this->assertEquals('primary', $balance['type']);
+        $this->assertEquals(820, $balance['fee_credits']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+        Mail::assertNotQueued(NegativeBalanceThresholdAlert::class);
+        Mail::assertNotQueued(BalancePositiveAlert::class);
+    }
+
+    public function testCaptureAddBalanceToNegativeBalance()
+    {
+        Mail::fake();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->fixtures->base->editEntity('balance', '10000000000000',
+            [
+                'balance'     => -1000,
+            ]
+        );
+
+        $this->payment = $this->defaultAuthPayment();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+
+        Mail::assertQueued(CapturedMail::class);
+        Mail::assertQueued(BalancePositiveAlert::class);
+    }
+
     public function startBulkTest(array $payments)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -1550,5 +1914,80 @@ class CaptureTest extends TestCase
     {
         $this->assertEquals('failed', $payment['status']);
         $this->assertEquals($internalErrorCode, $payment['internal_error_code']);
+    }
+
+    private function setUpEmandateFixtures(int $balanceAmount = 0, int $feeCredits = 0)
+    {
+        $this->fixtures->merchant->addFeatures(['charge_at_will', 's2s', 'emandate_mrn']);
+
+        $paymentData = $this->getEmandateNetbankingRecurringPaymentArray('UTIB');
+
+        $paymentData['customer_id'] = '100000customer';
+        $paymentData['status'] = 'authorized';
+        $paymentData['gateway_captured'] = true;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $paymentData['amount']]);
+
+        $paymentData['order_id'] = $order['id'];
+
+        $tokenData = [
+            'merchant_id'      => '10000000000000',
+            'customer_id'      => '100000customer',
+            'method'           => 'emandate',
+            'bank'             => 'UTIB',
+            'recurring'        => '1',
+            'auth_type'        => 'netbanking',
+            'account_number'   => '9170100000000319',
+            'ifsc'             => 'UTIB0000194',
+            'beneficiary_name' => 'Axis',
+            'recurring_status' => 'initiated',
+        ];
+
+        $token = $this->fixtures->create('token', $tokenData);
+
+        $paymentData['token_id']  = $token['id'];
+        $paymentData['recurring_type']  = 'initial';
+        $paymentData['recurring']  = 1;
+
+        $payment = $this->fixtures->create('payment', $paymentData);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->payment['bank_account'] = [
+            'account_number'    => '9170100000000319',
+            'ifsc'               => 'UTIB0000194',
+            'name'               => 'Axis',
+        ];
+
+        if($feeCredits !== 0 )
+        {
+            $this->fixtures->create('credits',
+                [
+                    'type'  => 'fee',
+                    'value' => $feeCredits,
+                ]
+            );
+        }
+
+        $this->fixtures->base->editEntity('balance', '10000000000000',
+            [
+                'balance'     => $balanceAmount,
+                'fee_credits' => $feeCredits
+            ]
+        );
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->ba->privateAuth();
+
+        return $payment['id'];
     }
 }

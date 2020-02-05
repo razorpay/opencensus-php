@@ -3,10 +3,13 @@
 namespace RZP\Models\Adjustment;
 
 use RZP\Base;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Base\PublicEntity;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Transaction;
+use RZP\Models\Merchant\Balance;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
 use RZP\Models\Settlement\Channel as SettlementChannel;
@@ -14,6 +17,7 @@ use RZP\Models\Settlement\Channel as SettlementChannel;
 class Validator extends Base\Validator
 {
     const FEES = 'fees';
+    const MIN_RESERVE_BALANCE = 1000000; // in paise
 
     protected static $createRules = [
         Entity::AMOUNT        => 'required|integer',
@@ -57,6 +61,34 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'At least one out of amount OR tax/fees should be passed');
         }
+
+        $this->validateReserveBalance($input);
+    }
+
+    private function validateReserveBalance(array $input)
+    {
+        if (isset($input[Balance\Entity::TYPE]) === true)
+        {
+            $reserveType = ($input[Entity::TYPE] === Balance\Type::RESERVE_PRIMARY) or
+                            ($input[Entity::TYPE] === Balance\Type::RESERVE_BANKING);
+
+            if ($reserveType === true)
+            {
+                if (isset($input[Entity::AMOUNT]) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Amount should be passed for reserve balance.');
+                }
+
+                $reserveAmountInvalid = $input[Entity::AMOUNT] < self::MIN_RESERVE_BALANCE;
+
+                if ($reserveAmountInvalid === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Reserve Balance Amount should be greater than or equal to '.self::MIN_RESERVE_BALANCE);
+                }
+            }
+        }
     }
 
     /**
@@ -80,12 +112,15 @@ class Validator extends Base\Validator
 
         $amountToBeDeducted = abs($input[Entity::AMOUNT]);
 
-        $isSufficientBalance = (new Merchant\Balance\Core)->checkMerchantBalance($merchant, $amountToBeDeducted);
-
-        if ($isSufficientBalance === false)
+        try
+        {
+            (new Merchant\Balance\Core)->checkMerchantBalance($merchant,
+                -1 * $amountToBeDeducted, Transaction\Type::DISPUTE);
+        }
+        catch (\Exception $e)
         {
             $traceData = [
-                'message'               => 'Not enough balance',
+                'message'               => TraceCode::getMessage(TraceCode::MERCHANT_BALANCE_DEBIT_FAILURE),
                 'adjustment_amount'     => $amountToBeDeducted,
                 'entity_type'           => $entity->getEntityName(),
                 'entity_id'             => $entity->getId(),

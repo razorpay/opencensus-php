@@ -35,6 +35,7 @@ use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\FundTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\PaperMandate;
 use RZP\Models\EntityOrigin;
@@ -47,6 +48,7 @@ use RZP\Models\Plan\Subscription;
 use RZP\Models\Partner\Commission;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
+use RZP\Services\FreshdeskTicketClient;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\PaymentLink\PaymentPageItem;
@@ -174,6 +176,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new CardPaymentService();
         });
 
+        $this->app->singleton('nbplus.payments', function($app)
+        {
+            $nbPlusMock = $app['config']->get('applications.nbplus_payment_service.mock');
+
+            if ($nbPlusMock === true)
+            {
+                return new Mock\NbPlus\Service();
+            }
+
+            return new NbPlus\Service();
+        });
+
         $this->app->singleton('card.otpelf', function($app)
         {
             $mock = $app['config']->get('applications.otpelf.mock');
@@ -211,6 +225,18 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('diag', function($app)
         {
             return new DiagClient($app);
+        });
+
+        $this->app->singleton('salesforce', function($app)
+        {
+            $salesForceMock = $app['config']->get('applications.salesforce.mock');
+
+            if ($salesForceMock === true)
+            {
+                return new Mock\SalesForceClient($app);
+            }
+
+            return new SalesForceClient($app);
         });
 
         $this->app->singleton('gateway_downtime_metric', function($app)
@@ -327,6 +353,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMozart();
 
         $this->registerHyperVerge();
+
+        $this->registerFreshdeskTicketService();
     }
 
     /**
@@ -375,6 +403,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'diag',
             'mozart',
             'hubspot',
+            'salesforce',
+            'freshdesk_client'
         ];
     }
 
@@ -636,9 +666,11 @@ class ApiServiceProvider extends BaseServiceProvider
             'order'                     => Order\Entity::class,
             'refund'                    => Payment\Refund\Entity::class,
             'settlement'                => Settlement\Entity::class,
+            'settlement_transfer'       => Settlement\Transfer\Entity::class,
             'payout'                    => Payout\Entity::class,
             'transaction'               => Transaction\Entity::class,
             'fund_account_validation'   => FundAccount\Validation\Entity::class,
+            'fund_transfer_attempt'     => FundTransfer\Attempt\Entity::class,
             'customer_transaction'      => Customer\Transaction\Entity::class,
             'external'                  => External\Entity::class,
 
@@ -860,6 +892,21 @@ class ApiServiceProvider extends BaseServiceProvider
             $implementation = $mock ? Mock\FTS\FundTransfer::class : FTS\FundTransfer::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerFreshdeskTicketService()
+    {
+        $this->app->singleton('freshdesk_client', function($app)
+        {
+            $ticketMock = $app['config']->get('applications.freshdesk.mock');
+
+            if ($ticketMock === true)
+            {
+                return new Mock\FreshdeskTicketClient($app);
+            }
+
+            return new FreshDeskTicketClient($app);
         });
     }
 }

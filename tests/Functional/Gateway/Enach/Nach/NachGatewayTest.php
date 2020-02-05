@@ -36,6 +36,25 @@ class NachGatewayTest extends TestCase
         (new Terminal)->createNachTerminal();
     }
 
+    public function testNachDebitRefund()
+    {
+        $this->testGatewayFileDebitBankResponseSuccess();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+
+        $this->assertEquals('initiated', $refund['status']);
+
+        $this->assertTrue(empty($refund['bank_account_id']) === false);
+    }
+
     public function testGatewayFileRegister()
     {
         $this->createDummyRegisterToken();
@@ -123,7 +142,7 @@ class NachGatewayTest extends TestCase
     {
         $payment = $this->createDummyRegisterToken();
 
-        $batchFile = $this->getBatchFileToUploadForBankRegisterResponse($payment, 'Reject');
+        $batchFile = $this->getBatchFileToUploadForBankRegisterResponse($payment, 'Rejected', 'No such account');
 
         $url = '/admin/batches';
 
@@ -142,6 +161,33 @@ class NachGatewayTest extends TestCase
 
         $this->assertNull($token['gateway_token']);
         $this->assertEquals('rejected', $token['recurring_status']);
+        $this->assertEquals('No such account', $token['recurring_details']['failure_reason']);
+    }
+
+    public function testGatewayFailureRegistrationResponseFileInitialReject()
+    {
+        $payment = $this->createDummyRegisterToken();
+
+        $batchFile = $this->getBatchFileToUploadForBankRegisterResponse($payment, 'Initial Reject', 'END DATE BEFORE CURENT BUSINESS DATE NOT ALLOWED');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $this->assertEquals('nach', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNull($token['gateway_token']);
+        $this->assertEquals('rejected', $token['recurring_status']);
+        $this->assertEquals('END DATE BEFORE CURENT BUSINESS DATE NOT ALLOWED', $token['recurring_details']['failure_reason']);
     }
 
     public function testGatewayInitialRegistrationResponseFile()
@@ -149,6 +195,56 @@ class NachGatewayTest extends TestCase
         $payment = $this->createDummyRegisterToken();
 
         $batchFile = $this->getBatchFileToUploadForBankRegisterResponse($payment, 'Initial');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $this->assertEquals('nach', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals('created', $payment['status']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNull($token['gateway_token']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+    }
+
+    public function testGatewayInitialRegistrationResponseFilePendingResponse()
+    {
+        $payment = $this->createDummyRegisterToken();
+
+        $batchFile = $this->getBatchFileToUploadForBankRegisterResponse($payment, 'Pending');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $this->assertEquals('nach', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertEquals('created', $payment['status']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNull($token['gateway_token']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+    }
+
+    public function testGatewayInitialRegistrationResponseFilePendingFromBankResponse()
+    {
+        $payment = $this->createDummyRegisterToken();
+
+        $batchFile = $this->getBatchFileToUploadForBankRegisterResponse($payment, 'Pending for confirmation from Destination Bank');
 
         $url = '/admin/batches';
 
@@ -245,8 +341,9 @@ class NachGatewayTest extends TestCase
         $paymentId = $payment['razorpay_payment_id'];
         $this->fixtures->stripSign($paymentId);
 
-        $data = '560000000RAZORPAY SOFTWARE PVT LTD               00000000000000000000000                           000005000000000000000030002211201910000000011000000001   NACH00000000010000000000000000000000RATN0TREASU00000000000000000000000000000000000000000001                                                           
-67         10                  dead pool                                                                                000000000300010000000011000000001' . $status .'  HDFC00012331111111111111                      RATN0TREASUNACH00000000010000CTTATAAIAA'. $paymentId .'      ACH               UTIB6000000005844847       ';
+        $data = '56       RAZORPAY SOFTWARE PVT LTD                             000000000                           000005000000000000000020001701202047642224498136619848   NACH00000000013149000000000000000000CITI000PIGW000018003                          00000000227
+67         10                  ABIJITO GUHA                            17012020        RAZORPAY SOFTWARE PV             000000030000047642224504081750481'. $status .'00HDFC00024971111111111111                      CITI000PIGWNACH00000000013149CTTATAAIAA' . $paymentId . '      10 000000000000000HDFC0000000010936518
+';
 
         $name = 'temp.txt';
 
@@ -259,7 +356,7 @@ class NachGatewayTest extends TestCase
         return $file;
     }
 
-    protected function getBatchFileToUploadForBankRegisterResponse($payment, $status = 'Accept')
+    protected function getBatchFileToUploadForBankRegisterResponse($payment, $status = 'Accepted', $failureReason = '')
     {
         $paymentId = $payment['id'];
 
@@ -272,22 +369,24 @@ class NachGatewayTest extends TestCase
                 ],
                 'items'  => [
                     [
-                        'Sr.no'                => '1',
-                        'Category Code'        => 'U099',
-                        'Category Description' => 'Others',
-                        'Start date'           => '21/11/2019',
-                        'End date'             => '21/11/2029',
-                        'Client code'          => 'will be provided by CITI',
-                        'Unique reference no'  => $paymentId,
-                        'Account No'           => '1111111111111',
-                        'Account Holder name'  => 'dead pool',
-                        'Account type'         => 'savings',
-                        'Bank Name'            => 'HDFC',
-                        'Bank MICR / IFSC'     => 'HDFC0001233',
-                        'Amount'               => '10000',
-                        'Status'               => $status,
-                        'UMRN'                 => 'UTIB6000000005844847',
-                        'Remarks'              => '',
+                        'Sr.no'                  => '1',
+                        'Category Code'          => 'U099',
+                        'Category Description'   => 'Others',
+                        'Start date'             => '21/11/2019',
+                        'End date'               => '21/11/2029',
+                        'Client code'            => 'CTRAZORPAY',
+                        'Unique reference no'    => $paymentId,
+                        'Account No'             => '1111111111111',
+                        'Account Holder name'    => 'dead pool',
+                        'Account type'           => 'savings',
+                        'Bank Name'              => 'HDFC',
+                        'Bank MICR / IFSC'       => 'HDFC0001233',
+                        'Amount'                 => '10000',
+                        'Lot'                    => '1',
+                        'Softcopy Received Date' => '06/12/19',
+                        'Status'                 => $status,
+                        'UMRN'                   => 'UTIB6000000005844847',
+                        'Remark'                 => $failureReason,
                     ],
                 ],
             ],

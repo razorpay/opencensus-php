@@ -967,6 +967,23 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+                'id'                    => '1n25ficipayltr',
+                'merchant_id'           => Account::SHARED_ACCOUNT,
+                'gateway'               => Gateway::PAYLATER,
+                'gateway_acquirer'      => 'icic',
+                'card'                  => '0',
+                'gateway_merchant_id'   => 'test_merchant_id',
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                'type'                  => 0,
+                'paylater'              => 1,
+                'mode'                  => 2,
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
                 'id'                    => '1n25f6uN5S1Z7c',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::HDFC,
@@ -2112,8 +2129,8 @@ class DatabaseSeeder extends Seeder
             'gateway_terminal_id'         => '1234',
             'gateway_terminal_password'   => Crypt::encrypt('shared_account_upi_mindgate_terminal_pass'),
             'type'                        => '65537',
-            'virtual_upi_root'            => 'rzp.',
-            'virtual_upi_merchant_prefix' => 'pay.',
+            'virtual_upi_root'            => 'rzpy.',
+            'virtual_upi_merchant_prefix' => 'payto00000',
             'virtual_upi_handle'          => 'hdfcbank',
             'created_at'                  => time(),
             'updated_at'                  => time(),
@@ -2606,6 +2623,20 @@ class DatabaseSeeder extends Seeder
             'gateway_merchant_id2'       => 'NMIMS',
             'gateway_acquirer'           => 'flexmoney',
             'gateway_terminal_password'  => 'eyJpdiI6IklpRTBKZXBTYUJVVENNcms4TUVkVEE9PSIsInZhbHVlIjoiWHN4b0lZMlJBKzJvK05vdjk3NEFjMmgrb1Q5UStLODJ1UTQ5NjNndmc1UVQ3VXI4N2N0d2M0eks1SVwvUzFPK0wiLCJtYWMiOiIxNzE0ZTg5NjYwYzc2ZTE5MzViMGIyMGNkZjk1MzU3NTlkZWE5YmNjNTk2NWRkMTM3ZTA5YTgwMDI1YmQ0NzFmIn0=',
+            'cardless_emi'               => 1,
+            'mode'                       => 1,
+            'created_at'                 => time(),
+            'updated_at'                 => time()
+        ]);
+        DB::table(Table::TERMINAL)->insert([
+            'id'                         => Terminal\Shared::CARDLESS_EMI_ZESTMONEY_TERMINAL,
+            'merchant_id'                => Account::TEST_ACCOUNT,
+            'category'                   => 123,
+            'gateway'                    => Gateway::CARDLESS_EMI,
+            'gateway_merchant_id'        => '35',
+            'gateway_merchant_id2'       => 'NMIMS',
+            'gateway_acquirer'           => 'zestmoney',
+            'gateway_terminal_password'  => '1234',
             'cardless_emi'               => 1,
             'mode'                       => 1,
             'created_at'                 => time(),

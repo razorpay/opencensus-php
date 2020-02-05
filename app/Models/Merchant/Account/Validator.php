@@ -33,18 +33,20 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $createAccountRules = [
-        Constants::ENTITY          => 'required|string|in:'.CE::ACCOUNT,
-        Constants::BUSINESS_ENTITY => 'sometimes|string',
-        Constants::LEGAL_ENTITY_ID => 'sometimes|string',
-        Constants::MANAGED         => 'sometimes|boolean',
-        Constants::EMAIL           => 'sometimes|email',
-        Constants::PHONE           => 'sometimes|numeric|digits:10',
-        Constants::NOTES           => 'sometimes|notes',
-        Constants::PROFILE         => 'required|array',
-        Constants::SETTLEMENT      => 'sometimes|array',
-        Constants::SETTINGS        => 'sometimes|array',
-        Constants::TNC             => 'sometimes|array',
-        Constants::CONTACT_INFO    => 'sometimes|array',
+        Constants::ENTITY            => 'required|string|in:' . CE::ACCOUNT,
+        Constants::BUSINESS_ENTITY   => 'sometimes|string',
+        Constants::EXTERNAL_ID       => 'sometimes|string',
+        Constants::LEGAL_EXTERNAL_ID => 'sometimes|string',
+        Constants::LEGAL_ENTITY_ID   => 'sometimes|string',
+        Constants::MANAGED           => 'sometimes|boolean',
+        Constants::EMAIL             => 'sometimes|email',
+        Constants::PHONE             => 'sometimes|numeric|digits:10',
+        Constants::NOTES             => 'sometimes|notes',
+        Constants::PROFILE           => 'required|array',
+        Constants::SETTLEMENT        => 'sometimes|array',
+        Constants::SETTINGS          => 'sometimes|array',
+        Constants::TNC               => 'sometimes|array',
+        Constants::CONTACT_INFO      => 'sometimes|array',
     ];
 
     protected static $editAccountRules = [
@@ -94,7 +96,7 @@ class Validator extends Merchant\Validator
     protected static $accountAddressRules = [
         Constants::TYPE          => 'required|string|custom:address_type',
         Constants::LINE1         => 'required|string|max:100',
-        Constants::LINE2         => 'required|string',
+        Constants::LINE2         => 'sometimes|string',
         Constants::CITY          => 'required|string',
         Constants::DISTRICT_NAME => 'sometimes|string',
         Constants::STATE         => 'required|string',
@@ -152,8 +154,9 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $listAccountsRules = [
-        Merchant\Constants::COUNT => 'required|integer|min:1|max:30',
-        Merchant\Constants::SKIP  => 'integer',
+        Merchant\Constants::COUNT    => 'required|integer|min:1|max:30',
+        Merchant\Constants::SKIP     => 'integer',
+        Merchant\Entity::EXTERNAL_ID => 'sometimes|string',
     ];
 
     protected static $documentRules = [

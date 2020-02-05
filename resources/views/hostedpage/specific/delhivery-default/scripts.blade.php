@@ -35,7 +35,7 @@
 
 <script>
     (function(global){
-        function initCheckout(globalScope, udfData, amount) {
+        function initCheckout(globalScope, udfData, orderId, amountDue) {
             var data = globalScope.data;
 
             var paymentPageObj = data.payment_link;
@@ -45,10 +45,11 @@
             var options = {
                 key: data.key_id,
                 payment_link_id: paymentPageObj.id,
-                amount: amount,
+                order_id: orderId,
+                amount: amountDue,
                 notes: udfData,
                 handler: function(response) {
-                    var amountPaid = amount;
+                    var amountPaid = amountDue;
 
                     if (globalScope.hasRedirect()) {
 
@@ -199,7 +200,21 @@
                     window.RZP.scrollTo(parentEle, errorEle, 300);
                 } else {
                     amount = parseInt(amount * 100);
-                    window.RZP.initCheckout(window.RZP_DATA = window.RZP_DATA || {}, Object.assign({}, udfData), amount);
+
+                    var globalScope = window.RZP_DATA || {};
+                    var baseUrl = globalScope.data.base_url;
+                    var paymentPageObj = globalScope.data.payment_link;
+
+                    var paymentPageId = paymentPageObj.id;
+
+                    var lineItem = paymentPageObj.payment_page_items[0]; // Only 1 line item
+                    var lineItems = [{ amount: amount, payment_page_item_id: lineItem.id }];
+
+                    function onOrderCreation(orderId, amountDue) {
+                        window.RZP.initCheckout(globalScope, Object.assign({}, udfData), orderId, amountDue);
+                    }
+
+                    window.RZP.createOrder(baseUrl, paymentPageId, lineItems, onOrderCreation);
                 }
 
             }, 10); // If blur happens directly through click on submit btn, so 'has-error' class won't be put until delayed.

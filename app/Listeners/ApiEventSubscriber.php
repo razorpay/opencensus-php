@@ -17,6 +17,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
+use RZP\Models\PaymentLink;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Terminal;
@@ -29,6 +30,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
 use RZP\Models\Merchant\Webhook\Metric as WebhookMetric;
@@ -105,7 +107,8 @@ class ApiEventSubscriber extends Base\Core
         WebhookEvent::PAYMENT_FAILED,
         WebhookEvent::PAYOUT_PROCESSED,
         WebhookEvent::PAYOUT_REVERSED,
-        WebhookEvent::ORDER_PAID
+        WebhookEvent::ORDER_PAID,
+        WebhookEvent::PAYMENT_CAPTURED,
     ];
 
     /**
@@ -347,6 +350,11 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onPaymentCaptured($payment)
     {
+        if ($payment->hasPaymentLink() === true)
+        {
+            (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
+        }
+
         $payload = $this->getPaymentPayload($payment);
 
         $this->prepareAndDispatchWebhook($payload);
@@ -570,6 +578,41 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onPayoutLinkIssued(PayoutLinkEntity $payoutLink)
+    {
+        $payload = $this->getPayoutLinkPayload($payoutLink);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutLinkProcessed(PayoutLinkEntity $payoutLink)
+    {
+        $payload = $this->getPayoutLinkPayload($payoutLink);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutLinkProcessing(PayoutLinkEntity $payoutLink)
+    {
+        $payload = $this->getPayoutLinkPayload($payoutLink);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutLinkAttempted(PayoutLinkEntity $payoutLink)
+    {
+        $payload = $this->getPayoutLinkPayload($payoutLink);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutLinkCancelled(PayoutLinkEntity $payoutLink)
+    {
+        $payload = $this->getPayoutLinkPayload($payoutLink);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onPayoutCreated(Payout\Entity $payout)
     {
         $payload = $this->getPayoutPayload($payout);
@@ -626,6 +669,25 @@ class ApiEventSubscriber extends Base\Core
         {
             $payload = $this->getPayoutPayload($payout);
 
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
+    protected function onPayoutUpdated(Payout\Entity $payout)
+    {
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
+    protected function onPayoutRejected(Payout\Entity $payout)
+    {
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
             $this->prepareAndDispatchWebhook($payload);
         }
     }
@@ -934,6 +996,15 @@ class ApiEventSubscriber extends Base\Core
         ];
 
         return $payload;
+    }
+
+    protected function getPayoutLinkPayload(PayoutLinkEntity $payoutLink): array
+    {
+        return [
+            Constants\Entity::PAYOUT_LINK => [
+                'entity' => $payoutLink->toArrayPublic(),
+            ],
+        ];
     }
 
     protected function getPayoutPayload(Payout\Entity $payout): array

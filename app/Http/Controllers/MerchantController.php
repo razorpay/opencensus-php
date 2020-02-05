@@ -14,6 +14,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\AccessMap;
+use RZP\Models\Merchant\InheritanceMap;
 
 class MerchantController extends Controller
 {
@@ -1484,6 +1485,80 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->putAdditionalWebsite($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getInheritanceParent(string $merchantId)
+    {
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->getInheritanceParent($merchantId);
+
+        return ApiResponse::json($response->toArrayPublic());
+    }
+
+    public function postInheritanceParent(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->postInheritanceParent($merchantId, $input);
+
+        return ApiResponse::json($response->toArrayPublic());
+    }
+
+    public function deleteInheritanceParent(string $merchantId)
+    {
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->deleteInheritanceParent($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postInheritanceParentBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->postInheritanceParentBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function enableBusinessBankingTestMode()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->enableBusinessBankingTestMode($input);
+
+        return ApiResponse::json($response);
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function merchantsBulkUpdate()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->merchantsBulkUpdate($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBatchActionEntities()
+    {
+        $response = $this->service()->getBatchActionEntities();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBatchActions()
+    {
+        $response = $this->service()->getBatchActions();
 
         return ApiResponse::json($response);
     }

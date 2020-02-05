@@ -76,8 +76,7 @@ class CreatePricing extends Migration
             $table->tinyInteger(Pricing::AMOUNT_RANGE_ACTIVE)
                   ->default(0);
 
-            $table->integer(Pricing::AMOUNT_RANGE_MIN)
-                  ->unsigned()
+            $table->unsignedBigInteger(Pricing::AMOUNT_RANGE_MIN)
                   ->nullable();
 
             $table->unsignedBigInteger(Pricing::AMOUNT_RANGE_MAX)
