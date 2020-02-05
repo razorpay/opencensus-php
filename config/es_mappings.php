@@ -330,6 +330,9 @@ return [
             'partner_type' => [
                 'type' => 'keyword',
             ],
+            'activation_source' => [
+                'type' => 'keyword',
+            ],
             'activated_at' => [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',

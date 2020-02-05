@@ -3,6 +3,7 @@
 namespace RZP\Mail\Transaction;
 
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer\Entity;
 
@@ -19,8 +20,10 @@ class BankTransfer extends Transaction
 
     protected function getSubject(): string
     {
+        $modePrefix = ($this->mode === Mode::TEST) ? '[Test Mode] ' : '';
+
         return sprintf(
-            'Your A/C ending with %s has been credited with INR %s',
+            "{$modePrefix}Your A/C ending with %s has been credited with INR %s",
             mask_except_last4($this->balance['account_number']),
             amount_format_IN($this->txn['amount']));
     }

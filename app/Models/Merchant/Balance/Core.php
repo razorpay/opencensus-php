@@ -243,6 +243,7 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         int $amount,
         string $txnType,
+        bool $negativeBalanceEnabled = false,
         string $balanceType = Type::PRIMARY) : bool
     {
         $balance = $merchant->getBalanceByTypeOrFail($balanceType);
@@ -261,30 +262,20 @@ class Core extends Base\Core
             return true;
         }
 
-        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
-            [
-                'mode'          => $this->mode,
-                'merchant_id'   => $merchant->getId()
-            ]
-        );
+        // If transaction is making balance increase then return true
+        // (even if the final balance is still negative, there is slight increase)
 
-        $response = $this->app->razorx->getTreatment($merchant->getId(), BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE,
-                                                     $this->mode);
-
-        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
-            [
-                'mode'          => $this->mode,
-                'merchant_id'   => $merchant->getId(),
-                'response'      => $response
-            ]
-        );
+        if ($balanceAmount + $amount > $balanceAmount)
+        {
+              return true;
+        }
 
         $errorData = [
             'merchant_balance'  => $balanceAmount,
             'debit_amount'      => abs($amount)
         ];
 
-        if (($response !== 'on') and
+        if (($negativeBalanceEnabled === false) and
             ($balanceAmount < abs($amount)))
         {
             $errorData['message'] = TraceCode::getMessage(TraceCode::MERCHANT_BALANCE_DEBIT_FAILURE);
@@ -328,6 +319,7 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         int $amount,
         string $txnType,
+        bool $negativeBalanceEnabled = false,
         string $balanceType = Type::PRIMARY) : bool
     {
         $balance = $merchant->getBalanceByTypeOrFail($balanceType);
@@ -346,30 +338,12 @@ class Core extends Base\Core
             return true;
         }
 
-        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
-            [
-                'mode'          => $this->mode,
-                'merchant_id'   => $merchant->getId()
-            ]
-        );
-
-        $response = $this->app->razorx->getTreatment($merchant->getId(), BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE,
-                                                     $this->mode);
-
-        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
-            [
-                'mode'          => $this->mode,
-                'merchant_id'   => $merchant->getId(),
-                'response'      => $response
-            ]
-        );
-
         $errorData = [
             'merchant_refund_credits'   => $refundCredits,
             'debit_amount'               => $amount
         ];
 
-        if (($response !== 'on') and
+        if (($negativeBalanceEnabled === false) and
             ($refundCredits < abs($amount)))
         {
             $errorData['message'] = TraceCode::getMessage(TraceCode::MERCHANT_REFUND_CREDITS_DEBIT_FAILURE);
@@ -469,27 +443,34 @@ class Core extends Base\Core
         }
         else
         {
-            $maxNegativeAllowed = $this->getMaximumNegativeAllowedForBalanceType($merchant, $balanceType, $txnType);
-
             if (($newBalance >= 0) or
-                ($maxNegativeAllowed === 0) or
                 ($oldBalance < $newBalance))
             {
                 return;
             }
 
-            //percentage thresholds below which negative balance threshold breached mail should be sent
-            $negativeThresholdAlerts = [90, 80, 70, 50];
+            $maxNegativeAllowed = $this->getMaximumNegativeAllowedForBalanceType($merchant, $balanceType, $txnType);
 
-            $percentage = (int) abs(($newBalance * 100) / $maxNegativeAllowed);
+            if ($maxNegativeAllowed === 0)
+            {
+                return;
+            }
+
+            //percentage thresholds below which negative balance threshold breached mail should be sent
+            $negativeThresholdAlerts = [50, 70, 80, 90, 80, 100];
+
+            $oldPercentage = (int) abs(($oldBalance * 100) / $maxNegativeAllowed);
+
+            $newPercentage = (int) abs(($newBalance * 100) / $maxNegativeAllowed);
 
             $thresholdBreached = false;
 
             foreach ($negativeThresholdAlerts as $threshold)
             {
-                if ($percentage >= $threshold)
+                if (($newPercentage >= $threshold) and
+                    ($oldPercentage < $threshold))
                 {
-                    $this->sendMailNegativeBalanceThresholdBreached($merchant, $newBalance, $percentage,
+                    $this->sendMailNegativeBalanceThresholdBreached($merchant, $newBalance, $newPercentage,
                                                                     $maxNegativeAllowed, $balanceSource, $txnType);
 
                     $thresholdBreached = true;
