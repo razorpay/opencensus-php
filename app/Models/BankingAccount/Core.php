@@ -787,7 +787,8 @@ class Core extends Base\Core
         $limit = (int) (new AdminService)->getConfigKey(
                                 ['key' => ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);
 
-        $merchantIds = $this->repo->banking_account->getLimitedMerchantIdsByChannelOrderedByBalanceLastFetchedAt($channel, $limit);
+        $merchantIds = $this->repo->banking_account
+                                  ->getLimitedMerchantIdsByChannelOrderedByBalanceLastFetchedAt($channel, $limit);
 
         foreach ($merchantIds as $merchantId)
         {
