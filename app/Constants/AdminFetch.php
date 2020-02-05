@@ -277,7 +277,6 @@ class AdminFetch
                 ],
             ],
 
-            
             Entity::PAYMENTS_NBPLUS_NETBANKING => [],
 
             Entity::PAYMENTS_CARDS_AUTHORIZATION  => [
@@ -575,6 +574,10 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'account_number' => [
                     Fetch::LABEL => 'Account Number',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'type' => [
+                    Fetch::LABEL => 'Type',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
             ],

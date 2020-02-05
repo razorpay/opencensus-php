@@ -1028,7 +1028,9 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        if (($basicAuth->getUser() === null) or
+        // Workflows are not enabled on test mode for now
+        if ((app('rzp.mode') === Mode::TEST) or
+            ($basicAuth->getUser() === null) or
             ($this->merchant === null) or
             ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === false))
         {
@@ -1057,7 +1059,9 @@ class Entity extends Base\PublicEntity
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 
-        if ($basicAuth->isStrictPrivateAuth() === true)
+        // Workflows are not enabled on test mode for now
+        if ((app('rzp.mode') === Mode::TEST) or
+            ($basicAuth->isStrictPrivateAuth() === true))
         {
             unset($attributes[self::WORKFLOW_HISTORY]);
 

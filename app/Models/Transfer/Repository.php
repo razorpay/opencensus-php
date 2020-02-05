@@ -174,13 +174,15 @@ class Repository extends Base\Repository
      *
      * @return mixed
      */
-    public function getTransfersByPayments(string $sourceType, string $sourceId,string $merchantId)
+    public function getTransfersByPayments(string $sourceId, string $merchantId)
     {
+        $relations = ['recipientSettlement'];
+
         return $this->newQuery()
-                ->where(Entity::SOURCE_TYPE, $sourceType)
-                ->where(Entity::SOURCE_ID, $sourceId)
-                ->where(Entity::TO_ID,$merchantId)
-                ->get();
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->where(Entity::TO_ID,$merchantId)
+                    ->with($relations)
+                    ->get();
     }
 
     /**
@@ -193,13 +195,15 @@ class Repository extends Base\Repository
      *
      * @return mixed
      */
-    public function getTransfersByPaymentsAndTransId(string $sourceType, string $sourceId,string $merchantId,string $transId)
+    public function getTransfersByPaymentsAndTransId(string $sourceId, string $merchantId, string $transId)
     {
+        $relations = ['recipientSettlement'];
+
         return $this->newQuery()
-                ->where(Entity::ID,$transId)
-                ->where(Entity::SOURCE_TYPE, $sourceType)
-                ->where(Entity::SOURCE_ID, $sourceId)
-                ->where(Entity::TO_ID,$merchantId)
-                ->get();
+                    ->where(Entity::ID,$transId)
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->where(Entity::TO_ID,$merchantId)
+                    ->with($relations)
+                    ->get();
     }
 }

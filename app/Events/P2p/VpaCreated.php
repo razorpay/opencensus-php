@@ -23,4 +23,9 @@ class VpaCreated extends Event implements ShouldQueue
     {
         return;
     }
+
+    public function getReminderPayload()
+    {
+        return;
+    }
 }

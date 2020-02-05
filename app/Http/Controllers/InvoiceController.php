@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use View;
+use Config;
 use Request;
 use Response;
 use ApiResponse;
@@ -261,6 +262,8 @@ class InvoiceController extends Controller
         //
         $data['request_params'] = Request::all();
 
+        $data['lumberjack_key'] = Config::get('applications.lumberjack.static_key');
+
         return View::make($view)
                    ->with('data', $data);
     }
@@ -341,6 +344,8 @@ class InvoiceController extends Controller
         //
         $data['request_params'] = Request::all();
 
+        $data['lumberjack_key'] = Config::get('applications.lumberjack.static_key');
+
         return View::make($view)
             ->with('data', $data);
     }
@@ -392,6 +397,15 @@ class InvoiceController extends Controller
         $input = Request::all();
 
         $response = $this->service()->getIssuableByBatchIds($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function sendEmailForPaymentLinkService()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->sendEmailForPaymentLinkService($input);
 
         return ApiResponse::json($response);
     }

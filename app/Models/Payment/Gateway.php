@@ -366,7 +366,6 @@ class Gateway
         IFSC::SCBL,
         IFSC::TMBL,
         IFSC::USFB,
-        IFSC::UTBI,
         IFSC::UTIB,
         IFSC::YESB,
         Netbanking::PUNB_R,
@@ -390,7 +389,6 @@ class Gateway
         IFSC::MAHB,
         IFSC::SIBL,
         IFSC::USFB,
-        IFSC::UTBI,
         IFSC::YESB,
         Netbanking::PUNB_R,
         IFSC::SBIN,
@@ -1624,6 +1622,7 @@ class Gateway
         IFSC::CIUB => Gateway::NETBANKING_CUB,
         IFSC::SIBL => Gateway::NETBANKING_SIB,
         IFSC::YESB => Gateway::NETBANKING_YESB,
+        IFSC::KVBL => Gateway::NETBANKING_KVB,
     ];
 
 

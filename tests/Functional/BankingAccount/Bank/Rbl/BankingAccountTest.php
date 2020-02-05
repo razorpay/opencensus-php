@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Models\Contact;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccount\Entity;
@@ -298,6 +299,29 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('activated', $logs['items'][1]['status']);
 
         $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+
+        $contact = $this->getDbLastEntity('contact')->toArray();
+
+        $this->assertEquals($contact['type'], Contact\Type::RZP_FEES);
+        $this->assertEquals($contact['active'], true);
+        $this->assertEquals($contact['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($contact['name'],  config('banking_account.razorpayx_fee_details.name'));
+
+        $fundAccount = $this->getDbLastEntity('fund_account')->toArray();
+
+        $this->assertEquals($fundAccount['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($fundAccount['source_type'], 'contact');
+        $this->assertEquals($fundAccount['source_id'], $contact['id']);
+        $this->assertEquals($fundAccount['active'], true);
+
+        $account = $this->getDbLastEntity('bank_account')->toArray();
+
+        $this->assertEquals($account['account_number'], config('banking_account.razorpayx_fee_details.account_number'));
+        $this->assertEquals($account['name'], config('banking_account.razorpayx_fee_details.name'));
+        $this->assertEquals($account['ifsc'], config('banking_account.razorpayx_fee_details.ifsc'));
+        $this->assertEquals($account['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($account['entity_id'], $contact['id']);
     }
 
     public function testActivateFailedDueToFtsFailure()
@@ -945,6 +969,54 @@ class BankingAccountTest extends TestCase
         $bankingAccountDetails = $this->getDbLastEntity('banking_account_detail');
 
         $this->assertEquals('api_key_two', $bankingAccountDetails['gateway_value']);
+    }
+
+    public function testBankingAccountFetchOnProxyAuth()
+    {
+        $xBalance1 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+            ]);
+
+        $xBalance2 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '1234567808',
+                'balance'           => 100000,
+            ]);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $ba2 = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account', $ba1->getId(), [
+            'account_number' => '2224440041626905',
+            'balance_id'     => $xBalance1->getId(),
+        ]);
+
+        $this->fixtures->edit('banking_account', $ba2['id'], [
+            'account_number' => '1234567808',
+            'balance_id'     => $xBalance2->getId(),
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     protected function setMozartMockResponse($mockedResponse)

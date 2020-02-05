@@ -314,6 +314,13 @@ class Validator extends Base\Validator
         'action'  => 'required|string',
     ];
 
+    protected static $entityBatchActionRules = [
+        Constants::BATCH_ACTION  => 'required|string|custom',
+        Constants::ENTITY        => 'required|string|custom',
+        Constants::IDEMPOTENT_ID => 'required',
+        Entity::ID               => 'required|alpha_num|size:14',
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;
@@ -816,6 +823,22 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS);
+        }
+    }
+
+    public function validateBatchAction($attribute, $BatchAction)
+    {
+        if (BatchAction::exists($BatchAction) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_ACTION_NOT_SUPPORTED);
+        }
+    }
+
+    public function validateEntity($attribute, $BatchActionEntity)
+    {
+        if (BatchActionEntity::exists($BatchActionEntity) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_ACTION_ENTITY_NOT_SUPPORTED);
         }
     }
 

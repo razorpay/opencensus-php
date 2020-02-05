@@ -179,6 +179,10 @@ class Shield
                 break;
 
             case Payment\Method::CARD:
+                if ($payment->isGooglePayCard() === true)
+                {
+                    break;
+                }
             case Payment\Method::EMI:
                 $card = $payment->card;
 

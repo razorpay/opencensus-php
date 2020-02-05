@@ -1362,35 +1362,6 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
     }
 
-    public function testVirtualAccountExcess()
-    {
-        $virtualAccount = $this->createVirtualAccount([
-            'amount_expected' => 10000,
-        ]);
-
-        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 110]);
-
-        // Account is paid in excess
-        $virtualAccount = $this->getLastEntity('virtual_account', true);
-        $this->assertEquals(11000, $virtualAccount['amount_paid']);
-        $this->assertEquals(Status::PAID, $virtualAccount['status']);
-
-        $this->refundVirtualAccountExcessPayments();
-
-        // Payment is partially refunded
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals('bank_transfer', $payment['method']);
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals(11000, $payment['amount']);
-        $this->assertEquals(1000, $payment['amount_refunded']);
-
-        // Refund is created
-        $refund = $this->getLastEntity('refund', true);
-        $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('initiated', $refund['status']);
-        $this->assertEquals(1000, $refund['amount']);
-    }
-
     public function testFetchPaymentsForVirtualAccount()
     {
         $virtualAccount = $this->createVirtualAccount();
@@ -1625,7 +1596,7 @@ class VirtualAccountTest extends TestCase
 
         $this->expectExceptionMessage('Access to requested resource not available');
 
-        $virtualAccount = (new Core)->createForBankingBalance($merchant);
+        $virtualAccount = (new Core)->createForBankingBalance($merchant, $merchant->sharedBankingBalance);
 
         // Case 2: Success
 
@@ -1633,7 +1604,7 @@ class VirtualAccountTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        $virtualAccount = (new Core)->createForBankingBalance($merchant);
+        $virtualAccount = (new Core)->createForBankingBalance($merchant, $merchant->sharedBankingBalance);
         $this->assertEquals($merchant->sharedBankingBalance->getId(), $virtualAccount->getBalanceId());
         $this->assertNotEmpty($virtualAccount->bankAccount);
         $this->assertStringStartsWith('222444', $virtualAccount->bankAccount->getAccountNumber());

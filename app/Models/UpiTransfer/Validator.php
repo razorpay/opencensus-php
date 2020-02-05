@@ -19,6 +19,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID   => 'required|string',
         Entity::NPCI_REFERENCE_ID     => 'nullable|string|max:40',
         Entity::PROVIDER_REFERENCE_ID => 'required|string',
-
+        Entity::TRANSACTION_REFERENCE => 'nullable|string',
     ];
 }

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Constants\Table;
+use RZP\Constants\Product;
 use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
@@ -220,6 +222,86 @@ class Repository extends Base\Repository
         $mappedStatuses = Status::getInternalStatusFromPublicStatus($publicStatus);
 
         $query->whereIn($statusColumn, $mappedStatuses);
+    }
+
+    /**
+     * calculates the sum of `fee` and `tax` of all the payouts initiated for a merchant in given time frame.
+     *
+     * select SUM(tax) AS tax,SUM(fees) AS fee
+     * from `payouts` where `payouts`.`merchant_id` = ?
+     * and `payouts`.`balance_id` = ? and
+     * and `payouts`.`initiated_at` between ? and ?"
+     *
+     * @param string $merchantId
+     * @param string $balanceId
+     * @param int    $startTime
+     * @param int    $endTime
+     *
+     * @return mixed
+     */
+    public function fetchFeesAndTaxOfPayoutsForGivenBalanceId(
+        string $merchantId,
+        string $balanceId,
+        int $startTime,
+        int $endTime)
+    {
+        $payoutsBalanceIdColumn   = $this->dbColumn(Entity::BALANCE_ID);
+        $payoutsInitiatedAtColumn = $this->dbColumn(Entity::INITIATED_AT);
+
+        return $this->newQuery()
+                    ->selectRaw(
+                        'SUM(' . Entity::TAX .') AS tax,
+                         SUM(' . Entity::FEES . ') AS fee')
+                    ->merchantId($merchantId)
+                    ->where($payoutsBalanceIdColumn, $balanceId)
+                    ->whereBetween($payoutsInitiatedAtColumn, [$startTime, $endTime])
+                    ->first();
+    }
+
+    /**
+     * calculates the sum of `fee` and `tax` of all the payouts initiated and then failed for a merchant in
+     * given time frame.
+     *
+     * Payouts can go to failed state from either created or initiated state.
+     * We only want to get fees and tax for payouts which went from initiated to failed
+     * i.e where initiated_at is not null.
+     *
+     * select SUM(tax) AS tax,SUM(fees) AS fee
+     * from `payouts` where `payouts`.`merchant_id` = ?
+     * and `payouts`.`balance_id` = ?
+     * and `payouts`.`initiated_at` is not null
+     * and `payouts`.`failed_at` between ? and ?
+     * and `payouts`.`status` = failed
+     *
+     * @param string $merchantId
+     * @param string $balanceId
+     * @param int    $startTime
+     * @param int    $endTime
+     *
+     * @return mixed
+     */
+    public function fetchFeesAndTaxForFailedPayoutsForGivenBalanceId(
+        string $merchantId,
+        string $balanceId,
+        int $startTime,
+        int $endTime)
+    {
+        $payoutsBalanceIdColumn   = $this->dbColumn(Entity::BALANCE_ID);
+        $payoutsInitiatedAtColumn = $this->dbColumn(Entity::INITIATED_AT);
+        $payoutsFailedAtColumn    = $this->dbColumn(Entity::FAILED_AT);
+        $payoutsStatusColumn      = $this->dbColumn(Entity::STATUS);
+
+        return $this->newQuery()
+                    ->selectRaw(
+                        'SUM(' . Entity::TAX .') AS tax,
+                         SUM(' . Entity::FEES . ') AS fee')
+                    ->merchantId($merchantId)
+                    ->where($payoutsBalanceIdColumn, $balanceId)
+                    ->whereNotNull($payoutsInitiatedAtColumn)
+                    ->whereBetween($payoutsFailedAtColumn, [$startTime, $endTime])
+                    ->where($payoutsStatusColumn, '=', Status::FAILED)
+                    ->first();
+
     }
 
     /**

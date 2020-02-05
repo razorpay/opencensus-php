@@ -7,11 +7,13 @@ use Razorpay\IFSC\Bank;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
+use RZP\Models\Contact;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Admin;
 use RZP\Models\BankAccount;
+use RZP\Models\FundAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
@@ -46,8 +48,13 @@ class Core extends Base\Core
         $bankAccount = $virtualAccount->bankAccount;
         $bankCode    = $bankAccount->getBankCode();
 
-        // Only Yesbank bank accounts are allowed as shared banking accounts, for now
-        if ($bankCode !== Bank::YESB)
+        //
+        // Only Yesbank bank accounts are allowed as shared banking accounts on live mode, for now
+        // For test mode we create the accounts using bt_dashboard terminal
+        // In case of test mode, the bank code will be `RAZR` and not `YESB`.
+        //
+        if (($this->isLiveMode() === true) and
+            ($bankCode !== Bank::YESB))
         {
             throw new LogicException(
                 'Only YesBank virtual accounts are supported', // for now 🤑
@@ -444,6 +451,9 @@ class Core extends Base\Core
 
             $balance = (new Merchant\Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
 
+            // Creating a contact of type 'rzp_fees' and a fund account related to it. To be used for fees recovery.
+            $this->createRZPFeesContactAndFundAccount($merchant);
+
             $bankingAccount->balance()->associate($balance);
 
             $this->repo->saveOrFail($bankingAccount);
@@ -467,6 +477,13 @@ class Core extends Base\Core
         });
 
         return $bankingAccount;
+    }
+
+    protected function createRZPFeesContactAndFundAccount(Merchant\Entity $merchant)
+    {
+        $contact = (new Contact\Core)->createRZPFeesContact($merchant);
+
+        (new FundAccount\Core)->createRZPFeesFundAccount($merchant, $contact);
     }
 
     public function bulkCreateBankingAccountsForYesbank(array $input)
