@@ -533,7 +533,11 @@ export default class CreateOfferWizard extends React.Component {
     let form = this.tranformFormFields(this.state);
     let offer = new Offer(form);
     return offer
-      .save(form)
+      .save(form, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
       .then(savedOffer => {
         this.setState({
           parentFormLock: false,
