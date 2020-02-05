@@ -261,11 +261,12 @@ class Shield
 
     protected function populateWhiteListedDomains(Merchant\Entity $merchant, array & $payloadDetails)
     {
-        if ($merchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === true)
+        if ($merchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === false)
         {
-            $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_DOMAINS] = (array) $merchant->getWhitelistedDomains();
+            continue;
         }
 
+        $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_DOMAINS] = (array) $merchant->getWhitelistedDomains();
         /*
             Requirement:
                 Send partner whitelisted domains, if applicable, along with merchant whitelisted domains
@@ -289,10 +290,7 @@ class Shield
         {
             $partnerMerchant = $this->repo->merchant->find($partnerMerchantId);
 
-            if ($partnerMerchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === true)
-            {
-                $partnerWhitelistedDomains[$partnerMerchant->getId()] = (array) $partnerMerchant->getWhitelistedDomains();
-            }
+            $partnerWhitelistedDomains[$partnerMerchant->getId()] = (array) $partnerMerchant->getWhitelistedDomains();
         }
         else
         {
@@ -300,11 +298,6 @@ class Shield
 
             foreach ($partnerMerchants as $partnerMerchant)
             {
-                if ($partnerMerchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === false)
-                {
-                    continue;
-                }
-
                 if (($partnerMerchant->isAggregatorPartner() === true) or
                     ($partnerMerchant->isFullyManagedPartner() === true) or
                     ($partnerMerchant->isPurePlatformPartner() === true))
