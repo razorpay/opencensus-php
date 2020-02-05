@@ -201,6 +201,17 @@ class MerchantPayoutTest extends TestCase
 
     public function testCreateMerchantPayoutOnHoldFunds()
     {
+        $this->fixtures->on('live')->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->on('live')->base->editEntity('merchant', '10000000000000', ['hold_funds' => true]);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantPayoutOnHoldFundsOnTestMode()
+    {
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
         $this->fixtures->base->editEntity('merchant', '10000000000000', ['hold_funds' => true]);

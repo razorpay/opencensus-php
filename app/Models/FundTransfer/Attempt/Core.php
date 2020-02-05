@@ -64,7 +64,6 @@ class Core extends Base\Core
             $this->dispatchForTransfer($fundTransferAttempt);
         }
 
-
         return $fundTransferAttempt;
     }
 

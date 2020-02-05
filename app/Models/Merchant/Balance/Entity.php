@@ -253,16 +253,15 @@ class Entity extends Base\PublicEntity
      * @param \RZP\Models\Transaction\Entity $txn
      * @throws Exception\LogicException
      */
-    public function updateBalance($txn, $negativeBalanceEnabled = false)
+    public function updateBalance($txn, bool $negativeBalanceEnabled = false)
     {
         $amount = $txn->getNetAmount();
 
         $this->addAmount($amount);
 
-        if ($negativeBalanceEnabled === false)
+        if (($negativeBalanceEnabled === false) and
+            ($this->getBalance() < 0))
         {
-            if ($this->getBalance() < 0)
-            {
                 $data = [
                     'balance'     => $this->toArray(),
                     'transaction' => $txn->toArray(),
@@ -273,7 +272,6 @@ class Entity extends Base\PublicEntity
                     'Something very wrong is happening! Balance is going negative',
                     null,
                     $data);
-            }
         }
     }
 

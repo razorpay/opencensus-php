@@ -922,7 +922,7 @@ class Gateway extends Base\Gateway
 
         $gatewayName = $input['payment']['gateway'];
 
-        $this->disableVerifyCronForGateway($gatewayName, $verify);
+        //$this->disableVerifyCronForGateway($gatewayName, $verify);
 
         return $this->runPaymentVerifyFlow($verify);
     }

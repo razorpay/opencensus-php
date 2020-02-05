@@ -630,11 +630,12 @@ return [
                 'account_number'    => '2224440041626905',
                 'amount'            => 1000000,
                 'currency'          => 'INR',
-                'destination'       => 'ba_9LfZofLRJIpwrH',
-                'customer_id'       => 'cust_100000customer',
+                'fund_account_id'   => 'fa_100000000000fa',
+                'mode'              => 'NEFT',
+                'purpose'           => 'refund',
                 'notes'             => [
                     'abc' => 'xyz',
-                ],
+                ]
             ],
         ],
         'response' => [
@@ -649,6 +650,42 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
+        ],
+    ],
+
+    'testCreatePayoutFundsOnHoldOnTestMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'    => '2224440041626905',
+                'amount'            => 2000000,
+                'currency'          => 'INR',
+                'fund_account_id'   => 'fa_100000000000fa',
+                'mode'              => 'NEFT',
+                'purpose'           => 'refund',
+                'notes'             => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'failure_reason'  => null,
+                'mode'            => 'NEFT',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
         ],
     ],
 
@@ -1006,6 +1043,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
         ],
     ],
+
+    'testCreateMerchantPayoutOnHoldFundsOnTestMode' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 398,
+                'currency'    => 'INR',
+                'tax'         => 92,
+                'fees'        => 602,
+                'notes'       => []
+            ],
+        ],
+    ],
+
     'testCreateMerchantPayoutOnMinAmount' => [
         'request' => [
             'method'  => 'POST',
