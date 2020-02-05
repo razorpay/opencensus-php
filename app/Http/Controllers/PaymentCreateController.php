@@ -650,10 +650,12 @@ class PaymentCreateController extends Controller
                 ]);
         }
 
+        $pollUrl = $this->route->getUrl('payment_fetch_by_id', ['id' => $data['payment_id']]);
+
         array_push($next,
             [
                 "action" => "poll",
-                "url"    => $data['request']['url'],
+                "url"    => $pollUrl,
             ]);
 
         $response['next'] = $next;
