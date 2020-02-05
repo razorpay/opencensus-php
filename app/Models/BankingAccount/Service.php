@@ -156,7 +156,11 @@ class Service extends Base\Service
 
     public function processGatewayBalanceUpdate(array $input)
     {
-        //TODO: add comments;
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_PROCESS_GATEWAY_BALANCE_UPDATE_REQUEST,
+            [
+               'input' => $input
+            ]);
 
         $response = $this->core->dispatchGatewayBalanceUpdateForMerchants($input);
 

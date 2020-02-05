@@ -773,6 +773,16 @@ class Core extends Base\Core
         unset($input[Entity::PASSWORD]);
     }
 
+    /**
+     * This function is used by cron to dispatch job for each merchant(merchants selected based upon channel and ordered
+     * by balance last fetched at).Job fetches balance from gateway and then update in banking account associated
+     * with merchant
+     *
+     * @param $input
+     *
+     * @return mixed
+     * @throws BadRequestValidationFailureException
+     */
     public function dispatchGatewayBalanceUpdateForMerchants($input)
     {
         $validator = new Validator();
@@ -787,6 +797,7 @@ class Core extends Base\Core
         $limit = (int) (new AdminService)->getConfigKey(
                                 ['key' => ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);
 
+        // get list of merchants based upon channel and balance last fetched at
         $merchantIds = $this->repo->banking_account
                                   ->getLimitedMerchantIdsByChannelOrderedByBalanceLastFetchedAt($channel, $limit);
 
@@ -794,6 +805,12 @@ class Core extends Base\Core
         {
             $this->dispatchGatewayBalanceUpdateJob($channel, $merchantId);
         }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_DISPATCH_GATEWAY_BALANCE_UPDATE_JOB_LIST_OF_MERCHANTS,
+            [
+                'merchant_ids' => $merchantIds
+            ]);
 
         return $merchantIds;
     }
