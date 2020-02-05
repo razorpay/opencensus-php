@@ -5,6 +5,7 @@ namespace RZP\Error;
 use App;
 use RZP\Exception;
 use Illuminate\Support;
+use RZP\Models\Feature\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Services\DowntimeMetric;
 
@@ -56,6 +57,8 @@ class Error extends Support\Fluent
 
     protected $attributes = array();
 
+    protected $app;
+
     protected $trace;
 
     protected $redis;
@@ -68,11 +71,11 @@ class Error extends Support\Fluent
     {
         $this->fill($code, $desc, $field, $data);
 
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
-        $this->trace = $app['trace'];
+        $this->trace = $this->app['trace'];
 
-        $this->redis = $app['redis']->connection();
+        $this->redis = $this->app['redis']->connection();
     }
 
     public function fill($code, $desc = null, $field = null, $data = null, $internalDesc = null)
@@ -490,9 +493,27 @@ class Error extends Support\Fluent
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
-            self::REASON       => $this->getAttribute(self::REASON),
-            self::METADATA          => $this->getAttribute(self::METADATA)
         );
+
+        $isMetadataFeatureEnabled = false;
+
+        if (($this->app['basicauth'] !== null) and
+            ($this->app['basicauth']->getMerchant() !== null))
+        {
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+        }
+
+        if ($isMetadataFeatureEnabled === true)
+        {
+            $reasonArr = array(
+                self::REASON            => $this->getAttribute(self::REASON),
+                self::METADATA          => $this->getAttribute(self::METADATA)
+            );
+
+            $error = array_merge($error, $reasonArr);
+        }
 
         $error = $this->checkAndAddDataToErrorResp($error);
 
