@@ -13,9 +13,10 @@ const DEFAULT_FILE_FORMAT = 'csv';
 
 export default class LogItem extends React.PureComponent {
   componentDidMount() {
-    const { status, id } = this.props;
+    const { status, id, consumer, generated_by } = this.props;
+    const accountId = consumer !== generated_by ? consumer : undefined;
     if (isLogInProgress(status)) {
-      this.props.pollLog(id);
+      this.props.pollLog(id, accountId);
     }
   }
 
