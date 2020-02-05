@@ -88,4 +88,21 @@ class Repository extends Base\Repository
                     ->limit($limit)
                     ->pluck(Entity::ACCOUNT_NUMBER);
     }
+
+    // To be used for x test mode migration purpose only
+    public function fetchBankingAccounts(array $merchantIds, int $skip, int $limit)
+    {
+         $query = $this->newQuery()
+                       ->where(Entity::CHANNEL, '=', Channel::YESBANK)
+                       ->orderBy(Entity::CREATED_AT)
+                       ->skip($skip)
+                       ->take($limit);
+
+        if (empty($merchantIds) === false)
+        {
+            $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
+        }
+
+         return $query->get();
+    }
 }

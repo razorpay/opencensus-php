@@ -227,6 +227,38 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         return $formattedData;
     }
 
+    protected function paylater_icici($input)
+    {
+        $this->fileExtension = FileStore\Format::TXT;
+
+        $this->fileToWriteName = 'razorpayreports';
+
+        $data = [];
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('d-m-Y');
+            $col = [
+                'ITC'       => $row['payment']['id'],
+                'PRN'       => $row['payment']['id'],
+                'BID'       => 99999,
+                'amount'    => $row['payment']['amount'] / 100,
+                'Date'      => $date,
+            ];
+
+            $this->content($col, 'col_payment_icici_paylater_recon');
+
+            $data[] = $col;
+        }
+
+    $formattedData = $this->generateText($data, ',');
+
+    return $formattedData;
+    }
+
     protected function netbanking_cbi($input)
     {
         $this->fileExtension = FileStore\Format::TXT;

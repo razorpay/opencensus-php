@@ -955,7 +955,7 @@ class Validator extends Base\Validator
             User\Entity::ACTION => "create_{$input[Entity::TYPE]}_batch",
         ];
 
-        (new User\Core)->verifyOtp($params, $auth->getMerchant(), $auth->getUser());
+        (new User\Core)->verifyOtp($params, $auth->getMerchant(), $auth->getUser(), $this->isTestMode());
     }
 
     protected function validateLinkedAccountReversalEntries(array & $entries, array $params, ME $merchant)

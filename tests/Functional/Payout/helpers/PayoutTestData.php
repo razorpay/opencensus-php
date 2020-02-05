@@ -630,11 +630,12 @@ return [
                 'account_number'    => '2224440041626905',
                 'amount'            => 1000000,
                 'currency'          => 'INR',
-                'destination'       => 'ba_9LfZofLRJIpwrH',
-                'customer_id'       => 'cust_100000customer',
+                'fund_account_id'   => 'fa_100000000000fa',
+                'mode'              => 'NEFT',
+                'purpose'           => 'refund',
                 'notes'             => [
                     'abc' => 'xyz',
-                ],
+                ]
             ],
         ],
         'response' => [
@@ -652,6 +653,41 @@ return [
         ],
     ],
 
+    'testCreatePayoutFundsOnHoldOnTestMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'    => '2224440041626905',
+                'amount'            => 2000000,
+                'currency'          => 'INR',
+                'fund_account_id'   => 'fa_100000000000fa',
+                'mode'              => 'NEFT',
+                'purpose'           => 'refund',
+                'notes'             => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'failure_reason'  => null,
+                'mode'            => 'NEFT',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
 
     'testCreatePayoutInsufficientBalance' => [
         'request' => [
@@ -1006,6 +1042,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
         ],
     ],
+
+    'testCreateMerchantPayoutOnHoldFundsOnTestMode' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 398,
+                'currency'    => 'INR',
+                'tax'         => 92,
+                'fees'        => 602,
+                'notes'       => []
+            ],
+        ],
+    ],
+
     'testCreateMerchantPayoutOnMinAmount' => [
         'request' => [
             'method'  => 'POST',
@@ -2812,7 +2870,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_FEE_RECOVERY_PAYOUT_CANCEL_NOT_PERMITTED,
         ],
     ],
-    
+
     'testCreatingPendingPayoutsForRblWithUnsupportedModeChannelDestinationTypeCombo' => [
         'request' => [
             'url'     => '/payouts',
@@ -2976,4 +3034,100 @@ return [
             'status_code' => 200
         ],
     ],
+
+    'testFiringOfWebhookOnRejectionOfPayoutEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payout.rejected',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity' => 'payout',
+                    'status' => 'rejected',
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutStatusUpdate' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testPayoutInvalidStatusUpdate' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error'         => [
+                    'code'              => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'Status change not permitted',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                     => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'       => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'message'                   => 'Status change not permitted',
+        ],
+    ],
+
+    'testPayoutStatusUpdateOnPrivateAuth' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testPayoutStatusUpdateOnLiveMode' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                     => RZP\Exception\BadRequestException::class,
+            'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
+            'message'                   => PublicErrorDescription::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
+        ],
+    ]
 ];

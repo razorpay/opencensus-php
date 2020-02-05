@@ -51,15 +51,15 @@ class AdjustmentTest extends TestCase
 
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
-        $this->assertEquals(500000, $adjustment['amount']);
+        $this->assertEquals(5000000, $adjustment['amount']);
 
         $this->assertEquals('reserve_primary', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
-        $this->assertEquals(500000, $balance['balance']);
+        $this->assertEquals(5000000, $balance['balance']);
 
         $this->assertEquals('adjustment', $transaction['type']);
         $this->assertEquals('100abc000abc00', $transaction['merchant_id']);
-        $this->assertEquals(500000, $transaction['amount']);
+        $this->assertEquals(5000000, $transaction['amount']);
         $this->assertEquals($balanceId, $transaction['balance_id']);
 
     }
@@ -88,15 +88,15 @@ class AdjustmentTest extends TestCase
 
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
-        $this->assertEquals(500000, $adjustment['amount']);
+        $this->assertEquals(5000000, $adjustment['amount']);
 
         $this->assertEquals('reserve_banking', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
-        $this->assertEquals(500000, $balance['balance']);
+        $this->assertEquals(5000000, $balance['balance']);
 
         $this->assertEquals('adjustment', $transaction['type']);
         $this->assertEquals('100abc000abc00', $transaction['merchant_id']);
-        $this->assertEquals(500000, $transaction['amount']);
+        $this->assertEquals(5000000, $transaction['amount']);
         $this->assertEquals($balanceId, $transaction['balance_id']);
     }
 
@@ -108,7 +108,7 @@ class AdjustmentTest extends TestCase
             'balance',
             [
                 'id'            => '100def000def00',
-                'balance'       => 500000,
+                'balance'       => 5000000,
                 'type'          => 'reserve_primary',
                 'merchant_id'   => '100xyz000xyz00'
             ]
@@ -136,16 +136,16 @@ class AdjustmentTest extends TestCase
 
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100xyz000xyz00', $adjustment['merchant_id']);
-        $this->assertEquals(500000, $adjustment['amount']);
+        $this->assertEquals(5000000, $adjustment['amount']);
 
         $this->assertEquals('100def000def00', $balanceId);
         $this->assertEquals('reserve_primary', $balance['type']);
         $this->assertEquals('100xyz000xyz00', $balance['merchant_id']);
-        $this->assertEquals(1000000, $balance['balance']);
+        $this->assertEquals(10000000, $balance['balance']);
 
         $this->assertEquals('adjustment', $transaction['type']);
         $this->assertEquals('100xyz000xyz00', $transaction['merchant_id']);
-        $this->assertEquals(500000, $transaction['amount']);
+        $this->assertEquals(5000000, $transaction['amount']);
         $this->assertEquals($balanceId, $transaction['balance_id']);
     }
 

@@ -67,9 +67,8 @@ class Org extends Base
 
     public function createHdfcOrg()
     {
-        $now = Carbon::now()->getTimestamp();
-
         $permissions = (new PermissionEntity)->getAllPermissions();
+
         // Default organisation to be used for tests
         $org = $this->fixtures->create('org', [
             'id'                      => self::HDFC_ORG,
@@ -124,7 +123,7 @@ class Org extends Base
             'id'         => 'SuprHdfcbToken',
             'admin_id'   => 'HdfcbSprAdmnId',
             'token'      => Hash::make(self::DEFAULT_TOKEN),
-            'created_at' => $now,
+            'created_at' => Carbon::now()->getTimestamp(),
             'expires_at' => Carbon::now()->addYears(10)->timestamp,
         ]);
 
@@ -133,10 +132,7 @@ class Org extends Base
 
     public function createRazorpayOrg()
     {
-        $now = Carbon::now()->getTimestamp();
-
-        $permissions = $this->fixtures->create(
-            'permission:default_permissions');
+        $permissions = $this->fixtures->create('permission:default_permissions');
 
         // Default organisation to be used for tests
         $org = $this->fixtures->create('org', [
@@ -165,6 +161,18 @@ class Org extends Base
             'org_id' => self::RZP_ORG,
         ]);
 
+        $this->createAdminForRazorpayOrg($permissions);
+
+        return $org;
+    }
+
+    public function createAdminForRazorpayOrg($permissions = null)
+    {
+        if (empty($permissions) === true)
+        {
+            $permissions = $this->fixtures->create('permission:default_permissions');
+        }
+
         $adminRole = $this->fixtures->create('role', [
             'id'     => self::ADMIN_ROLE,
             'org_id' => self::RZP_ORG,
@@ -191,11 +199,9 @@ class Org extends Base
             'id'         => self::DEFAULT_TOKEN_PRINCIPAL,
             'admin_id'   => self::SUPER_ADMIN,
             'token'      => Hash::make(self::DEFAULT_TOKEN),
-            'created_at' => $now,
+            'created_at' => Carbon::now()->getTimestamp(),
             'expires_at' => Carbon::now()->addYears(10)->timestamp,
         ]);
-
-        return $org;
     }
 
     public function createWorkflowUsers($attributes)

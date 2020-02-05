@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\BankingAccount\State;
 use RZP\Models\Base\PublicCollection;
 
@@ -107,6 +108,7 @@ class Entity extends Base\PublicEntity
 
     // Relation Constants
     const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
+    const BALANCE                 = 'balance';
 
     protected $entity = 'banking_account';
 
@@ -179,6 +181,7 @@ class Entity extends Base\PublicEntity
         self::BANK_INTERNAL_REFERENCE_NUMBER,
         self::MERCHANT,
         self::INTERNAL_COMMENT,
+        self::BALANCE,
         self::BANKING_ACCOUNT_DETAILS,
         self::LAST_STATEMENT_ATTEMPT_AT,
         //
@@ -211,6 +214,7 @@ class Entity extends Base\PublicEntity
         self::BANK_REFERENCE_NUMBER,
         self::PINCODE,
         self::BANKING_ACCOUNT_DETAILS,
+        self::BALANCE,
     ];
 
     protected $relations = [
@@ -219,7 +223,8 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ID,
-        self::BANKING_ACCOUNT_DETAILS
+        self::BALANCE,
+        self::BANKING_ACCOUNT_DETAILS,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -474,6 +479,31 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::BANKING_ACCOUNT_DETAILS]);
         }
+    }
+
+    public function setPublicBalanceAttribute(array & $array)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($array[self::BALANCE]);
+
+            return;
+        }
+
+        if (empty($this->balance))
+        {
+            $this->load(self::BALANCE);
+        }
+
+        $array[self::BALANCE] = optional($this->balance)->only(
+            [
+                Balance\Entity::ID,
+                Balance\Entity::BALANCE,
+                Balance\Entity::CURRENCY
+            ]);
     }
 
     protected function isChannelYesbank()
