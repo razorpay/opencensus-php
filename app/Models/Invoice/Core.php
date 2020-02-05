@@ -41,6 +41,8 @@ class Core extends Base\Core
     //
     const MAX_EXPECTED_QUEUE_DELAY     = 60; // In seconds (= 1 min)
 
+    const BATCH_BULK_QUEUE_OFFSET_LIMIT = 2500;
+
     protected $lineItemCore;
     protected $pdfGenerator;
     protected $slack;
@@ -133,6 +135,15 @@ class Core extends Base\Core
 
         $batchIdOrBatch = $batchId === null ? $batch : $batchId;
 
+        $batchOffset = 0;
+
+        if (isset($input[Entity::BATCH_OFFSET]) === true)
+        {
+            $batchOffset = $input[Entity::BATCH_OFFSET];
+
+            unset($input[Entity::BATCH_OFFSET]);
+        }
+
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
                         ->setExternalEntity($externalEntity)
@@ -148,17 +159,7 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $response = 'off';
-
-            if (empty($batchIdOrBatch) === false)
-            {
-                $response = $this->app->razorx->getTreatment(
-                    $merchant->getId(),
-                    Merchant\RazorxTreatment::CHANGE_QUEUE_BATCH_INVOICE,
-                    $this->mode);
-            }
-
-            if ((empty($batchIdOrBatch) === false) and ($response === 'on'))
+            if ((empty($batchIdOrBatch) === false) and ($batchOffset > self::BATCH_BULK_QUEUE_OFFSET_LIMIT))
             {
                 $pendingDispatch = InvoiceBatchJob::dispatch($this->mode, InvoiceBatchJob::ISSUED, $invoice->getId());
             }

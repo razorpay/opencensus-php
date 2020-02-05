@@ -36,6 +36,7 @@ class EsRepository extends Base\EsRepository
         Entity::SUSPENDED_AT,
         Entity::CREATED_AT,
         Entity::UPDATED_AT,
+        Entity::ACTIVATION_SOURCE,
     ];
 
     protected $merchantDetailIndexedFields = [
@@ -88,6 +89,7 @@ class EsRepository extends Base\EsRepository
         DetailEntity::REVIEWER_ID,
         Constants::INSTANT_ACTIVATION,
         Constants::BUSINESS_TYPE_BUCKET,
+        Entity::ACTIVATION_SOURCE,
     ];
 
     /**
@@ -143,6 +145,11 @@ class EsRepository extends Base\EsRepository
     public function buildQueryForOrgId(array & $query, string $value)
     {
         $this->addTermFilter($query, Entity::ORG_ID, $value);
+    }
+
+    public function buildQueryForActivationSource(array & $query, string $value)
+    {
+        $this->addTermFilter($query, Entity::ACTIVATION_SOURCE, $value);
     }
 
     public function buildQueryForPartnerType(array &$query, string $value)

@@ -14,31 +14,31 @@ class Metric extends Base\Core
     const LABEL_TRANSACTION_TYPE        = 'transaction_type';
     const LABEL_BALANCE_AMOUNT          = 'balance_amount';
     const LABEL_THRESHOLD_PERCENTAGE    = 'threshold_percentage';
-    const LABEL_MERCHANT                 = 'merchant';
+    const LABEL_MERCHANT                = 'merchant_id';
 
     //Metric names
     const BALANCE_NEGATIVE                = 'balance_is_negative';
-    const BALANCE_NEGATIVE_THRESHOLD     = 'balance_negative_crossed_threshold';
+    const BALANCE_NEGATIVE_THRESHOLD      = 'balance_negative_crossed_threshold';
 
-    public function getBalanceNegativeDimensions(Merchant\Entity $merchant, Entity $balance, string $txnType) : array
+    public function getBalanceNegativeDimensions(string $merchantId, string $balanceType, int $balanceAmount, string $txnType) : array
     {
         $dimensions = [
-            self::LABEL_MERCHANT                => $merchant,
-            self::LABEL_BALANCE_TYPE        => $balance->getType(),
-            self::LABEL_BALANCE_AMOUNT      => $balance->getBalance(),
+            self::LABEL_MERCHANT            => $merchantId,
+            self::LABEL_BALANCE_TYPE        => $balanceType,
+            self::LABEL_BALANCE_AMOUNT      => $balanceAmount,
             self::LABEL_TRANSACTION_TYPE    => $txnType,
         ];
 
         return $dimensions;
     }
 
-    public function getBalanceNegativeThresholdBreachedDimensions(Merchant\Entity $merchant,
+    public function getBalanceNegativeThresholdBreachedDimensions(string $merchantId,
                                                                   int $balance,
                                                                   int $threshold,
                                                                   string $txnType) : array
     {
         $dimensions = [
-            self::LABEL_MERCHANT                => $merchant,
+            self::LABEL_MERCHANT                => $merchantId,
             self::LABEL_BALANCE_AMOUNT          => $balance,
             self::LABEL_THRESHOLD_PERCENTAGE    => $threshold,
             self::LABEL_TRANSACTION_TYPE        => $txnType,

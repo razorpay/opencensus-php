@@ -48,8 +48,13 @@ class Core extends Base\Core
         $bankAccount = $virtualAccount->bankAccount;
         $bankCode    = $bankAccount->getBankCode();
 
-        // Only Yesbank bank accounts are allowed as shared banking accounts, for now
-        if ($bankCode !== Bank::YESB)
+        //
+        // Only Yesbank bank accounts are allowed as shared banking accounts on live mode, for now
+        // For test mode we create the accounts using bt_dashboard terminal
+        // In case of test mode, the bank code will be `RAZR` and not `YESB`.
+        //
+        if (($this->isLiveMode() === true) and
+            ($bankCode !== Bank::YESB))
         {
             throw new LogicException(
                 'Only YesBank virtual accounts are supported', // for now 🤑

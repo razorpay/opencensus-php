@@ -54,6 +54,8 @@ class Type
 
     const MERCHANT_CONFIG_INHERITANCE = 'merchant_config_inheritance';
 
+    const MDR_ADJUSTMENT            = 'mdr_adjustment';
+
     // Batch Terminal Creation
     const TERMINAL                  = 'terminal';
 
@@ -117,6 +119,7 @@ class Type
         self::PRICING_RULE,
         self::ADMIN_BATCH,
         self::MERCHANT_CONFIG_INHERITANCE,
+        self::MDR_ADJUSTMENT,
     ];
 
     /**
@@ -268,6 +271,7 @@ class Type
         self::FUND_ACCOUNT,
         self::PRICING_RULE,
         self::MERCHANT_CONFIG_INHERITANCE,
+        self::MDR_ADJUSTMENT,
     ];
 
     public static function exists(string $type)

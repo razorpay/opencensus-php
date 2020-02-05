@@ -4,7 +4,6 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
-use RZP\Constants\Entity as EntityConstants;
 
 final class Constants
 {

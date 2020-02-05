@@ -717,7 +717,7 @@ class Gateway extends Base\Gateway
         switch ($gateway)
         {
             case Payment\Gateway::UPI_AIRTEL:
-                return json_decode($input[0], true);
+                return json_decode($input, true);
             case Payment\Gateway::UPI_JUSPAY:
             case Payment\Gateway::UPI_CITI:
                 return $input;
@@ -922,7 +922,7 @@ class Gateway extends Base\Gateway
 
         $gatewayName = $input['payment']['gateway'];
 
-        $this->disableVerifyCronForGateway($gatewayName, $verify);
+        //$this->disableVerifyCronForGateway($gatewayName, $verify);
 
         return $this->runPaymentVerifyFlow($verify);
     }

@@ -61,7 +61,17 @@ class AuthLink extends Base
 
         $entry[HEADER::AUTH_LINK_CREATED_AT]    = $this->invoice->getCreatedAt();
 
+        $tokenRegistration = $this->invoice->tokenRegistration;
+        if (($tokenRegistration !== null) and
+            ($tokenRegistration->getMethod() === SubscriptionRegistration\Method::NACH))
+        {
+            $paperMandate = $tokenRegistration->paperMandate;
 
+            if ($paperMandate !== null)
+            {
+                $entry[Header::AUTH_LINK_NACH_PRI_FILLED_FORM] = $paperMandate->getGeneratedFormUrl();
+            }
+        }
     }
 
     protected function createAuthLink(array & $entry) : Invoice\Entity
