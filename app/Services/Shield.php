@@ -294,13 +294,19 @@ class Shield
         {
             $partnerMerchants = $this->merchantCore->fetchAffiliatedPartners($merchant->getId());
 
-            foreach ($partnerMerchants as $partnerMerchant) {
+            foreach ($partnerMerchants as $partnerMerchant)
+            {
                 if ($partnerMerchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === false)
                 {
                     continue;
                 }
 
-                $partnerWhitelistedDomains[$partnerMerchant->getId()] = (array) $partnerMerchant->getWhitelistedDomains();
+                if (($partnerMerchant->isAggregatorPartner() === true) ||
+                    ($partnerMerchant->isFullyManagedPartner() === true) ||
+                    ($partnerMerchant->isPurePlatformPartner() === true))
+                {
+                    $partnerWhitelistedDomains[$partnerMerchant->getId()] = (array) $partnerMerchant->getWhitelistedDomains();
+                }
             }
         }
 
