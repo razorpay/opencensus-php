@@ -2930,9 +2930,6 @@ return [
         'request' => [
             'url'    => '/payouts_with_otp',
             'method' => 'POST',
-            'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
-            ],
             'content' => [
                 'account_number'  => '2224440041626905',
                 'amount'          => 500000,
