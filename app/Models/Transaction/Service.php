@@ -240,7 +240,6 @@ class Service extends Base\Service
             $this->fillFeeBreakupValues($response, 'old_', (new FeeBreakup\Repository)->fetchByTransactionId($transactionId));
 
 
-
             $isDebitLessThan2k = $payment->getBaseAmount() < 2000 * 100 ? true : false;
 
             $response['payment_id']         = $paymentId;
@@ -321,11 +320,9 @@ class Service extends Base\Service
 
         $response[$prefix . 'esautomatic'] = 0;
 
-
         foreach ($feeBreakups as $feeBreakup)
         {
             $response[$prefix . $feeBreakup->getName()] = $feeBreakup->getAmount();
         }
-
     }
 }
