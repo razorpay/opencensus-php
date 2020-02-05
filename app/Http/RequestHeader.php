@@ -60,6 +60,6 @@ class RequestHeader
     const BEARER                        = 'Bearer';
 
     // For testing purpose
-    const X_TESTCASE_ID                   = 'X-TESTCASE-ID';
+    const X_RZP_TESTCASE_ID             = 'X-RZP-TESTCASE-ID';
 
 }
