@@ -902,6 +902,18 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_ICICI_PRUDENTIAL:
+
+                $template = 'sms.custom_invoice.icici_prudential';
+
+                $sender = 'ICICPR';
+
+                $params   = [
+                    'invoice_link'     => $invoiceLink,
+                ];
+
+                break;
+
             case Preferences::MID_BAGIC:
 
                 $template = 'sms.custom_invoice.bagic_sub';
