@@ -92,6 +92,7 @@ class Base extends Core
     const PAYUMONEY              = 'PayuMoney';
     const EBS                    = 'Ebs';
     const FIRST_DATA             = 'FirstData';
+    const PAYLATER_ICICI         = 'PaylaterIcici';
     const UPI_ICICI              = 'UpiIcici';
     const ADMIN                  = 'admin';
     const HITACHI                = 'Hitachi';
@@ -173,6 +174,7 @@ class Base extends Core
         self::AMEX                   => [],
         self::ISG                    => [],
         self::PHONEPE                => [],
+        self::PAYLATER_ICICI         => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
         self::PAYPAL                 => [],
         self::VAS_AXIS               => [],

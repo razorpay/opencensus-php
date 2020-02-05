@@ -94,9 +94,9 @@ class CreateAccount extends Job
                 return;
             }
 
-            $createFundAccount = $accountService->isAccountCreatedInFts();
+            $isAccountCreatedInFts = $accountService->isAccountCreatedInFts();
 
-            if ($createFundAccount === false)
+            if ($isAccountCreatedInFts === true)
             {
                 $this->trace->info(TraceCode::FTS_CREATE_ACCOUNT_DUPLICATE,
                     [
@@ -106,6 +106,8 @@ class CreateAccount extends Job
                     ]);
 
                 $this->delete();
+
+                return;
             }
 
             $ftsResponse = $accountService->createFundAccount();

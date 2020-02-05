@@ -37,6 +37,20 @@ return [
         ]
     ],
 
+    'testPayoutLinkStatusApi' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status'      => 'issued'
+            ]
+        ]
+    ],
+
     'testPostRequestForCreatingPayoutLinkWithContactId' => [
         'request'  => [
             'method'  => 'POST',
