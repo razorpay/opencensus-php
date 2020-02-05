@@ -152,7 +152,7 @@ class Processor
      * Core payment service feature flag
      */
     const CPS_FEATURE_FLAG_PREFIX               = 'cps_gateway_routing';
-    const CARD_PAYMENTS_PREFIX                  = 'card_payments_gateway_routing_dark';
+    const CARD_PAYMENTS_PREFIX                  = 'card_payments_gateway_routing';
     const NB_PLUS_PAYMENTS_PREFIX               = 'nb_plus_payments_gateway_routing';
     const CARD_PAYMENTS_AUTHORIZE_ALL_TERMINALS = 'card_payments_authorize_all_terminals';
     /**

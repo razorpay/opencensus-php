@@ -52,7 +52,6 @@ class PayInitData extends Base\Mock\Server
                     'MobileNumber'          => '93884739457',
                     'AppName'               => 'MerchantName',
                     'TransactionIdentifier' => '3479278',
-                    'bank_payment_id'       => '1234567890',
                     '_raw'                  => '',
                 ],
             'error'             => null,
