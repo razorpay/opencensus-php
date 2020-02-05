@@ -21,6 +21,12 @@ class Shield
 
     protected $shieldClient;
 
+    protected $merchantCore;
+
+    protected $ba;
+
+    protected $repo;
+
     public function __construct($app)
     {
         $this->request = $app['request'];
@@ -28,6 +34,12 @@ class Shield
         $this->shieldClient = $app['shield'];
 
         $this->trace = $app['trace'];
+
+        $this->ba = $app['basicauth'];
+
+        $this->repo = $app['repo'];
+
+        $this->merchantCore = new Merchant\Core;
 
     }
 
@@ -137,10 +149,8 @@ class Shield
         $payloadDetails[ShieldConstants::MERCHANT_CREATED_AT]     = $merchant->getCreatedAt();
         $payloadDetails[ShieldConstants::MERCHANT_ACTIVATED_AT]   = $merchant->getActivatedAt();
 
-        if ($merchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === true)
-        {
-            $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_DOMAINS] = (array) $merchant->getWhitelistedDomains();
-        }
+        $this->populateWhiteListedDomains($merchant, $payloadDetails);
+
     }
 
     protected function populatePaymentDetails(Payment\Entity $payment, array & $payloadDetails)
@@ -243,5 +253,59 @@ class Shield
         $payloadDetails[ShieldConstants::PLATFORM]         = $paymentAnalytics->getPlatform();
         $payloadDetails[ShieldConstants::PLATFORM_VERSION] = $paymentAnalytics->getPlatformVersion();
         $payloadDetails[ShieldConstants::INTEGRATION]      = $paymentAnalytics->getIntegration();
+    }
+
+    protected function populateWhiteListedDomains(Merchant\Entity $merchant, array & $payloadDetails)
+    {
+        if ($merchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === true)
+        {
+            $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_DOMAINS] = (array) $merchant->getWhitelistedDomains();
+        }
+
+        /*
+            Requirement:
+                Send partner whitelisted domains, if applicable, along with merchant whitelisted domains
+
+            If payment is driven by a partner then,
+                Collect the partner whitelisted domains and record in partner_urls
+
+            If payment is not driven by a partner then,
+                Get all affiliated partners
+                For all partners of type -> ["Aggregator", "FullyManaged", "PurePlatform"] collect the whitelisted domains
+                and record in partners urls
+
+        */
+
+        $partnerMerchantId = $this->ba->getPartnerMerchantId();
+        $isPaymentDrivenByPartner = (is_null($partnerMerchantId) === false) && ($partnerMerchantId != $merchant->getId());
+
+        $partnerWhitelistedDomains = [];
+
+        if ($isPaymentDrivenByPartner === true)
+        {
+            $partnerMerchant = $this->repo->merchant->find($partnerMerchantId);
+
+            if ($partnerMerchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === true)
+            {
+                $partnerWhitelistedDomains[$partnerMerchant->getId()] = (array) $partnerMerchant->getWhitelistedDomains();
+            }
+        }
+        else
+        {
+            $partnerMerchants = $this->merchantCore->fetchAffiliatedPartners($merchant->getId());
+
+            foreach ($partnerMerchants as $partnerMerchant) {
+                if ($partnerMerchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === false)
+                {
+                    continue;
+                }
+
+                $partnerWhitelistedDomains[$partnerMerchant->getId()] = (array) $partnerMerchant->getWhitelistedDomains();
+            }
+        }
+
+        $payloadDetails[ShieldConstants::IS_PARTNER_INITIATED_PAYMENT] = $isPaymentDrivenByPartner;
+
+        $payloadDetails[ShieldConstants::PARTNER_WHITELISTED_DOMAINS] = $partnerWhitelistedDomains;
     }
 }

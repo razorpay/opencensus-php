@@ -18,6 +18,7 @@ final class Shield
     const MERCHANT_RISK_THRESHOLD      = 'merchant_risk_threshold';
     const MERCHANT_WEBSITE             = 'merchant_website';
     const MERCHANT_WHITELISTED_DOMAINS = 'whitelisted_domains';
+    const PARTNER_WHITELISTED_DOMAINS  = 'partner_whitelisted_domains';
     const MERCHANT_CREATED_AT          = 'merchant_created_at';
     const MERCHANT_ACTIVATED_AT        = 'merchant_activated_at';
     const ID                           = 'id';
@@ -70,6 +71,7 @@ final class Shield
     const INVOICE_TYPE                 = 'invoice_type';
     const INVOICE_ENTITY_TYPE          = 'invoice_entity_type';
     const INTEGRATION                  = 'integration';
+    const IS_PARTNER_INITIATED_PAYMENT = 'is_partner_initiated_payment';
 
     // Response constants
     const ACTION_KEY              = 'action';
