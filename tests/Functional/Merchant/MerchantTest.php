@@ -6162,6 +6162,6 @@ class MerchantTest extends TestCase
 
         $testData['request']['content']['order_id'] = $order->getPublicId();
 
-        $content = $this->runRequestResponseFlow($testData);
+        $this->runRequestResponseFlow($testData);
     }
 }
