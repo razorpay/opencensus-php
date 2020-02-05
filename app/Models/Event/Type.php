@@ -25,5 +25,5 @@ class Type
     const SUBSCRIPTION_CANCELLED    = 'subscription.cancelled';
     const SUBSCRIPTION_COMPLETED    = 'subscription.completed';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
-    const PAYMENT_CREATED           = 'payment_created';
+    const PAYMENT_CREATED           = 'payment.created';
 }
