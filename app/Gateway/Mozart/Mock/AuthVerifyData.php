@@ -18,7 +18,8 @@ class AuthVerifyData extends Base\Mock\Server
                 $response = [
                     'data' =>
                         [
-                            'Status' => 'Success',
+                            'ValidateOtpErrorCode'    => '0000',
+                            'ValidateOtpErrorMessage' => '',
                             '_raw'   => '',
                         ],
                     'error'             => null,
@@ -29,12 +30,11 @@ class AuthVerifyData extends Base\Mock\Server
                 break;
             default:
                 $response = [
-                    'data' =>
-                        [
-                            'ErrorCode'    => 'A061',
-                            'ErrorMessage' => 'Invalid OTP',
-                            '_raw'         => '',
-                        ],
+                    'data'              => [
+                        'ValidateOtpErrorCode'    => 'A061',
+                        'ValidateOtpErrorMessage' => 'Invalid OTP',
+                        '_raw'                    => '',
+                    ],
                     'error'             => [
                         'description'               => 'Invalid OTP',
                         'gateway_error_code'        => 'A061',

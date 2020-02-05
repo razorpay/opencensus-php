@@ -421,6 +421,8 @@ class Gateway extends Base\Gateway
                 true,
                 $action
             );
+
+            $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
         }
 
         if ($this->immediateVerifyApplicable($input) === true)

@@ -13,19 +13,19 @@ class AuthInitData extends Base\Mock\Server
         return [
             'data' =>
                 [
-                    'Status'              => 'Success',
-                    'BankReferncNo'       => 'abc123456',
-                    'MerchantReferenceNo' => $entities['payment']['id'],
-                    'ErrorCode'           => '0000',
-                    'EligibilityStatus'   => 'Yes',
-                    'Token'               => '123456',
-                    '_raw'                => '',
+                    'status'                     => 'OTP_sent',
+                    'BankReferenceNo'            => 'abc123456',
+                    'MerchantReferenceNo'        => $entities['payment']['id'],
+                    'AuthenticationErrorCode'    => '0000',
+                    'AuthenticationErrorMessage' => '',
+                    'EligibilityStatus'          => 'Yes',
+                    'Token'                      => '123456',
+                    '_raw'                       => '',
                 ],
             'next' => [
                 'redirect' => [
                     'content' => [
                         'type' => 'otp',
-                        'bank' => '',
                         'next' => [
                             'submit_otp',
                         ]
