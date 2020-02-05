@@ -6151,4 +6151,17 @@ class MerchantTest extends TestCase
 
         $this->fixtures->edit('pricing', '1AXp2Xd3t5aRLX', ['international' => true]);
     }
+
+    public function testGetCheckoutPreferencesWithOrderMethodForNonTPVEnabledMerchant()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->create('order', ['method' => 'upi']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $content = $this->runRequestResponseFlow($testData);
+    }
 }
