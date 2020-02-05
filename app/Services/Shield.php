@@ -263,7 +263,7 @@ class Shield
     {
         if ($merchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === false)
         {
-            continue;
+            return;
         }
 
         $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_DOMAINS] = (array) $merchant->getWhitelistedDomains();
