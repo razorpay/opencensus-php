@@ -256,11 +256,11 @@ class Shield
             $invoiceEntityType = $payment->invoice->getEntityType();
         }
 
-        if ($invoiceType === 'link' && is_null($subscriptionId) === true && empty($invoiceEntityType) === true)
+        if (($invoiceType === 'link') and (is_null($subscriptionId) === true) and (empty($invoiceEntityType) === true))
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_LINKS;
         }
-        else if ($invoiceType === 'invoice' and is_null($subscriptionId) === true)
+        else if (($invoiceType === 'invoice') and (is_null($subscriptionId) === true))
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_INVOICES;
         }
@@ -280,11 +280,12 @@ class Shield
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_ROUTE;
         }
-        else if (empty($receiverType) === false && in_array($receiverType, ['bank_account', 'qr_code']) === true)
+        else if ((empty($receiverType) === false) and (in_array($receiverType, ['bank_account', 'qr_code']) === true))
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_SMART_COLLECT;
         }
-        else if (($payment->isRecurring() === true && is_null($subscriptionId) === false) || (empty($authType) === false && $authType === 'skip'))
+        else if ((($payment->isRecurring() === true) and (is_null($subscriptionId) === false)) or
+                 ((empty($authType) === false) and ($authType === 'skip')))
         {
             $product = ShieldConstants::PRODUCT_PAYMENT_CAW;
         }
