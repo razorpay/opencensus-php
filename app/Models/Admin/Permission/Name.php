@@ -227,6 +227,7 @@ class Name
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
     const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
+    const GET_SELF_SERVE_REPORT               = 'get_self_serve_report';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
     const CREATE_GATEWAY_DOWNTIME             = 'create_gateway_downtime';
     const VIEW_GATEWAY_DOWNTIME               = 'view_gateway_downtime';
@@ -311,12 +312,14 @@ class Name
     const VIEW_WEBHOOK_EVENT                  = 'view_webhook_event';
     const VIEW_REPORTING                      = 'view_reporting';
     const CREATE_REPORTING                    = 'create_reporting';
+    const UPDATE_REPORTING                    = 'update_reporting';
     const VIEW_TRANSACTION_STATEMENT          = 'view_transaction_statement';
     const CREATE_INVITATION                   = 'create_invitation';
     const VIEW_INVITATION                     = 'view_invitation';
     const RESEND_INVITATION                   = 'resend_invitation';
     const UPDATE_INVITATION                   = 'update_invitation';
     const DELETE_INVITATION                   = 'delete_invitation';
+    const MERCHANT_PRODUCT_SWITCH             = 'merchant_product_switch';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

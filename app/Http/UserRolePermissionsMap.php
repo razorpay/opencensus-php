@@ -74,6 +74,8 @@ class UserRolePermissionsMap
                  Permission::UPDATE_INVITATION,
                  Permission::DELETE_INVITATION,
                  Permission::CREATE_SELF_SERVE_REPORT,
+                 Permission::GET_SELF_SERVE_REPORT,
+                 Permission::MERCHANT_PRODUCT_SWITCH,
              ],
 
              BankingRole::ADMIN => [
@@ -127,6 +129,8 @@ class UserRolePermissionsMap
                  Permission::VIEW_TRANSACTION_STATEMENT,
                  Permission::CREATE_INVITATION,
                  Permission::CREATE_SELF_SERVE_REPORT,
+                 Permission::GET_SELF_SERVE_REPORT,
+                 Permission::MERCHANT_PRODUCT_SWITCH,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -176,6 +180,8 @@ class UserRolePermissionsMap
                  Permission::CREATE_REPORTING,
                  Permission::VIEW_TRANSACTION_STATEMENT,
                  Permission::CREATE_SELF_SERVE_REPORT,
+                 Permission::GET_SELF_SERVE_REPORT,
+                 Permission::MERCHANT_PRODUCT_SWITCH,
              ],
 
              BankingRole::VIEW_ONLY => [

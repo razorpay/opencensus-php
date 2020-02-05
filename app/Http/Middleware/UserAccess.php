@@ -4,6 +4,7 @@ namespace RZP\Http\Middleware;
 
 use Closure;
 use ApiResponse;
+
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Error\ErrorCode;
@@ -27,6 +28,11 @@ class UserAccess
      * @var mixed
      */
     protected $repo;
+
+    /**
+     * @var UserRolePermissionsMap
+     */
+    private $userRolePermissionsMap;
 
     /**
      * UserAccess constructor.
@@ -204,9 +210,11 @@ class UserAccess
      *
      * @param $route
      *
+     * @return
      */
     private function validateBankingUserRoutePolicy($route)
     {
+        // Add debug info
         $userRole = $this->ba->getUserRole();
 
         // If no role was sent in the headers
@@ -243,6 +251,12 @@ class UserAccess
         }
     }
 
+    /**
+     * @param string $routeName
+     *
+     * @return mixed
+     * @throws Exception\BadRequestException
+     */
     private function getRoutePermission(string $routeName)
     {
         $routePermissionList = Route::$routePermission;

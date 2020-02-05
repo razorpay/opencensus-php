@@ -3155,15 +3155,11 @@ final class Route
         'batch_create_admin'                           => Permission::ADMIN_BATCH_CREATE,
         'send_test_sms'                                => '*',
         'file_upload_admin'                            => Permission::ADMIN_FILE_UPLOAD,
-        'reporting_config_get'                         => '*',
-        'reporting_config_list'                        => '*',
+        'reporting_config_get'                         => Permission::GET_SELF_SERVE_REPORT,
+        'reporting_config_list'                        => Permission::GET_SELF_SERVE_REPORT,
         'reporting_config_create'                      => Permission::CREATE_SELF_SERVE_REPORT,
         'reporting_config_edit'                        => Permission::CREATE_SELF_SERVE_REPORT,
         'reporting_config_delete'                      => Permission::CREATE_SELF_SERVE_REPORT,
-        'reporting_log_get'                            => '*',
-        'reporting_log_list'                           => '*',
-        'reporting_log_update'                         => '*',
-        'reporting_log_create'                         => '*',
         'reporting_schedule_get'                       => '*',
         'reporting_schedule_list'                      => '*',
         'reporting_schedule_create'                    => '*',
@@ -3344,6 +3340,8 @@ final class Route
         'merchant_inheritance_parent_set_bulk'         =>  '*',
         'merchant_inheritance_parent_delete'           =>  '*',
 
+        'mdr_adjustment'                               => '*',
+
         'subscription_registration_resend_links_batch' => '*',
         'subscription_registration_cancel_links_batch' => Permission::CANCEL_BATCH,
 
@@ -3427,8 +3425,6 @@ final class Route
         'reporting_log_list'                           => Permission::VIEW_REPORTING,
         // TODO: Add permission map in db for superadmin - Added permission instead of *
         'reporting_log_create'                         => Permission::CREATE_REPORTING,
-        'reporting_config_edit'                        => Permission::CREATE_SELF_SERVE_REPORT,
-        'reporting_config_delete'                      => Permission::CREATE_SELF_SERVE_REPORT,
         // TODO: Add permission map in db for superadmin - Added permission instead of *
         'reporting_log_update'                         => Permission::CREATE_INVITATION,
         'transaction_statement_fetch'                  => Permission::VIEW_TRANSACTION_STATEMENT,
@@ -3440,6 +3436,7 @@ final class Route
         'invitation_edit'                              => Permission::UPDATE_INVITATION,
         'invitation_delete'                            => Permission::DELETE_INVITATION,
         'invitation_action'                            => Permission::CREATE_INVITATION,
+        'merchant_product_switch'                      => Permission::MERCHANT_PRODUCT_SWITCH,
     ];
 
 
