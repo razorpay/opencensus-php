@@ -281,7 +281,7 @@ class Shield
         */
 
         $partnerMerchantId = $this->ba->getPartnerMerchantId();
-        $isPaymentDrivenByPartner = (is_null($partnerMerchantId) === false) and ($partnerMerchantId != $merchant->getId());
+        $isPaymentDrivenByPartner = ((is_null($partnerMerchantId) === false) and ($partnerMerchantId != $merchant->getId()));
 
         $partnerWhitelistedDomains = [];
 
