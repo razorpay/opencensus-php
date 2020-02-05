@@ -136,7 +136,7 @@ class Payout extends Base
         return $this->source->shouldValidateAndUpdateBalances();
     }
 
-    public function updateBalances()
+    public function updateBalances(bool $negativeBalanceEnabled = false)
     {
         $this->validateMerchantBalance();
 

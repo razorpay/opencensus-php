@@ -226,6 +226,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS                      = 'Cannot issue refund since payment date is older than 6 months';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING                         = 'Your account does not have enough balance to carry out the payout operation.';
+    const BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE            = 'Payout status update is allowed only in test mode';
     const BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED                         = 'Refund in an invalid state to be marked as processed';
     const BAD_REQUEST_REFUND_INVALID_STATE_UPDATE                               = 'Refund can not be updated to this state';
     const BAD_REQUEST_REFUND_NOT_SCROOGE                                        = 'Gateway refund cannot be called for non-scrooge gateway';
@@ -324,6 +325,8 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED                                = 'The merchant has already been suspended';
     const BAD_REQUEST_MERCHANT_NOT_SUSPENDED                                    = 'The merchant has not been suspended. This action can only be taken for suspended merchants';
     const BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED                             = 'The input action is not supported for the merchant';
+    const BAD_REQUEST_BATCH_ACTION_NOT_SUPPORTED                                = 'The input batch action is not supported for the merchant';
+    const BAD_REQUEST_BATCH_ACTION_ENTITY_NOT_SUPPORTED                         = 'The input batch action entity is not supported for the merchant';
     const BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS                           = 'Merchant details does not exists';
     const BAD_REQUEST_MERCHANT_DETAIL_CANNOT_BE_UPDATED                         = 'Merchant details cannot be updated';
     const BAD_REQUEST_MERCHANT_ALREADY_LIVE                                     = 'The merchant is already live';

@@ -190,6 +190,11 @@ class WebhookTest extends TestCase
 
     public function testCreateWebhookForProductBanking()
     {
+        // This is required, because this is going to on board the merchant on X on the test mode
+        // which requires the terminal entity to be present
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
         $this->fixtures->merchant->addFeatures(['payout']);
 
         $this->startTest();
@@ -197,6 +202,11 @@ class WebhookTest extends TestCase
 
     public function testCreateWebhookForProductBankingWithInvalidEvents()
     {
+        // This is required, because this is going to on board the merchant on X on the test mode
+        // which requires the terminal entity to be present
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
         $this->fixtures->merchant->addFeatures(['payout']);
 
         $this->startTest();
@@ -341,6 +351,11 @@ class WebhookTest extends TestCase
 
     public function testGetWebhookEventsForProductBanking()
     {
+        // This is required, because this is going to on board the merchant on X on the test mode
+        // which requires the terminal entity to be present
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
         $this->fixtures->merchant->addFeatures(['payout']);
 
         $this->startTest();

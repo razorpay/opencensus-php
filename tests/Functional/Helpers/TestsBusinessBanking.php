@@ -280,7 +280,7 @@ trait TestsBusinessBanking
                           ->willReturn(strtolower($webhookViaStork));
     }
 
-    protected function createWorkflowFeature(array $attributes = [])
+    protected function createWorkflowFeature(array $attributes = [], $mode = 'test')
     {
         $defaultAttributes = [
             'name'        => 'payout_workflows',
@@ -290,6 +290,6 @@ trait TestsBusinessBanking
 
         $attributes = array_merge($defaultAttributes, $attributes);
 
-        return $this->fixtures->create('feature', $attributes);
+        return $this->fixtures->on($mode)->create('feature', $attributes);
     }
 }

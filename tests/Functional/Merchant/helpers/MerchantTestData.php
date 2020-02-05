@@ -4731,6 +4731,17 @@ return [
         ],
     ],
 
+    'testMerchantSwitchProductWhenMerchantNotActivated' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testGetCheckoutPreferencesForCardlessEmi' => [
         'request' => [
             'url' => '/preferences',

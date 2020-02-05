@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 use Requests;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Country;
@@ -377,13 +378,19 @@ class CreateAccount extends Base
 
     public function isAccountCreatedInFts()
     {
+        // We don't want to create account in FTs for test mode
+        if ($this->mode === Mode::TEST)
+        {
+            return true;
+        }
+
         if ((method_exists($this->account, "getFtsFundAccountId") === true) &&
             (empty($this->account->getFtsFundAccountId()) === false))
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     protected function getDefaultChannelByProductAndAccountType()

@@ -8,6 +8,7 @@ use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Services\Raven;
 use RZP\Models\Contact;
 use RZP\Models\Pricing;
 use RZP\Models\Reversal;
@@ -35,7 +36,7 @@ class Service extends Base\Service
     protected $fundAccountService;
 
     /**
-     * @var ContactCore
+     * @var Contact\Core
      */
     protected $contactCore;
 
@@ -193,7 +194,10 @@ class Service extends Base\Service
     {
         $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
 
-        (new User\Core)->verifyOtp($input + ['action' => 'create_payout'], $this->merchant, $this->user);
+        (new User\Core)->verifyOtp($input + ['action' => 'create_payout'],
+                                   $this->merchant,
+                                   $this->user,
+                                   $this->mode === Constants\Mode::TEST);
 
         $payoutInput = array_except($input, ['otp', 'token']);
 
@@ -517,6 +521,32 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::BATCH_SERVICE_PAYOUT_BULK_REQUEST, $payoutBatch->toArrayWithItems());
 
         return $payoutBatch->toArrayWithItems();
+    }
+
+    /**
+     * This route has been added to update payout status in test mode
+     * Since we don't actually hit the banks in test mode
+     * In live mode this is taken care of by FTS
+     *
+     * @param string $id
+     * @param array  $input
+     * @return array
+     */
+    public function updateTestPayoutStatus(string $id, array $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_STATUS_UPDATE_REQUEST,
+            [
+                'payout_id' => $id,
+                'input'     => $input
+            ]);
+
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payout = $this->core->updateTestPayoutStatus($payout, $input);
+
+        return $payout->toArrayPublic();
     }
 
     protected function getQueuedPayoutsSummary()

@@ -99,10 +99,11 @@ class Core extends Base\Core
      * Creates a virtual account with bank account type receiver
      * on business banking type balance of given merchant.
      *
-     * @param  Merchant $merchant
+     * @param Merchant $merchant
+     * @param Balance\Entity $balance
      * @return Entity
      */
-    public function createForBankingBalance(Merchant $merchant): Entity
+    public function createForBankingBalance(Merchant $merchant, Balance\Entity $balance): Entity
     {
         $merchant->getValidator()->validateBusinessBankingActivated();
 
@@ -114,7 +115,7 @@ class Core extends Base\Core
             ],
         ];
 
-        return $this->create($input, $merchant, null, null, $merchant->sharedBankingBalance);
+        return $this->create($input, $merchant, null, null, $balance);
     }
 
     public function createOrFetchBankingVirtualAccount(Merchant $merchant, Balance\Entity $balance): Entity
@@ -123,7 +124,7 @@ class Core extends Base\Core
 
         if ($virtualAccount === null)
         {
-            $virtualAccount = $this->createForBankingBalance($merchant);
+            $virtualAccount = $this->createForBankingBalance($merchant, $balance);
         }
 
         return $virtualAccount;

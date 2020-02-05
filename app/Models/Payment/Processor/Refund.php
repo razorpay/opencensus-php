@@ -33,6 +33,7 @@ use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -1875,15 +1876,18 @@ trait Refund
             'refund_id'         => $refund->getId(),
         ];
 
+        $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant(Transaction\Type::REFUND,
+                                                            $merchant->getId());
+
         if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
             return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getAmount(),
-                                                            Transaction\Type::REFUND);
+                                                            Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
 
         if ($merchant->getRefundSource() === RefundSource::BALANCE)
         {
-            return $this->checkMerchantBalance($merchant, $refund, $type, $traceData);
+            return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled);
         }
     }
 
@@ -2985,12 +2989,13 @@ trait Refund
     private function checkMerchantBalance(Merchant\Entity $merchant,
                                           RefundEntity $refund,
                                           string $type,
-                                          array $traceData)
+                                          array $traceData,
+                                          bool $negativeBalanceEnabled = false)
     {
         try
         {
             return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getAmount(),
-                                                        Transaction\Type::REFUND);
+                                                        Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
         catch (\Exception $e)
         {

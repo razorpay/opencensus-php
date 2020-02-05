@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 use RZP\Models\State;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
@@ -752,12 +753,10 @@ class Core extends Base\Core
             }
         }
 
-        // The connection is being reset in here because after executing the App::call
-        // If the connection is still set to test then this will fail cause workflow exists only in live mode.
-        $mode = $this->app['basicauth']->getLiveConnection();
-
-        // Resetting connection so that workflow updates will not fail for test modes.
-        \Database\DefaultConnection::set($mode);
+        // We're always going to set connection as Live because workflow are executed in live mode only
+        // For test cases, please use live mode only, otherwise this break
+        // TODO: This is a temporary solution, need to change this in future
+        \Database\DefaultConnection::set(Mode::LIVE);
 
         // Update states
 
