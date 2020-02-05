@@ -2316,5 +2316,4 @@ class PayoutTest extends TestCase
 
         return $this->createQueuedOrPendingPayout($payoutAttributes);
     }
-
 }

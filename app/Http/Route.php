@@ -3414,8 +3414,8 @@ final class Route
         'fund_account_get'                             => Permission::VIEW_FUND_ACCOUNT,
         'fund_account_list'                            => Permission::VIEW_FUND_ACCOUNT,
         'fund_account_create'                          => Permission::CREATE_FUND_ACCOUNT,
-        'fund_account_update'                          => Permission::CREATE_FUND_ACCOUNT,
-        'fund_account_delete'                          => Permission::CREATE_FUND_ACCOUNT,
+        'fund_account_update'                          => Permission::UPDATE_FUND_ACCOUNT,
+        'fund_account_delete'                          => Permission::DELETE_FUND_ACCOUNT,
         'fund_account_bulk_create'                     => Permission::CREATE_FUND_ACCOUNT_BULK,
         'merchant_create_key'                          => Permission::CREATE_MERCHANT_KEY,
         'merchant_fetch_keys'                          => Permission::VIEW_MERCHANT_KEY,
@@ -3425,29 +3425,22 @@ final class Route
         'merchant_invoice_fetch_multiple'              => Permission::VIEW_MERCHANT_INVOICE,
         'user_edit_self'                               => Permission::UPDATE_USER_PROFILE,
         'user_fetch'                                   => Permission::VIEW_USER,
-        // TODO: Add permission map in db for superadmin - Added permission instead of *
         'merchant_fetch_users'                         => Permission::VIEW_MERCHANT_USER,
         'webhook_create'                               => Permission::CREATE_WEBHOOK,
-        // TODO: Add permission map in db for superadmin - Added permission instead of *
         'webhook_edit'                                 => Permission::UPDATE_WEBHOOK,
         'webhook_fetch'                                => Permission::VIEW_WEBHOOK,
         'webhook_fetch_events'                         => Permission::VIEW_WEBHOOK_EVENT,
         'webhook_fetch_multiple'                       => Permission::VIEW_WEBHOOK,
         'oauth_app_webhook_create'                     => Permission::CREATE_WEBHOOK,
-        // TODO: Add permission map in db for superadmin - Added permission instead of *
         'reporting_log_get'                            => Permission::VIEW_REPORTING,
-        // TODO: Add permission map in db for superadmin - Added permission instead of *
         'reporting_log_list'                           => Permission::VIEW_REPORTING,
-        // TODO: Add permission map in db for superadmin - Added permission instead of *
         'reporting_log_create'                         => Permission::CREATE_REPORTING,
-        // TODO: Add permission map in db for superadmin - Added permission instead of *
         'reporting_log_update'                         => Permission::CREATE_INVITATION,
         'transaction_statement_fetch'                  => Permission::VIEW_TRANSACTION_STATEMENT,
         'transaction_statement_fetch_multiple'         => Permission::VIEW_TRANSACTION_STATEMENT,
         'invitation_create'                            => Permission::CREATE_INVITATION,
         'invitation_fetch_by_token'                    => Permission::VIEW_INVITATION,
         'invitation_resend'                            => Permission::RESEND_INVITATION,
-        // TODO: Add permission map in db for superadmin - Added permission instead of *
         'invitation_edit'                              => Permission::UPDATE_INVITATION,
         'invitation_delete'                            => Permission::DELETE_INVITATION,
         'invitation_action'                            => Permission::CREATE_INVITATION,

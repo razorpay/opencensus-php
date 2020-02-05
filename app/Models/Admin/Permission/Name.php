@@ -296,9 +296,10 @@ class Name
     const VIEW_FUND_ACCOUNT_VALIDATION        = 'view_fund_account_validation';
     const VALIDATE_FUND_ACCOUNT               = 'validate_fund_account';
     const RETRY_BULK_FUND_ACCOUNT_VALIDATION  = 'retry_bulk_fund_account_validation';
-
     const VIEW_FUND_ACCOUNT                   = 'view_fund_account';
     const CREATE_FUND_ACCOUNT                 = 'create_fund_account';
+    const UPDATE_FUND_ACCOUNT                 = 'update_fund_account';
+    const DELETE_FUND_ACCOUNT                 = 'delete_fund_account';
     const CREATE_FUND_ACCOUNT_BULK            = 'create_fund_account_bulk';
     const CREATE_MERCHANT_KEY                 = 'create_merchant_key';
     const VIEW_MERCHANT_KEY                   = 'view_merchant_key';
