@@ -26,6 +26,8 @@ function fireL1FormSuccessEvents(activation_flow) {
     liData: 987404,
     twiData: 'o1ua0',
     fbData: 'activation_complete_success',
+    quoraData: 'AddToWishlist',
+    redditData: 'AddToWishlist',
   });
   trackL1FormSuccess(activation_flow);
 }
