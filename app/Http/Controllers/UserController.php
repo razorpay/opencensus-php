@@ -239,4 +239,18 @@ class UserController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function verifyUserThroughEmail()
+    {
+        $data = $this->service()->verifyUserThroughEmail($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function changeContactMobile()
+    {
+        $data = $this->service()->changeContactMobile($this->input);
+
+        return ApiResponse::json($data);
+    }
 }

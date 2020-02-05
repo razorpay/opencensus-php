@@ -807,4 +807,20 @@ class Service extends Base\Service
 
         return $this->core()->accountLockUnlock($user, $action);
     }
+
+    public function verifyUserThroughEmail($input)
+    {
+        $merchant = $this->auth->getMerchant();
+
+        $user = $this->auth->getUser();
+
+        return $this->core()->verifyUserThroughEmail($input, $merchant, $user);
+    }
+
+    public function changeContactMobile($input)
+    {
+        $user = $this->auth->getUser();
+
+        return $this->core()->changeContactMobile($input, $user);
+    }
 }

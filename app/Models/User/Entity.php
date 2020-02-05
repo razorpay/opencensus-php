@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_LOCKED                = 'account_locked';
     const CAPTCHA                       = 'captcha';
     const CAPTCHA_DISABLE               = 'captcha_disable';
+    const OTP_AUTH_TOKEN                = 'otp_auth_token';
 
     const TOKEN                         = 'token';
     const EXPIRY_TIME                   = 'expiryTime';

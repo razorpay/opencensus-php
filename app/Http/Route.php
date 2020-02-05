@@ -939,6 +939,8 @@ final class Route
         'merchant_2fa_change_setting'              => ['patch',    'merchants/2fa',                                  'MerchantController@change2faSetting'                               ],
         'merchant_restrict'                        => ['patch',    'merchant/restrict',                              'MerchantController@applyRestrictedSettings'                        ],
         'user_update_contact'                      => ['patch',    'users/contact/update',                           'UserController@editContactMobile'                                  ],
+        'user_change_contact'                      => ['patch',    'users/contact/change',                           'UserController@changeContactMobile'                                ],
+        'user_verify_through_email'                => ['post',     'users/email/verify-user',                        'UserController@verifyUserThroughEmail'                             ],
 
         'user_update_contact_admin'                => ['patch',    'users-admin/contact',                            'UserController@updateContactMobile'                                ],
         'user_update_contact_merchant'             => ['patch',    'users/contact',                                  'UserController@updateContactMobile'                                ],
@@ -2249,6 +2251,8 @@ final class Route
         'workflow_payout_amount_rules',
         'merchant_2fa_change_setting',
         'user_update_contact',
+        'user_change_contact',
+        'user_verify_through_email',
         'user_update_contact_merchant',
         'user_account_unlock',
         'banking_account_statement_generate',

@@ -139,7 +139,8 @@ class Validator extends Base\Validator
                                  . 'create_payout,'
                                  . 'create_payout_batch,'
                                  . 'approve_payout,'
-                                 . 'approve_payout_bulk,',
+                                 . 'approve_payout_bulk,'
+                                 . 'update_contact',
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
@@ -177,6 +178,16 @@ class Validator extends Base\Validator
 
     protected static $changePasswordValidators = [
         'old_password'
+    ];
+
+    protected static $verifyUserThroughEmailRules = [
+        Entity::OTP             => 'required|filled|min:4',
+        Entity::TOKEN           => 'required|unsigned_id',
+    ];
+
+    protected static $changeContactMobileRules = [
+        Entity::OTP_AUTH_TOKEN  => 'required|filled',
+        Entity::CONTACT_MOBILE  => 'required|numeric|digits_between:8,11',
     ];
 
     /**
@@ -333,6 +344,12 @@ class Validator extends Base\Validator
         $action = $input[Entity::ACTION];
         // Medium is optional input, for validation logic here assigns 'both' as the value.
         $medium = $input[Entity::MEDIUM] ?? 'both';
+
+        if (($action === 'update_contact') and
+            ($medium !== 'email'))
+        {
+            throw new BadRequestValidationFailureException('Otp must be sent to registered email');
+        }
 
         if (($action === 'verify_contact') and
             ($medium !== 'sms'))

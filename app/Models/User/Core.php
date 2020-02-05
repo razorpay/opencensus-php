@@ -6,6 +6,7 @@ use Mail;
 use Hash;
 use Config;
 use Carbon\Carbon;
+use RZP\Models\User\TokenService;
 use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
@@ -1351,5 +1352,64 @@ class Core extends Base\Core
         $customProperties = ['email' => $userEmail];
 
         $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, null, $customProperties);
+    }
+
+    /**
+     * Verify user through otp sent to email to update contact number.
+     * Generates and stores a user verification token in redis.
+     * This token has to be passed in subsequent call to change number api.
+     *
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Entity $user
+     * @return array
+     */
+    public function verifyUserThroughEmail(array $input, Merchant\Entity $merchant, Entity $user) : array
+    {
+        $user->getValidator()->validateInput('verifyUserThroughEmail', $input);
+
+        $this->verifyOtp($input + ['action' => 'update_contact'], $merchant, $user);
+
+        $tokenservice = new TokenService();
+
+        $token  = $tokenservice->generate($user->getId());
+
+        return [Entity::OTP_AUTH_TOKEN => $token];
+    }
+
+    /**
+     * User changes his mobile number.
+     * Note :- The user will first have to be verified through
+     * users/verify/email by verifying otp sent to email. The
+     * user verification token received in that function will have to
+     * be passed into this function.
+     *
+     * @param array $input
+     * @param Entity $user
+     * @return Entity
+     * @throws Exception\BadRequestException
+     */
+    public function changeContactMobile(array $input, Entity $user) : Entity
+    {
+        $user->getValidator()->validateInput('changeContactMobile', $input);
+
+        $token = $input[Entity::OTP_AUTH_TOKEN];
+
+        $tokenservice = new TokenService();
+
+        $tokenservice->verify($token, $user->getId());
+
+        $this->trace->info(
+            TraceCode::USER_CONTACT_MOBILE_UPDATE,
+            [
+                Entity::USER_ID        => $user->getId(),
+                Entity::CONTACT_MOBILE => $input[Entity::CONTACT_MOBILE],
+            ]);
+
+        $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
+
+        $this->repo->saveOrFail($user);
+
+        return $user;
     }
 }
