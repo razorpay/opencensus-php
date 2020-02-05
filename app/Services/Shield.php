@@ -281,7 +281,7 @@ class Shield
         */
 
         $partnerMerchantId = $this->ba->getPartnerMerchantId();
-        $isPaymentDrivenByPartner = (is_null($partnerMerchantId) === false) && ($partnerMerchantId != $merchant->getId());
+        $isPaymentDrivenByPartner = (is_null($partnerMerchantId) === false) and ($partnerMerchantId != $merchant->getId());
 
         $partnerWhitelistedDomains = [];
 
@@ -305,8 +305,8 @@ class Shield
                     continue;
                 }
 
-                if (($partnerMerchant->isAggregatorPartner() === true) ||
-                    ($partnerMerchant->isFullyManagedPartner() === true) ||
+                if (($partnerMerchant->isAggregatorPartner() === true) or
+                    ($partnerMerchant->isFullyManagedPartner() === true) or
                     ($partnerMerchant->isPurePlatformPartner() === true))
                 {
                     $partnerWhitelistedDomains[$partnerMerchant->getId()] = (array) $partnerMerchant->getWhitelistedDomains();
