@@ -5546,4 +5546,14 @@ ALTER TABLE partner_configs
     ADD COLUMN `default_payment_methods` JSON NULL AFTER `commissions_enabled`;
 
 ALTER TABLE merchant_details
-	ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
+    ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
+
+    ADD COLUMN kyc_id char(14) DEFAULT NULL ;
+
+ALTER TABLE payouts
+   ADD COLUMN payout_link_id CHAR(14) DEFAULT NULL AFTER `idempotency_key`,
+   ADD INDEX `payouts_payout_link_id_index` (`payout_link_id`);
+
+ALTER TABLE banking_account_statement
+    ADD COLUMN reconciled_at INT DEFAULT NULL AFTER transaction_date,
+    ADD COLUMN ponum VARCHAR(255) DEFAULT NULL AFTER reconciled_at;

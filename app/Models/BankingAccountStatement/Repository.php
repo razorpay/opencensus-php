@@ -24,6 +24,17 @@ class Repository extends Base\Repository
                     ->exists();
     }
 
+    public function findDebitTxnWithPonum($ponum, $amount, $bankTxnDate, $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PONUM, $ponum)
+                    ->where(Entity::AMOUNT, $amount)
+                    ->where(Entity::TRANSACTION_DATE, $bankTxnDate)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::TYPE, 'debit')
+                    ->first();
+    }
+
     public function findLatestByAccountNumber($accountNumber)
     {
         return $this->newQuery()
@@ -61,7 +72,8 @@ class Repository extends Base\Repository
                       ->where(function($query) use ($reversal, $payout)
                         {
                             $query->where(Entity::UTR, $reversal->getUtr())
-                                  ->orWhere(Entity::UTR, $payout->getUtr());
+                                  ->orWhere(Entity::UTR, $payout->getUtr())
+                                  ->orWhere(Payout\Entity::RETURN_UTR, $payout->getReturnUtr());
                         })
                       ->where(Entity::CREATED_AT, '>=', $payout->getCreatedAt());
 

@@ -38,15 +38,25 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID        = 'transaction_id';
     const POSTED_DATE           = 'posted_date';
     const TRANSACTION_DATE      = 'transaction_date';
+    const RECONCILED_AT         = 'reconciled_at';
+    const PONUM                 = 'ponum';
 
     const UTR                   = 'utr';
 
     // Relation names/attributes
     const SOURCE                = 'source';
 
+    // for RBL examples of NEFT, IMPS and RTGS Regex
+    // NEFT/000036602888/Bene A/C DOES NOT EXIST
+    // IMPS R-000811000008-REVERSAL-RAZORPAY TESTING
+    // RTGS/HDFCH20191002661/ASDFG/HDFC/000240
     const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
 
     const DEBIT_REGEX = '/^(.*?)-/';
+
+    const NEFT_PONUM_REGEX = '/^(NEFT\/)(.*?)(\/)/';
+
+    const NEFT_RTGS_DEBIT_REGEX = '/^(RTGS\/|NEFT\/)(.*?)(\/)/';
 
     protected static $sign = 'bas';
 
@@ -68,6 +78,8 @@ class Entity extends Base\PublicEntity
         self::POSTED_DATE,
         self::TRANSACTION_DATE,
         self::UTR,
+        self::PONUM,
+        self::RECONCILED_AT,
     ];
 
     protected $visible = [
@@ -91,8 +103,10 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::TRANSACTION_ID,
         self::UTR,
+        self::PONUM,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::RECONCILED_AT,
     ];
 
     protected $public = [
@@ -230,6 +244,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UTR, $utr);
     }
 
+    public function setReconciledAt($timestamp)
+    {
+        $this->setAttribute(self::RECONCILED_AT, $timestamp);
+    }
+
+    public function setPonum($ponum = null)
+    {
+        if (empty($ponum) === true)
+        {
+            $ponum = $this->getPonumFromDescription();
+        }
+
+        $this->setAttribute(self::PONUM, $ponum);
+    }
+
     // -------------------------- Getters ------------------------------------ //
 
     public function getAmount()
@@ -307,6 +336,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::DEBIT);
     }
 
+    public function getPonum()
+    {
+        return $this->getAttribute(self::PONUM);
+    }
+
     protected function getUtrFromDescription()
     {
         $description = $this->getDescription();
@@ -316,18 +350,55 @@ class Entity extends Base\PublicEntity
         if ($this->isTypeCredit() === true)
         {
             $regex = self::CREDIT_REGEX;
+
+            $match = preg_match($regex, $description, $matches);
+
+            if ($match === 1)
+            {
+                $match = $matches[2];
+            }
         }
-
-        $match = preg_match($regex, $description, $matches);
-
-        if ($match === 1)
+        else
         {
-            $match = $matches[1];
+            $match = preg_match($regex, $description, $matches);
+
+            if ($match === 1)
+            {
+                $match = $matches[1];
+            }
+            else
+            {
+                $match = preg_match(self::NEFT_RTGS_DEBIT_REGEX, $description, $matches);
+
+                if ($match === 1)
+                {
+                    $match = $matches[2];
+                }
+
+            }
         }
 
         // Could be an empty string match
         if (empty($match) === false)
         {
+            return $match;
+        }
+
+        return null;
+    }
+
+    protected function getPonumFromDescription()
+    {
+        $description = $this->getDescription();
+
+        $regex = self::NEFT_PONUM_REGEX;
+
+        $match = preg_match($regex, $description, $matches);
+
+        if ($match === 1)
+        {
+            $match = $matches[2];
+
             return $match;
         }
 

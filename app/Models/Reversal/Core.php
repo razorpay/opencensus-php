@@ -366,6 +366,8 @@ class Core extends Base\Core
 
         $reversal->setChannel($payout->getChannel());
 
+        $reversal->setUtr($payout->getReturnUtr());
+
         $reversal->merchant()->associate($payout->merchant);
 
         $reversal->entity()->associate($payout);

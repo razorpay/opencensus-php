@@ -97,6 +97,12 @@ class Status
         self::CANCELLED,
     ];
 
+    public static $finalStatuses = [
+        self::PROCESSED,
+        self::REVERSED,
+        self::FAILED,
+    ];
+
     /**
      * Payout statuses that are prior to the created state.
      * Transactions and FTA are not created for these payouts yet.

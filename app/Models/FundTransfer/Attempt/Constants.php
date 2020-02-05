@@ -126,4 +126,11 @@ final class Constants
     ];
 
     const DISABLE              = 'disable';
+
+    // field added to capture reversal UTR to its payout
+
+    const RETURN_UTR           = 'return_utr';
+    const GATEWAY_REF_NO       = 'gateway_ref_no';
+    const BANK_STATUS_CODE     = 'bank_status_code';
+    const STATUS               = 'status';
 }
