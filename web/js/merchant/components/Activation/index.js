@@ -271,46 +271,48 @@ export default class ActivationWizard extends React.Component {
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
     const prepareFileFields = a => {
-      a._cmp = Input.File;
-      a._accept = ['pdf', 'image'];
-      a._showAcceptInfo = false;
-      a._showStagedFileStatus = false;
+      if (a._cmp === Input.File) {
+        a._cmp = Input.File;
+        a._accept = ['pdf', 'image'];
+        a._showAcceptInfo = false;
+        a._showStagedFileStatus = false;
 
-      if (!a.hasOwnProperty('required')) {
-        a.required = true;
-      }
+        if (!a.hasOwnProperty('required')) {
+          a.required = true;
+        }
 
-      a.onChange = (file, progressTracker) => {
-        const filename = a.getName ? a.getName(this) : a.name;
-        tracking.trackEvent(
-          window.rzpQ.onbr().initiated(`kyc.upload_document_${filename}`, {
-            name: filename,
-          })
-        );
+        a.onChange = (file, progressTracker) => {
+          const filename = a.getName ? a.getName(this) : a.name;
+          tracking.trackEvent(
+            window.rzpQ.onbr().initiated(`kyc.upload_document_${filename}`, {
+              name: filename,
+            })
+          );
 
-        return props
-          .saveFile(
-            filename,
-            file,
-            progressTracker,
-            a.destinationUrl || null,
-            a.uploadAs || null
-          )
-          .then(() => {
-            updateHubSpotContactsProperties({
-              [filename]: true,
+          return props
+            .saveFile(
+              filename,
+              file,
+              progressTracker,
+              a.destinationUrl || null,
+              a.uploadAs || null
+            )
+            .then(() => {
+              updateHubSpotContactsProperties({
+                [filename]: true,
+              });
+
+              tracking.trackEvent(
+                window.rzpQ.onbr().initiated('kyc.upload_document', {
+                  name: filename,
+                })
+              );
+
+              this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+              this.updateFileInDirty(filename);
             });
-
-            tracking.trackEvent(
-              window.rzpQ.onbr().initiated('kyc.upload_document', {
-                name: filename,
-              })
-            );
-
-            this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-            this.updateFileInDirty(filename);
-          });
-      };
+        };
+      }
     };
     /*
      * All document fields in activation form to have same footprint.
@@ -318,6 +320,8 @@ export default class ActivationWizard extends React.Component {
      * */
     DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(prepareFileFields);
+
+    /* This calls for all fields instead of just file fields */
     NEEDS_CLARIFICATION_STEP &&
       FORM_TABS_CONTENT[NEEDS_CLARIFICATION_STEP].forEach(prepareFileFields);
   }
@@ -1438,7 +1442,6 @@ export default class ActivationWizard extends React.Component {
         </li>
       );
     }
-
     return (
       <div className="Activation--wizard Wizard">
         {/* Activation form tabs */}

@@ -162,11 +162,13 @@ const uploadFields = [
     label: "Company's Bank Account Statement with Address",
     description:
       'Your Bank account number, IFSC code, and Company Name should be clearly visible',
+    _cmp: Input.File,
   },
   {
     name: 'promoter_pan_url',
     label: 'PAN Card',
     description: 'Promoter/Individual PAN Card.',
+    _cmp: Input.File,
   },
 ];
 
