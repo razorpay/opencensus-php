@@ -131,7 +131,8 @@ class UserAccess
                             'user_role' => $this->ba->getUserRole(),
                         ]);
 
-                    return $routeUserRolePolicy;
+                    // TODO: remove this
+//                    return $routeUserRolePolicy;
                 }
             }
         }
