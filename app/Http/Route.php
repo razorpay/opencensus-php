@@ -1979,6 +1979,7 @@ final class Route
         'user_otp_create',
         'user_2fa_change_setting',
         'user_verify_contact',
+        'user_change_contact',
         'payout_create_with_otp',
         // payouts approve reject routes
         'payout_approve_bulk',
