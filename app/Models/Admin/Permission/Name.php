@@ -321,6 +321,9 @@ class Name
     const UPDATE_INVITATION                   = 'update_invitation';
     const DELETE_INVITATION                   = 'delete_invitation';
     const MERCHANT_PRODUCT_SWITCH             = 'merchant_product_switch';
+    const MERCHANT_ACTIVATION_DETAILS         = 'merchant_activation_details';
+    const MERCHANT_GET_TAGS                   = 'merchant_get_tags';
+
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

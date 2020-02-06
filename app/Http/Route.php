@@ -2945,7 +2945,6 @@ final class Route
         'merchant_activation_needs_clarification'      => '*',
         'merchant_fetch'                               => '*',
         'merchant_get_terminals'                       => '*',
-        'merchant_activation_details'                  => '*',
         'admin_change_password'                        => '*',
         'admin_get_file'                               => '*',
         'admin_post_stork'                             => Permission::STORK_WRITE_OPERATION,
@@ -2995,7 +2994,6 @@ final class Route
         'feature_onboarding_fetch_all_responses'       => '*' /* deprecated; will be removed. not adding permissions */,
         'geoip_update'                                 => '*',
         'batch_process_by_id'                          => Permission::RETRY_BATCH,
-        'merchant_get_tags'                            => '*',
         'merchant_tags_bulk'                           => Permission::MANAGE_BULK_MERCHANT_TAGGING,
         'pricing_get_merchant_plans'                   => Permission::MERCHANT_PRICING_PLANS,
         'pricing_supported_networks'                   => '*',
@@ -3449,6 +3447,8 @@ final class Route
         'invitation_delete'                            => Permission::DELETE_INVITATION,
         'invitation_action'                            => Permission::CREATE_INVITATION,
         'merchant_product_switch'                      => Permission::MERCHANT_PRODUCT_SWITCH,
+        'merchant_activation_details'                  => Permission::MERCHANT_ACTIVATION_DETAILS,
+        'merchant_get_tags'                            => Permission::MERCHANT_GET_TAGS,
     ];
 
 

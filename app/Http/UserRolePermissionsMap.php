@@ -76,6 +76,8 @@ class UserRolePermissionsMap
                  Permission::CREATE_SELF_SERVE_REPORT,
                  Permission::GET_SELF_SERVE_REPORT,
                  Permission::MERCHANT_PRODUCT_SWITCH,
+                 Permission::MERCHANT_ACTIVATION_DETAILS,
+                 Permission::MERCHANT_GET_TAGS,
              ],
 
              BankingRole::ADMIN => [

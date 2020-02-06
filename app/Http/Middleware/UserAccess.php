@@ -60,8 +60,6 @@ class UserAccess
         $this->userRolePermissionsMap = new UserRolePermissionsMap();
 
         $this->trace = $app['trace'];
-
-
     }
 
     /**
