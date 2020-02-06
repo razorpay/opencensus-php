@@ -661,6 +661,68 @@ class Core extends Base\Core
         ];
     }
 
+    public function deleteInvoices(int $pastTime, array $merchantIds = [], int $limit = 500): array
+    {
+        RuntimeManager::setMaxExecTime(720);
+
+        RuntimeManager::setMemoryLimit('1024M');
+
+        $time = time();
+
+        $invoices = $this->repo->invoice->getPastInvoicesByStatusAndMerchatId(
+            $pastTime,
+            Entity::DELETE_ALLOWED_STATUSES,
+            $merchantIds,
+            $limit);
+
+        $summary = [
+            'total_invoices_count' => $invoices->count(),
+            'failed_invoice_ids'   => [],
+        ];
+
+        foreach ($invoices as $invoice)
+        {
+            try
+            {
+                $this->deleteInvoice($invoice);
+            }
+            catch (\Exception $e)
+            {
+                $summary['failed_invoice_ids'][] = $invoice->getId();
+
+                $this->trace->traceException($e, null, null, ['id' => $invoice->getId()]);
+            }
+        }
+
+        $time = time() - $time;
+
+        $summary['time_taken'] = $time . ' secs';
+
+        $this->trace->debug(TraceCode::INVOICES_DELETE_CRON_SUMMARY, $summary);
+
+        return $summary;
+    }
+
+    protected function deleteInvoice(Entity $invoice)
+    {
+        /** @var Validator $validator */
+        $validator = $invoice->getValidator();
+
+        $validator->validateOperation(__FUNCTION__);
+
+        // retries the database transaction for 1 time when there is a deadlock error.
+        $maxAttempts = 2;
+
+        $this->repo->transaction(
+            function () use ($invoice)
+            {
+                $this->repo->invoice->lockForUpdateAndReload($invoice);
+
+                $this->repo->invoice->deleteOrFail($invoice);
+
+            }, $maxAttempts);
+    }
+
     /**
      * Returns formatted invoice data for checkout usage.
      * Includes:

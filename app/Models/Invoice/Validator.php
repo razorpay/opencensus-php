@@ -781,6 +781,15 @@ class Validator extends Base\Validator
 
                 break;
 
+            case 'deleteInvoice':
+
+                $allowedStatuses = [
+                    Status::CANCELLED,
+                    Status::EXPIRED,
+                ];
+
+                break;
+
             default:
                 $allowedStatuses = [
                     Status::DRAFT,

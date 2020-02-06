@@ -5,6 +5,7 @@ namespace RZP\Models\Invoice;
 use Mail;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Batch;
@@ -358,6 +359,19 @@ class Service extends Base\Service
     public function expireInvoices(): array
     {
         return $this->core->expireInvoices();
+    }
+
+    public function deleteInvoices($input): array
+    {
+        $limit = $input['limit'] ?? 5000;
+
+        $merchantIds = $input['merchant_ids'] ?? [];
+
+        $hours = $input['hours'] ?? 24;
+
+        $pastTime = Carbon::now()->subHours($hours)->getTimestamp();
+
+        return $this->core->deleteInvoices($pastTime, $merchantIds, $limit);
     }
 
     public function sendNotificationsInBulk(): array

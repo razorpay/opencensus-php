@@ -461,6 +461,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CANCEL_INVOICE                                        = 'CANCEL_INVOICE';
     const INVOICES_EXPIRE_CRON_SUMMARY                          = 'INVOICES_EXPIRE_CRON_SUMMARY';
+    const INVOICES_DELETE_CRON_SUMMARY                          = 'INVOICES_DELETE_CRON_SUMMARY';
     const INVOICE_INVALID_CONTACT_NUMBER                        = 'INVOICE_INVALID_CONTACT_NUMBER';
     const INVOICE_CREATE_REQUEST                                = 'INVOICE_CREATE_REQUEST';
     const INVOICE_CREATED                                       = 'INVOICE_CREATED';
