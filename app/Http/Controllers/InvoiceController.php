@@ -400,4 +400,13 @@ class InvoiceController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function sendEmailForPaymentLinkService()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->sendEmailForPaymentLinkService($input);
+
+        return ApiResponse::json($response);
+    }
 }

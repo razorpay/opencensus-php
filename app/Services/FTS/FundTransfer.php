@@ -16,6 +16,7 @@ use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Vpa\Core as VPACore;
 use RZP\Models\Base\PublicCollection;
+use RZP\Constants\Mode as ModeConstants;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankAccount\Core as BankAccountCore;
@@ -652,6 +653,11 @@ class FundTransfer extends Base
 
     public function shouldAllowTransfersViaFts()
     {
+        if ($this->mode === ModeConstants::TEST)
+        {
+            return [false, 'Transfers not allowed on test mode'];
+        }
+
         list($mode, $shouldUpdateMode) = $this->getFTSFundTransferMode();
 
         $this->modifyModeIfRequired();
@@ -688,6 +694,13 @@ class FundTransfer extends Base
 
         if ($this->fta->source->isBalanceTypeBanking() === true)
         {
+            // We don't want to sent requests for FTS for test mode
+            // until FTS has proper setup for test mode which is being maintained
+            if ($this->mode === ModeConstants::TEST)
+            {
+                return false;
+            }
+
             if (($currentTime < $this->bankingStartTime) &&
                 (TransferHoliday::isWorkingDay(Carbon::now(Timezone::IST)) === true))
             {

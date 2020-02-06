@@ -344,6 +344,10 @@ return [
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
     ],
 
+    'payment_links' => [
+        'secret'   => env('APP_PAYMENT_LINKS_SECRET'),
+    ],
+
     'myoperator' => [
         'mock'      => env('MYOPERATOR_MOCK'),
         'api_token' => env('MYOPERATOR_API_TOKEN'),

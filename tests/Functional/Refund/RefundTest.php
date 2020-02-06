@@ -8,8 +8,10 @@ use Mockery;
 use Carbon\Carbon;
 
 use RZP\Mail\Merchant\BalancePositiveAlert;
+use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Mail\Merchant\NegativeBalanceAlert;
 use RZP\Mail\Merchant\NegativeBalanceThresholdAlert;
+use RZP\Models\Batch\Header;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
@@ -3379,6 +3381,39 @@ class RefundTest extends TestCase
         Mail::assertNotQueued(NegativeBalanceAlert::class);
         Mail::assertNotQueued(NegativeBalanceThresholdAlert::class);
         Mail::assertNotQueued(BalancePositiveAlert::class);
+    }
+
+    public function testRefundWithNegativeBalanceMultipleBreach()
+    {
+        Mail::fake();
+
+        $this->negativeRefundFixtures('balance', 500000, 0, 0);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -240000]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -255000]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -375000]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+        Mail::assertNotQueued(BalancePositiveAlert::class);
+
+        Mail::assertQueued(NegativeBalanceThresholdAlert::class, 2);
     }
 
     //refund flow allowed for negative

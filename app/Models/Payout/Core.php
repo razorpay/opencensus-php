@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use App;
+
 use RZP\Exception;
 use RZP\Constants;
 use Carbon\Carbon;
@@ -287,6 +288,44 @@ class Core extends Base\Core
 
             return $this->createPayoutToMerchant($payoutInput, $payout->merchant);
         }
+    }
+
+    public function updateTestPayoutStatus(Entity $payout, array $input)
+    {
+        if ($this->isTestMode() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
+                null,
+                [
+                    'payout_id'     => $payout->getId(),
+                ]);
+        }
+
+        if ($payout->getStatus() === Status::CREATED)
+        {
+            // Move payout to initiated state
+            // This has been done so that state machine is respected
+            // Payouts can move to final status (i.e.. processed/reversed) from initiated state only
+            $this->updateStatusAfterFtaInitiated($payout, new Attempt\Entity);
+        }
+
+        // Validate status
+        Status::validateStatusUpdate($input[Entity::STATUS], $payout->getStatus());
+
+        $input += [
+            Attempt\Entity::UTR                => $payout->getId(),
+            Attempt\Entity::SOURCE_ID          => $payout->getId(),
+            Attempt\Entity::SOURCE_TYPE        => Constants\Entity::PAYOUT,
+            // This is required because FTA has a required|int validator for fund_transfer_id
+            Attempt\Entity::FUND_TRANSFER_ID   => -1,
+        ];
+
+        (new Attempt\Core())->updateFundTransfer($input);
+
+        // Reloading the model here so that the payout has the updated status which was done via FTA
+        // FTA fetches the payout from the db, therefore the instance of payout doesn't have updated status by default
+        return $payout->refresh();
     }
 
     public function updateStatusAfterFtaRecon(Entity $payout, array $ftaData)

@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Transfer;
 
-use function GuzzleHttp\Psr7\try_fopen;
-use Razorpay\Trace\TraceCode;
 use RZP\Base;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -12,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 
 class Validator extends Base\Validator
 {
@@ -216,8 +215,13 @@ class Validator extends Base\Validator
 
         try
         {
+            $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant(
+                                                                Transaction\Type::TRANSFER,
+                                                                $merchant->getId());
+
             (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $debit,
                                                         Transaction\Type::TRANSFER,
+                                                                $negativeBalanceEnabled,
                                                      Balance\Type::PRIMARY);
         }
         catch (\Exception $e)
