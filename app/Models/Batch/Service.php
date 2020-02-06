@@ -274,9 +274,9 @@ class Service extends Base\Service
         return $result->toArray();
     }
 
-    public function stopBatchProcessIfRequired(string $batchId): bool
+    public function stopBatchProcessIfRequired(array $batch)
     {
-        $batch = $this->fetchBatchById($batchId);
+        $batchId = $batch[Entity::ID];
 
         if ($batch[Entity::STATUS] === Status::PROCESSED)
         {
@@ -288,7 +288,7 @@ class Service extends Base\Service
                 ]
             );
 
-            return true;
+            return;
         }
 
         return $this->app->batchService->cancelBatchInBatchService($batchId);

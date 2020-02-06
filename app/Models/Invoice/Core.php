@@ -933,7 +933,9 @@ class Core extends Base\Core
      */
     public function cancelInvoicesOfBatch(array $batch)
     {
-        (new Validator)->validateCancelInvoicesOfBatch($batch);
+        (new Validator())->validateCancelInvoicesOfBatch($batch);
+
+        (new Batch\Service())->stopBatchProcessIfRequired($batch);
 
         $batchId = $batch[Batch\Entity::ID];
 

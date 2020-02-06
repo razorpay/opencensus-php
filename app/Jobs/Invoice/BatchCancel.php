@@ -4,10 +4,9 @@ namespace RZP\Jobs\Invoice;
 
 use RZP\Jobs\Job;
 use RZP\Models\Batch;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Services\BatchMicroService;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Invoice as InvoiceModel;
 
 /**
@@ -15,6 +14,9 @@ use RZP\Models\Invoice as InvoiceModel;
  */
 class BatchCancel extends Job
 {
+    const MAX_RETRY_DELAY       = 60;
+
+    const MAX_RETRY_ATTEMPTS     = 5;
     /**
      * {@inheritDoc}
      */
@@ -52,16 +54,12 @@ class BatchCancel extends Job
     {
         parent::handle();
 
-        if ((new Batch\Service())->stopBatchProcessIfRequired($this->batchId) === false)
+        if ((new BatchMicroService())->isBatchCancelled($this->batchId) !== true)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
-                null,
-                [
-                    'batch_id' => $this->batchId,
-                ],
-                'Unable to stop batch processing'
-            );
+            if ($this->attempts() <= self::MAX_RETRY_ATTEMPTS)
+            {
+                $this->release(self::MAX_RETRY_DELAY);
+            }
         }
 
         $this->core = new InvoiceModel\Core;

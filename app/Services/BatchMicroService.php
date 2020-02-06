@@ -675,63 +675,48 @@ class BatchMicroService
                     'batch_id' => $id,
                 ]
             );
+        }
+    }
+
+    public function isBatchCancelled(string $id): bool
+    {
+        $relativeUrl = self::BATCH_URLS['batch'] . '/' . Batch\Entity::verifyIdAndStripSign($id);
+
+        try
+        {
+            $options['mode'] = $this->mode;
+
+            // Batch entity is received in response
+            $response = $this->getResponseFromBatchService($relativeUrl, Requests::GET, $options);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->error(
+                TraceCode::BATCH_SERVICE_REQUEST_FAILED,
+                [
+                    'batch_id' => $id,
+                ]
+            );
 
             return false;
         }
 
-        $relativeUrl = self::BATCH_URLS['batch'] . '/' . Batch\Entity::verifyIdAndStripSign($id);
+        $batchStatus = $response->getStatus();
 
-        $timeout = 5 * 60; // 5 minutes
-
-        $time = 0;
-
-        do
+        if ($batchStatus === Batch\Status::CANCELLED)
         {
-            try
-            {
-                $options['mode'] = $this->mode;
+            $this->trace->info(
+                TraceCode::BATCH_SERVICE_CANCEL_BATCH_SUCCESS,
+                [
+                    'batch_id' => $id,
+                ]
+            );
 
-                // Batch entity is received in response
-                $response = $this->getResponseFromBatchService($relativeUrl, Requests::GET, $options);
-            }
-            catch (\Exception $exception)
-            {
-                $this->trace->error(
-                    TraceCode::BATCH_SERVICE_CANCEL_BATCH_FAILED,
-                    [
-                        'batch_id' => $id,
-                    ]
-                );
-
-                return false;
-            }
-
-            $batchStatus = $response->getStatus();
-
-            if ($batchStatus === Batch\Status::CANCELLED)
-            {
-                $this->trace->info(
-                    TraceCode::BATCH_SERVICE_CANCEL_BATCH_SUCCESS,
-                    [
-                        'batch_id' => $id,
-                    ]
-                );
-
-                return true;
-            }
-
-            usleep(1000000); // 1 second
-
-            $time += 1;
-        }while ($time <= $timeout);
-
-        $this->trace->error(
-            TraceCode::BATCH_SERVICE_CANCEL_BATCH_FAILED,
-            [
-                'batch_id' => $id,
-            ]
-        );
-
-        return false;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
