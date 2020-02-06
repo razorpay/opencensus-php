@@ -78,6 +78,8 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_PRODUCT_SWITCH,
                  Permission::MERCHANT_ACTIVATION_DETAILS,
                  Permission::MERCHANT_GET_TAGS,
+                 Permission::MERCHANT_RAZORX_EVALUATE,
+                 Permission::MERCHANT_RAZORX_BULK_EVALUATE,
              ],
 
              BankingRole::ADMIN => [

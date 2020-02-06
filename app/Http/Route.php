@@ -3449,6 +3449,9 @@ final class Route
         'merchant_product_switch'                      => Permission::MERCHANT_PRODUCT_SWITCH,
         'merchant_activation_details'                  => Permission::MERCHANT_ACTIVATION_DETAILS,
         'merchant_get_tags'                            => Permission::MERCHANT_GET_TAGS,
+        'merchant_razorx_bulk_evaluate'                => Permission::MERCHANT_RAZORX_BULK_EVALUATE,
+        'merchant_razorx_evaluate'                     => Permission::MERCHANT_RAZORX_EVALUATE
+
     ];
 
 

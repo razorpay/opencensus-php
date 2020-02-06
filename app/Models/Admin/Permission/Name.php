@@ -323,6 +323,8 @@ class Name
     const MERCHANT_PRODUCT_SWITCH             = 'merchant_product_switch';
     const MERCHANT_ACTIVATION_DETAILS         = 'merchant_activation_details';
     const MERCHANT_GET_TAGS                   = 'merchant_get_tags';
+    const MERCHANT_RAZORX_BULK_EVALUATE       = 'merchant_razorx_bulk_evaluate';
+    const MERCHANT_RAZORX_EVALUATE            = 'merchant_razorx_evaluate';
 
 
     public static $actionMap = [
