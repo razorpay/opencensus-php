@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Services\BatchMicroService;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Invoice as InvoiceModel;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 /**
  * - Asynchronously cancels all issued invoices/payment links of given batch.
@@ -38,23 +39,32 @@ class BatchCancel extends Job
      */
     protected $core;
 
+    protected $merchant;
+
     const TOTAL_INVOICES_COUNT = 'total_invoices_count';
     const FAILED_INVOICE_IDS   = 'failed_invoice_ids';
 
-    public function __construct(string $mode, string $batchId, int $successCount)
+    public function __construct(string $mode, string $batchId, int $successCount, MerchantEntity $merchant)
     {
         parent::__construct($mode);
 
         $this->batchId = $batchId;
 
         $this->successCount = $successCount;
+
+        $this->merchant = $merchant;
     }
 
     public function handle()
     {
         parent::handle();
 
-        if ((new BatchMicroService())->isBatchCancelled($this->batchId) !== true)
+        $batch = (new Batch\Service())->getBatchById($this->batchId, $this->merchant);
+
+        $batchStatus = $batch[Batch\Entity::STATUS];
+
+        if (($batchStatus !== Batch\Status::PROCESSED) and
+            ($batchStatus !== 'cancelled'))
         {
             if ($this->attempts() <= self::MAX_RETRY_ATTEMPTS)
             {

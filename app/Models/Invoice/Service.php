@@ -213,7 +213,7 @@ class Service extends Base\Service
 
     public function cancelInvoicesOfBatch(string $batchId)
     {
-        $batch = (new Batch\Service())->fetchBatchById($batchId);
+        $batch = (new Batch\Service())->getBatchById($batchId, $this->merchant);
 
         return $this->core->cancelInvoicesOfBatch($batch);
     }

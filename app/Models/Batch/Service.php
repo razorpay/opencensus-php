@@ -73,8 +73,14 @@ class Service extends Base\Service
         return $types;
     }
 
-    public function getBatchById(string $id): array
+    public function getBatchById(string $id, Merchant\Entity $merchant = null): array
     {
+        if (($this->merchant === null) and
+            ($merchant !== null))
+        {
+            $this->merchant = $merchant;
+        }
+
         $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id, $this->merchant);
 
         if ($responseBatch !== null)
@@ -291,6 +297,6 @@ class Service extends Base\Service
             return;
         }
 
-        return $this->app->batchService->cancelBatchInBatchService($batchId);
+        $this->app->batchService->cancelBatchInBatchService($batchId);
     }
 }

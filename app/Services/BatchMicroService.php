@@ -677,47 +677,4 @@ class BatchMicroService
             );
         }
     }
-
-    public function isBatchCancelled(string $id): bool
-    {
-        $relativeUrl = self::BATCH_URLS['batch'] . '/' . Batch\Entity::verifyIdAndStripSign($id);
-
-        try
-        {
-            $options['mode'] = $this->mode;
-
-            // Batch entity is received in response
-            $response = $this->getResponseFromBatchService($relativeUrl, Requests::GET, $options);
-        }
-        catch (\Exception $exception)
-        {
-            $this->trace->error(
-                TraceCode::BATCH_SERVICE_BAD_REQUEST,
-                [
-                    'relative_url' => $relativeUrl,
-                    'batch_id' => $id,
-                ]
-            );
-
-            return false;
-        }
-
-        $batchStatus = $response->getStatus();
-
-        if ($batchStatus === Batch\Status::CANCELLED)
-        {
-            $this->trace->info(
-                TraceCode::BATCH_SERVICE_CANCEL_BATCH_SUCCESS,
-                [
-                    'batch_id' => $id,
-                ]
-            );
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
 }
