@@ -229,7 +229,7 @@ return [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
-                    'reason'   => 'payment_failed'
+                    'reason'   => 'Gateway-NA-payment_failed'
                 ],
             ],
             'status_code' => 400,

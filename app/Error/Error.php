@@ -507,8 +507,18 @@ class Error extends Support\Fluent
 
         if ($isMetadataFeatureEnabled === true)
         {
+            $pointOfFailure = $this->getAttribute(self::POINT_OF_FAILURE);
+
+            $failureStage   = $this->getAttribute(self::FAILURE_STAGE);
+
+            $pointOfFailure = $pointOfFailure ?: "NA";
+
+            $failureStage   = $failureStage ?: "NA";
+
+            $publicReason   = $pointOfFailure."-".$failureStage."-".$this->getAttribute(self::REASON);
+
             $reasonArr = array(
-                self::REASON            => $this->getAttribute(self::REASON),
+                self::REASON            => $publicReason,
                 self::METADATA          => $this->getAttribute(self::METADATA)
             );
 
