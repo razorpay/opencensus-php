@@ -330,7 +330,10 @@ class BatchMicroService
                 return Batch\Status::PROCESSED;
 
             case 'FAILED':
-                return BATCH\Status::FAILURE;
+                return Batch\Status::FAILURE;
+
+            case 'CANCELLED':
+                return Batch\Status::CANCELLED;
 
             default:
                 return Batch\Status::PARTIALLY_PROCESSED;

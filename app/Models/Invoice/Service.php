@@ -10,6 +10,7 @@ use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -218,7 +219,25 @@ class Service extends Base\Service
 
     public function cancelInvoicesOfBatch(string $batchId)
     {
-        $batch = (new Batch\Service())->getBatchById($batchId, $this->merchant);
+        if ($this->auth->isAdminAuth() === true)
+        {
+            $batch = (new Batch\Service())->fetchBatchById($batchId);
+        }
+        else
+        {
+            $batch = (new Batch\Service())->getBatchById($batchId, $this->merchant);
+        }
+
+        if ($batch === [])
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                null,
+                [
+                    'batch_id'      => $batchId,
+                ]
+            );
+        }
 
         return $this->core->cancelInvoicesOfBatch($batch);
     }

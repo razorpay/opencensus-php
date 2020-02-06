@@ -1004,7 +1004,7 @@ class Core extends Base\Core
 
         Batch\Entity::verifyIdAndStripSign($batchId);
 
-        InvoiceBatchCancelJob::dispatch($this->mode, $batchId, $batch[Batch\Entity::SUCCESS_COUNT], $this->merchant);
+        InvoiceBatchCancelJob::dispatch($this->mode, $batchId, $batch[Batch\Entity::SUCCESS_COUNT], $this->merchant ?? null);
     }
 
     /**

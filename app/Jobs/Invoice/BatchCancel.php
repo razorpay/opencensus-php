@@ -44,7 +44,7 @@ class BatchCancel extends Job
     const TOTAL_INVOICES_COUNT = 'total_invoices_count';
     const FAILED_INVOICE_IDS   = 'failed_invoice_ids';
 
-    public function __construct(string $mode, string $batchId, int $successCount, MerchantEntity $merchant)
+    public function __construct(string $mode, string $batchId, int $successCount, MerchantEntity $merchant = null)
     {
         parent::__construct($mode);
 
@@ -59,12 +59,19 @@ class BatchCancel extends Job
     {
         parent::handle();
 
-        $batch = (new Batch\Service())->getBatchById($this->batchId, $this->merchant);
+        if ($this->merchant !== null)
+        {
+            $batch = (new Batch\Service())->getBatchById($this->batchId, $this->merchant);
+        }
+        else
+        {
+            $batch = (new Batch\Service())->fetchBatchById($this->batchId);
+        }
 
         $batchStatus = $batch[Batch\Entity::STATUS];
 
         if (($batchStatus !== Batch\Status::PROCESSED) and
-            ($batchStatus !== 'cancelled'))
+            ($batchStatus !== Batch\Status::CANCELLED))
         {
             if ($this->attempts() <= self::MAX_RETRY_ATTEMPTS)
             {
