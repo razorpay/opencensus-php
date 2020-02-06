@@ -250,7 +250,11 @@ pipeline:
         - AWS_CDN_BUCKET=rzp-1018-nonprod-betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
         - CDN_PATH=dashboard/func1
-    secrets: [AWS_KEY, AWS_SECRET]
+    secrets:
+        - source: STAGE_S3_AWS_KEY
+          target: AWS_KEY
+        - source: STAGE_S3_AWS_SECRET
+          target: AWS_SECRET
     commands:
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
