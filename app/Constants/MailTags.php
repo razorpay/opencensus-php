@@ -42,7 +42,6 @@ class MailTags
     const AIRTEL_MONEY_REFUNDS_MAIL             = 'airtel_money_refunds_mail';
     const AIRTEL_MONEY_FAILED_REFUNDS_MAIL      = 'airtel_money_failed_refunds_mail';
     const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';
-    const ICICI_PAYLATER_REFUNDS_MAIL           = 'icici_paylater_refunds_mail';
     const INDIAN_BANK_NETBANKING_REFUNDS_MAIL   = 'indianbank_netbanking_refunds_mail';
     const CBI_NETBANKING_REFUNDS_MAIL           = 'cbi_netbanking_refunds_mail';
     const CANARA_NETBANKING_REFUNDS_MAIL        = 'canara_netbanking_refunds_mail';

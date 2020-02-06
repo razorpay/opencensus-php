@@ -2914,6 +2914,13 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateSendEmailForPaymentLinkService()
+    {
+        $this->ba->paymentLinksAuth();
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function assertInvoiceCreateResponse(array $response)

@@ -689,7 +689,6 @@ return [
         ],
     ],
 
-
     'testCreatePayoutInsufficientBalance' => [
         'request' => [
             'method'  => 'POST',
@@ -3048,4 +3047,84 @@ return [
             ],
         ],
     ],
+
+    'testPayoutStatusUpdate' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testPayoutInvalidStatusUpdate' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error'         => [
+                    'code'              => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'Status change not permitted',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                     => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'       => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'message'                   => 'Status change not permitted',
+        ],
+    ],
+
+    'testPayoutStatusUpdateOnPrivateAuth' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testPayoutStatusUpdateOnLiveMode' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                     => RZP\Exception\BadRequestException::class,
+            'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
+            'message'                   => PublicErrorDescription::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
+        ],
+    ]
 ];

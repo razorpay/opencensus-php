@@ -78,6 +78,14 @@ class Status
         self::PROCESSED => [
             self::REVERSED,
         ],
+        self::REVERSED => [
+            // this is empty because it's the final status
+            // need this to check state transitions
+        ],
+        self::FAILED => [
+            // this is empty because it's the final status
+            // need this to check state transitions
+        ],
     ];
 
     /**
