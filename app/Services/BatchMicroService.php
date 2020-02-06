@@ -692,8 +692,9 @@ class BatchMicroService
         catch (\Exception $exception)
         {
             $this->trace->error(
-                TraceCode::BATCH_SERVICE_REQUEST_FAILED,
+                TraceCode::BATCH_SERVICE_BAD_REQUEST,
                 [
+                    'relative_url' => $relativeUrl,
                     'batch_id' => $id,
                 ]
             );

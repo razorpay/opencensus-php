@@ -492,6 +492,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_BATCH_CANCEL_SUMMARY                          = 'INVOICE_BATCH_CANCEL_SUMMARY';
     const INVOICE_BATCH_COUNT_ZERO                              = 'INVOICE_BATCH_COUNT_ZERO';
     const INVOICE_WITHOUT_GSTIN                                 = 'INVOICE_WITHOUT_GSTIN';
+    const STOP_BATCH_PROCESS_NOT_REQUIRED                       = 'STOP_BATCH_PROCESS_NOT_REQUIRED';
 
     const PAYMENT_LINK_CREATE_REQUEST                           = 'PAYMENT_LINK_CREATE_REQUEST';
     const PAYMENT_LINK_CREATED                                  = 'PAYMENT_LINK_CREATED';
@@ -2306,7 +2307,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SERVICE_FAILED                                  = 'BATCH_SERVICE_FAILED';
     const BATCH_SERVICE_IIN_BULK_REQUEST                        = 'BATCH_SERVICE_IIN_BULK_REQUEST';
     const BATCH_SERVICE_IIN_BULK_RESPONSE                       = 'BATCH_SERVICE_IIN_BULK_RESPONSE';
-    const STOP_BATCH_PROCESS_NOT_REQUIRED                       = 'STOP_BATCH_PROCESS_NOT_REQUIRED';
     const BATCH_SERVICE_CANCEL_BATCH                            = 'BATCH_SERVICE_CANCEL_BATCH';
     const BATCH_SERVICE_CANCEL_BATCH_SUCCESS                    = 'BATCH_SERVICE_CANCEL_BATCH_SUCCESS';
     const BATCH_SERVICE_CANCEL_BATCH_FAILED                     = 'BATCH_SERVICE_CANCEL_BATCH_FAILED';
