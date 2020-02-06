@@ -26,19 +26,19 @@ class NeedsClarificationReasonsList
     const SUBMIT_COMPLETE_PASSPORT                  = 'submit_complete_passport';
     const SUBMIT_COMPLETE_ELECTION_CARD             = 'submit_complete_election_card';
     const ADDRESS_PROOF_OUTDATED                    = 'address_proof_outdated';
-    const UPDATE_PROPREITOR_PAN                     = "update_propreitor_pan";
-    const SUBMIT_COMPANY_PAN                        = "submit_company_pan";
-    const SUBMIT_PROPTIETOR_PAN                     = "submit_proprietor_pan";
-    const RESUBMIT_CANCELLED_CHEQUE                 = "resubmit_cancelled_cheque";
-    const SUBMIT_DRIVING_LICENSE                    = "submit_driving_license";
+    const UPDATE_PROPRIETOR_PAN                     = 'update_proprietor_pan';
+    const SUBMIT_COMPANY_PAN                        = 'submit_company_pan';
+    const SUBMIT_PROPRIETOR_PAN                     = 'submit_proprietor_pan';
+    const RESUBMIT_CANCELLED_CHEQUE                 = 'resubmit_cancelled_cheque';
+    const SUBMIT_DRIVING_LICENSE                    = 'submit_driving_license';
 
 
     const REASON_DETAILS = [
-        self::UPDATE_PROPREITOR_PAN                     => [
-            NeedsClarificationMetaData::DESCRIPTION => 'Please update PAN of the Propreitor.',],
+        self::UPDATE_PROPRIETOR_PAN                     => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Please update PAN of the Proprietor.',],
         self::SUBMIT_COMPANY_PAN                        => [
             NeedsClarificationMetaData::DESCRIPTION => 'Please submit a copy of the Company PAN Card',],
-        self::SUBMIT_PROPTIETOR_PAN                     => [
+        self::SUBMIT_PROPRIETOR_PAN                     => [
             NeedsClarificationMetaData::DESCRIPTION => 'Please submit a copy of the Proprietor PAN Card.',],
         self::RESUBMIT_CANCELLED_CHEQUE                 => [
             NeedsClarificationMetaData::DESCRIPTION => 'The statements or cancelled cheque attached is not legible. Please resubmit a clear copy.',],
