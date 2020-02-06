@@ -7,11 +7,13 @@ use ApiResponse;
 
 use RZP\Exception;
 use RZP\Http\Route;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\UserRolesScope;
 use Illuminate\Http\Request;
 use RZP\Http\BasicAuth\BasicAuth;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Http\UserRolePermissionsMap;
 use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\Balance\Type as ProductType;
@@ -36,6 +38,11 @@ class UserAccess
     private $userRolePermissionsMap;
 
     /**
+     * Trace instance used for tracing
+     * @var Trace
+     */
+    protected $trace;
+    /**
      * UserAccess constructor.
      *
      * @param \RZP\Http\Middleware\Application $app
@@ -51,6 +58,10 @@ class UserAccess
         $this->userRoleScope = new UserRolesScope();
 
         $this->userRolePermissionsMap = new UserRolePermissionsMap();
+
+        $this->trace = $app['trace'];
+
+
     }
 
     /**
@@ -115,6 +126,13 @@ class UserAccess
                 // If there's an exception then return and fail
                 if ($routeUserRolePolicy !== null)
                 {
+                    $this->trace->info(
+                        TraceCode::MERCHANT_USER_ACTION_NOT_SUPPORTED,
+                        [
+                            'route'        => $route,
+                            'user_role' => $this->ba->getUserRole(),
+                        ]);
+
                     return $routeUserRolePolicy;
                 }
             }
