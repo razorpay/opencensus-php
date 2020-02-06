@@ -630,11 +630,12 @@ return [
                 'account_number'    => '2224440041626905',
                 'amount'            => 1000000,
                 'currency'          => 'INR',
-                'destination'       => 'ba_9LfZofLRJIpwrH',
-                'customer_id'       => 'cust_100000customer',
+                'fund_account_id'   => 'fa_100000000000fa',
+                'mode'              => 'NEFT',
+                'purpose'           => 'refund',
                 'notes'             => [
                     'abc' => 'xyz',
-                ],
+                ]
             ],
         ],
         'response' => [
@@ -652,6 +653,41 @@ return [
         ],
     ],
 
+    'testCreatePayoutFundsOnHoldOnTestMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'    => '2224440041626905',
+                'amount'            => 2000000,
+                'currency'          => 'INR',
+                'fund_account_id'   => 'fa_100000000000fa',
+                'mode'              => 'NEFT',
+                'purpose'           => 'refund',
+                'notes'             => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'failure_reason'  => null,
+                'mode'            => 'NEFT',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
 
     'testCreatePayoutInsufficientBalance' => [
         'request' => [
@@ -1006,6 +1042,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
         ],
     ],
+
+    'testCreateMerchantPayoutOnHoldFundsOnTestMode' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 398,
+                'currency'    => 'INR',
+                'tax'         => 92,
+                'fees'        => 602,
+                'notes'       => []
+            ],
+        ],
+    ],
+
     'testCreateMerchantPayoutOnMinAmount' => [
         'request' => [
             'method'  => 'POST',
@@ -1723,7 +1781,7 @@ return [
                         'fund_account_id' => 'fa_100000000000fa',
                         'narration'       => 'Batman',
                         'purpose'         => 'refund',
-                        'status'          => 'processed',
+                        'status'          => 'processing',
                         'tax'             => 162,
                         'fees'            => 1062,
                         'notes'           => [
@@ -1863,7 +1921,7 @@ return [
                         'currency'                  => 'INR',
                         'fees'                      => 590,
                         'tax'                       => 90,
-                        'status'                    => 'processed',
+                        'status'                    => 'processing',
                         'purpose'                   => 'refund',
                         'user_id'                   => null,
                         'mode'                      => 'IMPS',
@@ -1921,26 +1979,26 @@ return [
             'content' => [
                 'bacc_ABCde1234ABCde' => [
                     'queued' =>  [
-                        'balance' =>  10000000,
-                        'count' => 1,
-                        'total_amount' => 20000099,
-                        'total_fees' =>  1770,
+                        'balance'       => 10000000,
+                        'count'         => 1,
+                        'total_amount'  => 20000099,
+                        'total_fees'    => 1770,
                     ],
                     'pending' => [
-                        'count' => 1,
-                        'total_amount' =>54321,
+                        'count'         => 1,
+                        'total_amount'  => 54321,
                     ]
                 ],
                 'bacc_DEcba4321DEcba' => [
                     'queued' =>  [
-                        'balance' => 10000000,
-                        'count' => 1,
-                        'total_amount' => 30000099,
-                        'total_fees' =>  0,
+                        'balance'       => 10000000,
+                        'count'         => 1,
+                        'total_amount'  => 30000099,
+                        'total_fees'    => 590,
                     ],
                     'pending' => [
-                        'count' => 1,
-                        'total_amount' =>12345,
+                        'count'         => 1,
+                        'total_amount'  => 12345,
                     ]
                 ]
             ],
@@ -2397,6 +2455,33 @@ return [
         ],
     ],
 
+    'testGetPayoutMetaWorkflowProxyAuth' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/workflows',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetPayoutMetaWorkflowPrivateAuth' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/workflows',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testCreatePayoutWithWrongFundAccountId' => [
         'request'  => [
             'method'  => 'POST',
@@ -2786,6 +2871,36 @@ return [
         ],
     ],
 
+    'testRZPFeesQueuedPayoutPriority' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/queued/process',
+            'content'   => [
+                'merchant_ids'      => ['10000000000000'],
+                'merchant_ids_not'  => [],
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testRZPFeesQueuedPayoutNotEnoughBalance' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/queued/process',
+            'content'   => [
+                'merchant_ids'      => ['10000000000000'],
+                'merchant_ids_not'  => [],
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
 
     'testCreatingPendingPayoutsForRblWithUnsupportedModeChannelDestinationTypeCombo' => [
         'request' => [
@@ -2814,6 +2929,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
         ],
     ],
+
     'testCreatingPendingPayoutsForRblWithSupportedModeChannelDestinationTypeCombo' => [
         'request' => [
             'url'     => '/payouts',
@@ -2839,4 +2955,210 @@ return [
             ],
         ],
     ],
+
+    'testWorkflowTriggerForBankingRequest' => [
+        'request' => [
+            'url'    => '/payouts_with_otp',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'token'           => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'pending',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testDefaultWorkflowBehaviourForAPIRequest' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'pending',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testSkipWorkflowForAPIRequest' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 500000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testFiringOfWebhookOnRejectionOfPayoutEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payout.rejected',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity' => 'payout',
+                    'status' => 'rejected',
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutStatusUpdate' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testPayoutInvalidStatusUpdate' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error'         => [
+                    'code'              => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => 'Status change not permitted',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                     => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'       => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'message'                   => 'Status change not permitted',
+        ],
+    ],
+
+    'testPayoutStatusUpdateOnPrivateAuth' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testPayoutStatusUpdateOnLiveMode' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/status',
+            'content' => [
+                'status' => 'processed'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                     => RZP\Exception\BadRequestException::class,
+            'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
+            'message'                   => PublicErrorDescription::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
+        ],
+    ]
 ];

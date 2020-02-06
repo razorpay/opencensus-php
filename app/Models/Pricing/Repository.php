@@ -374,4 +374,22 @@ class Repository extends Base\Repository
 
         return $rule;
     }
+
+    // In case of Current Account Payouts, fees is deducted at a later stage. There is a chance that a Pricing Rule
+    // might have been deleted sometime between payout creation and transaction creation (which happens much later).
+    // We use withTrashed to get pricingRules if they have been soft deleted so that feesBreakup remains consistent.
+    public function getPricingFromPricingId($pricingRuleId, $withTrashed = false)
+    {
+        $idColumn = $this->dbColumn(Entity::ID);
+
+        $query = $this->newQuery()
+                      ->where($idColumn, $pricingRuleId);
+
+        if ($withTrashed === true)
+        {
+            $query = $query->withTrashed();
+        }
+
+         return $query->first();
+    }
 }

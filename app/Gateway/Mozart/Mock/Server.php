@@ -250,7 +250,7 @@ class Server extends Base\Mock\Server
 
         $response['hash'] = $hash;
 
-        return [json_encode($response)];
+        return json_encode($response);
     }
 
     public function getFailedAsyncCallbackContent(array $payment)
@@ -275,7 +275,7 @@ class Server extends Base\Mock\Server
 
         $response['hash'] = $hash;
 
-        return [json_encode($response)];
+        return json_encode($response);
     }
 
     protected function wallet_phonepe($input)
@@ -673,6 +673,10 @@ class Server extends Base\Mock\Server
 
     public function decrypt($input)
     {
+        $data = json_decode($input, true);
+
+        $signature = $data['signature'];
+
         $decryptedMessage = [
             'paymentMethod' => 'TOKENIZED_CARD',
             'version'       => '1.0',
@@ -689,17 +693,36 @@ class Server extends Base\Mock\Server
             'messageExpiration' => '1492343123',
         ];
 
-        $responseBody = [
-            'data' => [
-                '_raw'             => '',
-                'decryptedMessage' => $decryptedMessage,
-            ],
-            'error'             => [],
-            'external_trace_id' => '',
-            'mozart_id'         => 'blfq216r1gunssphbs01',
-            'next'              => null,
-            'success'           => true,
-        ];
+        $responseBody = [];
+
+        switch ($signature)
+        {
+            Case "MEQCID2npCOWMBWTr5hfCzT2cou0UcZou3drDTA8wC3eXi78AiAhJefYECEw6AnyWbpTbOhwXQ1fSEQMiOxXkOJtmrw5sg==":
+                $responseBody = [
+                    'data' => [
+                        '_raw'             => '',
+                        'decryptedMessage' => $decryptedMessage,
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => true,
+                ];
+                break;
+            Case "MEQCID2npCOWMBWTr5hfCzT2cou0UcZou3drDTA8wC3eXi78AiAhJefYECEw6AnyWbpTbOhwXQ1fSEQMiOxXkOJtmrw5sg==2":
+                $responseBody = [
+                    'data' => [
+                        '_raw'             => '',
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => false,
+                ];
+                break;
+        }
 
         $response = \Response::make($responseBody);
 

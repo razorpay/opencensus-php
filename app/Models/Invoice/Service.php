@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Invoice;
 
+use Mail;
+
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Batch;
@@ -13,6 +16,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
+use RZP\Constants\Entity as E;
+use RZP\Mail\Invoice\PaymentLinkServiceBase;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
 
@@ -356,6 +361,19 @@ class Service extends Base\Service
         return $this->core->expireInvoices();
     }
 
+    public function deleteInvoices($input): array
+    {
+        $limit = $input['limit'] ?? 5000;
+
+        $merchantIds = $input['merchant_ids'] ?? [];
+
+        $hours = $input['hours'] ?? 24;
+
+        $pastTime = Carbon::now()->subHours($hours)->getTimestamp();
+
+        return $this->core->deleteInvoices($pastTime, $merchantIds, $limit);
+    }
+
     public function sendNotificationsInBulk(): array
     {
         return (new Notifier())->sendNotificationsInBulk();
@@ -514,6 +532,48 @@ class Service extends Base\Service
         return $results;
     }
 
+    public function sendEmailForPaymentLinkService(array $input): array
+    {
+        (new Validator)->validateInput('payment_link_service_send_email', $input);
+
+        $input[E::MERCHANT] = $this->serializeMerchantForHostedForPaymentLinkService($this->merchant);
+
+        $mailable = new PaymentLinkServiceBase($input);
+
+        try
+        {
+            Mail::send($mailable);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::PAYMENT_LINK_NOTIFY_BY_EMAIL_FAILURE,
+                [
+                    'input' => $input,
+                ]
+            );
+
+            throw $ex;
+        }
+
+        return [];
+    }
+
+    protected function serializeMerchantForHostedForPaymentLinkService(Merchant\Entity $merchant): array
+    {
+        return [
+            'id'                               => $merchant->getId(),
+            'name'                             => $merchant->getLabelForInvoice(),
+            'brand_color'                      => get_rgb_value($merchant->getBrandColorOrDefault()),
+            'brand_text_color'                 => get_brand_text_color($merchant->getBrandColorOrDefault()),
+            'business_registered_address_text' => $merchant->getBusinessRegisteredAddressAsText(', '),
+            'image'                            => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
+            'business_registered_address'      => optional($merchant->merchantDetail)->getBusinessRegisteredAddress(),
+        ];
+    }
+
     /**
      * Sets userId and userRole members of this class by reading values from
      * request headers sent from dashboard.
@@ -548,7 +608,7 @@ class Service extends Base\Service
 
     public function getStatusInvoicesOfBatch($batchId)
     {
-        $batch = (new Batch\Service())->getBatchById($batchId);
+        $batch = (new Batch\Service())->getBatchById($batchId, $this->merchant);
 
         $batchStatus = $batch[Batch\Entity::STATUS];
 

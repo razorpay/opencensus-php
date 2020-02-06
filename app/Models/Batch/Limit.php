@@ -43,6 +43,7 @@ class Limit
         TYPE::IIN_MC_MASTERCARD                     => 500000,
         TYPE::PRICING_RULE                          => 50000,
         Type::ADMIN_BATCH                           => 5000,
+        Type::MDR_ADJUSTMENT                        => 1100000,
     ];
 
     /**

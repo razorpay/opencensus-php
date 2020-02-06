@@ -25,7 +25,7 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::NAME                    => 'required|string|max:50|nullable|custom',
-        Entity::CONTACT                 => 'sometimes|nullable|contact_syntax',
+        Entity::CONTACT                 => 'sometimes|nullable|contact_syntax|regex:/^([0-9\s\-\+\(\)]*)$/',
         Entity::EMAIL                   => 'sometimes|nullable|email',
         Entity::TYPE                    => 'sometimes|nullable|max:40|alpha_dash_space',
         Entity::REFERENCE_ID            => 'sometimes|string|max:40',
@@ -35,7 +35,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::NAME         => 'sometimes|string|max:50|custom',
-        Entity::CONTACT      => 'sometimes|nullable|contact_syntax',
+        Entity::CONTACT      => 'sometimes|nullable|contact_syntax|regex:/^([0-9\s\-\+\(\)]*)$/',
         Entity::EMAIL        => 'sometimes|nullable|email',
         Entity::TYPE         => 'sometimes|nullable|max:40|alpha_dash_space',
         Entity::REFERENCE_ID => 'sometimes|nullable|string|max:40',

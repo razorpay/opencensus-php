@@ -230,21 +230,7 @@ class Base extends BaseProcessor
             $data = $this->addGatewayEntitiesToData($data, $entities);
         }
 
-        //
-        // Adding checks to ensure refunds are in expected date range - if not throwing exception
-        //
-        $refundCreatedAtRange = array_column(array_column($data, 'refund'), 'created_at');
-
-        if ((max($refundCreatedAtRange) > $this->gatewayFile->getEnd()) or
-            (min($refundCreatedAtRange) < $this->gatewayFile->getBegin()))
-        {
-            throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_LOGICAL_ERROR_REFUNDS_OUT_OF_RANGE,
-                [
-                    'id' => $this->gatewayFile->getId(),
-                ]
-            );
-        }
+        $this->checkIfRefundsAreInValidDateRange($data);
 
         return $data;
     }
@@ -642,5 +628,41 @@ class Base extends BaseProcessor
         );
 
         return $refunds;
+    }
+
+    /**
+     * Refunds should be in expected date ranges
+     *
+     * @param array $data
+     * @throws GatewayFileException
+     */
+    protected function checkIfRefundsAreInValidDateRange(array $data)
+    {
+        // This check is applicable only for Scrooge refunds
+        // SBI - is handling older failed refunds as well - so this check won't be applicable for this gateway
+        if (empty($this->scroogeRefunds) === false)
+        {
+            //
+            // Adding checks to ensure refunds are in expected date range - if not throwing exception
+            //
+
+            $refundData = array_column($data, RefundConstants::REFUND);
+
+            if (empty($refundData) === false)
+            {
+                $refundCreatedAtRange = array_column($refundData, RefundConstants::SCROOGE_CREATED_AT);
+
+                if ((max($refundCreatedAtRange) > $this->gatewayFile->getEnd()) or
+                    (min($refundCreatedAtRange) < $this->gatewayFile->getBegin()))
+                {
+                    throw new GatewayFileException(
+                        ErrorCode::SERVER_ERROR_GATEWAY_FILE_LOGICAL_ERROR_REFUNDS_OUT_OF_RANGE,
+                        [
+                            'id' => $this->gatewayFile->getId(),
+                        ]
+                    );
+                }
+            }
+        }
     }
 }

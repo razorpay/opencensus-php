@@ -184,7 +184,8 @@ return [
         'secret'        => env('LUMBERJACK_SECRET'),
         'key'           => env('LUMBERJACK_KEY'),
         'mock'          => env('LUMBERJACK_MOCK', false),
-        'identifier'    => env('LUMBERJACK_API_IDENTIFIER')
+        'identifier'    => env('LUMBERJACK_API_IDENTIFIER'),
+        'static_key'    => env('LUMBERJACK_STATIC_KEY'),
     ],
 
     'harvester' => [
@@ -216,6 +217,15 @@ return [
         'mock'      => env('EXCHANGE_MOCK', false),
         'url'       => env('EXCHANGE_URL'),
         'appId'     => env('EXCHANGE_APP_ID')
+    ],
+
+    'freshdesk' => [
+        'url'           => env('FRESHDESK_URL'),
+        'sandbox'       => env('FRESHDESK_SANDBOX', false),
+        'sandbox_url'   => env('FRESHDESK_SANDBOX_URL'),
+        'token'         => env('FRESHDESK_TOKEN'),
+        'sandbox_token' => env('FRESHDESK_SANDBOX_TOKEN'),
+        'mock'          => env('FRESHDESK_MOCK', false),
     ],
 
     'zoho' => [
@@ -332,6 +342,10 @@ return [
         'url'      => env('APP_SUBSCRIPTIONS_URL'),
         'username' => 'rzp',
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
+    ],
+
+    'payment_links' => [
+        'secret'   => env('APP_PAYMENT_LINKS_SECRET'),
     ],
 
     'myoperator' => [

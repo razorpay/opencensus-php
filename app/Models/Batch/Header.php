@@ -136,6 +136,11 @@ class Header
     const MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID        = 'Merchant Id';
 
     //
+    // Mdr adjustment headers
+    //
+    const MDR_ADJUSTMENT_TRANSACTION_ID = 'transaction_id';
+
+    //
     // Virtual Account Bulk Creation Headers
     //
     const VA_CUSTOMER_ID         = 'customer_id';
@@ -557,15 +562,19 @@ class Header
     const AUTH_LINK_ACCOUNT_TYPE        = 'account_type';
     const AUTH_LINK_RECEIPT             = 'receipt';
     const AUTH_LINK_DESCRIPTION         = 'description';
+    const AUTH_LINK_NACH_REFERENCE1     = 'nach_reference1';
+    const AUTH_LINK_NACH_REFERENCE2     = 'nach_reference2';
+    const AUTH_LINK_NACH_CREATE_FORM    = 'nach_create_form';
     //
     // Auth Link Output Headers
     //
-    const AUTH_LINK_ID                  = 'authorization_link_id';
-    const AUTH_LINK_SHORT_URL           = 'authorization_link';
-    const AUTH_LINK_STATUS              = 'link_status';
-    const AUTH_LINK_MAIL_SENT           = 'sent_mail';
-    const AUTH_LINK_SMS_SENT            = 'sent_sms';
-    const AUTH_LINK_CREATED_AT          = 'created_at';
+    const AUTH_LINK_ID                   = 'authorization_link_id';
+    const AUTH_LINK_SHORT_URL            = 'authorization_link';
+    const AUTH_LINK_NACH_PRI_FILLED_FORM = 'prefilled_form';
+    const AUTH_LINK_STATUS               = 'link_status';
+    const AUTH_LINK_MAIL_SENT            = 'sent_mail';
+    const AUTH_LINK_SMS_SENT             = 'sent_sms';
+    const AUTH_LINK_CREATED_AT           = 'created_at';
 
     //
     // Hitachi Bulk Terminal Creation Headers
@@ -768,6 +777,7 @@ class Header
     const PRICING_RULE_AMOUNT_RANGE_ACTIVE = 'amount_range_active';
     const PRICING_RULE_AMOUNT_RANGE_MIN    = 'amount_range_min';
     const PRICING_RULE_AMOUNT_RANGE_MAX    = 'amount_range_max';
+    const PRICING_RULE_FIXED_RATE          = 'fixed_rate';
 
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
@@ -1969,10 +1979,14 @@ class Header
                 self::AUTH_LINK_RECEIPT,
                 self::AUTH_LINK_DESCRIPTION,
                 self::AUTH_LINK_EXPIRE_BY,
+                self::AUTH_LINK_NACH_REFERENCE1,
+                self::AUTH_LINK_NACH_REFERENCE2,
+                self::AUTH_LINK_NACH_CREATE_FORM,
                 self::NOTES,
                 self::STATUS,
                 self::AUTH_LINK_ID,
                 self::AUTH_LINK_SHORT_URL,
+                self::AUTH_LINK_NACH_PRI_FILLED_FORM,
                 self::AUTH_LINK_STATUS,
                 self::AUTH_LINK_CREATED_AT,
                 self::ERROR_CODE,
@@ -2409,6 +2423,7 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_FIXED_RATE,
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
@@ -2422,6 +2437,7 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_FIXED_RATE,
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
@@ -2452,6 +2468,12 @@ class Header
              * Reason is this batch is entirely migrated to batch micro service.
              */
         ],
+
+        Type::MDR_ADJUSTMENT => [
+            self::INPUT => [
+                self::MDR_ADJUSTMENT_TRANSACTION_ID,
+            ],
+        ]
     ];
 
     /**
@@ -2493,6 +2515,22 @@ class Header
             ((in_array(self::FIRST_PAYMENT_MIN_AMOUNT, $actualHeaders, true) === true)))
         {
             $expectedHeaders[] = self::FIRST_PAYMENT_MIN_AMOUNT;
+        }
+
+        if ($type === Type::AUTH_LINK)
+        {
+            if (in_array(self::AUTH_LINK_NACH_REFERENCE1, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::AUTH_LINK_NACH_REFERENCE1;
+            }
+            if (in_array(self::AUTH_LINK_NACH_REFERENCE2, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::AUTH_LINK_NACH_REFERENCE2;
+            }
+            if (in_array(self::AUTH_LINK_NACH_CREATE_FORM, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::AUTH_LINK_NACH_CREATE_FORM;
+            }
         }
 
         if (($type === Type::PAYMENT_LINK) and

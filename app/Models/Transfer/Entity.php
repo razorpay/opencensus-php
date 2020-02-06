@@ -11,6 +11,7 @@ use RZP\Models\Reversal;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\Payment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
@@ -529,11 +530,11 @@ class Entity extends Base\PublicEntity
 
         if($transferSourceType === E::ORDER)
         {
-            $parentPaymentId = $this->source->payments()->whereIn('status', ['captured','refunded'])->first()->getId();
+            $parentPaymentId = Payment\Entity::getSignedId($this->source->payments()->whereIn('status', ['captured','refunded'])->first()->getId());
         }
         else if($transferSourceType === E::PAYMENT)
         {
-            $parentPaymentId = $this->getSourceId();
+            $parentPaymentId = Payment\Entity::getSignedId($this->getSourceId());
         }
 
         return $parentPaymentId;

@@ -46,7 +46,7 @@ class Core extends Base\Core
         $this->repo->saveOrFail($rule);
 
         $this->trace->info(TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,
-            $rule->toArray());
+                           $rule->toArray());
 
         return $rule;
     }

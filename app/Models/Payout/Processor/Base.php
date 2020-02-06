@@ -22,7 +22,9 @@ use RZP\Models\Base\Core as BaseCore;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+
 
 /**
  * Payouts base where we will have a generic flow for the customer/merchants payouts.
@@ -284,9 +286,13 @@ class Base extends BaseCore
      */
     protected function handleWorkflowsIfApplicable(callable $createPayoutCallback)
     {
-        $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
-
-        if ($areWorkflowsEnabled === false)
+        //
+        // Skip workflow if its not enabled for the merchant or
+        // if the workflow is enabled, check if the request if from API and merchant wants to
+        // skip workflow for requests through API
+        // also skip workflow for test mode
+        //
+        if ($this->isWorkflowApplicable() === false)
         {
             //
             // Workflows feature was not enabled.
@@ -353,6 +359,40 @@ class Base extends BaseCore
         }
 
         return $payout;
+    }
+
+    /**
+     * Check if workflow is enabled for merchant
+     * Additionally check if the call is from API and merchant has disabled the workflow for API request
+     *
+     * @return bool
+     */
+    protected function isWorkflowApplicable()
+    {
+        $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
+
+        $hasSkipWorkflowFeature = $this->merchant->isFeatureEnabled(Features::SKIP_WORKFLOWS_FOR_API);
+
+        $isApiRequest = $this->app['basicauth']->isStrictPrivateAuth();
+
+        //
+        // Skip workflow if:
+        // test mode
+        // workflow is not enabled for the merchant or
+        // if the workflow is enabled, check if the request if from API and merchant wants to
+        // skip workflow for requests through API
+        //
+        if (($this->isTestMode() === true) or
+            ($areWorkflowsEnabled === false) or
+            (($isApiRequest === true) and
+             ($hasSkipWorkflowFeature === true)))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 
     /**
@@ -480,8 +520,11 @@ class Base extends BaseCore
         // If SKIP_HOLD_FUNDS_ON_PAYOUT feature is enabled for merchant,
         // then we don't check the merchant funds_on_hold and proceed with payout creation
         //
-        if (($this->merchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false) and
-            ($this->merchant->getHoldFunds() === true))
+        // We check funds_on_hold only for live mode. We don't care about funds on hold in test mode.
+        //
+        if (($this->isLiveMode() === true) and
+            ($this->merchant->getHoldFunds() === true) and
+            ($this->merchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);

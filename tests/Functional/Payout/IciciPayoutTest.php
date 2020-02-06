@@ -214,4 +214,11 @@ class IciciPayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function tearDown()
+    {
+        $this->app['cache']->flush();
+
+        parent::tearDown();
+    }
 }

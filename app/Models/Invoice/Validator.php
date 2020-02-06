@@ -273,6 +273,13 @@ class Validator extends Base\Validator
         Entity::AMOUNT => 'required|integer|min_amount'
     ];
 
+    protected static $paymentLinkServiceSendEmailRules = [
+        E::INVOICE          => 'required|array',
+        'to'                => 'required|email',
+        'view'              => 'required|string|custom',
+        'subject'           => 'required|string',
+    ];
+
     //
     // Custom validators.
     //
@@ -302,6 +309,18 @@ class Validator extends Base\Validator
     protected static $validExternalEntities = [
         E::SUBSCRIPTION_REGISTRATION,
     ];
+
+    public function validateView($attribute, $value)
+    {
+        if (view()->exists($value) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'View not found',
+                'view',
+                ['view' => $value,]
+            );
+        }
+    }
 
     public function validateAmount(array $input)
     {
@@ -757,6 +776,15 @@ class Validator extends Base\Validator
             case 'notifyInvoiceExpired':
 
                 $allowedStatuses = [
+                    Status::EXPIRED,
+                ];
+
+                break;
+
+            case 'deleteInvoice':
+
+                $allowedStatuses = [
+                    Status::CANCELLED,
                     Status::EXPIRED,
                 ];
 

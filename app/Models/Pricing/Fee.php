@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Models\Payout\Method;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Feature\Constants as Feature;
@@ -41,6 +42,11 @@ class Fee extends Base\Core
         $this->repo = new Pricing\Repository;
     }
 
+    public function setMerchant(Merchant\Entity $merchant)
+    {
+        $this->merchant = $merchant;
+    }
+
     /**
      *  Used in testing to mock
      *  pricing repository
@@ -67,6 +73,7 @@ class Fee extends Base\Core
      * @param $entity
      *
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function calculateMerchantFees($entity): array
     {
@@ -96,7 +103,7 @@ class Fee extends Base\Core
     {
         $calculator = $this->getCalculator($entity);
 
-        $pricingPlanId = $this->getPricingPlanId($entity->merchant);
+        $pricingPlanId = $this->getPricingPlanId($entity);
 
         // Delete this after 31st Jan
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
@@ -287,8 +294,17 @@ class Fee extends Base\Core
         return $pricingPlan;
     }
 
-    protected function getPricingPlanId($merchant)
+    protected function getPricingPlanId($entity)
     {
+        $customPricingPlan = $this->getCustomPricingPlan($entity);
+
+        if (empty($customPricingPlan) === false)
+        {
+            return $customPricingPlan;
+        }
+
+        $merchant = $entity->merchant;
+
         $pricingPlanId = $merchant->getPricingPlanId();
 
         if ($pricingPlanId !== null)
@@ -326,5 +342,10 @@ class Fee extends Base\Core
         }
 
         return Product::PRIMARY;
+    }
+
+    protected function getCustomPricingPlan(Base\PublicEntity $entity)
+    {
+        return null;
     }
 }

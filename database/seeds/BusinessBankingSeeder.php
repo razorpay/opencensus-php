@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use Illuminate\Database\Seeder;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -13,12 +14,14 @@ class BusinessBankingSeeder extends Seeder
      */
     public function run()
     {
-        DB::transaction(function()
+        $mode = DB::connection()->getName();
+
+        DB::transaction(function() use ($mode)
         {
             $this->seedContacts();
-            $this->seedBankingBalance();
-            $this->seedBankingVA();
-            $this->seedBankingVATerminal();
+            $this->seedBankingBalance($mode);
+            $this->seedBankingVA($mode);
+            $this->seedBankingVATerminal($mode);
             $this->seedPayoutFeature();
         });
     }
@@ -66,7 +69,7 @@ class BusinessBankingSeeder extends Seeder
             ]);
     }
 
-    private function seedBankingBalance()
+    private function seedBankingBalance($mode)
     {
         DB::table(Table::BALANCE)->insert(
             [
@@ -76,7 +79,9 @@ class BusinessBankingSeeder extends Seeder
                     'type'           => 'banking',
                     'balance'        => 0,
                     'currency'       => 'INR',
-                    'account_number' => '2224440041626905',
+                    // The account numbers are different in case of live and test mode
+                    // check terminal entity below
+                    'account_number' => ($mode === Mode::LIVE) ? '2224440041626905' : '2323230041626905',
                     'account_type'   => AccountType::SHARED,
                     'channel'        => null,
                     'created_at'     => time(),
@@ -85,7 +90,7 @@ class BusinessBankingSeeder extends Seeder
             ]);
     }
 
-    private function seedBankingVA()
+    private function seedBankingVA($mode)
     {
         DB::table(Table::BANK_ACCOUNT)->insert(
             [
@@ -94,8 +99,10 @@ class BusinessBankingSeeder extends Seeder
                     'merchant_id'          => '10000000000000',
                     'entity_id'            => 'xva00000000000',
                     'type'                 => 'virtual_account',
-                    'ifsc_code'            => 'RAZRB000000',
-                    'account_number'       => '2224440041626905',
+                    // The account numbers and ifsc are different in case of live and test mode
+                    // check terminal entity below
+                    'ifsc_code'            => ($mode === Mode::LIVE) ? 'YESB0000000' : 'RAZRB000000',
+                    'account_number'       => ($mode === Mode::LIVE) ? '2224440041626905' : '2323230041626905',
                     'beneficiary_name'     => 'random_name',
                     'beneficiary_address1' => 'address1',
                     'beneficiary_address2' => 'address2',
@@ -133,15 +140,17 @@ class BusinessBankingSeeder extends Seeder
             ]);
     }
 
-    private function seedBankingVATerminal()
+    private function seedBankingVATerminal($mode)
     {
         DB::table(Table::TERMINAL)->insert(
             [
                 [
                     'id'                   => 'xterminal00000',
                     'merchant_id'          => '100000Razorpay',
-                    'gateway'              => 'bt_yesbank',
-                    'gateway_merchant_id'  => '222444',
+                    // IN test mode we select the terminal as bt_dashboard and in live mode as bt_yesbank
+                    'gateway'              => ($mode === Mode::LIVE) ? 'bt_yesbank' : 'bt_dashboard',
+                    // For live and test mode the account numbers should be different due to different terminals
+                    'gateway_merchant_id'  => ($mode === Mode::LIVE) ? '222444' : '232323',
                     'gateway_merchant_id2' => '00',
                     'card'                 => 0,
                     'recurring'            => 0,
