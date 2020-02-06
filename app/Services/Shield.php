@@ -126,6 +126,8 @@ class Shield
 
         $this->populatePaymentRequestDetails($payment, $payloadDetails);
 
+        $payloadDetails[ShieldConstants::PAYMENT_PRODUCT] = $this->getPaymentProduct($payment);
+
         $payloadDetails[ShieldConstants::CREATED_AT] = Carbon::now()->getTimestamp();
 
         $shieldPayload = [
@@ -167,22 +169,6 @@ class Shield
 
         // add payment method details
         $payloadDetails[ShieldConstants::METHOD] = $payment->getMethod();
-
-        $payloadDetails[ShieldConstants::SUBSCRIPTION_ID] = $payment->getSubscriptionId() ?? '';
-        $payloadDetails[ShieldConstants::PAYMENT_LINK_ID] = $payment->getPaymentLinkId() ?? '';
-        $payloadDetails[ShieldConstants::ORDER_ID]        = $payment->getApiOrderId() ?? '';
-
-        $payloadDetails[ShieldConstants::AUTH_TYPE]     = $payment->getAuthType();
-        $payloadDetails[ShieldConstants::RECEIVER_TYPE] = $payment->getReceiverType();
-
-        $payloadDetails[ShieldConstants::INVOICE_TYPE]        = '';
-        $payloadDetails[ShieldConstants::INVOICE_ENTITY_TYPE] = '';
-
-        if ($payment->hasInvoice() == true)
-        {
-            $payloadDetails[ShieldConstants::INVOICE_TYPE] = $payment->invoice->getType();
-            $payloadDetails[ShieldConstants::INVOICE_ENTITY_TYPE] = $payment->invoice->getEntityType() ?? '';
-        }
 
         switch ($payloadDetails[ShieldConstants::METHOD])
         {
@@ -282,11 +268,11 @@ class Shield
         */
 
         $partnerMerchantId = $this->ba->getPartnerMerchantId();
-        $isPaymentDrivenByPartner = ((is_null($partnerMerchantId) === false) and ($partnerMerchantId != $merchant->getId()));
+        $isPaymentInitiatedByPartner = ((is_null($partnerMerchantId) === false) and ($partnerMerchantId != $merchant->getId()));
 
         $partnerWhitelistedDomains = [];
 
-        if ($isPaymentDrivenByPartner === true)
+        if ($isPaymentInitiatedByPartner === true)
         {
             $partnerMerchant = $this->repo->merchant->find($partnerMerchantId);
 
@@ -307,8 +293,66 @@ class Shield
             }
         }
 
-        $payloadDetails[ShieldConstants::IS_PARTNER_INITIATED_PAYMENT] = $isPaymentDrivenByPartner;
+        $payloadDetails[ShieldConstants::IS_PARTNER_INITIATED_PAYMENT] = $isPaymentInitiatedByPartner;
 
         $payloadDetails[ShieldConstants::PARTNER_WHITELISTED_DOMAINS] = $partnerWhitelistedDomains;
+    }
+
+    protected function getPaymentProduct(Payment\Entity $payment)
+    {
+        $product = ShieldConstants::PRODUCT_PAYMENT_GATEWAY;
+
+        $subscriptionId = $payment->getSubscriptionId();
+        $paymentLinkId = $payment->getPaymentLinkId();
+
+        $authType = $payment->getAuthType();
+        $receiverType = $payment->getReceiverType();
+
+        $invoiceType = '';
+        $invoiceEntityType = '';
+
+        $method = $payment->getMethod();
+
+        if ($payment->hasInvoice() === true)
+        {
+            $invoiceType = $payment->invoice->getType();
+            $invoiceEntityType = $payment->invoice->getEntityType();
+        }
+
+        if (($invoiceType === 'link') and (is_null($subscriptionId) === true) and (empty($invoiceEntityType) === true))
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_LINKS;
+        }
+        else if (($invoiceType === 'invoice') and (is_null($subscriptionId) === true))
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_INVOICES;
+        }
+        else if ($invoiceType === 'ecod')
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_EPOS;
+        }
+        else if (is_null($subscriptionId) === false)
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_SUBSCRIPTIONS;
+        }
+        else if (is_null($paymentLinkId) === false)
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_LINKS;
+        }
+        else if ($method === 'transfer')
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_ROUTE;
+        }
+        else if ((empty($receiverType) === false) and (in_array($receiverType, ['bank_account', 'qr_code']) === true))
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_SMART_COLLECT;
+        }
+        else if ((($payment->isRecurring() === true) and (is_null($subscriptionId) === false)) or
+                 ((empty($authType) === false) and ($authType === 'skip')))
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_CAW;
+        }
+
+        return $product;
     }
 }

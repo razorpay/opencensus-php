@@ -456,6 +456,8 @@ class Pricing extends Base
     public function createDefaultBankingPlan()
     {
         $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getBankingPlanData());
+
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getZeroBankingPlanData());
     }
 
     public function createStandardPlan()
@@ -717,6 +719,30 @@ class Pricing extends Base
             'percent_rate'        => 50,
             'fixed_rate'          => 80,
             'org_id'              => '100000razorpay',
+        ];
+
+        $this->addPricingRulesToDb([$row]);
+    }
+
+    public function createRBLDirectPayoutPricingPlan()
+    {
+        $pricingPlanId = '1hDYlICobzOCYt';
+
+        $row = [
+            'id'                  => '1ZE3CYqf1zbyaF',
+            'plan_id'             => $pricingPlanId,
+            'plan_name'           => 'testRBLPlan',
+            'product'             => 'banking',
+            'feature'             => 'payout',
+            'payment_method'      => 'fund_transfer',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 500,
+            'org_id'              => '100000razorpay',
+            'account_type'        => 'direct',
+            'channel'             => 'rbl',
         ];
 
         $this->addPricingRulesToDb([$row]);

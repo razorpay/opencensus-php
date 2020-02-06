@@ -217,12 +217,12 @@ class AuthLink
 
         if (empty($entry[Batch\Header::AUTH_LINK_NACH_REFERENCE1]) === false)
         {
-            $nachFormData[SubscriptionRegistration\Entity::FORM_REFERENCE1] = $entry[Batch\Header::AUTH_LINK_NACH_REFERENCE1];
+            $nachFormData[SubscriptionRegistration\Entity::FORM_REFERENCE1] = strval($entry[Batch\Header::AUTH_LINK_NACH_REFERENCE1]);
         }
 
         if (empty($entry[Batch\Header::AUTH_LINK_NACH_REFERENCE2]) === false)
         {
-            $nachFormData[SubscriptionRegistration\Entity::FORM_REFERENCE2] = $entry[Batch\Header::AUTH_LINK_NACH_REFERENCE2];
+            $nachFormData[SubscriptionRegistration\Entity::FORM_REFERENCE2] = strval($entry[Batch\Header::AUTH_LINK_NACH_REFERENCE2]);
         }
 
         if (isset($entry[Batch\Header::AUTH_LINK_NACH_CREATE_FORM]) === true)
