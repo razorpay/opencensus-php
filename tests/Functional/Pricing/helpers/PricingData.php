@@ -1673,7 +1673,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 10,
+                'count' => 11,
                 'entity' => 'collection',
                 'items' => [
                     [
@@ -1684,6 +1684,9 @@ return [
                     ],
                     [
                         'name' => 'DefaultSubMerchant',
+                    ],
+                    [
+                        'name' => 'Zero banking default plan',
                     ],
                     [
                         'name' => 'Banking default plan',
@@ -1815,7 +1818,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count'  => 10,
+                'count'  => 11,
                 'entity' => 'collection',
                 'items'  => [
                     [
@@ -1826,6 +1829,9 @@ return [
                     ],
                     [
                         'name' => 'DefaultSubMerchant',
+                    ],
+                    [
+                        'name' => 'Zero banking default plan',
                     ],
                     [
                         'name' => 'Banking default plan',
@@ -2012,8 +2018,13 @@ return [
                     'type'        => 'pricing',
                 ],
                 [
+                    'plan_name'   => 'Zero banking default plan',
+                    'rules_count' => 2,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 8,
+                    'rules_count' => 12,
                     'type'        => 'pricing',
                 ],
                 [
@@ -2092,8 +2103,13 @@ return [
                     'type'        => 'pricing',
                 ],
                 [
+                    'plan_name'   => 'Zero banking default plan',
+                    'rules_count' => 2,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 8,
+                    'rules_count' => 12,
                     'type'        => 'pricing',
                 ],
                 [
