@@ -4970,6 +4970,8 @@ class MerchantTest extends TestCase
      */
     public function testMerchantSwitchProduct()
     {
+        $this->markTestSkipped('X test mode onboarding revert');
+
         $user = (new User())->createUserForMerchant();
 
         $this->fixtures->edit('merchant',
@@ -5076,6 +5078,8 @@ class MerchantTest extends TestCase
      */
     public function testMerchantSwitchProductWhenMerchantNotActivated()
     {
+        $this->markTestSkipped('X test mode onboarding revert');
+
         $user = (new User())->createUserForMerchant();
 
         $this->fixtures->edit('merchant',
