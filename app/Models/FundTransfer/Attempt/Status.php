@@ -23,7 +23,7 @@ class Status
     // allowed state transition when webhook is fired from fts
     const ALLOWED_STATE_TRANSITION = [
         self::CREATED   => [self::CREATED, self::INITIATED, self::PROCESSED, self::FAILED],
-        self::INITIATED => [self::INITIATED, self::FAILED, self::PROCESSED],
+        self::INITIATED => [self::INITIATED, self::FAILED, self::PROCESSED, self::REVERSED],
         self::PROCESSED => [self::PROCESSED, self::REVERSED],
         self::REVERSED  => [self::REVERSED],
         self::FAILED    => [self::FAILED],
