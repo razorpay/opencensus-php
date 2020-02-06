@@ -303,11 +303,11 @@ class Error extends Support\Fluent
 
                 $this->setFailureType($errorCodeMap[$code][2]);
 
-                $this->setPointOfFailure($errorCodeMap[$code][3]);
+                $this->setPointOfFailure($errorCodeMap[$code][3] ?: "NA");
 
                 $this->setNextBestAction($errorCodeMap[$code][4]);
 
-                $this->setFailureStage($errorCodeMap[$code][5]);
+                $this->setFailureStage($errorCodeMap[$code][5] ?: "NA");
 
                 $this->setRecoverable($errorCodeMap[$code][6]);
             }
@@ -507,16 +507,14 @@ class Error extends Support\Fluent
 
         if ($isMetadataFeatureEnabled === true)
         {
-            $pointOfFailure = $this->getAttribute(self::POINT_OF_FAILURE);
+            $publicReason   = null;
 
-            $failureStage   = $this->getAttribute(self::FAILURE_STAGE);
-
-            $pointOfFailure = $pointOfFailure ?: "NA";
-
-            $failureStage   = $failureStage ?: "NA";
-
-            $publicReason   = $pointOfFailure."-".$failureStage."-".$this->getAttribute(self::REASON);
-
+            if($this->getAttribute(self::REASON) !== null)
+            {
+                $publicReason   = $this->getAttribute(self::POINT_OF_FAILURE)."-".
+                    $this->getAttribute(self::FAILURE_STAGE)."-".$this->getAttribute(self::REASON);
+            }
+            
             $reasonArr = array(
                 self::REASON            => $publicReason,
                 self::METADATA          => $this->getAttribute(self::METADATA)
