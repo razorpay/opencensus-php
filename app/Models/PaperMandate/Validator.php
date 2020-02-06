@@ -10,8 +10,10 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
+    const MAX_AMOUNT_LIMIT = 1000000000;
+
     protected static $createRules = [
-        Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:500|max:1000000000|custom',
+        Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:500|max:'. self::MAX_AMOUNT_LIMIT .'|custom',
         Entity::TYPE                     => 'filled|string|custom',
         Entity::DEBIT_TYPE               => 'filled|string|custom',
         Entity::TERMINAL_ID              => 'filled|string',
