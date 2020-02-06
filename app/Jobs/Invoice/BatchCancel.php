@@ -14,9 +14,9 @@ use RZP\Models\Invoice as InvoiceModel;
  */
 class BatchCancel extends Job
 {
-    const MAX_RETRY_DELAY       = 60;
+    const RETRY_DELAY           = 60;
 
-    const MAX_RETRY_ATTEMPTS     = 5;
+    const MAX_RETRY_ATTEMPTS    = 5;
     /**
      * {@inheritDoc}
      */
@@ -58,8 +58,14 @@ class BatchCancel extends Job
         {
             if ($this->attempts() <= self::MAX_RETRY_ATTEMPTS)
             {
-                $this->release(self::MAX_RETRY_DELAY);
+                $this->release(self::RETRY_DELAY);
             }
+            else
+            {
+                $this->delete();
+            }
+
+            return;
         }
 
         $this->core = new InvoiceModel\Core;
