@@ -42,8 +42,6 @@ class Type
 
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
 
-    const ICICI_PAYLATER_REFUND             = 'icici_paylater_refund';
-
     const OBC_NETBANKING_REFUND             = 'obc_netbanking_refund';
 
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
@@ -228,7 +226,6 @@ class Type
             self::CITI_NACH_DEBIT_SUMMARY,
             self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
-            self::ICICI_PAYLATER_REFUND,
             self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
@@ -396,7 +393,6 @@ class Type
         self::ALLAHABAD_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
-        self::ICICI_PAYLATER_REFUND,
         self::AXIS_NETBANKING_REFUND,
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,

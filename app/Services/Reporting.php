@@ -281,11 +281,15 @@ class Reporting implements ExternalService
         $input['mode'] = $this->mode;
 
         /**
+         * If request is coming from the proxy auth (merchant)
          * Adds the merchant id of the merchant who initiated the request
          * irrespective of the case whether the request was for the merchant itself
          * or for one of it's linked account
          */
-        $input['generated_by'] = $this->ba->authCreds->getKey();
+        if ($this->ba->isProxyAuth())
+        {
+            $input['generated_by'] = $this->ba->authCreds->getKey();
+        }
 
         $path = self::LOG_PATH;
 

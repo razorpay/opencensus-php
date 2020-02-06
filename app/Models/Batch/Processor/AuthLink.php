@@ -140,4 +140,27 @@ class AuthLink extends Base
             $input["config"] = $config;
         }
     }
+
+    protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
+    {
+        $entry = current($entries);
+
+        if (empty($entry) === false)
+        {
+            if (array_key_exists(Header::AUTH_LINK_NACH_REFERENCE1, $entry) === true)
+            {
+                array_splice($headers, count($headers), 0, Header::AUTH_LINK_NACH_REFERENCE1);
+            }
+
+            if (array_key_exists(Header::AUTH_LINK_NACH_REFERENCE2, $entry) === true)
+            {
+                array_splice($headers, count($headers), 0, Header::AUTH_LINK_NACH_REFERENCE2);
+            }
+
+            if (array_key_exists(Header::AUTH_LINK_NACH_CREATE_FORM, $entry) === true)
+            {
+                array_splice($headers, count($headers), 0, Header::AUTH_LINK_NACH_CREATE_FORM);
+            }
+        }
+    }
 }

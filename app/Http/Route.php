@@ -627,6 +627,7 @@ final class Route
         'item_fetch_multiple'                      => ['get',      'items',                                          'ItemController@getItems'                                           ],
         'item_update'                              => ['patch',    'items/{id}',                                     'ItemController@updateItem'                                         ],
         'item_delete'                              => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
+        'send_email_for_pl_service'                => ['post',     'payment_links/send_email',                       'InvoiceController@sendEmailForPaymentLinkService'                  ],
         'pages_view'                               => ['get,post', 'pages/{x_entity_id}/view',                       'PaymentLinkController@view'                                        ],
         'pages_view_by_slug'                       => ['get,post', 'pages/{slug}',                                   'PaymentLinkController@viewBySlug'                                  ],
         'payment_link_view_get'                    => ['get,post', 'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
@@ -2038,6 +2039,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'send_email_for_pl_service',
         'oauth_token_create',
         'merchant_activation_update_website_status',
         'reminder_next_run',
@@ -3692,6 +3694,14 @@ final class Route
             'credit_note_list',
             'credit_note_get',
             'credit_note_apply',
+        ],
+
+        'payment_links' => [
+            'send_email_for_pl_service',
+            'customer_fetch_by_id',
+            'create_merchant_options',
+            'read_merchant_options',
+            'order_create',
         ],
 
         'kotak' => [
