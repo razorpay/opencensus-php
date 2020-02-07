@@ -109,7 +109,7 @@ export const generateReportV2 = (
           return (
             timeElapsed > timeout ||
             resp.error ||
-            resp.data.status !== 'created'
+            ['processed', 'failed'].includes(resp.data.status)
           );
         },
         getNextCallWaitime: () => {
@@ -149,7 +149,7 @@ export const generateReportV2 = (
 
           const fileId = resp.data.file_id;
 
-          if (!fileId) {
+          if (resp.data.status === 'processed' && !fileId) {
             onProgress(resp.data);
             return {
               error: 'No data found for the given dates',
