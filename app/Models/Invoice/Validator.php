@@ -1012,7 +1012,7 @@ class Validator extends Base\Validator
         if (in_array($batch[Batch\Entity::STATUS], Batch\Status::BATCH_STATUSES_VALID_FOR_CANCEL) === false)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_STATUS_FOR_CANCEL,
+                ErrorCode::BAD_REQUEST_BATCH_FILE_STATUS_INVALID_FOR_CANCEL,
                 $batch[Batch\Entity::STATUS],
                 [
                     'batch_id'  => $batch[Batch\Entity::ID],
