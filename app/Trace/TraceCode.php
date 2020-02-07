@@ -1870,6 +1870,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DB_READ_CONN_SETUP_ERROR                              = 'DB_READ_CONN_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                                   = 'AWS_CREDS_CACHE_SET';
+    const AWS_SNS_PUBLISH_REQUEST                               = 'AWS_SNS_PUBLISH_REQUEST';
     const AWS_SNS_PUBLISH_RESPONSE                              = 'AWS_SNS_PUBLISH_RESPONSE';
 
     const SERVER_ERROR_LOG_RISK                                 = 'SERVER_ERROR_LOG_RISK';
