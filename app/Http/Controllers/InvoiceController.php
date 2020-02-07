@@ -410,13 +410,6 @@ class InvoiceController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getStatusInvoicesOfBatch(string $batchId)
-    {
-        $response = $this->service()->getStatusInvoicesOfBatch($batchId);
-
-        return ApiResponse::json($response);
-    }
-
     public function sendEmailForPaymentLinkService()
     {
         $input = Request::all();
