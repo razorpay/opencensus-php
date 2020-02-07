@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\PaymentMeta;
 
+use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
@@ -19,7 +20,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_AMOUNT,
         self::GATEWAY_CURRENCY,
         self::FOREX_RATE,
-        self::IS_DCC_OFFERED,
+        self::DCC_OFFERED,
     ];
 
     protected $public = [
@@ -28,7 +29,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_AMOUNT,
         self::GATEWAY_CURRENCY,
         self::FOREX_RATE,
-        self::IS_DCC_OFFERED,
+        self::DCC_OFFERED,
     ];
 
     protected $visible = [
@@ -37,12 +38,16 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_AMOUNT,
         self::GATEWAY_CURRENCY,
         self::FOREX_RATE,
-        self::IS_DCC_OFFERED,
+        self::DCC_OFFERED,
     ];
 
     protected $casts = [
         self::GATEWAY_AMOUNT   => 'int',
-        self::IS_DCC_OFFERED   => 'bool',
+        self::DCC_OFFERED      => 'bool',
+    ];
+
+    protected $defaults = [
+        self::DCC_OFFERED => false,
     ];
 
     protected $entity = 'payment_meta';
@@ -73,7 +78,7 @@ class Entity extends Base\PublicEntity
 
     public function getForexRate()
     {
-        return $this->getAttrubute(self::FOREX_RATE);
+        return $this->getAttribute(self::FOREX_RATE);
     }
 
     public function isDccOffered()
