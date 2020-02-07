@@ -5,7 +5,6 @@ namespace RZP\Jobs\Invoice;
 use RZP\Jobs\Job;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
-use RZP\Services\BatchMicroService;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Invoice as InvoiceModel;
 use RZP\Models\Merchant\Entity as MerchantEntity;
