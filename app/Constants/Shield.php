@@ -79,11 +79,9 @@ final class Shield
     const PRODUCT_PAYMENT_LINKS         = 'payment_links';
     const PRODUCT_PAYMENT_INVOICES      = 'payment_invoices';
     const PRODUCT_PAYMENT_EPOS          = 'payment_epos';
-    const PRODUCT_PAYMENT_SUBSCRIPTIONS = 'payment_subscriptions';
     const PRODUCT_PAYMENT_PAGES         = 'payment_pages';
     const PRODUCT_PAYMENT_ROUTE         = 'payment_route';
     const PRODUCT_PAYMENT_SMART_COLLECT = 'payment_smart_collect';
-    const PRODUCT_PAYMENT_CAW           = 'payment_charge_at_will';
 
     // Response constants
     const ACTION_KEY              = 'action';
