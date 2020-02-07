@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Verifiers;
 
+use RZP\lib\FuzzyMatcher;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 
@@ -31,28 +32,28 @@ class POAVerifier implements Verifier
 
     public function verify()
     {
-        $ocrMatchingPercentage = 0;
+        $isOcrMatch = false;
+
+        $matchPercent = null;
+
+        $poaFuzzyMatcher = new FuzzyMatcher(OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD, FuzzyMatcher::JUMBLED_MATCH);
 
         if ((empty($this->ocrName) === false) and
             empty($this->panOwnerName) === false)
         {
-            $ocrMatchingPercentage = get_similar_text_percent($this->panOwnerName, $this->ocrName);
+            $isOcrMatch = $poaFuzzyMatcher->isMatch($this->panOwnerName, $this->ocrName, $matchPercent);
         }
 
         return [
-            Constants::OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME => $ocrMatchingPercentage,
-            Constants::DOCUMENT_VERIFICATION_STATUS          => $this->getOcrVerificationStatus($ocrMatchingPercentage),
+            Constants::OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME => $matchPercent,
+            Constants::DOCUMENT_VERIFICATION_STATUS          => $this->getOcrVerificationStatus($isOcrMatch),
+            Constants::POA_FUZZY_MATCH_TYPE                  => $poaFuzzyMatcher->getMatchType(),
         ];
     }
 
-    protected function getOcrVerificationStatus($percent)
+    protected function getOcrVerificationStatus(bool $isOcrMatch): string
     {
-        $ocrVerifiedStatus = OcrVerificationStatus::FAILED;
-
-        if ($percent >= OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD)
-        {
-            $ocrVerifiedStatus = OcrVerificationStatus::VERIFIED;
-        }
+        $ocrVerifiedStatus = $isOcrMatch ? OcrVerificationStatus::VERIFIED : OcrVerificationStatus::FAILED;
 
         return $ocrVerifiedStatus;
     }
