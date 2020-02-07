@@ -5714,4 +5714,21 @@ return [
             ]
         ]
     ],
+
+    'testGetCheckoutPreferencesWithOrderMethodForNonTPVEnabledMerchant' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'method' => 'upi'
+                ]
+            ],
+        ],
+    ],
 ];

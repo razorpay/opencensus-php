@@ -1673,7 +1673,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 11,
+                'count' => 12,
                 'entity' => 'collection',
                 'items' => [
                     [
@@ -1821,7 +1821,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count'  => 11,
+                'count'  => 12,
                 'entity' => 'collection',
                 'items'  => [
                     [

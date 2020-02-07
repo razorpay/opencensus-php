@@ -206,11 +206,6 @@ class Core extends Base\Core
                 Entity::BANK           => $order->getBank(),
                 Entity::ACCOUNT_NUMBER => $this->getMaskedAccountNumber($accountNumber),
             ];
-
-            if ($orderMethod !== null)
-            {
-                $data += [Entity::METHOD => $orderMethod];
-            }
         }
         else if ($order->getBank() !== null)
         {
@@ -223,11 +218,6 @@ class Core extends Base\Core
 
         if ($tokenRegistration !== null)
         {
-            if ($orderMethod !== null)
-            {
-                $data += [Entity::METHOD => $orderMethod];
-            }
-
             if ( ($tokenRegistration->getEntityType() === Entity::BANK_ACCOUNT) === true )
             {
                 $bankAccount = $tokenRegistration->bankAccount;
@@ -240,6 +230,11 @@ class Core extends Base\Core
             }
 
             $data[Entity::AUTH_TYPE] = $tokenRegistration->getAuthType();
+        }
+
+        if ($orderMethod !== null)
+        {
+            $data += [Entity::METHOD => $orderMethod];
         }
 
         return $data;
