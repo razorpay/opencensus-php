@@ -142,6 +142,7 @@ class Constants
     const PARTNER_ACTIVATE_MERCHANT       = 'partner_activate_merchant';
 
     const OFFLINE_PAYMENTS                = 'offline_payments';
+    const DCC                             = 'dcc';
 
     /**
      * If applied on partner merchant then all sub merchant settlement will be settled to partner
@@ -330,6 +331,7 @@ class Constants
         self::GOOGLE_PAY_OMNICHANNEL,
         self::PHONEPE_INTENT,
         self::SAVE_VPA,
+        self::DCC,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -512,6 +514,7 @@ class Constants
         self::SKIP_WORKFLOWS_FOR_API          => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
+        self::DCC                             => true,
     ];
 
     // Entity type constants
