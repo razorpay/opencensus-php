@@ -70,6 +70,16 @@ final class Shield
     const INVOICE_TYPE                 = 'invoice_type';
     const INVOICE_ENTITY_TYPE          = 'invoice_entity_type';
     const INTEGRATION                  = 'integration';
+    const PAYMENT_PRODUCT              = 'payment_product';
+
+    const PRODUCT_PAYMENT_GATEWAY       = 'payment_gateway';
+    const PRODUCT_PAYMENT_LINKS         = 'payment_links';
+    const PRODUCT_PAYMENT_INVOICES      = 'payment_invoices';
+    const PRODUCT_PAYMENT_EPOS          = 'payment_epos';
+    const PRODUCT_PAYMENT_PAGES         = 'payment_pages';
+    const PRODUCT_PAYMENT_ROUTE         = 'payment_route';
+    const PRODUCT_PAYMENT_SMART_COLLECT = 'payment_smart_collect';
+
 
     // Response constants
     const ACTION_KEY              = 'action';
