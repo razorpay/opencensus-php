@@ -413,17 +413,4 @@ class Core extends Base\Core
 
         return ['success' => true];
     }
-
-    public function fetchBatchAndSetCancelled(string $batchId)
-    {
-        $batch = $this->repo->batch->findByPublicId($batchId);
-
-        if (($batch !== null) and
-            ($batch->getStatus() !== Status::CANCELLED))
-        {
-            $batch->setStatus(Status::CANCELLED);
-        }
-
-        $this->repo->saveOrFail($batch);
-    }
 }

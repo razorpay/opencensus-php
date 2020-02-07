@@ -117,8 +117,6 @@ class BatchCancel extends Job
         }
 
         $this->trace->debug(TraceCode::INVOICE_BATCH_CANCEL_SUMMARY, $summary);
-
-        (new Batch\Core())->fetchBatchAndSetCancelled($this->batchId);
     }
 
     protected function cancel(InvoiceModel\Entity $invoice, array & $summary)
