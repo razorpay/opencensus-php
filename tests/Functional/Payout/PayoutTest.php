@@ -378,6 +378,8 @@ class PayoutTest extends TestCase
     {
         $this->liveSetUp();
 
+        $this->fixtures->pricing->createRBLDirectPayoutPricingPlan();
+
         // Create second Balance
         $balanceAttributes = [
             'balance' => 10000000,
@@ -2347,5 +2349,177 @@ class PayoutTest extends TestCase
         $this->disableWorkflowMocks();
 
         return $this->createQueuedOrPendingPayout($payoutAttributes, $authKey);
+    }
+
+    // rzp_fees payout should get processed before others. Create 3 Queued payouts, have enough balance for only
+    // one to go through. Assert that rzp_fees payout went through first
+    public function testRZPFeesQueuedPayoutPriority()
+    {
+        $balance = $this->createDirectBankingBalance()->toArray();
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $balanceId = $balance['id'];
+
+        $this->fixtures->edit('balance', $balanceId, ['balance' => 0]);
+
+        $payoutData = [
+            'queue_if_low_balance' => 1,
+            'account_number'        => 2224440041626906,
+        ];
+
+        $this->createQueuedOrPendingPayout($payoutData);
+
+        $payout1 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createQueuedOrPendingPayout($payoutData);
+
+        $payout2 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createQueuedOrPendingPayout($payoutData);
+
+        $payout3 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->assertEquals($payout1['status'], Payout\Status::QUEUED);
+        $this->assertEquals($payout2['status'], Payout\Status::QUEUED);
+        $this->assertEquals($payout3['status'], Payout\Status::QUEUED);
+
+        $payout2Id = $payout2['id'];
+
+        $this->fixtures->edit('payout', $payout2Id, ['purpose' => 'rzp_fees']);
+
+        // Add enough balance for exactly one payout to go through
+        $this->fixtures->edit('balance', $balanceId, ['balance' => 15000]);
+
+        $this->ba->cronAuth();
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content']['from'] = $currentTime - 10;
+        $data['request']['content']['to'] = $currentTime + 10;
+
+        $this->startTest();
+
+        // Assert first payout still queued
+        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $this->assertEquals($payout1['status'], Payout\Status::QUEUED);
+
+        // Assert third payout still queued
+        $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
+        $this->assertEquals($payout3['status'], Payout\Status::QUEUED);
+
+        // Assert second payout status changed
+        $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $this->assertNotEquals($payout2['status'], Payout\Status::QUEUED);
+    }
+
+    // If rzp_fees payout remains queued, all other payouts remain queued too.
+    public function testRZPFeesQueuedPayoutNotEnoughBalance()
+    {
+        $balance = $this->createDirectBankingBalance()->toArray();
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $balanceId = $balance['id'];
+
+        $this->fixtures->edit('balance', $balanceId, ['balance' => 0]);
+
+        $payoutData = [
+            'queue_if_low_balance' => 1,
+            'account_number'        => 2224440041626906,
+        ];
+
+        $this->createQueuedOrPendingPayout($payoutData);
+
+        $payout1 = $this->getDbLastEntity('payout')->toArray();
+
+        $payoutDataHigherAmount = [
+            'queue_if_low_balance'  => 1,
+            'amount'                => 530000,
+            'account_number'        => 2224440041626906,
+        ];
+
+        $this->createQueuedOrPendingPayout($payoutDataHigherAmount);
+
+        $payout2 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createQueuedOrPendingPayout($payoutData);
+
+        $payout3 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->assertEquals($payout1['status'], Payout\Status::QUEUED);
+        $this->assertEquals($payout2['status'], Payout\Status::QUEUED);
+        $this->assertEquals($payout3['status'], Payout\Status::QUEUED);
+
+        $payout2Id = $payout2['id'];
+
+        $this->fixtures->edit('payout', $payout2Id, ['purpose' => 'rzp_fees']);
+
+        // Add enough balance so that all payouts except the fee_recovery payout can get processed
+        $this->fixtures->edit('balance', $balanceId, ['balance' => 520000]);
+
+        $this->ba->cronAuth();
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['content']['from'] = $currentTime - 10;
+        $data['request']['content']['to'] = $currentTime + 10;
+
+        $this->startTest();
+
+        // Assert second still queued
+        $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $this->assertEquals($payout2['status'], Payout\Status::QUEUED);
+
+        // Assert first payout still queued although merchant had enough balance to process this
+        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $this->assertEquals($payout1['status'], Payout\Status::QUEUED);
+
+        // Assert third payout still queued although merchant had enough balance to process this
+        $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
+        $this->assertEquals($payout3['status'], Payout\Status::QUEUED);
+    }
+
+    protected function createDirectBankingBalance()
+    {
+        // Create second Balance
+        $balanceAttributes = [
+            'balance' => 10000000,
+            'balanceType' => 'direct',
+            'channel' => 'rbl',
+        ];
+
+        $secondBankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            '10000000000000',
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        // Create Second Bank Account
+
+        $virtualAccount = $this->fixtures->create('virtual_account');
+        $secondBankAccount    = $this->fixtures->create(
+            'bank_account',
+            [
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '2224440041626906',
+                'ifsc_code'      => 'RAZRB000000',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($secondBankAccount);
+        $virtualAccount->balance()->associate($secondBankingBalance);
+        $virtualAccount->save();
+
+        $secondBankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+        $secondBankingBalance->save();
+
+        $balance = $this->getDbEntity('balance', [
+            'merchant_id'   => '10000000000000',
+            'account_type'  => 'direct'
+        ]);
+
+        return $balance;
     }
 }

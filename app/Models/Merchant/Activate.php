@@ -502,7 +502,7 @@ class Activate extends Base\Core
         {
             $this->createBankingEntitiesForMode($merchant, Mode::LIVE);
 
-            $this->createBankingEntitiesForMode($merchant, Mode::TEST);
+            //$this->createBankingEntitiesForMode($merchant, Mode::TEST);
         });
 
         $this->setDbAndModelConnectionWithMode($originalMode, $merchant);

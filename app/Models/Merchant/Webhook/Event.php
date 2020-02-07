@@ -80,6 +80,7 @@ class Event
     const PAYOUT_LINK_ATTEMPTED             = 'payout_link.attempted';
     const PAYOUT_LINK_CANCELLED             = 'payout_link.cancelled';
     const PAYOUT_LINK_PROCESSED             = 'payout_link.processed';
+    const PAYMENT_CREATED                   = 'payment.created';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -142,6 +143,7 @@ class Event
         self::ACCOUNT_REJECTED,
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
+        self::PAYMENT_CREATED,
 
     ];
 
@@ -215,7 +217,8 @@ class Event
         self::PAYOUT_LINK_PROCESSED,
         self::PAYOUT_LINK_PROCESSING,
         self::PAYOUT_LINK_CANCELLED,
-        self::PAYOUT_LINK_ATTEMPTED
+        self::PAYOUT_LINK_ATTEMPTED,
+        self::PAYMENT_CREATED
     ];
 
     protected static $bitPosition = [
@@ -280,6 +283,7 @@ class Event
         self::TRANSACTION_UPDATED               => 59,
         self::PAYOUT_UPDATED                    => 60,
         self::PAYOUT_REJECTED                   => 61,
+        self::PAYMENT_CREATED                   => 62,
     ];
 
     /**
@@ -345,6 +349,7 @@ class Event
         self::ACCOUNT_PAYMENTS_DISABLED         => [Product::PRIMARY],
         self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_REJECTED                   => [Product::PRIMARY, Product::BANKING],
+        self::PAYMENT_CREATED                   => [Product::PRIMARY],
     ];
 
     /**
@@ -415,6 +420,7 @@ class Event
         self::PAYOUT_LINK_ATTEMPTED             => Entity::PAYOUT_LINK,
         self::PAYOUT_UPDATED                    => Entity::PAYOUT,
         self::PAYOUT_REJECTED                   => Entity::PAYOUT,
+        self::PAYMENT_CREATED                   => Entity::PAYMENT,
     ];
 
     public static $eventsToFeatureMap = [

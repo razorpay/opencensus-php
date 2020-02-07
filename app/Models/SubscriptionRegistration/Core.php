@@ -681,7 +681,7 @@ class Core extends Base\Core
         $token = $subscriptionRegistration->token;
 
         if ((empty($input[Entity::SUCCEED]) === false) and
-            ($input[Entity::SUCCEED] === true))
+            (boolval($input[Entity::SUCCEED]) === true))
         {
             $this->updateTestTokenEntityRegister($token, Token\RecurringStatus::CONFIRMED);
         }
@@ -690,7 +690,7 @@ class Core extends Base\Core
             $this->updateTestTokenEntityRegister(
                 $token,
                 Token\RecurringStatus::REJECTED,
-                'rejected by npci'
+                'Drawers signature differs'
             );
         }
 

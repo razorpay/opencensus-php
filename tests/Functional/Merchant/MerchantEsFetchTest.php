@@ -242,7 +242,7 @@ class MerchantEsFetchTest extends TestCase
 
         $this->ba->adminAuth('test', $requestToken);
 
-        s($this->startTest());
+        $this->startTest();
     }
 
     /**
