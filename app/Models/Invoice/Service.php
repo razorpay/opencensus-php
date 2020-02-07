@@ -367,6 +367,11 @@ class Service extends Base\Service
 
         $merchantIds = $input['merchant_ids'] ?? [];
 
+        if (empty($merchantIds) === true)
+        {
+            return [];
+        }
+
         $hours = $input['hours'] ?? 24;
 
         $pastTime = Carbon::now()->subHours($hours)->getTimestamp();
