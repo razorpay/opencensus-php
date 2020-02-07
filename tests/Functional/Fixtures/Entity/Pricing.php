@@ -434,6 +434,21 @@ class Pricing extends Base
                 'max_fee'             => 5000,
                 'org_id'              => '100000razorpay',
             ],
+            [
+                'id'                  => '1zE31zbybacab6',
+                'plan_id'             => 'E9t4ljLBnt2cad',
+                'plan_name'           => 'testDefaultVpaPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'upi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 200,
+                'fixed_rate'          => 0,
+                'max_fee'             => 5000,
+                'receiver_type'       => 'vpa',
+                'org_id'              => '100000razorpay',
+            ],
         ];
 
         return $rows;

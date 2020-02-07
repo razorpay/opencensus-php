@@ -34,6 +34,7 @@ class Fee extends Base\Core
     const DEFAULT_EMI_PLAN_ID           = 'ArGUUem5z3UADv';
     const DEFAULT_BANK_TRANSFER_PLAN_ID = '8gP5505KgDVWIh';
     const DEFAULT_BANKING_PLAN_ID       = 'BTo98voDY05ueB';
+    const DEFAULT_VIRTUAL_UPI_PLAN_ID   = 'E9t4ljLBnt2cad';
 
     public function __construct()
     {
@@ -220,6 +221,13 @@ class Fee extends Base\Core
             $bankTransferPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_BANK_TRANSFER_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($bankTransferPricing);
+        }
+
+        if ($pricingPlan->hasVpaReceiver() === false)
+        {
+            $virtualUpiPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_VIRTUAL_UPI_PLAN_ID);
+
+            $pricingPlan = $pricingPlan->merge($virtualUpiPricing);
         }
 
         if ($pricingPlan->hasQrCodeReceiver() === false)

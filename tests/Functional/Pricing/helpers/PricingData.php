@@ -1677,6 +1677,9 @@ return [
                 'entity' => 'collection',
                 'items' => [
                     [
+                        'name' => 'testDefaultVpaPlan',
+                    ],
+                    [
                         'name' => 'PP190AMEX290',
                     ],
                     [
@@ -1821,6 +1824,9 @@ return [
                 'count'  => 11,
                 'entity' => 'collection',
                 'items'  => [
+                    [
+                        'name' => 'testDefaultVpaPlan',
+                    ],
                     [
                         'name' => 'PP190AMEX290',
                     ],
@@ -2003,6 +2009,11 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'testDefaultVpaPlan',
+                    'rules_count' => 1,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'PP190AMEX290',
                     'rules_count' => 9,
                     'type'        => 'pricing',
@@ -2087,6 +2098,11 @@ return [
         ],
         'response' => [
             'content' => [
+                [
+                    'plan_name'   => 'testDefaultVpaPlan',
+                    'rules_count' => 1,
+                    'type'        => 'pricing',
+                ],
                 [
                     'plan_name'   => 'PP190AMEX290',
                     'rules_count' => 9,
