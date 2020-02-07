@@ -219,6 +219,8 @@ class Service extends Base\Service
 
     public function cancelInvoicesOfBatch(string $batchId)
     {
+        $batch = [];
+
         if ($this->auth->isAdminAuth() === true)
         {
             $batch = (new Batch\Service())->fetchBatchById($batchId);

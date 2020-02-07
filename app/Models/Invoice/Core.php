@@ -1004,6 +1004,11 @@ class Core extends Base\Core
 
         Batch\Entity::verifyIdAndStripSign($batchId);
 
+        //
+        // This function is also used for cancel auth links via batch on
+        // admin auth. Since merchant is not available on admin auth,
+        // keeping $this->merchant ?? null explicitly.
+        //
         InvoiceBatchCancelJob::dispatch($this->mode, $batchId, $batch[Batch\Entity::SUCCESS_COUNT], $this->merchant ?? null);
     }
 
