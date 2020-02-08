@@ -2086,6 +2086,19 @@ trait Refund
                 ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
         }
 
+        if (($this->getPaymentRefundType($input) === Payment\RefundStatus::PARTIAL) and
+            (in_array($payment->getGateway(), Payment\Gateway::$partialRefundDisabledGateways) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_PARTIAL_REFUND_NOT_SUPPORTED,
+                null,
+                [
+                    'payment_id' => $payment->getId(),
+                    'gateway'    => $payment->getGateway(),
+                ]
+            );
+        }
+
         if ($payment->isCaptured() === false)
         {
             if ($this->merchant->isFeatureEnabled(Feature::VOID_REFUNDS) === true)

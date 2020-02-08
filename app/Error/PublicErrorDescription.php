@@ -446,6 +446,7 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
     const BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED                            = 'Void is not supported by the gateway';
     const BAD_REQUEST_REFUND_PARTIAL_VOID_NOT_SUPPORTED                         = 'Void is not supported for partial refunds';
+    const BAD_REQUEST_REFUND_PARTIAL_REFUND_NOT_SUPPORTED                       = 'Partial refunds are not supported by the gateway';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
     const BAD_REQUEST_PAYMENT_SUBSCRIPTION_NOT_RECURRING                        = 'Recurring is not set for the subscription payment';
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED                     = 'The subscription already has a token associated with it';

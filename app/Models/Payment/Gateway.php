@@ -1313,6 +1313,10 @@ class Gateway
         self::UPI_MINDGATE,
     ];
 
+    public static $partialRefundDisabledGateways = [
+        self::HDFC_DEBIT_EMI,
+    ];
+
     public static $authTypeToEmandateGatewayMap = [
         AuthType::NETBANKING  => [
             Gateway::NETBANKING_AXIS,
