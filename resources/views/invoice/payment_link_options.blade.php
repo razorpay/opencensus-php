@@ -402,6 +402,13 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
                                     </div>
                                     <div class="line-strike"></div>
 
+                                    @if($invoice_status === 'paid' && !$is_invoice_partial_payment)
+                                        <div class="info">
+                                            PAYMENT ID
+                                            <div class="val" style="text-transform:unset">{{$invoice_data['payment_id']}}</div>
+                                        </div>
+                                    @endif
+
                                 </div>
                                 @if($is_invoice_partial_payment && count($invoice_payments))
                                     <button class="btn-link showhistory" onclick="showPayHist()"> Show Payment History </button>
