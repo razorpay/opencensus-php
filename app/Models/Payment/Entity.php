@@ -57,6 +57,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
  * @property Emi\Entity             $emiPlan
+ * @property Customer\Entity        $customer
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
@@ -209,7 +210,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
     const BASE_CURRENCY                     = 'base_currency';
-    const PAYMENT_TIMEOUT_NACH              = 1296000;  // 15 Days
+    const PAYMENT_TIMEOUT_NACH              = 1728000;  // 20 Days
 
     // payment services
     const API                               = 0;
@@ -1339,6 +1340,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $this->setAttribute(self::FEE_BEARER, $feeBearer);
 
+    }
+
+    public function setBatchId($batchId)
+    {
+        $this->setAttribute(self::BATCH_ID, $batchId);
     }
 
     // ----------------------- Setters Ends-----------------------------------------
@@ -3554,6 +3560,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getPaymentResponseCacheKey(): string
     {
         return 'payment:response' . $this->getId() . '.cache';
+    }
+
+    public static function getTrackIdRequestKey(string $trackId): string
+    {
+        return 'track_id:request:'. $trackId . '.cache';
+    }
+
+    public static function getTrackIdResponseKey(string $trackId): string
+    {
+        return 'track_id:response:'. $trackId . '.cache';
     }
 
     public function getTransactionType()

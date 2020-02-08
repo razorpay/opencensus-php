@@ -68,6 +68,7 @@ trait SettlementTrait
                 [
                     'caption' => 'Settlement is not enabled',
                     'reason'  => 'Only active merchants can get settlements',
+                    'on_hold' => false,
                 ]
             ];
         }
@@ -86,6 +87,7 @@ trait SettlementTrait
                 [
                     'caption' => 'Settlements are on hold',
                     'reason'  => $merchant->getHoldFundsReason(),
+                    'on_hold' => true,
                 ]
             ];
         }
@@ -99,6 +101,7 @@ trait SettlementTrait
                 [
                     'caption' => 'Settlement will be skipped',
                     'reason'  => 'Settlements skipped based on merchant preference',
+                    'on_hold' => false,
                 ]
             ];
         }
@@ -137,6 +140,7 @@ trait SettlementTrait
                 [
                     'caption' => 'Settlement will be skipped',
                     'reason'  => 'Merchant doesnt have a active bank account registered',
+                    'on_hold' => false,
                 ]
             ];
         }
@@ -182,7 +186,8 @@ trait SettlementTrait
                     'reason'  => 'Bank account created yesterday. bank account was created/updated at '
                         . $createdAt
                         . '. It would require a day (except bank holidays)'
-                        . ' to register the same with our banking partners'
+                        . ' to register the same with our banking partners',
+                    'on_hold' => false,
                 ]
             ];
         }

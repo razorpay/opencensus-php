@@ -843,7 +843,7 @@ class VerifyTest extends TestCase
         $payment = $this->fixtures->create('payment', []);
 
         $payment->setAuthenticationGateway('google_pay');
-        $payment->setStatus(Payment\Status::CAPTURED);
+        $payment->setStatus(Payment\Status::AUTHORIZED);
 
         (new Payment\Repository)->saveOrFail($payment);
 
@@ -858,6 +858,62 @@ class VerifyTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($response['STATUS'], 'SUCCESS');
+    }
+
+    public function testVerifyGooglePayCardPaymentNotFound()
+    {
+        $payment = $this->fixtures->create('payment', []);
+
+        $payment->setAuthenticationGateway('google_pay');
+        $payment->setStatus(Payment\Status::AUTHORIZED);
+
+        (new Payment\Repository)->saveOrFail($payment);
+
+        $request = array(
+            'url'     => '/gateway/google_pay/verify',
+            'method'  => 'get',
+            'content' => [
+                'pgTransactionRefId' => 'pay_10000000000000',
+            ],
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            }
+        );
+    }
+
+
+    public function testVerifyGooglePayCardPaymentNotOfGooglePay()
+    {
+        $payment = $this->fixtures->create('payment', []);
+
+        $payment->setStatus(Payment\Status::AUTHORIZED);
+
+        (new Payment\Repository)->saveOrFail($payment);
+
+        $request = array(
+            'url'     => '/gateway/google_pay/verify',
+            'method'  => 'get',
+            'content' => [
+                'pgTransactionRefId' => 'pay_' . $payment['id'],
+            ],
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            }
+        );
     }
 
     public function testInvalidFilter()

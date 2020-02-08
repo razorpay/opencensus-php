@@ -103,8 +103,7 @@ class Core extends Base\Core
 
         $document->setEntityType();
 
-        $this->repo->transaction(function() use ($document, $merchant, $input, $merchantDetails)
-        {
+        $this->repo->transaction(function() use ($document, $merchant, $input, $merchantDetails) {
             $this->repo->saveOrFail($document);
 
             $param = [
@@ -143,13 +142,14 @@ class Core extends Base\Core
 
         foreach ($documentsResponse as $documentType => &$documentMetaData)
         {
-            foreach($documentMetaData as &$document)
+            foreach ($documentMetaData as &$document)
             {
                 $signedUrl = $detailService->getSignedUrl($document[Entity::FILE_STORE_ID], $merchantId);
 
                 $document[Entity::SIGNED_URL] = $signedUrl;
             }
         }
+
         return $documentsResponse;
     }
 
@@ -244,6 +244,7 @@ class Core extends Base\Core
                                             $ocrDetails,
                                             $document,
                                             $verificationData[Detail\Constants::OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME],
+                                            $verificationData[Detail\Constants::POA_FUZZY_MATCH_TYPE],
                                             $merchantDetails->getPromoterPanName());
     }
 
@@ -329,6 +330,7 @@ class Core extends Base\Core
                                                     array $ocrDetails,
                                                     Entity $document,
                                                     $ocrMatchingPercentage = 0,
+                                                    $ocrMatchType = null,
                                                     $promoterPanName = null)
     {
         $eventProperties = [
@@ -336,6 +338,7 @@ class Core extends Base\Core
             Constants::API_CALL_SUCCESSFUL     => $ocrDetails[Constants::SUCCESS] ?? false,
             Constants::VERIFIED                => ($document->getOcrVerify() === OcrVerificationStatus::VERIFIED),
             Constants::OCR_MATCHING_PERCENTAGE => $ocrMatchingPercentage,
+            Constants::OCR_MATCH_TYPE          => $ocrMatchType,
             Constants::OCR_MATCHING_THRESHOLD  => OcrVerificationStatus::OCR_VERIFICATION_THRESHOLD,
             Constants::OCR_NAME                => $ocrDetails[Constants::NAME] ?? null,
             Detail\Entity::PROMOTER_PAN_NAME   => $promoterPanName,

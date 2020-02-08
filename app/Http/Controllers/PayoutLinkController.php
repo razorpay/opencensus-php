@@ -18,6 +18,17 @@ class PayoutLinkController extends Controller
         return ApiResponse::json('Not Supported');
     }
 
+    public function getStatus(string $payoutLinkId)
+    {
+        $response = $this->service()->getStatus($payoutLinkId);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
     public function allowCors()
     {
         $response = ApiResponse::json([]);
@@ -119,6 +130,13 @@ class PayoutLinkController extends Controller
         $data = $this->service()->cancel($payoutLinkId);
 
         return ApiResponse::json($data);
+    }
+
+    public function pullPayoutStatus(string $payoutLinkId)
+    {
+        $response =$this->service()->pullPayoutStatus($payoutLinkId);
+
+        return ApiResponse::json($response);
     }
 
     private function addCorsHeaders(& $response)

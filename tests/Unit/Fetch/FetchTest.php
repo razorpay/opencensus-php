@@ -11,6 +11,7 @@ use RZP\Tests\Unit\MocksAppServices;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Http\BasicAuth\Type as AuthType;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class FetchTest extends TestCase
@@ -285,6 +286,9 @@ class FetchTest extends TestCase
             }
             catch (BadRequestException $e)
             {
+                //
+            }
+            catch(InvalidArgumentException $e){
                 //
             }
         }

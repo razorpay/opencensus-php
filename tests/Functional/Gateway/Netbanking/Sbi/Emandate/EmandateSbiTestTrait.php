@@ -188,22 +188,24 @@ trait EmandateSbiTestTrait
                 $amount = number_format($entity['payment']['amount'] / 100, '2', '.', '');
 
                 $items[] = [
-                    DebitFileHeadings::SERIAL_NUMBER            => $index + 1,
-                    DebitFileHeadings::EMANDATE_TYPE            => 'random',
-                    DebitFileHeadings::UMRN                     => '1234',
-                    DebitFileHeadings::SCHEME_NAME              => 'test Scheme',
-                    DebitFileHeadings::SUB_SCHEME_NAME          => 'test subScheme',
-                    DebitFileHeadings::MANDATE_HOLDER_NAME_RESP => 'Test Account',
-                    DebitFileHeadings::DEBIT_ACC_NO             => $entity['AccNo'] ?? '12345678901234',
-                    DebitFileHeadings::DEBIT_BANK_IFSC          => 'SBIN0000001',
-                    DebitFileHeadings::DEBIT_DATE_RESP          => Carbon::now(Timezone::IST)->format('d/m/Y'),
-                    DebitFileHeadings::AMOUNT                   => $amount,
-                    DebitFileHeadings::JOURNAL_NUMBER           => '',
-                    DebitFileHeadings::PROCESSING_DATE          => Carbon::now(Timezone::IST)->format('d/m/Y'),
-                    DebitFileHeadings::CUSTOMER_REF_NO          => $entity['payment']['id'],
-                    DebitFileHeadings::DEBIT_STATUS             => $entity['status'],
-                    DebitFileHeadings::CREDIT_STATUS            => '',
-                    DebitFileHeadings::REASON                   => $entity['return_reason'] ?? 'random reason'
+                    DebitFileHeadings::SERIAL_NUMBER             => $index + 1,
+                    DebitFileHeadings::UMRN                      => '1234',
+                    DebitFileHeadings::CUSTOMER_CODE             => 'test customer code',
+                    DebitFileHeadings::CUSTOMER_NAME             => 'test customer name',
+                    DebitFileHeadings::TRANSACTION_INPUT_CHANNEL => 'test channel',
+                    DebitFileHeadings::FILE_NAME                 => 'Test file',
+                    DebitFileHeadings::CUSTOMER_REF_NO           => $entity['payment']['id'],
+                    DebitFileHeadings::MANDATE_HOLDER_NAME       => 'Test Account',
+                    DebitFileHeadings::MANDATE_HOLDER_ACCOUNT_NO => $entity['AccNo'] ?? '12345678901234',
+                    DebitFileHeadings::DEBIT_BANK_IFSC           => 'SBIN0000001',
+                    DebitFileHeadings::DEBIT_DATE_RESP           => Carbon::now(Timezone::IST)->format('d/m/Y'),
+                    DebitFileHeadings::AMOUNT                    => $amount,
+                    DebitFileHeadings::JOURNAL_NUMBER            => '',
+                    DebitFileHeadings::PROCESSING_DATE           => Carbon::now(Timezone::IST)->format('d/m/Y'),
+                    DebitFileHeadings::DEBIT_STATUS              => $entity['status'],
+                    DebitFileHeadings::CREDIT_STATUS             => '',
+                    DebitFileHeadings::REASON                    => $entity['return_reason'] ?? 'random reason',
+                    DebitFileHeadings::CREDIT_DATE               => Carbon::now(Timezone::IST)->format('d/m/Y'),
                 ];
             }
         }

@@ -83,16 +83,19 @@ class Base extends BaseProcessor
 
     protected function getFormattedGatewayAmount($content)
     {
-        return number_format($content[self::AMOUNT], 2, '.', '');
+        return number_format($content[self::AMOUNT] / 100, 2, '.', '');
     }
 
     protected function updatePayment(Payment\Entity $payment, array $content)
     {
         if ($this->isAuthorized($content) === true)
         {
-            return $this->processAuthorizedPayment($payment);
+            $this->processAuthorizedPayment($payment);
         }
-        return $this->processFailedPayment($payment, $content);
+        else if ($this->isRejected($content) === true)
+        {
+            $this->processFailedPayment($payment, $content);
+        }
     }
 
     protected function processAuthorizedPayment(Payment\Entity $payment)

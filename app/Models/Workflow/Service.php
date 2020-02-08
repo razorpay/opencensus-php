@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Workflow;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Permission;
-use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Step;
+use RZP\Models\Workflow\Action;
+use RZP\Models\Admin\Permission;
 
 class Service extends Base\Service
 {
@@ -16,7 +18,9 @@ class Service extends Base\Service
 
         Permission\Entity::verifyIdAndStripSignMultiple($input[Entity::PERMISSIONS]);
 
-        $workflow = $this->core()->create($input);
+        $this->validateIfPayoutWorkflow($input);
+
+        $workflow = $this->core()->create($input, $this->merchant);
 
         return $this->convertDataToDashboardFormat(
             $workflow->toArrayPublic());
@@ -42,7 +46,7 @@ class Service extends Base\Service
     {
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $workflows = $this->repo->workflow->findByOrgId($orgId);
+        $workflows = $this->repo->workflow->findByOrgIdAndPermissionName($orgId, $input);
 
         return $workflows->toArrayPublic();
     }
@@ -134,5 +138,29 @@ class Service extends Base\Service
         $data[Entity::LEVELS] = $levelData;
 
         return $data;
+    }
+
+    public function validateIfPayoutWorkflow($input)
+    {
+        $orgId = $input[Entity::ORG_ID];
+
+        $permissions = $input[Entity::PERMISSIONS];
+
+        // Ensure that merchant id is also passed if create_payout permission is attached, otherwise not required
+        $createPayoutPerm = $this->repo
+                                 ->permission
+                                 ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, $orgId)
+                                 ->first();
+
+        $hasCreatePayoutPermission =  (in_array($createPayoutPerm, $permissions, true) === true);
+
+        if ($hasCreatePayoutPermission === true)
+        {
+            if (empty($this->merchant) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED);
+            }
+        }
     }
 }

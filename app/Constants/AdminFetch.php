@@ -278,7 +278,6 @@ class AdminFetch
                 ],
             ],
 
-            
             Entity::PAYMENTS_NBPLUS_NETBANKING => [],
 
             Entity::PAYMENTS_CARDS_AUTHORIZATION  => [
@@ -576,6 +575,10 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'account_number' => [
                     Fetch::LABEL => 'Account Number',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'type' => [
+                    Fetch::LABEL => 'Type',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
             ],
@@ -899,6 +902,12 @@ class AdminFetch
                 'vault_token' => [
                     Fetch::LABEL  => 'Vault Token',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::WORKFLOW_ACTION => [
+                'entity_id' => [
+                    Fetch::LABEL => 'Entity Id',
                 ],
             ],
 
@@ -1393,6 +1402,12 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
+            Entity::LEGAL_ENTITY => [
+                'external_id' => [
+                    Fetch::LABEL  => 'External ID',
+                ],
+            ],
+
             Entity::KEY => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
@@ -1524,6 +1539,9 @@ class AdminFetch
                         '4',
                         '5',
                     ],
+                ],
+                'external_id' => [
+                    Fetch::LABEL  => 'External ID',
                 ],
             ],
 
@@ -2217,6 +2235,10 @@ class AdminFetch
                 ],
             ],
 
+            Entity::MERCHANT_REQUEST => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::VIRTUAL_ACCOUNT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'balance_id' => Fetch::FIELD_BALANCE_ID,
@@ -2238,6 +2260,7 @@ class AdminFetch
                     Fetch::VALUES => [
                         'bank_account',
                         'qr_code',
+                        'vpa',
                     ],
                 ],
             ],

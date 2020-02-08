@@ -12,15 +12,14 @@ class AuthVerifyData extends Base\Mock\Server
     {
         $otp = $entities['gateway']['redirect']['otp'];
 
-        switch($otp)
-        {
+        switch ($otp) {
             case 111111:
                 $response = [
-                    'data' =>
+                    'data'              =>
                         [
                             'ValidateOtpErrorCode'    => '0000',
                             'ValidateOtpErrorMessage' => '',
-                            '_raw'   => '',
+                            '_raw'                    => '',
                         ],
                     'error'             => null,
                     'success'           => true,
@@ -47,6 +46,26 @@ class AuthVerifyData extends Base\Mock\Server
                     'external_trace_id' => '',
                 ];
         }
+
+        return $response;
+    }
+
+    public function paylater_icici($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'ResponseCode'          => '000',
+                    'MobileNumber'          => '93884739457',
+                    'AppName'               => 'MerchantName',
+                    'TransactionIdentifier' => '3479278',
+                    '_raw'                  => '',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
 
         return $response;
     }

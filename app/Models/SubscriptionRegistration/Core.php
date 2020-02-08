@@ -316,7 +316,7 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subr);
     }
 
-    public function chargeToken(string $id, array $input, Merchant\Entity $merchant)
+    public function chargeToken(string $id, array $input, Merchant\Entity $merchant, String $batchId = null)
     {
         $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
 
@@ -363,6 +363,7 @@ class Core extends Base\Core
             Payment\Entity::CUSTOMER_ID => $customer->getPublicId(),
             Payment\Entity::ORDER_ID    => $order->getPublicId(),
             Payment\Entity::RECURRING   => '1',
+            Payment\Entity::NOTES       => $input[Payment\Entity::NOTES] ?? []
         ];
 
         $this->trace->info(
@@ -376,7 +377,18 @@ class Core extends Base\Core
 
         $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
-        return $paymentProcessor->process($paymentInput);
+        $paymentData =  $paymentProcessor->process($paymentInput);
+
+        if(empty($batchId) === false)
+        {
+            $payment = $paymentProcessor->getPayment();
+
+            $payment->setBatchId($batchId);
+
+            $this->repo->save($payment);
+        }
+
+        return $paymentData;
     }
 
     public function getUploadedFileUrlByPaymentForNachMethod(Payment\Entity $payment)
@@ -610,11 +622,13 @@ class Core extends Base\Core
     {
         $result = [SubscriptionRegistrationConstants::SUCCESS => true];
 
-        $data   = (new PaperMandate\Core)->authenticate($subscriptionRegistration->paperMandate, $input);
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
+        $data   = (new PaperMandate\Core)->authenticate($paperMandate, $input);
 
         $fileId = $data[PaperMandate\Entity::UPLOADED_FILE_ID];
 
-        $signedUrl = (new PaperMandate\FileUploader)->getSignedUrl($fileId);
+        $signedUrl = (new PaperMandate\FileUploader($paperMandate))->getSignedUrl($fileId);
 
         $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
 
@@ -637,11 +651,13 @@ class Core extends Base\Core
     {
         $result = [SubscriptionRegistrationConstants::SUCCESS => true];
 
+        $paperMandate = $subscriptionRegistration->paperMandate;
+
         $data   = (new PaperMandate\Core)->validate($subscriptionRegistration->paperMandate, $input);
 
         $fileId = $data[PaperMandate\Entity::UPLOADED_FILE_ID];
 
-        $signedUrl = (new PaperMandate\FileUploader)->getSignedUrl($fileId);
+        $signedUrl = (new PaperMandate\FileUploader($paperMandate))->getSignedUrl($fileId);
 
         $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
 
@@ -665,7 +681,7 @@ class Core extends Base\Core
         $token = $subscriptionRegistration->token;
 
         if ((empty($input[Entity::SUCCEED]) === false) and
-            ($input[Entity::SUCCEED] === true))
+            (boolval($input[Entity::SUCCEED]) === true))
         {
             $this->updateTestTokenEntityRegister($token, Token\RecurringStatus::CONFIRMED);
         }
@@ -674,7 +690,7 @@ class Core extends Base\Core
             $this->updateTestTokenEntityRegister(
                 $token,
                 Token\RecurringStatus::REJECTED,
-                'rejected by npci'
+                'Drawers signature differs'
             );
         }
 

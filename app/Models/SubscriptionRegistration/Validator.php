@@ -16,6 +16,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
+    const EMANDATE_MAX_AMOUNT_LIMIT = 9999900;
+
     protected static $createRules = [
         Entity::EXPIRE_AT                       => 'sometimes|epoch',
         Entity::MAX_AMOUNT                      => 'sometimes|integer|nullable',
@@ -27,6 +29,7 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         Entity::AUTH_TYPE,
+        Entity::MAX_AMOUNT,
     ];
 
     protected static $autochargeRules = [
@@ -89,6 +92,31 @@ class Validator extends Base\Validator
         Entity::FORM_REFERENCE1 => 'sometimes|string',
         Entity::FORM_REFERENCE2 => 'sometimes|string',
     ];
+
+    public function validateMaxAmount(array $input)
+    {
+        $maxAmount = $input[Entity::MAX_AMOUNT] ?? null;
+
+        if ($maxAmount !== null)
+        {
+            $maxAmountLimit = self::EMANDATE_MAX_AMOUNT_LIMIT;
+
+            $authType = $input[Entity::AUTH_TYPE] ?? null;
+
+            if ($authType === Payment\AuthType::PHYSICAL)
+            {
+                $maxAmountLimit = PaperMandate\Validator::MAX_AMOUNT_LIMIT;
+            }
+
+            if ($maxAmount > $maxAmountLimit)
+            {
+                throw new BadRequestValidationFailureException(
+                    'The amount may not be greater than ' . $maxAmountLimit . '.',
+                    Entity::MAX_AMOUNT
+                );
+            }
+        }
+    }
 
     public function validateAuthType(array $input)
     {

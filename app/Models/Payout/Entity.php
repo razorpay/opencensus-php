@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -87,6 +88,7 @@ class Entity extends Base\PublicEntity
     const IDEMPOTENCY_KEY        = 'idempotency_key';
     const INITIATED_AT           = 'initiated_at';
     const PAYOUT_LINK_ID         = 'payout_link_id';
+    const PRICING_RULE_ID        = 'pricing_rule_id';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -239,6 +241,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::IDEMPOTENCY_KEY,
+        self::PRICING_RULE_ID,
     ];
 
     protected $public = [
@@ -786,6 +789,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FTS_TRANSFER_ID);
     }
 
+    public function getPricingRuleId()
+    {
+        return $this->getAttribute(self::PRICING_RULE_ID);
+    }
+
     public function hasTransaction()
     {
         return ($this->isAttributeNotNull(self::TRANSACTION_ID) === true);
@@ -857,9 +865,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
 
         // pushing a message in the queue to update the source for payout
-        $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
-        SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
+         SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
     }
 
     protected function setStatusAttribute($status)
@@ -994,6 +1002,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
     }
 
+    public function setPricingRuleId($pricingRuleId)
+    {
+        $this->setAttribute(self::PRICING_RULE_ID, $pricingRuleId);
+    }
+
     public function incrementAttempts()
     {
         $this->increment(self::ATTEMPTS);
@@ -1028,7 +1041,9 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        if (($basicAuth->getUser() === null) or
+        // Workflows are not enabled on test mode for now
+        if ((app('rzp.mode') === Mode::TEST) or
+            ($basicAuth->getUser() === null) or
             ($this->merchant === null) or
             ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === false))
         {
@@ -1057,7 +1072,9 @@ class Entity extends Base\PublicEntity
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 
-        if ($basicAuth->isStrictPrivateAuth() === true)
+        // Workflows are not enabled on test mode for now
+        if ((app('rzp.mode') === Mode::TEST) or
+            ($basicAuth->isStrictPrivateAuth() === true))
         {
             unset($attributes[self::WORKFLOW_HISTORY]);
 
@@ -1543,11 +1560,12 @@ class Entity extends Base\PublicEntity
             }
 
             $checkersData[] = [
-                'id'       => $checker['id'],
-                'user_id'  => $userData['id'],
-                'name'     => $userData['name'] ?? '',
-                'email'    => $userData['email'] ?? '',
-                'approved' => $checker['approved'],
+                'id'           => $checker['id'],
+                'user_id'      => $userData['id'],
+                'name'         => $userData['name'] ?? '',
+                'email'        => $userData['email'] ?? '',
+                'approved'     => $checker['approved'],
+                'user_comment' => $checker['user_comment'],
             ];
         }
 

@@ -58,6 +58,27 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function paylater_icici($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'ResponseCode'          => '000',
+                    'MobileNumber'          => '93884739457',
+                    'AppName'               => 'MerchantName',
+                    'TransactionIdentifier' => '3479278',
+                    'bank_payment_id'       => '1234567890',
+                    '_raw'                  => '',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
+
     public function upi_juspay($entities)
     {
         $response = [

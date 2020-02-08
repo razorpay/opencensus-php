@@ -24,4 +24,11 @@ class Repository extends Base\Repository
 
         return $upiTransfer;
     }
+
+    public function findByNpciReferenceId(string $npciReferenceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+                    ->first();
+    }
 }

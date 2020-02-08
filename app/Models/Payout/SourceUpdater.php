@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payout;
 
+use App;
+use RZP\Trace\TraceCode;
 use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Models\PayoutLink\Core as PayoutLinkCore;
 
@@ -29,6 +31,22 @@ class SourceUpdater
                                     string $previousStatus = null,
                                     string $expectedCurrentStatus = null)
     {
+        $payoutLink = $payout->payoutLink;
+
+        if ($payoutLink === null)
+        {
+            return;
+        }
+
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->info(TraceCode::PAYOUT_SOURCE_UPDATER_QUEUE_PUSH,
+                     [
+                         'payout_id'               => $payout->getPublicId(),
+                         'previous_status'         => $previousStatus,
+                         'expected_current_status' => $expectedCurrentStatus
+                     ]);
+
         PayoutSourceUpdaterJob::dispatch($mode,
                                          $payout->getPublicId(),
                                          $previousStatus,
@@ -44,8 +62,16 @@ class SourceUpdater
      * @param Entity $payout
      * @param string $previousPayoutStatus
      */
-    public static function handleUpdateFromQueue(Entity $payout, string $previousPayoutStatus = null)
+    public static function update(Entity $payout, string $previousPayoutStatus = null)
     {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->info(TraceCode::PAYOUT_SOURCE_UPDATER_PROCESSING,
+            [
+                'payout_id'              => $payout->getPublicId(),
+                'previous_payout_status' => $previousPayoutStatus
+            ]);
+
         $payoutLink = $payout->payoutLink;
 
         if (($payoutLink !== null) and

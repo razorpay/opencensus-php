@@ -236,6 +236,7 @@ function disableEmptyInputs(form) {
                 <option value="flexmoney">Flexmoney</option>
                 <option value="epaylater">EPayLater</option>
                 <option value="getsimpl">Simpl</option>
+                <option value="icic">Icici Paylater</option>
                 <option value="bajajfinserv">Bajaj Finserv</option>
             </select>
         </td>
@@ -394,7 +395,12 @@ function disableEmptyInputs(form) {
 
 <form name ="refund" method="post" action="//<?=$private_url?>/payments/">
 <input type="text" id="refund_id" placeholder="Enter payment id to refund"/>
-<input type="text" id="amount" name="amount" value="100"/><input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
+<input type="text" id="amount" name="amount" value="100"/>
+<select name="speed">
+    <option value="normal">Normal</option>
+    <option value="optimum">Optimum</option>
+</select>
+<input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
 </form>
 </div>
 </div>

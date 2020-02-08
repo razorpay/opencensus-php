@@ -814,6 +814,18 @@ return [
         ]
     ],
 
+    'testRefundWithNegativeBalanceMultipleBreach' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
     'testRefundWithNegativeBalanceAndReserveBalance' => [
         'request' => [
         ],

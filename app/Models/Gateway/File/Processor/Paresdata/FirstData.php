@@ -64,9 +64,15 @@ class FirstData extends Base
 
     public function fetchEntities(): PublicCollection
     {
-        $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->getTimestamp();
+        // if a file is created through cron, its begin & end is set automatically to previous day's starting date &
+        // ending date. There's no param to ignore this behaviour.
+        // for firstdata, we need to create file every hour since payments count is too high to accommodate lakhs of
+        // payments in one go. so, cron needs to be triggered every hour. but since the time will be set to previous day
+        // automatically, begin & end timestamps are being changed here instead based on cron hit time.
 
-        $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)->getTimestamp();
+        $begin = Carbon::createFromTimestamp($this->gatewayFile->getCreatedAt(), Timezone::IST)->subHour(1)->getTimestamp();
+
+        $end = Carbon::createFromTimestamp($this->gatewayFile->getCreatedAt(), Timezone::IST)->getTimestamp();
 
         $paymentIds = $this->repo->first_data->findPaymentIdsBetween($begin, $end);
 
@@ -97,7 +103,14 @@ class FirstData extends Base
         // increasing timeout to 10s for that.
         $this->cache->setConnection('default_with_high_timeout');
 
-        $data = $this->cache->many($ids);
+        $ids =  array_chunk($ids, 1000);
+
+        $data = [];
+
+        foreach ($ids as $chunk)
+        {
+            $data  += $this->cache->many($chunk);
+        }
 
         $this->trace->info(
             TraceCode::PAYMENTS_SELECTED,
@@ -200,8 +213,6 @@ class FirstData extends Base
 
     public function sendFile($data)
     {
-        $fileInfo = [];
-
         $files = $this->gatewayFile
                       ->files()
                       ->whereIn(FileStore\Entity::ID, $this->fileStoreIds)
@@ -209,43 +220,45 @@ class FirstData extends Base
 
         foreach ($files as $file)
         {
+            $fileInfo = [];
+
             $fullFileName = $file->getName() . '.' . $file->getExtension();
 
             $fileInfo[] = $fullFileName;
-        }
 
-        $data =  [
-            BeamService::BEAM_PUSH_FILES   => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::FIRST_DATA_PARES_FILE_JOB_NAME
-        ];
+            $data =  [
+                BeamService::BEAM_PUSH_FILES   => $fileInfo,
+                BeamService::BEAM_PUSH_JOBNAME => BeamConstants::FIRST_DATA_PARES_FILE_JOB_NAME
+            ];
 
-        // In seconds
-        $timelines = [900, 10 * 900, 20 * 900, 30 * 900, 100 * 900];
+            // In seconds
+            $timelines = [900, 10 * 900, 20 * 900, 30 * 900, 100 * 900];
 
-        $mailInfo = [
-            'fileInfo'  => $fileInfo,
-            'channel'   => 'tech_alerts',
-            'filetype'  => FileStore\Type::FIRST_DATA_PARES_FILE,
-            'subject'   => 'File Send failure',
-            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::GATEWAY_POD]
-        ];
+            $mailInfo = [
+                'fileInfo'  => $fileInfo,
+                'channel'   => 'tech_alerts',
+                'filetype'  => FileStore\Type::FIRST_DATA_PARES_FILE,
+                'subject'   => 'File Send failure',
+                'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::GATEWAY_POD]
+            ];
 
-        try
-        {
-            $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+            try
+            {
+                $this->app['beam']->beamPush($data, $timelines, $mailInfo);
 
-            $this->gatewayFile->setFileSentAt(Carbon::now()->getTimestamp());
+                $this->gatewayFile->setFileSentAt(Carbon::now()->getTimestamp());
 
-            $this->gatewayFile->setStatus(Status::FILE_SENT);
-        }
-        catch (\Throwable $e)
-        {
-            throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
-                [
-                    'id'    => $this->gatewayFile->getId(),
-                    'data'  => $fileInfo
-                ],
-                $e);
+                $this->gatewayFile->setStatus(Status::FILE_SENT);
+            }
+            catch (\Throwable $e)
+            {
+                throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
+                    [
+                        'id'    => $this->gatewayFile->getId(),
+                        'data'  => $fileInfo
+                    ],
+                    $e);
+            }
         }
     }
 }

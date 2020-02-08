@@ -160,6 +160,8 @@ class Processor
      */
     const SECURE_3D_INTERNATIONAL = 'secure_3d_international';
 
+    const FINGERPRINT_MIGRATION_CACHE_KEY = 'fingerprint_migration';
+
     /**
      * @var Merchant\Entity
      */
@@ -309,6 +311,8 @@ class Processor
 
             $payment = $this->payment;
 
+            $this->eventPaymentCreated();
+
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
@@ -340,6 +344,15 @@ class Processor
 
             throw $e;
         }
+    }
+
+    protected function eventPaymentCreated()
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $this->payment,
+        ];
+
+        $this->app['events']->fire('api.payment.created', $eventPayload);
     }
 
     protected function appendMetadataForPayment(array & $input)
@@ -663,6 +676,21 @@ class Processor
                 $input['payment'] = $payment->toArray();
 
                 $input['contact'] = $payment['contact'];
+                break;
+
+            case PayLater::ICICI:
+                $gateway = Payment\Gateway::PAYLATER_ICICI;
+
+                $payment = $this->repo->transaction(function() use ($input, $payment)
+                {
+                    $payment = $this->createPaymentEntity($input, $payment);
+                    $payment->setBaseAmount($payment->getAmount());
+                    return $payment;
+                });
+
+                $input['payment'] = $payment->toArray();
+
+
                 break;
 
             default:
@@ -1975,9 +2003,17 @@ class Processor
 
         $gateway = $this->payment->getGateway();
 
-        if(($gateway === Payment\Gateway::PAYLATER) and ($this->payment->getWallet() === Payment\Gateway::GETSIMPL))
+        if($gateway === Payment\Gateway::PAYLATER)
         {
-            $gateway = Payment\Gateway::GETSIMPL;
+            switch ($this->payment->getWallet())
+            {
+                case Payment\Gateway::GETSIMPL:
+                    $gateway = Payment\Gateway::GETSIMPL;
+                    break;
+                case PayLater::ICICI:
+                    $gateway = Payment\Gateway::PAYLATER_ICICI;
+                    break;
+            }
         }
 
         $gatewayData['terminal'] = $terminal;
@@ -3025,6 +3061,10 @@ class Processor
         {
             $refundAt = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
         }
+        else if ($payment->isNach() === true)
+        {
+            $refundAt = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH;
+        }
 
         $this->trace->info(
             TraceCode::AUTO_CAPTURE_REFUND_DELAY,
@@ -3581,6 +3621,9 @@ class Processor
                 //
                 $coproto = $this->preProcessGetSimplCoproto($response, $input, $payment, $merchant);
                 break;
+
+            case PayLater::ICICI:
+                return;
 
             default:
                 (new Customer\Raven)->sendOtp($input, $merchant);

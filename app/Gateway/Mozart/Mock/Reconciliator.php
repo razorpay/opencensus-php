@@ -227,6 +227,38 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         return $formattedData;
     }
 
+    protected function paylater_icici($input)
+    {
+        $this->fileExtension = FileStore\Format::TXT;
+
+        $this->fileToWriteName = 'razorpayreports';
+
+        $data = [];
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('d-m-Y');
+            $col = [
+                'ITC'       => $row['payment']['id'],
+                'PRN'       => $row['payment']['id'],
+                'BID'       => 99999,
+                'amount'    => $row['payment']['amount'] / 100,
+                'Date'      => $date,
+            ];
+
+            $this->content($col, 'col_payment_icici_paylater_recon');
+
+            $data[] = $col;
+        }
+
+    $formattedData = $this->generateText($data, ',');
+
+    return $formattedData;
+    }
+
     protected function netbanking_cbi($input)
     {
         $this->fileExtension = FileStore\Format::TXT;
@@ -317,18 +349,17 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
             $gatewayData = json_decode($row['mozart']['raw'], true);
 
             $col = [
-                'Dealer ID'                           => $row['payment']['id'],
-                'Type of Txn'                         => 'Sale',
-                'RRN'                                 => $gatewayData['DealID'],
-                'Transaction Date'                    => $date,
-                'Disbursement Date'                   => $date,
-                'Amount Financed (Rs) '               => (string)ceil($row['payment']['amount'] / 100) . '.00',
-                'Scheme Desc'                         => '123445',
-                'Interest Subsidy including GST (Rs)' => 2233,
-                'Interest Subsidy (%)+GST'            => '6.00%',
-                'Net Disb. Amount (Rs)'               => 2233,
-                'UTR No'                              => '911082787695',
-                'Asset Serial Number/IMEI'            => $row['payment']['id'],
+                'date'                        => $date,
+                'order_id'                    => $row['payment']['id'],
+                'deal_id'                     => $gatewayData['DealID'],
+                'gross_loan_amount'           => (string)ceil($row['payment']['amount'] / 100),
+                'net_tenor'                   => 6,
+                'scheme_code'                 => 141030,
+                'transaction_type'            => 'SALE-APPROVED',
+                'case_sourceaquiring_channel' => 'ECOM',
+                'merchant_code'               => 565968,
+                'merchant_name'               => 'RAZORPAY SOFTWARE PRIVATEBANGALORE IN',
+                'product'                     => 'ECF',
             ];
 
             $this->content($col, 'col_payment_bfl_recon');

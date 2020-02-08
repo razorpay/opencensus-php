@@ -48,7 +48,7 @@ class FreechargeWorldlineOnboardingDetails
             self::CREDIT_CARD_PREMIUM_OFFUS     => '0.006',
             self::CREDIT_CARD_NON_PREMIUM_ONUS  => '0.006',
             self::CREDIT_CARD_NON_PREMIUM_OFFUS => '0.006',
-            self::AXIS_UPI_MSF_L20K             => '0.0065',
+            self::AXIS_UPI_MSF_L20K             => '0',
             self::AXIS_UPI_MSF_G20K             => '0.0065',
             self::QR_CODE_BASE_TXNS_ONUS        => '0.004',
             self::QR_CODE_BASE_TXNS_OFFUS       => '0.004'
@@ -62,7 +62,7 @@ class FreechargeWorldlineOnboardingDetails
             self::CREDIT_CARD_PREMIUM_OFFUS     => '0.004',
             self::CREDIT_CARD_NON_PREMIUM_ONUS  => '0.004',
             self::CREDIT_CARD_NON_PREMIUM_OFFUS => '0.004',
-            self::AXIS_UPI_MSF_L20K             => '0.0065',
+            self::AXIS_UPI_MSF_L20K             => '0',
             self::AXIS_UPI_MSF_G20K             => '0.0065',
             self::QR_CODE_BASE_TXNS_ONUS        => '0.004',
             self::QR_CODE_BASE_TXNS_OFFUS       => '0.004'
@@ -76,7 +76,7 @@ class FreechargeWorldlineOnboardingDetails
             self::CREDIT_CARD_PREMIUM_OFFUS     => '0.003',
             self::CREDIT_CARD_NON_PREMIUM_ONUS  => '0.003',
             self::CREDIT_CARD_NON_PREMIUM_OFFUS => '0.003',
-            self::AXIS_UPI_MSF_L20K             => '0.0065',
+            self::AXIS_UPI_MSF_L20K             => '0',
             self::AXIS_UPI_MSF_G20K             => '0.0065',
             self::QR_CODE_BASE_TXNS_ONUS        => '0.004',
             self::QR_CODE_BASE_TXNS_OFFUS       => '0.004'
@@ -92,7 +92,6 @@ class FreechargeWorldlineOnboardingDetails
         self::SECODE        => '2132323', 
         self::PRICECATE     => 'Other',
         self::MONTHRENTFEE  => '0',
-        self::YEARRENTFEE   => '250.00', 
         self::SETUPFEE      => '0',
         self::OTHERFEE      => '250.00',
         self::PAYBY         => 'NEFT',

@@ -57,7 +57,7 @@ class Gateway extends Base\Gateway
         ]
     ];
 
-    protected $nonVerifyRefundProviders = [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY];
+    protected $nonVerifyRefundProviders = [CardlessEmi::EARLYSALARY];
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -1096,9 +1096,11 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getVerifyRefundRequestContent($input);
 
+        $traceRequest = $this->stripSensitiveHeader($request);
+
         $this->trace->info(TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
             [
-                'request'   => $request,
+                'request'   => $traceRequest,
                 'gateway'   => $this->gateway,
                 'provider'  => $this->provider,
             ]);

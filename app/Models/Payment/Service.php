@@ -20,6 +20,7 @@ use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Card;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
@@ -277,6 +278,13 @@ class Service extends Base\Service
     {
         $traceData = ['track_id' => $id];
 
+        $data = $this->checkMultipleRedirectionAndReturnResponse($id);
+
+        if ($data != null)
+        {
+            return $data;
+        }
+
         $this->trace->info(TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST, $traceData);
 
         $payment = null;
@@ -284,6 +292,8 @@ class Service extends Base\Service
         try
         {
             list($merchant, $payment) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
+
+            $this->markFirstRequestIfApplicable($merchant, $id);
 
             $response = $this->getResponseDataFromCache($payment);
 
@@ -301,7 +311,9 @@ class Service extends Base\Service
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, $traceData);
 
-            $this->cacheResponseData($payment, $response);
+            $this->cachePaysecureResponseDataIfApplicable($payment, $response);
+
+            $this->cacheResponseIfApplicable($id, $merchant, $response);
 
             return $response;
         }
@@ -318,6 +330,55 @@ class Service extends Base\Service
 
             throw $e;
         }
+    }
+
+    protected function checkMultipleRedirectionAndReturnResponse(string $trackId)
+    {
+        $trackIdKey = Payment\Entity::getTrackIdRequestKey($trackId);
+
+        $data = $this->app['cache']->get($trackIdKey);
+
+        if (empty($data) === true)
+        {
+            return null;
+        }
+
+        $responseKey = Payment\Entity::getTrackIdResponseKey($trackId);
+
+
+        $this->trace->info(TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_ONHOLD,
+        [
+            'track_id' => $trackId
+        ]);
+
+        // we wait for 5 seconds, every second, we check cache whether the first request got processed or not. if it's processed we return the response.
+        $delay = 1;
+        do
+        {
+            // usleep works on microsec. delay is in millisec so multiply by 1000
+            usleep(1000000);
+
+            $data = $this->app['cache']->get($responseKey);
+
+            if (empty($data) === false)
+            {
+                $this->setRequiredDetailsGetMerchantAndPaymentId($trackId);
+                return $data;
+            }
+
+            $data = $this->app['cache']->get($trackIdKey);
+
+            if (empty($data) === true)
+            {
+                return null;
+            }
+
+            $delay = $delay + 1;
+
+        }
+        while ($delay <= 5);
+
+        return null;
     }
 
     protected function getResponseDataFromCache($payment)
@@ -341,7 +402,19 @@ class Service extends Base\Service
         return  $data;
     }
 
-    protected function cacheResponseData($payment, $data)
+    protected function cacheResponseIfApplicable($trackId, $merchant, $data)
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::REDIRECTION_ONHOLD) === false)
+        {
+            return;
+        }
+
+        $responseKey = Payment\Entity::getTrackIdResponseKey($trackId);
+
+        $this->app['cache']->put($responseKey, $data, Processor\Processor::REDIRECT_CACHE_RESPONSE_TTL);
+    }
+
+    protected function cachePaysecureResponseDataIfApplicable($payment, $data)
     {
         if ($payment->getGateway() !== Gateway::PAYSECURE)
         {
@@ -417,6 +490,29 @@ class Service extends Base\Service
         return [$merchant, $payment];
     }
 
+    public function markFirstRequestIfApplicable($merchant, $trackId)
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::REDIRECTION_ONHOLD) === false)
+        {
+            return;
+        }
+
+        $trackIdKey = Payment\Entity::getTrackIdRequestKey($trackId);
+
+        // this code is for marking that we have recieved the first request.
+        // TTL is for 10 seconds, if we receive subsequent request before this key
+        // expires we hold that thread and wait for the first request response.
+        // hold that thread to wait for 5 sec and check the first request response.
+         $this->trace->info(
+            TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_FIRST_REQUEST,
+            [
+                "track_id" => $trackId,
+            ]
+         );
+
+        // put method multiplies $ttl with 60 hence, 0.17 * 60 = 9.6 sec
+        $this->app['cache']->put($trackIdKey, $trackIdKey, 0.17);
+    }
     public function forceAuthorizeFailed($id, $input)
     {
         $payment = $this->core->retrieveById($id);
@@ -2111,9 +2207,21 @@ class Service extends Base\Service
 
         $payments = $cards = $cardsWithoutFingerprint = [];
 
-        if($migrateMissingFingerprintCards)
+        $startTime = $this->app['cache']->get(Processor\Processor::FINGERPRINT_MIGRATION_CACHE_KEY, 1546300800);
+
+        $timeWindow = $input['time_window'] ?? 86400;
+
+        if($migrateMissingFingerprintCards and $startTime < time())
         {
-            $cardsWithoutFingerprint = $this->repo->card->findCardsWithoutFingerprint($limit);
+            $cardsWithoutFingerprint = $this->repo->card->findCardsWithoutFingerprint($limit, $startTime, $timeWindow);
+
+            // Update start time in redis if no records are found for migration in the window
+            if (count($cardsWithoutFingerprint) === 0)
+            {
+                $startTime = $startTime + $timeWindow;
+
+                $this->app['cache']->forever(Processor\Processor::FINGERPRINT_MIGRATION_CACHE_KEY, $startTime);
+            }
         }
         else
         {
@@ -2129,6 +2237,8 @@ class Service extends Base\Service
             [
                 'payments_count' => count($payments),
                 'cards_count'    => count($cards) + count($cardsWithoutFingerprint),
+                'start_time'     => $startTime,
+                'end_time'       => $startTime + $timeWindow,
             ]);
 
         $result = [

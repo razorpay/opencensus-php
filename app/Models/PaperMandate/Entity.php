@@ -182,7 +182,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return (new FileUploader)->getSignedShortUrl(
+        return (new FileUploader($this))->getSignedShortUrl(
             $generatedFileId,
             Constants::MAX_SIGNED_URL_TIMEOUT
         );
@@ -197,7 +197,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return (new FileUploader)->getSignedShortUrl($uploadedFileId);
+        return (new FileUploader($this))->getSignedShortUrl($uploadedFileId);
     }
 
     public function getTerminalId()

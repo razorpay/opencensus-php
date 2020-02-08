@@ -109,6 +109,7 @@ class Gateway
     const CARDLESS_EMI       = 'cardless_emi';
     const PAYLATER           = 'paylater';
     const GETSIMPL           = 'getsimpl';
+    const PAYLATER_ICICI     = 'paylater_icici';
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -167,18 +168,19 @@ class Gateway
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
-        self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC, self::ACQUIRER_YESB],
         self::FIRST_DATA   => [self::ACQUIRER_ICIC],
-        self::AMEX           => [self::ACQUIRER_AMEX],
-        self::AEPS_ICICI     => [self::ACQUIRER_ICIC],
-        self::CARD_FSS       => [self::ACQUIRER_FSS, self::ACQUIRER_BARB, self::ACQUIRER_SBIN],
-        self::HITACHI        => [self::ACQUIRER_RATN],
-        self::ENACH_RBL      => [self::ACQUIRER_RATN],
-        self::UPI_HULK       => [self::ACQUIRER_HDFC],
-        self::CARDLESS_EMI   => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
-        self::PAYLATER       => [PayLater::EPAYLATER, PayLater::GETSIMPL],
-        self::WORLDLINE      => [self::ACQUIRER_AXIS],
-        self::MPGS           => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
+        self::AMEX         => [self::ACQUIRER_AMEX],
+        self::AEPS_ICICI   => [self::ACQUIRER_ICIC],
+        self::CARD_FSS     => [self::ACQUIRER_FSS, self::ACQUIRER_BARB, self::ACQUIRER_SBIN],
+        self::HITACHI      => [self::ACQUIRER_RATN],
+        self::ENACH_RBL    => [self::ACQUIRER_RATN],
+        self::UPI_HULK     => [self::ACQUIRER_HDFC],
+        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
+        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI],
+        self::WORLDLINE    => [self::ACQUIRER_AXIS],
+        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
+        self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
     ];
 
     const POWER_WALLETS = [
@@ -368,7 +370,6 @@ class Gateway
         IFSC::SCBL,
         IFSC::TMBL,
         IFSC::USFB,
-        IFSC::UTBI,
         IFSC::UTIB,
         IFSC::YESB,
         Netbanking::PUNB_R,
@@ -392,7 +393,6 @@ class Gateway
         IFSC::MAHB,
         IFSC::SIBL,
         IFSC::USFB,
-        IFSC::UTBI,
         IFSC::YESB,
         Netbanking::PUNB_R,
         IFSC::SBIN,
@@ -889,6 +889,7 @@ class Gateway
         self::NETBANKING_AXIS,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_SBI,
+        self::NACH_CITI,
     ];
 
     /**
@@ -1637,6 +1638,7 @@ class Gateway
         IFSC::CIUB => Gateway::NETBANKING_CUB,
         IFSC::SIBL => Gateway::NETBANKING_SIB,
         IFSC::YESB => Gateway::NETBANKING_YESB,
+        IFSC::KVBL => Gateway::NETBANKING_KVB,
     ];
 
 

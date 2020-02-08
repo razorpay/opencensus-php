@@ -99,6 +99,7 @@ return [
         'google_pay',
         'getsimpl',
         'worldline',
+        'paylater_icici',
         'hdfc_debit_emi',
     ],
 
@@ -179,6 +180,7 @@ return [
     'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),
     'mock_wallet_phonepe'         => env('PHONEPE_MOCK'),
     'mock_getsimpl'               => env('GETSIMPL_MOCK'),
+    'mock_paylater_icici'         => env('PAYLATER_ICICI_MOCK'),
     'mock_wallet_paypal'          => env('PAYPAL_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
     'mock_upi_juspay'             => env('UPI_JUSPAY_MOCK'),

@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Models\User;
 use RZP\Models\Batch;
+use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
@@ -124,6 +125,9 @@ class CreatePayoutsTable extends Migration
                   ->unique();
 
             $table->string(Payout::REMARKS)
+                  ->nullable();
+
+            $table->char(Payout::PRICING_RULE_ID, Pricing\Entity::ID_LENGTH)
                   ->nullable();
 
             $table->integer(Payout::PROCESSED_AT)

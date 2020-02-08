@@ -42,6 +42,7 @@ class MailTags
     const AIRTEL_MONEY_REFUNDS_MAIL             = 'airtel_money_refunds_mail';
     const AIRTEL_MONEY_FAILED_REFUNDS_MAIL      = 'airtel_money_failed_refunds_mail';
     const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';
+    const ICICI_PAYLATER_REFUNDS_MAIL           = 'icici_paylater_refunds_mail';
     const INDIAN_BANK_NETBANKING_REFUNDS_MAIL   = 'indianbank_netbanking_refunds_mail';
     const CBI_NETBANKING_REFUNDS_MAIL           = 'cbi_netbanking_refunds_mail';
     const CANARA_NETBANKING_REFUNDS_MAIL        = 'canara_netbanking_refunds_mail';
@@ -182,6 +183,9 @@ class MailTags
     const NEGATIVE_BALANCE_THRESHOLD_ALERT              = 'negative_balance_threshold_alert';
     const BALANCE_NEGATIVE_ALERT                        = 'balance_negative_alert';
     const BALANCE_POSITIVE_ALERT                        = 'balance_positve_alert';
+
+    //Merchant Invoice tags
+    const MERCHANT_INVOICE_EXECUTION_SUMMARY            = 'merchant_invoice_execution_summary';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

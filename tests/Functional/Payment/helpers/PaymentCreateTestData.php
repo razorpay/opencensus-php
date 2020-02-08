@@ -448,5 +448,57 @@ return [
             'library'               => 'custom',
             'library_version'       => '3.6.0'
         ],
-    ]
+    ],
+
+    'testPaymentS2SJsonPrivateAuthUPIIntent' => [
+        'request' => [
+            'url' => '/payments/create/json',
+            'method' => 'POST',
+            'content' => [
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'contact'       => '9999999999',
+                'email'         => 'a@b.com',
+                'description'   => 'description',
+                'notes'         => [
+                    'key'   => 'value'
+                ],
+                '_'  => [
+                    'flow'      => 'intent'
+                ],
+                'method'        =>  'upi',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testPaymentS2SJsonPrivateAuthUPIVpa' => [
+        'request' => [
+            'url' => '/payments/create/json',
+            'method' => 'POST',
+            'content' => [
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'contact'       => '9999999999',
+                'email'         => 'a@b.com',
+                'description'   => 'description',
+                'notes'         => [
+                    'key'   => 'value'
+                ],
+                'vpa'           =>  'dontencrypt@icici',
+                'method'        =>  'upi',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
 ];

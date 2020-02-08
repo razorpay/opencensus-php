@@ -151,6 +151,8 @@ class ErrorCodeMapping
         'INVALID_BENEFICIARY_ACCOUNT'    => 'Invalid Beneficiary Account. Please check and retry.',
         'TECHNICAL_ERROR_FAILURE'        => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
         'PBANK_BENE_NOT_REGISTERED'      => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
+        'TXN_TIMEOUT_FAILURE'            => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
+        'PBANK_GATEWAY_THROTTLED'        => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
     ];
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)

@@ -15,13 +15,18 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
+    //temporary fix as this part has to be shifted to shield
+    private const BLACKLISTED_ACCOUNTS = [
+        '4104115000012344', '1921238323624830', '31260200000646', '201002552973'
+    ];
+
     const INVALID_IFSC_CODE_MESSAGE         = 'Invalid IFSC Code in Bank Account';
     const INVALID_ADDRESS_PROOF_URL_MESSAGE = 'Invalid Address Proof File in Details or Invalid Auth';
 
     protected static $addBankAccountRules = [
         Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes',
         Entity::IFSC_CODE                       => 'required|alpha_num|size:11',
-        Entity::ACCOUNT_NUMBER                  => 'required|regex:/^[a-zA-Z0-9-]+$/|between:5,22',
+        Entity::ACCOUNT_NUMBER                  => 'required|regex:/^[a-zA-Z0-9-]+$/|between:5,22|custom',
         Entity::BENEFICIARY_NAME                => 'required|between:4,120|string',
         Entity::ACCOUNT_TYPE                    => 'sometimes|nullable|string|custom',
         Entity::BENEFICIARY_ADDRESS1            => 'sometimes|max:30',
@@ -40,7 +45,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::ACCOUNT_NUMBER      => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,22',
+        Entity::ACCOUNT_NUMBER      => 'sometimes|regex:/^[a-zA-Z0-9-]+$/|between:5,22|custom',
         Entity::BENEFICIARY_NAME    => 'sometimes|between:4,120|string|custom',
     ];
 
@@ -211,5 +216,21 @@ class Validator extends Base\Validator
                     'account_type' => $value
                 ]);
         }
+    }
+
+    public function validateAccountNumber($attribute, $bankAccountNumber)
+    {
+        if(self::isBlacklistedAccountNumber($bankAccountNumber))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_BANK_ACCOUNT);
+        }
+    }
+
+    public static function isBlacklistedAccountNumber($bankAccountNumber): bool
+    {
+        return (
+            in_array($bankAccountNumber, self::BLACKLISTED_ACCOUNTS, true) === true
+        );
     }
 }

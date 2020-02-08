@@ -31,6 +31,8 @@ use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 /**
  * @group dns-sensitive
+ *
+ * todo, need to add test cases for VA Emails (https://razorpay.atlassian.net/browse/RX-1025)
  */
 class ActivationTest extends OAuthTestCase
 {
@@ -1603,7 +1605,6 @@ class ActivationTest extends OAuthTestCase
 
         FundAccountValidation::dispatch('test', $fav['id']);
 
-
         $merchant  = $this->getDbEntityById('merchant', $merchantDetail['merchant_id']);
 
         $merchantDetail = $merchant->merchantDetail;
@@ -1611,6 +1612,40 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals($merchantDetail->getBankDetailsVerificationStatus(), 'verified');
 
         $this->assertEquals($merchantDetail->getActivationStatus(), 'activated');
+    }
+
+    public function testSuccessJumbledBankDetailsVerification()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'           => 2,
+                                                   'promoter_pan_name'       => 'mr vijay laxmi subramaniam',
+                                                   'bank_account_name'       => 'mr subramaniam laxmi vijay',
+                                                   'poa_verification_status' => 'verified',
+                                                   'poi_verification_status' => 'verified',
+                                                   'submitted'               => 1,
+                                                   'submitted_at'            => now()->getTimestamp()]);
+
+        $attribute = [
+            ValidationEntity::REGISTERED_NAME => "vijay laxmi subramaniam",
+            ValidationEntity::ACCOUNT_STATUS  => "active",
+            ValidationEntity::NOTES           => [
+                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
+            ],
+        ];
+
+        $this->fixtures->create('fund_account_validation', $attribute);
+
+        $fav = $this->getLastEntity('fund_account_validation', true, 'test');
+
+        FundAccountValidation::dispatch('test', $fav['id']);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantDetail['merchant_id']);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals('verified', $merchantDetail->getBankDetailsVerificationStatus());
+
+        $this->assertEquals('activated', $merchantDetail->getActivationStatus());
     }
 
     public function testFailureBankDetailsVerification()
