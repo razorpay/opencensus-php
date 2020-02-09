@@ -247,11 +247,12 @@ class Entity extends Base\PublicEntity
     /**
      * Only this method should be public
      * for updating balance.
-     * We need to check for balance going negative
+     * We need to check for balance going less than $negativeLimit
      * whenever we update balance
      *
      * @param \RZP\Models\Transaction\Entity $txn
      * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
      */
     public function updateBalance($txn, bool $negativeBalanceEnabled = false)
     {

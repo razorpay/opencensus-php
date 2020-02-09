@@ -183,6 +183,8 @@ class MailTags
     const NEGATIVE_BALANCE_THRESHOLD_ALERT              = 'negative_balance_threshold_alert';
     const BALANCE_NEGATIVE_ALERT                        = 'balance_negative_alert';
     const BALANCE_POSITIVE_ALERT                        = 'balance_positve_alert';
+    const RESERVE_BALANCE_ACTIVATED                     = 'reserve_balance_activated';
+
 
     //Merchant Invoice tags
     const MERCHANT_INVOICE_EXECUTION_SUMMARY            = 'merchant_invoice_execution_summary';
