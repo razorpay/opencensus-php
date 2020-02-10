@@ -409,6 +409,76 @@ class WebhookTest extends TestCase
             $this->assertArrayHasKey('webhook_id', $data);
             $this->assertArrayHasKey('created_at', $data['event']);
 
+            $paymentArray = $data['event']['payload']['payment']['entity'];
+            $this->assertArrayNotHasKey('terminal_id', $paymentArray);
+
+            return true;
+        });
+
+        $order = $this->fixtures->create('order',
+                    [
+                        'id'              => '100000000order',
+                        'receipt'         => 'random',
+                        'payment_capture' => true,
+                    ]);
+
+        $this->fixtures->create('invoice', ['amount' => 1000000]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $order->getAmount();
+
+        $this->doAuthPayment($payment);
+    }
+
+     /**
+     * If partner parent has feature "terminal_onboarding" enabled, then only payment entity should have terminal_id key
+     */
+    public function testPaymentWebhookShouldHaveTerminalIdForFeaturedPartner()
+    {
+        $partner = $this->fixtures->create('merchant');
+
+        $partnerId = $partner->getId();
+
+        $this->fixtures->edit('merchant', $partnerId, ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => '10000000000000',
+            'entity_owner_id' => $partnerId,
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $this->fixtures->merchant->addFeatures(
+            [Feature\Constants::TERMINAL_ONBOARDING],
+            $partnerId
+        );
+
+        $this->fixtures->create('webhook',
+        [
+            'entity_type' => 'application',
+            'entity_id'   => '10000000000App',
+            'url'         => 'https://www.razorpay.co.in',
+            'events'      => [
+                'invoice.paid' => '1'
+            ]
+        ]);
+
+        $testData = $this->testData['testInvoicePaidWebhookEventData'];
+
+        $testData['event']['payload']['payment']['entity']['terminal_id'] = 'term_1n25f6uN5S1Z5a';
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+
             return true;
         });
 

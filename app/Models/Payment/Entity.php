@@ -353,6 +353,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
         self::FEE_BEARER,
+        self::TERMINAL_ID,
     ];
 
     protected $public = [
@@ -365,6 +366,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
+        self::TERMINAL_ID,
         self::INTERNATIONAL,
         self::METHOD,
         self::REFUNDS,
@@ -461,6 +463,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
         self::ACCOUNT_ID,
+        self::TERMINAL_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -2656,6 +2659,40 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $reference;
+    }
+
+    /**
+     * Partners who can onboard terminals would want to see terminal_id associated in their payments entity
+     */
+    public function setPublicTerminalIdAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        $router = $app['router'];
+        
+        // Do not unset terminal_id for privileged auth as its currently being used in unit tests etc
+        // Unset terminal_id for bank_transfer_process route as it leads to external merchants receiving webhook
+        if (($auth->isPrivilegeAuth() === true) and ($router->currentRouteName() !== 'bank_transfer_process'))
+        {
+            return;
+        }
+
+        $merchant = $this->merchant;
+
+        if ($merchant->isFeatureEnabledOnNonPurePlatformPartner(Feature\Constants::TERMINAL_ONBOARDING) === true)
+        {
+            $terminalId = $this->getTerminalId();
+
+            $signedTerminalId = isset($terminalId) ? (new Terminal\Entity())->getSignedId($terminalId) : null; 
+
+            $array[self::TERMINAL_ID] = $signedTerminalId;
+
+            return;
+        }
+
+        unset($array[self::TERMINAL_ID]);
     }
 
     /**
