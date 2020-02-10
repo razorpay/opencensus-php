@@ -38,7 +38,7 @@ class Service extends Base\Service
 
         $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
 
-//        $this->logActionToSlack($merchant, SlackActions::ADD_ADJUSTMENT, $input);
+        $this->logActionToSlack($merchant, SlackActions::ADD_ADJUSTMENT, $input);
 
         return $adj->toArrayPublic();
     }
