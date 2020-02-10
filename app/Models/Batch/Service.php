@@ -73,11 +73,17 @@ class Service extends Base\Service
         return $types;
     }
 
-    public function getBatchById(string $id): array
+    public function getBatchById(string $id, Merchant\Entity $merchant = null): array
     {
+        if (($this->merchant === null) and
+            ($merchant !== null))
+        {
+            $this->merchant = $merchant;
+        }
+
         $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id, $this->merchant);
 
-        if ($responseBatch != null)
+        if ($responseBatch !== null)
         {
             $this->app->batchService->prepareBatchItemResponse($responseBatch);
 
@@ -115,7 +121,7 @@ class Service extends Base\Service
 
         $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id);
 
-        if ($responseBatch != null)
+        if ($responseBatch !== null)
         {
             $this->app->batchService->prepareBatchItemResponse($responseBatch);
 
@@ -272,5 +278,25 @@ class Service extends Base\Service
         $result = $this->repo->batch->getReconFilesCountByGateway($input);
 
         return $result->toArray();
+    }
+
+    public function stopBatchProcessIfRequired(array $batch)
+    {
+        $batchId = $batch[Entity::ID];
+
+        if ($batch[Entity::STATUS] === Status::PROCESSED)
+        {
+            $this->trace->info(
+                TraceCode::STOP_BATCH_PROCESS_NOT_REQUIRED,
+                [
+                    'batch_id'  => $batchId,
+                    'status'    => $batch[Entity::STATUS],
+                ]
+            );
+
+            return;
+        }
+
+        $this->app->batchService->cancelBatchInBatchService($batchId);
     }
 }

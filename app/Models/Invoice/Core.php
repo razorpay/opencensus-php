@@ -996,13 +996,20 @@ class Core extends Base\Core
      */
     public function cancelInvoicesOfBatch(array $batch)
     {
-        (new Validator)->validateCancelInvoicesOfBatch($batch);
+        (new Validator())->validateCancelInvoicesOfBatch($batch);
+
+        (new Batch\Service())->stopBatchProcessIfRequired($batch);
 
         $batchId = $batch[Batch\Entity::ID];
 
         Batch\Entity::verifyIdAndStripSign($batchId);
 
-        InvoiceBatchCancelJob::dispatch($this->mode, $batchId, $batch[Batch\Entity::SUCCESS_COUNT]);
+        //
+        // This function is also used for cancel auth links via batch on
+        // admin auth. Since merchant is not available on admin auth,
+        // keeping $this->merchant ?? null explicitly.
+        //
+        InvoiceBatchCancelJob::dispatch($this->mode, $batchId, $batch[Batch\Entity::SUCCESS_COUNT], $this->merchant ?? null);
     }
 
     /**
