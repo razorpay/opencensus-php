@@ -135,6 +135,16 @@ const uploadBatch = (actionType, batchType) => (file, mode, extraFields) => {
   };
 };
 
+export const cancelBatch = actionType => batchId => {
+  return {
+    type: actionType,
+    payload: merchantFetch({
+      url: `invoices/batch/${batchId}/cancel`,
+      method: 'post',
+    }),
+  };
+};
+
 /* extra methods for more details related to payment link batch */
 export const fetchBatchStats = batchId =>
   merchantFetch({
@@ -226,6 +236,7 @@ export const fetchPaymentLinkBatchesDetails = params => {
 };
 
 export const createPaymentLinkBatch = createBatch('payment_link');
+export const cancelPaymentLinkBatch = cancelBatch('payment_link');
 export const validatePaymentLinkBatch = validateBatch('payment_link');
 
 /* direct debit batches */
