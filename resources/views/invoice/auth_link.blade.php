@@ -25,7 +25,9 @@
             window.RZP.renderApp('authlink-container', data);
         }
     </script>
-    {{-- <script type="text/javascript" src='https://cdn.razorpay.com/static/analytics/bundle.js'></script> --}}
+    <script type="text/javascript" src="https://cdn.razorpay.com/static/analytics/bundle.js"></script>
+    <script type="text/javascript" src="https://cdn.razorpay.com/static/assets/color.js"></script>
+    <script type="text/javascript" src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script type="text/javascript" src="{{env('AWS_CF_CDN_URL')}}/static/subscription_auth_link/bundle.js" onload="renderAuthLinkPage()"></script>
 </body>
 </html>
