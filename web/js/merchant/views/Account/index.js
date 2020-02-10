@@ -4,8 +4,8 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import Profile from 'merchant/views/Account/Profile';
 import AddFunds from 'merchant/views/Account/AddFunds';
 import Credits from 'merchant/views/Account/Credits/List';
-import Referrals from 'merchant/containers/Referrals/List';
-import TeamManagement from 'merchant/containers/Team';
+import ManageTeam from 'merchant/views/Account/ManageTeam';
+import Referrals from 'merchant/views/Account/Referrals/List';
 
 export default function MyAccount() {
   return (
@@ -26,13 +26,7 @@ export default function MyAccount() {
             <NavLink to="/addfunds">Add Funds</NavLink>
           </ShowWhen>
 
-          <ShowWhen
-            featureEnabled="Referral"
-            additionalCondition={user =>
-              user.isAllowedView('referrals') &&
-              (!user.isPartner() || user.isPartner('pure_platform'))
-            }
-          >
+          <ShowWhen featureEnabled="Referral">
             <NavLink to="/referrals">Referrals</NavLink>
           </ShowWhen>
 
@@ -45,7 +39,7 @@ export default function MyAccount() {
           <Route path="/credits" component={Credits} />
           <Route path="/addfunds" component={AddFunds} />
           <Route path="/referrals" component={Referrals} />
-          <Route path="/team" component={TeamManagement} />
+          <Route path="/team" component={ManageTeam} />
         </content>
       </tabbed-container>
     </React.Fragment>

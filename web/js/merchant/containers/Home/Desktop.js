@@ -139,9 +139,8 @@ class AnalyticsDesktop extends Component {
           }`}
         >
           {/* nps banner */}
-          {user.isNPSSurveyBannerEnabled && user.isAccepted && (
-            <NPSAnnouncement user={user} />
-          )}
+          {user.isNPSSurveyBannerEnabled &&
+            user.isAccepted && <NPSAnnouncement user={user} />}
 
           {showInstantActivation && (
             <Announcement mode={mode} user={user} payments={payments} />

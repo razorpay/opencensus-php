@@ -473,16 +473,17 @@ export default class AddCustomer extends Component {
               )}
             </div>
           </div>
-          {customer && customer.id && (
-            <div class="row">
-              <div class="col-md-12">
-                <p>
-                  Note: The updated customer details will be reflected
-                  everywhere in the future.
-                </p>
+          {customer &&
+            customer.id && (
+              <div class="row">
+                <div class="col-md-12">
+                  <p>
+                    Note: The updated customer details will be reflected
+                    everywhere in the future.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
           <div class="row">
             <div class="col-md-12">
               <div class="Modal__actions">

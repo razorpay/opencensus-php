@@ -190,11 +190,11 @@ const MerchantDetails = ({
               user.activation_status ? (
                 <ActivationStatusLabel status={user.activation_status} />
               ) : (
-                <div className="activation-bar-content activation-status-secondary">
-                  <div className="activation-bar-text">
+                <div class="activation-bar-content activation-status-secondary">
+                  <div class="activation-bar-text">
                     {user.activation_progress}% Completed
                   </div>
-                  <div className="activation-bar">
+                  <div class="activation-bar">
                     <ProgressBar
                       type="success"
                       max={100}
@@ -214,7 +214,7 @@ const MerchantDetails = ({
             value={() => (
               <div class="account-access" style={{ textAlign: 'right' }}>
                 {user.has_key_access ? 'Complete' : 'Limited'}
-                <small className="help-content" style={{ paddingLeft: '4px' }}>
+                <small class="help-content" style={{ paddingLeft: '4px' }}>
                   <i class="i i-help" />
                   <Popover align="right" theme="dark">
                     <PopoverBody>

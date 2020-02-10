@@ -72,7 +72,7 @@ export default class extends React.Component {
           <div class="ModalForm ModalForm--Share">
             <Input
               label="What will the button say?"
-              className="Input--vTop"
+              class="Input--vTop"
               placeholder="Enter button text"
               onChange={this.updateButtonText}
               value={btnLabel}
@@ -81,11 +81,11 @@ export default class extends React.Component {
             <Input.Radio
               label="Button size"
               options={BTN_SIZES}
-              className="Input--vTop"
+              class="Input--vTop"
               value={btnSize}
               onChange={this.updateButtonSize}
             />
-            <div className="Input Input--vTop Input--radio">
+            <div class="Input Input--vTop Input--radio">
               <div class="Input-label">Preview</div>
               <PreviewEmbedButton
                 url={shortUrl}

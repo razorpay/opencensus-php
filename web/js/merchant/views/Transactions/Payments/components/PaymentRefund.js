@@ -57,7 +57,7 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
       }}
     >
       <span>Refund Details</span>
-      <div className="full-width-item sub-entity-list">
+      <div class="full-width-item sub-entity-list">
         <DataTable
           customClass="refunds-table"
           progressLoader={true}
@@ -107,7 +107,7 @@ export default ({
               !(['card', 'emi'].indexOf(payment.method) !== -1))
           }
         >
-          <div className="m-b">
+          <div class="m-b">
             {refundStatus === 'partial' ? (
               <Definition>
                 <span>
@@ -137,7 +137,7 @@ export default ({
         >
           <p>
             <button
-              className="btn btn-default"
+              class="btn btn-default"
               onClick={openRefundModal}
               disabled={hasOpenNonFraudDisputes}
             >

@@ -29,12 +29,12 @@ export default class EmailNotifications extends Component {
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
-          <span className="title">Email Notifications</span>
+          <span class="title">Email Notifications</span>
         </div>
 
         <div class="panel-body">
           <form class="form-horizontal" onSubmit={this.onSave}>
-            <div className="description">
+            <div class="description">
               Enter email addresses that will receive email notifications
               regarding payments, settlements, daily payment reports, webhooks,
               etc. (You can enter multiple email addresses separated by a

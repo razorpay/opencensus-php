@@ -142,7 +142,7 @@ export default class extends React.Component {
               <div class="settings-section">
                 <Input
                   name="slug"
-                  className="Input--vTop"
+                  class="Input--vTop"
                   label="Choose custom URL for this page"
                   defaultValue={slug}
                   addonValueBefore="https://pages.razorpay.com/"
@@ -175,7 +175,7 @@ export default class extends React.Component {
                   name="theme"
                   label="Theme"
                   options={['Dark', 'Light']}
-                  className="Input--vTop Input--theme"
+                  class="Input--vTop Input--theme"
                   defaultValue={theme}
                 />
               </div>
@@ -189,7 +189,7 @@ export default class extends React.Component {
                 <Input.DateTime
                   label="Page Expiry Date"
                   checkboxFieldLabel="No Expiry"
-                  className="Input--vTop Input--expiryby"
+                  class="Input--vTop Input--expiryby"
                   value={expire_by}
                   defaultValue={expire_by}
                   onChange={this.updateDate}

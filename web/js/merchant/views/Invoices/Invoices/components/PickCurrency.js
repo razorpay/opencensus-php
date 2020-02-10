@@ -39,7 +39,7 @@ export default class extends React.PureComponent {
             this.props.showCross ? this.props.closeModal : undefined
           }
         />
-        <div className="modal-body">
+        <div class="modal-body">
           <Form onSubmit={this.onSave}>
             <Input.CurrencySelect
               name="currency"

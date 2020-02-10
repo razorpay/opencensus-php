@@ -1692,7 +1692,7 @@ export default class InvoicesNewContainer extends Component {
                                 customer.id &&
                                 !isDisabled && (
                                   <button
-                                    className="btn btn-sm btn-link edit-in-input"
+                                    class="btn btn-sm btn-link edit-in-input"
                                     onClick={this.quickEditCustomer}
                                     type="button"
                                   >
@@ -2406,8 +2406,8 @@ export default class InvoicesNewContainer extends Component {
                         locked && user.isAllowedEdit('invoices')
                       }
                     >
-                      <div className="inv__cta">
-                        <div className="btn-group-vertical">
+                      <div class="inv__cta">
+                        <div class="btn-group-vertical">
                           {duplicateInvoiceButton}
                         </div>
                       </div>

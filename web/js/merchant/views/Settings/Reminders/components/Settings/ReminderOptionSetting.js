@@ -95,7 +95,7 @@ const RemovableSelect = ({ options, onRemove, ...otherProps }) => (
       showClear={false}
       searchEnabled={false}
       optionLabelPath="label"
-      className="removable-power-select"
+      class="removable-power-select"
     />
 
     <span class="close-btn" onClick={onRemove}>

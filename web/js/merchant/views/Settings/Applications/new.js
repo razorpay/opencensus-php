@@ -416,7 +416,7 @@ class NewApplicationForm extends Component {
               </div>
             )}
 
-            <div className="section-divide" />
+            <div class="section-divide" />
             <div class="form-group">
               <div class="col-md-offset-3 col-md-9">
                 <div class="btn-toolbar">

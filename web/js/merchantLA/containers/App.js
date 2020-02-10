@@ -10,7 +10,7 @@ import Sidebar from 'merchantLA/containers/Sidebar';
 import HeaderNav from 'merchantLA/components/HeaderNav';
 import Content from 'merchantLA/components/Content';
 import Footer from 'merchant/components/Footer';
-import MerchantTour from 'merchant/containers/MerchantTour';
+import MerchantTour from 'merchantLA/containers/MerchantTour';
 import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';

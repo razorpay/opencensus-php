@@ -176,7 +176,7 @@ export default class AddGST extends Component {
                 </Link>
               </div>
 
-              <div className="gst-update-note">
+              <div class="gst-update-note">
                 <Banner>
                   <b>Note:</b> {this.gst_success_msg}
                 </Banner>
@@ -214,7 +214,7 @@ export default class AddGST extends Component {
                   />
                 </div>
                 {isNew && (
-                  <div className="gst-update-note">
+                  <div class="gst-update-note">
                     <Banner>
                       <b>Note:</b> {this.gst_success_msg}
                     </Banner>
