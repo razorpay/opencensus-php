@@ -699,9 +699,8 @@ class PayoutTest extends TestCase
 
         // Create Checker Role User for 2nd level of approval
         $secondLevelRole = $this->getDbEntityById('role', Org::MAKER_ROLE, 'live');
-        $secondUser = $this->fixtures->on('live')->user->createUserForMerchant('10000000000000',
-            [],
-            Org::MAKER_ROLE);
+        $secondUser = $this->fixtures->on('live')
+                                     ->user->createUserForMerchant('10000000000000', [], Org::MAKER_ROLE);
 
         $this->app['config']->set('database.default', 'live');
 

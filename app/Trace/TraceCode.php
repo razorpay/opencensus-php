@@ -329,6 +329,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_INTERNAL_FORMATTED_RESPONSE                   = 'GATEWAY_INTERNAL_FORMATTED_RESPONSE';
 
     const MERCHANT_USER_ACTION_NOT_SUPPORTED                    = 'MERCHANT_USER_ACTION_NOT_SUPPORTED';
+    const BANKING_ROUTE_PERMISSION_MISSING                      = 'BANKING_ROUTE_PERMISSION_MISSING';
 
     const AUTO_CAPTURE_REFUND_DELAY                             = 'AUTO_CAPTURE_REFUND_DELAY';
 
@@ -2620,6 +2621,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::PAYMENT_ANALYTICS_INCORRECT_DATA                      => 'Incorrect data found in payment analytics log',
         self::VERIFY_REFUND_TRANSACTION_CREATED                     => 'Refund transaction created in verify refund',
         self::MERCHANT_USER_ACTION_NOT_SUPPORTED                    => 'The input action is not supported for the merchant user',
+        self::BANKING_ROUTE_PERMISSION_MISSING                      => 'Banking Route permission missing',
         self::MANUAL_GATEWAY_REFUND_RESPONSE                        => 'Response received on manual gateway refund',
         self::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE                   => 'Response received for all refunds on manual gateway refund',
         self::MANUAL_GATEWAY_REFUND_FAILURE                         => 'Failed while trying to refund from gateway',

@@ -18,8 +18,7 @@ class BankingRole
     // Static Roles
     const OWNER = Role::OWNER;
     const ADMIN = Role::ADMIN;
-
-    const VIEW_ONLY = 'view_only';
+    const VIEW_ONLY = Role::VIEW_ONLY;
 
     //
     // Dynamic Roles:

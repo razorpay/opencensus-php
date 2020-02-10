@@ -42,6 +42,9 @@ class UserAccess
      * @var Trace
      */
     protected $trace;
+
+    const WILDCARD_PERMISSION = '*';
+
     /**
      * UserAccess constructor.
      *
@@ -114,25 +117,17 @@ class UserAccess
             {
                 if ($this->ba->isProductBanking())
                 {
-                    $routeUserRolePolicy = $this->validateBankingUserRoutePolicy($route);
+                    $userAccessException = $this->validateBankingUserRoutePolicy($route);
                 }
                 else
                 {
-                    $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
+                    $userAccessException = $this->validateRouteUserRolesPolicy($route);
                 }
 
                 // If there's an exception then return and fail
-                if ($routeUserRolePolicy !== null)
+                if ($userAccessException !== null)
                 {
-                    $this->trace->info(
-                        TraceCode::MERCHANT_USER_ACTION_NOT_SUPPORTED,
-                        [
-                            'route'        => $route,
-                            'user_role' => $this->ba->getUserRole(),
-                        ]);
-
-                    // TODO: remove this
-//                    return $routeUserRolePolicy;
+                    return $userAccessException;
                 }
             }
         }
@@ -261,8 +256,16 @@ class UserAccess
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
 
-        // If route permission not in role permissions then deny otherwise allow
-        if (in_array($routePermission, $userRolePermissions, true) === false)
+        // Allow route to all roles having wildcard permission
+        if ($routePermission === self::WILDCARD_PERMISSION)
+        {
+            return null;
+        }
+
+        // If role doesn't have route permission then deny otherwise allow
+        // TODO: if route permission is null, currently we are allowing particular request but in future we will
+        // deny such request after collecting concrete list of all X routes
+        if ($routePermission !== null and in_array($routePermission, $userRolePermissions, true) === false)
         {
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED);
@@ -281,8 +284,15 @@ class UserAccess
 
         if (isset($routePermissionList[$routeName]) === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
+            // TODO: This is temp; in future, it should throw exception
+            $this->trace->info(
+                TraceCode::BANKING_ROUTE_PERMISSION_MISSING,
+                [
+                    'route'        => $route,
+                    'user_role' => $this->ba->getUserRole(),
+                ]);
+
+            return null;
         }
 
         return $routePermissionList[$routeName];

@@ -772,7 +772,7 @@ return [
 
         PermissionCategory::REPORTING => [
             Permission::CREATE_SELF_SERVE_REPORT => 'Create Self Serve reporting configs',
-            Permission::GET_SELF_SERVE_REPORT  => 'View Self Serve reporting config',
+            Permission::GET_SELF_SERVE_REPORT    => 'View Self Serve reporting config',
         ],
 
         PermissionCategory::SUBSCRIPTIONS => [
