@@ -475,49 +475,6 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ]
     ],
-    'testDuplicateBulkPricingPlanBanking' => [
-        'request' => [
-            'content' => [
-                'plan_name' => 'TestUploadPlan2',
-                'rules'     => [
-                    [
-                        'product'             => 'banking',
-                        'feature'             => 'payout',
-                        'payment_method'      => 'fund_transfer',
-                        'percent_rate'        => 0,
-                        'international'       => '0',
-                        'amount_range_active' => '0',
-                        'account_type'        => 'current',
-                        'channel'             => 'rbl',
-                    ],
-                    [
-                        'product'             => 'banking',
-                        'feature'             => 'payout',
-                        'payment_method'      => 'fund_transfer',
-                        'percent_rate'        => 0,
-                        'international'       => '0',
-                        'amount_range_active' => '0',
-                        'account_type'        => 'current',
-                        'channel'             => 'rbl',
-                    ],
-                ],
-            ],
-            'url' => '/pricing',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => ErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
-        ]
-    ],
     'testCreatePricingPlanWithMinAndMaxFee' => [
         'request' => [
             'content' => [
@@ -2801,66 +2758,6 @@ return [
                 'amount_range_min'    => null,
                 'amount_range_max'    => null,
                 'feature'             => 'refund',
-            ],
-        ],
-    ],
-
-    'testAddPricingPlanRuleForBankingShared' => [
-        'request' => [
-            'content' => [
-                'product'             => 'banking',
-                'feature'             => 'payout',
-                'payment_method'      => 'fund_transfer',
-                'percent_rate'        => 0,
-                'international'       => '0',
-                'amount_range_active' => '0',
-                'account_type'        => 'shared',
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'plan_name'           => 'TestPlan1',
-                'product'             => 'banking',
-                'payment_method'      => 'fund_transfer',
-                'percent_rate'        => 0,
-                'international'       => false,
-                'amount_range_active' => false,
-                'amount_range_min'    => null,
-                'amount_range_max'    => null,
-                'feature'             => 'payout',
-                'account_type'        => 'shared',
-            ],
-        ],
-    ],
-
-    'testAddPricingPlanRuleForBankingDirect' => [
-        'request' => [
-            'content' => [
-                'product'             => 'banking',
-                'feature'             => 'payout',
-                'payment_method'      => 'fund_transfer',
-                'percent_rate'        => 0,
-                'international'       => '0',
-                'amount_range_active' => '0',
-                'account_type'        => 'current',
-                'channel'             => 'rbl',
-            ],
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'plan_name'           => 'TestPlan1',
-                'product'             => 'banking',
-                'payment_method'      => 'fund_transfer',
-                'percent_rate'        => 0,
-                'international'       => false,
-                'amount_range_active' => false,
-                'amount_range_min'    => null,
-                'amount_range_max'    => null,
-                'feature'             => 'payout',
-                'account_type'        => 'current',
-                'channel'             => 'rbl',
             ],
         ],
     ],

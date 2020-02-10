@@ -3,25 +3,25 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Base;
-use RZP\Exception;
-use RZP\Models\Payout;
-use RZP\Models\Payment;
-use RZP\Models\Pricing;
-use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
-use RZP\Models\Transfer;
-use RZP\Models\Bank\IFSC;
 use RZP\Constants\Product;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Card\Network;
+use RZP\Models\Card\SubType;
+use RZP\Models\Card\Type as CardType;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Models\Payout;
+use RZP\Models\Transfer;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer;
-use RZP\Models\Card\SubType;
-use RZP\Models\Card\Network;
-use RZP\Error\PublicErrorDescription;
-use RZP\Models\Card\Type as CardType;
-use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Payment\Processor\CardlessEmi;
+use RZP\Models\Pricing;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccountStatement\Channel as BASChannel;
 
 class Validator extends Base\Validator
@@ -611,24 +611,8 @@ class Validator extends Base\Validator
                 ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]))
             {
-                if ($rule[Entity::PRODUCT] === Product::BANKING)
-                {
-                    if ($rule[Entity::ACCOUNT_TYPE] === AccountType::SHARED)
-                    {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
-                    }
-                    if ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL])
-                    {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
-                    }
-                }
-                else
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
-                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }
 
             if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
@@ -645,21 +629,7 @@ class Validator extends Base\Validator
                 (isset($newRule[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
                 (isset($rule[Entity::AMOUNT_RANGE_ACTIVE]) === true))
             {
-                if ($rule[Entity::PRODUCT] === Product::BANKING)
-                {
-                    if ($rule[Entity::ACCOUNT_TYPE] === AccountType::SHARED)
-                    {
-                        $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
-                    }
-                    if ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL])
-                    {
-                        $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
-                    }
-                }
-                else
-                {
-                    $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
-                }
+                $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
             }
 
             if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
@@ -675,24 +645,8 @@ class Validator extends Base\Validator
                 ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
                 (empty($newRule[Entity::AMOUNT_RANGE_ACTIVE]) !== empty($rule[Entity::AMOUNT_RANGE_ACTIVE])))
             {
-                if ($rule[Entity::PRODUCT] === Product::BANKING)
-                {
-                    if ($rule[Entity::ACCOUNT_TYPE] === AccountType::SHARED)
-                    {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
-                    }
-                    if ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL])
-                    {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
-                    }
-                }
-                else
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
-                }
+                throw new Exception\BadRequestException(
+                     ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
             }
         }
     }
@@ -795,7 +749,7 @@ class Validator extends Base\Validator
             ];
 
             $message = 'Unable to add rule to plan ' . $rule->getPlanName() . '. Rule has fee_bearer ' . $rule->getFeeBearer() .
-                       '. Merchant ' . $merchant->getId() . ' on this plan has fee_bearer ' . $merchant->getFeeBearer();
+                '. Merchant ' . $merchant->getId() . ' on this plan has fee_bearer ' . $merchant->getFeeBearer();
 
             throw new Exception\BadRequestValidationFailureException(
                 $message,
