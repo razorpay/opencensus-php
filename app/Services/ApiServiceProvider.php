@@ -917,9 +917,9 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('terminals_service', function ($app)
         {
-            $terminalServiceMock = $app['config']->get('applications.terminal_service.mock');
+            $terminalsServiceMock = $app['config']->get('applications.terminals_service.mock');
 
-            if ($terminalServiceMock === true)
+            if ($terminalsServiceMock === true)
             {
                 return new Mock\TerminalsService($app);
             }

@@ -2,9 +2,9 @@
 
 namespace RZP\Services\Mock;
 
-use RZP\Services\TerminalsService as BaseTerminalService;
+use RZP\Services\TerminalsService as BaseTerminalsService;
 
-class TerminalsService extends BaseTerminalService
+class TerminalsService extends BaseTerminalsService
 {
 
 }
