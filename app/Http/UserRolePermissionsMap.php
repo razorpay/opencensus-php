@@ -67,6 +67,7 @@ class UserRolePermissionsMap
                  Permission::CREATE_WEBHOOK,
                  Permission::VIEW_REPORTING,
                  Permission::CREATE_REPORTING,
+                 Permission::UPDATE_REPORTING,
                  Permission::VIEW_TRANSACTION_STATEMENT,
                  Permission::CREATE_INVITATION,
                  Permission::VIEW_INVITATION,

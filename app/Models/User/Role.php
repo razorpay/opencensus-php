@@ -22,7 +22,7 @@ class Role
     const LINKED_ACCOUNT_ADMIN  = 'linked_account_admin';
     const RBL_SUPERVISOR        = 'rbl_supervisor';
     const RBL_AGENT             = 'rbl_agent';
-    const VIEW_ONLY             = 'view_only'
+    const VIEW_ONLY             = 'view_only';
 
     // SELLERAPP and extra functionality (Reports) - not publicly available.
     const SELLERAPP_PLUS        = 'sellerapp_plus';

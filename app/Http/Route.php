@@ -3437,7 +3437,7 @@ final class Route
         'reporting_log_get'                            => Permission::VIEW_REPORTING,
         'reporting_log_list'                           => Permission::VIEW_REPORTING,
         'reporting_log_create'                         => Permission::CREATE_REPORTING,
-        'reporting_log_update'                         => Permission::CREATE_INVITATION,
+        'reporting_log_update'                         => Permission::UPDATE_REPORTING,
         'transaction_statement_fetch'                  => Permission::VIEW_TRANSACTION_STATEMENT,
         'transaction_statement_fetch_multiple'         => Permission::VIEW_TRANSACTION_STATEMENT,
         'invitation_create'                            => Permission::CREATE_INVITATION,
