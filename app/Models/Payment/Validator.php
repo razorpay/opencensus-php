@@ -187,7 +187,9 @@ class Validator extends Base\Validator
 
     protected static $postFlowsRules = [
         'card_number'        => 'sometimes|numeric|luhn|digits_between:12,19',
-        'iin'                => 'sometimes|numeric|digits:6'
+        'iin'                => 'sometimes|numeric|digits:6',
+        'currency'           => 'sometimes|string',
+        'amount'             => 'sometimes|integer'
     ];
 
     protected static $pspAmountLimit = [

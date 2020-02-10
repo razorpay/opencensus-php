@@ -131,6 +131,7 @@ class Core extends Base\Core
      * - Capture current time, round it off to nearest interval
      * - Store currencyRequestId and round off time in redis
      * - Get or Update rates for the round off time
+     * - convert currency to all supported currencies
      */
     public function getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId)
     {
@@ -156,8 +157,5 @@ class Core extends Base\Core
         }
 
         return $supportedCurrencies;
-
     }
-
-
 }
