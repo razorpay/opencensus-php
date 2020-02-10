@@ -562,6 +562,7 @@ final class Route
         'reports_order_rpp'                        => ['get',      'reports/order/rpp',                              'MerchantController@getRPPOrderReport'                              ],
         'reports_monthly_invoice'                  => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_monthly_banking_invoice'          => ['post',     'reports/invoice/banking',                        'MerchantController@generateBankingInvoice'                         ],
+        'reports_monthly_banking_invoice_admin'    => ['post',     'admin/reports/invoice/banking',                  'MerchantController@generateBankingInvoice'                         ],
         'reports_public_entity'                    => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'               => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
         'reports_refund_irctc'                     => ['get',      'reports/refund/irctc',                           'MerchantController@getIrctcRefundReport'                           ],
@@ -2799,6 +2800,8 @@ final class Route
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
 
+        'reports_monthly_banking_invoice_admin',
+
         'merchant_inheritance_parent_fetch',
         'merchant_inheritance_parent_set',
         'merchant_inheritance_parent_delete',
@@ -3359,7 +3362,9 @@ final class Route
         'fts_dashboard_source_account_create'       => Permission::GATEWAY_PVT,
         'fts_dashboard_source_account_delete'       => Permission::GATEWAY_PVT,
         'mozart_gateway_action'                     => Permission::GATEWAY_PVT,
+
         'reports_monthly_banking_invoice'           => '*',
+        'reports_monthly_banking_invoice_admin'     => '*',
 
         'setl_holidays'                             => '*',
 
