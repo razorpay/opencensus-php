@@ -7,6 +7,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Status
 {
     const CREATED           = 'created';
+    const PICKED            = 'picked';
     const INITIATED         = 'initiated';
     const PROCESSING        = 'processing';
     const PROCESSED         = 'processed';
@@ -49,6 +50,9 @@ class Status
      */
     protected static $fromToStatusMap = [
         self::CREATED => [
+            self::PICKED,
+        ],
+        self::PICKED => [
             self::INITIATED,
             self::UNSERVICEABLE,
             self::CANCELLED,
@@ -75,13 +79,14 @@ class Status
     ];
 
     public static $internallyEditStatuses = [
-      self::INITIATED,
-      self::PROCESSED,
-      self::PROCESSING,
-      self::UNSERVICEABLE,
-      self::REJECTED,
-      self::CANCELLED,
-      self::ACTIVATED,
+        self::PICKED,
+        self::INITIATED,
+        self::PROCESSED,
+        self::PROCESSING,
+        self::UNSERVICEABLE,
+        self::REJECTED,
+        self::CANCELLED,
+        self::ACTIVATED,
     ];
 
     public static function isValidStatus(string $status = null)
