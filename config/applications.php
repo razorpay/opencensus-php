@@ -458,4 +458,19 @@ return [
         'client_id'     => env('SALESFORCE_CLIENT_ID'),
         'client_secret' => env('SALESFORCE_CLIENT_SECRET'),
     ],
+
+    'terminals_service' => [
+        'mock'          => env('TERMINALS_SERVICE_MOCK', false),
+        'live'          => [
+            'username'      => env('TERMINALS_SERVICE_LIVE_USERNAME'),
+            'password'      => env('TERMINALS_SERVICE_LIVE_PASSWORD'),
+            'url'           => env('TERMINALS_SERVICE_LIVE_URL'),
+        ],
+        'test'          => [
+            'username'      => env('TERMINALS_SERVICE_TEST_USERNAME'),
+            'password'      => env('TERMINALS_SERVICE_TEST_PASSWORD'),
+            'url'           => env('TERMINALS_SERVICE_TEST_URL'),
+        ],
+
+    ],
 ];
