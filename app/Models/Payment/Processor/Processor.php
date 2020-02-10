@@ -821,12 +821,10 @@ class Processor
             unset($input['_']);
         }
 
-        $currentRouteName = 'payment_create';
-        
         $coproto = [
             'type'    => 'respawn',
             'request' => [
-                'url'     => $this->route->getUrlWithPublicAuthInQueryParam($currentRouteName),
+                'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
                 'method'  => 'POST',
                 'content' => [
                     'input' => array_assoc_flatten($input, '%s[%s]'),
