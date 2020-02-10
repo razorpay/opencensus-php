@@ -487,7 +487,7 @@ return [
                         'percent_rate'        => 0,
                         'international'       => '0',
                         'amount_range_active' => '0',
-                        'account_type'        => 'current',
+                        'account_type'        => 'direct',
                         'channel'             => 'rbl',
                     ],
                     [
@@ -497,7 +497,7 @@ return [
                         'percent_rate'        => 0,
                         'international'       => '0',
                         'amount_range_active' => '0',
-                        'account_type'        => 'current',
+                        'account_type'        => 'direct',
                         'channel'             => 'rbl',
                     ],
                 ],
@@ -1673,9 +1673,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 10,
+                'count' => 12,
                 'entity' => 'collection',
                 'items' => [
+                    [
+                        'name' => 'testDefaultVpaPlan',
+                    ],
                     [
                         'name' => 'PP190AMEX290',
                     ],
@@ -1684,6 +1687,9 @@ return [
                     ],
                     [
                         'name' => 'DefaultSubMerchant',
+                    ],
+                    [
+                        'name' => 'Zero banking default plan',
                     ],
                     [
                         'name' => 'Banking default plan',
@@ -1815,9 +1821,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'count'  => 10,
+                'count'  => 12,
                 'entity' => 'collection',
                 'items'  => [
+                    [
+                        'name' => 'testDefaultVpaPlan',
+                    ],
                     [
                         'name' => 'PP190AMEX290',
                     ],
@@ -1826,6 +1835,9 @@ return [
                     ],
                     [
                         'name' => 'DefaultSubMerchant',
+                    ],
+                    [
+                        'name' => 'Zero banking default plan',
                     ],
                     [
                         'name' => 'Banking default plan',
@@ -1997,6 +2009,11 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'testDefaultVpaPlan',
+                    'rules_count' => 1,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'PP190AMEX290',
                     'rules_count' => 9,
                     'type'        => 'pricing',
@@ -2012,8 +2029,13 @@ return [
                     'type'        => 'pricing',
                 ],
                 [
+                    'plan_name'   => 'Zero banking default plan',
+                    'rules_count' => 2,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 8,
+                    'rules_count' => 12,
                     'type'        => 'pricing',
                 ],
                 [
@@ -2077,6 +2099,11 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'testDefaultVpaPlan',
+                    'rules_count' => 1,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'PP190AMEX290',
                     'rules_count' => 9,
                     'type'        => 'pricing',
@@ -2092,8 +2119,13 @@ return [
                     'type'        => 'pricing',
                 ],
                 [
+                    'plan_name'   => 'Zero banking default plan',
+                    'rules_count' => 2,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 8,
+                    'rules_count' => 12,
                     'type'        => 'pricing',
                 ],
                 [
@@ -2811,7 +2843,7 @@ return [
                 'percent_rate'        => 0,
                 'international'       => '0',
                 'amount_range_active' => '0',
-                'account_type'        => 'current',
+                'account_type'        => 'direct',
                 'channel'             => 'rbl',
             ],
             'method' => 'POST'
@@ -2827,7 +2859,7 @@ return [
                 'amount_range_min'    => null,
                 'amount_range_max'    => null,
                 'feature'             => 'payout',
-                'account_type'        => 'current',
+                'account_type'        => 'direct',
                 'channel'             => 'rbl',
             ],
         ],

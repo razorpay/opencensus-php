@@ -52,10 +52,12 @@ class Core extends Base\Core
 
         unset($adjInput[Entity::TYPE]);
 
+        $sendReserveBalanceMail = false;
+
         if (($balanceType === Balance\Type::RESERVE_BANKING) or
             ($balanceType === Balance\Type::RESERVE_PRIMARY))
         {
-            $balance = (new Balance\Core)->createOrFetchReserveBalance($merchant, $balanceType, $this->mode);
+            [$balance, $sendReserveBalanceMail] = (new Balance\Core)->createOrFetchReserveBalance($merchant, $balanceType, $this->mode);
         }
         else
         {
@@ -70,6 +72,8 @@ class Core extends Base\Core
              ->setEntityAndId($adj->getEntity(), $merchant->getId())
              ->handle((new \stdClass), $adj);
 
+        $adjustment = null;
+
         if (isset($input[Entity::AMOUNT]) === true)
         {
             // Creating adjustment only, since no invoice record is reqd
@@ -82,8 +86,6 @@ class Core extends Base\Core
                     'merchant_id'              => $merchant->getMerchantId()
                 ]
             );
-
-            return $adjustment;
         }
         else
         {
@@ -107,9 +109,14 @@ class Core extends Base\Core
                     return $adjustment;
                 }
             );
-
-            return $adjustment;
         }
+
+        if ($sendReserveBalanceMail === true)
+        {
+            (new Balance\Core)->sendReserveBalanceActivatedMail($merchant, $balance);
+        }
+
+        return $adjustment;
     }
 
     public function createAdjustmentForSource(array $input, Base\PublicEntity $source): Entity

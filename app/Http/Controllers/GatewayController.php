@@ -542,11 +542,13 @@ class GatewayController extends Controller
 
         $this->app['config']->set('database.default', $mode);
 
-        $this->app['rzp.mode'] = $mode;
+        $this->app['basicauth']->setModeAndDbConnection($mode);
 
         $payment = $this->app['repo']->payment->findOrFail($paymentId);
 
         $merchant = $payment->merchant;
+
+        $this->app['basicauth']->setMerchant($merchant);
 
         $input = Mozart\GetSimpl\Helper::getPaymentInputParameters($input, $payment);
 

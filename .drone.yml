@@ -133,7 +133,7 @@ steps:
 
   - name: feature_2_test_suite
     pull: always
-    image: razorpay/onggi:php-7.2
+    image: razorpay/onggi:php-7.2-apache-api
     depends_on:
       - prepare_test
     commands:

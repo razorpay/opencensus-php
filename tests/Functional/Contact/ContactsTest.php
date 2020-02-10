@@ -576,21 +576,4 @@ class ContactsTest extends TestCase
 
         $this->startTest();
     }
-
-    public function testCreateContactWithAlphabet()
-    {
-        $this->startTest();
-    }
-
-    public function testUpdateContactWithAlphabet()
-    {
-        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
-
-        $this->startTest();
-
-        // Test with Proxy Auth
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
 }

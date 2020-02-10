@@ -613,15 +613,18 @@ class Validator extends Base\Validator
             {
                 if ($rule[Entity::PRODUCT] === Product::BANKING)
                 {
-                    if ($rule[Entity::ACCOUNT_TYPE] === AccountType::SHARED)
+                    if ($rule[Entity::ACCOUNT_TYPE] === $newRule[Entity::ACCOUNT_TYPE])
                     {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
-                    }
-                    if ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL])
-                    {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
+                        if ($rule[Entity::ACCOUNT_TYPE] === AccountType::SHARED)
+                        {
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
+                        }
+                        if ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL])
+                        {
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
+                        }
                     }
                 }
                 else
@@ -647,13 +650,16 @@ class Validator extends Base\Validator
             {
                 if ($rule[Entity::PRODUCT] === Product::BANKING)
                 {
-                    if ($rule[Entity::ACCOUNT_TYPE] === AccountType::SHARED)
+                    if ($rule[Entity::ACCOUNT_TYPE] === $newRule[Entity::ACCOUNT_TYPE])
                     {
-                        $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
-                    }
-                    if ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL])
-                    {
-                        $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
+                        if ($rule[Entity::ACCOUNT_TYPE] === AccountType::SHARED)
+                        {
+                            $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
+                        }
+                        if ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL])
+                        {
+                            $this->checkPricingRuleForAmountRangeOverlap($rule, $newRule);
+                        }
                     }
                 }
                 else
@@ -677,15 +683,18 @@ class Validator extends Base\Validator
             {
                 if ($rule[Entity::PRODUCT] === Product::BANKING)
                 {
-                    if ($rule[Entity::ACCOUNT_TYPE] === AccountType::SHARED)
+                    if ($rule[Entity::ACCOUNT_TYPE] === $newRule[Entity::ACCOUNT_TYPE])
                     {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
-                    }
-                    if ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL])
-                    {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
+                        if ($rule[Entity::ACCOUNT_TYPE] === AccountType::SHARED)
+                        {
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
+                        }
+                        if ($rule[Entity::CHANNEL] === $newRule[Entity::CHANNEL])
+                        {
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP);
+                        }
                     }
                 }
                 else

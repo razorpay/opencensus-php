@@ -562,6 +562,7 @@ final class Route
         'reports_order_rpp'                        => ['get',      'reports/order/rpp',                              'MerchantController@getRPPOrderReport'                              ],
         'reports_monthly_invoice'                  => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_monthly_banking_invoice'          => ['post',     'reports/invoice/banking',                        'MerchantController@generateBankingInvoice'                         ],
+        'reports_monthly_banking_invoice_admin'    => ['post',     'admin/reports/invoice/banking',                  'MerchantController@generateBankingInvoice'                         ],
         'reports_public_entity'                    => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'               => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
         'reports_refund_irctc'                     => ['get',      'reports/refund/irctc',                           'MerchantController@getIrctcRefundReport'                           ],
@@ -615,6 +616,7 @@ final class Route
         'invoice_view_test_preferences_test'       => ['get',      't/{id}/test',                                    'InvoiceController@getInvoiceViewForTest'                           ],
         'invoice_cancel'                           => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
         'invoice_expire_bulk'                      => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
+        'invoice_delete_bulk'                      => ['delete',   'invoices/delete',                                'InvoiceController@deleteInvoices'                                  ],
         'invoice_issue_by_batch'                   => ['post',     'invoices/batch/{batchId}/issue',                 'InvoiceController@issueInvoicesOfBatch'                            ],
         'invoice_notify_by_batch'                  => ['put',      'invoices/batch/{batchId}/notify',                'InvoiceController@notifyInvoicesOfBatch'                           ],
         'invoice_cancel_by_batch'                  => ['post',     'invoices/batch/{batchId}/cancel',                'InvoiceController@cancelInvoicesOfBatch'                           ],
@@ -1673,6 +1675,7 @@ final class Route
         'invoice_update',
         'invoice_issue',
         'invoice_cancel',
+        'invoice_cancel_by_batch',
         'invoice_delete',
         'invoice_send_notification_private',
         'item_create',
@@ -1838,6 +1841,7 @@ final class Route
         'invitation_action',
         'invitation_fetch_by_token',
         'invoice_expire_bulk',
+        'invoice_delete_bulk',
         'invoice_send_notifications',
         'payment_link_expire_cron',
         'merchant_activation_migrate',
@@ -2098,6 +2102,7 @@ final class Route
         'bulk_submerchant_assign',
         'invoice_issue_by_batch',
         'invoice_notify_by_batch',
+        'invoice_cancel_by_batch',
         'invoice_get_stats_by_batch_ids',
         'invoice_add_line_items',
         'invoice_update_line_item',
@@ -2359,7 +2364,6 @@ final class Route
         'feature_get',
         'batch_create_admin',
         'send_test_sms',
-        'invoice_cancel_by_batch',
         'file_upload_admin',
         'admin_dummy_account_test',
         'admin_get_file',
@@ -2796,6 +2800,8 @@ final class Route
 
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
+
+        'reports_monthly_banking_invoice_admin',
 
         'merchant_inheritance_parent_fetch',
         'merchant_inheritance_parent_set',
@@ -3296,7 +3302,7 @@ final class Route
         'banking_account_update'                       => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_activate'                     => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_webhook_account'
-        . '_info_internal'                            => Permission::BANKING_UPDATE_ACCOUNT,
+         . '_info_internal'                            => Permission::BANKING_UPDATE_ACCOUNT,
 
         'fetch_throttle_settings'                      => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                       => Permission::EDIT_THROTTLE_SETTINGS,
@@ -3312,7 +3318,8 @@ final class Route
         'webhook_stork_migrate'                        => Permission::STORK_WRITE_OPERATION,
 
         'banking_account_yesb_bulk_create'             => Permission::BANKING_UPDATE_ACCOUNT,
-        'banking_account_activation_status_change_log' => '*',
+        'banking_account_activation_status_'
+        . 'change_log'                                 => '*',
         'set_channel_action'                           => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                           => Permission::SETTLEMENT_BULK_UPDATE,
 
@@ -3340,7 +3347,9 @@ final class Route
         'fts_dashboard_source_account_create'          => Permission::GATEWAY_PVT,
         'fts_dashboard_source_account_delete'          => Permission::GATEWAY_PVT,
         'mozart_gateway_action'                        => Permission::GATEWAY_PVT,
+
         'reports_monthly_banking_invoice'              => '*',
+        'reports_monthly_banking_invoice_admin'        => '*',
 
         'setl_holidays'                                => '*',
 
@@ -3349,20 +3358,20 @@ final class Route
         'update_merchant_options_admin'                => Permission::MANAGE_RENDERING_PREFERENCES,
         'delete_merchant_options_admin'                => Permission::MANAGE_RENDERING_PREFERENCES,
 
-        'merchant_inheritance_parent_fetch'            =>  '*',
-        'merchant_inheritance_parent_set'              =>  '*',
-        'merchant_inheritance_parent_set_bulk'         =>  '*',
-        'merchant_inheritance_parent_delete'           =>  '*',
+        'merchant_inheritance_parent_fetch'             =>  '*',
+        'merchant_inheritance_parent_set'               =>  '*',
+        'merchant_inheritance_parent_set_bulk'          =>  '*',
+        'merchant_inheritance_parent_delete'            =>  '*',
 
-        'mdr_adjustment'                               => '*',
+        'mdr_adjustment'                                => '*',
 
-        'subscription_registration_resend_links_batch' => '*',
-        'subscription_registration_cancel_links_batch' => Permission::CANCEL_BATCH,
+        'subscription_registration_resend_links_batch'  => '*',
+        'subscription_registration_cancel_links_batch'  => Permission::CANCEL_BATCH,
 
-        'fetch_merchant_balance_configs'               => '*',
-        'get_merchant_balance_config'                  => '*',
-        'add_merchant_balance_config'                  => '*',
-        'edit_merchant_balance_config'                 => '*',
+        'fetch_merchant_balance_configs'                => '*',
+        'get_merchant_balance_config'                   => '*',
+        'add_merchant_balance_config'                   => '*',
+        'edit_merchant_balance_config'                  => '*',
 
         //Todo update permission later
         //'update_sr_level_global_config'              => Permission::UPDATE_DOWNTIME_CONFIG,
@@ -3658,6 +3667,7 @@ final class Route
             'invoice_send_notifications',
             'card_update_saved',
             'invoice_expire_bulk',
+            'invoice_delete_bulk',
             'payment_link_expire_cron',
             'batch_process_file',
             'order_refund_multiple_authorized',

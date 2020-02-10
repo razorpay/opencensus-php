@@ -5286,6 +5286,24 @@ return [
         ],
     ],
 
+    'testInvoiceSoftDelete' => [
+        'request' => [
+            'url' => '/invoices/delete',
+            'method' => 'delete',
+            'content' => [
+                'hours' => 24,
+                'merchant_ids' => ['100000Razorpay']
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'total_invoices_count' => 2,
+                'failed_invoice_ids' => []
+            ]
+        ]
+    ],
+
     'testCreateSendEmailForPaymentLinkService' => [
         'request'  => [
             'url'     => '/payment_links/send_email',

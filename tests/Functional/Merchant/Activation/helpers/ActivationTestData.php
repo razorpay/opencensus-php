@@ -2688,8 +2688,8 @@ return [
                         'update_director_pan'   => [
                             'description' => 'Please update PAN details of a director listed by MCA',
                         ],
-                        'update_propreitor_pan' => [
-                            'description' => 'Please update PAN of the Propreitor.'
+                        'update_proprietor_pan' => [
+                            'description' => 'Please update PAN of the Proprietor.'
                         ]
                     ],
                 ],

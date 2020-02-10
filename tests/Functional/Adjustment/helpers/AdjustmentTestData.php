@@ -20,7 +20,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Reserve Balance Amount should be greater than or equal to 1000000',
+                    'description' => 'Reserve Balance Amount should be greater than or equal to 100000',
                 ],
             ],
             'status_code' => 400,
