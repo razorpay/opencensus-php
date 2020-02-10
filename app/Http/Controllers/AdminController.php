@@ -357,6 +357,15 @@ class AdminController extends Controller
         return ApiResponse::json([]);
     }
 
+    public function unclaimedMerchantPoc()
+    {
+        $input = Request::all();
+
+        $this->service()->unclaimedMerchantPoc($input);
+
+        return ApiResponse::json([]);
+    }
+
     public function getPvtResponse()
     {
         $input = Request::all();

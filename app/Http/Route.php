@@ -788,6 +788,7 @@ final class Route
         'admin_lock_old_accounts'                  => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
         'terminal_bank_bulk'                       => ['put',      'terminals/banks/bulk',                           'TerminalController@updateTerminalsBank'                            ],
         'merchant_poc_update'                      => ['post',      'admin/poc_update',                              'AdminController@updateMerchantPoc'                                 ],
+        'unclaimed_merchant_poc_update'            => ['post',      'admin/unclaimed_poc_update',                    'AdminController@unclaimedMerchantPoc'                              ],
 
         // Permission can only be created by certain organizations.
         'permission_create'                        => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
@@ -1982,6 +1983,7 @@ final class Route
         'transaction_settled_data_fix',
 
         'merchant_poc_update',
+        'unclaimed_merchant_poc_update',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3386,6 +3388,8 @@ final class Route
 
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
+
+        'unclaimed_merchant_poc_update'                     => '*',
         'merchant_poc_update'                               => '*',
 
         'fetch_merchant_balance_configs'            => '*',
@@ -3682,6 +3686,7 @@ final class Route
             'create_merchant_options_admin',
             'transaction_settled_data_fix',
             'merchant_poc_update',
+            'unclaimed_merchant_poc_update',
         ],
 
         'subscriptions' => [

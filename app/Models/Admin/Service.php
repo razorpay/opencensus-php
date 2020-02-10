@@ -11,6 +11,7 @@ use RZP\Jobs;
 use RZP\Exception;
 use RZP\Jobs\EsSync;
 use RZP\Models\Card;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
@@ -22,6 +23,7 @@ use RZP\Jobs\SFMerchantPocUpdate;
 use RZP\Jobs\SFMerchantPocRemoval;
 use RZP\Services\Mozart as MozartBase;
 use RZP\Models\GeoIP\Service as GeoIP;
+use RZP\Jobs\SFAllMerchantToUnclaimedGroup;
 use RZP\Models\{Base, Base\EsRepository, Batch, Admin\Org};
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
@@ -1069,5 +1071,44 @@ class Service extends Base\Service
         }
 
         EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT, $deltaUnclaimedAccounts);
+    }
+
+    public function unclaimedMerchantPoc(array $input = [])
+    {
+        RuntimeManager::setTimeLimit(10000);
+
+        $input['count']   = 5000;
+        $input['afterId'] = $input['afterId'] ?? null;
+        $count            = 0;
+
+        while (true)
+        {
+            $merchants = (new Merchant\Core)->getAllMerchantIds($input);
+
+            if ($merchants->isEmpty() === true)
+            {
+                break;
+            }
+
+            $count += $merchants->count();
+
+            $input['afterId'] = $merchants->last()->getId();
+
+            $this->trace->info(TraceCode::MERCHANT_POC_UPDATE_REQUEST,
+                               [
+                                   'message' => 'Merchant POC update request for Unclaimed From Service before Job',
+                                   'count'   => $count,
+                                   'endId'   => $merchants->last()->getId(),
+
+                               ]
+            );
+
+            SFAllMerchantToUnclaimedGroup::dispatch($this->mode,
+                                                    $merchants->pluck(Merchant\Entity::ID)->toArray());
+            EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT,
+                             $merchants->pluck(Merchant\Entity::ID)->toArray());
+        }
+
+        return [];
     }
 }
