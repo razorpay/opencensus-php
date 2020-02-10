@@ -399,4 +399,15 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
+
+    public function isDCCSupported(): bool
+    {
+        if (($this->isInternational() === true) and
+            (in_array($this->getNetworkCode(), Card\Network::getDCCSupportedNetworks())))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

@@ -15,6 +15,7 @@ use RZP\Exception;
 use RZP\Error;
 use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
 use RZP\Models\Base;
+use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Offer;
@@ -22,6 +23,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Card;
+use RZP\Models\Card\IIN;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Org;
@@ -1150,6 +1152,21 @@ class Service extends Base\Service
         $iinEntity = $this->repo->iin->find($input['iin']);
 
         $data = $merchant->getPaymentFlows($iinEntity);
+
+        if ((empty($iinEntity) === false) and
+            ($merchant->isDCCEnabled() === true) and
+            ($iinEntity->isDCCSupported() === true))
+        {
+            $countryCode = IIN\Country::COUNTRY_ISO_NUMERIC_CODE[$iinEntity->getCountry()];
+
+            $baseCurrency = Currency\Currency::getCurrency($countryCode) ?? $input['currency'];
+
+            $data[IIN\Constants::IS_INTERNATIONAL] = $iinEntity->isInternational();
+
+            $data['card_currency'] = $baseCurrency;
+
+            $data['all_currencies'] = (new Currency\Core)->getConvertedCurrencies($input['currency'], $input['amount'], $input['currency_request_id']);
+        }
 
         if (isset($input['order_id']) === true)
         {

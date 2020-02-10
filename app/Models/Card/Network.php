@@ -302,4 +302,9 @@ class Network
     {
         return self::$networks;
     }
+
+    public static function getDCCSupportedNetworks()
+    {
+        return array(self::MC, self::VISA);
+    }
 }
