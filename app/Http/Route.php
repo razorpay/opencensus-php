@@ -787,6 +787,7 @@ final class Route
         'group_delete'                             => ['delete',   'groups/{id}',                                    'OrganizationController@deleteGroup'                                ],
         'admin_lock_old_accounts'                  => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
         'terminal_bank_bulk'                       => ['put',      'terminals/banks/bulk',                           'TerminalController@updateTerminalsBank'                            ],
+        'merchant_poc_update'                      => ['post',      'admin/poc_update',                              'AdminController@updateMerchantPoc'                                 ],
 
         // Permission can only be created by certain organizations.
         'permission_create'                        => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
@@ -1979,6 +1980,8 @@ final class Route
         'merchant_mtu_update',
         'webhook_deactivate',
         'transaction_settled_data_fix',
+
+        'merchant_poc_update',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3383,6 +3386,7 @@ final class Route
 
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
+        'merchant_poc_update'                               => '*',
 
         'fetch_merchant_balance_configs'            => '*',
         'get_merchant_balance_config'               => '*',
@@ -3677,6 +3681,7 @@ final class Route
             'banking_account_statement_process_cron',
             'create_merchant_options_admin',
             'transaction_settled_data_fix',
+            'merchant_poc_update',
         ],
 
         'subscriptions' => [

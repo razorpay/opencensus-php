@@ -2343,6 +2343,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SALESFORCE_INTEGRATION_ERROR                          = 'SALESFORCE_INTEGRATION_ERROR';
     const SALESFORCE_INTEGRATION_API_REQUEST                    = 'SALESFORCE_INTEGRATION_API_REQUEST';
     const SALESFORCE_INTEGRATION_API_RESPONSE                   = 'SALESFORCE_INTEGRATION_API_RESPONSE';
+    const SALESFORCE_DATA_VALIDATION_FAILURES                   = 'SALESFORCE_DATA_VALIDATION_FAILURES';
+    const SALESFORCE_RECORD_VALIDATION_FAILURES                 = 'SALESFORCE_RECORD_VALIDATION_FAILURES';
+
+
 
     // Banking account
     const BANKING_ACCOUNT_EDIT                                  = 'BANKING_ACCOUNT_EDIT';
@@ -2542,6 +2546,19 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
+    //Trace Code for SalesForce POC updates
+    const MERCHANT_POC_UPDATE_REQUEST                           = 'MERCHANT_POC_UPDATE_REQUEST';
+    const MERCHANT_GROUP_DETACH_REQUEST                         = 'MERCHANT_GROUP_DETACH_REQUEST';
+    const MERCHANT_GROUP_ATTACH_REQUEST                         = 'MERCHANT_GROUP_ATTACH_REQUEST';
+    const MERCHANT_ADMIN_ATTACH_REQUEST                         = 'MERCHANT_ADMIN_ATTACH_REQUEST';
+    const MERCHANT_ADMIN_DETACH_REQUEST                         = 'MERCHANT_ADMIN_DETACH_REQUEST';
+    const GROUP_ADMIN_DETACH_REQUEST                            = 'GROUP_ADMIN_DETACH_REQUEST';
+    const GROUP_ADMIN_ATTACH_REQUEST                            = 'GROUP_ADMIN_ATTACH_REQUEST';
+    const SF_POC_UPDATE_QUEUE_DELETE                            = 'SF_POC_UPDATE_QUEUE_DELETE';
+    const SF_POC_UPDATE_ERROR                                   = 'SF_POC_UPDATE_ERROR';
+    const SF_POC_ADMINS_REMOVAL_ERROR                           = 'SF_POC_ADMINS_REMOVAL_ERROR';
+    const SF_POC_GROUP_REMOVAL_ERROR                            = 'SF_POC_GROUP_REMOVAL_ERROR';
+    const REMOVAL_HISTORICAL_ADMINS_FROM_GROUP                  = 'REMOVAL_HISTORICAL_ADMINS_FROM_GROUP';
     // Trace Code for Workflow Rules
     const WORKFLOW_PAYOUT_RULES_ATTACHMENT                      = 'WORKFLOW_PAYOUT_RULES_ATTACHMENT';
 
@@ -2549,6 +2566,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NOT_ACTIVATED                                         = 'NOT_ACTIVATED';
 
     const MERCHANT_DEFAULT_GROUP_ATTACH                         = 'MERCHANT_DEFAULT_GROUP_ATTACH';
+    const MERCHANT_CLAIMED_TO_UNCLAIMED_GROUP_ATTACH            = 'MERCHANT_CLAIMED_TO_UNCLAIMED_GROUP_ATTACH';
+
 
     //Balance Config
     const BALANCE_CONFIG_CREATE_REQUEST                         = 'BALANCE_CONFIG_CREATE_REQUEST';

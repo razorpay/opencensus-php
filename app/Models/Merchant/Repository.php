@@ -16,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\Admin\Group;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Partner\Config as PartnerConfig;
@@ -945,5 +946,17 @@ class Repository extends Base\Repository
         $merchants = $merchants->select(['email', 'transaction_report_email'])
                                ->get();
         return $merchants;
+    }
+
+    public function fetchHistoricalClaimedMerchantIds($mode)
+    {
+        $historicalClaimedMerchantIds = \DB::connection($mode)->table(Table::MERCHANT_MAP)
+                                           ->select('merchant_id')
+                                           ->where('entity_id', Group\Constant::SF_CLAIMED_MERCHANTS_GROUP_ID)
+                                           ->get()
+                                           ->pluck('merchant_id')
+                                           ->toArray();
+
+        return $historicalClaimedMerchantIds;
     }
 }
