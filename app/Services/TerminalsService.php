@@ -37,7 +37,7 @@ class TerminalsService
 
     public function sendRequest(string $path, array $content, string $method = Requests::POST): \Requests_Response
     {
-        $url = $this->getBaseUrl($this->mode);
+        $url = $this->getBaseUrl($this->mode) . $path;
 
         $headers = $this->getHeaders();
 
