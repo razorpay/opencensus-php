@@ -3456,10 +3456,10 @@ final class Route
         'invitation_delete'                            => Permission::DELETE_INVITATION,
         'invitation_action'                            => Permission::CREATE_INVITATION,
         'merchant_product_switch'                      => Permission::MERCHANT_PRODUCT_SWITCH,
-        'merchant_activation_details'                  => Permission::MERCHANT_ACTIVATION_DETAILS,
-        'merchant_get_tags'                            => Permission::MERCHANT_GET_TAGS,
-        'merchant_razorx_bulk_evaluate'                => Permission::MERCHANT_RAZORX_BULK_EVALUATE,
-        'merchant_razorx_evaluate'                     => Permission::MERCHANT_RAZORX_EVALUATE
+        'merchant_activation_details'                  => '*',
+        'merchant_get_tags'                            => '*',
+        'merchant_razorx_bulk_evaluate'                => '*',
+        'merchant_razorx_evaluate'                     => '*',
 
     ];
 

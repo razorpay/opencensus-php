@@ -77,10 +77,6 @@ class UserRolePermissionsMap
                  Permission::CREATE_SELF_SERVE_REPORT,
                  Permission::GET_SELF_SERVE_REPORT,
                  Permission::MERCHANT_PRODUCT_SWITCH,
-                 Permission::MERCHANT_ACTIVATION_DETAILS,
-                 Permission::MERCHANT_GET_TAGS,
-                 Permission::MERCHANT_RAZORX_EVALUATE,
-                 Permission::MERCHANT_RAZORX_BULK_EVALUATE,
              ],
 
              BankingRole::ADMIN => [
