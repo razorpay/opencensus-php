@@ -256,6 +256,57 @@ return [
         ],
     ],
 
+    'testGetPaymentFlowsFromIinDetailsEndpoint' => [
+        'request'  => [
+            'url'     => '/payment/iin',
+            'content' => [
+                'iin' => '112333',
+            ],
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'flows' => [
+                    'pin'       => true,
+                    'otp'       => true,
+                    'recurring' => false,
+                    'iframe'    => true,
+                ],
+            ],
+        ],
+    ],
+
+    'testGetPaymentFlowsEmptyResponseFromIinDetailsEndpoint' => [
+        'request'  => [
+            'url'     => '/payment/iin',
+            'content' => [
+                'iin' => '112333',
+            ],
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testGetPaymentOtpFlowFromIinDetailsEndpoint' => [
+        'request'  => [
+            'url'     => '/payment/iin',
+            'content' => [
+                'iin' => '112333',
+            ],
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'flows'   => [
+                    'otp' => true,
+                ],
+            ],
+        ],
+    ],
+
+
     'testEditIinFailedInvalidMessageType' => [
         'request'     => [
             'url'     => '/iins/112333',
@@ -539,6 +590,66 @@ return [
         ],
     ],
 
+    'testGetCardPaymentFlowAndIinDetails' => [
+        'request' => [
+            'url'     => '/payment/iin',
+            'content' => [
+                'iin' => '401200',
+            ],
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content'     => [
+                'flows'   => [
+                    'recurring' => true,
+                    'iframe'    => false,
+                    'emi'       => true,
+                ],
+                'issuer'  => 'HDFC',
+                'type'    => 'credit',
+            ]
+        ]
+    ],
+
+    'testGetCardPaymentFlowAndIinDetailsWithEmiNotEnabled' => [
+        'request' => [
+            'url'     => '/payment/iin',
+            'content' => [
+                'iin' => '401200',
+            ],
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content'     => [
+                'flows'   => [
+                    'recurring' => true,
+                    'iframe'    => false,
+                    'emi'       => false,
+                ],
+            ]
+        ]
+    ],
+
+    'testGetCardPaymentFlowAndIinDetailsWithHdfcDebitIin' => [
+        'request' => [
+            'url'     => '/payment/iin',
+            'content' => [
+                'iin' => '401200',
+            ],
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content'    => [
+                'flows'   => [
+                    'recurring' => false,
+                    'iframe'    => false,
+                    'emi'       => true,
+                ],
+                'issuer' => 'HDFC',
+                'type'   => 'debit',
+            ]
+        ]
+    ],
 
     'testGetCardPaymentFlows' => [
         'request'  => [

@@ -75,6 +75,7 @@ final class Route
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
         'payment_get_flows_private'                => ['post',     'payment/flows',                                  'PaymentController@getPaymentFlowsPrivate'                          ],
+        'payment_get_iin_details'                  => ['get',      'payment/iin',                                    'IinController@getIinDetails'                                       ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'payments_downtime'                        => ['get',      'payments/downtimes',                             'DowntimeController@getMethodDowntimeData'                          ],
         'payments_downtime_trigger_cron'           => ['post',     'payments/downtimes/trigger/{status}',            'DowntimeController@triggerDowntimes'                               ],
@@ -1498,6 +1499,7 @@ final class Route
         'payment_callback_get',
         'payment_callback_ajax_get',
         'payment_get_flows',
+        'payment_get_iin_details',
         'card_issuer_validate',
         'invoice_get_status',
         'invoice_send_notification',
@@ -3872,6 +3874,7 @@ final class Route
         'merchant_methods',
         'merchant_methods_downtime',
         'payment_get_flows',
+        'payment_get_iin_details',
     ];
 
     protected static $s2sJsonRoutes = [
