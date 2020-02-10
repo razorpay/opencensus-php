@@ -2,10 +2,12 @@
 
 namespace RZP\Services;
 
+use Requests;
+
 use RZP\Trace\TraceCode;
 use RZP\Exception\IntegrationException;
 
-class TerminalService
+class TerminalsService
 {
     protected $app;
 
@@ -20,25 +22,22 @@ class TerminalService
 
     const URL               = 'url';
     const CONTENT           = 'content';
+    const CONTENT_TYPE      = 'content_type';
     const EXCEPTION         = 'exception';
     const STATUS_CODE       = 'status_code';
 
-    public function __construct($app, string $mode = '')
+    public function __construct($app)
     {
         $this->app = $app;
 
-        $this->config = $this->app['config']->get('applications.terminals_service');
-
         $this->trace = $this->app['trace'];
 
-        $this->mode = $mode ?? $this->app['rzp.mode'];
-
-        $this->baseUrl = $this->getBaseUrl($this->mode);
+        $this->mode = $this->app['rzp.mode'];
     }
 
-    protected function sendRequest(string $path, array $content, string $method = Requests::POST): \Requests_Response
+    public function sendRequest(string $path, array $content, string $method = Requests::POST): \Requests_Response
     {
-        $url = $this->baseUrl . $path;
+        $url = $this->getBaseUrl($this->mode);
 
         $headers = $this->getHeaders();
 
@@ -68,6 +67,8 @@ class TerminalService
             {
                 throw new IntegrationException('Terminals service request failed with status code : ' . $response->status_code);
             }
+
+            return $response;
         }
         catch (\Exception $exception)
         {
@@ -82,10 +83,38 @@ class TerminalService
         }
     }
 
-    protected function getBaseUrl(string $mode)
+    protected function getBaseUrl()
     {
-        $urlConfig = 'applications.terminals_service.' . $mode . '.url';
+        $urlConfig = 'applications.terminals_service.' . $this->mode . '.url';
 
         return $this->app['config']->get($urlConfig);
+    }
+
+    protected function getHeaders()
+    {
+        return [
+            self::CONTENT_TYPE      => 'Application/json',
+        ];
+    }
+
+    protected function getOptions()
+    {
+        $auth = [
+            'api',
+            $this->getPassword(),
+
+        ];
+
+        return [
+            'auth' => $auth
+        ];
+    }
+
+    protected function getPassword()
+    {
+        $passwordConfig = 'applications.terminals_service.' . $this->mode . '.password';
+
+        return $this->app['config']->get($passwordConfig);
+
     }
 }

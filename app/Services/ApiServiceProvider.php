@@ -915,16 +915,16 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerTerminalsService()
     {
-        $this->app->singleton('terminal_service', function ($app)
+        $this->app->singleton('terminals_service', function ($app)
         {
             $terminalServiceMock = $app['config']->get('applications.terminal_service.mock');
 
             if ($terminalServiceMock === true)
             {
-                return new Mock\TerminalService($app);
+                return new Mock\TerminalsService($app);
             }
 
-            return new TerminalService($app);
+            return new TerminalsService($app);
         });
 
     }
