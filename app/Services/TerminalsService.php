@@ -35,7 +35,7 @@ class TerminalsService
         $this->mode = $this->app['rzp.mode'];
     }
 
-    public function sendRequest(string $path, array $content, string $method = Requests::POST): \Requests_Response
+    protected function sendRequest(string $path, array $content, string $method = Requests::POST): \Requests_Response
     {
         $url = $this->getBaseUrl($this->mode) . $path;
 
