@@ -821,6 +821,8 @@ class Processor
             unset($input['_']);
         }
 
+        $currentRouteName = 'payment_create';
+        
         $coproto = [
             'type'    => 'respawn',
             'request' => [
