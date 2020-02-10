@@ -1663,7 +1663,6 @@ class PayoutTest extends TestCase
         }
     }
 
-
     protected function makePayoutSummaryRequest()
     {
         $request = [
@@ -2521,5 +2520,27 @@ class PayoutTest extends TestCase
         ]);
 
         return $balance;
+    }
+
+
+    public function testFiringOfWebhookOnCreationOfPendingPayout()
+    {
+        $this->liveSetUp();
+
+        $this->setupMockDns();
+
+        $this->mockRazorxTreatment('yesbank', 'on');
+
+        $this->createWebhook(['events' => ['payout.pending' => '1']], [], 'live');
+
+        $eventTestDataKey = 'testFiringOfWebhookOnCreationOfPendingPayoutEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        $workflow = $this->setupWorkflowForLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+
+        $this->assertEquals('pending', $payout['status']);
     }
 }

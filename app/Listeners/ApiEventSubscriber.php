@@ -703,6 +703,15 @@ class ApiEventSubscriber extends Base\Core
         }
     }
 
+    protected function onPayoutPending(Payout\Entity $payout)
+    {
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
     protected function onPayoutInitiated(Payout\Entity $payout)
     {
         if ($this->webhookEnabledForEvent === true)
