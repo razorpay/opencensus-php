@@ -229,6 +229,8 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
+            $this->eventPaymentCreated();
+
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
             return null;
@@ -243,7 +245,6 @@ trait Authorize
 
         if ($this->canAuthorizeViaCps($payment) === true)
         {
-
             $request =  $this->authorizeViaCps($payment, $input, $gatewayInput);
 
             $this->trace->info(
@@ -1970,6 +1971,8 @@ trait Authorize
         );
 
         $this->repo->saveOrFail($payment);
+
+        $this->eventPaymentCreated();
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
@@ -6468,6 +6471,8 @@ trait Authorize
             $data['version'] = 1;
 
             $this->repo->saveOrFail($payment);
+
+            $this->eventPaymentCreated();
 
             $payload['track_id'] = $trackId;
             $payload['request'] = $data;

@@ -753,89 +753,19 @@ class WebhookTest extends TestCase
 
     public function testWebhookPaymentCreated()
     {
-        $translatedWebhookBody = 'sample translated webhook body';
-
-        $webhookSecret = 'sample_secret';
-
-        // mark as partner
-        $partnerId     = '100000Razorpay';
-        $client        = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $partnerId);
-        $submerchantId = '10000000000000';
-
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_id'   => $client->getApplicationId(),
-                'merchant_id' => $submerchantId,
-                'entity_owner_id' => $partnerId,
-            ]
-        );
-
-        $app = DB::Connection('auth')
-            ->table('applications')
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        // create partner webhook
         $this->createMerchantWebhook(
             [
-                'events'      => ['payment.created' => "1"],
-                'secret'      => $webhookSecret,
-                'entity_type' => 'application',
-                'entity_id'   => $app->id,
+                'events'      => ['payment.created' => "1"]
             ]);
 
-        // create setting for translation url
-        $this->ba->adminAuth();
-        $this->fixtures->edit('admin', 'RzrpySprAdmnId', ['allow_all_merchants' => 1]);
-        $this->ba->addAccountAuth($partnerId);
+        $inferno = $this->mockInferno();
 
-        $testData = $this->testData['createSettingsForWebhookTranslateUrl'];
+        $payment = $this->getDefaultPaymentArray();
 
-        $this->runRequestResponseFlow($testData);
+        $inferno->shouldReceive('fire')
+            ->once();
 
-        $this->ba->deleteAccountAuth();
-
-        $payment  = $this->getDefaultPaymentArray();
-
-        // mock mozart webhook translate and inferno requests
-        $this->mockMozartWebhookTranslateRequest(function ($path, $content) use ($translatedWebhookBody) {
-
-            return [
-                'content'   => $translatedWebhookBody,
-                'headers'   => ['request-id' => ['12345678']],
-            ];
-        });
-
-        $webhookFired = [];
-
-        $this->mockInfernoMakeRequest(function ($request) use (& $webhookFired)
-        {
-            $webhookFired = $request;
-
-            return $this->getStandardWebhookResponse();
-        });
-
-        // make payment on submerchant
-        $this->doPartnerAuthPayment($payment, $client->getId(), $submerchantId);
-
-        /*
-         * these asserts cannot be inside the mockInfernoMakeRequest closure because
-         * if assert fails, then exception is thrown. However, the exception is caught and not rethrown
-         * by inferno. this leads to all assert failures failing silently.
-         */
-        $this->assertEquals($translatedWebhookBody, $webhookFired['content']);
-
-        $this->assertEquals('12345678', $webhookFired['headers']['request-id'][0]);
-
-        $this->assertEquals(
-            hash_hmac('sha256', $translatedWebhookBody, $webhookSecret),
-            $webhookFired['headers']['X-Razorpay-Signature']);
-
-        // to assert that express service does not modify the original url, method etc
-        $this->assertEquals('http://webhook.com/v1/dummy/route', $webhookFired['url']);
-
-        $this->assertEquals('post', $webhookFired['method']);
+        $this->doAuthAndCapturePayment($payment);
     }
 
     public function testOrderPaidWebhookEventData()
