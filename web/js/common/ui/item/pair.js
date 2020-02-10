@@ -7,8 +7,8 @@ import { roles, agentRole, RBLRoles } from 'merchant/helpers/data';
 
 const allRoles = {
   ...roles,
-  agentRole,
-  RBLRoles,
+  ...agentRole,
+  ...RBLRoles,
 };
 import { RefundStatusLabel } from 'merchant/components/StatusLabel';
 

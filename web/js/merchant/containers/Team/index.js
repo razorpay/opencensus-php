@@ -74,7 +74,7 @@ export default class ManageTeamContainer extends React.Component {
         <HeaderAction>
           <div class="btn-toolbar pull-right">
             <DocsLink url="https://razorpay.com/docs/team-support/" />
-            <ShowWhen myRole="owner">
+            <ShowWhen additionalCondition={user => user.isAllowedEdit('team')}>
               <button class="btn btn-primary" onClick={this.inviteNewMember}>
                 Invite New Member
               </button>
