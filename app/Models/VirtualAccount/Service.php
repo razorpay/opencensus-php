@@ -466,4 +466,11 @@ class Service extends Base\Service
 
         return (new Order\Core)->create($orderInput, $this->merchant);
     }
+
+    public function getConfigsForVirtualAccount()
+    {
+        $receivers[Entity::RECEIVER_TYPES] = [Receiver::BANK_ACCOUNT, Receiver::VPA];
+
+        return $this->core->getConfigsForVirtualAccount($receivers);
+    }
 }

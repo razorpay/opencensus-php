@@ -165,9 +165,12 @@ class MerchantCreateTest extends TestCase
         $methods = $this->getEntityById('methods', '1X4hRFHFx4UiXt', true);
 
         $expectedMethods = [
-            'amex'     => false,
-            'mobikwik' => false,
-            'paytm'    => false
+            'amex'          => true,
+            'mobikwik'      => true,
+            'paytm'         => false,
+            'jiomoney'      => true,
+            'airtelmoney'   => true,
+            'paylater'      => true,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methods);

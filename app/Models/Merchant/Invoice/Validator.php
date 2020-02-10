@@ -59,7 +59,6 @@ class Validator extends Base\Validator
     protected static $bankingInvoiceGenerateRules = [
         Entity::YEAR                => 'required|digits:4',
         Entity::MONTH               => 'required|digits_between:1,2',
-        Entity::ACCOUNT_NUMBER      => 'required|alpha_num|between:5,22',
         Entity::SEND_EMAIL          => 'sometimes|boolean',
         Entity::TO_EMAILS           => 'required_if:send_email,1|array',
         Entity::TO_EMAILS . '.*'    => 'filled|email',

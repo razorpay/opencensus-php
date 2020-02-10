@@ -45,7 +45,9 @@ class Service extends Base\Service
     {
         $properties = $input;
 
-        $properties['user_agent'] = $this->app['request']->header('User-Agent');
+        $properties['user_agent']  = $this->app['request']->header('User-Agent');
+
+        $properties['merchant_id'] = $this->merchant->getId();
 
         $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_INITIATED, null, null, $properties);
 
@@ -59,11 +61,11 @@ class Service extends Base\Service
 
             $order = (new Core)->create($input, $merchant);
 
-            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, $order);
+            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, $order, null, $properties);
         }
         catch (\Throwable $ex)
         {
-            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, null, $ex);
+            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, null, $ex, $properties);
 
             throw $ex;
         }

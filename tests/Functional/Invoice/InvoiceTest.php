@@ -2288,6 +2288,90 @@ class InvoiceTest extends TestCase
 
     }
 
+    public function testInvoiceSoftDelete()
+    {
+        $this->ba->appAuth('rzp_test', 'RANDOM_CRON_PASSWORD');
+
+        $pastDay = Carbon::now()->subHour(24)->getTimestamp();
+
+        $currentTimestamp = Carbon::now()->getTimestamp();
+
+        $this->createOrder(['id' => '10000000order0']);
+        $this->fixtures->create('invoice',
+            [
+                'id' => '100000invoice0',
+                'status' => 'expired',
+                'updated_at' => $pastDay,
+                'order_id' => '10000000order0',
+                'type' => 'link',
+                'merchant_id' => '100000Razorpay'
+            ]);
+
+
+        $this->fixtures->create('invoice',
+            [
+                'id' => '100000invoice1',
+                'status' => 'expired',
+                'updated_at' => $currentTimestamp,
+                'order_id' => '10000000order0',
+                'type' => 'link',
+                'merchant_id' => '100000Razorpay'
+            ]);
+
+        $this->fixtures->create('invoice',
+            [
+                'id' => '100000invoice2',
+                'status' => 'cancelled',
+                'updated_at' => $pastDay,
+                'order_id' => '10000000order0',
+                'type' => 'link',
+                'merchant_id' => '100000Razorpay'
+            ]);
+
+        $this->fixtures->create('invoice',
+            [
+                'id' => '100000invoice3',
+                'status' => 'issued',
+                'updated_at' => $pastDay,
+                'order_id' => '10000000order0',
+                'type' => 'link',
+                'merchant_id' => '100000Razorpay'
+            ]);
+
+        $this->fixtures->create('invoice',
+            [
+                'id' => '100000invoice4',
+                'status' => 'partially_paid',
+                'updated_at' => $pastDay,
+                'order_id' => '10000000order0',
+                'type' => 'link',
+                'merchant_id' => '100000Razorpay'
+            ]);
+
+        $this->fixtures->create('invoice',
+            [
+                'id' => '100000invoice5',
+                'status' => 'expired',
+                'updated_at' => $pastDay,
+                'order_id' => '10000000order0',
+                'type' => 'link',
+                'merchant_id' => '10000000000000'
+            ]);
+
+        $this->fixtures->create('invoice',
+            [
+                'id' => '100000invoice6',
+                'status' => 'expired',
+                'updated_at' => $currentTimestamp,
+                'order_id' => '10000000order0',
+                'type' => 'link',
+                'merchant_id' => '10000000000000'
+            ]);
+
+        $this->startTest();
+
+    }
+
     /**
      * Calls GET invoice route and makes assertions for status code
      * and errors if any.
@@ -2910,6 +2994,13 @@ class InvoiceTest extends TestCase
         $this->createIssuedInvoice();
 
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateSendEmailForPaymentLinkService()
+    {
+        $this->ba->paymentLinksAuth();
 
         $this->startTest();
     }

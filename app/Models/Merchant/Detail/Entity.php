@@ -570,6 +570,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return Address\Utility::formatAddressAsText(
             [
                 Address\Entity::LINE1     => $this->getBusinessRegisteredAddress(),
+                Address\Entity::LINE2     => $this->getBusinessRegisteredAddressLine2(),
                 Address\Entity::CITY      => $this->getBusinessRegisteredCity(),
                 Address\Entity::STATE     => $this->getBusinessRegisteredStateName(),
                 Address\Entity::COUNTRY   => 'India',

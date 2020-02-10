@@ -61,7 +61,17 @@ class AuthLink extends Base
 
         $entry[HEADER::AUTH_LINK_CREATED_AT]    = $this->invoice->getCreatedAt();
 
+        $tokenRegistration = $this->invoice->tokenRegistration;
+        if (($tokenRegistration !== null) and
+            ($tokenRegistration->getMethod() === SubscriptionRegistration\Method::NACH))
+        {
+            $paperMandate = $tokenRegistration->paperMandate;
 
+            if ($paperMandate !== null)
+            {
+                $entry[Header::AUTH_LINK_NACH_PRI_FILLED_FORM] = $paperMandate->getGeneratedFormUrl();
+            }
+        }
     }
 
     protected function createAuthLink(array & $entry) : Invoice\Entity
@@ -128,6 +138,29 @@ class AuthLink extends Base
             $config[self::AMOUNT_AS_RUPEE_CONFIG] = true;
 
             $input["config"] = $config;
+        }
+    }
+
+    protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
+    {
+        $entry = current($entries);
+
+        if (empty($entry) === false)
+        {
+            if (array_key_exists(Header::AUTH_LINK_NACH_REFERENCE1, $entry) === true)
+            {
+                array_splice($headers, count($headers), 0, Header::AUTH_LINK_NACH_REFERENCE1);
+            }
+
+            if (array_key_exists(Header::AUTH_LINK_NACH_REFERENCE2, $entry) === true)
+            {
+                array_splice($headers, count($headers), 0, Header::AUTH_LINK_NACH_REFERENCE2);
+            }
+
+            if (array_key_exists(Header::AUTH_LINK_NACH_CREATE_FORM, $entry) === true)
+            {
+                array_splice($headers, count($headers), 0, Header::AUTH_LINK_NACH_CREATE_FORM);
+            }
         }
     }
 }

@@ -125,6 +125,11 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testDuplicateBulkPricingPlanBanking()
+    {
+        $this->startTest();
+    }
+
     /**
      * RZP admin due to cross org feature enabled can create pricing plan for all orgs like SBI and HDFC.
      * Here, we are testing the case where RZP admin is creating a pricing plan for SBI organisation.
@@ -1447,6 +1452,28 @@ class PricingTest extends TestCase
         $paymentObj = $this->getLastEntity('payment', true);
 
         $this->assertEquals('10000', $paymentObj['fee']);
+    }
+
+    public function testAddPricingPlanRuleForBankingShared()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForBankingDirect()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
     }
 
     public function testAddPricingPlanRuleForBankingPayoutWithoutAccountType()

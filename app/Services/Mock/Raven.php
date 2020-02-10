@@ -19,7 +19,7 @@ class Raven extends BaseRaven
         return [self::SMS_ID => self::TEST_SMS_ID];
     }
 
-    public function verifyOtp(array $input): array
+    public function verifyOtp(array $input, bool $mock = false): array
     {
         if ($input[self::OTP] !== self::MOCK_VALID_OTP)
         {

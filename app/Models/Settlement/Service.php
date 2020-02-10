@@ -66,7 +66,8 @@ class Service extends Base\Service
             $response += [
                 'no_settlement' => [
                     'caption' => 'Settlement might get skipped',
-                    'reason'  => 'Settlement amount is less than 1 rupee'
+                    'reason'  => 'Settlement amount is less than 1 rupee',
+                    'on_hold' => false,
                 ],
             ];
         }
@@ -76,6 +77,7 @@ class Service extends Base\Service
                 'no_settlement' => [
                     'caption' => 'Settlement might get skipped',
                     'reason'  => 'Settlement amount is more than the available live balance',
+                    'on_hold' => false,
                 ]
             ];
         }

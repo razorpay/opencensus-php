@@ -3080,4 +3080,24 @@ class Core extends Base\Core
 
         return new Base\PublicCollection;
     }
+
+    /**
+     * @return array
+     */
+    public function getBatchActionEntities(): array
+    {
+        $batchActionEntities = BatchActionEntity::BATCH_ACTION_ENTITIES;
+
+        return $batchActionEntities;
+    }
+
+    /**
+     * @return array
+     */
+    public function getBatchActions(): array
+    {
+        $batchActions = BatchAction::BATCH_ACTIONS;
+
+        return $batchActions;
+    }
 }

@@ -123,7 +123,7 @@ class Service extends Base\Service
 
     public function fetchMultiple()
     {
-        return $this->merchant->bankingAccounts;
+        return $this->merchant->bankingAccounts->load(Entity::BALANCE)->toArrayPublic();
     }
 
     public function processAccountInfoWebhook(string $channel, array $input)

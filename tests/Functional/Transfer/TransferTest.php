@@ -1052,7 +1052,7 @@ class TransferTest extends TestCase
     {
         Mail::fake();
 
-        $this->fixtures->merchant->editBalance(-300000);
+        $this->fixtures->merchant->editBalance(-400000);
 
         $this->fixtures->create('balance_config',
             [
@@ -1080,7 +1080,7 @@ class TransferTest extends TestCase
 
         $transfers[0] = [
             'account'  => 'acc_' . $account->getId(),
-            'amount'   => 1000,
+            'amount'   => 50000,
             'currency' => 'INR',
         ];
 
@@ -1094,7 +1094,7 @@ class TransferTest extends TestCase
 
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
-            $this->assertEquals(50, $viewData['percentage']);
+            $this->assertEquals(80, $viewData['percentage']);
 
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 

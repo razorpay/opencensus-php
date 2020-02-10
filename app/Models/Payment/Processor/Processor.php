@@ -160,6 +160,8 @@ class Processor
      */
     const SECURE_3D_INTERNATIONAL = 'secure_3d_international';
 
+    const FINGERPRINT_MIGRATION_CACHE_KEY = 'fingerprint_migration';
+
     /**
      * @var Merchant\Entity
      */
@@ -309,6 +311,8 @@ class Processor
 
             $payment = $this->payment;
 
+            $this->eventPaymentCreated();
+
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
@@ -340,6 +344,15 @@ class Processor
 
             throw $e;
         }
+    }
+
+    protected function eventPaymentCreated()
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $this->payment,
+        ];
+
+        $this->app['events']->fire('api.payment.created', $eventPayload);
     }
 
     protected function appendMetadataForPayment(array & $input)

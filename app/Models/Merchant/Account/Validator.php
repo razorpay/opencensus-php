@@ -96,7 +96,7 @@ class Validator extends Merchant\Validator
     protected static $accountAddressRules = [
         Constants::TYPE          => 'required|string|custom:address_type',
         Constants::LINE1         => 'required|string|max:100',
-        Constants::LINE2         => 'required|string',
+        Constants::LINE2         => 'sometimes|string',
         Constants::CITY          => 'required|string',
         Constants::DISTRICT_NAME => 'sometimes|string',
         Constants::STATE         => 'required|string',

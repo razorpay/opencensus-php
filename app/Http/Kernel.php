@@ -27,6 +27,7 @@ class Kernel extends HttpKernel
         'web' => [
             Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            Middleware\SameSiteSession::class,
             \Illuminate\Session\Middleware\StartSession::class,
             Middleware\TemporaryStartSession::class,
             // \Illuminate\View\Middleware\ShareErrorsFromSession::class,
@@ -60,6 +61,7 @@ class Kernel extends HttpKernel
         // Route group middleware
         Middleware\EncryptCookies::class,
         \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        Middleware\SameSiteSession::class,
         \Illuminate\Session\Middleware\StartSession::class,
         Middleware\TemporaryStartSession::class,
     ];
