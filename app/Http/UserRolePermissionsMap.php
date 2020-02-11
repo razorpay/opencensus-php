@@ -2,9 +2,8 @@
 
 namespace RZP\Http;
 
-use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\User\BankingRole;
-use RZP\Models\User\Role;
+use RZP\Models\Admin\Permission\Name as Permission;
 
 class UserRolePermissionsMap
 {
@@ -217,8 +216,25 @@ class UserRolePermissionsMap
          return $rolePermissions;
     }
 
-    public function getRolePermissions(string $role)
+    public function isValidRolePermission(string $role, string $permission)
     {
-        return $this->rolePermissions[$role] ?? null;
+        $rolePermissions = $this->rolePermissions[$role] ?? null;
+
+        if (in_array($permission, $rolePermissions))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isInvalidRolePermission(string $role, string $permission)
+    {
+        if ($this->isValidRolePermission($role, $permission))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

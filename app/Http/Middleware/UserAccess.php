@@ -180,23 +180,25 @@ class UserAccess
 
     private function validateUserAccess(string $route)
     {
+        $userAccessException = $this->validateRouteUserRolesPolicy($route);
+
         // TODO: Dry run ACL for banking request, This is a part of release step.
         if ($this->ba->isProductBanking())
         {
             try
             {
                 $this->validateBankingUserRoutePolicy($route);
-            } catch (BadRequestException $e)
+            }
+            catch (BadRequestException $e)
             {
                 $this->trace->traceException($e, Trace::INFO, TraceCode::BANKING_ACCOUNT_USER_PERMISSION_ERROR,
                                             [
-                                                'route'        => $route,
-                                                'user_id' => $this->ba->getUser()->getId(),
+                                                'route'            => $route,
+                                                'user_id'          => $this->ba->getUser()->getId(),
+                                                'old_acl_response' => $userAccessException,
                                             ]);
             }
         }
-
-        $userAccessException = $this->validateRouteUserRolesPolicy($route);
 
         return $userAccessException;
     }
@@ -247,8 +249,6 @@ class UserAccess
 
         $userRole = $this->getUserRole();
 
-        $userRolePermissions = $this->getBankingRolePermissions($userRole);
-
         $routePermission = $this->getRoutePermission($route);
 
         // Allow route to all roles having wildcard permission
@@ -258,7 +258,7 @@ class UserAccess
         }
 
         // If role doesn't have route permission then deny otherwise allow
-        if (in_array($routePermission, $userRolePermissions, true) === false)
+        if ($this->userRolePermissionsMap->isInvalidRolePermission($userRole, $routePermission))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
@@ -277,24 +277,6 @@ class UserAccess
         }
 
         return $userRole;
-    }
-
-    /**
-     * @param $role
-     *
-     * @return mixed|null
-     * @throws BadRequestException
-     */
-    private function getBankingRolePermissions($role)
-    {
-        $rolePermissions = $this->userRolePermissionsMap->getRolePermissions($role);
-
-        if ($rolePermissions === null)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED_USER_PERMISSIONS_MISSING);
-        }
-
-        return $rolePermissions;
     }
 
     /**
