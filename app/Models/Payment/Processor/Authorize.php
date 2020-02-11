@@ -6472,8 +6472,6 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
-            $this->eventPaymentCreated();
-
             $payload['track_id'] = $trackId;
             $payload['request'] = $data;
 
