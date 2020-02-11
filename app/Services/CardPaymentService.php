@@ -231,8 +231,11 @@ class CardPaymentService
         if ($this->app->environment('production') === false)
         {
             $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
-            if ($testCaseId != null)
-                $request['headers'][self::X_RZP_TESTCASE_ID] = $testCaseId ;
+
+            if (empty($testCaseId) === false)
+            {
+                $request['headers'][self::X_RZP_TESTCASE_ID] = $testCaseId;
+            }
         }
 
         $this->traceRequest($request);
