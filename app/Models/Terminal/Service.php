@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\TerminalsServiceSyncJob;
 
 class Service extends Base\Service
 {
@@ -347,7 +348,15 @@ class Service extends Base\Service
         }
     }
 
+    public function migrateTerminals(array $input)
+    {
+        $terminals = $this->repo->terminal->fetch(['count' => 10]);
 
+        foreach ($terminals as $terminal)
+        {
+            $this->migrateTerminal($terminal);
+        }
+    }
     /**
      * Add/Remove bank from the oldEnabledBankList adn return the newList.
      *
@@ -370,5 +379,29 @@ class Service extends Base\Service
             unset($oldList[$index]);
         }
         return array_values($oldList);
+    }
+
+    protected function migrateTerminal(Terminal\Entity $terminal)
+    {
+        $data = [
+            Entity::TERMINAL_ID => $terminal->getId(),
+        ];
+
+        try
+        {
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_QUEUE_REQUEST_STARTED, $data);
+
+            TerminalsServiceSyncJob::dispatch($this->mode, $terminal->getId());
+
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_QUEUE_REQUEST_SUCCESS, $data);
+        }
+        catch (\Exception $exception)
+        {
+            $data['message'] = $exception->getMessage();
+
+            $data['code']    = $exception->getCode();
+
+            $this->trace->error(TraceCode::TERMINALS_SERVICE_QUEUE_REQUEST_FAILURE, $data);
+        }
     }
 }

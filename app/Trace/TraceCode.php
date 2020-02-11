@@ -2604,6 +2604,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUPPORT_TICKET_STATUS_REQUEST                         = 'SUPPORT_TICKET_STATUS_REQUEST';
     const SUPPORT_TICKET_STATUS_RESPONSE                        = 'SUPPORT_TICKET_STATUS_RESPONSE';
 
+    //Terminals service
+    const TERMINALS_SERVICE_QUEUE_REQUEST_STARTED               = 'TERMINALS_SERVICE_QUEUE_REQUEST_STARTED';
+    const TERMINALS_SERVICE_QUEUE_REQUEST_SUCCESS               = 'TERMINALS_SERVICE_QUEUE_REQUEST_SUCCESS';
+    const TERMINALS_SERVICE_QUEUE_REQUEST_FAILURE               = 'TERMINALS_SERVICE_QUEUE_REQUEST_FAILURE';
+    const TERMINALS_SERVICE_QUEUE_WORKER_STARTED                = 'TERMINALS_SERVICE_QUEUE_WORKER_STARTED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
