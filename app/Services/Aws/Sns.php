@@ -34,6 +34,9 @@ class Sns
         $args = [
             'credentials' => new Credentials\FileCache,
             'timeout'     => 3.0,
+            'http'        => [
+                'timeout' => 1.0,
+            ],
         ];
 
         $this->client = $sdk->createClient('sns', $args);
@@ -43,6 +46,8 @@ class Sns
 
     public function publish($message, $messageTarget = 'sms')
     {
+        $this->trace->info(TraceCode::AWS_SNS_PUBLISH_REQUEST);
+
         $result = $this->client->publish(
             [
                 'Message'   => $message,

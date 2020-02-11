@@ -794,6 +794,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FREECHARGE, $value);
     }
 
+    public function setJiomoney($value)
+    {
+        $this->setAttribute(self::JIOMONEY, $value);
+    }
+
+    public function setPayLater($value)
+    {
+        $this->setAttribute(self::PAYLATER, $value);
+    }
+
     public function setSbibuddy($value)
     {
         $this->setAttribute(self::SBIBUDDY, $value);

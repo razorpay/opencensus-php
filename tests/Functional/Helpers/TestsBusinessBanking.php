@@ -238,6 +238,7 @@ trait TestsBusinessBanking
     protected function mockRazorxTreatment(string $channel = 'yesbank',
                                            string $ftsEnabled = 'off',
                                            string $webhookViaStork = 'off',
+                                           string $webhookArrayPublicPayload = 'on',
                                            string $defaultBehaviour = 'off')
     {
         // Mock Razorx
@@ -250,7 +251,12 @@ trait TestsBusinessBanking
 
         $this->app->razorx->method('getTreatment')
                           ->will($this->returnCallback(
-                function ($mid, $feature, $mode) use ($channel, $ftsEnabled, $defaultBehaviour)
+                function ($mid, $feature, $mode) use (
+                    $channel,
+                    $ftsEnabled,
+                    $webhookArrayPublicPayload,
+                    $defaultBehaviour
+                )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
                     {
@@ -262,6 +268,11 @@ trait TestsBusinessBanking
                         return strtolower($ftsEnabled);
                     }
 
+                    if ($feature === 'payouts_webhook_filter')
+                    {
+                        return strtolower($webhookArrayPublicPayload);
+                    }
+
                     return strtolower($defaultBehaviour);
                 }));
 
@@ -269,7 +280,7 @@ trait TestsBusinessBanking
                           ->willReturn(strtolower($webhookViaStork));
     }
 
-    protected function createWorkflowFeature(array $attributes = [])
+    protected function createWorkflowFeature(array $attributes = [], $mode = 'test')
     {
         $defaultAttributes = [
             'name'        => 'payout_workflows',
@@ -279,6 +290,6 @@ trait TestsBusinessBanking
 
         $attributes = array_merge($defaultAttributes, $attributes);
 
-        return $this->fixtures->create('feature', $attributes);
+        return $this->fixtures->on($mode)->create('feature', $attributes);
     }
 }

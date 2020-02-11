@@ -265,9 +265,14 @@ class Constants
     const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
 
     /**
- * Enables workflow feature on Payout for Business Banking (RazorpayX)
- */
+     * Enables workflow feature on Payout for Business Banking (RazorpayX)
+     */
     const PAYOUT_WORKFLOWS              = 'payout_workflows';
+
+    /**
+     * Skips workflow for API requests for creating payouts for Business Banking (RazorpayX)
+     */
+    const SKIP_WORKFLOWS_FOR_API        = 'skip_workflow_for_api';
 
     /**
      * Aggregator Partner + OAuth Client access
@@ -504,6 +509,7 @@ class Constants
         self::OFFLINE_PAYMENTS                => true,
         self::ERROR_METADATA_RESPONSE         => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
+        self::SKIP_WORKFLOWS_FOR_API          => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
     ];
@@ -645,6 +651,11 @@ class Constants
             'display_name'  => 'D2C Credit score campaign',
             'documentation' => '',
         ],
+        self::SKIP_WORKFLOWS_FOR_API         => [
+            'feature'       => self::SKIP_WORKFLOWS_FOR_API,
+            'display_name'  => 'Razorpay X - Skip workflows for API requests',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -662,6 +673,7 @@ class Constants
         self::VIRTUAL_ACCOUNTS,
         self::ES_AUTOMATIC,
         self::SHOW_CREDIT_SCORE,
+        self::SKIP_WORKFLOWS_FOR_API
     ];
 
     /*

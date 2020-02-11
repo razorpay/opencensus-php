@@ -67,7 +67,7 @@ class Validator extends Base\Validator
 
     private function validateReserveBalance(array $input)
     {
-        if (array_key_exists(Balance\Entity::TYPE, $input) === true)
+        if (isset($input[Balance\Entity::TYPE]) === true)
         {
             $reserveType = ($input[Entity::TYPE] === Balance\Type::RESERVE_PRIMARY) or
                             ($input[Entity::TYPE] === Balance\Type::RESERVE_BANKING);

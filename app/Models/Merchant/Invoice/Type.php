@@ -62,7 +62,7 @@ class Type
     const CARD_LTE_2K_DESCRIPTION           = 'Commission on Card Payments <= INR 2,000';
     const CARD_GT_2K_DESCRIPTION            = 'Commission on Card Payments > INR 2,000';
     const OTHERS_DESCRIPTION                = 'Commission on All Methods Except Cards';
-    const RX_TRANSACTIONS_DESCRIPTION       = 'Commission for Razorpay-X transactions';
+    const RX_TRANSACTIONS_DESCRIPTION       = 'RazorpayX Transactions Fees';
     const VALIDATION_DESCRIPTION            = 'Commission on All Validations';
     const INSTANT_REFUNDS_DESCRIPTION       = 'Fee on Instant Refunds';
     const REFUND_LTE_1K_DESCRIPTION         = 'Fee on Instant Refund <= INR 1,000';

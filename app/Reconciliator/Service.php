@@ -263,7 +263,9 @@ class Service extends Base\Service
             [
                 'info_code' => InfoCode::RECON_CPS_QUEUE_DISPATCH,
                 'queue'     => $queueName,
-                'payload'   => json_encode($pushData),
+                'payload'   => $pushData,
+                'gateway'   => $input['gateway'],
+                'batch_id'  => $input['batch_id'],
             ]
         );
     }

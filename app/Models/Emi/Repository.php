@@ -70,4 +70,24 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function fetchDurationsByMerchantAndIssuer(string $merchantId, string $issuer)
+    {
+        return $this->newQuery()
+            ->select(Entity::DURATION)
+            ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
+            ->where(Entity::BANK, '=', $issuer)
+            ->pluck(Entity::DURATION)
+            ->all();
+    }
+
+    public function fetchDurationsByMerchantAndNetwork(string $merchantId, string $paymentNetwork)
+    {
+        return $this->newQuery()
+            ->select(Entity::DURATION)
+            ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
+            ->where(Entity::NETWORK, '=', $paymentNetwork)
+            ->pluck(Entity::DURATION)
+            ->all();
+    }
  }

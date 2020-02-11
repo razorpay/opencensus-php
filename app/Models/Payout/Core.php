@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use App;
+
 use RZP\Exception;
 use RZP\Constants;
 use Carbon\Carbon;
@@ -30,6 +31,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 /**
@@ -52,6 +54,8 @@ class Core extends Base\Core
     const MUTEX_LOCK_TIMEOUT                = 300;
 
     const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
+
+    const PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT = 3600;
 
     /**
      * @var Mutex
@@ -285,6 +289,44 @@ class Core extends Base\Core
 
             return $this->createPayoutToMerchant($payoutInput, $payout->merchant);
         }
+    }
+
+    public function updateTestPayoutStatus(Entity $payout, array $input)
+    {
+        if ($this->isTestMode() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
+                null,
+                [
+                    'payout_id'     => $payout->getId(),
+                ]);
+        }
+
+        if ($payout->getStatus() === Status::CREATED)
+        {
+            // Move payout to initiated state
+            // This has been done so that state machine is respected
+            // Payouts can move to final status (i.e.. processed/reversed) from initiated state only
+            $this->updateStatusAfterFtaInitiated($payout, new Attempt\Entity);
+        }
+
+        // Validate status
+        Status::validateStatusUpdate($input[Entity::STATUS], $payout->getStatus());
+
+        $input += [
+            Attempt\Entity::UTR                => $payout->getId(),
+            Attempt\Entity::SOURCE_ID          => $payout->getId(),
+            Attempt\Entity::SOURCE_TYPE        => Constants\Entity::PAYOUT,
+            // This is required because FTA has a required|int validator for fund_transfer_id
+            Attempt\Entity::FUND_TRANSFER_ID   => -1,
+        ];
+
+        (new Attempt\Core())->updateFundTransfer($input);
+
+        // Reloading the model here so that the payout has the updated status which was done via FTA
+        // FTA fetches the payout from the db, therefore the instance of payout doesn't have updated status by default
+        return $payout->refresh();
     }
 
     public function updateStatusAfterFtaRecon(Entity $payout, array $ftaData)
@@ -599,6 +641,44 @@ class Core extends Base\Core
     {
         $dispatchedCount = 0;
 
+        // This is only false when there is a queued fee_recovery payout and the merchant doesn't
+        // have enough balance for that payout
+        $rzpFeesRecoverySucceeded = true;
+
+        foreach ($payouts as $key => $payout)
+        {
+            $purpose = $payout->getPurpose();
+
+            if ($purpose === Purpose::RZP_FEES)
+            {
+                $totalPayoutAmount = $payout->getAmount();
+
+                if ($totalBalance < $totalPayoutAmount)
+                {
+                    $rzpFeesRecoverySucceeded = false;
+
+                    continue;
+                }
+
+                $totalBalance -= $totalPayoutAmount;
+
+                $this->dispatchQueuedPayout($payout, 0, $totalBalance);
+
+                $dispatchedCount += 1;
+
+                unset($payouts[$key]);
+            }
+        }
+
+        // If fee_recovery payout does not get processed, we will not process any other queued payout either
+        if ($rzpFeesRecoverySucceeded === false)
+        {
+            return [
+                'balance_remaining'        => $totalBalance,
+                'dispatched_payout_count'  => $dispatchedCount,
+            ];
+        }
+
         foreach ($payouts as $payout)
         {
             $payoutAmount = $payout->getAmount();
@@ -607,7 +687,14 @@ class Core extends Base\Core
             // have been created and hence the fees also wouldn't have been calculated.
             list($payoutFees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
 
-            $totalPayoutAmount = $payoutAmount + $payoutFees;
+            if ($payout->balance->getAccountType() === AccountType::DIRECT)
+            {
+                $totalPayoutAmount = $payoutAmount;
+            }
+            else
+            {
+                $totalPayoutAmount = $payoutAmount + $payoutFees;
+            }
 
             if ($totalBalance < $totalPayoutAmount)
             {
@@ -997,7 +1084,17 @@ class Core extends Base\Core
                 // This fee_breakup can be later inserted in the db without any issues
                 //
                 /** @var Base\PublicCollection $dummyFeesBreakup */
-                list($totalFee, $taxFee, $dummyFeesBreakup) = (new Pricing\Fee)->calculateMerchantFees($clonedPayout);
+
+                $fees = $clonedPayout->getFees();
+
+                $tax = $clonedPayout->getTax();
+
+                $pricingRuleId = $clonedPayout->getPricingRuleId();
+
+                $dummyFeesBreakup = (new Transaction\Processor\Payout($clonedPayout))->getFeeSplitForDirectPayouts(
+                                                                                            $fees,
+                                                                                            $tax,
+                                                                                            $pricingRuleId);
 
                 $this->trace->info(
                     TraceCode::DUMMY_TRANSACTION_FEES_BREAKUP_DETAILS,
@@ -1180,26 +1277,23 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
             ]);
 
-        if ($payout->isStatusReversed() === true)
-        {
-            throw new Exception\LogicException(
-                'Attempted to reverse an already reversed payout',
-                null,
-                [
-                    'payout_id'      => $payout->getId(),
-                    'status'         => $payout->getStatus(),
-                    'reverse_reason' => $reverseReason,
-                ]);
-        }
-
         $app = App::getFacadeRoot();
 
         $this->mutex = $app['api.mutex'];
 
+        // Keeping the mutex TTL high while updating the payout to reversed.
+        // This is to ensure that the process that is working on the payout
+        // resource, releases mutex on the payout only once all entities are
+        // saved in the database.
         $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
             function () use ($payout, $reverseReason)
             {
+                // reloading the payout here to ensure if any other process
+                // gets a mutex on payout resource, it gets a fresh copy
+                // of payout to work.
+                $payout->reload();
+
                 if ($payout->isStatusReversed() === true)
                 {
                     $this->trace->info(TraceCode::PAYOUT_ALREADY_REVERSED,
@@ -1211,6 +1305,7 @@ class Core extends Base\Core
 
                     return;
                 }
+
                 $this->repo->transaction(
                     function() use ($payout, $reverseReason) {
                         $reversal = (new Reversal\Core)->reverseForPayout($payout);
@@ -1228,7 +1323,7 @@ class Core extends Base\Core
                         }
                     });
             },
-            60,
+            self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
     }

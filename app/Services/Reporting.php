@@ -40,6 +40,7 @@ class Reporting implements ExternalService
     const LOG_PATH              = '/v1/logs';
     const ADMIN_LOG_PATH        = '/v1/admin-logs';
     const SCHEDULE_PATH         = '/v1/schedules';
+    const LOG_PATH_FOR_MERCHANT = '/v1/merchant/logs';
 
     const SCHEDULE_PREFIX = 'sched_';
 
@@ -57,6 +58,7 @@ class Reporting implements ExternalService
     const ADMIN_TOKEN_HEADER    = 'X-Admin-Token';
     const LINKED_ACCOUNT_HEADER = 'X-Linked-Account-Parent';
     const USER_ID_HEADER        = 'X-Dashboard-User-Id';
+    const GENERATED_BY_HEADER   = 'X-Generated-By';
 
     /**
      * @var array
@@ -278,6 +280,17 @@ class Reporting implements ExternalService
         //
         $input['mode'] = $this->mode;
 
+        /**
+         * If request is coming from the proxy auth (merchant)
+         * Adds the merchant id of the merchant who initiated the request
+         * irrespective of the case whether the request was for the merchant itself
+         * or for one of it's linked account
+         */
+        if ($this->ba->isProxyAuth())
+        {
+            $input['generated_by'] = $this->ba->authCreds->getKey();
+        }
+
         $path = self::LOG_PATH;
 
         if (empty($input['emails']) === true)
@@ -310,7 +323,20 @@ class Reporting implements ExternalService
 
     public function fetchLogMultiple(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input);
+        $path = self::LOG_PATH;
+
+        $headers = [];
+
+        if ($this->ba->isProxyAuth())
+        {
+            $headers = [
+                self::GENERATED_BY_HEADER   => $this->ba->authCreds->getKey(),
+            ];
+
+            $path = self::LOG_PATH_FOR_MERCHANT;
+        }
+
+        return $this->createAndSendRequest(Requests::GET, $path, $input, $headers);
     }
 
     public function createSchedule(array $input): array

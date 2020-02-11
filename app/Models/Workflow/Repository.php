@@ -14,7 +14,7 @@ class Repository extends Base\Repository
 {
     protected $entity = 'workflow';
 
-    const DEFAULT_FETCH_LIMIT = 10;
+    const DEFAULT_FETCH_LIMIT = 200;
     const DEFAULT_FETCH_OFFSET = 0;
 
     protected $adminFetchParamRules = [
@@ -36,7 +36,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Returns merchant ids of merchants who have workflow/s with create_payout permission
+     * Fetches workflows by orgId and permission name
      *
      * @param string $orgId
      * @param array $params

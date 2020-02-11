@@ -68,6 +68,8 @@ class Entity extends Base\PublicEntity
     const NACH            = 'nach';
     const SUCCEED         = 'succeed';
 
+    const DEFAULT_MAX_AMOUNT = 9999900;
+
     protected static $sign = 'subr';
 
     protected $entity = 'subscription_registration';
@@ -340,5 +342,29 @@ class Entity extends Base\PublicEntity
     public function setBank(string $bank)
     {
         $this->setAttribute(self::BANK, $bank);
+    }
+
+    public function setMaxAmount(string $maxAmount)
+    {
+        $this->setAttribute(self::MAX_AMOUNT, $maxAmount);
+    }
+
+    public function build(array $input = array())
+    {
+        $subscriptionRegistration = parent::build($input);
+
+        if (empty($subscriptionRegistration->getMaxAmount()) === true)
+        {
+            $maxAmount = self::DEFAULT_MAX_AMOUNT;
+
+            if ($subscriptionRegistration->getMethod() === Method::NACH)
+            {
+                $maxAmount = PaperMandate\Entity::DEFAULT_AMOUNT;
+            }
+
+            $subscriptionRegistration->setMaxAmount($maxAmount);
+        }
+
+        return $subscriptionRegistration;
     }
 }

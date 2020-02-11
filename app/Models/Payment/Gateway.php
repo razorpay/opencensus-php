@@ -164,7 +164,7 @@ class Gateway
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
-        self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC, self::ACQUIRER_YESB],
         self::FIRST_DATA   => [self::ACQUIRER_ICIC],
         self::AMEX         => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI   => [self::ACQUIRER_ICIC],
@@ -366,7 +366,6 @@ class Gateway
         IFSC::SCBL,
         IFSC::TMBL,
         IFSC::USFB,
-        IFSC::UTBI,
         IFSC::UTIB,
         IFSC::YESB,
         Netbanking::PUNB_R,
@@ -390,7 +389,6 @@ class Gateway
         IFSC::MAHB,
         IFSC::SIBL,
         IFSC::USFB,
-        IFSC::UTBI,
         IFSC::YESB,
         Netbanking::PUNB_R,
         IFSC::SBIN,
@@ -1016,6 +1014,10 @@ class Gateway
         ],
         self::PAYSECURE => [
             Network::RUPAY,
+        ],
+        self::MPI_BLADE => [
+            Network::MC,
+            Network::VISA
         ]
     ];
 

@@ -80,15 +80,6 @@ class NachCiti extends Base
         return $data;
     }
 
-    protected function generateTextWithHeadings($data, $glue = '~', $ignoreLastNewline = false, array $headings = [])
-    {
-        array_shift($data);
-
-        array_unshift($data, array_combine($headings, $headings));
-
-        return $this->generateText($data, $glue, $ignoreLastNewline);
-    }
-
     /**
      * @param array $content
      * @return bool
@@ -97,5 +88,24 @@ class NachCiti extends Base
     protected function isAuthorized(array $content): bool
     {
         return Status::isDebitSuccess($content[self::GATEWAY_RESPONSE_CODE]);
+    }
+
+    /**
+     * @param array $content
+     * @return bool
+     * @throws Exception\GatewayErrorException
+     */
+    protected function isRejected(array $content): bool
+    {
+        return Status::isDebitRejected($content[self::GATEWAY_RESPONSE_CODE]);
+    }
+
+    protected function parseFileAndCleanEntries(string $filePath): array
+    {
+        $entries = $this->parseFile($filePath);
+
+        array_shift($entries);
+
+        return $this->cleanParsedEntries($entries);
     }
 }

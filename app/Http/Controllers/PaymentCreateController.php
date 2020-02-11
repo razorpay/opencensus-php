@@ -650,10 +650,12 @@ class PaymentCreateController extends Controller
                 ]);
         }
 
+        $pollUrl = $this->route->getUrl('payment_fetch_by_id', ['id' => $data['payment_id']]);
+
         array_push($next,
             [
                 "action" => "poll",
-                "url"    => $data['request']['url'],
+                "url"    => $pollUrl,
             ]);
 
         $response['next'] = $next;
@@ -882,6 +884,14 @@ class PaymentCreateController extends Controller
             ]
         ];
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $properties);
+        $metaDetails =[
+            'metadata'  => $properties,
+            'read_key'  => array() ,
+            'write_key' => 'request.id',
+        ];
+
+        $metaDetails['metadata']['request']['id'] = $this->app['request']->getId();
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_INITIATED, null, null, $metaDetails, $properties);
     }
 }

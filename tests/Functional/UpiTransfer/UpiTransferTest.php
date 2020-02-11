@@ -143,6 +143,23 @@ class UpiTransferTest extends TestCase
         $this->assertEquals($transaction['amount'] * 1 / 100, $transaction['fee'] - $transaction['tax']);
     }
 
+    /**
+     * This test is to verify the case when merchant doesn't have either UPI or vpa pricing enabled.
+     * In that case, default/fallback pricing has to be picked up for payment creation.
+     */
+    public function testProcessUpiTransferWithDefaultPricing()
+    {
+        $pricingPlanId = $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $pricingPlanId]);
+
+        $this->processUpiTransfer();
+
+        $transaction = $this->getLastEntity('transaction', true);
+        // Pricing 2%
+        $this->assertEquals($transaction['amount'] * 2 / 100, $transaction['fee'] - $transaction['tax']);
+    }
+
     protected function createVirtualAccount($mode = 'test', $merchantId = '10000000000000')
     {
         $this->ba->privateAuth();

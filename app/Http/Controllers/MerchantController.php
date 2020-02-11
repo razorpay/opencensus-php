@@ -1501,7 +1501,7 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_INHERITANCE_MAP)->postInheritanceParent($merchantId, $input);
-        
+
         return ApiResponse::json($response->toArrayPublic());
     }
 
@@ -1520,5 +1520,46 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
-    
+
+    public function enableBusinessBankingTestMode()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->enableBusinessBankingTestMode($input);
+
+        return ApiResponse::json($response);
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function merchantsBulkUpdate()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->merchantsBulkUpdate($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBatchActionEntities()
+    {
+        $response = $this->service()->getBatchActionEntities();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBatchActions()
+    {
+        $response = $this->service()->getBatchActions();
+
+        return ApiResponse::json($response);
+    }
 }

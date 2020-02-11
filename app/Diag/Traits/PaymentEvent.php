@@ -45,4 +45,26 @@ trait PaymentEvent
 
         $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
     }
+
+    public function trackPaymentEventV2(
+        array $eventData,
+        Payment\Entity $payment = null,
+        \Throwable $ex = null,
+        array $metaDetails = [],
+        array $customProperties = [])
+    {
+        $event = new PE($payment, $ex, $customProperties, $metaDetails);
+
+        $properties = $event->getProperties();
+
+        $metaData = $metaDetails['metadata'];
+
+        $readKey = $metaDetails['read_key'];
+
+        $writeKey = $metaDetails['write_key'];
+
+        $this->trackPaymentEvent($eventData, $payment, $ex, $customProperties);
+
+        $this->trackEvent(PE::EVENT_TYPE, 'v2', $eventData, $properties, $metaData, $readKey, $writeKey);
+    }
 }

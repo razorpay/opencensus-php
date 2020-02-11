@@ -124,8 +124,9 @@ class Entity extends Base\Entity
     public function getSalesForceGroupId()
     {
         return [
-            Constant::SALESFORCE_CLAIMED_GROUP_ID   => Constant::SF_CLAIMED_SME_GROUP_ID,
-            Constant::SALESFORCE_UNCLAIMED_GROUP_ID => Constant::SF_UNCLAIMED_GROUP_ID
+            Constant::SALESFORCE_CLAIMED_MERCHANTS_GROUP_ID => Constant::SF_CLAIMED_MERCHANTS_GROUP_ID,
+            Constant::SALESFORCE_CLAIMED_SME_GROUP_ID       => Constant::SF_CLAIMED_SME_GROUP_ID,
+            Constant::SALESFORCE_UNCLAIMED_GROUP_ID         => Constant::SF_UNCLAIMED_GROUP_ID
         ];
     }
 }

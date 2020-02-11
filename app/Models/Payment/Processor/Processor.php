@@ -160,6 +160,8 @@ class Processor
      */
     const SECURE_3D_INTERNATIONAL = 'secure_3d_international';
 
+    const FINGERPRINT_MIGRATION_CACHE_KEY = 'fingerprint_migration';
+
     /**
      * @var Merchant\Entity
      */
@@ -309,6 +311,8 @@ class Processor
 
             $payment = $this->payment;
 
+            $this->eventPaymentCreated();
+
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
@@ -342,6 +346,15 @@ class Processor
         }
     }
 
+    protected function eventPaymentCreated()
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $this->payment,
+        ];
+
+        $this->app['events']->fire('api.payment.created', $eventPayload);
+    }
+
     protected function appendMetadataForPayment(array & $input)
     {
         if ($this->app['basicauth']->isPrivateAuth() === true)
@@ -373,7 +386,15 @@ class Processor
             ],
         ];
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $properties);
+        $metaDetails = [
+            'metadata'  => $properties,
+            'read_key'  => array(),
+            'write_key' => 'request.id',
+        ];
+
+        $metaDetails['metadata']['request']['id'] = $this->app['request']->getId();
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $metaDetails, $properties);
     }
 
     public function getPayment(): Payment\Entity

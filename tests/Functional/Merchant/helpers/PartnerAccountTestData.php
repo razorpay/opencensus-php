@@ -1398,7 +1398,6 @@ return [
                         [
                             'type'          => 'registered',
                             'line1'         => 'registered',
-                            'line2'         => 'near Jamnalal Police Stn',
                             'city'          => 'BENGALURU',
                             'state'         => 'KARNATAKA',
                             'pin'           => '560032',
@@ -1504,7 +1503,7 @@ return [
                         [
                             'type'          => 'registered',
                             'line1'         => 'registered',
-                            'line2'         => 'near Jamnalal Police Stn',
+                            'line2'         => null,
                             'city'          => 'BENGALURU',
                             'state'         => 'KARNATAKA',
                             'country'       => 'India',
