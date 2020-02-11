@@ -9,6 +9,7 @@ use RZP\Constants\Procurer;
 use RZP\Models\Terminal\Entity as Terminal;
 use RZP\Models\Terminal\Mode;
 use RZP\Models\Terminal\Status;
+use RZP\Models\Terminal\SyncStatus;
 use RZP\Models\Admin\Org\Entity as Org;
 
 
@@ -191,6 +192,9 @@ class CreateTerminals extends Migration
 
             $table->text(Terminal::NOTES)
                   ->nullable();
+
+            $table->integer(Terminal::SYNC_STATUS)
+                  ->default(SyncStatus::getValueForSyncStatusString(SyncStatus::NOT_SYNCED));
 
             $table->integer(Terminal::CREATED_AT);
 
