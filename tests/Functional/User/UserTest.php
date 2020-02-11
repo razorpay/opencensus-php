@@ -1890,6 +1890,8 @@ class UserTest extends TestCase
     {
         $this->ba->proxyAuth();
 
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
         $this->startTest();
     }
 

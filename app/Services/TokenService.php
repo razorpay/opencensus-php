@@ -15,7 +15,6 @@ use RZP\Exception\BadRequestException;
  *
  * @package RZP\Models\User
  */
-
 class TokenService
 {
     const TOKEN_EXPIRES_IN_SECONDS = 900; // 15 minutes
@@ -81,5 +80,10 @@ class TokenService
                 ]
             );
         }
+    }
+
+    public function invalidate($token)
+    {
+        $this->redis->del($token);
     }
 }
