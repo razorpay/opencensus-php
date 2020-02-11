@@ -462,7 +462,7 @@ export default class User {
   }
 
   get isBatchCancelEnabled() {
-    return this.getExpStatus('batch_cancelled');
+    return this.getExpStatus('batch_cancel');
   }
 
   get isVPAFeatureEnabled() {
