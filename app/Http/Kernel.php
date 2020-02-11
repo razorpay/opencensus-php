@@ -57,6 +57,7 @@ class Kernel extends HttpKernel
         Middleware\EventTracker::class,
         Middleware\P2p::class,
         Middleware\IdempotentHandler::class,
+        Middleware\RequestContextHandler::class,
 
         // Route group middleware
         Middleware\EncryptCookies::class,
@@ -84,5 +85,6 @@ class Kernel extends HttpKernel
         'p2p'                 => Middleware\P2p::class,
         'idempotent'          => Middleware\IdempotentHandler::class,
         'failure_interceptor' => Middleware\FailureEventsInterceptor::class,
+        'request_context'     => Middleware\RequestContextHandler::class,
     ];
 }
