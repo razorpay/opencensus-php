@@ -47,6 +47,7 @@ class Cors
                 'X-Requested-With',
                 Headers::CSRF_TOKEN,
                 'Content-Type',
+                'X-Report-Type',
             ];
 
             $headers = [
