@@ -939,7 +939,7 @@ final class Route
         'merchant_2fa_change_setting'              => ['patch',    'merchants/2fa',                                  'MerchantController@change2faSetting'                               ],
         'merchant_restrict'                        => ['patch',    'merchant/restrict',                              'MerchantController@applyRestrictedSettings'                        ],
         'user_update_contact'                      => ['patch',    'users/contact/update',                           'UserController@editContactMobile'                                  ],
-        'user_verify_through_email'                => ['post',     'users/email/verify-user',                        'UserController@verifyUserThroughEmail'                             ],
+        'user_verify_through_email'                => ['post',     'users/verify-user-email',                        'UserController@verifyUserThroughEmail'                             ],
 
         'user_update_contact_admin'                => ['patch',    'users-admin/contact',                            'UserController@updateContactMobile'                                ],
         'user_update_contact_merchant'             => ['patch',    'users/contact',                                  'UserController@updateContactMobile'                                ],
