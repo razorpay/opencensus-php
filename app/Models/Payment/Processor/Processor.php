@@ -386,7 +386,15 @@ class Processor
             ],
         ];
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $properties);
+        $metaDetails = [
+            'metadata'  => $properties,
+            'read_key'  => array(),
+            'write_key' => 'request.id',
+        ];
+
+        $metaDetails['metadata']['request']['id'] = $this->app['request']->getId();
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $metaDetails, $properties);
     }
 
     public function getPayment(): Payment\Entity

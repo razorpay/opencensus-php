@@ -1468,7 +1468,7 @@ class CaptureTest extends TestCase
 
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
-            $this->assertEquals(-1180 , $viewData['balance']);
+            $this->assertEquals('-11.8 INR' , $viewData['balance']);
 
             $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
 
@@ -1666,7 +1666,7 @@ class CaptureTest extends TestCase
 
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
-            $this->assertEquals(-1180 , $viewData['balance']);
+            $this->assertEquals('-11.8 INR' , $viewData['balance']);
 
             $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
 
