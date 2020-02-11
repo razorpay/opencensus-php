@@ -1368,6 +1368,7 @@ return [
             'status_code' => 200,
         ],
     ],
+
     'testGetForUsersWithBusinessBankingEnabled' => [
         'request'  => [
             'url'     => '/users/30000000000000',
@@ -1393,6 +1394,70 @@ return [
                 'settings'    => [
                 ],
             ],
+        ],
+    ],
+
+    'testVerifyUserThroughEmail' => [
+        'request'  => [
+            'url'     => '/users/verify-user-email',
+            'method'  => 'post',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'RandomToken123',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditContactMobileByUserOnBankingWithoutAuthToken' => [
+        'request'   => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+                'HTTP_X-Request-Origin'    => 'http://x.razorpay.in',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'User authorization token needs to be given.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testEditContactMobileByUserAndVerifyForBanking' => [
+        'request'  => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877',
+                'otp'            => '0007',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+                'HTTP_X-Request-Origin'    => 'http://x.razorpay.in',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
         ],
     ],
 ];

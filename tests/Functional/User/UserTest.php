@@ -18,6 +18,7 @@ use RZP\Services\HubspotClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\PayoutLink\TokenService;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -1876,5 +1877,51 @@ class UserTest extends TestCase
         $this->startTest();
 
         Carbon::setTestNow();
+    }
+
+    public function testVerifyUserThroughEmail()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditContactMobileByUserOnBankingWithoutAuthToken()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    protected function mockRedisSuccess($funcName, $payoutLinkId)
+    {
+        $token = (new TokenService())->generate($payoutLinkId);
+
+        $this->testData[$funcName]['request']['content']['otp_auth_token'] = $token;
+    }
+
+    public function testEditContactMobileByUserAndVerifyForBanking()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->mockRedisSuccess(__FUNCTION__ , $user->getId());
+
+        $response = $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($response['contact_mobile_verified'], true);
+
+        $this->assertEquals($response['contact_mobile_verified'], $userDb['contact_mobile_verified']);
+
+        $this->assertEquals($testData['request']['content']['contact_mobile'], $userDb['contact_mobile']);
     }
 }

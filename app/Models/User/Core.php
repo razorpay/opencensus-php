@@ -6,7 +6,6 @@ use Mail;
 use Hash;
 use Config;
 use Carbon\Carbon;
-use TokenService;
 use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
@@ -1114,15 +1113,6 @@ class Core extends Base\Core
      */
     public function editContactMobile(array $input, Entity $user)
     {
-        if($this->app['basicauth']->isProductBanking() === true)
-        {
-            $token = $input[Entity::OTP_AUTH_TOKEN] ?? null;
-
-            $tokenservice = new TokenService();
-
-            $tokenservice->verify($token, $user->getId());
-        }
-
         if ($user->getRestricted() === true)
         {
             //
@@ -1381,7 +1371,7 @@ class Core extends Base\Core
     {
         $user->getValidator()->validateInput('verifyUserThroughEmail', $input);
 
-        $this->verifyOtp($input + ['action' => 'update_contact'], $merchant, $user);
+        $this->verifyOtp($input + ['action' => 'user_auth'], $merchant, $user);
 
         $tokenservice = new TokenService();
 

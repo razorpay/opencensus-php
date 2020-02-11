@@ -781,6 +781,17 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('edit_contact_mobile', $input);
 
+        if($this->auth->isProductBanking() === true)
+        {
+            (new Validator())->validateInputForProductBanking($input);
+
+            $token = $input[Entity::OTP_AUTH_TOKEN];
+
+            $tokenservice = new TokenService();
+
+            $tokenservice->verify($token, $this->user->getId());
+        }
+
         return $this->core()->editContactMobile($input, $this->user);
     }
 

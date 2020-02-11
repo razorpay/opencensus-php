@@ -141,7 +141,7 @@ class Validator extends Base\Validator
                                  . 'create_payout_batch,'
                                  . 'approve_payout,'
                                  . 'approve_payout_bulk,'
-                                 . 'update_contact',
+                                 . 'user_auth',
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
@@ -341,7 +341,7 @@ class Validator extends Base\Validator
         // Medium is optional input, for validation logic here assigns 'both' as the value.
         $medium = $input[Entity::MEDIUM] ?? 'both';
 
-        if (($action === 'update_contact') and
+        if (($action === 'user_auth') and
             ($medium !== 'email'))
         {
             throw new BadRequestValidationFailureException('Otp must be sent to registered email');
@@ -397,5 +397,13 @@ class Validator extends Base\Validator
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
+    }
+
+    public function validateInputForProductBanking($input)
+    {
+        if (empty($input[Entity::OTP_AUTH_TOKEN]) === true)
+        {
+            throw new BadRequestValidationFailureException('User authorization token needs to be given.');
+        }
     }
 }
