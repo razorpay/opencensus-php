@@ -105,7 +105,7 @@ class Stork
             [],
             // Options and authentication for requests.
             [
-                'timeout' => 0.35, // Minimum possible value is 1 second.
+                'timeout' => 0.35, // Minimum possible value is 0.35 second.
                 'auth' => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
             ]);
     }
