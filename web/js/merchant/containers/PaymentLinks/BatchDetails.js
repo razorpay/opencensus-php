@@ -94,7 +94,7 @@ export default class PaymentLinksBatchDetailsContainer extends Component {
         this.props.cancelPaymentLinkBatch(this.props.id).then(() => {
           this.props.showNotification({
             type: 'success',
-            message: 'This batch is marked for cancellation.',
+            message: 'This batch cancellation initiated.',
           });
         });
       },
