@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import AppDetails, {
   AppDetailsLoader,
-} from 'merchant/components/Applications/AppDetails';
-import NewAppLink from 'merchant/components/Applications/NewAppLink';
+} from 'merchant/views/Settings/Applications/components/AppDetails';
+import NewAppLink from 'merchant/views/Settings/Applications/components/NewAppLink';
 import {
   NoConnectedApps,
   LoadingConnectedApps,
-} from 'merchant/components/Applications/NoConnectedApps';
+} from 'merchant/views/Settings/Applications/components/NoConnectedApps';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as ApplicationActions from 'merchant/reducers/applications';

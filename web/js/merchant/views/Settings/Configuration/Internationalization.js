@@ -148,14 +148,14 @@ export default class FlashCheckout extends Component {
     }
 
     return (
-      <div className="panel panel-default">
-        <div className="panel-heading">
-          <span className="title">International card payments</span>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <span class="title">International card payments</span>
 
           {user.has_key_access && (
             <>
               {showToggler && (
-                <span className="toggler-btn">
+                <span class="toggler-btn">
                   <SwitchField
                     defaultChecked={!!internationalEnabled}
                     onChange={(isChecked, cb) =>
@@ -164,9 +164,9 @@ export default class FlashCheckout extends Component {
                     type="prime"
                   />
                   {user.international ? (
-                    <b className="text-primary">Enabled</b>
+                    <b class="text-primary">Enabled</b>
                   ) : (
-                    <b className="text-faded">Disabled</b>
+                    <b class="text-faded">Disabled</b>
                   )}
                 </span>
               )}
@@ -174,8 +174,8 @@ export default class FlashCheckout extends Component {
           )}
         </div>
 
-        <div className="panel-body">
-          <form className="form-horizontal">
+        <div class="panel-body">
+          <form class="form-horizontal">
             {user.has_key_access ? (
               <>
                 {showBanner && (
@@ -186,23 +186,23 @@ export default class FlashCheckout extends Component {
                   </Alert.Info>
                 )}
 
-                <div className="description">{displayMsg}</div>
+                <div class="description">{displayMsg}</div>
 
-                <div className="form-group">
+                <div class="form-group">
                   <ShowWhen
                     additionalCondition={user =>
                       user.isOrgAllowedFunctionality('external_links')
                     }
                   >
-                    <div className="col-sm-10">
+                    <div class="col-sm-10">
                       <a
-                        className="highlight"
+                        class="highlight"
                         target="_blank"
                         href="https://razorpay.com/payment-gateway/#go-international"
                       >
                         Know more
                         <i
-                          className="i i-external-link"
+                          class="i i-external-link"
                           style={{ marginLeft: '5px' }}
                         />
                       </a>

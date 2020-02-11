@@ -11,7 +11,6 @@ import Sidebar from 'merchant/containers/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
 import Footer from 'merchant/components/Footer';
-import MerchantTour from 'merchant/containers/MerchantTour';
 import ActivationRequired from 'merchant/components/ActivationRequired';
 import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -507,7 +506,6 @@ export default class App extends Component {
         {/* Creates Portal for the comp */}
         <ModalDialog />
         <Notifications />
-        <MerchantTour user={user} />
 
         {this.state.isDashboardLocked && (
           <PasswordReLogin

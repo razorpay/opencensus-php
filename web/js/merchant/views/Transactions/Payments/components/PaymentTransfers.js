@@ -56,7 +56,7 @@ const TransfersList = ({ transfers, payment }) => {
   return (
     <ContentToggler>
       <span>Transfer Details</span>
-      <div className="full-width-item sub-entity-list">
+      <div class="full-width-item sub-entity-list">
         <DataTable
           customClass="transfers-table"
           progressLoader={true}
@@ -73,7 +73,7 @@ const TransfersList = ({ transfers, payment }) => {
 };
 
 const CreateTransferBtn = ({ onClick, text = 'Create Transfer' }) => (
-  <button className="btn btn-default" onClick={onClick}>
+  <button class="btn btn-default" onClick={onClick}>
     {text}
   </button>
 );
@@ -110,7 +110,7 @@ export default ({ payment, transfers, onCreateTransfer }) => {
 
   return (
     <div>
-      <div className="m-b">
+      <div class="m-b">
         <Definition>
           <span>
             <NumTransfers transfers={transfers} /> created
@@ -129,7 +129,7 @@ export default ({ payment, transfers, onCreateTransfer }) => {
         {!transfers.loading &&
           payment.status === 'captured' &&
           payment.amount !== amountTransferred && (
-            <div className="m-b">
+            <div class="m-b">
               <CreateTransferBtn
                 text="Create another transfer"
                 onClick={onCreateTransfer}

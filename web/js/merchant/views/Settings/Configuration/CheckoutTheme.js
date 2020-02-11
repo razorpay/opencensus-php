@@ -89,15 +89,12 @@ export default class CheckoutTheme extends Component {
       <div class="panel panel-default panel-theme">
         <div class="panel-section--theme">
           <div class="panel-heading">
-            <span className="title">Account Settings</span>
+            <span class="title">Account Settings</span>
           </div>
           <div class="panel-body">
             <form class="form-horizontal">
               <div class="form-group theme-select">
-                <label
-                  className="col-md-12 col-sm-12"
-                  style={{ marginTop: 12 }}
-                >
+                <label class="col-md-12 col-sm-12" style={{ marginTop: 12 }}>
                   <strong>Theme Color</strong>
                 </label>
                 <div class="col-md-5 col-sm-6" style={{ position: 'relative' }}>

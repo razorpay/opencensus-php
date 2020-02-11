@@ -13,35 +13,36 @@ import PaymentPagesWysiwyg from 'merchant/views/PaymentPages/PaymentPages/Wysiwy
 import PaymentsDetails from 'merchant/views/Transactions/Payments/Details';
 import RefundDetails from 'merchant/views/Transactions/Refunds/Details';
 import OrderDetails from 'merchant/views/Transactions/Orders/Details';
+
 import VirtualAccountEntity from 'merchant/containers/VirtualAccounts/Entity';
 import VirtualAccountCreate from 'merchant/containers/VirtualAccounts/CreateVirtualAccount';
 
 import OffersNew from 'merchant/views/Offers/New';
 import OfferEntity from 'merchant/views/Offers/Entity';
-import PlanDetails from 'merchant/containers/Plans/Details';
-import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
-import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
-import ReversalDetails from 'merchant/containers/Marketplace/Reversals/Details';
+import PlanDetails from 'merchant/views/Subscriptions/Plans/Details';
+import SubscriptionDetails from 'merchant/views/Subscriptions/Subscriptions/Details';
+import TransferDetails from 'merchant/views/Marketplace/Transfers/Details';
+import ReversalDetails from 'merchant/views/Marketplace/Reversals/Details';
 import DisputeDetails from 'merchant/views/Transactions/Disputes/Details';
 import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
 import EarningTransactionalDetails from 'merchant/containers/PartnerDashboard/Earnings/Transactional/Entity';
 import EarningDailyDetails from 'merchant/containers/PartnerDashboard/Earnings/Daily/Entity';
 import SubventionTransactionalDetails from 'merchant/containers/PartnerDashboard/Subvention/Transactional/Entity';
 import SubventionDailyDetails from 'merchant/containers/PartnerDashboard/Subvention/Daily/Entity';
-import RegistrationLink from 'merchant/containers/Subscriptions/RegistrationLinks/Entity';
-import UploadNACHForm from 'merchant/components/Subscriptions/UploadNACHForm';
-import AccountDetailsNew from 'merchant/containers/Marketplace/Accounts/DetailsNew';
+import RegistrationLinkDetails from 'merchant/views/Subscriptions/RegistrationLinks/Details';
+import UploadNACHForm from 'merchant/views/Subscriptions/components/UploadNACHForm';
+import AccountDetailsNew from 'merchant/views/Marketplace/Accounts/DetailsNew';
 
-import Token from 'merchant/containers/Subscriptions/Tokens/Entity';
+import TokenDetails from 'merchant/views/Subscriptions/Tokens/Details';
 
 import PaymentLinkBatchDetails from 'merchant/containers/PaymentLinks/BatchDetails';
-import SubscriptionBatchDetails from 'merchant/containers/Subscriptions/Batch/Entity';
+import SubscriptionBatchDetails from 'merchant/views/Subscriptions/Batch/Details';
 
-import PlanNew from 'merchant/containers/Plans/New';
+import PlanNew from 'merchant/views/Subscriptions/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation';
-import NewRegistrationLink from 'merchant/containers/Subscriptions/RegistrationLinks/New';
-import NewSubscriptionLink from 'merchant/containers/Subscriptions/SubscriptionLinks/New';
-import UpdateSubscriptionLink from 'merchant/containers/Subscriptions/SubscriptionLinks/Update';
+import NewRegistrationLink from 'merchant/views/Subscriptions/RegistrationLinks/New';
+import NewSubscriptionLink from 'merchant/views/Subscriptions/SubscriptionLinks/New';
+import UpdateSubscriptionLink from 'merchant/views/Subscriptions/SubscriptionLinks/Update';
 import CreditSubDetails from 'merchant/views/Account/Credits/components/CreditSubDetails';
 
 /*
@@ -95,12 +96,12 @@ const entityDetailsMap = {
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
   '/registration_links/:id(inv_.+)': {
-    component: RegistrationLink,
+    component: RegistrationLinkDetails,
     additionalCondition: user => user.isChargeAtWillEnabled,
   },
 
   '/tokens/:id(token_.+)': {
-    component: Token,
+    component: TokenDetails,
     additionalCondition: user => user.isChargeAtWillEnabled,
   },
 

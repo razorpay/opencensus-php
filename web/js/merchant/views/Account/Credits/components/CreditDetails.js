@@ -63,7 +63,7 @@ export default class CreditDetails extends Component {
           {showCollapsible && (
             <div class="collapsible">
               <Table
-                className="history"
+                class="history"
                 rows={creditItems}
                 columns={[
                   creditId,

@@ -159,7 +159,7 @@ export default class ScheduledModal extends Component {
   successModalHeader = () => {
     return (
       <div>
-        <i className="i i-done-all text-success modal-header-success" />
+        <i class="i i-done-all text-success modal-header-success" />
         Successfully Enabled!
       </div>
     );
@@ -177,22 +177,22 @@ export default class ScheduledModal extends Component {
           title={this.successModalHeader()}
           onCloseClick={() => this.props.closeModal()}
         />
-        <div className="modal-body">
+        <div class="modal-body">
           Congratulations, Your Early Settlement feature has now been enabled.
           Never fall short of cash now!
-          <div className="border">
+          <div class="border">
             <p>
               Early settlement applies to domestic settlements only. For
               International, please{' '}
             </p>
-            <a className="btn-link" onClick={this.openSupport}>
+            <a class="btn-link" onClick={this.openSupport}>
               Contact support
             </a>
           </div>
           <a
             target="_blank"
             href="https://razorpay.com/capital/#faqs"
-            className="highlight-support"
+            class="highlight-support"
             onClick={() => {
               this.fireGAEvent({
                 eventAction: `ES Modal`,
@@ -203,7 +203,7 @@ export default class ScheduledModal extends Component {
             Show FAQs
           </a>
           <Button.Primary
-            className="pull-right"
+            class="pull-right"
             onClick={() => {
               this.props.closeModal();
             }}
@@ -228,12 +228,12 @@ export default class ScheduledModal extends Component {
             }
           }}
         />
-        <div className="modal-body">
+        <div class="modal-body">
           <div>
             Early settlements will automatically settle the amount to your
             account in few hours from the time of transaction, everyday.
             <a
-              className="btn-link"
+              class="btn-link"
               target="_blank"
               href="http://razorpay.com/settlement"
             >
@@ -241,12 +241,10 @@ export default class ScheduledModal extends Component {
             </a>
           </div>
           {!this.state.errors ? (
-            <div className="overflow-box">
-              <div className="schedule-header">
-                Here's how instantly it works:
-              </div>
-              <div className="schedule-desc-container">
-                <ul className="schedule-desc">
+            <div class="overflow-box">
+              <div class="schedule-header">Here's how instantly it works:</div>
+              <div class="schedule-desc-container">
+                <ul class="schedule-desc">
                   <li>
                     Everyday at <b>9AM</b> and <b>5PM</b> all your payments get
                     settled
@@ -259,7 +257,7 @@ export default class ScheduledModal extends Component {
                   )}
                 </ul>
               </div>
-              <div className="schedule-img-container">
+              <div class="schedule-img-container">
                 <img src={'/dist/css/assets/settlements-blue-box.png'} />
               </div>
               <div>
@@ -278,12 +276,12 @@ export default class ScheduledModal extends Component {
               {this.state.errors}
             </div>
           )}
-          <div className="border">
+          <div class="border">
             <p>
               Early settlement applies to domestic settlements only. For
               International, please{' '}
             </p>
-            <a className="btn-link" onClick={this.openSupport}>
+            <a class="btn-link" onClick={this.openSupport}>
               Contact support
             </a>
           </div>
@@ -294,7 +292,7 @@ export default class ScheduledModal extends Component {
 
   render() {
     return (
-      <div className="container-scheduled-modal">
+      <div class="container-scheduled-modal">
         {this.state.modalClosed ? (
           <ModalCloseReasons closeOrigin="Scheduled" />
         ) : this.state.autoEnabled ? (

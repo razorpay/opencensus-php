@@ -46,8 +46,8 @@ export default class ScheduledBanner extends Component {
 
   render() {
     return (
-      <div className="pull-right schedule-enable-container">
-        <i className="i i-early-settlement scheduled-enable" />
+      <div class="pull-right schedule-enable-container">
+        <i class="i i-early-settlement scheduled-enable" />
         Get your settlements on the same day, automatically
         <Button.Secondary
           class="scheduled-btn-act"

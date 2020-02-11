@@ -35,7 +35,7 @@ export default class ModalCloseReasons extends Component {
 
   render() {
     return (
-      <div className="reasons-close-modal">
+      <div class="reasons-close-modal">
         <ModalHeader
           class="header"
           title="Reason"
@@ -43,12 +43,12 @@ export default class ModalCloseReasons extends Component {
             this.props.closeModal();
           }}
         />
-        <div className="modal-body">
+        <div class="modal-body">
           {CLOSE_OPTIONS.map(choice => {
             return (
               <div
                 key={'parent-choice-' + choice.value}
-                className="es-close-choices"
+                class="es-close-choices"
               >
                 <label key={'lab-' + choice.value}>
                   <input
@@ -67,7 +67,7 @@ export default class ModalCloseReasons extends Component {
         <Button.Primary
           onClick={this.submitCloseReason}
           disabled={!this.state.closeReason}
-          className="pull-right confirm-close"
+          class="pull-right confirm-close"
         >
           Confirm & Close
         </Button.Primary>

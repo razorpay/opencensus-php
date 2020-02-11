@@ -421,7 +421,7 @@ export const getPercentage = (divident, divisor) => {
   let value = 0;
 
   if (divident) {
-    value = getFixedNumber((divisor / divident) * 100);
+    value = getFixedNumber(divisor / divident * 100);
   }
 
   return Number(value);
@@ -466,7 +466,7 @@ export const getEMI = (principle, length, rate) => {
 
   var multiplier = Math.pow(1 + rate, length);
 
-  return parseInt((principle * rate * multiplier) / (multiplier - 1), 10);
+  return parseInt(principle * rate * multiplier / (multiplier - 1), 10);
 };
 
 export const arrayToCsv = array => {

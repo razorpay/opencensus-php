@@ -14,7 +14,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import debounce from 'common/utils/debounce';
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
-import { logout, showOrHideTour } from 'merchant/reducers/session';
+import { logout } from 'merchant/reducers/session';
 import SwitchMerchant, {
   SwitchMerchantTypeahead,
 } from 'merchant/components/HeaderNav/SwitchMerchant';
@@ -31,7 +31,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
       user: state.session.user,
     };
   },
-  { logout, closeModal, openModal, showOrHideTour, updateSession }
+  { logout, closeModal, openModal, updateSession }
 )
 export default class ProfileDropdown extends Component {
   state = {
@@ -103,19 +103,6 @@ export default class ProfileDropdown extends Component {
         </div>
       ),
     });
-  };
-
-  showOrHideTour = show => {
-    let { analytics = () => {}, showOrHideTour } = this.props;
-
-    analytics('Show - Recent UI Changes');
-
-    if (this.props.history.location.pathname.indexOf('/dashboard') === 0) {
-      return showOrHideTour(show);
-    }
-
-    LocalStorageService.removeItem('hide_new_analytics_banner');
-    this.props.history.push('/dashboard');
   };
 
   render() {

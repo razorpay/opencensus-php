@@ -11,7 +11,7 @@ export default ({ showBatchIdFilter, ...props }) => {
 
       {/* used in emndate payments */}
       {showBatchIdFilter && (
-        <div className="form-group list-filter-item">
+        <div class="form-group list-filter-item">
           <label>Batch Id</label>
           <Field
             name="batch_id"

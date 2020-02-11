@@ -14,7 +14,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import RefundModal from 'merchant/views/Transactions/Payments/components/RefundModal';
 
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
-import PaymentTransferNew from 'merchant/containers/Marketplace/Transfers/New';
+import PaymentTransferNew from 'merchant/views/Marketplace/Transfers/New';
 
 import {
   getKeysSeparatedByPipe,
@@ -321,7 +321,7 @@ export default class PaymentDetailsContainer extends Component {
     }
 
     return (
-      <div className={`${this.state.secView ? 'multi-content' : ''}`}>
+      <div class={`${this.state.secView ? 'multi-content' : ''}`}>
         <PaymentDetails
           payment={payment}
           card={card}

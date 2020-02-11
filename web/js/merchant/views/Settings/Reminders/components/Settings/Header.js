@@ -2,7 +2,7 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 
 export default ({ disabled, type, isEnabled, onToggle }) => (
   <React.Fragment>
-    <span className="title">Reminders for {type}</span>
+    <span class="title">Reminders for {type}</span>
 
     <SwitchField
       class="m-l"

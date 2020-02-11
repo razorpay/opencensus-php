@@ -430,14 +430,14 @@ export default class PaymentPagesV3Entity extends React.Component {
               </div>
             ))}
 
-            <div className="btn-toolbar pull-right">
+            <div class="btn-toolbar pull-right">
               <button
                 type="button"
-                className="btn Button--primary--invert btn-sm"
+                class="btn Button--primary--invert btn-sm"
                 onClick={this.downloadReport}
                 disabled={this.state.isExportInProgress}
               >
-                <i className="i i-download m-r" />
+                <i class="i i-download m-r" />
                 Export All (CSV)
               </button>
             </div>

@@ -118,7 +118,7 @@ export default class OndemandModal extends Component {
   breakup = () => {
     return (
       <div class="breakup">
-        <div className={this.state.isSaved ? 'dropdown-1' : 'dropdown'}>
+        <div class={this.state.isSaved ? 'dropdown-1' : 'dropdown'}>
           {this.state.isSaved ? (
             <div class="currency-big-1">
               <Amount
@@ -134,9 +134,7 @@ export default class OndemandModal extends Component {
             </span>
           )}
           <AsyncBtn.Primary
-            className={`drop-button ${
-              this.state.isSaved ? 'success-breakup' : ''
-            }`}
+            class={`drop-button ${this.state.isSaved ? 'success-breakup' : ''}`}
             disabled={this.state.isLoadingBreakup || !this.state.validAmount}
             pendingState=""
             onClick={this.fetchBreakup}
@@ -153,9 +151,7 @@ export default class OndemandModal extends Component {
           </AsyncBtn.Primary>
         </div>
         <div
-          className={
-            this.state.breakupShow ? 'dropdown-active' : 'dropdown-closed'
-          }
+          class={this.state.breakupShow ? 'dropdown-active' : 'dropdown-closed'}
         >
           <p>Total Amount</p>
           <span class="float-right currency">
@@ -192,9 +188,7 @@ export default class OndemandModal extends Component {
           </span>
         </div>
         <div
-          className={
-            this.state.breakupShow ? 'dropdown-active' : 'dropdown-closed'
-          }
+          class={this.state.breakupShow ? 'dropdown-active' : 'dropdown-closed'}
         >
           <p>Amount to be settled</p>
           <span class="float-right currency-big">
@@ -447,7 +441,7 @@ export default class OndemandModal extends Component {
   successModalHeader = () => {
     return (
       <div>
-        <i className="i i-done-all text-success modal-header-success" />
+        <i class="i i-done-all text-success modal-header-success" />
         Hurray
       </div>
     );
@@ -455,19 +449,19 @@ export default class OndemandModal extends Component {
 
   renderPreTransaction = () => {
     return (
-      <div className="onmdemand-modal">
+      <div class="onmdemand-modal">
         <ModalHeader
           class="header"
           title="Instant Settlement"
           onCloseClick={() => this.handleCloseModal('Close Modal Screen 1')}
         />
-        <div className="modal-body">
+        <div class="modal-body">
           <p>Settle to your bank account instantly.</p>
           <br />
           <p>
             Upcoming Settlements follow the existing schedule.
             <a
-              className="btn-link"
+              class="btn-link"
               target="_blank"
               href="http://razorpay.com/settlement"
             >
@@ -481,8 +475,8 @@ export default class OndemandModal extends Component {
               })}
             </div>
           )}
-          <div className="overflow-box">
-            <div className="InputGroup Input Input--vTop">
+          <div class="overflow-box">
+            <div class="InputGroup Input Input--vTop">
               <Input
                 label="Amount to settle now"
                 required={false}
@@ -505,7 +499,7 @@ export default class OndemandModal extends Component {
             </div>
             <div>
               <span>
-                <div className="grey-border">
+                <div class="grey-border">
                   <span>
                     {this.state.isLoadingBreakup === false ? (
                       this.state.validAmount ? (
@@ -525,7 +519,7 @@ export default class OndemandModal extends Component {
                         <React.Fragment />
                       )
                     ) : (
-                      <div className="loader" />
+                      <div class="loader" />
                     )}
                   </span>
                 </div>
@@ -533,12 +527,12 @@ export default class OndemandModal extends Component {
             </div>
           </div>
           {this.breakup()}
-          <div className="border">
+          <div class="border">
             <p>
               Early settlement applies to domestic settlements only. For
               International, please{' '}
             </p>
-            <a className="btn-link" onClick={this.openSupport}>
+            <a class="btn-link" onClick={this.openSupport}>
               Contact support
             </a>
           </div>
@@ -561,19 +555,19 @@ export default class OndemandModal extends Component {
 
   renderPostTransaction = () => {
     return (
-      <div className="onmdemand-modal">
+      <div class="onmdemand-modal">
         <ModalHeader
           title={this.successModalHeader()}
           onCloseClick={() => this.handleCloseModal('Close Modal Screen 2')}
         />
-        <div className="modal-body">
-          <div className="overflow-box">
+        <div class="modal-body">
+          <div class="overflow-box">
             {this.breakup()}
-            <div className="help-block">
+            <div class="help-block">
               Your settlement has been initiated. Amounts up to 2 Lacs will be
               settled instantly. All other amounts to be settled within 3
               working hours{` `}
-              <i className="i i-info-circle" />
+              <i class="i i-info-circle" />
               <Popover
                 align="right"
                 theme="dark"

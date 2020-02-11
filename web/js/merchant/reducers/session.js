@@ -54,13 +54,6 @@ export const logout = () => {
   };
 };
 
-export const showOrHideTour = toShowTour => {
-  return {
-    type: SHOW_HIDE_TOUR,
-    toShowTour,
-  };
-};
-
 let initialState = {
   user: new User(),
   org: {},
@@ -86,9 +79,6 @@ export default function(state = initialState, action) {
 
     case `${ORG_FETCH}::SUCCESS`:
       return set(state, 'org', action.payload.data);
-
-    case 'SHOW_HIDE_TOUR':
-      return set(state, 'isTourVisible', action.toShowTour);
 
     default:
       return state;

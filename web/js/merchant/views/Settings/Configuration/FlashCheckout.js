@@ -102,7 +102,7 @@ export default class FlashCheckout extends Component {
             {fcEnabled ? (
               <b class="text-primary">Enabled</b>
             ) : (
-              <b className="text-faded">Disabled</b>
+              <b class="text-faded">Disabled</b>
             )}
           </span>
         </div>
