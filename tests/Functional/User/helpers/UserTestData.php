@@ -1424,6 +1424,7 @@ return [
             ],
             'server'  => [
                 'HTTP_X-Dashboard-User-id' => '',
+                'HTTP_X-Request-Origin'    => '',
             ],
         ],
         'response' => [

@@ -1888,9 +1888,15 @@ class UserTest extends TestCase
 
     public function testEditContactMobileByUserOnBankingWithoutAuthToken()
     {
-        $this->ba->proxyAuth();
+        $user = $this->fixtures->create('user');
 
-        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->startTest();
     }
