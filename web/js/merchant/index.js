@@ -5,17 +5,18 @@ import { render } from 'react-dom';
 import { HashRouter as Router } from 'react-router-dom';
 
 import 'common/utils/polyfills';
-import store from './store';
-
 import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
-
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import store from './store';
 import App from './containers/App';
 
 render(
   <Provider store={store}>
     <ConfirmModalProvider>
       <Router basename="/app">
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </Router>
     </ConfirmModalProvider>
   </Provider>,
