@@ -55,7 +55,7 @@ export default class TransactionsContainer extends Component {
 
     return (
       <tabbed-container>
-        <header id="transactions-header" class="flex">
+        <header id="transactions-header">
           <NavLink to="/payments" exact>
             Payments
           </NavLink>
@@ -93,7 +93,7 @@ export default class TransactionsContainer extends Component {
           </ShowWhen>
           <NavLink to="/disputes">Disputes</NavLink>
           {no_settlement && pathname !== '/disputes' ? (
-            <div class="text-right" style={{ width: '100%' }}>
+            <div class="text-right settlement-caption">
               {no_settlement.caption}
               {no_settlement.reason && (
                 <React.Fragment>
