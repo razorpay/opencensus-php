@@ -127,6 +127,13 @@ class Core extends Base\Core
         return floor(time() / (self::TIME_INTERVAL_MINS * 60)) * (self::TIME_INTERVAL_MINS * 60);
     }
 
+    private function getConvertedAmount($baseAmount, $rate)
+    {
+        $convertedAmount = $baseAmount * $rate;
+
+        return (int) ceil($convertedAmount);
+    }
+
     /*
      * - Capture current time, round it off to nearest interval
      * - Store currencyRequestId and round off time in redis
@@ -147,9 +154,7 @@ class Core extends Base\Core
         {
             if(isset($rates[$currency]))
             {
-                $convertedAmount = $baseAmount * $rates[$currency];
-
-                $supportedCurrencies[$currency]['amount'] = (int) ceil($convertedAmount);
+                $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $rates[$currency]);
             }
             else {
                 unset($supportedCurrencies[$currency]);
@@ -157,5 +162,28 @@ class Core extends Base\Core
         }
 
         return $supportedCurrencies;
+    }
+
+    public function getRequestedCurrencyDetails($baseCurrency, $baseAmount, $requestedCurrency, $currencyRequestId)
+    {
+        $requestedCurrencyData = [];
+
+        $ratesTimestamp = $this->redis->get($this->getCurrencyRequestDataRedisKey($currencyRequestId));
+
+        if (empty($ratesTimestamp) === false)
+        {
+            $rates = $this->getRates($baseCurrency, $ratesTimestamp);
+
+            if((empty($rates) === false) and (isset($rates[$requestedCurrency])))
+            {
+                $requestedCurrencyData['currency'] = $requestedCurrency;
+
+                $requestedCurrencyData['forex_rate'] = $rates[$requestedCurrency];
+
+                $requestedCurrencyData['amount'] = $this->getConvertedAmount($baseAmount,$rates[$requestedCurrency]);
+            }
+        }
+
+        return $requestedCurrencyData;
     }
 }

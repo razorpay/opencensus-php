@@ -1173,9 +1173,9 @@ class Service extends Base\Service
         {
             $data[IIN\Constants::IS_INTERNATIONAL] = $iinEntity->isInternational();
 
-            $cardHomecountryCode = IIN\Country::COUNTRY_ISO_NUMERIC_CODE[$iinEntity->getCountry()];
+            $cardHomeCountryCode = IIN\Country::COUNTRY_ISO_NUMERIC_CODE[$iinEntity->getCountry()];
 
-            $cardHomeCurrency = Currency\Currency::getCurrency($cardHomecountryCode) ?? $input['currency'];
+            $cardHomeCurrency = Currency\Currency::getCurrency($cardHomeCountryCode) ?? $input['currency'];
 
             $data['card_currency'] = $cardHomeCurrency;
 

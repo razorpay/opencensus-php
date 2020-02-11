@@ -23,6 +23,7 @@ use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Currency;
 use RZP\Models\Terminal;
 use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
@@ -293,6 +294,8 @@ class Processor
 
             $payment = $this->buildPaymentEntity($input);
 
+            $this->preProcessDCCInputs($input, $payment);
+
             $this->preProcessForSubscriptionsIfApplicable($input, $payment);
 
             $ret = $this->preProcessPaymentInputs($input, $payment);
@@ -462,6 +465,63 @@ class Processor
         {
             $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($this->subscription->getCustomerId());
         }
+    }
+
+    protected function preProcessDCCInputs(array $input, Payment\Entity $payment)
+    {
+        if (isset($input['dcc_currency']) === true and
+            isset($input['dcc_amount']) and
+            isset($input['currency_request_id']))
+        {
+            $dccCurrency = $input['dcc_currency'];
+
+            $dccAmount = $input['dcc_amount'];
+
+            $dccCurrencyRequestId = $input['currency_request_id'];
+
+            $requestedCurrencyData = (new Currency\Core)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
+                $dccCurrency, $dccCurrencyRequestId);
+
+            if (empty($requestedCurrencyData) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_REQUEST_DATA, null,
+                    [
+                        'currency_request_id' => $dccCurrencyRequestId,
+                        'dcc_currency' => $dccCurrency,
+                    ]);
+            }
+            else if ($requestedCurrencyData['amount'] !== $dccAmount){
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_AMOUNT, null,
+                    [
+                        'dcc_amount' => $dccAmount,
+                    ]);
+            }
+            else{
+                $paymentMetaInput = [
+                    'gateway_amount'    => $requestedCurrencyData['amount'],
+                    'gateway_currency'  => $requestedCurrencyData['currency'],
+                    'forex_rate'        => $requestedCurrencyData['forex_rate'],
+                    'dcc_offered'       => true
+                ];
+
+                $paymentMetaEntity = $this->buildPaymentMetaEntity($paymentMetaInput, $payment);
+
+                $this->repo->saveOrFail($paymentMetaEntity);
+            }
+        }
+    }
+
+    protected function buildPaymentMetaEntity(array $input, $payment): Payment\PaymentMeta\Entity
+    {
+        $paymentMeta = new Payment\PaymentMeta\Entity;
+
+        $paymentMeta->generateId();
+
+        $paymentMeta->payment()->associate($payment);
+
+        $paymentMeta->build($input);
+
+        return $paymentMeta;
     }
 
     protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
