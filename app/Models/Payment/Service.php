@@ -1144,6 +1144,19 @@ class Service extends Base\Service
                                                                 ->isInstantRefundSupported($payment);
     }
 
+    private function getDCCInfo($baseAmount, $baseCurrency)
+    {
+        $dccInfo = [];
+
+        $currencyRequestId = UniqueIdEntity::generateUniqueId();
+
+        $dccInfo['all_currencies'] = (new Currency\Core)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId);
+
+        $dccInfo['currency_request_id'] = $currencyRequestId;
+
+        return $dccInfo;
+    }
+
     public function getPaymentFlows(array $input)
     {
         $merchant = $this->merchant;
@@ -1156,23 +1169,23 @@ class Service extends Base\Service
 
         if (isset($input['currency']) and
             isset($input['amount']) and
-            empty($iinEntity) === false and
-            ($merchant->isDCCEnabled() === true) and
-            ($iinEntity->isDCCSupported() === true))
+            empty($iinEntity) === false)
         {
-            $currencyRequestId = UniqueIdEntity::generateUniqueId();
-
-            $countryCode = IIN\Country::COUNTRY_ISO_NUMERIC_CODE[$iinEntity->getCountry()];
-
-            $baseCurrency = Currency\Currency::getCurrency($countryCode) ?? $input['currency'];
-
             $data[IIN\Constants::IS_INTERNATIONAL] = $iinEntity->isInternational();
 
-            $data['card_currency'] = $baseCurrency;
+            $cardHomecountryCode = IIN\Country::COUNTRY_ISO_NUMERIC_CODE[$iinEntity->getCountry()];
 
-            $data['all_currencies'] = (new Currency\Core)->getConvertedCurrencies($input['currency'], $input['amount'], $currencyRequestId);
+            $cardHomeCurrency = Currency\Currency::getCurrency($cardHomecountryCode) ?? $input['currency'];
 
-            $data['currency_request_id'] = $currencyRequestId;
+            $data['card_currency'] = $cardHomeCurrency;
+
+            if ($merchant->isDCCEnabled() === true and
+                $iinEntity->isDCCSupported() === true)
+            {
+                $dccInfo = $this->getDCCInfo($input['amount'], $input['currency']);
+
+                $data = array_merge($data, $dccInfo);
+            }
         }
 
         if (isset($input['order_id']) === true)
