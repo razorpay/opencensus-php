@@ -12,6 +12,7 @@ use Psr\Http\Message\ResponseInterface;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Settlement;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Webhook;
@@ -47,6 +48,8 @@ class WebhookTest extends TestCase
     use WebhookTrait;
     use DbEntityFetchTrait;
     use PartnerTrait;
+
+    protected $sharedTerminal;
 
     public function setUp()
     {
@@ -751,7 +754,7 @@ class WebhookTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
     }
 
-    public function testWebhookPaymentCreated()
+    public function testWebhookPaymentCreatedForJsonp()
     {
         $this->createMerchantWebhook(
             [
@@ -766,6 +769,84 @@ class WebhookTest extends TestCase
             ->once();
 
         $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function testWebhookPaymentCreatedForAuth()
+    {
+        $this->createMerchantWebhook(
+            [
+                'events'      => ['payment.created' => "1"]
+            ]);
+
+        $inferno = $this->mockInferno();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $inferno->shouldReceive('fire')
+            ->once();
+
+        $this->doAuthPayment($payment);
+    }
+
+    public function testWebhookPaymentCreatedForAjax()
+    {
+        $this->createMerchantWebhook(
+            [
+                'events'      => ['payment.created' => "1"]
+            ]);
+
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldReceive('fire')
+            ->once();
+
+        $this->gateway = 'upi_hulk';
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_hulk_terminal');
+
+        $this->gateway = 'upi_hulk';
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+    }
+
+    public function testWebhookPaymentCreatedForCheckout()
+    {
+        $this->createMerchantWebhook(
+            [
+                'events'      => ['payment.created' => "1"]
+            ]);
+
+        $inferno = $this->mockInferno();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $inferno->shouldReceive('fire')
+            ->once();
+
+        $this->doAuthPaymentViaCheckoutRoute($payment);
+    }
+
+    public function testWebhookPaymentCreatedForS2SPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->createMerchantWebhook(
+            [
+                'events'      => ['payment.created' => "1"]
+            ]);
+
+        $inferno = $this->mockInferno();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $inferno->shouldReceive('fire')
+            ->once();
+
+        $this->doS2SPrivateAuthPayment($payment);
     }
 
     public function testOrderPaidWebhookEventData()
