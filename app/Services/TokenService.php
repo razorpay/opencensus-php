@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\User;
+namespace RZP\Services;
 
 use App;
 use Carbon\Carbon;
@@ -15,6 +15,7 @@ use RZP\Exception\BadRequestException;
  *
  * @package RZP\Models\User
  */
+
 class TokenService
 {
     const TOKEN_EXPIRES_IN_SECONDS = 900; // 15 minutes
@@ -25,9 +26,9 @@ class TokenService
 
     protected $redis;
 
-    public function __construct()
+    public function __construct($app)
     {
-        $this->redis = App::getFacadeRoot()['redis']->connection();
+        $this->redis = $app['redis'];
     }
 
     /**

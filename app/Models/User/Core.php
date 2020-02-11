@@ -1373,9 +1373,7 @@ class Core extends Base\Core
 
         $this->verifyOtp($input + ['action' => 'user_auth'], $merchant, $user);
 
-        $tokenservice = new TokenService();
-
-        $token  = $tokenservice->generate($user->getId());
+        $token  = $this->app['token_service']->generate($user->getId());
 
         return [Entity::OTP_AUTH_TOKEN => $token];
     }

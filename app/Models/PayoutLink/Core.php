@@ -63,7 +63,7 @@ class Core extends Base\Core
 
         $this->raven = $this->app['raven'];
 
-        $this->tokenService = new TokenService();
+        $this->tokenService = $this->app['token_service'];
 
         $this->mutex = $this->app['api.mutex'];
     }

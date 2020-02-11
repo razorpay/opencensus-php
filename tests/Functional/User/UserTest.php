@@ -1893,9 +1893,9 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    protected function mockRedisSuccess($funcName, $payoutLinkId)
+    protected function mockRedisSuccess($funcName, $userId)
     {
-        $token = (new TokenService())->generate($payoutLinkId);
+        $token = $this->app['token_service']->generate($userId);
 
         $this->testData[$funcName]['request']['content']['otp_auth_token'] = $token;
     }
