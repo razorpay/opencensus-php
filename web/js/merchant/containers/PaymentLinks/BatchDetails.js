@@ -2,11 +2,16 @@ import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 
 import BatchDetails from 'merchant/containers/BatchNew/Details';
-import { fetchPaymentLinkBatchesDetails as fetchBatchDetails } from 'merchant/reducers/batches';
+import {
+  fetchPaymentLinkBatchesDetails as fetchBatchDetails,
+  cancelPaymentLinkBatch,
+} from 'merchant/reducers/batches';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { pluralize } from 'common/utils/rzp-utils';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 import BatchStats from 'common/ui/StatsTable';
+import Button from 'common/new-ui/Button';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import DataTable from 'common/ui/Table/DataTable';
 import ListToggler from 'common/ui/Toggler/ListToggler';
@@ -19,6 +24,10 @@ const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
 const renderBatchDetails = props => {
   const { batch, stats, invoices } = props;
   const statsTable = getStatsTable(stats);
+
+  const showCancelBtn =
+    batch.status === 'partially_processed' || batch.status === 'processed';
+
   return (
     <Fragment>
       <div class="equal-margin">
@@ -27,6 +36,16 @@ const renderBatchDetails = props => {
       <div class="equal-margin">
         <EntityDetailRow label="Status">
           <BatchUploadStatusLabel status={batch.status} />
+
+          {showCancelBtn &&
+            props.isBatchCancelEnabled && (
+              <Button.Transparent
+                class="Button--Link cancel-batch"
+                onClick={props.onClickCancelBtn}
+              >
+                Cancel
+              </Button.Transparent>
+            )}
         </EntityDetailRow>
         <EntityDetailRow label="Created At">
           <Time value={batch.created_at} />
@@ -50,17 +69,55 @@ const renderBatchDetails = props => {
   );
 };
 
-@connect(null, {
-  fetchBatchDetails,
-})
+@connect(
+  state => ({ isBatchCancelEnabled: state.session.user.isBatchCancelEnabled }),
+  {
+    cancelPaymentLinkBatch,
+    showNotification,
+    fetchBatchDetails,
+  }
+)
 export default class PaymentLinksBatchDetailsContainer extends Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
+  onClickCancelBtn = () => {
+    this.context.confirm({
+      header: 'Cancel Batch?',
+      message:
+        'Cancelling this batch will also cancel any Payment Links created through this batch.',
+      affirmativeLabel: 'Yes, Cancel',
+      affirmativePendingLabel: 'Cancelling...',
+      abortLabel: "No, don't!",
+      action: () => {
+        this.props
+          .cancelPaymentLinkBatch(this.props.id)
+          .then(() => {
+            this.props.showNotification({
+              type: 'success',
+              message: 'This batch cancellation initiated.',
+            });
+          })
+          .catch(err => {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors[0],
+            });
+          });
+      },
+    });
+  };
+
   render() {
     return (
       <BatchDetails
         id={this.props.id}
         fetchBatchDetails={this.props.fetchBatchDetails}
+        onClickCancelBtn={this.onClickCancelBtn}
         renderDetails={renderBatchDetails}
         gaEvents={gaEvents}
+        isBatchCancelEnabled={this.props.isBatchCancelEnabled}
       />
     );
   }

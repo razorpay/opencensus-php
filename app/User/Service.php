@@ -890,6 +890,7 @@ class Service extends Base\Service
             'new_pp_success_modal',
             'hide_company_name',
             'rx_test_mode',
+            'batch_cancel'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

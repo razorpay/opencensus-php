@@ -461,6 +461,10 @@ export default class User {
     return this.getExpStatus('sellerapp_PL_batch_upload');
   }
 
+  get isBatchCancelEnabled() {
+    return this.getExpStatus('batch_cancel');
+  }
+
   get isVPAFeatureEnabled() {
     const isLiveMode = getMode() === 'live';
 

@@ -56,6 +56,8 @@ export const batchUploadStatusMap = {
   partially_processed: 'label-info',
   processed: 'label-success',
   failure: 'label-danger',
+  cancelled: 'label-danger',
+  paused: 'label-yellow',
 };
 
 export const virtualAccountStatusMap = {
