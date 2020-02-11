@@ -247,6 +247,8 @@ class UserAccess
 
         $userRole = $this->getUserRole();
 
+        $userRolePermissions = $this->getBankingRolePermissions($userRole);
+
         $routePermission = $this->getRoutePermission($route);
 
         // Allow route to all roles having wildcard permission
@@ -256,7 +258,7 @@ class UserAccess
         }
 
         // If role doesn't have route permission then deny otherwise allow
-        if ($this->userRolePermissionsMap->isInvalidPermission($userRole, $routePermission))
+        if (in_array($routePermission, $userRolePermissions, true) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
@@ -275,6 +277,24 @@ class UserAccess
         }
 
         return $userRole;
+    }
+
+    /**
+     * @param $role
+     *
+     * @return mixed|null
+     * @throws BadRequestException
+     */
+    private function getBankingRolePermissions($role)
+    {
+        $rolePermissions = $this->userRolePermissionsMap->getRolePermissions($role);
+
+        if ($rolePermissions === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED_USER_PERMISSIONS_MISSING);
+        }
+
+        return $rolePermissions;
     }
 
     /**
