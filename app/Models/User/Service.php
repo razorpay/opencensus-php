@@ -816,11 +816,4 @@ class Service extends Base\Service
 
         return $this->core()->verifyUserThroughEmail($input, $merchant, $user);
     }
-
-    public function changeContactMobile($input)
-    {
-        $user = $this->auth->getUser();
-
-        return $this->core()->changeContactMobile($input, $user);
-    }
 }
