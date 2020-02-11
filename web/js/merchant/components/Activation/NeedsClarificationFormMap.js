@@ -158,6 +158,9 @@ const predefinedReasons = {
       update_director_pan: {
         description: 'Please update PAN details of a director listed by MCA',
       },
+      update_proprietor_pan: {
+        description: 'Please update PAN of the Propreitor',
+      },
     },
   },
   company_pan_name: {
@@ -239,6 +242,10 @@ const predefinedReasons = {
         description:
           "We're unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
       },
+      resubmit_cancelled_cheque: {
+        description:
+          'The statements or cancelled cheque attached is not legible. Please resubmit a clear copy.',
+      },
     },
   },
   promoter_address_url: {
@@ -262,6 +269,10 @@ const predefinedReasons = {
       address_proof_outdated: {
         description:
           'The validity of the address proof attached has elapsed. Please submit the updated document',
+      },
+      submit_driving_license: {
+        description:
+          'Please submit both photo ID and address page of the driving license - merged as one document.',
       },
     },
   },
@@ -346,6 +357,16 @@ const predefinedReasons = {
       unable_to_validate_ifsc: {
         description:
           "We're unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
+      },
+    },
+  },
+  business_pan_url: {
+    reasons: {
+      submit_company_pan: {
+        description: 'Please submit a copy of the Company PAN Card',
+      },
+      submit_proprietor_pan: {
+        description: 'Please submit a copy of the Proprietor PAN Card',
       },
     },
   },
