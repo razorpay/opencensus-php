@@ -91,12 +91,20 @@ export default class PaymentLinksBatchDetailsContainer extends Component {
       affirmativePendingLabel: 'Cancelling...',
       abortLabel: "No, don't!",
       action: () => {
-        this.props.cancelPaymentLinkBatch(this.props.id).then(() => {
-          this.props.showNotification({
-            type: 'success',
-            message: 'This batch cancellation initiated.',
+        this.props
+          .cancelPaymentLinkBatch(this.props.id)
+          .then(() => {
+            this.props.showNotification({
+              type: 'success',
+              message: 'This batch cancellation initiated.',
+            });
+          })
+          .catch(err => {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors,
+            });
           });
-        });
       },
     });
   };
