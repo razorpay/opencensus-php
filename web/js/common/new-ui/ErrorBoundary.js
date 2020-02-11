@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 export default class ErrorBoundary extends Component {
   state = {
     error: false,
-    info: null,
+    info: null
   };
 
   componentDidCatch(error, info) {
@@ -11,6 +11,9 @@ export default class ErrorBoundary extends Component {
       Sentry.withScope(scope => {
         Object.keys(info).forEach(key => {
           scope.setExtra(key, info[key]);
+          if (window.rzp_user && window.rzp_user.current) {
+            scope.setTag('merchant_id', window.rzp_user.current);
+          }
         });
         Sentry.captureException(error);
       });
@@ -24,15 +27,15 @@ export default class ErrorBoundary extends Component {
     this.setState({ error, info });
   }
 
-  componentWillReceiveProps(props) {
+  componentWillReceiveProps() {
     if (this.props.resetOnProps) {
       this.setState({ error: false, info: null });
     }
   }
 
   render() {
-    const hasRaven = !!window.Raven,
-      lastEventId = hasRaven && Raven.lastEventId();
+    const hasRaven = !!window.Raven;
+    const lastEventId = hasRaven && Raven.lastEventId();
 
     if (this.state.error) {
       return (
