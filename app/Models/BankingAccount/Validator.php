@@ -58,6 +58,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'sometimes|nullable|string',
         Entity::BENEFICIARY_EMAIL               => 'sometimes|nullable|string',
         Entity::BENEFICIARY_NAME                => 'sometimes|nullable|string',
+        Entity::REVIEWER                        => 'sometimes|nullable|string',
     ];
 
     protected static $rblCreateRules = [
@@ -89,6 +90,7 @@ class Validator extends Base\Validator
         Entity::REFERENCE1                      => 'filled|string',
         Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
         Entity::DETAILS                         => 'sometimes|array',
+        Entity::REVIEWER                        => 'sometimes|string'
     ];
 
     protected static $internalEditRules = [

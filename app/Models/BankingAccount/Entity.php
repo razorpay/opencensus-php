@@ -104,6 +104,8 @@ class Entity extends Base\PublicEntity
     const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
     const BALANCE                 = 'balance';
 
+    const REVIEWER      = 'reviewer';
+
     protected $entity = 'banking_account';
 
     protected static $sign = 'bacc';
@@ -187,6 +189,8 @@ class Entity extends Base\PublicEntity
         //
         'bankingAccountDetails',
         self::PASSWORD,
+        self::REVIEWER,
+
     ];
 
     protected $public = [
