@@ -102,7 +102,7 @@ export default class PaymentLinksBatchDetailsContainer extends Component {
           .catch(err => {
             this.props.showNotification({
               type: 'error',
-              message: err.errors,
+              message: err.errors[0],
             });
           });
       },
