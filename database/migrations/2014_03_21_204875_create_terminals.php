@@ -193,9 +193,6 @@ class CreateTerminals extends Migration
             $table->text(Terminal::NOTES)
                   ->nullable();
 
-            $table->integer(Terminal::SYNC_STATUS)
-                  ->default(SyncStatus::getValueForSyncStatusString(SyncStatus::NOT_SYNCED));
-
             $table->integer(Terminal::CREATED_AT);
 
             $table->integer(Terminal::UPDATED_AT);
@@ -206,6 +203,10 @@ class CreateTerminals extends Migration
 
             $table->tinyInteger(Terminal::ENABLED)
                   ->default(1);
+
+            $table->integer(Terminal::SYNC_STATUS)
+                  ->default(SyncStatus::getValueForSyncStatusString(SyncStatus::NOT_SYNCED));
+
 
             $table->foreign(Terminal::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
@@ -231,6 +232,7 @@ class CreateTerminals extends Migration
             $table->index(Terminal::STATUS);
             $table->index(Terminal::ORG_ID);
             $table->index(Terminal::BANK_TRANSFER);
+            $table->index(Terminal::SYNC_STATUS);
         });
     }
 

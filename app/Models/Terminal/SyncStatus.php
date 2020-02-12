@@ -4,6 +4,11 @@
 namespace RZP\Models\Terminal;
 
 
+/**
+ * Class SyncStatus
+ * Enum values used for status while syncing api terminals with terminals service
+ * @package RZP\Models\Terminal
+ */
 class SyncStatus
 {
 

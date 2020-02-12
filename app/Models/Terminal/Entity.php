@@ -313,12 +313,12 @@ class Entity extends Base\PublicEntity
         self::PAYLATER                   => 0,
         self::STATUS                     => Status::ACTIVATED,
         self::NOTES                      => null,
-        self::SYNC_STATUS                => SyncStatus::NOT_SYNCED,
         self::OMNICHANNEL                => 0,
         self::VPA                        => null,
         self::MC_MPAN                    => null,
         self::VISA_MPAN                  => null,
         self::RUPAY_MPAN                 => null,
+        self::SYNC_STATUS                => SyncStatus::NOT_SYNCED,
     ];
 
     protected $casts = [

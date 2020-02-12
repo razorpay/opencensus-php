@@ -5617,4 +5617,5 @@ ALTER TABLE disputes
     ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL AFTER gateway_amount;
 
 ALTER TABLE terminals
-    ADD COLUMN sync_status INT DEFAULT 0 AFTER notes;
+    ADD COLUMN sync_status INT DEFAULT 0,
+    ADD INDEX `terminals_sync_status_index` (`sync_status`);
