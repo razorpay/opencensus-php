@@ -289,7 +289,7 @@ class UserAccess
      */
     private function getRoutePermission(string $routeName)
     {
-        $routePermissionList = Route::$routePermission;
+        $routePermissionList = Route::$bankingRoutePermissions;
 
         if (isset($routePermissionList[$routeName]) === false)
         {

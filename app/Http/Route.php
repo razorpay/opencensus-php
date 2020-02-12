@@ -3377,8 +3377,32 @@ final class Route
         'fetch_batch_action_entities'                  => Permission::ADMIN_BATCH_CREATE,
         'fetch_batch_actions'                          => Permission::ADMIN_BATCH_CREATE,
 
-        // ******** Banking API Permissions ****************
-        // Routes which were added earlier for admin dashboard
+        // common routes between admin and banking dashboard
+        'merchant_balance_fetch'                       => Permission::VIEW_MERCHANT_BALANCE,
+        'merchant_edit_config'                         => Permission::ASSIGN_MERCHANT_HANDLE,
+        'merchant_activation_business_categories'      => '*',
+        'merchant_activation_details'                  => '*',
+        'merchant_fetch_users'                         => '*',
+        'invitation_fetch'                             => '*',
+        'merchant_analytics'                           => Permission::VIEW_MERCHANT_ANALYTICS,
+        'merchant_get_tags'                            => '*',
+        'webhook_edit'                                 => '*',
+        'batch_create'                                 => '*',
+        'reporting_config_get'                         => '*',
+        'reporting_config_list'                        => '*',
+        'reporting_log_get'                            => '*',
+        'reporting_log_list'                           => '*',
+        'reporting_log_create'                         => '*',
+        'reporting_log_update'                         => '*',
+        'ufh_get_file_signed_url'                      => '*',
+        'payout_create'                                => Permission::CREATE_PAYOUT,
+        'payout_create_with_otp'                       => Permission::CREATE_PAYOUT,
+        'currency_fetch_all_proxy'                     => '*',
+        'reports_monthly_banking_invoice'              => '*',
+    ];
+
+    public static $bankingRoutePermissions = [
+        // common routes between banking and admin dashboard
         'merchant_balance_fetch'                       => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_edit_config'                         => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_details'                  => '*',
@@ -3399,6 +3423,7 @@ final class Route
         'payout_create_with_otp'                       => Permission::CREATE_PAYOUT,
         'currency_fetch_all_proxy'                     => '*',
         'reports_monthly_banking_invoice'              => '*',
+        'merchant_activation_business_categories'      => '*',
 
         'payout_bulk_create'                           => Permission::CREATE_PAYOUT_BULK,
         'payout_approve_bulk'                          => Permission::APPROVE_PAYOUT_BULK,
@@ -3472,7 +3497,6 @@ final class Route
         'merchant_features_fetch'                      => '*',
         'banking_accounts_list'                        => '*',
         'merchant_fetch_config'                        => '*',
-        'merchant_activation_business_categories'      => '*',
         'merchant_edit_pre_signup_details'             => '*',
         'merchant_gst_fetch'                           => '*',
         'batch_fetch_multiple'                         => '*',
