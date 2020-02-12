@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\TerminalsServiceMigrateJob;
+use RZP\Services\TerminalsService as TerminalsServiceClient;
 
 class Service extends Base\Service
 {
@@ -74,8 +75,8 @@ class Service extends Base\Service
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
         $this->app['workflow']
-             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-             ->handle($terminal, (new \stdClass));
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle($terminal, (new \stdClass));
 
         $terminal = $this->repo->deleteOrFail($terminal);
 
@@ -98,8 +99,8 @@ class Service extends Base\Service
         $terminal = $this->repo->terminal->findOrFailPublic($id);
 
         $this->app['workflow']
-             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-             ->handle($terminal, (new \stdClass));
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle($terminal, (new \stdClass));
 
         $terminal = $this->repo->deleteOrFail($terminal);
 
@@ -215,8 +216,8 @@ class Service extends Base\Service
         ];
 
         $this->app['workflow']
-             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-             ->handle($original, $dirty);
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle($original, $dirty);
 
         (new Terminal\Core)->toggle($terminal, $toggle);
 
@@ -404,8 +405,24 @@ class Service extends Base\Service
      */
     public function migrateTerminal(Terminal\Entity $terminal)
     {
-        
+        $client = new TerminalsServiceClient($this->app);
+
+        $migrateTerminalResponse = $client->migrateTerminal($terminal);
+
+        $fetchTerminalResponse = $client->fetchTerminalById($terminal->getId());
+
+        if ($this->isMigrateTerminalSuccess($terminal, $migrateTerminalResponse, $fetchTerminalResponse) === true)
+        {
+            $this->processMigrateTerminalSuccsess($terminal);
+        }
+        else
+        {
+            $this->processMigrateTerminalFailure($terminal);
+        }
+
     }
+
+
 
     protected function createTerminalMigrateJob(Terminal\Entity $terminal)
     {
@@ -425,5 +442,20 @@ class Service extends Base\Service
 
             $this->trace->error(TraceCode::TERMINALS_SERVICE_CREATE_MIGRATE_JOB_FAILURE, $data);
         }
+    }
+
+    protected function isMigrateTerminalSuccess(Entity $terminal, array $migrateTerminalResponse, array $fetchTerminalResponse)
+    {
+        return false; // TODO add logic here
+    }
+
+    protected function processMigrateTerminalSuccsess(Entity $terminal)
+    {
+        #TODO
+    }
+
+    protected function processMigrateTerminalFailure(Entity $terminal)
+    {
+        #TODO
     }
 }

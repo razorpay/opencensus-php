@@ -5,6 +5,7 @@ namespace RZP\Services;
 use Requests;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
 use RZP\Exception\IntegrationException;
 
 class TerminalsService
@@ -25,6 +26,23 @@ class TerminalsService
     const CONTENT_TYPE      = 'content_type';
     const EXCEPTION         = 'exception';
     const STATUS_CODE       = 'status_code';
+    const PATH              = 'path';
+    const METHOD            = 'method';
+
+
+    const CREATE_TERMINAL      = 'create_terminal';
+    const FETCH_TERMINAL_BY_ID = 'fetch_terminal_by_id';
+
+    const PARAMS = [
+        self::CREATE_TERMINAL       =>   [
+            self::PATH   => 'v1/terminals',
+            self::METHOD => Requests::POST,
+        ],
+        self::FETCH_TERMINAL_BY_ID  =>   [
+            self::PATH   => 'v1/terminals/',
+            self::METHOD => Requests::GET,
+        ],
+    ];
 
     public function __construct($app)
     {
@@ -33,6 +51,28 @@ class TerminalsService
         $this->trace = $this->app['trace'];
 
         $this->mode = $this->app['rzp.mode'];
+    }
+
+    public function migrateTerminal(Terminal\Entity $terminal): array
+    {
+        $content = $terminal->toArrayWithPassword();
+
+        $params = self::PARAMS[self::CREATE_TERMINAL];
+
+        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response);
+    }
+
+    public function fetchTerminalById(string $terminalId): array
+    {
+        $params = self::PARAMS[self::FETCH_TERMINAL_BY_ID];
+
+        $params[self::PATH] .= $terminalId;
+
+        $response = $this->sendRequest($params[self::PATH], [], $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response);
     }
 
     protected function sendRequest(string $path, array $content, string $method = Requests::POST): \Requests_Response
@@ -83,9 +123,21 @@ class TerminalsService
         }
     }
 
-    protected function getBaseUrl()
+    protected function parseAndReturnResponse(\Requests_Response $response): array
     {
-        $urlConfig = 'applications.terminals_service.' . $this->mode . '.url';
+        $responseArray = json_decode($response->body, true);
+
+        if ($responseArray === null)
+        {
+            return [];
+        }
+
+        return $responseArray;
+    }
+
+    protected function getBaseUrl(string $mode)
+    {
+        $urlConfig = 'applications.terminals_service.' . $mode . '.url';
 
         return $this->app['config']->get($urlConfig);
     }
@@ -117,4 +169,6 @@ class TerminalsService
         return $this->app['config']->get($passwordConfig);
 
     }
+
+
 }
