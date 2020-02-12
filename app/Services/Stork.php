@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use Illuminate\Support\Str;
 use Request;
 use Throwable;
 use Requests_Session;
@@ -105,7 +106,7 @@ class Stork
             [],
             // Options and authentication for requests.
             [
-                'timeout' => 1, // Minimum possible value is 1 second.
+                'timeout' => 0.35, // Request to stork gets timed out after this
                 'auth' => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
             ]);
     }
@@ -128,8 +129,39 @@ class Stork
         catch (Throwable $e)
         {
             $exception = $e;
+
+            $res = $this->retryStorkRequest($exception, $path, $payload, $res);
         }
 
+        $this->throwStorkException($exception, $res, $path);
+
+        return $res;
+    }
+
+    protected function retryStorkRequest($exception, string $path, array $payload, $res)
+    {
+        if (($exception !== null) and ($exception instanceof \Requests_Exception))
+        {
+           if (Str::contains($exception->getMessage(), "Operation timed out"))
+           {
+               try
+               {
+                   $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload));
+               }
+               catch (Throwable $e)
+               {
+                   $exception = $e;
+               }
+
+               $this->throwStorkException($exception, $res, $path);
+
+               return $res;
+           }
+        }
+    }
+
+    protected function throwStorkException($exception, $res, $path)
+    {
         if (($exception !== null) or ($res->success !== true))
         {
             throw new ServerErrorException(
@@ -138,8 +170,6 @@ class Stork
                 ['req_path' => $path] + ($res ? ['resp_status_code' => $res->status_code, 'resp_body' => $res->body] : []),
                 $exception);
         }
-
-        return $res;
     }
 
     protected function formatListResponse(string $entity, array $res): array
