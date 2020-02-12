@@ -2956,7 +2956,7 @@ return [
         ],
     ],
 
-    '   testWorkflowTriggerForBankingRequest' => [
+    'testWorkflowTriggerForBankingRequest' => [
         'request' => [
             'url'    => '/payouts_with_otp',
             'method' => 'POST',
