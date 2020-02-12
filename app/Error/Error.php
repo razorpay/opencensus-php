@@ -246,49 +246,62 @@ class Error extends Support\Fluent
 
         if ($this->redis->exists($cacheKey) === 1)
         {
-            $errorCodeMap = get_object_vars(json_decode($this->redis->get($cacheKey)));
+            if ($this->redis->get($cacheKey) !== null)
+            {
+                $errorCodeMap = get_object_vars(json_decode($this->redis->get($cacheKey)));
+            }
+            else
+            {
+                $this->readMappingFromFile($cacheKey, $method);
+            }
+
         }
         else
         {
-            $filePath = storage_path(sprintf(self::ERROR_CODE_FILE_PATH, $method));
-
-            if (file_exists($filePath) === false)
-            {
-                return;
-            }
-
-            $handle = fopen($filePath,"r");
-
-            if ($handle === false)
-            {
-                return;
-            }
-
-            try
-            {
-                $header = fgetcsv($handle);
-
-                while ($row = fgetcsv($handle))
-                {
-                    $key = array_shift($row);
-
-                    $errorCodeMap[$key] = $row;
-                }
-
-                $this->redis->set($cacheKey, json_encode($errorCodeMap), self::REDIS_EXPIRY_PARAM, self::CACHE_EXPIRY);
-            }
-            catch (\Exception $exception)
-            {
-                $this->trace->traceException($exception, null, TraceCode::ERROR_RESPONSE_FILE_READING_FAILED,
-                    ['payment_method'  => $method, 'cacheKey'  => $cacheKey]);
-            }
-            finally
-            {
-                fclose($handle);
-            }
+            $this->readMappingFromFile($cacheKey, $method);
         }
 
         $this->setErrorParamsIfApplicable($errorCodeMap, $code);
+    }
+
+    protected function readMappingFromFile($cacheKey, $method)
+    {
+        $filePath = storage_path(sprintf(self::ERROR_CODE_FILE_PATH, $method));
+
+        if (file_exists($filePath) === false)
+        {
+            return;
+        }
+
+        $handle = fopen($filePath,"r");
+
+        if ($handle === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $header = fgetcsv($handle);
+
+            while ($row = fgetcsv($handle))
+            {
+                $key = array_shift($row);
+
+                $errorCodeMap[$key] = $row;
+            }
+
+            $this->redis->set($cacheKey, json_encode($errorCodeMap), self::REDIS_EXPIRY_PARAM, self::CACHE_EXPIRY);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException($exception, null, TraceCode::ERROR_RESPONSE_FILE_READING_FAILED,
+                ['payment_method'  => $method, 'cacheKey'  => $cacheKey]);
+        }
+        finally
+        {
+            fclose($handle);
+        }
     }
 
     protected function setErrorParamsIfApplicable($errorCodeMap, $code)
@@ -514,7 +527,7 @@ class Error extends Support\Fluent
                 $publicReason   = $this->getAttribute(self::POINT_OF_FAILURE)."-".
                     $this->getAttribute(self::FAILURE_STAGE)."-".$this->getAttribute(self::REASON);
             }
-            
+
             $reasonArr = array(
                 self::REASON            => $publicReason,
                 self::METADATA          => $this->getAttribute(self::METADATA)
