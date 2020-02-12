@@ -30,9 +30,7 @@ class TerminalsServiceMigrateJob extends Job
         {
             $this->trace->info(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_STARTED, $data);
 
-            $terminal = (new Terminal\Repository)->findOrFail($this->terminalId);
-
-            (new Terminal\Service)->migrateTerminal($terminal);
+            (new Terminal\Service)->migrateTerminal($this->terminalId);
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_SUCCESS, $data);
 

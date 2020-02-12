@@ -403,17 +403,18 @@ class Service extends Base\Service
      * All logic will reside here.
      * @param Entity $terminal
      */
-    public function migrateTerminal(Terminal\Entity $terminal)
+    public function migrateTerminal(string $terminalId)
     {
-        $client = new TerminalsServiceClient($this->app);
+            $client = new TerminalsServiceClient($this->app);
 
-        try
-        {
+            $terminal = $this->repo->terminal->getById($terminalId);
+
+
             $migrateTerminalResponse = $client->migrateTerminal($terminal);
 
-            $fetchTerminalResponse = $client->fetchTerminalById($terminal->getId());
+            $client->fetchTerminalById($terminalId);
 
-            if ($this->isMigrateTerminalSuccess($terminal, $migrateTerminalResponse, $fetchTerminalResponse) === true)
+            if ($this->isMigrateTerminalSuccess($terminal, $migrateTerminalResponse) === true)
             {
                 $this->processMigrateTerminalSuccsess($terminal);
             }
@@ -421,16 +422,6 @@ class Service extends Base\Service
             {
                 $this->processMigrateTerminalFailure($terminal);
             }
-        }
-        catch (\Exception $exception)
-        {
-            $this->processMigrateTerminalFailure($terminal);
-        }
-        finally
-        {
-
-        }
-
    }
 
 
@@ -455,7 +446,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function isMigrateTerminalSuccess(Entity $terminal, array $migrateTerminalResponse, array $fetchTerminalResponse)
+    protected function isMigrateTerminalSuccess(Entity $terminal, array $migrateTerminalResponse)
     {
         return false; // TODO add logic here
     }

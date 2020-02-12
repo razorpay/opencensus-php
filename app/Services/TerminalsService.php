@@ -55,7 +55,7 @@ class TerminalsService
 
     public function migrateTerminal(Terminal\Entity $terminal): array
     {
-        $content = $terminal->toArrayWithPassword();
+        $content = json_encode($terminal->toArrayWithPassword());
 
         $params = self::PARAMS[self::CREATE_TERMINAL];
 
@@ -70,20 +70,18 @@ class TerminalsService
 
         $path = sprintf($params[self::PATH], $terminalId);
 
-        $response = $this->sendRequest($path, null, $params[self::METHOD]);
+        $response = $this->sendRequest($path, '', $params[self::METHOD]);
 
         return $this->parseAndReturnResponse($response);
     }
 
-    protected function sendRequest(string $path, array $content, string $method): \Requests_Response
+    protected function sendRequest(string $path, $content = '', string $method = Requests::POST): \Requests_Response
     {
         $url = $this->getBaseUrl($this->mode) . $path;
 
         $headers = $this->getHeaders();
 
         $options = $this->getOptions();
-
-        $content = json_encode($content);
 
         try
         {
