@@ -668,7 +668,7 @@ trait Capture
                     'message'    => $e->getMessage(),
                 ]);
 
-            $this->updateMerchantBalance($payment, $transaction);
+            $this->updateMerchantBalance($payment, $txn);
         }
     }
 
