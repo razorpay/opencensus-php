@@ -13,12 +13,11 @@ use Psr\Http\Message\ResponseInterface;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Settlement;
 use RZP\Models\Feature;
-use RZP\Models\Merchant\Webhook;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Webhook\Inferno;
 use Illuminate\Database\Eloquent\Factory;
@@ -782,9 +781,13 @@ class WebhookTest extends TestCase
         $this->doS2SPrivateAuthPayment();
     }
 
-    public function testWebhookPaymentCreatedForS2SPrivateAuthJson()
+    public function testWebhookPaymentCreatedForCustomerFee()
     {
         $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
         $this->createMerchantWebhook(
             [
@@ -798,9 +801,9 @@ class WebhookTest extends TestCase
         $inferno = $this->mockInferno();
 
         $inferno->shouldReceive('fire')
-            ->once();
+            ->never();
 
-        $this->doS2SPrivateAuthJsonPayment();
+        $this->createAndGetFeesForPayment();
     }
 
     public function testOrderPaidWebhookEventData()
