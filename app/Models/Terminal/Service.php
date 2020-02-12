@@ -405,10 +405,12 @@ class Service extends Base\Service
      */
     public function migrateTerminal(string $terminalId)
     {
+        $this->repo->transaction(function () use ($terminalId) {
             $client = new TerminalsServiceClient($this->app);
 
             $terminal = $this->repo->terminal->getById($terminalId);
 
+            $this->repo->terminal->lockForUpdateAndReload($terminal);
 
             $migrateTerminalResponse = $client->migrateTerminal($terminal);
 
@@ -422,8 +424,9 @@ class Service extends Base\Service
             {
                 $this->processMigrateTerminalFailure($terminal);
             }
-   }
+        });
 
+    }
 
 
     protected function createTerminalMigrateJob(Terminal\Entity $terminal)
