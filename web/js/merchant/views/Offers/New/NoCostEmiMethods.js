@@ -14,6 +14,7 @@ export default class NoCostEmiMethods extends React.Component {
       selectedIssuer: this.props.issuer || null,
       tenure: {},
       isLoading: true,
+      emiOptionsDetails: null,
     };
   }
 
@@ -21,8 +22,10 @@ export default class NoCostEmiMethods extends React.Component {
     let methodsReq = merchantFetch('merchant/methods');
     methodsReq
       .then(res => {
+        console.log('res', res.data);
         this.setState({
           emiOptions: (res.data && res.data.emi_plans) || null,
+          emiOptionsDetails: (res.data && res.data.emi_options) || null,
           isLoading: false,
         });
       })
@@ -75,11 +78,22 @@ export default class NoCostEmiMethods extends React.Component {
       let emiPlans = this.state.emiOptions[this.state.selectedIssuer] || {
         plans: [],
       };
-      let count = 1;
+
+      let emiMerchantPaybacks = this.state.emiOptionsDetails[
+        this.state.selectedIssuer
+      ].reduce((acc, item) => {
+        if (acc[item.duration]) {
+          return acc;
+        } else {
+          acc[item.duration] = item;
+          return acc;
+        }
+      }, {});
+
       for (let duration in emiPlans.plans) {
         let text = `${duration} Months`;
         planFields.push(
-          <div key={this.state.selectedIssuer + count++}>
+          <div>
             <Input.Check
               fieldLabel={text}
               onChange={this.onSelectTenure(duration)}
@@ -89,12 +103,13 @@ export default class NoCostEmiMethods extends React.Component {
                 false
               }
             />
+            <p>{emiMerchantPaybacks[duration].merchant_payback}</p>
           </div>
         );
       }
     }
     if (planFields.length > 0) {
-      return <Input.Group label={'EMI Tenure'}>{planFields}</Input.Group>;
+      return planFields;
     }
   }
 
