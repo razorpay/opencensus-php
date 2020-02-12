@@ -469,6 +469,11 @@ class Processor
 
     protected function preProcessDCCInputs(array $input, Payment\Entity $payment)
     {
+        if ($payment->isCard() === false)
+        {
+            return;
+        }
+
         if (isset($input['dcc_currency']) === true and
             isset($input['dcc_amount']) and
             isset($input['currency_request_id']))

@@ -2970,7 +2970,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $data = $this->toArray();
 
-        if (($this->isCard()) and
+        if (($this->isCard() === true) and
             ($this->getConvertCurrency() === true))
         {
             $data['amount'] = $this->getBaseAmount();
