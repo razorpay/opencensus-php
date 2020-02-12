@@ -2970,8 +2970,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $data = $this->toArray();
 
-        if (($this->isCard()) and
-            ($this->paymentMeta()->exists === true))
+        if ($this->isCard())
         {
             $data['amount'] = $this->getGatewayAmount();
             $data['currency'] = $this->getGatewayCurrency();
@@ -3717,11 +3716,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function getGatewayAmount()
     {
-        return $this->paymentMeta->getGatewayAmount() ?? $this->getAmount();
+        $paymentMetaEntity = $this->paymentMeta;
+
+        return (($paymentMetaEntity !== null) and ($paymentMetaEntity->getGatewayAmount() > 0)) ?
+                $paymentMetaEntity->getGatewayAmount() : $this->getAmount();
     }
 
     public function getGatewayCurrency()
     {
-        return $this->paymentMeta->getGatewayCurrency() ?? $this->getCurrency();
+        $paymentMetaEntity = $this->paymentMeta;
+
+        return (($paymentMetaEntity !== null) and ($paymentMetaEntity->getGatewayCurrency()) !== null) ?
+                $paymentMetaEntity->getGatewayCurrency() : $this->getCurrency();
     }
 }

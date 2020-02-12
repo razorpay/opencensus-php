@@ -142,6 +142,7 @@ class Entity
     const D2C_BUREAU_DETAIL          = 'd2c_bureau_detail';
     const D2C_BUREAU_REPORT          = 'd2c_bureau_report';
     const BANKING_ACCOUNT_STATE      = 'banking_account_state';
+    const PAYMENT_META               = 'payment_meta';
 
     // heimdall
     const ORG                   = 'org';
@@ -631,9 +632,9 @@ class Entity
         self::PAYMENTS_UPI_VPA              => \RZP\Models\PaymentsUpi\Vpa::class,
         self::PAYMENTS_UPI_BANK_ACCOUNT     => \RZP\Models\PaymentsUpi\BankAccount::class,
         self::PAYMENTS_UPI_VPA_BANK_ACCOUNT => \RZP\Models\PaymentsUpi\Vpa\BankAccount::class,
-        
+
         self::MERCHANT_FRESHDESK_TICKETS    => \RZP\Models\Merchant\FreshdeskTicket::class,
-        
+
     ];
 
     protected static $repository = [
