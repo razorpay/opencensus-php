@@ -16,6 +16,7 @@ use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
 
 use RZP\Exception;
+use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Models\User;
@@ -1838,7 +1839,7 @@ class Service extends Base\Service
                                                     $userRole);
         }
 
-        $this->getScheduledEarlySettlementPricingForMerchant();
+        $pricingForMerchant = $this->getScheduledEarlySettlementPricingForMerchant();
 
         $schedule = (new Schedule\Repository)->getScheduleByPeriodIntervalAnchorHourDelayAndType(
                                                 Schedule\Period::HOURLY,
@@ -1881,26 +1882,95 @@ class Service extends Base\Service
                                                         Feature\Constants::ES_AUTOMATIC => 1
                                                     ],
                                                     Feature\Entity::SHOULD_SYNC => 1]);
-
-            $tags = $this->merchant->tagNames();
-
-            array_walk($tags, function(& $tag)
-            {
-                $tag = substr($tag, 0, 2);
-            });
-
-            if (in_array('KA', $tags) === true)
-            {
-                // for key accounts, send Feature enabled mail to Capital product team
-                $data['merchant'] = $this->merchant->toArrayPublic();
-
-                $esNotifyEmail = new EsEnabledNotify($data);
-
-                Mail::queue($esNotifyEmail);
-            }
         });
 
+
+        // All the mail sending steps are taken out of the transactionOnLiveAndTest. We want the flow to not get disturbed or reverted for any issues that may happen with mailer.
+        try
+        {
+            $this->sendMailsPostEnableScheduledEs($pricingForMerchant);
+        }
+
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FEATURE_ENABLE_EARLY_SETTLEMENT_MAIL_FAILED,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'user_id' => $this->user->getId()
+                ]);
+        }
+
         return ['success' => true];
+    }
+
+    public function sendMailsPostEnableScheduledEs(array $pricingForMerchant = null)
+    {
+        // Check merchant corresponding tags to see if it is a key account
+        $tags = $this->merchant->tagNames();
+
+        array_walk($tags, function(& $tag)
+        {
+            $tag = substr($tag, 0, 2);
+        });
+        if (in_array('KA', $tags) === true)
+        {
+            // For key accounts, send feature enabled mail to Capital product team
+            $kamMailerData[EsEnabledNotify::TO_EMAIL] = EsEnabledNotify::KAM_MAILING_LIST_EMAILS;
+
+            $kamMailerData[EsEnabledNotify::TO_NAME] = EsEnabledNotify::KAM_MAILING_LIST_NAMES;
+
+            $kamMailerData[EsEnabledNotify::SUBJECT] = EsEnabledNotify::KAM_MAILER_SUBJECT;
+
+            $kamMailerData[EsEnabledNotify::VIEW] = EsEnabledNotify::KAM_MAILER_VIEW;
+
+            $kamMailerData[EsEnabledNotify::MERCHANT_DATA] = $this->merchant->toArrayPublic();
+
+            $esNotifyKAMEmail = new EsEnabledNotify($kamMailerData);
+
+            Mail::queue($esNotifyKAMEmail);
+        }
+
+        if (isset($pricingForMerchant) === true)
+        {
+            // Fetch all userIds which belong to the merchant and are either owner, finance or admin type
+            $merchantOwnerAdminUsersCollections = (new MerchantUser\Repository)->findByRolesAndMerchantId([User\Entity::OWNER,
+                                                                                                           User\Entity::ADMIN,
+                                                                                                           User\Role::FINANCE],
+                                                                                                           $this->merchant->getId());
+
+            $merchantOwnerAdminUsers = array_unique($merchantOwnerAdminUsersCollections
+                                                    ->pluck(User\Entity::USER_ID)
+                                                    ->toArray());
+
+            // Fetch their corresponding names and email id's
+            $userNamesAndEmailsCollections = (new User\Repository)->findMany($merchantOwnerAdminUsers, [User\Entity::NAME, User\Entity::EMAIL]);
+
+            $userNamesAndEmails = $userNamesAndEmailsCollections->pluck(User\Entity::NAME, User\Entity::EMAIL)->toArray();
+
+            $pricingForMerchantPercentRate = number_format(floatval($pricingForMerchant[Pricing\Entity::PERCENT_RATE]) / 100, 2);
+
+            $merchantMailerData[EsEnabledNotify::TO_EMAIL] = array_keys($userNamesAndEmails);
+
+            // Add capital support to receiver's list
+            array_push($merchantMailerData[EsEnabledNotify::TO_EMAIL], MailConstants::MAIL_ADDRESSES[MailConstants::CAPITAL_SUPPORT]);
+
+            $merchantMailerData[EsEnabledNotify::TO_NAME] = array_values($userNamesAndEmails);
+
+            array_push($merchantMailerData[EsEnabledNotify::TO_NAME], MailConstants::HEADERS[MailConstants::CAPITAL_SUPPORT]);
+
+            $merchantMailerData[Pricing\Entity::PERCENT_RATE] = $pricingForMerchantPercentRate;
+
+            $merchantMailerData[EsEnabledNotify::SUBJECT] = EsEnabledNotify::MERCHANT_MAILER_SUBJECT;
+
+            $merchantMailerData[EsEnabledNotify::VIEW] = EsEnabledNotify::MERCHANT_MAILER_VIEW;
+
+            $esNotifyMerchantEmail = new EsEnabledNotify($merchantMailerData);
+
+            Mail::queue($esNotifyMerchantEmail);
+        }
     }
 
     public function addOrRemoveMerchantFeatures(array $input)
@@ -2355,6 +2425,8 @@ class Service extends Base\Service
 
             // Fetch formatted merchant details.
             $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
+
+            $data['is_inheritance_parent']  =  $merchant->isInheritanceParent();
 
             $data['tags'] = $merchant->tagNames();
         }
@@ -3456,6 +3528,32 @@ class Service extends Base\Service
         });
     }
 
+    public function enableBusinessBankingTestMode(array $input)
+    {
+        $merchantIds = $input['merchant_ids'] ?? [];
+        $skip        = $input['skip'] ?? 0;
+        $limit       = $input['limit'] ?? 500;
+
+        $bankingAccounts = $this->repo->banking_account->fetchBankingAccounts($merchantIds, $skip, $limit);
+
+        foreach ($bankingAccounts as $bankingAccount)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_X_TEST_MODE_MIGRATION,
+                [
+                    'banking_account_id'  => $bankingAccount->getId(),
+                    'merchant_id'         => $bankingAccount->merchant->getId(),
+                ]
+            );
+
+            $this->app['basicauth']->setMerchant($bankingAccount->merchant);
+
+            (new Activate)->activateBusinessBankingIfApplicable($bankingAccount->merchant);
+        }
+
+        return ['processed' => count($bankingAccounts)];
+    }
+
     /**
      * Checks if a merchant exists with the input email
      * and if it is marked as a partner
@@ -3684,5 +3782,107 @@ class Service extends Base\Service
         $referral = (new Referral\Core)->createOrFetch($merchant);
 
         return $referral->toArrayPublic();
+    }
+
+
+    /**
+     * @param array $record
+     */
+    public function actionPerform(array $record)
+    {
+        $attribute = [];
+        $settings  = [];
+
+        $this->segregateInputFieldsAndSettings($record, $attribute, $settings);
+
+        (new Validator)->validateInput('entity_batch_action', $settings);
+
+        $core = CE::getEntityCoreClass($settings[Constants::ENTITY]);
+
+        $batch_action = $settings[Constants::BATCH_ACTION];
+
+        $function = camel_case($batch_action);
+
+        $core->$function($settings[Entity::ID], $attribute);
+    }
+
+
+    /**
+     * @param array $input
+     *
+     * @return Base\PublicCollection
+     */
+    public function merchantsBulkUpdate(array $input)
+    {
+        $response = new Base\PublicCollection();
+
+        foreach ($input as $record)
+        {
+            try
+            {
+                $this->actionPerform($record);
+
+                $response->push($record);
+            }
+            catch (Exception\BaseException $exception)
+            {
+                $this->setErrorAttributesToResponse($record, $exception, $response);
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param array                   $record
+     * @param Exception\BaseException $exception
+     * @param Base\PublicCollection   $response
+     */
+    public function setErrorAttributesToResponse(array $record, Exception\BaseException $exception, Base\PublicCollection $response)
+    {
+        $this->trace->traceException($exception,
+                                     Trace::INFO,
+                                     TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST);
+        $exceptionData = [
+            'error'                 => [
+                Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+            ],
+            Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+        ];
+
+        $response->push(array_merge($record, $exceptionData));
+    }
+
+    /**
+     * @param array $record
+     * @param array $attribute
+     * @param array $settings
+     */
+    protected function segregateInputFieldsAndSettings(array $record, array & $attribute, array & $settings)
+    {
+        $settings = array_only($record, Constants::$EntityBatchActionSettingParams);
+
+        $attribute = array_diff($record, $settings);
+    }
+
+    /**
+     * @return array
+     */
+    public function getBatchActionEntities(): array
+    {
+        $batchAction = (new Core())->getBatchActionEntities();
+
+        return $batchAction;
+    }
+
+    /**
+     * @return array
+     */
+    public function getBatchActions(): array
+    {
+        $batchAction = (new Core())->getBatchActions();
+
+        return $batchAction;
     }
 }

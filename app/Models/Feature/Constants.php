@@ -265,9 +265,14 @@ class Constants
     const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
 
     /**
- * Enables workflow feature on Payout for Business Banking (RazorpayX)
- */
+     * Enables workflow feature on Payout for Business Banking (RazorpayX)
+     */
     const PAYOUT_WORKFLOWS              = 'payout_workflows';
+
+    /**
+     * Skips workflow for API requests for creating payouts for Business Banking (RazorpayX)
+     */
+    const SKIP_WORKFLOWS_FOR_API        = 'skip_workflow_for_api';
 
     /**
      * Aggregator Partner + OAuth Client access
@@ -287,8 +292,13 @@ class Constants
 
     const BLOCK_OFFER_CREATION     = 'block_offer_creation';
 
-    const MULTIPLE_REDIRECTION_ONHOLD = 'multiple_redirection_onhold';
-  
+    /*
+     * this is used for displaying the parent payment id for linked accounts in Route
+     */
+    const DISPLAY_LA_PARENT_PAYMENT_ID = 'display_parent_payment_id';
+
+    const REDIRECTION_ONHOLD       = 'redirection_onhold';
+
     const ERROR_METADATA_RESPONSE  = 'error_metadata_response';
 
     /*
@@ -499,7 +509,9 @@ class Constants
         self::OFFLINE_PAYMENTS                => true,
         self::ERROR_METADATA_RESPONSE         => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
-        self::MULTIPLE_REDIRECTION_ONHOLD     => true,
+        self::SKIP_WORKFLOWS_FOR_API          => true,
+        self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
+        self::REDIRECTION_ONHOLD              => true,
     ];
 
     // Entity type constants
@@ -614,6 +626,11 @@ class Constants
             'display_name'  => 'Allow Refunds From Linked Accounts',
             'documentation' => '',
         ],
+        self::DISPLAY_LA_PARENT_PAYMENT_ID    => [
+            'feature'       => self::DISPLAY_LA_PARENT_PAYMENT_ID,
+            'display_name'  => 'display parent paymentId for transfers',
+            'documentation' => '',
+        ],
         self::PAYOUT_TO_CARDS           => [
             'feature'       => self::PAYOUT_TO_CARDS,
             'display_name'  => 'Payout to cards',
@@ -634,6 +651,11 @@ class Constants
             'display_name'  => 'D2C Credit score campaign',
             'documentation' => '',
         ],
+        self::SKIP_WORKFLOWS_FOR_API         => [
+            'feature'       => self::SKIP_WORKFLOWS_FOR_API,
+            'display_name'  => 'Razorpay X - Skip workflows for API requests',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -651,6 +673,7 @@ class Constants
         self::VIRTUAL_ACCOUNTS,
         self::ES_AUTOMATIC,
         self::SHOW_CREDIT_SCORE,
+        self::SKIP_WORKFLOWS_FOR_API
     ];
 
     /*

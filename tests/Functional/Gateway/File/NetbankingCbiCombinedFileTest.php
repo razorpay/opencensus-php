@@ -39,11 +39,23 @@ class NetbankingCbiCombinedFileTest extends TestCase
     {
         Mail::fake();
 
-        $paymentArray    = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $paymentArray = $this->getDefaultNetbankingPaymentArray($this->bank);
 
-        $payment1     = $this->doAuthAndCapturePayment($paymentArray);
+        $payment1 = $this->doAuthAndCapturePayment($paymentArray);
 
-        $payment2        = $this->doAuthAndCapturePayment($paymentArray);
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $payment2 = $this->doAuthAndCapturePayment($paymentArray);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
 
         $fileContents = $this->generateFile('cbi', ['gateway' => 'netbanking_cbi']);
 

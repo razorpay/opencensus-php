@@ -15,6 +15,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Jobs\EsSync;
 use RZP\Models\Batch;
+use RZP\Models\Partner;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -177,6 +178,15 @@ class Core extends Base\Core
     {
         $aggregatorMerchant->getValidator()->validateSubMerchantInput($input, $linkedAccount);
 
+        // validate that external id passed is unique for that partner
+        if (empty($input[Entity::EXTERNAL_ID]) === false)
+        {
+            (new Partner\Core)->validateExternalIdForPartnerSubmerchant($aggregatorMerchant, $input[Entity::EXTERNAL_ID]);
+        }
+
+        $legalEntity           = null;
+        $externalLegalEntityId = null;
+
         $input['email'] = $input['email'] ?? $aggregatorMerchant->getEmail();
 
         if ($accountEntity === true)
@@ -186,6 +196,19 @@ class Core extends Base\Core
         else
         {
             $entity = new Entity;
+
+            if (empty($input[Entity::LEGAL_ENTITY_ID]) === false)
+            {
+                $legalEntity = $this->repo->legal_entity->findOrFailPublic($input[Entity::LEGAL_ENTITY_ID]);
+
+                unset($input[Entity::LEGAL_ENTITY_ID]);
+            }
+            else if (empty($input[Entity::LEGAL_EXTERNAL_ID]) === false)
+            {
+                $externalLegalEntityId = $input[Entity::LEGAL_EXTERNAL_ID];
+
+                unset($input[Entity::LEGAL_EXTERNAL_ID]);
+            }
         }
 
         $subMerchant = $entity->build($input);
@@ -221,13 +244,25 @@ class Core extends Base\Core
             $subMerchant->org()->associate($org);
         }
 
+        if (empty($legalEntity) === false)
+        {
+            $subMerchant->legalEntity()->associate($legalEntity);
+        }
+
         $this->repo->saveOrFail($subMerchant);
 
         $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant);
 
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
 
-        $this->upsertLegalEntity($subMerchant, []);
+        $legalEntityInput = [];
+
+        if (empty($externalLegalEntityId) === false)
+        {
+            $legalEntityInput[LegalEntity\Entity::EXTERNAL_ID] = $externalLegalEntityId;
+        }
+
+        $this->upsertLegalEntity($subMerchant, $legalEntityInput);
 
         return $subMerchant;
     }
@@ -3044,5 +3079,29 @@ class Core extends Base\Core
         }
 
         return new Base\PublicCollection;
+    }
+
+    public function getAllMerchantIds($input): Base\PublicCollection
+    {
+        return $this->repo->merchant->fetchAllMerchantIDs($input);
+    }
+    /**
+     * @return array
+     */
+    public function getBatchActionEntities(): array
+    {
+        $batchActionEntities = BatchActionEntity::BATCH_ACTION_ENTITIES;
+
+        return $batchActionEntities;
+    }
+
+    /**
+     * @return array
+     */
+    public function getBatchActions(): array
+    {
+        $batchActions = BatchAction::BATCH_ACTIONS;
+
+        return $batchActions;
     }
 }

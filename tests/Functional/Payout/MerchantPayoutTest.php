@@ -107,6 +107,8 @@ class MerchantPayoutTest extends TestCase
 
     public function testRetryMerchantOnDemandPayout()
     {
+        $this->markTestSkipped();
+
         $payout = $this->testCreateMerchantPayoutOnDemand();
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
@@ -199,6 +201,17 @@ class MerchantPayoutTest extends TestCase
 
     public function testCreateMerchantPayoutOnHoldFunds()
     {
+        $this->fixtures->on('live')->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->on('live')->base->editEntity('merchant', '10000000000000', ['hold_funds' => true]);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantPayoutOnHoldFundsOnTestMode()
+    {
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
         $this->fixtures->base->editEntity('merchant', '10000000000000', ['hold_funds' => true]);
@@ -241,7 +254,7 @@ class MerchantPayoutTest extends TestCase
 
     public function testCreateMerchantPayoutOnDemandWithFtsRampFailure()
     {
-        $this->mockRazorxTreatment();
+        $this->mockRazorxTreatment('yesbank','on');
 
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
@@ -268,7 +281,7 @@ class MerchantPayoutTest extends TestCase
 
     public function testCreateMerchantPayoutOnDemandWithFtsRampSuccess()
     {
-        $this->mockRazorxTreatment();
+        $this->mockRazorxTreatment('yesbank','on');
 
         $this->testCreatePayout();
 

@@ -421,7 +421,7 @@ class Core extends Base\Core
             return null;
         }
 
-        (new DownstreamProcessor('fund_account_payout', $payout))->processTransaction();
+        (new DownstreamProcessor('fund_account_payout', $payout, $this->mode))->processTransaction();
 
         $this->repo->saveOrFail($payout);
 

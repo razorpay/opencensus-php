@@ -197,6 +197,12 @@ class Validator extends Base\Validator
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
     ];
+
+    protected static $mdrAdjustmentCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+    ];
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
@@ -949,7 +955,7 @@ class Validator extends Base\Validator
             User\Entity::ACTION => "create_{$input[Entity::TYPE]}_batch",
         ];
 
-        (new User\Core)->verifyOtp($params, $auth->getMerchant(), $auth->getUser());
+        (new User\Core)->verifyOtp($params, $auth->getMerchant(), $auth->getUser(), $this->isTestMode());
     }
 
     protected function validateLinkedAccountReversalEntries(array & $entries, array $params, ME $merchant)

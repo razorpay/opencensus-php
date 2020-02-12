@@ -133,7 +133,7 @@ steps:
 
   - name: feature_2_test_suite
     pull: always
-    image: razorpay/onggi:php-7.2
+    image: razorpay/onggi:php-7.2-apache-api
     depends_on:
       - prepare_test
     commands:
@@ -494,6 +494,37 @@ steps:
       status:
         - success
 
+  - name: build-openresty
+    pull: default
+    image: plugins/docker
+    settings:
+      build_args:
+        - "GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}"
+      build_args_from_env:
+        - GIT_TOKEN
+        - GIT_USERNAME
+      repo: razorpay/api
+      tags: "openresty-${DRONE_COMMIT_SHA}"
+      dockerfile: Dockerfile.openresty
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      GIT_TOKEN:
+        from_secret: git_token
+      GIT_USERNAME:
+        from_secret: git_username
+    when:
+      event:
+        include:
+          - push
+        exclude:
+          - deployment
+          - pull_request
+      status:
+        - success
+
   - name: build-notify
     pull: default
     image: plugins/slack
@@ -534,6 +565,7 @@ steps:
     depends_on:
       - build-app
       - build-checkout
+      - build-openresty
     when:
       branch:
         - master

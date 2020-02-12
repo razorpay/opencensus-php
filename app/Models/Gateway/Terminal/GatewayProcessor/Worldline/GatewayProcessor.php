@@ -287,7 +287,9 @@ class GatewayProcessor extends BaseGatewayProcessor
         {
             $terminalOnboardingDetail->setStatus(TerminalOnboardingDetail\Status::PENDING);
 
-            $terminalOnboardingDetail->setVerifyAt(Carbon::now()->getTimestamp());
+            $verifyAt = Carbon::now()->addMinutes(Constants::WORLDLINE_ACTIVATION_DEFAULT_TIME)->getTimestamp();
+
+            $terminalOnboardingDetail->setVerifyAt($verifyAt);
 
             $terminal->setStatus(Terminal\Status::PENDING);
 

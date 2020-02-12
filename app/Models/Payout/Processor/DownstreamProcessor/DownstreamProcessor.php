@@ -2,26 +2,33 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
+use App;
+
 use RZP\Models\Payout\Entity;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
-use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\Admin\Service as AdminService;
-use RZP\Models\Payout\Processor\FundAccountPayout;
 
 class DownstreamProcessor
 {
+    protected $app;
+
     protected $type;
+
+    protected $mode;
 
     protected $payout;
 
     protected $ftaAccount;
 
-    public function __construct(string $type, Entity $payout, PublicEntity $ftaAccount = null)
+    public function __construct(string $type, Entity $payout, string $mode, PublicEntity $ftaAccount = null)
     {
+        $this->app = App::getFacadeRoot();
+
         $this->type = $type;
+
+        $this->mode = $mode;
 
         $this->payout = $payout;
 
@@ -73,6 +80,7 @@ class DownstreamProcessor
      * Relevant Slack Thread : https://razorpay.slack.com/archives/CE4DMABE3/p1579599527095500
      *
      * @param $accountType
+     *
      * @return string
      */
     protected function getChannelForFundTransfer($accountType): string
@@ -90,38 +98,28 @@ class DownstreamProcessor
         return $this->payout->balance->getChannel();
     }
 
+    /*
+     * One MID can't have more than one variant for same experiment, so there will be no clash.
+     */
     protected function getChannelForSharedAccountFundTransfer()
     {
         $merchant = $this->payout->merchant;
 
-        if ($this->checkIfChannelShouldBeIcici($merchant) === true)
+        $mode = $this->payout->getMode();
+
+        $razorxFeature = strtoupper(sprintf("%s_MODE_PAYOUT_FILTER", $mode));
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            constant(RazorxTreatment::class . '::' . $razorxFeature),
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'control')
         {
-            return Channel::ICICI;
+            return Channel::YESBANK;
         }
 
-        if ($this->checkIfChannelShouldBeCiti($merchant) === true)
-        {
-            return Channel::CITI;
-        }
-
-        return $this->payout->balance->getChannel() ?? Channel::YESBANK;
-    }
-
-    protected function checkIfChannelShouldBeIcici(Merchant $merchant): bool
-    {
-        $mid = $merchant->getId();
-
-        $iciciMids = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
-
-        return (in_array($mid, $iciciMids, true) === true);
-    }
-
-    protected function checkIfChannelShouldBeCiti(Merchant $merchant): bool
-    {
-        $mid = $merchant->getId();
-
-        $citiMids = (new AdminService)->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
-
-        return (in_array($mid, $citiMids, true) === true);
+        return constant(Channel::class . '::' . strtoupper($variant));
     }
 }

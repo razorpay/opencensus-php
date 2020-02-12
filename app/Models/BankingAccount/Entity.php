@@ -5,6 +5,9 @@ namespace RZP\Models\BankingAccount;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\BankingAccount\State;
+use RZP\Models\Base\PublicCollection;
 
 /**
  * @property Merchant\Entity            $merchant
@@ -99,6 +102,7 @@ class Entity extends Base\PublicEntity
 
     // Relation Constants
     const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
+    const BALANCE                 = 'balance';
 
     protected $entity = 'banking_account';
 
@@ -171,6 +175,7 @@ class Entity extends Base\PublicEntity
         self::BANK_INTERNAL_REFERENCE_NUMBER,
         self::MERCHANT,
         self::INTERNAL_COMMENT,
+        self::BALANCE,
         self::BANKING_ACCOUNT_DETAILS,
         //
         // This has been added so that banking_account_details
@@ -181,6 +186,7 @@ class Entity extends Base\PublicEntity
         // 'banking_account_details' works fine
         //
         'bankingAccountDetails',
+        self::PASSWORD,
     ];
 
     protected $public = [
@@ -201,6 +207,7 @@ class Entity extends Base\PublicEntity
         self::BANK_REFERENCE_NUMBER,
         self::PINCODE,
         self::BANKING_ACCOUNT_DETAILS,
+        self::BALANCE,
     ];
 
     protected $relations = [
@@ -209,7 +216,8 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ID,
-        self::BANKING_ACCOUNT_DETAILS
+        self::BALANCE,
+        self::BANKING_ACCOUNT_DETAILS,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -401,6 +409,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE1);
     }
 
+    public function getBankInternalStatus()
+    {
+        return $this->getAttribute(self::BANK_INTERNAL_STATUS);
+    }
+
     public function getDetailsDataUsingKey($key)
     {
         return $this->bankingAccountDetails()->where(Detail\Entity::GATEWAY_KEY, $key)
@@ -424,6 +437,23 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Balance\Entity::class);
     }
 
+    public function activationStates()
+    {
+        return $this->hasMany('\RZP\Models\BankingAccount\State\Entity');
+    }
+
+    /**
+     * This function is used for getting the activation status change log of a banking account
+     * @param Entity $bankingAccount
+     *
+     * @return PublicCollection
+     */
+    public function getActivationStatusChangeLog(): PublicCollection
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT)
+                    ->get();
+    }
     public function bankingAccountDetails()
     {
         return $this->hasMany(Detail\Entity::class, Detail\Entity::BANKING_ACCOUNT_ID, self::ID);
@@ -437,6 +467,31 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::BANKING_ACCOUNT_DETAILS]);
         }
+    }
+
+    public function setPublicBalanceAttribute(array & $array)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($array[self::BALANCE]);
+
+            return;
+        }
+
+        if (empty($this->balance))
+        {
+            $this->load(self::BALANCE);
+        }
+
+        $array[self::BALANCE] = optional($this->balance)->only(
+            [
+                Balance\Entity::ID,
+                Balance\Entity::BALANCE,
+                Balance\Entity::CURRENCY
+            ]);
     }
 
     protected function isChannelYesbank()

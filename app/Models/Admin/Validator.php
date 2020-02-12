@@ -34,6 +34,21 @@ class Validator extends Base\Validator
         'reason'            => 'sometimes|string',
     ];
 
+    protected static $sfPocDataRules = [
+        'totalSize' => 'required|integer',
+        'done'      => 'required|boolean',
+        'records'   => 'required|array',
+    ];
+
+    protected static $sfPocRecordRules = [
+        'attributes'                    => 'sometimes',
+        'Merchant_ID__c'                => 'required|string|max:14',
+        'Owner'                         => 'required',
+        'Owner.Email'                   => 'required|email',
+        'Owner_Role__c'                 => 'required|string',
+        'Managers_In_Role_Hierarchy__c' => 'required|string|custom',
+    ];
+
     protected static $setConfigKeysRules = [
         ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE     => 'filled|boolean',
         ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE => 'filled|boolean',
@@ -73,8 +88,6 @@ class Validator extends Base\Validator
 
         ConfigKey::WORLDLINE_TID_RANGE_LIST           => 'filled|array',
         ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',
-        ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS          => 'filled|array',
-        ConfigKey::CITI_CHANNEL_PAYOUT_MIDS           => 'filled|array',
 
         ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
     ];
@@ -127,6 +140,26 @@ class Validator extends Base\Validator
         'update_config_value'
     ];
 
+    protected static $emailRules = [
+        'email' => 'required|email',
+    ];
+
+    /**
+     * @param string $attribute
+     * @param string $value
+     */
+    public function validateManagersInRoleHierarchyC(string $attribute, string $value)
+    {
+        $value=rtrim($value,',');
+
+        $emails = explode(',', $value);
+
+        foreach ($emails as $email)
+        {
+            $this->validateInput('email', ['email' => $email]);
+        }
+    }
+
     /**
      * @param array $input
      * @throws Exception\BadRequestValidationFailureException
@@ -159,7 +192,7 @@ class Validator extends Base\Validator
 
     protected static $mozartGatewayPvtRules = [
         'gateway'            => 'required|string|in:citi,icici,yesbank_upi,yesbank,icici_imps,rbl',
-        'action'             => 'required|string|in:gateway_auth,transfer_init,transfer_status,beneficiary_verify,beneficiary_register,registration',
+        'action'             => 'required|string|in:gateway_auth,transfer_init,transfer_status,beneficiary_verify,beneficiary_register,registration,account_balance',
         'namespace'          => 'required|string',
         'payload'            => 'required|array',
         'payload.entities'   => 'required|array',

@@ -1613,16 +1613,12 @@ class Repository extends Base\Repository
         bool $isCorrection = false)
     {
         //
-        // will consider only those payments which are being settled by razorpay
+        // will consider all the payments
         //
         $query = $this->newQuery()
                       ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                       ->whereBetween(Entity::CAPTURED_AT, [$start, $end])
-                      ->whereNotNull(Entity::TRANSACTION_ID)
-                      ->where(function($query) {
-                          $query->where(Entity::SETTLED_BY, Org\Constants::RAZORPAY)
-                                ->orWhereNull(Entity::SETTLED_BY);
-                      });
+                      ->whereNotNull(Entity::TRANSACTION_ID);
 
         //
         // If correction is true then data will be fetched which are created and captured in given time frame

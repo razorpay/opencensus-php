@@ -243,7 +243,6 @@ class GatewayController extends Controller
             case Gateway::WALLET_FREECHARGE:
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
-            case Gateway::UPI_AIRTEL:
             case Gateway::WALLET_PHONEPE:
             case Gateway::UPI_CITI:
             case 'axis_corporate':
@@ -274,6 +273,7 @@ class GatewayController extends Controller
                 break;
 
             case Gateway::UPI_ICICI:
+            case Gateway::UPI_AIRTEL:
                 $input = Request::getContent();
 
                 $data = $this->processServerCallback($input, $gateway);
@@ -542,11 +542,13 @@ class GatewayController extends Controller
 
         $this->app['config']->set('database.default', $mode);
 
-        $this->app['rzp.mode'] = $mode;
+        $this->app['basicauth']->setModeAndDbConnection($mode);
 
         $payment = $this->app['repo']->payment->findOrFail($paymentId);
 
         $merchant = $payment->merchant;
+
+        $this->app['basicauth']->setMerchant($merchant);
 
         $input = Mozart\GetSimpl\Helper::getPaymentInputParameters($input, $payment);
 

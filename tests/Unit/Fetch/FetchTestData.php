@@ -419,6 +419,13 @@ return [
         ],
     ],
 
+    E::WORKFLOW_PAYOUT_AMOUNT_RULES => [
+        Type::ADMIN_AUTH => [
+            [
+            ],
+        ],
+    ],
+
     E::GEO_IP => [
         Type::PRIVILEGE_AUTH => [
             [
@@ -506,4 +513,12 @@ return [
             ],
         ],
     ],
+
+    E::MERCHANT_FRESHDESK_TICKETS => [
+        Type::PROXY_AUTH => [
+            [
+                'type'        => str_random(),
+            ],
+        ],
+    ]
 ];

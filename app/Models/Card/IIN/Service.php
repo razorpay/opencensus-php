@@ -2,14 +2,15 @@
 
 namespace RZP\Models\Card\IIN;
 
-use Razorpay\Trace\Logger as Trace;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payment\AuthType as AuthType;
+use RZP\Models\Card;
 use RZP\Trace\TraceCode;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Http\RequestHeader;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\AuthType as AuthType;
 
 class Service extends Base\Service
 {
@@ -33,6 +34,51 @@ class Service extends Base\Service
         $this->repo->saveOrFail($iin);
 
         return $iin->toArrayAdmin();
+    }
+
+    public function getIinDetails($input)
+    {
+        $merchant = $this->merchant;
+
+        (new Validator)->validateInput('get_iin_details', $input);
+
+        $iinEntity = $this->repo->iin->find($input['iin']);
+
+        $data['flows'] = $merchant->getPaymentFlows($iinEntity);
+
+        if (isset($input['order_id']) === true)
+        {
+            $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+
+            if ($order->hasOffers() === true)
+            {
+                $payment = $this->getDummyPayment($order, $iinEntity);
+
+                $applicableOffers = (new Offer\Core)->getApplicableOffersForPayment($order, $payment);
+
+                $data['offers'] = $applicableOffers;
+            }
+        }
+
+        if (is_null($iinEntity) === false)
+        {
+            $data['flows']['emi'] = $iinEntity->isEmiAvailable();
+
+            /*
+             * Need to return emi as available for HDFC Debit Cards because their eligibility is checked
+             * in the next step when the user enters his/her phone number.
+             */
+            if ($iinEntity->isEmiAvailable() or
+                (($iinEntity->getIssuer() === Card\Issuer::HDFC) and
+                ($iinEntity->getType() === Card\Type::DEBIT)))
+            {
+                $data['flows']['emi'] = true;
+                $data['type']         = $iinEntity->getType();
+                $data['issuer']       = $iinEntity->getIssuer();
+            }
+        }
+
+        return $data;
     }
 
     public function editIinBulk($input)

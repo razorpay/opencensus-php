@@ -8,6 +8,18 @@ use RZP\Mail\Base\Constants;
 
 class EsEnabledNotify extends Mailable
 {
+    const TO_EMAIL = 'to_email';
+    const TO_NAME = 'to_name';
+    const VIEW = 'view';
+    const SUBJECT = 'subject';
+    const MERCHANT_DATA = 'merchant_data';
+    const KAM_MAILING_LIST_EMAILS = ['ayush.bansal@razorpay.com', 'abhirup.bhabani@razorpay.com', 'kamteam@razorpay.com'];
+    const KAM_MAILING_LIST_NAMES = ['Ayush Bansal', 'Abhirup Bhabhani', 'KAM team'];
+    const KAM_MAILER_VIEW = 'emails.merchant.es_enabled_notify_kam';
+    const MERCHANT_MAILER_VIEW = 'emails.merchant.es_enabled_notify_merchant';
+    const KAM_MAILER_SUBJECT = 'A new Merchant has joined ES Scheduled!!';
+    const MERCHANT_MAILER_SUBJECT = 'Congratulations, Early Settlements has been enabled for your account!';
+
     protected $data;
 
     public function __construct(array $data)
@@ -19,9 +31,9 @@ class EsEnabledNotify extends Mailable
 
     protected function addRecipients()
     {
-        $toEmail = ['ayush.bansal@razorpay.com', 'abhirup.bhabani@razorpay.com', 'anubhav.jain@razorpay.com', 'kamteam@razorpay.com'];
+        $toEmail = $this->data['to_email'];
 
-        $toName = ['Ayush Bansal', 'Abhirup Bhabhani', 'Anubhav Jain', 'KAM team'];
+        $toName = $this->data['to_name'];
 
         $this->to($toEmail, $toName);
 
@@ -41,22 +53,21 @@ class EsEnabledNotify extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.merchant.es_enabled_notify');
+        $this->view($this->data['view']);
 
         return $this;
     }
 
     protected function addSubject()
     {
-        $subject = 'A new Merchant has joined ES scheduled!!';
-
-        $this->subject($subject);
+        $this->subject($this->data['subject']);
 
         return $this;
     }
 
     protected function addMailData()
     {
+        // Exposes elements from $data into the HTML template
         $this->with($this->data);
 
         return $this;

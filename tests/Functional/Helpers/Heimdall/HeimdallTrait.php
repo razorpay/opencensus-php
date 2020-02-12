@@ -45,7 +45,7 @@ trait HeimdallTrait
     /**
      * Edit an admin as superadmin
      */
-    protected function editAdmin($orgId, $adminId, $content = [])
+    protected function editAdmin($orgId, $adminId, $content = [], $mode = 'test')
     {
         $defaultContent = [
             'name' => 'Test Name',
@@ -59,7 +59,7 @@ trait HeimdallTrait
             'content' => $content,
         ];
 
-        $this->ba->adminAuth('test', null, $orgId);
+        $this->ba->adminAuth($mode, null, $orgId);
 
         $response = $this->makeRequestAndGetContent($request);
 

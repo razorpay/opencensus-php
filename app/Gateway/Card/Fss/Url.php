@@ -27,11 +27,11 @@ class Url
         ],
         Acquirer::SBI   => [
             self::TEST_DOMAIN => 'https://certpayments.onlinesbi.com/UPG',
-            self::LIVE_DOMAIN => 'https://certpayments.onlinesbi.com/UPG',
+            self::LIVE_DOMAIN => 'https://securepay.onlinesbi.com/PG',
 
             Action::PURCHASE  => '/VPAS.htm?actionVPAS=VbvVEReqProcessHTTP&',
-            Action::REFUND    => '/tranPipeHTTP.htm?param=tranInit',
-            Action::VERIFY    => '/tranPipeHTTP.htm?param=tranInit',
+            Action::REFUND    => '/tranPipe.htm?param=tranInit',
+            Action::VERIFY    => '/tranPipe.htm?param=tranInit',
         ]
     ];
 }

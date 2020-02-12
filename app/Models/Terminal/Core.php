@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Core extends Base\Core
@@ -482,9 +483,14 @@ class Core extends Base\Core
         //
         if ($existingTerminals->count() !== 0)
         {
+            $description = PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS . $existingTerminals->pluck(Entity::ID)->first();
+                        
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
-                $field);
+                ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
+                $field,
+                null,
+                $description
+            );
         }
     }
 

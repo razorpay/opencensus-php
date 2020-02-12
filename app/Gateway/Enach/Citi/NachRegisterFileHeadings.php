@@ -21,6 +21,8 @@ class NachRegisterFileHeadings
 
     // Additional headings in Response file
     const STATUS                        = 'Status';
-    const REMARKS                       = 'Remarks';
+    const REMARKS                       = 'Remark';
     const UMRN                          = 'UMRN';
+    const LOT                           = 'Lot';
+    const SOFT_COPY_RECEIVED_DATE       = 'Softcopy Received Date';
 }

@@ -164,7 +164,7 @@ class Gateway
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
-        self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC, self::ACQUIRER_YESB],
         self::FIRST_DATA   => [self::ACQUIRER_ICIC],
         self::AMEX         => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI   => [self::ACQUIRER_ICIC],
@@ -366,7 +366,6 @@ class Gateway
         IFSC::SCBL,
         IFSC::TMBL,
         IFSC::USFB,
-        IFSC::UTBI,
         IFSC::UTIB,
         IFSC::YESB,
         Netbanking::PUNB_R,
@@ -390,7 +389,6 @@ class Gateway
         IFSC::MAHB,
         IFSC::SIBL,
         IFSC::USFB,
-        IFSC::UTBI,
         IFSC::YESB,
         Netbanking::PUNB_R,
         IFSC::SBIN,
@@ -886,6 +884,7 @@ class Gateway
         self::NETBANKING_AXIS,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_SBI,
+        self::NACH_CITI,
     ];
 
     /**
@@ -1015,6 +1014,10 @@ class Gateway
         ],
         self::PAYSECURE => [
             Network::RUPAY,
+        ],
+        self::MPI_BLADE => [
+            Network::MC,
+            Network::VISA
         ]
     ];
 
@@ -1623,6 +1626,7 @@ class Gateway
         IFSC::CIUB => Gateway::NETBANKING_CUB,
         IFSC::SIBL => Gateway::NETBANKING_SIB,
         IFSC::YESB => Gateway::NETBANKING_YESB,
+        IFSC::KVBL => Gateway::NETBANKING_KVB,
     ];
 
 

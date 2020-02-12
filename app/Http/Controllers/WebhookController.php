@@ -57,4 +57,17 @@ class WebhookController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * @see Webhook\Service::webhookDeactivate()
+     *
+     * @param string $id
+     * @return mixed
+     */
+    public function webhookDeactivate(string $id)
+    {
+        $this->service()->webhookDeactivate($id);
+
+        return ApiResponse::json([]);
+    }
 }

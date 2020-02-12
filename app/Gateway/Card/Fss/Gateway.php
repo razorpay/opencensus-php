@@ -357,7 +357,7 @@ class Gateway extends Base\Gateway
                 $requestContent[Fields::UDF2]       = strtolower(Constants::UDF2);
                 $requestContent[Fields::UDF3]       = $input[E::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID];
                 $requestContent[Fields::UDF4]       = strtolower(Constants::UDF4);
-                $requestContent[Fields::UDF5]       = strtolower(Constants::TRACK_ID);
+                $requestContent[Fields::UDF5]       = Constants::TRACK_ID;
                 $requestContent[Fields::PASSWORD]   = $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
 
                 if ($this->mode === Mode::TEST)
