@@ -1399,7 +1399,7 @@ return [
 
     'testVerifyUserThroughEmail' => [
         'request'  => [
-            'url'     => '/users/verify-user-email',
+            'url'     => '/users/verify/mode/email',
             'method'  => 'post',
             'content' => [
                 'otp'            => '0007',

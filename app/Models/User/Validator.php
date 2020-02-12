@@ -186,6 +186,10 @@ class Validator extends Base\Validator
         Entity::TOKEN           => 'required|unsigned_id',
     ];
 
+    protected static $editContactMobileForBankingRules = [
+        Entity::OTP_AUTH_TOKEN  => 'required|filled',
+    ];
+
     /**
      * merchant can not edit or delete his own user id.
      * @param array $input
@@ -397,13 +401,5 @@ class Validator extends Base\Validator
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
-    }
-
-    public function validateInputForProductBanking($input)
-    {
-        if (empty($input[Entity::OTP_AUTH_TOKEN]) === true)
-        {
-            throw new BadRequestValidationFailureException('User authorization token needs to be given.');
-        }
     }
 }

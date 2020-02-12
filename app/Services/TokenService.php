@@ -7,13 +7,14 @@ use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
+use RZP\Foundation\Application;
 
 /**
  * Class Token
  *
  * Used to wrap "token for otp-auth" functionality. The token is generated after OTP verification. And stored in redis
  *
- * @package RZP\Models\User
+ * @package RZP\Services
  */
 class TokenService
 {
@@ -25,7 +26,7 @@ class TokenService
 
     protected $redis;
 
-    public function __construct($app)
+    public function __construct(Application $app)
     {
         $this->redis = $app['redis'];
     }

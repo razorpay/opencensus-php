@@ -292,11 +292,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new RZP\Modules\Manager($app);
         });
 
-        $this->app->singleton('token_service', function($app)
-        {
-            return new TokenService($app);
-        });
-
         $this->registerShield();
 
         $this->registerRedisDualWrite();
@@ -360,6 +355,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerHyperVerge();
 
         $this->registerFreshdeskTicketService();
+
+        $this->registerTokenService();
 
         $this->registerTerminalsService();
     }
@@ -933,5 +930,13 @@ class ApiServiceProvider extends BaseServiceProvider
             return new TerminalsService($app);
         });
 
+    }
+
+    protected function registerTokenService()
+    {
+        $this->app->singleton('token_service', function($app)
+        {
+            return new TokenService($app);
+        });
     }
 }

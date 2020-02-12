@@ -18,7 +18,6 @@ use RZP\Services\HubspotClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\PayoutLink\TokenService;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
