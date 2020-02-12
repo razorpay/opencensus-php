@@ -31,13 +31,13 @@ abstract class Base
         $this->trace = $this->app['trace'];
     }
 
-    public function getValidAuths(): array
+    public function getValidAuths($authenticationGateways=[]): array
     {
         $validAuths = [];
 
         foreach ($this->auths as $auth)
         {
-            if ($this->isValidAuth($auth) === true)
+            if ($this->isValidAuth($auth, $authenticationGateways) === true)
             {
                 $validAuths[] = $auth;
             }
@@ -48,7 +48,9 @@ abstract class Base
 
     public function getAuthenticationTerminals($terminals): array
     {
-        $validAuths = $this->getValidAuths();
+        $authenticationGateways = array_unique(array_pluck($terminals, 'authentication_gateway'));
+        
+        $validAuths = $this->getValidAuths($authenticationGateways);
 
         $traceData = [
             'valid_auths' => $validAuths,
@@ -85,7 +87,7 @@ abstract class Base
         return $selectedAuthTerminals;
     }
 
-    abstract function isValidAuth($authType): bool;
+    abstract function isValidAuth($authType, $authenticationGateways): bool;
 
     public function setAuthsApplicableForMethod()
     {
