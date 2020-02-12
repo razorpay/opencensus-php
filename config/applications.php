@@ -344,6 +344,10 @@ return [
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
     ],
 
+    'payment_links' => [
+        'secret'   => env('APP_PAYMENT_LINKS_SECRET'),
+    ],
+
     'myoperator' => [
         'mock'      => env('MYOPERATOR_MOCK'),
         'api_token' => env('MYOPERATOR_API_TOKEN'),
@@ -453,5 +457,18 @@ return [
         'password'      => env('SALESFORCE_PASSWORD'),
         'client_id'     => env('SALESFORCE_CLIENT_ID'),
         'client_secret' => env('SALESFORCE_CLIENT_SECRET'),
+    ],
+
+    'terminals_service' => [
+        'mock'          => env('TERMINALS_SERVICE_MOCK', false),
+        'live'          => [
+            'password'      => env('TERMINALS_SERVICE_LIVE_PASSWORD'),
+            'url'           => env('TERMINALS_SERVICE_LIVE_URL'),
+        ],
+        'test'          => [
+            'password'      => env('TERMINALS_SERVICE_TEST_PASSWORD'),
+            'url'           => env('TERMINALS_SERVICE_TEST_URL'),
+        ],
+
     ],
 ];

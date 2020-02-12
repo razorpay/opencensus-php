@@ -51,6 +51,7 @@ class Reporting implements ExternalService
     // REPORT_TYPE constants
     const MERCHANT      = 'merchant';
     const PARTNER       = 'partner';
+    const RAZORPAYX     = 'razorpayx';
 
     // Headers
     const CONSUMER_HEADER       = 'X-Consumer';
@@ -281,11 +282,15 @@ class Reporting implements ExternalService
         $input['mode'] = $this->mode;
 
         /**
+         * If request is coming from the proxy auth (merchant)
          * Adds the merchant id of the merchant who initiated the request
          * irrespective of the case whether the request was for the merchant itself
          * or for one of it's linked account
          */
-        $input['generated_by'] = $this->ba->authCreds->getKey();
+        if ($this->ba->isProxyAuth())
+        {
+            $input['generated_by'] = $this->ba->authCreds->getKey();
+        }
 
         $path = self::LOG_PATH;
 
@@ -1049,7 +1054,9 @@ class Reporting implements ExternalService
     {
         if ((empty($reportType) === false))
         {
-            if (($reportType !== self::MERCHANT) and ($reportType !== self::PARTNER))
+            if (($reportType !== self::MERCHANT) and
+                ($reportType !== self::PARTNER) and
+                ($reportType !== self::RAZORPAYX))
             {
                 throw new Exception\BadRequestValidationFailureException('Invalid report type');
             }

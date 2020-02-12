@@ -2,19 +2,23 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
+use Mail;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Gateway\File\Status;
 use RZP\Gateway\Upi\Sbi\RefundFile;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class UpiSbi extends Base
@@ -100,6 +104,10 @@ class UpiSbi extends Base
 
     public function createFile($data)
     {
+        $defaultExcelEnclosure = $this->config->get('excel.csv.enclosure');
+
+        $this->config->set('excel.csv.enclosure', '');
+
         if ($this->isFileGenerated() === true)
         {
             return;
@@ -140,6 +148,8 @@ class UpiSbi extends Base
                 ],
                 $e);
         }
+
+        $this->config->set('excel.csv.enclosure', $defaultExcelEnclosure);
     }
 
     public function sendFile($data)
@@ -165,6 +175,41 @@ class UpiSbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+
+        try
+        {
+            $this->sendConfirmationMail();
+        }
+        catch (\Throwable $e)
+        {
+           $this->trace->traceException($e,
+               Trace::ERROR,
+               TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
+               [
+                   'file_name' => $fullFileName,
+               ]);
+        }
+    }
+
+    protected function sendConfirmationMail()
+    {
+        $file = $this->gatewayFile
+                    ->files()
+                    ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                    ->first();
+
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+
+        $mailData = [
+            'file_name' => $file->getLocation(),
+            'signed_url' => $signedUrl
+        ];
+
+        $recipients =['finances.recon@razorpay.com'];
+
+        $refundFileMail = new RefundFileMail($mailData, static::GATEWAY, $recipients);
+
+        Mail::queue($refundFileMail);
     }
 
     protected function getFormattedAmount($amount)

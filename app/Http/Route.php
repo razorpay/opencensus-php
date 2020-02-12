@@ -75,6 +75,7 @@ final class Route
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
         'payment_get_flows_private'                => ['post',     'payment/flows',                                  'PaymentController@getPaymentFlowsPrivate'                          ],
+        'payment_get_iin_details'                  => ['get',      'payment/iin',                                    'IinController@getIinDetails'                                       ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'payments_downtime'                        => ['get',      'payments/downtimes',                             'DowntimeController@getMethodDowntimeData'                          ],
         'payments_downtime_trigger_cron'           => ['post',     'payments/downtimes/trigger/{status}',            'DowntimeController@triggerDowntimes'                               ],
@@ -562,6 +563,7 @@ final class Route
         'reports_order_rpp'                        => ['get',      'reports/order/rpp',                              'MerchantController@getRPPOrderReport'                              ],
         'reports_monthly_invoice'                  => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_monthly_banking_invoice'          => ['post',     'reports/invoice/banking',                        'MerchantController@generateBankingInvoice'                         ],
+        'reports_monthly_banking_invoice_admin'    => ['post',     'admin/reports/invoice/banking',                  'MerchantController@generateBankingInvoice'                         ],
         'reports_public_entity'                    => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'               => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
         'reports_refund_irctc'                     => ['get',      'reports/refund/irctc',                           'MerchantController@getIrctcRefundReport'                           ],
@@ -615,6 +617,7 @@ final class Route
         'invoice_view_test_preferences_test'       => ['get',      't/{id}/test',                                    'InvoiceController@getInvoiceViewForTest'                           ],
         'invoice_cancel'                           => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
         'invoice_expire_bulk'                      => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
+        'invoice_delete_bulk'                      => ['delete',   'invoices/delete',                                'InvoiceController@deleteInvoices'                                  ],
         'invoice_issue_by_batch'                   => ['post',     'invoices/batch/{batchId}/issue',                 'InvoiceController@issueInvoicesOfBatch'                            ],
         'invoice_notify_by_batch'                  => ['put',      'invoices/batch/{batchId}/notify',                'InvoiceController@notifyInvoicesOfBatch'                           ],
         'invoice_cancel_by_batch'                  => ['post',     'invoices/batch/{batchId}/cancel',                'InvoiceController@cancelInvoicesOfBatch'                           ],
@@ -627,6 +630,7 @@ final class Route
         'item_fetch_multiple'                      => ['get',      'items',                                          'ItemController@getItems'                                           ],
         'item_update'                              => ['patch',    'items/{id}',                                     'ItemController@updateItem'                                         ],
         'item_delete'                              => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
+        'send_email_for_pl_service'                => ['post',     'payment_links/send_email',                       'InvoiceController@sendEmailForPaymentLinkService'                  ],
         'pages_view'                               => ['get,post', 'pages/{x_entity_id}/view',                       'PaymentLinkController@view'                                        ],
         'pages_view_by_slug'                       => ['get,post', 'pages/{slug}',                                   'PaymentLinkController@viewBySlug'                                  ],
         'payment_link_view_get'                    => ['get,post', 'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
@@ -784,6 +788,8 @@ final class Route
         'group_delete'                             => ['delete',   'groups/{id}',                                    'OrganizationController@deleteGroup'                                ],
         'admin_lock_old_accounts'                  => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
         'terminal_bank_bulk'                       => ['put',      'terminals/banks/bulk',                           'TerminalController@updateTerminalsBank'                            ],
+        'merchant_poc_update'                      => ['post',      'admin/poc_update',                              'AdminController@updateMerchantPoc'                                 ],
+        'unclaimed_merchant_poc_update'            => ['post',      'admin/unclaimed_poc_update',                    'AdminController@unclaimedMerchantPoc'                              ],
 
         // Permission can only be created by certain organizations.
         'permission_create'                        => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
@@ -1494,6 +1500,7 @@ final class Route
         'payment_callback_get',
         'payment_callback_ajax_get',
         'payment_get_flows',
+        'payment_get_iin_details',
         'card_issuer_validate',
         'invoice_get_status',
         'invoice_send_notification',
@@ -1673,6 +1680,7 @@ final class Route
         'invoice_update',
         'invoice_issue',
         'invoice_cancel',
+        'invoice_cancel_by_batch',
         'invoice_delete',
         'invoice_send_notification_private',
         'item_create',
@@ -1838,6 +1846,7 @@ final class Route
         'invitation_action',
         'invitation_fetch_by_token',
         'invoice_expire_bulk',
+        'invoice_delete_bulk',
         'invoice_send_notifications',
         'payment_link_expire_cron',
         'merchant_activation_migrate',
@@ -1976,6 +1985,9 @@ final class Route
         'merchant_mtu_update',
         'webhook_deactivate',
         'transaction_settled_data_fix',
+
+        'merchant_poc_update',
+        'unclaimed_merchant_poc_update',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2040,6 +2052,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'send_email_for_pl_service',
         'oauth_token_create',
         'merchant_activation_update_website_status',
         'reminder_next_run',
@@ -2098,6 +2111,7 @@ final class Route
         'bulk_submerchant_assign',
         'invoice_issue_by_batch',
         'invoice_notify_by_batch',
+        'invoice_cancel_by_batch',
         'invoice_get_stats_by_batch_ids',
         'invoice_add_line_items',
         'invoice_update_line_item',
@@ -2359,7 +2373,6 @@ final class Route
         'feature_get',
         'batch_create_admin',
         'send_test_sms',
-        'invoice_cancel_by_batch',
         'file_upload_admin',
         'admin_dummy_account_test',
         'admin_get_file',
@@ -2796,6 +2809,8 @@ final class Route
 
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
+
+        'reports_monthly_banking_invoice_admin',
 
         'merchant_inheritance_parent_fetch',
         'merchant_inheritance_parent_set',
@@ -3357,7 +3372,9 @@ final class Route
         'fts_dashboard_source_account_create'       => Permission::GATEWAY_PVT,
         'fts_dashboard_source_account_delete'       => Permission::GATEWAY_PVT,
         'mozart_gateway_action'                     => Permission::GATEWAY_PVT,
+
         'reports_monthly_banking_invoice'           => '*',
+        'reports_monthly_banking_invoice_admin'     => '*',
 
         'setl_holidays'                             => '*',
 
@@ -3375,6 +3392,9 @@ final class Route
 
         'subscription_registration_resend_links_batch'      => '*',
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
+
+        'unclaimed_merchant_poc_update'                     => '*',
+        'merchant_poc_update'                               => '*',
 
         'fetch_merchant_balance_configs'            => '*',
         'get_merchant_balance_config'               => '*',
@@ -3597,6 +3617,7 @@ final class Route
             'invoice_send_notifications',
             'card_update_saved',
             'invoice_expire_bulk',
+            'invoice_delete_bulk',
             'payment_link_expire_cron',
             'batch_process_file',
             'order_refund_multiple_authorized',
@@ -3669,6 +3690,8 @@ final class Route
             'banking_account_statement_channel_fetch',
             'create_merchant_options_admin',
             'transaction_settled_data_fix',
+            'merchant_poc_update',
+            'unclaimed_merchant_poc_update',
         ],
 
         'subscriptions' => [
@@ -3695,6 +3718,14 @@ final class Route
             'credit_note_list',
             'credit_note_get',
             'credit_note_apply',
+        ],
+
+        'payment_links' => [
+            'send_email_for_pl_service',
+            'customer_fetch_by_id',
+            'create_merchant_options',
+            'read_merchant_options',
+            'order_create',
         ],
 
         'kotak' => [
@@ -3846,6 +3877,7 @@ final class Route
         'merchant_methods',
         'merchant_methods_downtime',
         'payment_get_flows',
+        'payment_get_iin_details',
     ];
 
     protected static $s2sJsonRoutes = [

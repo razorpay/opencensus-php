@@ -1537,8 +1537,4 @@ class AuthorizeTest extends TestCase
 
     }
 
-    public function testContactWithAlphabet()
-    {
-        $this->startTest();
-    }
 }

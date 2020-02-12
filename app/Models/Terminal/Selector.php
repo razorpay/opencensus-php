@@ -41,6 +41,10 @@ class Selector extends Base\Core
 
     const EXECUTION_TYPE_ASYNC = 'async';
 
+    const RAZORX_SYNC = 'payments_hit_routing_service';
+
+    const RAZORX_ASYNC = 'payments_hit_routing_service_async';
+
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\RuleFilter::class,
@@ -142,22 +146,6 @@ class Selector extends Base\Core
 
     public function select()
     {
-        $payment = $this->input['payment'];
-
-        if ($payment->getMerchantID() === '6ZJzxyLFWrGs74')
-        {
-            if ($payment->getAmount() === 156 || $payment->getAmount() === '156' )
-            {
-                $terminal = $this->repo->terminal->find('9CPria7f6MSFrO');
-            }
-            else
-            {
-                $terminal = $this->repo->terminal->find('BD1B6NJvJBh4ci');
-            }
-            $sortedTerminals = array($terminal);
-            return $sortedTerminals;
-        }
-
         $allTerminals = $this->repo->useSlave(function ()
         {
             return $this->getTerminals();
@@ -182,7 +170,7 @@ class Selector extends Base\Core
 
 
         // checking filtered terminals and razorX experiment for smart routing
-        if ($this->shouldHitRoutingService($payment->getId()) === true)
+        if ($this->shouldHitRoutingService(self::RAZORX_SYNC, $payment->getId()) === true)
         {
 
             try
@@ -267,7 +255,7 @@ class Selector extends Base\Core
 
             $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
             //Send the smart routing request in async mode
-            if ($this->shouldHitRoutingServiceInAsync($payment->getId()) === true)
+            if ($this->shouldHitRoutingService(self::RAZORX_ASYNC, $payment->getId()) === true)
             {
                 $this->sendParametersToSmartRoutingService($payment,
                     $this->input['merchant'], $allTerminals, $sortedTerminals, self::EXECUTION_TYPE_ASYNC);
@@ -674,7 +662,7 @@ class Selector extends Base\Core
         return $response;
     }
 
-    protected function shouldHitRoutingService(string $paymentId = null)
+    protected function shouldHitRoutingService(string $feature, string $paymentId = null)
     {
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
@@ -695,38 +683,7 @@ class Selector extends Base\Core
             return false;
         }
 
-        $response = $this->app->razorx->getTreatment($paymentId, 'payments_hit_routing_service', $this->mode);
-
-        if ($response === 'on')
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function shouldHitRoutingServiceInAsync(string $paymentId = null)
-    {
-        $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-        if ($isProduction === false)
-        {
-            return false;
-        }
-
-        if ($this->isTestMode() === true)
-        {
-            return false;
-        }
-
-        if ($paymentId === null)
-        {
-            $this->trace->info(TraceCode::PAYMENT_ID_NULL);
-
-            return false;
-        }
-
-        $response = $this->app->razorx->getTreatment($paymentId, 'payments_hit_routing_service_async', $this->mode);
+        $response = $this->app->razorx->getTreatment($paymentId, $feature, $this->mode);
 
         if ($response === 'on')
         {

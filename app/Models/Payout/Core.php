@@ -31,6 +31,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 /**
@@ -366,6 +367,8 @@ class Core extends Base\Core
     {
         $payout->batchFundTransfer()->associate($fta->batchFundTransfer);
 
+        Status::validateStatusUpdate(Status::INITIATED, $payout->getStatus());
+
         $payout->setStatus(Status::INITIATED);
 
         $this->repo->saveOrFail($payout);
@@ -640,6 +643,44 @@ class Core extends Base\Core
     {
         $dispatchedCount = 0;
 
+        // This is only false when there is a queued fee_recovery payout and the merchant doesn't
+        // have enough balance for that payout
+        $rzpFeesRecoverySucceeded = true;
+
+        foreach ($payouts as $key => $payout)
+        {
+            $purpose = $payout->getPurpose();
+
+            if ($purpose === Purpose::RZP_FEES)
+            {
+                $totalPayoutAmount = $payout->getAmount();
+
+                if ($totalBalance < $totalPayoutAmount)
+                {
+                    $rzpFeesRecoverySucceeded = false;
+
+                    continue;
+                }
+
+                $totalBalance -= $totalPayoutAmount;
+
+                $this->dispatchQueuedPayout($payout, 0, $totalBalance);
+
+                $dispatchedCount += 1;
+
+                unset($payouts[$key]);
+            }
+        }
+
+        // If fee_recovery payout does not get processed, we will not process any other queued payout either
+        if ($rzpFeesRecoverySucceeded === false)
+        {
+            return [
+                'balance_remaining'        => $totalBalance,
+                'dispatched_payout_count'  => $dispatchedCount,
+            ];
+        }
+
         foreach ($payouts as $payout)
         {
             $payoutAmount = $payout->getAmount();
@@ -648,7 +689,14 @@ class Core extends Base\Core
             // have been created and hence the fees also wouldn't have been calculated.
             list($payoutFees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
 
-            $totalPayoutAmount = $payoutAmount + $payoutFees;
+            if ($payout->balance->getAccountType() === AccountType::DIRECT)
+            {
+                $totalPayoutAmount = $payoutAmount;
+            }
+            else
+            {
+                $totalPayoutAmount = $payoutAmount + $payoutFees;
+            }
 
             if ($totalBalance < $totalPayoutAmount)
             {
@@ -1038,7 +1086,17 @@ class Core extends Base\Core
                 // This fee_breakup can be later inserted in the db without any issues
                 //
                 /** @var Base\PublicCollection $dummyFeesBreakup */
-                list($totalFee, $taxFee, $dummyFeesBreakup) = (new Pricing\Fee)->calculateMerchantFees($clonedPayout);
+
+                $fees = $clonedPayout->getFees();
+
+                $tax = $clonedPayout->getTax();
+
+                $pricingRuleId = $clonedPayout->getPricingRuleId();
+
+                $dummyFeesBreakup = (new Transaction\Processor\Payout($clonedPayout))->getFeeSplitForDirectPayouts(
+                                                                                            $fees,
+                                                                                            $tax,
+                                                                                            $pricingRuleId);
 
                 $this->trace->info(
                     TraceCode::DUMMY_TRANSACTION_FEES_BREAKUP_DETAILS,
@@ -1236,7 +1294,7 @@ class Core extends Base\Core
                 // reloading the payout here to ensure if any other process
                 // gets a mutex on payout resource, it gets a fresh copy
                 // of payout to work.
-                $payout->reload();
+                $this->repo->reload($payout);
 
                 if ($payout->isStatusReversed() === true)
                 {

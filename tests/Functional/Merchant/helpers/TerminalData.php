@@ -2756,4 +2756,31 @@ return [
             ]
         ]
     ],
+
+    'testCreateCybersourceYesBTerminal'      => [
+        'request'   => [
+            'content'   => [
+                'gateway'                   => 'cybersource',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_terminal_id'       => 'randommerchantid',
+                'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_secure_secret2'    => 'secure_secret2',
+                'gateway_access_code'       => 'access_code',
+                'gateway_acquirer'          => 'yesb',
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'recurring_3ds'     => '0',
+                    'recurring_non_3ds' => '1',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_acquirer'          => 'yesb',
+                'enabled'                   =>  true
+            ]
+        ]
+    ]
 ];

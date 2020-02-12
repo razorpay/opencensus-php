@@ -152,7 +152,7 @@ class Processor
      * Core payment service feature flag
      */
     const CPS_FEATURE_FLAG_PREFIX               = 'cps_gateway_routing';
-    const CARD_PAYMENTS_PREFIX                  = 'card_payments_gateway_routing_dark';
+    const CARD_PAYMENTS_PREFIX                  = 'card_payments_gateway_routing';
     const NB_PLUS_PAYMENTS_PREFIX               = 'nb_plus_payments_gateway_routing';
     const CARD_PAYMENTS_AUTHORIZE_ALL_TERMINALS = 'card_payments_authorize_all_terminals';
     /**
@@ -311,6 +311,8 @@ class Processor
 
             $payment = $this->payment;
 
+            $this->eventPaymentCreated();
+
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
@@ -344,6 +346,15 @@ class Processor
         }
     }
 
+    protected function eventPaymentCreated()
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $this->payment,
+        ];
+
+        $this->app['events']->fire('api.payment.created', $eventPayload);
+    }
+
     protected function appendMetadataForPayment(array & $input)
     {
         if ($this->app['basicauth']->isPrivateAuth() === true)
@@ -375,7 +386,15 @@ class Processor
             ],
         ];
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $properties);
+        $metaDetails = [
+            'metadata'  => $properties,
+            'read_key'  => array(),
+            'write_key' => 'request.id',
+        ];
+
+        $metaDetails['metadata']['request']['id'] = $this->app['request']->getId();
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $metaDetails, $properties);
     }
 
     public function getPayment(): Payment\Entity

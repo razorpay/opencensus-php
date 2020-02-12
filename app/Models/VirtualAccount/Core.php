@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
@@ -107,7 +108,14 @@ class Core extends Base\Core
     {
         $merchant->getValidator()->validateBusinessBankingActivated();
 
+        $name = $merchant->getBillingLabel();
+
+        // In test mode, there can be cases where the merchant name and billing_label are not set
+        // In those case we still want to create the VA and bank_account entities
+        $name = (($this->isTestMode() === true) and (empty($name) === true)) ? Mode::TEST : $name;
+
         $input = [
+            Entity::NAME => $name,
             Entity::RECEIVERS => [
                 Entity::TYPES => [
                     Entity::BANK_ACCOUNT

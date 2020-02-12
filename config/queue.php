@@ -405,6 +405,11 @@ return [
         'default' => env('AWS_EMAILS_QUEUE'),
     ],
 
+    'poc_update'=>[
+        'test'       =>  env('AWS_POC_UPDATE_QUEUE'),
+        'live'       =>  env('AWS_POC_UPDATE_QUEUE'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Queue Connections
