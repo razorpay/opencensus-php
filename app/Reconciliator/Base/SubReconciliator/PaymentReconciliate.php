@@ -639,9 +639,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             case VerifyResult::SUCCESS:
 
-                $this->messenger->raiseReconAlert(
+                $this->trace->info(
+                    TraceCode::RECON_FAILED_VERIFY,
                     [
-                        'trace_code' => TraceCode::RECON_FAILED_VERIFY,
                         'message'    => 'Verify returned failed. Payment is still in failed state.',
                         'payment_id' => $this->payment->getId(),
                         'amount'     => $this->payment->getAmount(),

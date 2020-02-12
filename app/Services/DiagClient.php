@@ -15,7 +15,11 @@ class DiagClient extends EventTrackerClient
     use Traits\OnBoardingEvent;
     use Traits\PaymentPageEvent;
 
-    public function trackEvent(string $eventType, string $eventVersion, array $event, array $properties)
+    public function trackEvent(string $eventType, string $eventVersion, array $event,
+                               array $properties,
+                               array $metaData = null,
+                               array $readKey = [] ,
+                               string $writeKey = null)
     {
         $event = [
             'event_type'    => $eventType,
@@ -25,6 +29,14 @@ class DiagClient extends EventTrackerClient
             'timestamp'     => (int)(microtime(true) * 1000000),
             'properties'    => $properties,
         ];
+
+        if(($eventVersion === 'v2') === true)
+        {
+            $event['event_trackId']  = $this->app['req.context']->getTrackId();
+            $event['metadata']       = $metaData;
+            $event['read_key']       = $readKey;
+            $event['write_key']      = $writeKey;
+        }
 
         $this->events[] = $event;
     }

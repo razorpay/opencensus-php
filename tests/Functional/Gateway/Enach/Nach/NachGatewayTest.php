@@ -36,6 +36,28 @@ class NachGatewayTest extends TestCase
         (new Terminal)->createNachTerminal();
     }
 
+    public function testGatewayFileDebitBankResponsePending()
+    {
+        $payment = $this->createRecurringNachPayment();
+
+        $batchFile = $this->getBatchFileToUploadForBankDebitResponse($payment, "3");
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'debit');
+
+        $batch = $this->getEntityById('batch', $batch['id'], true);
+
+        $this->assertEquals('nach', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getEntityById('payment', $payment['razorpay_payment_id'], true);
+
+        $this->assertEquals('created', $payment['status']);
+    }
+
     public function testNachDebitRefund()
     {
         $this->testGatewayFileDebitBankResponseSuccess();
@@ -87,6 +109,7 @@ class NachGatewayTest extends TestCase
 
         $this->assertEquals('nach', $batch['type']);
         $this->assertEquals('created', $batch['status']);
+        $this->assertEquals(300000, $batch['amount']);
 
         $payment = $this->getEntityById('payment', $payment['razorpay_payment_id'], true);
 

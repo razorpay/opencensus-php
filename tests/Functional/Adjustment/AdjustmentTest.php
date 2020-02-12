@@ -2,16 +2,16 @@
 
 namespace RZP\Tests\Functional\Adjustment;
 
+use Mail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Mail\Merchant\ReserveBalanceActivate as ReserveBalanceActivateMail;
 
 class AdjustmentTest extends TestCase
 {
-
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
-
 
     public function setUp()
     {
@@ -29,6 +29,8 @@ class AdjustmentTest extends TestCase
 
     public function testCreateReservePrimaryBalance()
     {
+        Mail::fake();
+
         $response = $this->startTest();
 
         $adjId = $response['id'];
@@ -62,10 +64,22 @@ class AdjustmentTest extends TestCase
         $this->assertEquals(5000000, $transaction['amount']);
         $this->assertEquals($balanceId, $transaction['balance_id']);
 
+        Mail::assertQueued(ReserveBalanceActivateMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('50000 INR', $viewData['reserve_limit']);
+
+            $this->assertEquals('emails.merchant.reserve_balance_activate_alert', $mail->view);
+
+            return true;
+        });
     }
 
     public function testCreateReserveBankingBalance()
     {
+        Mail::fake();
+
         $response = $this->startTest();
 
         $adjId = $response['id'];
@@ -98,10 +112,24 @@ class AdjustmentTest extends TestCase
         $this->assertEquals('100abc000abc00', $transaction['merchant_id']);
         $this->assertEquals(5000000, $transaction['amount']);
         $this->assertEquals($balanceId, $transaction['balance_id']);
+
+        Mail::assertQueued(ReserveBalanceActivateMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('50000 INR', $viewData['reserve_limit']);
+
+            $this->assertEquals('emails.merchant.reserve_balance_activate_alert', $mail->view);
+
+            return true;
+        });
+
     }
 
     public function testAddReserveBalance()
     {
+        Mail::fake();
+
         $this->createFixtures('100xyz000xyz00');
 
         $this->fixtures->create(
@@ -147,6 +175,8 @@ class AdjustmentTest extends TestCase
         $this->assertEquals('100xyz000xyz00', $transaction['merchant_id']);
         $this->assertEquals(5000000, $transaction['amount']);
         $this->assertEquals($balanceId, $transaction['balance_id']);
+
+        Mail::assertNotQueued(ReserveBalanceActivateMail::class);
     }
 
     private function createFixtures(string $id = null)

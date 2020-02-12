@@ -150,6 +150,49 @@ class TerminalAuthenticationTest extends TestCase
         $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
     }
 
+    public function testAuthenticationGatewayMigsHeadlessOtp()
+    {
+        TerminalOptions::setTestChance(20000);
+
+        $this->createGatewayRules($this->testData[__FUNCTION__]);
+
+        $this->fixtures->create('terminal:shared_axis_terminal', ['capability' => 2]);
+
+        $this->fixtures->iin->create([
+            'iin' => '556763',
+            'country' => 'IN',
+            'issuer' => 'ICIC',
+            'network' => 'MasterCard',
+            'flows' => [
+                '3ds' => '1',
+                'headless_otp' => '1'
+            ]
+        ]);
+
+        $this->otpFlow = false;
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['preferred_auth'] = ['3ds', 'otp'];
+
+        $this->mockCardVault();
+        $this->mockOtpElf();
+
+        $response = $this->doAuthPayment($payment, null);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+        self::assertTrue($this->otpFlow);
+        self::assertEquals('headless_otp' ,$payment['auth_type']);
+        self::assertEquals('axis_migs', $payment['gateway']);
+        self::assertEquals('1000AxisMigsTl', $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment[Payment\Entity::AUTHENTICATION_GATEWAY]);
+    }
+
     public function testAuthenticationGatewayIvr()
     {
         TerminalOptions::setTestChance(80000);

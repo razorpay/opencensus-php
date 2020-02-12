@@ -1822,6 +1822,7 @@ class DatabaseSeeder extends Seeder
                 'nach'                      => '1',
                 'gateway_merchant_id'       => 'NACH00000000010000',
                 'gateway_acquirer'          => 'RATN0TREASU',
+                'gateway_access_code'       => 'dummy',
                 'recurring'                 => 1,
                 'created_at'                => time(),
                 'updated_at'                => time(),

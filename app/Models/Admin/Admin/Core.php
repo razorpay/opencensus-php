@@ -4,7 +4,10 @@ namespace RZP\Models\Admin\Admin;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
@@ -125,5 +128,89 @@ class Core extends Base\Core
         }
 
         $admin->setPassword($input['password']);
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array           $adminIds
+     *
+     * @return array
+     */
+    public function assignMerchantToAdmins(Merchant\Entity $merchant, array $adminIds)
+    {
+        $this->trace->info(TraceCode::MERCHANT_ADMIN_ATTACH_REQUEST,
+                           [
+                               'action'   => 'attach_in_merchant_map',
+                               'merchantId' => $merchant->getId(),
+                               'adminIds' => $adminIds,
+                           ]
+        );
+
+        $this->repo->sync($merchant, 'admins', $adminIds);
+
+        return $merchant->toArrayPublic();
+    }
+
+    /**
+     * @param Group\Entity $group
+     * @param array        $adminIds
+     *
+     * @return array
+     */
+    public function assigningGroupToAdmins(Group\Entity $group, array $adminIds)
+    {
+        $this->trace->info(TraceCode::GROUP_ADMIN_ATTACH_REQUEST,
+                           [
+                               'action'   => 'attach_in_group_map',
+                               'groupId'    => $group->getId(),
+                               'adminIds' => $adminIds,
+                           ]
+        );
+
+        $this->repo->sync($group, 'admins', $adminIds, false);
+
+        return $group->toArrayPublic();
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array           $adminIds
+     *
+     * @return array
+     */
+    public function removeMerchantFromAdmins(Merchant\Entity $merchant, array $adminIds)
+    {
+        $this->trace->info(TraceCode::MERCHANT_GROUP_DETACH_REQUEST,
+                           [
+                               'action'   => 'detach_in_merchant_map',
+                               'merchantId' => $merchant->getId(),
+                               'adminIds' => $adminIds,
+                           ]
+        );
+
+        $this->repo->detach($merchant, 'admins', $adminIds);
+
+        return $merchant->toArrayPublic();
+    }
+
+    /**
+     * @param Group\Entity $group
+     * @param array        $adminIds
+     *
+     * @return array
+     */
+    public function removeGroupsFromAdmins(Group\Entity $group, array $adminIds)
+    {
+        $this->trace->info(TraceCode::GROUP_ADMIN_DETACH_REQUEST,
+                           [
+                               'action'   => 'detach_in_group_map',
+                               'groupId'    => $group->getId(),
+                               'adminIds' => $adminIds,
+                           ]
+        );
+
+        $this->repo->detach($group, 'admins', $adminIds);
+
+        return $group->toArrayPublic();
     }
 }

@@ -17,7 +17,7 @@ use RZP\Models\Settlement\Channel as SettlementChannel;
 class Validator extends Base\Validator
 {
     const FEES = 'fees';
-    const MIN_RESERVE_BALANCE = 1000000; // in paise
+    const MIN_RESERVE_BALANCE = 100000; // in paise
 
     protected static $createRules = [
         Entity::AMOUNT        => 'required|integer',
