@@ -213,7 +213,7 @@ class Service extends Base\Service
             ['terminal_enable' => $enabled],
             ['terminal_enable' => !$enabled],
         ];
-        
+
         $this->app['workflow']
              ->setEntityAndId($terminal->getEntity(), $terminal->getId())
              ->handle($original, $dirty);
@@ -395,6 +395,16 @@ class Service extends Base\Service
             unset($oldList[$index]);
         }
         return array_values($oldList);
+    }
+
+    /**
+     * This function is the entrypoint for migrating a terminal to Terminals service.
+     * All logic will reside here.
+     * @param Entity $terminal
+     */
+    public function migrateTerminal(Terminal\Entity $terminal)
+    {
+        
     }
 
     protected function createTerminalMigrateJob(Terminal\Entity $terminal)

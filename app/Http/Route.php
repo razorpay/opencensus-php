@@ -292,7 +292,7 @@ final class Route
         'terminal_check_encrypted_value'           => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'terminal_get_banks'                       => ['get',      'terminals/{id}/banks',                           'TerminalController@getBanks'                                       ],
         'terminal_set_banks'                       => ['patch',    'terminals/{id}/banks',                           'TerminalController@setBanks'                                       ],
-        'terminal_migrate_cron'                    => ['post',     'terminals/migrate_cron',                         'TerminalController@terminalsMigrateCron'                           ],
+        'terminal_migrate_cron'                    => ['post',     'terminals/migrate_cron',                         'TerminalController@postTerminalsMigrateCron'                        ],
         'terminal_onboarding_update_status'        => ['put',      'terminal_onboarding_update_status',              'TerminalOnboardingController@putTerminalOnboardingStatus'    ],
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
