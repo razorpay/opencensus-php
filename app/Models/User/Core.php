@@ -18,6 +18,7 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Services\TokenService;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
@@ -1366,15 +1367,17 @@ class Core extends Base\Core
      */
     public function verifyUserThroughEmail(array $input, Merchant\Entity $merchant, Entity $user) : array
     {
-
-        /** @var Validator $user */
+        /** @var Validator $validator */
         $validator = $user->getValidator();
 
         $validator->validateInput('verifyUserThroughEmail', $input);
 
         $this->verifyOtp($input + ['action' => 'user_auth'], $merchant, $user);
 
-        $token  = $this->app['token_service']->generate($user->getId());
+        /** @var TokenService $tokenService */
+        $tokenService  = $this->app['token_service'];
+
+        $token = $tokenService->generate($user->getId());
 
         return [Entity::OTP_AUTH_TOKEN => $token];
     }
