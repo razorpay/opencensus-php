@@ -505,6 +505,6 @@ class MethodsTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertTrue(isset($response["emi_options"][$emiPlanEntity->getBank()][0]["merchant_paybacked"]));
+        $this->assertTrue(isset($response["emi_options"][$emiPlanEntity->getBank()][0]["merchant_payback"]));
     }
 }
