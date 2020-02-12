@@ -321,6 +321,11 @@ class Name
     const UPDATE_INVITATION                   = 'update_invitation';
     const DELETE_INVITATION                   = 'delete_invitation';
     const MERCHANT_PRODUCT_SWITCH             = 'merchant_product_switch';
+    const CREATE_BATCH                        = 'create_batch';
+    const CREATE_USER_OTP                     = 'create_user_otp';
+    const GENERATE_BANKING_ACCOUNT_STATEMENT  = 'generate_banking_account_statement';
+    const MERCHANT_INSTANT_ACTIVATION         = 'merchant_instant_activation';
+    const UPDATE_MERCHANT_FEATURE             = 'update_merchant_feature';
 
 
     public static $actionMap = [

@@ -116,12 +116,12 @@ class UserAccess
             // when merchant (not admin) is hitting the route
             if ($this->ba->isProxyAuth() === true)
             {
-                $userAccessException = $this->validateUserAccess($route);
+                $userAccessResponse = $this->validateUserAccess($route);
 
                 // If there's an exception then return and fail
-                if ($userAccessException !== null)
+                if ($userAccessResponse !== null)
                 {
-                    return $userAccessException;
+                    return $userAccessResponse;
                 }
             }
         }
@@ -180,7 +180,7 @@ class UserAccess
 
     private function validateUserAccess(string $route)
     {
-        $userAccessException = $this->validateRouteUserRolesPolicy($route);
+        $userAccessResponse = $this->validateRouteUserRolesPolicy($route);
 
         // TODO: Dry run ACL for banking request, This is a part of release step.
         if ($this->ba->isProductBanking())
@@ -189,18 +189,20 @@ class UserAccess
             {
                 $this->validateBankingUserRoutePolicy($route);
             }
-            catch (BadRequestException $e)
+            catch (\Throwable $e)
             {
-                $this->trace->traceException($e, Trace::INFO, TraceCode::BANKING_ACCOUNT_USER_PERMISSION_ERROR,
+                $this->trace->traceException($e,
+                                            Trace::INFO,
+                                            TraceCode::BANKING_ACCOUNT_USER_PERMISSION_ERROR,
                                             [
                                                 'route'            => $route,
                                                 'user_id'          => $this->ba->getUser()->getId(),
-                                                'old_acl_response' => $userAccessException,
+                                                'old_acl_response' => $userAccessResponse,
                                             ]);
             }
         }
 
-        return $userAccessException;
+        return $userAccessResponse;
     }
 
     private function validateRouteUserRolesPolicy($route)

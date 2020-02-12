@@ -17,7 +17,6 @@ class UserRolePermissionsMap
     private function getRolePermissionMap()
     {
          $rolePermissions = [
-
              BankingRole::OWNER => [
                  Permission::CREATE_PAYOUT,
                  Permission::CREATE_PAYOUT_BULK,
@@ -26,7 +25,6 @@ class UserRolePermissionsMap
                  Permission::APPROVE_PAYOUT,
                  Permission::REJECT_PAYOUT,
                  Permission::VIEW_PAYOUT,
-                 Permission::RETRY_SETTLEMENT,
                  Permission::CANCEL_PAYOUT,
                  Permission::VIEW_PAYOUT_PURPOSE,
                  Permission::CREATE_PAYOUT_PURPOSE,
@@ -47,10 +45,11 @@ class UserRolePermissionsMap
                  Permission::FUND_ACCOUNT_VALIDATION,
                  Permission::RETRY_FUND_ACCOUNT_VALIDATION,
                  Permission::VIEW_FUND_ACCOUNT_VALIDATION,
-                 Permission::VALIDATE_FUND_ACCOUNT,
+                 Permission::UPDATE_FUND_ACCOUNT,
                  Permission::VIEW_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT_BULK,
+                 Permission::VALIDATE_FUND_ACCOUNT,
                  Permission::CREATE_MERCHANT_KEY,
                  Permission::VIEW_MERCHANT_KEY,
                  Permission::VIEW_MERCHANT_ANALYTICS,
@@ -76,6 +75,11 @@ class UserRolePermissionsMap
                  Permission::CREATE_SELF_SERVE_REPORT,
                  Permission::GET_SELF_SERVE_REPORT,
                  Permission::MERCHANT_PRODUCT_SWITCH,
+                 Permission::CREATE_USER_OTP,
+                 Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
+                 Permission::MERCHANT_INSTANT_ACTIVATION,
+                 Permission::UPDATE_MERCHANT_FEATURE,
+                 Permission::CREATE_BATCH,
              ],
 
              BankingRole::ADMIN => [
@@ -86,7 +90,6 @@ class UserRolePermissionsMap
                  Permission::APPROVE_PAYOUT,
                  Permission::REJECT_PAYOUT,
                  Permission::VIEW_PAYOUT,
-                 Permission::RETRY_SETTLEMENT,
                  Permission::CANCEL_PAYOUT,
                  Permission::VIEW_PAYOUT_PURPOSE,
                  Permission::CREATE_PAYOUT_PURPOSE,
@@ -111,6 +114,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT_BULK,
+                 Permission::VALIDATE_FUND_ACCOUNT,
                  Permission::VIEW_MERCHANT_KEY,
                  Permission::CREATE_MERCHANT_KEY,
                  Permission::VIEW_MERCHANT_ANALYTICS,
@@ -131,6 +135,10 @@ class UserRolePermissionsMap
                  Permission::CREATE_SELF_SERVE_REPORT,
                  Permission::GET_SELF_SERVE_REPORT,
                  Permission::MERCHANT_PRODUCT_SWITCH,
+                 Permission::CREATE_USER_OTP,
+                 Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
+                 Permission::MERCHANT_INSTANT_ACTIVATION,
+                 Permission::CREATE_BATCH,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -141,7 +149,6 @@ class UserRolePermissionsMap
                  Permission::APPROVE_PAYOUT,
                  Permission::REJECT_PAYOUT,
                  Permission::VIEW_PAYOUT,
-                 Permission::RETRY_SETTLEMENT,
                  Permission::CANCEL_PAYOUT,
                  Permission::VIEW_PAYOUT_PURPOSE,
                  Permission::CREATE_PAYOUT_PURPOSE,
@@ -166,6 +173,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT_BULK,
+                 Permission::VALIDATE_FUND_ACCOUNT,
                  Permission::VIEW_MERCHANT_ANALYTICS,
                  Permission::VIEW_MERCHANT_BALANCE,
                  Permission::UPDATE_USER_PROFILE,
@@ -182,6 +190,10 @@ class UserRolePermissionsMap
                  Permission::CREATE_SELF_SERVE_REPORT,
                  Permission::GET_SELF_SERVE_REPORT,
                  Permission::MERCHANT_PRODUCT_SWITCH,
+                 Permission::CREATE_USER_OTP,
+                 Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
+                 Permission::MERCHANT_INSTANT_ACTIVATION,
+                 Permission::CREATE_BATCH,
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -216,11 +228,11 @@ class UserRolePermissionsMap
          return $rolePermissions;
     }
 
-    public function isValidRolePermission(string $role, string $permission)
+    public function isValidRolePermission(string $role, string $permission) : bool
     {
         $rolePermissions = $this->rolePermissions[$role] ?? null;
 
-        if (in_array($permission, $rolePermissions))
+        if (in_array($permission, $rolePermissions, true))
         {
             return true;
         }
@@ -228,7 +240,7 @@ class UserRolePermissionsMap
         return false;
     }
 
-    public function isInvalidRolePermission(string $role, string $permission)
+    public function isInvalidRolePermission(string $role, string $permission) : bool
     {
         if ($this->isValidRolePermission($role, $permission))
         {
