@@ -58,6 +58,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Transaction\Entity     $transaction
  * @property Emi\Entity             $emiPlan
  * @property Customer\Entity        $customer
+ * @property PaymentMeta\Entity     $paymentMeta
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
@@ -2977,6 +2978,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data['amount_refunded'] = $this->getBaseAmountRefunded();
         }
 
+        if (($this->isCard()) and
+            ($this->paymentMeta->exists === true))
+        {
+            $data['amount'] = $this->getGatewayAmount();
+            $data['currency'] = $this->getGatewayCurrency();
+        }
+
         return $data;
     }
 
@@ -3058,6 +3066,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function upiTransfer()
     {
         return $this->hasOne('RZP\Models\UpiTransfer\Entity');
+    }
+
+    public function paymentMeta()
+    {
+        return $this->hasOne('RZP\Models\Payment\PaymentMeta\Entity');
     }
 
     public function batch()
@@ -3700,5 +3713,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $populatedMessage;
+    }
+
+    public function getGatewayAmount()
+    {
+        return $this->paymentMeta->getGatewayAmount() ?? $this->getAmount();
+    }
+
+    public function getGatewayCurrency()
+    {
+        return $this->paymentMeta->getGatewayCurrency() ?? $this->getCurrency();
     }
 }
