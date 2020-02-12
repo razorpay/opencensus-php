@@ -4,7 +4,7 @@ namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
 
-class TerminalsServiceSyncJob extends Job
+class TerminalsServiceMigrateJob extends Job
 {
     protected $terminalId;
 
@@ -21,7 +21,7 @@ class TerminalsServiceSyncJob extends Job
 
         try
         {
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_QUEUE_WORKER_STARTED, [$this->terminalId]);
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_STARTED, [$this->terminalId]);
 
             $this->delete();
         }

@@ -96,11 +96,11 @@ class TerminalController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function migrateTerminals()
+    public function terminalsMigrateCron()
     {
         $input = Request::all();
 
-        $response = $this->service()->migrateTerminals($input);
+        $response = $this->service()->terminalsMigrateCron($input);
 
         return ApiResponse::json($response);
     }

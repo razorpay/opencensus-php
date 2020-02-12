@@ -7,7 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\TerminalsServiceSyncJob;
+use RZP\Jobs\TerminalsServiceMigrateJob;
 
 class Service extends Base\Service
 {
@@ -348,14 +348,30 @@ class Service extends Base\Service
         }
     }
 
-    public function migrateTerminals(array $input)
+    public function terminalsMigrateCron(array $input)
     {
+        $succesCount = 0;
+
+        $failureCount = 0;
+
+
         $terminals = $this->repo->terminal->fetch(['count' => 10]);
 
         foreach ($terminals as $terminal)
         {
-            $this->migrateTerminal($terminal);
+            try
+            {
+                $this->createTerminalMigrateJob($terminal);
+
+                $succesCount += 1;
+            }
+            catch (\Throwable $throwable)
+            {
+                $failureCount += 1;
+            }
         }
+
+        return ['successCount' => $succesCount, 'failureCount' => $failureCount];
     }
     /**
      * Add/Remove bank from the oldEnabledBankList adn return the newList.
@@ -381,7 +397,7 @@ class Service extends Base\Service
         return array_values($oldList);
     }
 
-    protected function migrateTerminal(Terminal\Entity $terminal)
+    protected function createTerminalMigrateJob(Terminal\Entity $terminal)
     {
         $data = [
             Entity::TERMINAL_ID => $terminal->getId(),
@@ -389,7 +405,7 @@ class Service extends Base\Service
 
         try
         {
-            TerminalsServiceSyncJob::dispatch($this->mode, $terminal->getId());
+            TerminalsServiceMigrateJob::dispatch($this->mode, $terminal->getId());
         }
         catch (\Exception $exception)
         {
@@ -397,7 +413,7 @@ class Service extends Base\Service
 
             $data['code']    = $exception->getCode();
 
-            $this->trace->error(TraceCode::TERMINALS_SERVICE_QUEUE_REQUEST_FAILURE, $data);
+            $this->trace->error(TraceCode::TERMINALS_SERVICE_CREATE_MIGRATE_JOB_FAILURE, $data);
         }
     }
 }
