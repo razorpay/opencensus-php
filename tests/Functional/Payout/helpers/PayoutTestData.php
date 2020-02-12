@@ -3160,5 +3160,21 @@ return [
             'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
             'message'                   => PublicErrorDescription::BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE,
         ],
-    ]
+    ],
+
+    'testFiringOfWebhookOnCreationOfPendingPayoutEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payout.pending',
+        'contains' => [
+            'payout',
+        ],
+        'payload' => [
+            'payout' => [
+                'entity' => [
+                    'entity'     => 'payout',
+                    'status'     => 'pending',
+                ],
+            ],
+        ],
+    ],
 ];

@@ -66,6 +66,7 @@ class CommissionCreateTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+
     public function testCaptureCommissionByPartner()
     {
         list($partner) = $this->createSampleCommission();

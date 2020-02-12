@@ -1889,6 +1889,8 @@ trait Refund
         {
             return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled);
         }
+
+        return false;
     }
 
     protected function getGatewayDataForRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
