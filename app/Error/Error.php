@@ -252,19 +252,19 @@ class Error extends Support\Fluent
             }
             else
             {
-                $this->readMappingFromFile($cacheKey, $method);
+                $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
             }
 
         }
         else
         {
-            $this->readMappingFromFile($cacheKey, $method);
+            $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
         }
 
         $this->setErrorParamsIfApplicable($errorCodeMap, $code);
     }
 
-    protected function readMappingFromFile($cacheKey, $method)
+    protected function readMappingFromFile($cacheKey, $method, & $errorCodeMap)
     {
         $filePath = storage_path(sprintf(self::ERROR_CODE_FILE_PATH, $method));
 
