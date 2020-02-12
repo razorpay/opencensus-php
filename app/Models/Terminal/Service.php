@@ -407,20 +407,31 @@ class Service extends Base\Service
     {
         $client = new TerminalsServiceClient($this->app);
 
-        $migrateTerminalResponse = $client->migrateTerminal($terminal);
-
-        $fetchTerminalResponse = $client->fetchTerminalById($terminal->getId());
-
-        if ($this->isMigrateTerminalSuccess($terminal, $migrateTerminalResponse, $fetchTerminalResponse) === true)
+        try
         {
-            $this->processMigrateTerminalSuccsess($terminal);
+            $migrateTerminalResponse = $client->migrateTerminal($terminal);
+
+            $fetchTerminalResponse = $client->fetchTerminalById($terminal->getId());
+
+            if ($this->isMigrateTerminalSuccess($terminal, $migrateTerminalResponse, $fetchTerminalResponse) === true)
+            {
+                $this->processMigrateTerminalSuccsess($terminal);
+            }
+            else
+            {
+                $this->processMigrateTerminalFailure($terminal);
+            }
         }
-        else
+        catch (\Exception $exception)
         {
             $this->processMigrateTerminalFailure($terminal);
         }
+        finally
+        {
 
-    }
+        }
+
+   }
 
 
 

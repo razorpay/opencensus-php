@@ -39,7 +39,7 @@ class TerminalsService
             self::METHOD => Requests::POST,
         ],
         self::FETCH_TERMINAL_BY_ID  =>   [
-            self::PATH   => 'v1/terminals/',
+            self::PATH   => 'v1/terminals/%s',
             self::METHOD => Requests::GET,
         ],
     ];
@@ -68,9 +68,9 @@ class TerminalsService
     {
         $params = self::PARAMS[self::FETCH_TERMINAL_BY_ID];
 
-        $params[self::PATH] .= $terminalId;
+        $path = sprintf($params[self::PATH], $terminalId);
 
-        $response = $this->sendRequest($params[self::PATH], [], $params[self::METHOD]);
+        $response = $this->sendRequest($path, null, $params[self::METHOD]);
 
         return $this->parseAndReturnResponse($response);
     }
@@ -90,6 +90,7 @@ class TerminalsService
             $this->trace->info(TraceCode::TERMINALS_SERVICE_REQUEST,
                 [
                     self::URL       => $url,
+                    self::METHOD    => $method,
                 ]);
 
             $response = Requests::request(
