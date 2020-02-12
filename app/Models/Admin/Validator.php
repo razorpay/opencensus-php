@@ -34,6 +34,21 @@ class Validator extends Base\Validator
         'reason'            => 'sometimes|string',
     ];
 
+    protected static $sfPocDataRules = [
+        'totalSize' => 'required|integer',
+        'done'      => 'required|boolean',
+        'records'   => 'required|array',
+    ];
+
+    protected static $sfPocRecordRules = [
+        'attributes'                    => 'sometimes',
+        'Merchant_ID__c'                => 'required|string|max:14',
+        'Owner'                         => 'required',
+        'Owner.Email'                   => 'required|email',
+        'Owner_Role__c'                 => 'required|string',
+        'Managers_In_Role_Hierarchy__c' => 'required|string|custom',
+    ];
+
     protected static $setConfigKeysRules = [
         ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE     => 'filled|boolean',
         ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE => 'filled|boolean',
@@ -124,6 +139,26 @@ class Validator extends Base\Validator
     protected static $updateConfigKeyValidators = [
         'update_config_value'
     ];
+
+    protected static $emailRules = [
+        'email' => 'required|email',
+    ];
+
+    /**
+     * @param string $attribute
+     * @param string $value
+     */
+    public function validateManagersInRoleHierarchyC(string $attribute, string $value)
+    {
+        $value=rtrim($value,',');
+
+        $emails = explode(',', $value);
+
+        foreach ($emails as $email)
+        {
+            $this->validateInput('email', ['email' => $email]);
+        }
+    }
 
     /**
      * @param array $input

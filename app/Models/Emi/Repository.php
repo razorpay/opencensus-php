@@ -75,7 +75,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
             ->select(Entity::DURATION)
-            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
             ->where(Entity::BANK, '=', $issuer)
             ->pluck(Entity::DURATION)
             ->all();
@@ -85,7 +85,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
             ->select(Entity::DURATION)
-            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
             ->where(Entity::NETWORK, '=', $paymentNetwork)
             ->pluck(Entity::DURATION)
             ->all();
