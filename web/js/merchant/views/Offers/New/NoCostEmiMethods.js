@@ -93,7 +93,7 @@ export default class NoCostEmiMethods extends React.Component {
       for (let duration in emiPlans.plans) {
         let text = `${duration} Months`;
         planFields.push(
-          <div>
+          <div class="offers-emi-options-row">
             <Input.Check
               fieldLabel={text}
               onChange={this.onSelectTenure(duration)}
@@ -103,13 +103,14 @@ export default class NoCostEmiMethods extends React.Component {
                 false
               }
             />
-            <p>{emiMerchantPaybacks[duration].merchant_payback}</p>
+            {/* <p>{emiMerchantPaybacks[duration].merchant_payback}</p> */}
+            <p style={{ paddingLeft: '15px', paddingTop: '15px' }}>12% Off</p>
           </div>
         );
       }
     }
     if (planFields.length > 0) {
-      return planFields;
+      return <div class="offers-emi-options-container">{planFields}</div>;
     }
   }
 
