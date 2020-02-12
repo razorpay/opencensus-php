@@ -99,6 +99,13 @@ class Authorization
         $this->proxy = true;
     }
 
+    public function paymentLinksAuth()
+    {
+        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.payment_links')['secret']);
+
+        $this->proxy = true;
+    }
+
     public function batchAuth()
     {
         $this->appAuth('rzp_test_10000000000000', \Config::get('applications.batch')['secret']);

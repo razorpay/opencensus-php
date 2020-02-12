@@ -70,7 +70,7 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function createWebhook(array $input = array(), array $headers = [])
+    protected function createWebhook(array $input = array(), array $headers = [], $mode = 'test')
     {
         $this->setupMockDns();
 
@@ -88,7 +88,7 @@ trait EntityActionTrait
             'content' => $input,
             'server' => $headers);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth("rzp_{$mode}_10000000000000");
 
         return $this->makeRequestAndGetContent($request);
     }

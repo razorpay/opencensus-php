@@ -90,9 +90,12 @@ class Base extends BaseProcessor
     {
         if ($this->isAuthorized($content) === true)
         {
-            return $this->processAuthorizedPayment($payment);
+            $this->processAuthorizedPayment($payment);
         }
-        return $this->processFailedPayment($payment, $content);
+        else if ($this->isRejected($content) === true)
+        {
+            $this->processFailedPayment($payment, $content);
+        }
     }
 
     protected function processAuthorizedPayment(Payment\Entity $payment)

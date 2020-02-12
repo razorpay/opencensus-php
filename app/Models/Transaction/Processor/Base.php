@@ -7,9 +7,11 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Models\Pricing;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
@@ -21,6 +23,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Base as BaseCollection;
 use RZP\Mail\Merchant\FeeCreditsAlert;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base\Entity as BaseEntity;
 use RZP\Models\Payment\Processor\Capture;
 use RZP\Models\Merchant\Balance\BalanceConfig;
@@ -118,14 +121,36 @@ abstract class Base extends BaseCore
         // updates entity specific attributes in transaction
         $this->updateTransaction();
 
+        $negativeBalanceEnabled =  (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($this->txn->getType(),
+                                                                                        $this->txn->merchant->getId());
+
+        $negativeLimit = 0;
+
+        if ($negativeBalanceEnabled === true)
+        {
+            //TODO: remove hardcoding of balance type to primary, for future use cases
+            $negativeLimit = -1 * (new Balance\Core)->getMaximumNegativeAllowedForBalanceType($this->txn->merchant,
+                    Balance\Type::PRIMARY, $this->txn->getType());
+        }
+
         if ($this->shouldUpdateBalance() === true)
         {
+            $startTime = microtime(true);
+
             // update merchant credits an balances
             $this->setMerchantBalanceLockForUpdate();
 
-            $this->updateCredits();
+            $this->updateCredits($negativeLimit);
 
-            $this->updateBalances();
+            $this->updateBalances($negativeLimit);
+
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_TIME_TAKEN,
+                [
+                    'txn_type'              => $this->txn->getType(),
+                    'async_update'          => false,
+                    'balance_update_time'   => (microtime(true) - $startTime) * 1000
+                ]
+            );
         }
 
         return [$this->txn, $this->feesSplit];
@@ -320,28 +345,8 @@ abstract class Base extends BaseCore
         return $returnDay->getTimestamp();
     }
 
-    public function updateCredits()
+    public function updateCredits(int $negativeLimit = 0 )
     {
-        $mode = $this->mode ?? 'live';
-
-        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
-            [
-                'mode'          => $this->mode,
-                'merchant_id'   => $this->merchantBalance->merchant->getId(),
-            ]
-        );
-
-        $response = $this->app->razorx->getTreatment($this->merchantBalance->merchant->getId(),
-                                            BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE, $mode);
-
-        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
-            [
-                'mode'          => $this->mode,
-                'merchant_id'   => $this->merchantBalance->merchant->getId(),
-                'response'      => $response
-            ]
-        );
-
         if($this->txn->isGratis() === true)
         {
             $this->updateAmountCredits();
@@ -352,7 +357,7 @@ abstract class Base extends BaseCore
         }
         else if ($this->txn->isRefundCredits() === true)
         {
-            $this->updateRefundCredits($response === 'on');
+            $this->updateRefundCredits($negativeLimit);
         }
     }
 
@@ -556,7 +561,7 @@ abstract class Base extends BaseCore
         }
     }
 
-    public function updateRefundCredits(bool $negativeBalanceEnabled = false)
+    public function updateRefundCredits(int $negativeLimit = 0)
     {
         // While filling the txn fees and amount, we have not used fee credits.
         if ((($this->txn->isTypeRefund() === false) and
@@ -572,95 +577,72 @@ abstract class Base extends BaseCore
 
         $refundCredits = $this->merchantBalance->getRefundCredits();
 
-        if ($negativeBalanceEnabled === false)
+        $data = [
+            'transaction_id'    => $this->txn->getId(),
+            'merchant_id'       => $merchantId,
+            'refund_credits'    => $refundCredits,
+            'amount'            => $amount,
+        ];
+
+        if (($negativeLimit === 0) and
+            ($refundCredits < $amount))
         {
-            if ($refundCredits < $amount)
-            {
-                throw new Exception\LogicException(
-                    'Refund Credits should be higher or equal to the refund amount',
+            throw new Exception\LogicException(
+                'Refund Credits should be higher or equal to the refund amount',
                 null,
-                    [
-                        'transaction_id'    => $this->txn->getId(),
-                        'merchant_id'       => $merchantId,
-                        'refund_credits'    => $refundCredits,
-                        'amount'            => $amount,
-                    ]);
-            }
-
-            $this->merchantBalance->subtractRefundCredits($amount, $negativeBalanceEnabled);
+                $data
+                );
         }
-        else
+        else if (($refundCredits - $amount) < $negativeLimit)
         {
-            $this->merchantBalance->subtractRefundCredits($amount, $negativeBalanceEnabled);
+            $data['message'] = TraceCode::getMessage(TraceCode::NEGATIVE_BALANCE_BREACHED);
 
-            $newCredits = $this->merchantBalance->getRefundCredits();
+            $data['negative_limit'] = $negativeLimit;
 
-            (new Balance\Core)->sendNegativeBalanceMailIfApplicable($this->merchantBalance->merchant, $refundCredits, $newCredits,
-                $this->merchantBalance->getType(), 'refund credits', $this->txn->getType());
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED, abs($amount),
+                $data);
         }
+
+        $this->merchantBalance->subtractRefundCredits($amount, $negativeLimit);
+
+        $newCredits = $this->merchantBalance->getRefundCredits();
+
+        (new Balance\Core)->sendNegativeBalanceMailIfApplicable($this->merchantBalance->merchant, $refundCredits, $newCredits,
+                $this->merchantBalance->getType(), 'refund credits', $this->txn->getType());
 
         //create a credit transaction for the same
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
     }
 
-    public function updateBalances()
+    public function updateBalances(int $negativeLimit = 0)
     {
         $this->txn->accountBalance()->associate($this->merchantBalance);
 
-        $this->updateMerchantBalance();
+        $this->updateMerchantBalance($negativeLimit);
     }
 
-    public function updateMerchantBalance()
+    public function updateMerchantBalance(int $negativeLimit = 0)
     {
-        $mode = $this->mode ?? 'live';
+        $merchantBalance = $this->merchantBalance;
 
-        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_REQUEST,
-            [
-                'mode'          => $this->mode,
-                'merchant_id'   => $this->merchantBalance->merchant->getId(),
-            ]
-        );
+        $oldBalance = $merchantBalance->getBalance();
 
-        $response = $this->app->razorx->getTreatment($this->merchantBalance->merchant->getId(),
-                                                        BalanceConfig\Core::NEGATIVE_BALANCE_FEATURE, $mode);
-
-        $this->trace->info(TraceCode::NEGATIVE_BALANCE_RAZORX_RESPONSE,
-            [
-                'mode'          => $this->mode,
-                'merchant_id'   => $this->merchantBalance->merchant->getId(),
-                'response'      => $response
-            ]
-        );
-
-        $oldBalance = $this->merchantBalance->getBalance();
-
-        if ($response === 'on')
-        {
-            if ($this->txn->getType() === Transaction\Type::PAYMENT)
-            {
-                (new Balance\Core)->checkMerchantBalance($this->merchantBalance->merchant,
-                                                         $this->txn->getNetAmount(),
-                                                    Transaction\Type::PAYMENT,
-                                                         $this->merchantBalance->getType());
-            }
-        }
-
-        $this->merchantBalance->updateBalance($this->txn, $response === 'on');
+        $merchantBalance->updateBalance($this->txn, $negativeLimit);
 
         $newBalance = $this->merchantBalance->getBalance();
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
-        $this->txn->setBalance($this->merchantBalance->getBalance(), $response === 'on');
+        $this->txn->setBalance($this->merchantBalance->getBalance(), $negativeLimit);
 
-        if ($response === 'on')
+        if (in_array($this->txn->getType(), Balance\Core::NEGATIVE_FLOWS[Balance\Type::PRIMARY]) === true)
         {
             if ($newBalance < 0)
             {
                 $dimensions = (new Balance\Metric)->getBalanceNegativeDimensions($this->merchantBalance->merchant->getId(),
-                                                                                 $this->merchantBalance->getType(),
-                                                                                 $this->merchantBalance->getBalance(),
-                                                                                 $this->txn->getType());
+                                                                                     $this->merchantBalance->getType(),
+                                                                                     $this->merchantBalance->getBalance(),
+                                                                                     $this->txn->getType());
 
                 $this->trace->count(Balance\Metric::BALANCE_NEGATIVE, $dimensions);
             }

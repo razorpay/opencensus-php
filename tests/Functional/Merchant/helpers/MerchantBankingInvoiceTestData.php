@@ -136,21 +136,13 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 2,
+                'count' => 1,
                 'items' =>  [
                     [
                         'month'          => 7,
                         'year'           => 2019,
-                        'amount'         => 900,
-                        'tax'            => 162,
-                        'account_number' => '1234567',
-                    ],
-                    [
-                        'month'          => 7,
-                        'year'           => 2019,
-                        'amount'         => 500,
-                        'tax'            => 90,
-                        'account_number' => '12345',
+                        'amount'         => 1400,
+                        'tax'            => 252,
                     ],
                 ],
             ],
@@ -178,30 +170,7 @@ return [
             'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
-    'testFetchMultipleBankingInvoicesGivenAccountNumber' => [
-        'request'  => [
-            'method'  => 'GET',
-            'url'     => '/merchants/banking/invoices',
-            'content' => [
-                'account_number' => '1234567',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'month'          => 7,
-                        'year'           => 2019,
-                        'amount'         => 900,
-                        'tax'            => 162,
-                        'account_number' => '1234567',
-                    ],
-                ],
-            ],
-        ],
-    ],
+
     'testFetchMultipleBankingInvoicesGivenNoInputs' => [
         'request'  => [
             'method'  => 'GET',
@@ -211,35 +180,19 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 4,
+                'count'  => 2,
                 'items'  => [
                     [
                         'month'          => 8,
                         'year'           => 2019,
                         'amount'         => 0,
                         'tax'            => 0,
-                        'account_number' => '1234567',
-                    ],
-                    [
-                        'month'          => 8,
-                        'year'           => 2019,
-                        'amount'         => 0,
-                        'tax'            => 0,
-                        'account_number' => '12345',
                     ],
                     [
                         'month'          => 7,
                         'year'           => 2019,
-                        'amount'         => 900,
-                        'tax'            => 162,
-                        'account_number' => '1234567',
-                    ],
-                    [
-                        'month'          => 7,
-                        'year'           => 2019,
-                        'amount'         => 500,
-                        'tax'            => 90,
-                        'account_number' => '12345',
+                        'amount'         => 1400,
+                        'tax'            => 252,
                     ],
                 ],
             ],
@@ -281,6 +234,27 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
+        ],
+    ],
+
+    'testBankingInvoiceDownloadFromAdminDashboard' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/reports/invoice/banking',
+            'content' => [
+                "month"          => 7,
+                "year"           => 2019,
+                "send_email"     => false,
+                "to_emails"      => ["kunal.sikri@razorpay.com"]
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'file_id' => 'rzp_file_mock_id_1000000_file'
+            ],
         ],
     ],
 
@@ -332,6 +306,26 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+    'testBankingInvoiceEmailFromAdminDashboard' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/reports/invoice/banking',
+            'content' => [
+                "month"          => 7,
+                "year"           => 2019,
+                "send_email"     => true,
+                "to_emails"      => ["kunal.sikri@razorpay.com"]
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'file_id' => null
+            ],
         ],
     ],
 

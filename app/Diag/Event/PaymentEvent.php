@@ -59,6 +59,11 @@ class PaymentEvent extends Event
         unset($this->customProperties['card_number']);
         unset($this->customProperties['number']);
         unset($this->customProperties['notes']);
+
+        unset($this->metaDetails['metadata']['payment']['card']);
+        unset($this->metaDetails['metadata']['payment']['card_number']);
+        unset($this->metaDetails['metadata']['number']);
+        unset($this->metaDetails['metadata']['notes']);
     }
 
     private function addMerchantDetails(array &$properties)

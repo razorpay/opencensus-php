@@ -4731,6 +4731,17 @@ return [
         ],
     ],
 
+    'testMerchantSwitchProductWhenMerchantNotActivated' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testGetCheckoutPreferencesForCardlessEmi' => [
         'request' => [
             'url' => '/preferences',
@@ -5702,5 +5713,22 @@ return [
                 'failed'  => 0,
             ]
         ]
+    ],
+
+    'testGetCheckoutPreferencesWithOrderMethodForNonTPVEnabledMerchant' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'method' => 'upi'
+                ]
+            ],
+        ],
     ],
 ];

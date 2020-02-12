@@ -36,7 +36,7 @@ return [
             'url' => '/adjustments',
             'method' => 'POST',
             'content' => [
-                'amount'        =>  500000,
+                'amount'        =>  5000000,
                 'type'          =>  'reserve_primary',
                 'merchant_id'   =>  '100abc000abc00',
                 'currency'      =>  'INR',
@@ -46,7 +46,7 @@ return [
         'response' => [
             'content' => [
                 'entity'        => 'adjustment',
-                'amount'        => 500000,
+                'amount'        => 5000000,
                 'currency'      => 'INR',
                 'description'   => 'reserve_primary balance add',
             ],
@@ -58,7 +58,7 @@ return [
             'url' => '/adjustments',
             'method' => 'POST',
             'content' => [
-                'amount'        =>  500000,
+                'amount'        =>  5000000,
                 'type'          =>  'reserve_banking',
                 'merchant_id'   =>  '100abc000abc00',
                 'currency'      =>  'INR',
@@ -68,7 +68,7 @@ return [
         'response' => [
             'content' => [
                 'entity'        => 'adjustment',
-                'amount'        => 500000,
+                'amount'        => 5000000,
                 'currency'      => 'INR',
                 'description'   => 'reserve_banking balance add',
             ],
@@ -80,7 +80,7 @@ return [
             'url' => '/adjustments',
             'method' => 'POST',
             'content' => [
-                'amount'        =>  500000,
+                'amount'        =>  5000000,
                 'type'          =>  'reserve_primary',
                 'merchant_id'   =>  '100xyz000xyz00',
                 'currency'      =>  'INR',
@@ -90,7 +90,7 @@ return [
         'response' => [
             'content' => [
                 'entity'        => 'adjustment',
-                'amount'        => 500000,
+                'amount'        => 5000000,
                 'currency'      => 'INR',
                 'description'   => 'reserve_primary balance add',
             ],

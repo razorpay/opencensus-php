@@ -55,6 +55,13 @@ class Validator extends Base\Validator
         Entity::NUMBER       => 'required|numeric|digits_between:6,19',
     ];
 
+    protected static $getIinDetailsRules = [
+        'callback'                  => 'sometimes', // JSONP
+        'iin'                       => 'required|numeric|digits:6',
+        '_'                         => 'sometimes|array',
+        'order_id'                  => 'sometimes|filled',
+    ];
+
     protected static $createValidators = [
         'create_network',
         Entity::TYPE,

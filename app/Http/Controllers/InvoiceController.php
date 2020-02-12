@@ -179,6 +179,15 @@ class InvoiceController extends Controller
         return ApiResponse::json($summary);
     }
 
+    public function deleteInvoices()
+    {
+        $input = Request::all();
+
+        $summary = $this->service()->deleteInvoices($input);
+
+        return ApiResponse::json($summary);
+    }
+
     public function getInvoiceStatus(string $id)
     {
         $data = $this->service()->fetchStatus($id);
@@ -397,6 +406,15 @@ class InvoiceController extends Controller
         $input = Request::all();
 
         $response = $this->service()->getIssuableByBatchIds($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function sendEmailForPaymentLinkService()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->sendEmailForPaymentLinkService($input);
 
         return ApiResponse::json($response);
     }

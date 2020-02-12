@@ -9,29 +9,28 @@ use RZP\Models\Admin\Permission;
 
 trait WorkflowTrait
 {
-    private function createWorkflow(array $input)
+    private function createWorkflow(array $input, string $mode = 'test')
     {
         $defaultAttributes = $this->getDefaultWorkflowArray();
 
         $attributes = array_merge($input, $defaultAttributes);
 
-        $workflow = $this->fixtures->create('workflow', [
+        $workflow = $this->fixtures->on($mode)->create('workflow', [
             'org_id' => $attributes['org_id'],
             'name'   => $attributes['name']
             ]);
 
-        $permissions = (new Permission\Repository)
-            ->retrieveIdsByNames($attributes['permissions']);
+        $permissions = (new Permission\Repository)->retrieveIdsByNames($attributes['permissions']);
 
         $workflow->permissions()->sync($permissions);
 
-        $this->createWorkflowSteps($workflow->getId(), $attributes['levels']);
+        $this->createWorkflowSteps($workflow->getId(), $attributes['levels'], $mode);
 
         return $workflow;
 
     }
 
-    private function createWorkflowSteps($workflowId, array $levels)
+    private function createWorkflowSteps($workflowId, array $levels, string $mode = 'test')
     {
         foreach ($levels as $level)
         {
@@ -47,7 +46,7 @@ trait WorkflowTrait
             {
                 $step = array_merge($data, $step);
 
-                $this->fixtures->create('workflow_step', $step);
+                $this->fixtures->on($mode)->create('workflow_step', $step);
             }
         }
     }
@@ -99,9 +98,9 @@ trait WorkflowTrait
      * @param string $token
      * @return mixed
      */
-    private function approveWorkflowAction($workflowActionId)
+    private function approveWorkflowAction($workflowActionId, $mode = 'test')
     {
-        $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
+        $this->ba->adminAuth($mode, Org::CHECKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
 
         $request = [
             'method'    => 'POST',

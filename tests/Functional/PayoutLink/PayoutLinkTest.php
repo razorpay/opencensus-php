@@ -70,6 +70,7 @@ class PayoutLinkTest extends TestCase
     const CANCEL                = 'cancel';
     const FUND_ACCOUNTS         = 'fund-accounts';
     const INITIATE              = 'initiate';
+    const STATUS                = 'status';
 
     public function setUp()
     {
@@ -1153,6 +1154,21 @@ class PayoutLinkTest extends TestCase
         $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::INITIATE);
 
         $this->startTest();
+    }
+
+    public function testPayoutLinkStatusApi()
+    {
+        $this->ba->publicAuth();
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::STATUS);
+
+        $this->startTest();
+
     }
 
     public function testPayoutAmountAboveLimitFailsCreation()

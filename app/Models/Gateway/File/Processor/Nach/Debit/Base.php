@@ -14,10 +14,12 @@ abstract class Base extends Nach\Base
     public function fetchEntities(): PublicCollection
     {
         $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
-            ->getTimestamp();
+                        ->addHours(9)
+                        ->getTimestamp();
 
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-            ->getTimestamp();
+                      ->addHours(9)
+                      ->getTimestamp();
 
         $tokens = $this->repo->token->fetchPendingNachDebit( static::GATEWAY, $begin, $end);
 

@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Report;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class ReportingTest extends TestCase
 {
@@ -44,6 +43,11 @@ class ReportingTest extends TestCase
 
     public function testReportXDashboardAuth()
     {
+        // This is required, because this is going to on board the merchant on X on the test mode
+        // which requires the terminal entity to be present
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+                                ['merchant_id' => '100000Razorpay']);
+
         $this->ba->proxyAuth();
 
         $this->startTest();
