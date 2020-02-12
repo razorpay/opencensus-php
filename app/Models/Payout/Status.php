@@ -208,6 +208,8 @@ class Status
      *
      * @param string      $currentStatus
      * @param string|null $previousStatus
+     *
+     * @throws BadRequestValidationFailureException
      */
     public static function validateStatusUpdate(string $currentStatus, string $previousStatus = null)
     {
