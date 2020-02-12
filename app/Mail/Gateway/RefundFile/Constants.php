@@ -45,6 +45,7 @@ class Constants extends Base\Constants
         Gateway::WALLET_PAYUMONEY       => 'Wallet Payumoney refunds',
         Gateway::ISG                    => 'Isg refunds',
         Gateway::PAYLATER_ICICI         => 'Icici Paylater refunds',
+        Gateway::UPI_SBI                => 'UPI SBI Refunds',
     ];
 
     const SUBJECT_MAP = [
@@ -65,6 +66,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_RBL         => 'RBL Netbanking refunds file for ',
         Gateway::ISG                    => 'Isg refunds file for ',
         Gateway::PAYLATER_ICICI         => 'Icici Paylater refunds file for ',
+        Gateway::UPI_SBI                => 'UPI SBI refunds file',
     ];
 
     const MAILTAG_MAP = [
@@ -82,6 +84,7 @@ class Constants extends Base\Constants
         Gateway::WALLET_AIRTELMONEY     => MailTags::AIRTEL_MONEY_REFUNDS_MAIL,
         Gateway::WALLET_PAYUMONEY       => MailTags::PAYU_MONEY_REFUNDS_MAIL,
         Gateway::ISG                    => MailTags::ISG_REFUNDS_MAIL,
+        Gateway::UPI_SBI                => MailTags::UPI_SBI_REFUNDS_MAIL,
     ];
 
     const BODY_MAP = [
@@ -99,6 +102,7 @@ class Constants extends Base\Constants
         Gateway::WALLET_AIRTELMONEY     => 'Please find attached refunds information for AirtelMoney',
         Gateway::WALLET_PAYUMONEY       => 'Please find attached refunds information for PayUMoney',
         Gateway::ISG                    => 'Please find attached refunds file for Isg',
+        Gateway::UPI_SBI                => 'Please find attached refunds file for UPI SBI',
     ];
 
     const MAIL_TEMPLATE_MAP = [
@@ -110,11 +114,12 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_ALLAHABAD   => 'emails.message',
         Gateway::NETBANKING_ICICI       => 'emails.admin.icici_refunds',
         Gateway::PAYLATER_ICICI         => 'emails.admin.paylater_icici_refunds',
-        Gateway::NETBANKING_IBK       => 'emails.admin.ibk_refunds',
+        Gateway::NETBANKING_IBK         => 'emails.admin.ibk_refunds',
         Gateway::UPI_ICICI              => 'emails.message',
         Gateway::WALLET_AIRTELMONEY     => 'emails.message',
         Gateway::WALLET_PAYUMONEY       => 'emails.message',
         GATEWAY::NETBANKING_CANARA      => 'emails.message',
         Gateway::ISG                    => 'emails.message',
+        Gateway::UPI_SBI                => 'emails.message',
     ];
 }

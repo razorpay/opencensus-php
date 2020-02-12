@@ -417,10 +417,15 @@ class OAuth
 
         $accountId = $this->accountId ?: $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
 
+        $accountId =  $accountId ?: $this->request->query(BasicAuth::ACCOUNT_ID);
+
         if (empty($accountId) === true)
         {
             return null;
         }
+
+        // remove account Id in query Params, if sent.
+        $this->request->query->remove(BasicAuth::ACCOUNT_ID);
 
         if ($partnerMerchant->isFeatureEnabled(Feature\Constants::AGGREGATOR_OAUTH_CLIENT) === false)
         {

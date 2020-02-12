@@ -1251,6 +1251,8 @@ class MerchantBankingInvoiceTest extends TestCase
 
     public function testBankingInvoiceDownloadFromAdminDashboard()
     {
+        $this->markTestSkipped();
+
         $this->setupBankingInvoice();
 
         $this->ba->adminAuth();
@@ -1442,7 +1444,9 @@ class MerchantBankingInvoiceTest extends TestCase
 
     public function testBankingInvoiceEmailFromAdminDashboard()
     {
-       $this->setupBankingInvoice();
+        $this->markTestSkipped();
+
+        $this->setupBankingInvoice();
 
         $this->ba->adminAuth();
 

@@ -25,6 +25,7 @@ class CardPaymentService
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
     const X_RAZORPAY_MODE_HEADER   = 'X-Razorpay-Mode';
     const X_REQUEST_ID             = 'X-Request-ID';
+    const X_RZP_TESTCASE_ID        = 'X-RZP-TESTCASE-ID';
 
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
@@ -128,6 +129,8 @@ class CardPaymentService
             self::X_RAZORPAY_APP_HEADER    => 'api',
         ];
 
+
+
         return $headers;
     }
 
@@ -224,6 +227,16 @@ class CardPaymentService
                 self::X_REQUEST_ID             => $this->app['request']->getId(),
             ],
         ];
+
+        if ($this->app->environment('production') === false)
+        {
+            $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
+
+            if (empty($testCaseId) === false)
+            {
+                $request['headers'][self::X_RZP_TESTCASE_ID] = $testCaseId;
+            }
+        }
 
         $this->traceRequest($request);
 
@@ -556,6 +569,10 @@ class CardPaymentService
         if (empty($error['gateway_error_code']) === false)
         {
             $this->handleGatewayErrors($error, $response);
+        }
+        else if ($errorCode !== '')
+        {
+            throw new Exception\BadRequestException($errorCode);
         }
         else
         {
