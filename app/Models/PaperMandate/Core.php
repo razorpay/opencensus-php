@@ -55,6 +55,8 @@ class Core extends Base\Core
 
         $paperMandate->merchant()->associate($this->merchant);
 
+        $paperMandate->getValidator()->validateCustomer($customer);
+
         $paperMandate->customer()->associate($customer);
 
         $this->setDefaultValuesForPaperMandate($paperMandate);
@@ -64,6 +66,8 @@ class Core extends Base\Core
         $paperMandate->build($input);
 
         $bankAccount = $this->createBankAccount($input[Entity::BANK_ACCOUNT], $customer);
+
+        $paperMandate->getValidator()->validateBankAccount($bankAccount);
 
         $paperMandate->bankAccount()->associate($bankAccount);
 

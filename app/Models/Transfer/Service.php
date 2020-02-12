@@ -190,7 +190,7 @@ class Service extends Base\Service
     public function fetchLinkedAccountTransferByPaymentId(string $paymentId, array $input = []): array
     {
 
-        if (self::checkIsRazorxFlagEnabled() and $this->merchant->isDisplayParentPaymentId())
+        if ($this->merchant->isDisplayParentPaymentId() === true)
         {
             (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
@@ -334,25 +334,13 @@ class Service extends Base\Service
         $transferData[Transfer\Entity::NOTES] = $result[Payment\Entity::NOTES];
 
 
-        if (self::checkIsRazorxFlagEnabled() and  $merchant->isDisplayParentPaymentId())
+        if ($merchant->isDisplayParentPaymentId() === true)
         {
 
             $transferData[Transfer\Entity::PARENT_PAYMENT_ID] = $payment->transfer->parentpaymentId;
         }
 
         return $transferData;
-    }
-
-    private function  checkIsRazorxFlagEnabled() : bool
-    {
-        $app = $this->app;
-
-        $variant = $app['razorx']->getTreatment($this->merchant->getId(),
-            Merchant\RazorxTreatment::DISPLAY_PARENT_PAYMENT_ID,
-            $app['basicauth']->getMode()
-        );
-
-        return strtolower($variant) === 'on';
     }
 
     public function processPendingOrderTransfers()

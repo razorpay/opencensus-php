@@ -628,6 +628,11 @@ class Core extends Base\Core
             'failure_reason'    => $fta->getFailureReason(),
         ] + $extraInfo;
 
+        if (isset($ftaData['return_utr']) === true)
+        {
+            $ftaData += [ 'return_utr' => $ftaData['return_utr'] ];
+        }
+
         $this->sourceReconByFta($fta->source, $ftaData);
 
         if (($fta->getSourceType() === Type::PAYOUT) and

@@ -94,7 +94,7 @@ class UserRolesScope
             'create_submerchant_user'             => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
             // Merchant user routes
-            'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+            'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 
             //2fa
             'merchant_2fa_change_setting' => [Role::OWNER],

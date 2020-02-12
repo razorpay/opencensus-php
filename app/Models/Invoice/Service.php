@@ -5,10 +5,12 @@ namespace RZP\Models\Invoice;
 use Mail;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -217,7 +219,27 @@ class Service extends Base\Service
 
     public function cancelInvoicesOfBatch(string $batchId)
     {
-        $batch = (new Batch\Service())->fetchBatchById($batchId);
+        $batch = [];
+
+        if ($this->auth->isAdminAuth() === true)
+        {
+            $batch = (new Batch\Service())->fetchBatchById($batchId);
+        }
+        else
+        {
+            $batch = (new Batch\Service())->getBatchById($batchId, $this->merchant);
+        }
+
+        if ($batch === [])
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                null,
+                [
+                    'batch_id'      => $batchId,
+                ]
+            );
+        }
 
         return $this->core->cancelInvoicesOfBatch($batch);
     }
@@ -358,6 +380,24 @@ class Service extends Base\Service
     public function expireInvoices(): array
     {
         return $this->core->expireInvoices();
+    }
+
+    public function deleteInvoices($input): array
+    {
+        $limit = $input['limit'] ?? 5000;
+
+        $merchantIds = $input['merchant_ids'] ?? [];
+
+        if (empty($merchantIds) === true)
+        {
+            return [];
+        }
+
+        $hours = $input['hours'] ?? 24;
+
+        $pastTime = Carbon::now()->subHours($hours)->getTimestamp();
+
+        return $this->core->deleteInvoices($pastTime, $merchantIds, $limit);
     }
 
     public function sendNotificationsInBulk(): array

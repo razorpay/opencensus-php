@@ -108,4 +108,13 @@ class IinController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getIinDetails()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getIinDetails($input);
+
+        return ApiResponse::json($data);
+    }
 }

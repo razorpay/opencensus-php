@@ -17,6 +17,13 @@ trait PaymentAxisMigsTrait
 
         if ($mock)
         {
+            if ($this->isOtpCallbackUrl($url) === true)
+            {
+                $this->otpFlow = true;
+
+                return $this->makeOtpCallback($url);
+            }
+
             $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
         }
         else

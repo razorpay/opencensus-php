@@ -39,6 +39,7 @@ class MerchantBankingInvoiceTest extends TestCase
                                          'merchant_id' => '10000000000000',
                                          'type'        => 'banking',
                                          'balance'     => 100000,
+                                         'account_number' => '2224440041626905',
                                      ]);
 
         $this->fixtures->create(
@@ -59,6 +60,27 @@ class MerchantBankingInvoiceTest extends TestCase
             ]);
 
         return $x['id'];
+    }
+
+    protected function setupBankingInvoice()
+    {
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year,'merchant_ids' => ['10000000000000']],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return [$content, $balanceId];
     }
 
     protected function createDataForBankingInvoiceWithFailedPayoutsInGivenMonthAndYear()
@@ -148,7 +170,6 @@ class MerchantBankingInvoiceTest extends TestCase
 
         return [$y['id'], $w['id'] ,$z['id']];
     }
-
 
     //Basic Banking Invoice Test
     public function testBankingInvoiceEntityCreateForGivenMonthYear()
@@ -1203,21 +1224,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
     public function testInvoiceNumberFormat()
     {
-        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
-
-        Carbon::setTestNow($oldDateTime);
-
-        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
-
-        $this->ba->appAuth();
-
-        $request = [
-            'url'     => '/merchants/invoice/create',
-            'method'  => 'POST',
-            'content' => ['month' => $oldDateTime->month, 'year' => $oldDateTime->year,'merchant_ids' => ['10000000000000']],
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
+        $this->setupBankingInvoice();
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
@@ -1236,8 +1243,25 @@ class MerchantBankingInvoiceTest extends TestCase
             }
         }
 
-        $this->assertEquals('10000000000-' . '07' . substr($oldDateTime->year,2,2),
+        $this->assertEquals('10000000000-' . '07' . substr(2019, 2, 2),
                             $invoiceEntity['invoice_number']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testBankingInvoiceDownloadFromAdminDashboard()
+    {
+        $this->markTestSkipped();
+
+        $this->setupBankingInvoice();
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->startTest();
 
         Carbon::setTestNow();
     }
@@ -1406,6 +1430,23 @@ class MerchantBankingInvoiceTest extends TestCase
     public function testMerchantInvoiceFetchFromAdminDashboardWhenMonthIsGivenWithoutYearAndMerchantId()
     {
         $this->setUpForMerchantInvoiceFetch();
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testBankingInvoiceEmailFromAdminDashboard()
+    {
+        $this->markTestSkipped();
+
+        $this->setupBankingInvoice();
 
         $this->ba->adminAuth();
 

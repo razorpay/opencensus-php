@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
+use Mail;
 use Excel;
 use Mockery;
 use Carbon\Carbon;
@@ -27,6 +28,7 @@ use RZP\Gateway\Upi\Sbi\Status as SbiStatus;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class UpiSbiGatewayTest extends TestCase
 {
@@ -527,6 +529,7 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testRefundFileFlow()
     {
+        Mail::fake();
         $payments = [];
 
         // Create 3 payments
@@ -587,6 +590,8 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals('file_store', $file['entity']);
         $this->assertEquals('SBI_UPI_' . $time .'.csv', $file['location']);
         $this->assertEquals('SBI_UPI_' . $time, $file['name']);
+
+        Mail::assertQueued(RefundFileMail::class);
     }
 
     public function testUpiResponseAssertionFailure()

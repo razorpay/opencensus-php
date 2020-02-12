@@ -75,7 +75,7 @@ class SalesForceClient
         return $accessToken;
     }
 
-    public function fetchAccountDetails()
+    public function fetchAccountDetails($input)
     {
         $accessToken = $this->fetchAccessToken();
 
