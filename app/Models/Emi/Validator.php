@@ -54,6 +54,7 @@ class Validator extends Base\Validator
         $params = [
             Entity::MERCHANT_ID => $newEmiPlan->getMerchantId(),
             Entity::DURATION    => $newEmiPlan->getDuration(),
+            Entity::TYPE        => $newEmiPlan->getType(),
         ];
 
         if ($newEmiPlan->getNetwork() === null)
