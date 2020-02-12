@@ -570,6 +570,10 @@ class CardPaymentService
         {
             $this->handleGatewayErrors($error, $response);
         }
+        else if ($errorCode !== '')
+        {
+            throw new Exception\BadRequestException($errorCode);
+        }
         else
         {
             throw new Exception\LogicException(

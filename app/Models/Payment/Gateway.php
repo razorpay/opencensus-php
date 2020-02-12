@@ -1014,6 +1014,10 @@ class Gateway
         ],
         self::PAYSECURE => [
             Network::RUPAY,
+        ],
+        self::MPI_BLADE => [
+            Network::MC,
+            Network::VISA
         ]
     ];
 

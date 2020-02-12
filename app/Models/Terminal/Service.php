@@ -389,11 +389,7 @@ class Service extends Base\Service
 
         try
         {
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_QUEUE_REQUEST_STARTED, $data);
-
             TerminalsServiceSyncJob::dispatch($this->mode, $terminal->getId());
-
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_QUEUE_REQUEST_SUCCESS, $data);
         }
         catch (\Exception $exception)
         {
