@@ -355,6 +355,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerHyperVerge();
 
         $this->registerFreshdeskTicketService();
+
+        $this->registerTerminalsService();
     }
 
     /**
@@ -404,7 +406,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'mozart',
             'hubspot',
             'salesforce',
-            'freshdesk_client'
+            'freshdesk_client',
+            'terminals_service',
         ];
     }
 
@@ -908,5 +911,21 @@ class ApiServiceProvider extends BaseServiceProvider
 
             return new FreshDeskTicketClient($app);
         });
+    }
+
+    protected function registerTerminalsService()
+    {
+        $this->app->singleton('terminals_service', function ($app)
+        {
+            $terminalsServiceMock = $app['config']->get('applications.terminals_service.mock');
+
+            if ($terminalsServiceMock === true)
+            {
+                return new Mock\TerminalsService($app);
+            }
+
+            return new TerminalsService($app);
+        });
+
     }
 }

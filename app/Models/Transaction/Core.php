@@ -1557,7 +1557,7 @@ class Core extends Base\Core
         {
             //TODO: remove hardcoding of balance type to primary, for future use cases
             $negativeLimit = -1 * (new Balance\Core)->getMaximumNegativeAllowedForBalanceType($txn->merchant,
-                    $this->merchantBalance->getType(), $txn->getType());
+                    Balance\Type::PRIMARY, $txn->getType());
         }
 
         $startTime = microtime(true);
