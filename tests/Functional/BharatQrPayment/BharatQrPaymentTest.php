@@ -547,6 +547,8 @@ class BharatQrPaymentTest extends TestCase
 
         $qrCodeId = substr($this->qrCode['id'], 3);
 
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn ; 
         $request['content']['merchantTranId'] = $qrCodeId;
 
         $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
@@ -577,6 +579,10 @@ class BharatQrPaymentTest extends TestCase
         $this->assertNotNull($upi['payment_id']);
 
         $this->assertEquals($bharatQr['expected'], true);
+
+        //Check RRN capture
+        $this->assertEquals($rrn, $payment['npic_reference_id']);
+        $this->assertEquals($rrn, $payment['refernce16']);
     }
 
     public function testUpiQrPaymentProcessForFailedPayment()

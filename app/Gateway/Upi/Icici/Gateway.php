@@ -86,11 +86,26 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::AUTHENTICATE);
 
+        // if ($this->isBharatQrPayment() === true)
+        // {
+        //     $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
+
+        //     return null;
+        // }
+
         if ($this->isBharatQrPayment() === true)
         {
-            $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
+            $paymentData = $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
 
-            return null;
+            //put a comment for hack
+            $input[Fields::ORIGINAL_BANK_RRN_REQ] =  $input[Fields::BANK_RRN];
+            // return null;
+            //return RRN 
+            return [
+                'acquirer' => [
+                    Payment\Entity::REFERENCE16 => $paymentData->getNpciReferenceId(),
+                ]
+            ];
         }
 
         if ((isset($input['upi']['flow']) === true) and
