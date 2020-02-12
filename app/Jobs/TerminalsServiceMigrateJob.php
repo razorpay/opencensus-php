@@ -34,8 +34,6 @@ class TerminalsServiceMigrateJob extends Job
 
             (new Terminal\Service)->migrateTerminal($terminal);
 
-            $this->delete();
-
             $this->trace->info(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_SUCCESS, $data);
 
         }
@@ -49,7 +47,7 @@ class TerminalsServiceMigrateJob extends Job
         }
         finally
         {
-
+            $this->delete();
         }
     }
 }

@@ -75,13 +75,15 @@ class TerminalsService
         return $this->parseAndReturnResponse($response);
     }
 
-    protected function sendRequest(string $path, array $content, string $method = Requests::POST): \Requests_Response
+    protected function sendRequest(string $path, array $content, string $method): \Requests_Response
     {
         $url = $this->getBaseUrl($this->mode) . $path;
 
         $headers = $this->getHeaders();
 
         $options = $this->getOptions();
+
+        $content = json_encode($content);
 
         try
         {
@@ -145,14 +147,14 @@ class TerminalsService
     protected function getHeaders()
     {
         return [
-            self::CONTENT_TYPE      => 'Application/json',
+            self::CONTENT_TYPE      => 'application/json',
         ];
     }
 
     protected function getOptions()
     {
         $auth = [
-            'api',
+            'api_user',
             $this->getPassword(),
 
         ];
