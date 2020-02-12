@@ -565,9 +565,10 @@ class BharatQrPaymentTest extends TestCase
 
         //Created Qr Entity As Expected
         $bharatQr = $this->getLastEntity('bharat_qr', true);
-
+        
         // Payment is automatically captured
         $payment = $this->getLastEntity('payment', true);
+        
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(10000, $payment['amount']);
@@ -581,8 +582,8 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals($bharatQr['expected'], true);
 
         //Check RRN capture
-        $this->assertEquals($rrn, $payment['npic_reference_id']);
-        $this->assertEquals($rrn, $payment['refernce16']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
     }
 
     public function testUpiQrPaymentProcessForFailedPayment()
