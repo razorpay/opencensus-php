@@ -93,7 +93,7 @@ class FirstDataGatewayFileTest extends TestCase
                             {
                                 $this->assertEquals('firstdata_pares_data_push', $pushData['job_name']);
 
-                                $this->assertEquals(1, count($pushData['files']));
+                                $this->assertEquals(2, count($pushData['files']));
 
                                 return [
                                     'failed' => null,

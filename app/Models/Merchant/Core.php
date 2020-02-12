@@ -3081,6 +3081,10 @@ class Core extends Base\Core
         return new Base\PublicCollection;
     }
 
+    public function getAllMerchantIds($input): Base\PublicCollection
+    {
+        return $this->repo->merchant->fetchAllMerchantIDs($input);
+    }
     /**
      * @return array
      */

@@ -7,9 +7,12 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Settings;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Currency\Currency;
+use RZP\Exception\BadRequestException;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 /**
@@ -254,25 +257,32 @@ class Entity extends Base\PublicEntity
      * @throws Exception\LogicException
      * @throws Exception\BadRequestException
      */
-    public function updateBalance($txn, bool $negativeBalanceEnabled = false)
+    public function updateBalance($txn, int $negativeLimit = 0)
     {
         $amount = $txn->getNetAmount();
 
         $this->addAmount($amount);
 
-        if (($negativeBalanceEnabled === false) and
+        $data = [
+            'balance'     => $this->toArray(),
+            'amount'      => $amount,
+            'transaction' => $txn->getId(),
+        ];
+
+        if (($negativeLimit === 0) and
             ($this->getBalance() < 0))
         {
-                $data = [
-                    'balance'     => $this->toArray(),
-                    'transaction' => $txn->toArray(),
-                    'amount'      => $amount
-                ];
+            throw new Exception\LogicException(
+                'Something very wrong is happening! Balance is going negative',
+                null,
+                $data);
+        }
+        else if ($this->getBalance() < $negativeLimit)
+        {
+            $data['message'] = TraceCode::getMessage(TraceCode::NEGATIVE_BALANCE_BREACHED);
 
-                throw new Exception\LogicException(
-                    'Something very wrong is happening! Balance is going negative',
-                    null,
-                    $data);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED, abs($amount),
+                $data);
         }
     }
 
@@ -304,16 +314,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
-    public function subtractRefundCredits($amount, $negativeBalanceEnabled = false)
+    public function subtractRefundCredits($amount, int $negativeLimit = 0)
     {
         $credits = $this->getRefundCredits();
 
         $credits -= $amount;
 
-        if ($negativeBalanceEnabled === false)
-        {
-            assertTrue($credits >= 0);
-        }
+        assertTrue($credits >= $negativeLimit);
 
         $this->setAttribute(self::REFUND_CREDITS, $credits);
     }

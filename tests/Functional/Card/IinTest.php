@@ -167,6 +167,52 @@ class IinTest extends TestCase
         $this->assertArrayNotHasKey('atm_pin_auth', $response);
     }
 
+    public function testGetPaymentFlowsFromIinDetailsEndpoint()
+    {
+        $this->testAddIin();
+
+        $this->ba->publicAuth();
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+            'iframe'       => '1',
+        ];
+
+        $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'charge_at_will']);
+
+        $this->startTest();
+    }
+
+    public function testGetPaymentFlowsEmptyResponseFromIinDetailsEndpoint()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetPaymentOtpFlowFromIinDetailsEndpoint()
+    {
+        $this->testAddIin();
+
+        $this->ba->publicAuth();
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+        ];
+
+        $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('atm_pin_auth', $response);
+    }
+
     public function testGetIins()
     {
         $this->ba->adminAuth();
@@ -285,6 +331,37 @@ class IinTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetCardPaymentFlowAndIinDetails()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCardPaymentFlowAndIinDetailsWithEmiNotEnabled()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->edit('iin', 401200, ['emi' => false]);
+
+        $this->startTest();
+    }
+
+    public function testGetCardPaymentFlowAndIinDetailsWithHdfcDebitIin()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->edit('iin', 401200, [
+            'emi'     => false,
+            'issuer'  => 'HDFC',
+            'type'    => 'debit',
+        ]);
+
+        $this->startTest();
+    }
+
+
 
     public function testGetInnsListWithFeatures()
     {

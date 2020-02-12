@@ -4,10 +4,9 @@ namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Role;
 use RZP\Jobs\MerchantSync;
-use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
@@ -196,5 +195,47 @@ class Core extends Base\Core
         }
 
         return $allMerchantIds;
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array           $groupIds
+     *
+     * @return array
+     */
+    public function removeMerchantFromGroups(Merchant\Entity $merchant, array $groupIds)
+    {
+        $this->trace->info(TraceCode::MERCHANT_GROUP_DETACH_REQUEST,
+                           [
+                               'action'   => 'detach_in_merchant_map',
+                               'merchantId' => $merchant->getId(),
+                               'groupIds' => $groupIds,
+                           ]
+        );
+
+        $this->repo->detach($merchant, 'groups', $groupIds);
+
+        return $merchant->toArrayPublic();
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array           $groupIds
+     *
+     * @return array
+     */
+    public function addMerchantToGroups(Merchant\Entity $merchant, array $groupIds)
+    {
+        $this->trace->info(TraceCode::MERCHANT_GROUP_ATTACH_REQUEST,
+                           [
+                               'action'   => 'attach_in_merchant_map',
+                               'merchantId' => $merchant->getId(),
+                               'groupIds' => $groupIds,
+                           ]
+        );
+
+        $this->repo->sync($merchant, 'groups', $groupIds,false);
+
+        return $merchant->toArrayPublic();
     }
 }
