@@ -893,17 +893,7 @@ class Core extends Base\Core
 
     public function updateBalances(Transaction\Entity $txn, $updateNodalBalance = true)
     {
-        $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txn->getType(),
-                                                                                    $txn->merchant->getId());
-
-        $negativeLimit = 0;
-
-        if ($negativeBalanceEnabled === true)
-        {
-            //TODO: remove hardcoding of balance type to primary, for future use cases
-            $negativeLimit = -1 * (new Balance\Core)->getMaximumNegativeAllowedForBalanceType($txn->merchant,
-                    Balance\Type::PRIMARY, $txn->getType());
-        }
+        $negativeLimit = (new Balance\Core)->getNegativeLimit($txn);
 
         $txn = $this->updateMerchantBalance($txn, $negativeLimit);
 
@@ -1548,17 +1538,7 @@ class Core extends Base\Core
 
         $processor->setTransaction($txn);
 
-        $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txn->getType(),
-                                                                                              $txn->merchant->getId());
-
-        $negativeLimit = 0;
-
-        if ($negativeBalanceEnabled === true)
-        {
-            //TODO: remove hardcoding of balance type to primary, for future use cases
-            $negativeLimit = -1 * (new Balance\Core)->getMaximumNegativeAllowedForBalanceType($txn->merchant,
-                    Balance\Type::PRIMARY, $txn->getType());
-        }
+        $negativeLimit = (new Balance\Core)->getNegativeLimit($txn);
 
         $startTime = microtime(true);
 

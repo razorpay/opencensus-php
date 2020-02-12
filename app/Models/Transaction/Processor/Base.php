@@ -121,17 +121,7 @@ abstract class Base extends BaseCore
         // updates entity specific attributes in transaction
         $this->updateTransaction();
 
-        $negativeBalanceEnabled =  (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($this->txn->getType(),
-                                                                                        $this->txn->merchant->getId());
-
-        $negativeLimit = 0;
-
-        if ($negativeBalanceEnabled === true)
-        {
-            //TODO: remove hardcoding of balance type to primary, for future use cases
-            $negativeLimit = -1 * (new Balance\Core)->getMaximumNegativeAllowedForBalanceType($this->txn->merchant,
-                    Balance\Type::PRIMARY, $this->txn->getType());
-        }
+        $negativeLimit = (new Balance\Core)->getNegativeLimit($this->txn);
 
         if ($this->shouldUpdateBalance() === true)
         {

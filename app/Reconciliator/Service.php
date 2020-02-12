@@ -203,9 +203,16 @@ class Service extends Base\Service
                     continue;
                 }
 
-                if (empty($response[$paymentId][$field]) === true)
+                //
+                // Overwrite the data in two cases :
+                // 1. Existing CPS data is empty.
+                // 2. For gateway_transaction_id mismatch, we want to
+                //    replace the data, as confirmed by CPS team.
+                //    Ref : https://razorpay.slack.com/archives/C847BUR61/p1578048952001800
+                //
+                if ((empty($response[$paymentId][$field]) === true) or
+                    ($field === Constants::GATEWAY_TRANSACTION_ID))
                 {
-                    // Existing CPS data is empty, Overwrite it
                     $pushData[$field] = $misParams[$field];
                 }
                 else if (trim($response[$paymentId][$field]) !== $misParams[$field])
