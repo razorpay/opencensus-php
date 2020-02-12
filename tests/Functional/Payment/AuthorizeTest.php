@@ -152,6 +152,9 @@ class AuthorizeTest extends TestCase
             ->with(ConfigKey::DISABLE_MAGIC)
             ->andReturn(true);
 
+        Cache::shouldReceive('get')
+            ->andReturn(true);
+
         $this->startTest();
     }
 
