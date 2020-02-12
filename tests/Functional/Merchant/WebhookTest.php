@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use Mail;
+use Cache;
 use Closure;
 use Mockery;
 use Carbon\Carbon;
@@ -839,14 +840,37 @@ class WebhookTest extends TestCase
                 'events'      => ['payment.created' => "1"]
             ]);
 
-        $inferno = $this->mockInferno();
+        $this->ba->privateAuth();
 
-        $payment = $this->getDefaultPaymentArray();
+        $this->mockCardVault();
+
+        $inferno = $this->mockInferno();
 
         $inferno->shouldReceive('fire')
             ->once();
 
-        $this->doS2SPrivateAuthPayment($payment);
+        $this->doS2SPrivateAuthPayment();
+    }
+
+    public function testWebhookPaymentCreatedForS2SPrivateAuthJson()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->createMerchantWebhook(
+            [
+                'events'      => ['payment.created' => "1"]
+            ]);
+
+        $this->ba->privateAuth();
+
+        $this->mockCardVault();
+
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldReceive('fire')
+            ->once();
+
+        $this->doS2SPrivateAuthJsonPayment();
     }
 
     public function testOrderPaidWebhookEventData()

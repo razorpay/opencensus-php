@@ -346,11 +346,18 @@ class Processor
 
     protected function eventPaymentCreated()
     {
-        $eventPayload = [
-            ApiEventSubscriber::MAIN => $this->payment,
-        ];
+        $cacheKey = 'EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
 
-        $this->app['events']->fire('api.payment.created', $eventPayload);
+        if ($this->cache->get($cacheKey) === null or $this->cache->get($cacheKey) === false)
+        {
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $this->payment,
+            ];
+
+            $this->app['events']->fire('api.payment.created', $eventPayload);
+
+            $this->cache->put($cacheKey, true, 3600);
+        }
     }
 
     protected function appendMetadataForPayment(array & $input)
