@@ -2970,19 +2970,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $data = $this->toArray();
 
+        if (($this->isCard()) and
+            ($this->paymentMeta()->exists === true))
+        {
+            $data['amount'] = $this->getGatewayAmount();
+            $data['currency'] = $this->getGatewayCurrency();
+        }
+
         if (($this->isCard() === true) and
             ($this->getConvertCurrency() === true))
         {
             $data['amount'] = $this->getBaseAmount();
             $data['currency'] = Currency\Currency::INR;
             $data['amount_refunded'] = $this->getBaseAmountRefunded();
-        }
-
-        if (($this->isCard()) and
-            ($this->paymentMeta->exists === true))
-        {
-            $data['amount'] = $this->getGatewayAmount();
-            $data['currency'] = $this->getGatewayCurrency();
         }
 
         return $data;

@@ -492,7 +492,7 @@ class Processor
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_REQUEST_DATA, null,
                     [
                         'currency_request_id' => $dccCurrencyRequestId,
-                        'dcc_currency' => $dccCurrency,
+                        'dcc_currency'        => $dccCurrency,
                     ]);
             }
             else if ($requestedCurrencyData['amount'] !== $dccAmount){
