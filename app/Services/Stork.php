@@ -106,13 +106,14 @@ class Stork
             [],
             // Options and authentication for requests.
             [
-                'timeout' => 0.35, // Request to stork gets timed out after this
+                'connect_timeout' => 0.35, // Request to stork gets timed out after this
                 'auth' => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
             ]);
     }
 
     public function request(string $path, array $payload): Requests_Response
     {
+
         // Just for tests!
         if ($this->mock === true)
         {
@@ -125,6 +126,7 @@ class Stork
         try
         {
             $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload));
+
         }
         catch (Throwable $e)
         {
@@ -132,8 +134,6 @@ class Stork
 
             $res = $this->retryStorkRequest($exception, $path, $payload, $res);
         }
-
-        $this->throwStorkException($exception, $res, $path);
 
         return $res;
     }
