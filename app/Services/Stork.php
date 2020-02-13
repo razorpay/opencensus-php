@@ -106,7 +106,7 @@ class Stork
             [],
             // Options and authentication for requests.
             [
-                'connect_timeout' => 35, // Request to stork gets timed out after this
+                'connect_timeout' => 0.35, // Request to stork gets timed out after this
                 'auth' => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
             ]);
     }
