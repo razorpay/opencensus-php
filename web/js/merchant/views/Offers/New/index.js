@@ -526,6 +526,12 @@ export default class CreateOfferWizard extends React.Component {
       delete transformed.issuer;
       transformed.payment_network = 'AMEX';
     }
+
+    if (transformed.issuer === 'BAJAJ') {
+      delete transformed.issuer;
+      transformed.payment_network = 'BAJAJ';
+    }
+
     return transformed;
   }
 
