@@ -76,6 +76,7 @@ class Entity extends Base\PublicEntity
     const DIRECT                        = 'direct';
     const STATUS                        = 'status';
     const NOTES                         = 'notes';
+    const SYNC_STATUS                   = 'sync_status';
     const MPAN                          = 'mpan';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
@@ -181,6 +182,7 @@ class Entity extends Base\PublicEntity
         self::VIRTUAL_UPI_ROOT,
         self::VIRTUAL_UPI_MERCHANT_PREFIX,
         self::VIRTUAL_UPI_HANDLE,
+        self::SYNC_STATUS,
     ];
 
     protected $public = [
@@ -231,6 +233,7 @@ class Entity extends Base\PublicEntity
         self::MODE,
         self::STATUS,
         self::NOTES,
+        self::SYNC_STATUS,
         self::CORPORATE,
         self::CAPABILITY,
         self::EXPECTED,
@@ -315,6 +318,7 @@ class Entity extends Base\PublicEntity
         self::MC_MPAN                    => null,
         self::VISA_MPAN                  => null,
         self::RUPAY_MPAN                 => null,
+        self::SYNC_STATUS                => SyncStatus::NOT_SYNCED,
     ];
 
     protected $casts = [
@@ -455,6 +459,11 @@ class Entity extends Base\PublicEntity
     public function getNotes()
     {
         return $this->getAttribute(self::NOTES);
+    }
+
+    public function getSyncStatus()
+    {
+        return $this->getAttribute(self::SYNC_STATUS);
     }
 
     public function getEmiDuration()
@@ -829,6 +838,13 @@ class Entity extends Base\PublicEntity
         return BankingType::getBankingTypes($corporate);
     }
 
+    protected function getSyncStatusAttribute()
+    {
+        $attribute = $this->attributes[self::SYNC_STATUS];
+
+        return SyncStatus::getSyncStatusStringForValue($attribute);
+    }
+
     // ---------------------- END ACCESSORS ----------------------
 
     // ---------------------- MODIFIERS ----------------------
@@ -903,6 +919,11 @@ class Entity extends Base\PublicEntity
             $hex = $this->attributes[self::TYPE];
         }
         $this->attributes[self::TYPE] = Type::getHexValue($type, $hex);
+    }
+
+    protected function setSyncStatusAttribute(string $syncStatusString)
+    {
+        $this->attributes[self::SYNC_STATUS] = SyncStatus::getValueForSyncStatusString($syncStatusString);
     }
 
     protected function getTypeAttribute()

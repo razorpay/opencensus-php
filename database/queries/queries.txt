@@ -5621,3 +5621,7 @@ ALTER TABLE merchant_details
     ADD COLUMN authorized_signatory_residential_address varchar(255) DEFAULT NULL,
     ADD COLUMN authorized_signatory_dob date DEFAULT NULL,
     ADD COLUMN platform varchar(40) DEFAULT NULL;
+
+ALTER TABLE terminals
+    ADD COLUMN `sync_status` tinyint(4) NOT NULL DEFAULT '0',
+    ADD INDEX `terminals_sync_status_index` (`sync_status`);
