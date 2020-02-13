@@ -765,8 +765,8 @@ trait Authorize
                     $response,
                     [
                         'terms' => [
-                            'tnc'      => 'tnc_url',
-                            'schedule' => 'schedule_url',
+                            'tnc'      => 'https://cdn.razorpay.com/static/assets/hdfc/debitemi/tnc.json',
+                            'schedule' => 'https://cdn.razorpay.com/static/assets/hdfc/debitemi/schedule.json',
                         ],
                         'mode' => 'hdfc_debit_emi',
                     ]
