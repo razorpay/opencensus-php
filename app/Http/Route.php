@@ -3464,7 +3464,6 @@ final class Route
         'fund_account_validation_retry'                => Permission::RETRY_FUND_ACCOUNT_VALIDATION,
         'fund_account_validate_fetch'                  => Permission::VIEW_FUND_ACCOUNT_VALIDATION,
         'fund_account_validate_fetch_by_id'            => Permission::VALIDATE_FUND_ACCOUNT,
-        'fund_account_validate_retry_all'              => Permission::RETRY_BULK_FUND_ACCOUNT_VALIDATION,
         'fund_account_get'                             => Permission::VIEW_FUND_ACCOUNT,
         'fund_account_list'                            => Permission::VIEW_FUND_ACCOUNT,
         'fund_account_create'                          => Permission::CREATE_FUND_ACCOUNT,
