@@ -6,15 +6,15 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Status
 {
-    const CREATED           = 'created';
-    const PICKED            = 'picked';
-    const INITIATED         = 'initiated';
-    const PROCESSING        = 'processing';
-    const PROCESSED         = 'processed';
-    const CANCELLED         = 'cancelled';
-    const ACTIVATED         = 'activated';
-    const UNSERVICEABLE     = 'unserviceable';
-    const REJECTED          = 'rejected';
+    const CREATED           = 'created';       // Application Received
+    const PICKED            = 'picked';        // Razorpay Processing
+    const INITIATED         = 'initiated';     // Sent to Bank
+    const PROCESSING        = 'processing';    // Bank Processing
+    const PROCESSED         = 'processed';     // CA Opened
+    const CANCELLED         = 'cancelled';     // Bank Cancelled
+    const ACTIVATED         = 'activated';     // CA Activated
+    const UNSERVICEABLE     = 'unserviceable'; // Temp Unserviceable
+    const REJECTED          = 'rejected';      // Bank Rejected
 
     //
     // Account details can be saved only if the status
