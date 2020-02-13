@@ -22,7 +22,6 @@ export default class NoCostEmiMethods extends React.Component {
     let methodsReq = merchantFetch('merchant/methods');
     methodsReq
       .then(res => {
-        console.log('res', res.data);
         this.setState({
           emiOptions: (res.data && res.data.emi_plans) || null,
           emiOptionsDetails: (res.data && res.data.emi_options) || null,
@@ -74,7 +73,10 @@ export default class NoCostEmiMethods extends React.Component {
 
   renderDuration() {
     let planFields = [];
+
     if (this.state.selectedIssuer !== null) {
+      if (this.state.selectedIssuer.length === 0) return null;
+
       let emiPlans = this.state.emiOptions[this.state.selectedIssuer] || {
         plans: [],
       };
@@ -94,23 +96,30 @@ export default class NoCostEmiMethods extends React.Component {
         let text = `${duration} Months`;
         planFields.push(
           <div class="offers-emi-options-row">
-            <Input.Check
-              fieldLabel={text}
-              onChange={this.onSelectTenure(duration)}
-              defaultValue={
-                (Array.isArray(this.props.emiDurations) &&
-                  this.props.emiDurations.indexOf(parseInt(duration)) > -1) ||
-                false
-              }
-            />
-            {/* <p>{emiMerchantPaybacks[duration].merchant_payback}</p> */}
-            <p style={{ paddingLeft: '15px', paddingTop: '15px' }}>12% Off</p>
+            <div style={{ width: '110px' }}>
+              <Input.Check
+                fieldLabel={text}
+                onChange={this.onSelectTenure(duration)}
+                defaultValue={
+                  (Array.isArray(this.props.emiDurations) &&
+                    this.props.emiDurations.indexOf(parseInt(duration)) > -1) ||
+                  false
+                }
+              />
+            </div>
+            <p>{emiMerchantPaybacks[duration].merchant_payback}</p>
           </div>
         );
       }
     }
     if (planFields.length > 0) {
-      return <div class="offers-emi-options-container">{planFields}</div>;
+      return (
+        <Input.Group label="EMI Tenure">
+          <div class="offers-emi-options-container" required>
+            {planFields}
+          </div>
+        </Input.Group>
+      );
     }
   }
 
@@ -140,6 +149,7 @@ export default class NoCostEmiMethods extends React.Component {
           options={issuers}
           defaultValue={this.props.issuer || ''}
           onChange={this.onChange}
+          required
         />
         {this.renderDuration()}
         <div className="no-cost-emi-footnote">
