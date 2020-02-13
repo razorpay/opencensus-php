@@ -18,6 +18,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
@@ -678,7 +679,16 @@ class Validator extends Base\Validator
 
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
-        if ($amount > $maxAmountAllowed)
+        $currency = $input["currency"];
+
+        $baseAmount = $amount;
+
+        if ($currency != Currency::INR)
+        {
+            $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
+        }
+
+        if (($baseAmount > $maxAmountAllowed) === true)
         {
             $this->trace->count(Metric::PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
                 'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",
