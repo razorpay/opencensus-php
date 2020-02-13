@@ -261,7 +261,16 @@ class Entity extends Base\PublicEntity
     {
         $amount = $txn->getNetAmount();
 
+        $oldBalance = $this->getBalance();
+
         $this->addAmount($amount);
+
+        $newBalance = $this->getBalance();
+
+        if ($newBalance > $oldBalance)
+        {
+            return;
+        }
 
         $data = [
             'balance'     => $this->toArray(),
