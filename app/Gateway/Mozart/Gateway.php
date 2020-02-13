@@ -508,8 +508,9 @@ class Gateway extends Base\Gateway
                 parent::action($input, Action::AUTH_VERIFY);
 
                 $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                    $input['payment']['id'], Action::AUTHORIZE);
+                    $input['payment']['id'], Action::AUTHORIZE)->toArray();
 
+                $gatewayPayment = $gatewayPayment['data'];
                 /*
                  * Merges the array like so:
                  * {
@@ -517,7 +518,7 @@ class Gateway extends Base\Gateway
                  *  "BankReferenceNo": "bank_ref"
                  * }
                  */
-                $input['gateway'] = array_merge($input['gateway'], $gatewayPayment->toArray());
+                $input['gateway'] = array_merge($input['gateway'], $gatewayPayment);
             }
 
             list($response, $attributes) = $this->sendMozartRequestAndGetResponse(
