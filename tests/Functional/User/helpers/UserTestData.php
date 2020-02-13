@@ -1431,7 +1431,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'User authorization token needs to be given.',
+                    'description' => 'The otp auth token field is required.',
                 ],
             ],
             'status_code' => 400,
