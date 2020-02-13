@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Hellofresh\Business\Infrastructure\OpenCensus;
+namespace OpenCensus\Trace\Integrations\Guzzle;
 
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\FulfilledPromise;
