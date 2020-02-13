@@ -142,7 +142,7 @@ class Entity extends Base\PublicEntity
 
     public function getType()
     {
-        return $this->getAttribute(self::TYPE) ?? Type::CREDIT;
+        return $this->getAttribute(self::TYPE);
     }
 
     public function getMethods()
