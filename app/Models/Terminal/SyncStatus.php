@@ -13,13 +13,15 @@ class SyncStatus
 {
 
     const NOT_SYNCED          = 'not_synced';
+    const SYNC_IN_PROGRESS    = 'sync_in_progress';
     const SYNC_SUCCESS        = 'sync_success';
     const SYNC_FAILED         = 'sync_failed';
 
     protected static $values = [
-        self::NOT_SYNCED   => 0,
-        self::SYNC_SUCCESS => 1,
-        self::SYNC_FAILED  => 2,
+        self::NOT_SYNCED       => 0,
+        self::SYNC_IN_PROGRESS => 1,
+        self::SYNC_SUCCESS     => 2,
+        self::SYNC_FAILED      => 3,
     ];
 
     public static function getValueForSyncStatusString(string $syncStatus)

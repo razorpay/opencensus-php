@@ -204,7 +204,7 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::ENABLED)
                   ->default(1);
 
-            $table->integer(Terminal::SYNC_STATUS)
+            $table->tinyInteger(Terminal::SYNC_STATUS)
                   ->default(SyncStatus::getValueForSyncStatusString(SyncStatus::NOT_SYNCED));
 
 
