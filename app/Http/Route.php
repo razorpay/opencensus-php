@@ -3414,6 +3414,9 @@ final class Route
 
     public static $bankingRoutePermissions = [
         // common routes between banking and admin dashboard
+        'balance_fetch'                                => '*',
+        'fetch_merchant_balance_configs'               => '*',
+        'setl_amount'                                  => '*',
         'merchant_balance_fetch'                       => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_edit_config'                         => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_details'                  => '*',
@@ -3514,6 +3517,7 @@ final class Route
         'batch_fetch_by_id'                            => '*',
         'batch_validate_file'                          => '*',
         'batch_download_file'                          => '*',
+        'merchant_partner_configs_fetch'               => '*',
     ];
 
     public static $direct = [
