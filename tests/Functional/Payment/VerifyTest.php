@@ -1372,7 +1372,7 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMock($paymentArray = [])
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex', 'client'])
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex', 'client', 'exists'])
                           ->getMock();
 
         Redis::shouldReceive('connection')
@@ -1390,7 +1390,7 @@ class VerifyTest extends TestCase
         Redis::shouldReceive('incr')
             ->andReturn(1);
 
-         Redis::shouldReceive('expire')
+        Redis::shouldReceive('expire')
             ->andReturn(true);
 
         $redisMock->method('set')->will($this->returnCallback(function ($resourceId, $requestId) use ($paymentArray)
@@ -1421,6 +1421,8 @@ class VerifyTest extends TestCase
                 ->andReturn("control");
 
         $redisMock->method('get')->will($this->returnValue(''));
+
+        $redisMock->method('exists')->will($this->returnValue(0));
     }
 
     protected function setupRedisMockForBlockedGateway($paymentArray = [])
