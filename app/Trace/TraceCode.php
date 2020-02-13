@@ -2237,6 +2237,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_LOAD_SORTING_BOOSTED_TERMINALS                   = 'AUTH_LOAD_SORTING_BOOSTED_TERMINALS';
     const AUTH_RULES_SEARCH_CRITERIA                            = 'AUTH_RULES_SEARCH_CRITERIA';
     const AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP                = 'AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP';
+    const AUTH_SELECTED_TERMINAL                                = 'AUTH_SELECTED_TERMINAL';
 
     const ORG_MAILER_BLOCKED                                    = 'ORG_MAILER_BLOCKED';
     const NO_MERCHANT_CONTEXT_MAIL                              = 'NO_MERCHANT_CONTEXT_MAIL';
@@ -2472,6 +2473,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_REQUEST                                 = 'SMART_ROUTING_REQUEST';
     const SMART_ROUTING_TERMINALS_COUNT_IS_ZERO                 = 'SMART_ROUTING_TERMINALS_COUNT_IS_ZERO';
     const SMART_ROUTING_TERMINALS_MISMATCH                      = 'SMART_ROUTING_TERMINALS_MISMATCH';
+    const SMART_ROUTING_AUTHN_RESPONSE                          = 'SMART_ROUTING_AUTHN_RESPONSE';
+    const SMART_ROUTING_AUTHN_REQUEST_FAILED                    = 'SMART_ROUTING_AUTHN_REQUEST_FAILED';
+    const SMART_ROUTING_AUTHN_PUSH_FAILED                       = 'SMART_ROUTING_AUTHN_PUSH_FAILED';
+    const SMART_ROUTING_REQUEST_AUTHENTICATION                  = 'SMART_ROUTING_REQUEST_AUTHENTICATION';
 
     // Doppler service
     const DOPPLER_SERVICE_SNS_PUBLISH_FAILED                    = 'DOPPLER_SERVICE_SNS_PUBLISH_FAILED';
