@@ -34,13 +34,6 @@ class BalanceConfigTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateBalanceConfigInvalidSmallerNegativeLimit()
-    {
-        $this->setUpCreateRequestFixtures();
-
-        $this->startTest();
-    }
-
     public function testCreateBalanceConfigInvalidGreaterNegativeLimit()
     {
         $this->setUpCreateRequestFixtures();

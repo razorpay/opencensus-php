@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Adjustment\Validator;
 
 return [
     'testCreateReserveBalanceInvalidAmount' => [
@@ -9,7 +10,7 @@ return [
             'url' => '/adjustments',
             'method' => 'POST',
             'content' => [
-                'amount'        =>  50000,
+                'amount'        =>  5000000,
                 'type'          =>  'reserve_primary',
                 'merchant_id'   =>  '100abc000abc00',
                 'currency'      =>  'INR',
@@ -20,7 +21,8 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Reserve Balance Amount should be greater than or equal to 100000',
+                    'description' => 'Reserve Balance Amount should be less than or equal to '
+                        .Validator::MAX_RESERVE_BALANCE_AMOUNT,
                 ],
             ],
             'status_code' => 400,

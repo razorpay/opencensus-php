@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Balance;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Service extends Base\Service

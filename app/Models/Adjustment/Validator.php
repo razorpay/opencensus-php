@@ -17,7 +17,7 @@ use RZP\Models\Settlement\Channel as SettlementChannel;
 class Validator extends Base\Validator
 {
     const FEES = 'fees';
-    const MIN_RESERVE_BALANCE = 100000; // in paise
+    const MAX_RESERVE_BALANCE_AMOUNT = 5000000; //50,000INR
 
     protected static $createRules = [
         Entity::AMOUNT        => 'required|integer',
@@ -65,28 +65,33 @@ class Validator extends Base\Validator
         $this->validateReserveBalance($input);
     }
 
+    /**
+     * @param array $input
+     * @throws Exception\BadRequestValidationFailureException
+     */
     private function validateReserveBalance(array $input)
     {
-        if (isset($input[Balance\Entity::TYPE]) === true)
+        if (isset($input[Balance\Entity::TYPE]) === false)
         {
-            $reserveType = ($input[Entity::TYPE] === Balance\Type::RESERVE_PRIMARY) or
+            return;
+        }
+
+        $reserveType = ($input[Entity::TYPE] === Balance\Type::RESERVE_PRIMARY) or
                             ($input[Entity::TYPE] === Balance\Type::RESERVE_BANKING);
 
-            if ($reserveType === true)
+        if ($reserveType === true)
+        {
+            if (isset($input[Entity::AMOUNT]) === false)
             {
-                if (isset($input[Entity::AMOUNT]) === false)
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'Amount should be passed for reserve balance.');
-                }
+                throw new Exception\BadRequestValidationFailureException(
+                    'Amount should be passed for reserve balance.');
+            }
 
-                $reserveAmountInvalid = $input[Entity::AMOUNT] < self::MIN_RESERVE_BALANCE;
-
-                if ($reserveAmountInvalid === true)
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'Reserve Balance Amount should be greater than or equal to '.self::MIN_RESERVE_BALANCE);
-                }
+            if ($input[Entity::AMOUNT] > self::MAX_RESERVE_BALANCE_AMOUNT)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Reserve Balance Amount should be less than or equal to '
+                    . self::MAX_RESERVE_BALANCE_AMOUNT);
             }
         }
     }

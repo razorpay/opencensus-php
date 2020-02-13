@@ -22,11 +22,6 @@ class AdjustmentTest extends TestCase
         $this->createFixtures();
     }
 
-    public function testCreateReserveBalanceInvalidAmount()
-    {
-        $this->startTest();
-    }
-
     public function testCreateReservePrimaryBalance()
     {
         Mail::fake();

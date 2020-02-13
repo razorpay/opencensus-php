@@ -376,10 +376,15 @@ class Core extends Base\Core
         return true;
     }
 
-    public function getMaximumNegativeAllowedForBalanceType(Merchant\Entity $merchant,
+    protected function getMaximumNegativeAllowedForBalanceType(Merchant\Entity $merchant,
                                                             string $balanceType,
                                                             string $txnType) : int
     {
+        if ((in_array($txnType, self::NEGATIVE_FLOWS[$balanceType]) === false))
+        {
+            return 0;
+        }
+
         $balance = $merchant->getBalanceByTypeOrFail($balanceType);
 
         $reserveAmount = $this->getReserveAmount($merchant, $balanceType);
@@ -583,7 +588,7 @@ class Core extends Base\Core
         if ($negativeBalanceEnabled === true)
         {
             //TODO: remove hardcoding of balance type to primary, for future use cases
-            $negativeLimit = -1 * $this->getMaximumNegativeAllowedForBalanceType($txn->merchant,
+            $negativeLimit = -1 * $this->getMaximumNegativeAllowedForBalanceType($txn->merchant, $txn->source,
                    Type::PRIMARY, $txn->getType());
         }
 

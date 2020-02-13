@@ -12,7 +12,7 @@ return [
             'method'    => 'POST',
             'content'   => [
                 'negative_limit_auto'                => 5000000,
-                'negative_limit_manual'              => 6000000,
+                'negative_limit_manual'              => 5000000,
                 'type'                                => 'primary',
                 'negative_transaction_flows'         => ['transfer', 'refund'],
             ]
@@ -23,7 +23,7 @@ return [
                     'type'                          => 'primary',
                     'negative_transaction_flows'   => ['transfer', 'refund', 'payment'],
                     'negative_limit_auto'           => 5000000,
-                    'negative_limit_manual'         => 6000000
+                    'negative_limit_manual'         => 5000000
             ],
             'status_code' => 201
         ]
@@ -35,7 +35,7 @@ return [
             'method'    => 'POST',
             'content'   => [
                 'negative_limit_auto'          => 5000000,
-                'negative_limit_manual'        => 7000000,
+                'negative_limit_manual'        => 4000000,
                 'type'                          => 'banking',
                 'negative_transaction_flows'   => ['payout'],
             ]
@@ -46,36 +46,10 @@ return [
                         'type'                          => 'banking',
                         'negative_transaction_flows'   => ['payout'],
                         'negative_limit_auto'           => 5000000,
-                        'negative_limit_manual'         => 7000000
+                        'negative_limit_manual'         => 4000000
             ],
             'status_code' => 201
         ]
-    ],
-
-    'testCreateBalanceConfigInvalidSmallerNegativeLimit' => [
-        'request'  => [
-            'url'       => '/balance_configs/100ghi000ghi00',
-            'method'    => 'POST',
-            'content'   => [
-                'negative_limit_auto'                => 5000000,
-                'negative_limit_manual'              => 60000,
-                'type'                                => 'primary',
-                'negative_transaction_flows'         => ['transfer', 'refund'],
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The negative limit manual must be between 500000 and 50000000.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
     ],
 
     'testCreateBalanceConfigInvalidGreaterNegativeLimit' => [
@@ -93,8 +67,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The negative limit manual must be between '
-                        .BalanceConfig\Entity::DEFAULT_MAX_NEGATIVE.' and '.BalanceConfig\Entity::CUSTOM_MAX_NEGATIVE.'.'
+                    'description' => 'BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_LIMIT',
                 ],
             ],
             'status_code' => 400,
@@ -111,7 +84,7 @@ return [
             'method'    => 'POST',
             'content'   => [
                 'negative_limit_auto'               => 5000000,
-                'negative_limit_manual'             => 6000000,
+                'negative_limit_manual'             => 4000000,
                 'type'                               => 'primary',
                 'negative_transaction_flows'        => ['payout'],
             ]
@@ -358,16 +331,15 @@ return [
             'url'       => '/balance_configs/100yz000yz00yz',
             'method'    => 'PATCH',
             'content'   => [
-                'negative_limit_manual'     => 60000,
+                'type'                       => 'primary',
+                'negative_limit_manual'     => 60000000,
             ]
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The negative limit manual must be between '
-                        .BalanceConfig\Entity::DEFAULT_MAX_NEGATIVE.
-                        ' and '.BalanceConfig\Entity::CUSTOM_MAX_NEGATIVE.'.',
+                    'description' => 'BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_LIMIT',
                 ],
             ],
             'status_code' => 400,
