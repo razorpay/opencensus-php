@@ -96,7 +96,7 @@ export default class NoCostEmiMethods extends React.Component {
         let text = `${duration} Months`;
         planFields.push(
           <div class="offers-emi-options-row">
-            <div style={{ width: '110px' }}>
+            <div class="emi-checkfield">
               <Input.Check
                 fieldLabel={text}
                 onChange={this.onSelectTenure(duration)}
