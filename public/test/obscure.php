@@ -273,7 +273,7 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan="40"><b>Card No: </b> </td>
-        <td><input type="text" name="card[number]" value="4160211000148214" size="25" autocomplete="cc-number"></td>
+        <td><input type="text" name="card[number]" value="6084851000501223" size="25" autocomplete="cc-number"></td>
     </tr>
     <tr>
         <td colspan="40">CVV:</td>
@@ -285,7 +285,7 @@ function disableEmptyInputs(form) {
         <td><input type="text" name="card[expiry_year]" value="2020" autocomplete="cc-exp-year"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <td><input type="text" name="amount" size="25" value="400000"></td>
+            <td><input type="text" name="amount" size="25" value="600000"></td>
             <td>
             <select name="currency">
                 <option value="INR">Indian Rupee</option>
