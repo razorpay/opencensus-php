@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
@@ -575,6 +576,18 @@ class Core extends Base\Core
 
     public function getNegativeLimit(Transaction\Entity $txn)
     {
+        if ($txn->getType() === Transaction\Type::PAYMENT)
+        {
+            $payment =  $txn->source;
+
+            $method = $payment->getMethod();
+
+            if ($method !== Payment\Method::EMANDATE)
+            {
+                return 0;
+            }
+        }
+
         $negativeBalanceEnabled =  (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txn->getType(),
                                                                                             $txn->merchant->getId());
 

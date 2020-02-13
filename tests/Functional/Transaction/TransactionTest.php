@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Transaction;
 
 use Carbon\Carbon;
 use RZP\Models\Transaction;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -372,6 +373,16 @@ class TransactionTest extends TestCase
         $this->fixtures->merchant->editBalance('100', '10000000000000');
 
         $oldBalance = $this->getEntityById('balance', '10000000000000', true);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                           ->willReturn('on');
 
         $this->makeRequestAndCatchException(function ()
         {
