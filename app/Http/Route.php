@@ -3367,6 +3367,9 @@ final class Route
         'subscription_registration_resend_links_batch'  => '*',
         'subscription_registration_cancel_links_batch'  => Permission::CANCEL_BATCH,
 
+        'unclaimed_merchant_poc_update'                 => '*',
+        'merchant_poc_update'                           => '*',
+
         'fetch_merchant_balance_configs'                => '*',
         'get_merchant_balance_config'                   => '*',
         'add_merchant_balance_config'                   => '*',
