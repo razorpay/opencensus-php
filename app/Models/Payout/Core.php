@@ -367,6 +367,8 @@ class Core extends Base\Core
     {
         $payout->batchFundTransfer()->associate($fta->batchFundTransfer);
 
+        Status::validateStatusUpdate(Status::INITIATED, $payout->getStatus());
+
         $payout->setStatus(Status::INITIATED);
 
         $this->repo->saveOrFail($payout);
@@ -1292,7 +1294,7 @@ class Core extends Base\Core
                 // reloading the payout here to ensure if any other process
                 // gets a mutex on payout resource, it gets a fresh copy
                 // of payout to work.
-                $payout->reload();
+                $this->repo->reload($payout);
 
                 if ($payout->isStatusReversed() === true)
                 {

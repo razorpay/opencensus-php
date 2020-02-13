@@ -51,6 +51,7 @@ class Reporting implements ExternalService
     // REPORT_TYPE constants
     const MERCHANT      = 'merchant';
     const PARTNER       = 'partner';
+    const RAZORPAYX     = 'razorpayx';
 
     // Headers
     const CONSUMER_HEADER       = 'X-Consumer';
@@ -1053,7 +1054,9 @@ class Reporting implements ExternalService
     {
         if ((empty($reportType) === false))
         {
-            if (($reportType !== self::MERCHANT) and ($reportType !== self::PARTNER))
+            if (($reportType !== self::MERCHANT) and
+                ($reportType !== self::PARTNER) and
+                ($reportType !== self::RAZORPAYX))
             {
                 throw new Exception\BadRequestValidationFailureException('Invalid report type');
             }

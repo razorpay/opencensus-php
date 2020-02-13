@@ -30,15 +30,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $bankAccountRules = [
-        BankAccount\Entity::BENEFICIARY_NAME   => 'required|between:4,22|string',
+        BankAccount\Entity::BENEFICIARY_NAME   => 'required|between:4,32|string',
         BankAccount\Entity::BENEFICIARY_EMAIL  => 'sometimes|email|max:30',
         BankAccount\Entity::BENEFICIARY_MOBILE => 'sometimes|numeric|digits_between:10,12',
-    ];
-
-    protected static $customerRules = [
-        Customer\Entity::EMAIL    => 'sometimes|email|max:30',
-        Customer\Entity::CONTACT  => 'sometimes|numeric|digits_between:10,12',
-        Customer\Entity::NAME     => 'sometimes|between:4,22|string',
     ];
 
     protected static $createValidators = [
@@ -209,16 +203,5 @@ class Validator extends Base\Validator
         ];
 
         $this->validateInput('bank_account', $input);
-    }
-
-    public function validateCustomer(Customer\Entity $customer)
-    {
-        $input = [
-            Customer\Entity::EMAIL   => $customer->getEmail(),
-            Customer\Entity::CONTACT => $customer->getContact(),
-            Customer\Entity::NAME    => $customer->getName(),
-        ];
-
-        $this->validateInput('customer', $input);
     }
 }
