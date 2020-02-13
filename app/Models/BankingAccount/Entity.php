@@ -36,7 +36,7 @@ class Entity extends Base\PublicEntity
     const FTS_FUND_ACCOUNT_ID               = 'fts_fund_account_id';
     const BALANCE_ID                        = 'balance_id';
 
-    const TEMP_BALANCE                      = 'temp_balance';
+    const GATEWAY_BALANCE                   = 'gateway_balance';
     const BALANCE_LAST_FETCHED_AT           = 'balance_last_fetched_at';
 
     /**
@@ -140,7 +140,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_EMAIL,
         self::FTS_FUND_ACCOUNT_ID,
         self::INTERNAL_COMMENT,
-        self::TEMP_BALANCE,
+        self::GATEWAY_BALANCE,
         self::BALANCE_LAST_FETCHED_AT,
     ];
 
@@ -280,6 +280,16 @@ class Entity extends Base\PublicEntity
     public function setPassword(string $password)
     {
         $this->setAttribute(self::PASSWORD, $password);
+    }
+
+    public function setGatewayBalance($balance)
+    {
+        $this->setAttribute(self::GATEWAY_BALANCE, $balance);
+    }
+
+    public function setBalanceLastFetchedAt(int $time)
+    {
+        $this->setAttribute(self::BALANCE_LAST_FETCHED_AT, $time);
     }
 
     // -------------------------- Getters ------------------------------------ //
@@ -425,9 +435,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PINCODE);
     }
 
-    public function getTempBalance()
+    public function getGatewayBalance()
     {
-        return $this->getAttribute(self::TEMP_BALANCE);
+        return $this->getAttribute(self::GATEWAY_BALANCE);
     }
 
     public function getBalanceLastFetchedAt()

@@ -5614,5 +5614,5 @@ ALTER TABLE disputes
     ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL AFTER gateway_amount;
 
 ALTER TABLE banking_accounts
-    ADD COLUMN temp_balance BIGINT DEFAULT NULL AFTER  `balance_id`,
-    ADD COLUMN balance_last_fetched_at INT DEFAULT NULL AFTER  `updated_at`;
+    ADD COLUMN gateway_balance BIGINT DEFAULT NULL,
+    ADD COLUMN balance_last_fetched_at INT DEFAULT NULL;

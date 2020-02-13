@@ -17,7 +17,9 @@ use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 class Base extends FundAccountPayout\Base
 {
-    const GATEWAY_BALANCE_LAST_FETCHED_AT_TIME_DIFF = 2; //in minutes
+    // while creating payouts we fetch balance from gateway at a frequency decided in SLA. For now have hardcoded this
+    // to 2 minutes . So if last fetched at was while ago (more than 2 minutes) only then we will fetch.
+    const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = 2; //in minutes
 
     public function process(Entity $payout, PublicEntity $ftaAccount)
     {
@@ -58,7 +60,7 @@ class Base extends FundAccountPayout\Base
 
         $diffTime = $nowTime->diffInMinutes(Carbon::createFromTimestamp($balanceLastFetchedAt, Timezone::IST));
 
-        if ($diffTime > self::GATEWAY_BALANCE_LAST_FETCHED_AT_TIME_DIFF)
+        if ($diffTime > self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING)
         {
             (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
                                         Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
@@ -67,9 +69,10 @@ class Base extends FundAccountPayout\Base
 
             //need reload since we are updating banking account entity because of above call
             $merchantBankingAccount->reload();
+
         }
 
-        $merchantBalance = $merchantBankingAccount->getTempBalance();
+        $merchantBalance = $merchantBankingAccount->getGatewayBalance();
 
         $hasBalance = ($merchantBalance >= $payoutAmount);
 

@@ -30,7 +30,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFac
 class Core extends Base\Core
 {
     const GATEWAY   = 'gateway';
-    const Processor = 'processor';
+    const PROCESSOR = 'processor';
 
     public function __construct()
     {
@@ -583,6 +583,7 @@ class Core extends Base\Core
 
         $gatewayProcessor = $this->getGatewayProcessorClass($channel);
 
+        /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account
                                      ->getBankingAccountByMerchantIdAndChannel($merchantId, $channel);
 
@@ -601,37 +602,21 @@ class Core extends Base\Core
         // to fetch balance from gateway and return balance.
         $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
 
-        $updateRequestParams = [
-            Entity::TEMP_BALANCE            => $balance,
-            Entity::BALANCE_LAST_FETCHED_AT => Carbon::now()->getTimestamp(),
-        ];
+        $bankingAccount->setGatewayBalance($balance);
 
-        try
-        {
-            $bankingAccount->update($updateRequestParams);
+        $bankingAccount->setBalanceLastFetchedAt(Carbon::now()->getTimestamp());
 
-            $this->repo->saveOrFail($bankingAccount);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
-                [
-                    'channel' => $channel,
-                ]);
-        }
+        $this->repo->saveOrFail($bankingAccount);
 
         $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_SUCCEEDED,
-            [
-                Entity::CHANNEL        => $channel,
-                Entity::MERCHANT_ID    => $merchantId,
-                Entity::ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
-                Entity::TEMP_BALANCE   => $bankingAccount->getTempBalance(),
-            ]
-        );
+                TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_SUCCEEDED,
+                [
+                    Entity::CHANNEL         => $channel,
+                    Entity::MERCHANT_ID     => $merchantId,
+                    Entity::ACCOUNT_NUMBER  => $bankingAccount->getAccountNumber(),
+                    Entity::GATEWAY_BALANCE => $bankingAccount->getGatewayBalance(),
+                ]
+            );
 
         return ['success' => true];
     }
@@ -641,7 +626,7 @@ class Core extends Base\Core
         $gatewayProcessor = __NAMESPACE__ . '\\' .
                             studly_case(self::GATEWAY) . '\\' .
                             studly_case($channel) . '\\' .
-                            studly_case(self::Processor);
+                            studly_case(self::PROCESSOR);
 
         if (class_exists($gatewayProcessor) === true)
         {

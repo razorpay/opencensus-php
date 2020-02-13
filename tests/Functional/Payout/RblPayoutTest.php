@@ -145,13 +145,9 @@ class RblPayoutTest extends TestCase
     {
         $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
 
-        Carbon::setTestNow($oldDateTime);
-
         $this->fixtures->edit('banking_account', 'xba00000000000', [
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ] );
-
-        Carbon::setTestNow();
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -162,13 +158,9 @@ class RblPayoutTest extends TestCase
     {
         $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
 
-        Carbon::setTestNow($oldDateTime);
-
         $this->fixtures->edit('banking_account', 'xba00000000000', [
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ] );
-
-        Carbon::setTestNow();
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(50000);
 
@@ -179,13 +171,9 @@ class RblPayoutTest extends TestCase
     {
         $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
 
-        Carbon::setTestNow($oldDateTime);
-
         $this->fixtures->edit('banking_account', 'xba00000000000', [
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ] );
-
-        Carbon::setTestNow();
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -209,13 +197,9 @@ class RblPayoutTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        Carbon::setTestNow($oldDateTime);
-
         $this->fixtures->edit('banking_account', 'xba00000000000', [
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ] );
-
-        Carbon::setTestNow();
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(50000);
 

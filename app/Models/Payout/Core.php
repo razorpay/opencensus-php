@@ -408,8 +408,11 @@ class Core extends Base\Core
             // fetched at was a while ago(using threshold to decide that).Use this balance amount to dispatch payout.
             // If account type shared then use balance amount from balance entity.
 
+            $balanceAmount = $balanceEntity->getBalance();
+
             if ($balanceEntity->getAccountType() === Merchant\Balance\AccountType::DIRECT)
             {
+                /** @var BankingAccount\Entity $merchantBankingAccount */
                 $merchantBankingAccount = $balanceEntity->bankingAccount;
 
                 $balanceLastFetchedAt = $merchantBankingAccount->getBalanceLastFetchedAt();
@@ -418,7 +421,7 @@ class Core extends Base\Core
 
                 $diffTime = $nowTime->diffInMinutes(Carbon::createFromTimestamp($balanceLastFetchedAt, Timezone::IST));
 
-                if ($diffTime > FundAccountPayout\Direct\Base::GATEWAY_BALANCE_LAST_FETCHED_AT_TIME_DIFF)
+                if ($diffTime > FundAccountPayout\Direct\Base::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING)
                 {
                     (new BankingAccount\Core)->fetchAndUpdateGatewayBalance(
                         [
@@ -431,11 +434,7 @@ class Core extends Base\Core
                     $merchantBankingAccount->reload();
                 }
 
-                $balanceAmount = $merchantBankingAccount->getTempBalance();
-            }
-            else
-            {
-                $balanceAmount = $balanceEntity->getBalance();
+                $balanceAmount = $merchantBankingAccount->getGatewayBalance();
             }
 
             $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts);
