@@ -1,7 +1,6 @@
 # alpine:3.7
-# -> razorpay/pithos:rzp-alpine-base-alohomora
-# -> razorpay/pithos:rzp-php7.1 ->
-FROM razorpay/pithos:rzp-php7.1-nginx
+# -> razorpay/ongii:php7.3 ->
+FROM razorpay/onggi:php-7.3-nginx
 # -> razorpay/dashboard:{GIT_COMMIT_HASH}
 
 COPY composer.json composer.lock /app/

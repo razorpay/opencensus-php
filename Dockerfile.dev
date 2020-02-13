@@ -1,4 +1,4 @@
-FROM razorpay/pithos:rzp-alpine3.6-php7.1-nginx
+FROM razorpay/onggi:php-7.3-nginx
 
 VOLUME ["/app"]
 
