@@ -80,6 +80,7 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_INSTANT_ACTIVATION,
                  Permission::UPDATE_MERCHANT_FEATURE,
                  Permission::CREATE_BATCH,
+                 Permission::ASSIGN_MERCHANT_HANDLE,
              ],
 
              BankingRole::ADMIN => [
