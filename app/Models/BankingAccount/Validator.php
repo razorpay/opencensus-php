@@ -159,7 +159,7 @@ class Validator extends Base\Validator
     protected static $bulkAssignReviewerRules = [
         Entity::REVIEWER_ID     => 'required|public_id|size:20',
         Entity::IDS             => 'filled|array',
-        Entity::IDS . '*'       => 'sometimes|unsigned_id|size:14',
+        Entity::IDS . '*'       => 'sometimes|public_id|size:19',
     ];
 
     public function validatePincodes(array $input)

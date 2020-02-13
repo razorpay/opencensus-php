@@ -700,6 +700,8 @@ class Core extends Base\Core
         {
             try
             {
+                Entity::verifyIdAndStripSign($bankingAccountId);
+
                 $bankingAccount = $this->repo->banking_account->findOrFailPublic($bankingAccountId);
 
                 $this->addReviewerToBankingAccount($bankingAccount, $reviewerId);
