@@ -62,7 +62,7 @@ class TerminalsService
 
         $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD]);
 
-        return $this->parseAndReturnResponse($response);
+        return $this->parseAndReturnResponse($response)['data'];
     }
 
     public function fetchTerminalById(string $terminalId): array
@@ -73,7 +73,7 @@ class TerminalsService
 
         $response = $this->sendRequest($path, '', $params[self::METHOD]);
 
-        return $this->parseAndReturnResponse($response);
+        return $this->parseAndReturnResponse($response)['data'];
     }
 
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST): \Requests_Response

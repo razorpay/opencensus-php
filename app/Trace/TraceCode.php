@@ -2615,6 +2615,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
 
+    const TERMINALS_SERVICE_MIGRATE_FIELD_MISMATCH              = 'TERMINALS_SERVICE_MIGRATE_FIELD_MISMATCH';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

@@ -414,9 +414,9 @@ class Service extends Base\Service
 
             $migrateTerminalResponse = $client->migrateTerminal($terminal);
 
-            $client->fetchTerminalById($terminalId);
+            $fetchTerminalResponse = $client->fetchTerminalById($terminalId);
 
-            if ($this->isMigrateTerminalSuccess($terminal, $migrateTerminalResponse) === true)
+            if ($this->isMigrateTerminalSuccess($terminal, $migrateTerminalResponse, $fetchTerminalResponse) === true)
             {
                 $this->processMigrateTerminalSuccsess($terminal);
             }
@@ -449,9 +449,48 @@ class Service extends Base\Service
         }
     }
 
-    protected function isMigrateTerminalSuccess(Entity $terminal, array $migrateTerminalResponse)
+    protected function isMigrateTerminalSuccess(Entity $terminal,
+                                                $migrateTerminalResponse,
+                                                $fetchTerminalResponse)
     {
-        return false; // TODO add logic here
+        $originalTerminalArray = $terminal->toArrayWithPassword();
+
+        $ignoreAttributes = [Entity::CREATED_AT, Entity::UPDATED_AT, Entity::MPAN];
+
+        foreach (array_keys($originalTerminalArray) as $attribute)
+        {
+
+            if (array_search($attribute, $ignoreAttributes) !== false)
+            {
+                continue;
+            }
+
+            $originalValue = $originalTerminalArray[$attribute];
+
+
+            if (array_key_exists($attribute, $fetchTerminalResponse) === true)
+            {
+                $responseValue = $fetchTerminalResponse[$attribute];
+            }
+            else
+            {
+                $responseValue = '';
+            }
+
+            if ($originalValue != $responseValue)
+            {
+                $data = [
+                  Entity::TERMINAL_ID   => $terminal->getId(),
+                  'attribute'           => $attribute,
+                ];
+
+                $this->trace->debug(TraceCode::TERMINALS_SERVICE_MIGRATE_FIELD_MISMATCH, $data);
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected function processMigrateTerminalSuccsess(Entity $terminal)
