@@ -495,6 +495,7 @@ class Entity
         self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
         self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
+        self::PAYMENT_META              => \RZP\Models\Payment\PaymentMeta::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,

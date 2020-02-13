@@ -106,6 +106,9 @@ class Validator extends Base\Validator
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
         'application'                   => 'sometimes|filled|string|in:google_pay',
         'device'                        => 'sometimes',
+        'dcc_currency'                  => 'sometimes|string|max:3',
+        'dcc_amount'                    => 'sometimes|integer',
+        'currency_request_id'           => 'sometimes|string'
     ];
 
     protected static $editAcquirerRules = [
@@ -183,6 +186,8 @@ class Validator extends Base\Validator
         'iin'                       => 'required|numeric|digits:6',
         '_'                         => 'sometimes|array',
         'order_id'                  => 'sometimes|filled',
+        'currency'                  => 'sometimes|string',
+        'amount'                    => 'sometimes|integer'
     ];
 
     protected static $postFlowsRules = [

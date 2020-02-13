@@ -1214,6 +1214,8 @@ class Service extends Base\Service
         if (isset($input['card_number']) === true)
         {
             $iin = substr($input['card_number'], 0, 6);
+
+            unset($input['card_number']);
         }
         else if (isset($input['iin']) === true)
         {
@@ -1224,7 +1226,7 @@ class Service extends Base\Service
             throw new Exception\BadRequestValidationFailureException('invalid input');
         }
 
-        $input = ['iin' => $iin];
+        $input['iin'] = $iin;
 
         return $this->getPaymentFlows($input);
     }

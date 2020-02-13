@@ -294,8 +294,6 @@ class Processor
 
             $payment = $this->buildPaymentEntity($input);
 
-            $this->preProcessDCCInputs($input, $payment);
-
             $this->preProcessForSubscriptionsIfApplicable($input, $payment);
 
             $ret = $this->preProcessPaymentInputs($input, $payment);
@@ -313,6 +311,8 @@ class Processor
             });
 
             $payment = $this->payment;
+
+            $this->preProcessDCCInputs($input, $payment, $gatewayInput);
 
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
@@ -467,7 +467,7 @@ class Processor
         }
     }
 
-    protected function preProcessDCCInputs(array $input, Payment\Entity $payment)
+    protected function preProcessDCCInputs(array $input, Payment\Entity $payment, array & $gatewayInput)
     {
         if ($payment->isCard() === false)
         {
@@ -509,24 +509,12 @@ class Processor
                     'dcc_offered'       => true
                 ];
 
-                $paymentMetaEntity = $this->buildPaymentMetaEntity($paymentMetaInput, $payment);
+                //$paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput, $payment);
 
-                $this->repo->saveOrFail($paymentMetaEntity);
+                $gatewayInput['payment_meta'] = $paymentMetaInput;
+
             }
         }
-    }
-
-    protected function buildPaymentMetaEntity(array $input, $payment): Payment\PaymentMeta\Entity
-    {
-        $paymentMeta = new Payment\PaymentMeta\Entity;
-
-        $paymentMeta->generateId();
-
-        $paymentMeta->payment()->associate($payment);
-
-        $paymentMeta->build($input);
-
-        return $paymentMeta;
     }
 
     protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)

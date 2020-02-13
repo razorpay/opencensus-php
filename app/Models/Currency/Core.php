@@ -178,9 +178,9 @@ class Core extends Base\Core
             {
                 $requestedCurrencyData['currency'] = $requestedCurrency;
 
-                $requestedCurrencyData['forex_rate'] = $rates[$requestedCurrency];
+                $requestedCurrencyData['forex_rate'] = (string)$rates[$requestedCurrency];
 
-                $requestedCurrencyData['amount'] = $this->getConvertedAmount($baseAmount,$rates[$requestedCurrency]);
+                $requestedCurrencyData['amount'] = (string)$this->getConvertedAmount($baseAmount,$rates[$requestedCurrency]);
             }
         }
 

@@ -69,6 +69,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Options\Repository                          $options
  * @property Models\Merchant\FreshdeskTicket\Repository         $merchant_freshdesk_tickets
  * @property Models\VirtualAccount\Repository                   $virtual_account
+ * @property Models\Payment\PaymentMeta\Repository              $payment_meta
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {
