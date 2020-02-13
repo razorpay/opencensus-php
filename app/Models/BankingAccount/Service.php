@@ -175,4 +175,15 @@ class Service extends Base\Service
             );
         }
     }
+
+    public function bulkAssignReviewer(array $input)
+    {
+        (new Validator)->validateInput('bulk_assign_reviewer', $input);
+
+        $bankingAccountIds  = $input[Entity::IDS];
+
+        $reviewerId = $input[Entity::REVIEWER_ID];
+
+        return (new Core)->bulkAssignReviewer($reviewerId, $bankingAccountIds);
+    }
 }

@@ -267,6 +267,8 @@ class Name
 
     const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';
 
+    const ASSIGN_BANKING_ACCOUNT_REVIEWER     = 'assign_banking_account_reviewer';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

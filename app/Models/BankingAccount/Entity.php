@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Admin;
 use RZP\Models\Merchant\Balance;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\BankingAccount\State;
@@ -104,7 +105,9 @@ class Entity extends Base\PublicEntity
     const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
     const BALANCE                 = 'balance';
 
-    const REVIEWER      = 'reviewer';
+    const REVIEWER_ID   = 'reviewer_id';
+
+    const IDS           = 'ids';
 
     protected $entity = 'banking_account';
 
@@ -189,7 +192,7 @@ class Entity extends Base\PublicEntity
         //
         'bankingAccountDetails',
         self::PASSWORD,
-        self::REVIEWER,
+        self::REVIEWER_ID,
 
     ];
 
@@ -439,6 +442,11 @@ class Entity extends Base\PublicEntity
     public function balance()
     {
         return $this->belongsTo(Balance\Entity::class);
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(Admin\Entity::class);
     }
 
     public function activationStates()

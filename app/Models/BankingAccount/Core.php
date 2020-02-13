@@ -21,6 +21,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Mail\BankingAccount\XProActivation;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
@@ -663,5 +664,78 @@ class Core extends Base\Core
         ];
 
         return $attributes;
+    }
+
+    /**
+     * @param string $reviewerId
+     * @param array $bankingAccountIds
+     * @return array
+     */
+    public function bulkAssignReviewer(string $reviewerId, array $bankingAccountIds) : array
+    {
+        $success     = 0;
+
+        $failedItems = [];
+
+        try
+        {
+            $reviewerIdCopy = $reviewerId;
+
+            AdminEntity::verifyIdAndStripSign($reviewerIdCopy);
+
+            $this->repo->admin->findOrFailPublic($reviewerIdCopy);
+        }
+        catch (\Exception $e)
+        {
+            $response = [
+                'success' => 0,
+                'failed'  => count($bankingAccountIds),
+                'error'   => $e->getMessage(),
+            ];
+
+            return $response;
+        }
+
+        foreach ($bankingAccountIds as $bankingAccountId)
+        {
+            try
+            {
+                $bankingAccount = $this->repo->banking_account->findOrFailPublic($bankingAccountId);
+
+                $this->addReviewerToBankingAccount($bankingAccount, $reviewerId);
+
+                $success++;
+            }
+            catch (\Exception $e)
+            {
+                $failedItems[] = [
+                    Entity::ID          => $bankingAccountId,
+                    'error'             => $e->getMessage()
+                ];
+            }
+        }
+
+        $response = [
+            'success'     => $success,
+            'failed'      => count($failedItems),
+            'failedItems' => $failedItems,
+        ];
+
+        return $response;
+    }
+
+    /**
+     * @param Entity $bankingAccount
+     * @param string $reviewerId
+     */
+    public function addReviewerToBankingAccount(Entity $bankingAccount, string $reviewerId)
+    {
+        AdminEntity::verifyIdAndStripSign($reviewerId);
+
+        $reviewer = $this->repo->admin->findOrFailPublic($reviewerId);
+
+        $bankingAccount->reviewer()->associate($reviewer);
+
+        $this->repo->saveOrFail($bankingAccount);
     }
 }
