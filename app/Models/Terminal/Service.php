@@ -356,7 +356,7 @@ class Service extends Base\Service
         $failureCount = 0;
 
 
-        $terminals = $this->repo->terminal->fetch(['count' => 10]);
+        $terminals = $this->repo->terminal->fetchForSyncToTerminalsService();
 
         foreach ($terminals as $terminal)
         {
@@ -455,7 +455,7 @@ class Service extends Base\Service
     {
         $originalTerminalArray = $terminal->toArrayWithPassword();
 
-        $ignoreAttributes = [Entity::CREATED_AT, Entity::UPDATED_AT, Entity::MPAN];
+        $ignoreAttributes = [Entity::CREATED_AT, Entity::UPDATED_AT, Entity::MPAN, Entity::SYNC_STATUS];
 
         foreach (array_keys($originalTerminalArray) as $attribute)
         {
@@ -493,13 +493,17 @@ class Service extends Base\Service
         return true;
     }
 
-    protected function processMigrateTerminalSuccsess(Entity $terminal)
+    protected function processMigrateTerminalSuccess(Entity $terminal)
     {
-        #TODO
+        $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+
+        $this->repo->terminal->saveOrFail($terminal);
     }
 
     protected function processMigrateTerminalFailure(Entity $terminal)
     {
-        #TODO
+        $terminal->setSyncStatus(SyncStatus::SYNC_FAILED);
+
+        $this->repo->terminal->saveOrFail($terminal);
     }
 }

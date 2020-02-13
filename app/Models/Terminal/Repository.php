@@ -506,6 +506,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchForSyncToTerminalsService()
+    {
+        return $this->newQuery()
+                    ->where(Entity::SYNC_STATUS, '!=', SyncStatus::getValueForSyncStatusString(SyncStatus::SYNC_SUCCESS))
+                    ->limit(10) //TODO get this from the input and add validations
+                    ->get();
+    }
+
     public function fetchTerminalsForActivation($count)
     {
         $terminalId = $this->dbColumn(Entity::ID);

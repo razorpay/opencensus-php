@@ -718,6 +718,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setSyncStatus(string $syncStatus)
+    {
+        $this->setSyncStatusAttribute($syncStatus);
+    }
+
     // ---------------------- END SETTERS ----------------------
 
     // -----------------------PUBLIC SETTERS -------------------
