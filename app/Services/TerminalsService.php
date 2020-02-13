@@ -28,6 +28,7 @@ class TerminalsService
     const STATUS_CODE       = 'status_code';
     const PATH              = 'path';
     const METHOD            = 'method';
+    const RESPONSE          = 'response';
 
 
     const CREATE_TERMINAL      = 'create_terminal';
@@ -106,7 +107,9 @@ class TerminalsService
 
             if ($response->status_code >= 400)
             {
-                throw new IntegrationException('Terminals service request failed with status code : ' . $response->status_code);
+                throw new IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
+                null,
+                [self::RESPONSE => $this->parseAndReturnResponse($response)]);
             }
 
             return $response;
@@ -116,6 +119,7 @@ class TerminalsService
             $data = [
                 self::EXCEPTION => $exception->getMessage(),
                 self::URL       => $url,
+                'data'          => $exception->getData(),
             ];
 
             $this->trace->error(TraceCode::TERMINALS_SERVICE_INTEGRATION_ERROR, $data);
