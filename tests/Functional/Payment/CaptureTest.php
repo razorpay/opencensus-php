@@ -1397,6 +1397,32 @@ class CaptureTest extends TestCase
     }
 
     //Negative Balance Tests
+    public function testCaptureWithNegativeBalance()
+    {
+        $this->fixtures->base->editEntity('balance', '10000000000000',
+            [
+                'balance'     => -110000,
+            ]
+        );
+
+        Mail::fake();
+
+        $this->payment = $this->defaultAuthPayment(['amount' => 100,'currency' => 'INR']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+
+        $balance = $this->getDbEntityById('balance', '10000000000000');
+        $this->assertEquals(-109902, $balance['balance']);
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
     public function testEmandateCaptureWithSufficientBalance()
     {
         Mail::fake();

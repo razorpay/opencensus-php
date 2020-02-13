@@ -106,7 +106,7 @@ class Validator extends Base\Validator
 
     protected static $recurringChargeCreateRules = [
         Entity::TYPE            => 'required|in:recurring_charge',
-        Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE            => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::NAME            => 'filled|string|max:255',
         Entity::FILE_ID         => 'required_without:file|public_id',
     ];
