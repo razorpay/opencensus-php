@@ -506,13 +506,11 @@ class Processor
                     'gateway_amount'    => $requestedCurrencyData['amount'],
                     'gateway_currency'  => $requestedCurrencyData['currency'],
                     'forex_rate'        => $requestedCurrencyData['forex_rate'],
-                    'dcc_offered'       => true
+                    'dcc_offered'       => true,
+                    'payment_id'        => $payment->getId()
                 ];
 
-                //$paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput, $payment);
-
-                $gatewayInput['payment_meta'] = $paymentMetaInput;
-
+                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
             }
         }
     }

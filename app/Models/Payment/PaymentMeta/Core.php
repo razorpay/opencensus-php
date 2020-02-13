@@ -9,15 +9,13 @@ class Core extends Base\Core
 {
     protected $paymentMeta = null;
 
-    public function create($input, $payment)
+    public function create($input)
     {
         $paymentMeta = (new PaymentMeta\Entity)->build($input);
 
-        $paymentMeta->payment()->associate($payment);
-
         $this->$paymentMeta = $paymentMeta;
 
-        //$paymentMeta->saveOrFail();
+        $paymentMeta->saveOrFail();
 
         return $paymentMeta;
     }

@@ -1002,7 +1002,7 @@ class Validator extends Base\Validator
 
     public function captureAmountValidate(Payment\Entity $payment, int $amount)
     {
-        if ($amount !== $payment->getAmount())
+        if ($amount !== $payment->getGatewayAmount())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
@@ -1017,7 +1017,7 @@ class Validator extends Base\Validator
 
     protected function captureCurrencyValidate($payment, $currency)
     {
-        if ($currency !== $payment->getCurrency())
+        if ($currency !== $payment->getGatewayCurrency())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_CURRENCY_MISMATCH,
