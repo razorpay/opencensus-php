@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Models\Payout\Method;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Feature\Constants as Feature;
@@ -33,6 +34,7 @@ class Fee extends Base\Core
     const DEFAULT_EMI_PLAN_ID           = 'ArGUUem5z3UADv';
     const DEFAULT_BANK_TRANSFER_PLAN_ID = '8gP5505KgDVWIh';
     const DEFAULT_BANKING_PLAN_ID       = 'BTo98voDY05ueB';
+    const DEFAULT_VIRTUAL_UPI_PLAN_ID   = 'E9t4ljLBnt2cad';
 
     public function __construct()
     {
@@ -72,6 +74,7 @@ class Fee extends Base\Core
      * @param $entity
      *
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function calculateMerchantFees($entity): array
     {
@@ -101,7 +104,7 @@ class Fee extends Base\Core
     {
         $calculator = $this->getCalculator($entity);
 
-        $pricingPlanId = $this->getPricingPlanId($entity->merchant);
+        $pricingPlanId = $this->getPricingPlanId($entity);
 
         // Delete this after 31st Jan
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
@@ -220,6 +223,13 @@ class Fee extends Base\Core
             $pricingPlan = $pricingPlan->merge($bankTransferPricing);
         }
 
+        if ($pricingPlan->hasVpaReceiver() === false)
+        {
+            $virtualUpiPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_VIRTUAL_UPI_PLAN_ID);
+
+            $pricingPlan = $pricingPlan->merge($virtualUpiPricing);
+        }
+
         if ($pricingPlan->hasQrCodeReceiver() === false)
         {
             //
@@ -292,8 +302,17 @@ class Fee extends Base\Core
         return $pricingPlan;
     }
 
-    protected function getPricingPlanId($merchant)
+    protected function getPricingPlanId($entity)
     {
+        $customPricingPlan = $this->getCustomPricingPlan($entity);
+
+        if (empty($customPricingPlan) === false)
+        {
+            return $customPricingPlan;
+        }
+
+        $merchant = $entity->merchant;
+
         $pricingPlanId = $merchant->getPricingPlanId();
 
         if ($pricingPlanId !== null)
@@ -331,5 +350,10 @@ class Fee extends Base\Core
         }
 
         return Product::PRIMARY;
+    }
+
+    protected function getCustomPricingPlan(Base\PublicEntity $entity)
+    {
+        return null;
     }
 }

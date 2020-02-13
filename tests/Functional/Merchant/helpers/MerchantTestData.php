@@ -4731,6 +4731,61 @@ return [
         ],
     ],
 
+    'testMerchantSwitchProductWhenXOnboardingExperimentOff' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenL1Incomplete' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenMerchantNotActivated' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenMerchantNotActivatedAndL1Incomplete' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testGetCheckoutPreferencesForCardlessEmi' => [
         'request' => [
             'url' => '/preferences',
@@ -5702,5 +5757,22 @@ return [
                 'failed'  => 0,
             ]
         ]
+    ],
+
+    'testGetCheckoutPreferencesWithOrderMethodForNonTPVEnabledMerchant' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'method' => 'upi'
+                ]
+            ],
+        ],
     ],
 ];

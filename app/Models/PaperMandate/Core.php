@@ -65,6 +65,8 @@ class Core extends Base\Core
 
         $bankAccount = $this->createBankAccount($input[Entity::BANK_ACCOUNT], $customer);
 
+        $paperMandate->getValidator()->validateBankAccount($bankAccount);
+
         $paperMandate->bankAccount()->associate($bankAccount);
 
         $this->repo->saveOrFail($paperMandate);

@@ -40,5 +40,6 @@ final class Metric
     const PREVIOUS_ACTIVATION_STATUS = 'previous_activation_status';
     const UPDATED_ACTIVATION_STATUS = 'updated_activation_status';
 
+    const MERCHANT_RAZORPAYX_ACTIVATION_FAILED_TOTAL = 'merchant_razorpayx_activation_failed_total';
 
 }

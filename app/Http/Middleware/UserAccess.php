@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\UserRolesScope;
 use Illuminate\Http\Request;
+use RZP\Http\BasicAuth\BasicAuth;
 use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 

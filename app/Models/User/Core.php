@@ -957,11 +957,12 @@ class Core extends Base\Core
     /**
      * Verifies otp for given input(action, token & otp).
      *
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
-     * @param  Entity          $user
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Entity $user
+     * @param bool $mock
      */
-    public function verifyOtp(array $input, Merchant\Entity $merchant, Entity $user)
+    public function verifyOtp(array $input, Merchant\Entity $merchant, Entity $user, bool $mock = false)
     {
         $this->trace->info(TraceCode::USERS_VERIFY_OTP_FOR_ACTION, compact('input'));
 
@@ -969,7 +970,7 @@ class Core extends Base\Core
 
         $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
 
-        $this->app->raven->verifyOtp($payload);
+        $this->app->raven->verifyOtp($payload, $mock);
     }
 
     /**

@@ -2,19 +2,26 @@
 
 namespace RZP\Tests\Functional\Workflow;
 
-use RZP\Models\Admin\Permission as AdminPermission;
+use DB;
+use Hash;
+use Config;
+
 use RZP\Models\Base\EsDao;
+use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Admin\Permission as AdminPermission;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Models\Admin\Role\Repository as RoleRepository;
 use RZP\Tests\Functional\Fixtures\Entity\WorkflowAction;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class WorkflowActionTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
     use HeimdallTrait;
     use WorkflowTrait;
 
@@ -245,15 +252,35 @@ class WorkflowActionTest extends TestCase
 
     public function testWorkflowActionExecuteLastApproval()
     {
+        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
+
+        $permission = $this->getDbEntity('permission', ['name' => 'edit_admin'], 'live');
+
+        DB::connection('live')->table('permission_map')->insert(
+            [
+                'entity_id'     => Org::RZP_ORG,
+                'entity_type'   => 'org',
+                'permission_id' => $permission->getId(),
+            ]);
+
+        $org = (new OrgRepository)->getRazorpayOrg();
+        $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
+
+        $this->createWorkflow([
+            'org_id'      => '100000razorpay',
+            'name'        => 'some workflow',
+            'permissions' => ['edit_admin'],
+        ], 'live');
+
         // This will create a wf action in Mysql and ES, not using default workflow.
-        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::SUPER_ADMIN_SIGNED);
+        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::SUPER_ADMIN_SIGNED, [], 'live');
 
         //ES is not so Real Time, so need to refresh manually.
         $this->esClient->indices()->refresh();
 
-        $this->approveWorkflowAction($workflow['id']);
+        $this->approveWorkflowAction($workflow['id'], 'live');
 
-        $this->ba->adminAuth('test', Org::MAKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
+        $this->ba->adminAuth('live', Org::MAKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -266,13 +293,33 @@ class WorkflowActionTest extends TestCase
 
     public function testWorkflowActionSuperAdminApprove()
     {
+        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
+
+        $permission = $this->getDbEntity('permission', ['name' => 'edit_admin'], 'live');
+
+        DB::connection('live')->table('permission_map')->insert(
+            [
+                'entity_id'     => Org::RZP_ORG,
+                'entity_type'   => 'org',
+                'permission_id' => $permission->getId(),
+            ]);
+
+        $org = (new OrgRepository)->getRazorpayOrg();
+        $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
+
+        $this->createWorkflow([
+            'org_id'      => '100000razorpay',
+            'name'        => 'some workflow',
+            'permissions' => ['edit_admin'],
+        ], 'live');
+
         // This will create a wf action in Mysql and ES, not using default workflow.
-        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
+        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED, [], 'live');
 
         //ES is not so Real Time, so need to refresh manually.
         $this->esClient->indices()->refresh();
 
-        $this->ba->adminAuth('test', Org::DEFAULT_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
+        $this->ba->adminAuth('live', Org::DEFAULT_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 

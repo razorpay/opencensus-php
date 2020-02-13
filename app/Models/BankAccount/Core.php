@@ -286,12 +286,14 @@ class Core extends Base\Core
         return $ba;
     }
 
-
+    // pushToQueue is added to configure queue push and razorx call later since this function is used within
+    // a DB transaction.
     public function createBankAccountForSource(
         array $input,
         Merchant\Entity $merchant,
         Base\PublicEntity $source = null,
-        string $addRule): Entity
+        string $addRule,
+        bool $pushToQueue=true): Entity
     {
         $ba = new BankAccount\Entity;
 
@@ -303,7 +305,9 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($ba);
 
-        (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
+        if ($pushToQueue === true) {
+            (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
+        }
 
         return $ba;
     }

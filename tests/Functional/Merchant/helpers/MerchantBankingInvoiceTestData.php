@@ -237,6 +237,27 @@ return [
         ],
     ],
 
+    'testBankingInvoiceDownloadFromAdminDashboard' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/reports/invoice/banking',
+            'content' => [
+                "month"          => 7,
+                "year"           => 2019,
+                "send_email"     => false,
+                "to_emails"      => ["kunal.sikri@razorpay.com"]
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'file_id' => 'rzp_file_mock_id_1000000_file'
+            ],
+        ],
+    ],
+
     'testBankingInvoiceWithFailedPayoutsInGivenMonthAndYear' => [
         'rx_transactions' => [
             'amount' => 1509,
@@ -285,6 +306,26 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+    'testBankingInvoiceEmailFromAdminDashboard' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/reports/invoice/banking',
+            'content' => [
+                "month"          => 7,
+                "year"           => 2019,
+                "send_email"     => true,
+                "to_emails"      => ["kunal.sikri@razorpay.com"]
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'file_id' => null
+            ],
         ],
     ],
 

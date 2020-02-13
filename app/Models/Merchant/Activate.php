@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use Mail;
 use Throwable;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -14,9 +15,10 @@ use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
-use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Detail\ActivationFlow;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
 use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
@@ -471,6 +473,12 @@ class Activate extends Base\Core
     /**
      * Activates Business Banking for a merchant.
      *
+     * This flow kicks in following flows:
+     * - instant activations
+     * - activations
+     * - kyc verification
+     * - merchant switch product
+     *
      * @param Entity $merchant
      *
      * @return Entity
@@ -483,31 +491,75 @@ class Activate extends Base\Core
             return $merchant;
         }
 
-        $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
+        //
+        // Reset the connection to the requests original mode
+        //
+        $originalMode = $this->app['basicauth']->getMode();
 
-        // If merchant is instantly activated or Activated this flow will kick in.
-        if ($merchant->isActivated() === true)
+        // Creating the live and test mode entities in a db txn
+        // Either both get created or none
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
         {
-            // Business Banking logic is coupled only with the live mode.
-            $liveMode = $this->app['basicauth']->getLiveConnection();
+            try
+            {
+                $this->createBankingEntitiesForMode($merchant, Mode::LIVE);
 
-            $this->app['basicauth']->setModeAndDbConnection($liveMode);
+                $this->createBankingEntitiesForMode($merchant, Mode::TEST);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->count(Merchant\Metric::MERCHANT_RAZORPAYX_ACTIVATION_FAILED_TOTAL);
 
-            //
-            // This endpoint could be hit from test mode as well, depending which this merchant has been read from
-            // corresponding connection. Because this entity is synced between both connection, setting connection
-            // to live mode is same as fetching merchant of same id from live connection. We need to do this
-            // because in subsequent steps we do things like $merchant->sharedBankingBalance which we expect
-            // in this flow to query in live connection.
-            //
-            $merchant->setConnection($liveMode);
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::MERCHANT_RAZORPAYX_ACTIVATION_FAILED);
 
+                throw $e;
+            }
+        });
+
+        $this->setDbAndModelConnectionWithMode($originalMode, $merchant);
+
+        // Refreshing merchant here so that relations for original mode are fetched again
+        return $merchant->refresh();
+    }
+
+    protected function createBankingEntitiesForMode(Entity $merchant, string $mode)
+    {
+        $this->setDbAndModelConnectionWithMode($mode, $merchant);
+
+        // Refreshing merchant here so that relations for respective modes are fetched again
+        $merchant->refresh();
+
+        $onboardMerchant = false;
+
+        if ($mode === Mode::LIVE)
+        {
+            $onboardMerchant = $this->onBoardMerchantOnRazorpayxInLiveMode($merchant);
+        }
+        else if ($mode === Mode::TEST)
+        {
+            $onboardMerchant = $this->onBoardMerchantOnRazorpayxInTestMode($merchant);
+        }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_RAZORPAYX_ACTIVATION_REQUEST,
+            [
+                'merchant_id'       => $merchant->getId(),
+                'should_onboard'    => $onboardMerchant,
+                'mode'              => $mode,
+            ]);
+
+        if ($onboardMerchant === true)
+        {
             // Create Banking Balance
-            $balance = (new Balance\Core)->createOrFetchSharedBankingBalance($merchant,  $liveMode);
+            $balance = (new Balance\Core)->createOrFetchSharedBankingBalance($merchant, $mode);
 
-            // Virtual Account
+            // Create Virtual Account
             $virtualAccount = (new VirtualAccount\Core)->createOrFetchBankingVirtualAccount($merchant, $balance);
 
+            // Create Banking Account
             $bankingAccount = (new BankingAccount\Core)->createOrFetchSharedBankingAccountFromVA($virtualAccount);
 
             $this->trace->info(
@@ -516,25 +568,41 @@ class Activate extends Base\Core
                     'virtual_account_id' => $virtualAccount->getId(),
                     'banking_account_id' => $bankingAccount->getId(),
                     'merchant_id'        => $virtualAccount->getMerchantId(),
+                    'mode'               => $mode,
                 ]);
+
+            $this->addPayoutFeatureIfApplicable($merchant, $mode);
+        }
+    }
+
+    protected function addPayoutFeatureIfApplicable(Entity $merchant, string $mode)
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::PAYOUT) === true)
+        {
+            return;
         }
 
-        $merchantDetails->reload();
+        $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
 
-        // This means that L2 form is also verified.
-        if ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED)
+        //
+        // Assign payout feature if:
+        // In live mode: check if merchant has been activated
+        // In test mode: always
+        //
+        if (($mode === Mode::TEST) or
+            ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED))
         {
             $featureParams = [
-                Feature\Entity::ENTITY_ID    => $merchant->getId(),
-                Feature\Entity::ENTITY_TYPE  => 'merchant',
-                Feature\Entity::NAMES        => [Feature\Constants::PAYOUT],
-                Feature\Entity::SHOULD_SYNC  => true,
+                Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                Feature\Entity::NAMES       => [Feature\Constants::PAYOUT],
+                // Sync isn't required as this gets called separately for live and test mode
+                // If it were to be sync, greylsited merchants would get payout feature without being activated
+                Feature\Entity::SHOULD_SYNC => false,
             ];
 
             (new Feature\Service)->addFeatures($featureParams);
         }
-
-        return $merchant;
     }
 
     /**
@@ -546,5 +614,56 @@ class Activate extends Base\Core
     {
         return ((Detail\Core::shouldSkipBankAccountRegistration() === false) and
                 ($merchantDetail->hasBankAccountDetails() === true));
+    }
+
+    protected function setDbAndModelConnectionWithMode(string $mode, Merchant\Entity $merchant)
+    {
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $merchant->setConnection($mode);
+    }
+
+    protected function onBoardMerchantOnRazorpayxInLiveMode(Entity $merchant)
+    {
+        return ($merchant->isActivated() === true);
+    }
+
+    protected function onBoardMerchantOnRazorpayxInTestMode(Entity $merchant)
+    {
+        /** @var Merchant\Validator $merchantValidator */
+        $merchantValidator = $merchant->getValidator();
+
+        try
+        {
+            $merchantValidator->validateInstantActivationMandatoryAttributes();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE,
+                [
+                    'mode'  => Mode::TEST
+                ]);
+
+            return false;
+        }
+
+        $experimentActive = $this->onBoardMerchantOnRazorpayx($merchant, Mode::TEST);
+
+        return ($experimentActive === true);
+    }
+
+    protected function onBoardMerchantOnRazorpayx(Entity $merchant, string $mode): bool
+    {
+        $variant = $this->app->razorx->getTreatment($merchant->getId(),
+            Merchant\RazorxTreatment::RAZORPAY_X_TEST_MODE_ONBOARDING,
+            $mode
+        );
+
+        $result = (strtolower($variant) === 'on');
+
+        return $result;
     }
 }

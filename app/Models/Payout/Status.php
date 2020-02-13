@@ -78,6 +78,14 @@ class Status
         self::PROCESSED => [
             self::REVERSED,
         ],
+        self::REVERSED => [
+            // this is empty because it's the final status
+            // need this to check state transitions
+        ],
+        self::FAILED => [
+            // this is empty because it's the final status
+            // need this to check state transitions
+        ],
     ];
 
     /**
@@ -200,6 +208,8 @@ class Status
      *
      * @param string      $currentStatus
      * @param string|null $previousStatus
+     *
+     * @throws BadRequestValidationFailureException
      */
     public static function validateStatusUpdate(string $currentStatus, string $previousStatus = null)
     {

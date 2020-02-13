@@ -58,6 +58,8 @@ class CitiPayoutTest extends TestCase
                 'active'       => 1,
             ]);
 
+        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
+
         $this->startTest();
 
         $payout = $this->getLastEntity('payout', true);
@@ -237,5 +239,12 @@ class CitiPayoutTest extends TestCase
         $this->fixtures->edit('balance', $balance->getId(), ['balance' => '100000']);
 
         $this->startTest();
+    }
+
+    public function tearDown()
+    {
+        $this->app['cache']->flush();
+
+        parent::tearDown();
     }
 }

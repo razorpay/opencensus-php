@@ -4,8 +4,9 @@ namespace RZP\Models\Gateway\Terminal;
 class Constants
 {
     const DEFAULT_CONTACT_NAME                   =   "Razorpay";
-    const WORLDLINE_ACTIVATION_RETRY_LIMIT       =   10;
-    const WORLDLINE_ACTIVATION_NEXT_RETRY_MINS   =   20; // mins
+    const WORLDLINE_ACTIVATION_RETRY_LIMIT       =   5;
+    const WORLDLINE_ACTIVATION_NEXT_RETRY_MINS   =   10; // mins
+    const WORLDLINE_ACTIVATION_DEFAULT_TIME      =   45; // time taken by a worldline terminal to be activated, after creating on gateway
 
     // Actions
     const MERCHANT_ONBOARD      = 'merchantOnboard';

@@ -26,8 +26,8 @@ use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
-use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
+use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
 
 class Core extends Base\Core
 {
@@ -63,7 +63,6 @@ class Core extends Base\Core
         {
             $this->dispatchForTransfer($fundTransferAttempt);
         }
-
 
         return $fundTransferAttempt;
     }
@@ -101,11 +100,18 @@ class Core extends Base\Core
     public function dispatchForTransfer(Entity $fta)
     {
         //
+        // Adding initiate_at checks to ensure refund is dispatched only if initiate_at is less than current timestamp
+        // This helps in setting FTA initiate_at to a future date / time.
+        //
+        $isEligibleForInitiation = ((empty($fta->getInitiateAt()) === true) or
+                                    ($fta->getInitiateAt() <= Carbon::now()->getTimestamp()));
+
+        //
         // Not instantly dispatching for fta's with source type as refund in func environment
         // because of absence of queues, this check must be removed when func environment gets queue infra
-        //
-        $isEligibleForInstantDispatch = !(($fta->getSourceType() === Type::REFUND) and
-            (in_array($this->env, [Constants\Environment::FUNC], true) === true));
+        $isEligibleForInstantDispatch = (!(($fta->getSourceType() === Type::REFUND) and
+                                          (in_array($this->env, [Constants\Environment::FUNC], true) === true)) and
+                                         ($isEligibleForInitiation === true));
 
         if ($isEligibleForInstantDispatch === false)
         {
@@ -430,7 +436,12 @@ class Core extends Base\Core
                                 $input[Entity::SOURCE_TYPE],
                                 true);
 
-                $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
+                // Set fts_transfer_id only in live mode
+                // because in test mode we don't call FTS service
+                if ($this->isLiveMode() === true)
+                {
+                    $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
+                }
             }
 
             if (AttemptStatus::isValidStateTransition($fta->getStatus(), $input[Entity::STATUS]) === false) {
@@ -616,6 +627,11 @@ class Core extends Base\Core
             'bank_status_code'  => $fta->getBankStatusCode(),
             'failure_reason'    => $fta->getFailureReason(),
         ] + $extraInfo;
+
+        if (isset($ftaData['return_utr']) === true)
+        {
+            $ftaData += [ 'return_utr' => $ftaData['return_utr'] ];
+        }
 
         $this->sourceReconByFta($fta->source, $ftaData);
 

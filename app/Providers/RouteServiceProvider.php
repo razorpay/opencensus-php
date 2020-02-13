@@ -89,6 +89,7 @@ class RouteServiceProvider extends ServiceProvider
                 'user_access',
                 'workflow',
                 'merchant_ip_filter',
+                'request_context',
                 'event_tracker',
             ],
         ];
