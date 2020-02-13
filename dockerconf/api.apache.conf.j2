@@ -17,15 +17,6 @@
   ServerAlias invoices.razorpay.com
   {% endif %}
 
-  <IfModule status_module>
-    <Location /server-status>
-        SetHandler server-status
-        Require local
-        Require ip 127
-    </Location>
-  ExtendedStatus On
-  </IfModule>
-
   DocumentRoot /app/public
   <Directory /app/public>
     # This is to allow Authorization header raw access
