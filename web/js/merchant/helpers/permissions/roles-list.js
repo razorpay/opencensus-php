@@ -10,6 +10,8 @@ const RolesList = {
   SELLERAPP: 'sellerapp',
   SELLERAPP_PLUS: 'sellerapp_plus',
   AGENT: 'agent',
+  AUTH_LINK_AGENT: 'auth_link_agent',
+  AUTH_LINK_SUPERVISOR: 'auth_link_supervisor',
 };
 
 Object.freeze(RolesList);
