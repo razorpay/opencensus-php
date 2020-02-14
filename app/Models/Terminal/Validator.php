@@ -1132,6 +1132,11 @@ class Validator extends Base\Validator
         Entity::VPA                        => 'sometimes|string',
     ];
 
+    protected static $migrateTerminalsCronRules = [
+        Entity::SYNC_STATUS     => 'required|in:not_synced,sync_in_progress,sync_success',
+        'count'                 => 'required|min:1|max:100',
+    ];
+
     protected static $matchAttributes = [
         Entity::GATEWAY,
         Entity::GATEWAY_ACQUIRER,

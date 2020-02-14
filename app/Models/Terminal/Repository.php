@@ -506,11 +506,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchForSyncToTerminalsService()
+    public function fetchForSyncToTerminalsService(array $input)
     {
         return $this->newQuery()
-                    ->where(Entity::SYNC_STATUS, '!=', SyncStatus::getValueForSyncStatusString(SyncStatus::SYNC_SUCCESS))
-                    ->limit(10) //TODO get this from the input and add validations
+                    ->where(Entity::SYNC_STATUS, '=', SyncStatus::getValueForSyncStatusString($input[Entity::SYNC_STATUS]))
+                    ->limit($input['count'])
                     ->get();
     }
 

@@ -355,14 +355,19 @@ class Service extends Base\Service
 
         $failureCount = 0;
 
+        $validator = (new Terminal\Validator)->validateInput('migrate_terminals_cron', $input);
 
-        $terminals = $this->repo->terminal->fetchForSyncToTerminalsService();
+        $terminals = $this->repo->terminal->fetchForSyncToTerminalsService($input);
 
         foreach ($terminals as $terminal)
         {
             try
             {
                 $this->createTerminalMigrateJob($terminal);
+
+                $terminal->setSyncStatus(SyncStatus::SYNC_IN_PROGRESS);
+
+                $this->repo->terminal->saveOrFail($terminal);
 
                 $succesCount += 1;
             }
