@@ -41,7 +41,7 @@ class TerminalsServiceMigrateJob extends Job
 
             $data['message'] = $exception->getMessage();
 
-            $this->trace->error(TraceCode::Terminals_SERVICE_MIGRATE_JOB_FAILED, $data);
+            $this->trace->error(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_FAILED, $data);
         }
         finally
         {

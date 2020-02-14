@@ -84,13 +84,19 @@ class TerminalsService
 
         $options = $this->getOptions();
 
+        $data = [
+            self::URL       => $url,
+            self::METHOD    => $method,
+        ];
+
+        if (isset($content[Terminal\Entity::TERMINAL_ID]) === true)
+        {
+            $data[Terminal\Entity::TERMINAL_ID] = $content[Terminal\Entity::TERMINAL_ID];
+        }
+
         try
         {
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_REQUEST,
-                [
-                    self::URL       => $url,
-                    self::METHOD    => $method,
-                ]);
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_REQUEST, $data);
 
             $response = Requests::request(
                 $url,
@@ -109,7 +115,9 @@ class TerminalsService
             {
                 throw new IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
                 null,
-                [self::RESPONSE => $this->parseAndReturnResponse($response)]);
+                [
+                    self::RESPONSE => $this->parseAndReturnResponse($response)]
+                );
             }
 
             return $response;
