@@ -11,11 +11,15 @@ class TerminalsServiceMigrateJob extends Job
 
     protected $service;
 
+    const QueueConfigKey = 'terminals_service_migrate';
+
     public function __construct(string $mode, string $terminalId)
     {
         parent::__construct($mode);
 
         $this->terminalId = $terminalId;
+
+        $this->queueConfigKey = self::QueueConfigKey;
     }
 
     public function handle()

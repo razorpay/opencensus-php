@@ -406,6 +406,11 @@ return [
         'live'       =>  env('AWS_POC_UPDATE_QUEUE'),
     ],
 
+    'terminals_service_migrate' => [
+        'test'      =>  env('TERMINALS_SERVICE_MIGRATE_QUEUE'),
+        'live'      =>  env('TERMINALS_SERVICE_MIGRATE_QUEUE'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Queue Connections
