@@ -20,7 +20,8 @@ class CreatePaymentMetaTable extends Migration
             $table->engine = 'InnoDB';
 
             $table->char(PaymentMeta::ID, PaymentMeta::ID_LENGTH)
-                ->primary();
+                ->primary()
+                ->index();
 
             $table->char(PaymentMeta::PAYMENT_ID, PaymentMeta::ID_LENGTH);
 
