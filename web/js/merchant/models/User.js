@@ -288,7 +288,7 @@ export default class User {
   }
 
   get isAuthLinkRoleEnabled() {
-    return this.findTag('enable_auth_link_role');
+    return this.findTag('Enable_auth_link_role');
   }
 
   get enabledFeatures() {
