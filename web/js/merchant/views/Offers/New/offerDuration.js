@@ -11,7 +11,7 @@ export default ({
   endsAt,
   maxOfferUsage,
 }) => (
-  <React.Fragment>
+  <div class="offers-duration-container">
     <Input.DateTime
       label="Starting On"
       name="starts_at"
@@ -21,6 +21,7 @@ export default ({
       validator={getFormElementValidations('starts_at')}
       defaultValue={startsAt}
       checkboxFieldLabel={'Starts Immediately'}
+      class="offers-datetime"
     />
     <Input.DateTime
       label="Expires On"
@@ -31,6 +32,7 @@ export default ({
       validator={getFormElementValidations('ends_at')}
       defaultValue={endsAt || ''}
       required
+      class="offers-datetime"
     />
     <Input.Select
       validator={getFormElementValidations('block')}
@@ -72,5 +74,5 @@ export default ({
       </a>{' '}
       for this feature to work.
     </p>
-  </React.Fragment>
+  </div>
 );
