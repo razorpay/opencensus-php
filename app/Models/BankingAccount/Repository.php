@@ -87,7 +87,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getLimitedMerchantIdsByChannelOrderedByBalanceLastFetchedAt($channel, $limit)
+    public function getMerchantIdsByChannel($channel, $limit)
     {
         return $this->newQuery()
                     ->where(Entity::CHANNEL, '=', $channel)

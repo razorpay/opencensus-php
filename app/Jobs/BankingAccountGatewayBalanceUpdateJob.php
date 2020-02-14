@@ -38,7 +38,7 @@ class BankingAccountGatewayBalanceUpdateJob extends Job
             parent::handle();
 
             $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_DISPATCH_GATEWAY_BALANCE_UPDATE_JOB_INIT,
+                TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_INIT,
                 [
                     'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
                     'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
@@ -53,7 +53,7 @@ class BankingAccountGatewayBalanceUpdateJob extends Job
             $this->trace->traceException(
                 $exception,
                 TraceCode::ERROR_EXCEPTION,
-                TraceCode::BANKING_ACCOUNT_DISPATCH_GATEWAY_BALANCE_UPDATE_JOB_FAILED,
+                TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_FAILED,
                 [
                     'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
                     'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
@@ -67,7 +67,7 @@ class BankingAccountGatewayBalanceUpdateJob extends Job
     {
         if ($this->attempts() <= self::MAX_RETRY_ATTEMPT)
         {
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_DISPATCH_GATEWAY_BALANCE_UPDATE_JOB_RELEASED,
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_RELEASED,
                                [
                                    'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
                                    'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
@@ -77,7 +77,7 @@ class BankingAccountGatewayBalanceUpdateJob extends Job
         }
         else
         {
-            $this->trace->error(TraceCode::BANKING_ACCOUNT_DISPATCH_GATEWAY_BALANCE_UPDATE_JOB_DELETED,
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_DELETED,
                                 [
                                     'channel'      => $this->params[BankingAccount\Entity::CHANNEL],
                                     'merchant_id'  => $this->params[BankingAccount\Entity::MERCHANT_ID],

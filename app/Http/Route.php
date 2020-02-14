@@ -1357,8 +1357,7 @@ final class Route
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
-        'banking_account_gateway_balance_fetch'
-        . '_and_update'                           => ['put',      'banking_accounts/gateway/{channel}/balance',                'BankingAccountController@processGatewayBalanceUpdate'      ],
+        'banking_account_gateway_balance_fetch'   => ['put',      'banking_accounts/gateway/{channel}/balance',                'BankingAccountController@processGatewayBalanceUpdate'      ],
         'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
         'banking_account_webhook_account_info'
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
@@ -1962,7 +1961,7 @@ final class Route
         'merchant_mtu_update',
         'webhook_deactivate',
         'transaction_settled_data_fix',
-        'banking_account_gateway_balance_fetch_and_update',
+        'banking_account_gateway_balance_fetch',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3642,7 +3641,7 @@ final class Route
             'banking_account_statement_process_cron',
             'create_merchant_options_admin',
             'transaction_settled_data_fix',
-            'banking_account_gateway_balance_fetch_and_update'
+            'banking_account_gateway_balance_fetch'
         ],
 
         'subscriptions' => [

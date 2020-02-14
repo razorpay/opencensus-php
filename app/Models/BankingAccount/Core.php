@@ -35,6 +35,8 @@ class Core extends Base\Core
     const GATEWAY   = 'gateway';
     const Processor = 'processor';
 
+    const DEFAULT_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = 5000;
+
     public function __construct()
     {
         parent::__construct();
@@ -792,14 +794,18 @@ class Core extends Base\Core
         $validator->validateChannelForFetchingGatewayBalance($input);
 
         $channel = array_get($input, Entity::CHANNEL);
-
 //TODO://add config key for rate limit
         $limit = (int) (new AdminService)->getConfigKey(
                                 ['key' => ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);
 
+        if (empty($limit) === true)
+        {
+            $limit = self::DEFAULT_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT;
+        }
+
         // get list of merchants based upon channel and balance last fetched at
         $merchantIds = $this->repo->banking_account
-                                  ->getLimitedMerchantIdsByChannelOrderedByBalanceLastFetchedAt($channel, $limit);
+                                  ->getMerchantIdsByChannel($channel, $limit);
 
         foreach ($merchantIds as $merchantId)
         {
@@ -807,7 +813,7 @@ class Core extends Base\Core
         }
 
         $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_DISPATCH_GATEWAY_BALANCE_UPDATE_JOB_LIST_OF_MERCHANTS,
+            TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_DISPATCHED,
             [
                 'merchant_ids' => $merchantIds
             ]);
@@ -818,7 +824,7 @@ class Core extends Base\Core
     protected function dispatchGatewayBalanceUpdateJob(string $channel, $merchantId)
     {
         $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_DISPATCH_GATEWAY_BALANCE_UPDATE_JOB_REQUEST,
+            TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_REQUEST,
             [
                 Entity::CHANNEL     => $channel,
                 Entity::MERCHANT_ID => $merchantId,
