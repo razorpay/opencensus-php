@@ -91,6 +91,8 @@ class Type
 
     const ADMIN_BATCH           = 'admin_batch';
 
+    const ADJUSTMENT            = 'adjustment';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -120,6 +122,7 @@ class Type
         self::ADMIN_BATCH,
         self::MERCHANT_CONFIG_INHERITANCE,
         self::MDR_ADJUSTMENT,
+        self::ADJUSTMENT,
     ];
 
     /**
@@ -185,6 +188,7 @@ class Type
         self::MPAN,
         self::PRICING_RULE,
         self::ADMIN_BATCH,
+        self::ADJUSTMENT,
     ];
 
     /**
@@ -258,6 +262,7 @@ class Type
         self::PARTNER_SUBMERCHANTS,
         self::OAUTH_MIGRATION_TOKEN,
         self::LINKED_ACCOUNT_REVERSAL,
+        self::ADJUSTMENT,
     ];
 
     /**
@@ -272,6 +277,7 @@ class Type
         self::PRICING_RULE,
         self::MERCHANT_CONFIG_INHERITANCE,
         self::MDR_ADJUSTMENT,
+        self::ADJUSTMENT,
     ];
 
     public static function exists(string $type)

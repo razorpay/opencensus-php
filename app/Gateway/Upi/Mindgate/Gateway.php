@@ -383,6 +383,8 @@ class Gateway extends Base\Gateway
 
     public function getUpiTransferData(array $input)
     {
+        $this->checkForUpiTransferPaymentFailure($input);
+
         $amount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
 
         $upiTransferData = [
@@ -404,6 +406,11 @@ class Gateway extends Base\Gateway
             'callback_data'     => $input,
             'upi_transfer_data' => $upiTransferData
         ];
+    }
+
+    protected function checkForUpiTransferPaymentFailure($input)
+    {
+        $this->checkCallbackResponseStatus($input);
     }
 
     /**

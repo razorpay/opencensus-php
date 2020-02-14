@@ -45,6 +45,8 @@ class Service extends Base\Service
             // min amount in paisa
             $minAmount = $plan->getMinAmount();
 
+            $merchant_payback = number_format($plan->getMerchantPayback()/100, 2);
+
             if (array_key_exists($plan->getId(), $emiOfferPlans) === true)
             {
                 $minEmiAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback());
@@ -52,20 +54,22 @@ class Service extends Base\Service
                 if ($order->getAmount() >= $minEmiAmount)
                 {
                     $emiOptions[$issuer][] = [
-                        'duration'   => $duration,
-                        'interest'   => 0,
-                        'subvention' => Subvention::MERCHANT,
-                        'min_amount' => $minEmiAmount,
-                        'offer_id'   => $emiOfferPlans[$plan->getId()],
+                        'duration'           => $duration,
+                        'interest'           => 0,
+                        'subvention'         => Subvention::MERCHANT,
+                        'min_amount'         => $minEmiAmount,
+                        'offer_id'           => $emiOfferPlans[$plan->getId()],
+                        'merchant_payback'   => $merchant_payback,
                     ];
                 }
                 else
                 {
                     $emiOptions[$issuer][] = [
-                        'duration'   => $duration,
-                        'interest'   => $plan->getRate() / 100,
-                        'subvention' => Subvention::CUSTOMER,
-                        'min_amount' => $minAmount,
+                        'duration'           => $duration,
+                        'interest'           => $plan->getRate() / 100,
+                        'subvention'         => Subvention::CUSTOMER,
+                        'min_amount'         => $minAmount,
+                        'merchant_payback'   => $merchant_payback,
                     ];
                 }
             }
@@ -73,10 +77,11 @@ class Service extends Base\Service
             else if ($this->shouldShowNotOfferEmiOption($offers, $order, $plan) === true)
             {
                 $emiOptions[$issuer][] = [
-                    'duration'   => $duration,
-                    'interest'   => $plan->getRate() / 100,
-                    'subvention' => Subvention::CUSTOMER,
-                    'min_amount' => $minAmount,
+                    'duration'            => $duration,
+                    'interest'            => $plan->getRate() / 100,
+                    'subvention'          => Subvention::CUSTOMER,
+                    'min_amount'          => $minAmount,
+                    'merchant_payback'    => $merchant_payback,
                 ];
             }
         }
