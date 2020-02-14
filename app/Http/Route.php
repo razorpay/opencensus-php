@@ -451,6 +451,7 @@ final class Route
         'adj_add'                                  => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
         'adj_add_reverse'                          => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                             => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
+        'adj_add_batch'                            => ['post',     'adjustments/batch',                              'AdjustmentController@postAdjustmentBatch'                          ],
         'adjustments_split_for_dispute'            => ['post',     'adjustments/split_adjustments',                  'AdjustmentController@splitAdjustments'                             ],
         'mock_hdfc_enroll'                         => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                        => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
@@ -1820,6 +1821,7 @@ final class Route
         'merchant_inheritance_parent_set_bulk',
         'mdr_adjustment',
         'pricing_add_plan_rule_bulk',
+        'adj_add_batch',
         'admin_lead_verify',
         'admin_authentication',
         'admin_forgot_password',
@@ -2836,6 +2838,7 @@ final class Route
         'payout_links_settings_post'               => Permission::EDIT_MERCHANT,
         'payout_links_settings_get'                => Permission::EDIT_MERCHANT,
         'pricing_add_plan_rule_bulk'               => '*',
+        'adj_add_batch'                            => '*',
         'reminder_admin'                           => Permission::REMINDER_OPERATION,
         'merchant_document_admin_fetch'            => '*',
         'group_create'                             => Permission::CREATE_GROUP,
@@ -3937,6 +3940,7 @@ final class Route
             'merchant_inheritance_parent_set_bulk',
             'mdr_adjustment',
             'entity_bulk_update',
+            'adj_add_batch',
         ],
 
         'stork' => [
