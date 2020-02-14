@@ -1080,21 +1080,24 @@ class BankingAccountTest extends TestCase
 
     public function testBulkAssignReviewersToBankingAccounts()
     {
-        $ba1 = $this->fixtures->create('banking_account', [
-            'account_type'          => 'current',
+        $bankingAccount1 = $this->fixtures->create('banking_account', [
+            'id'            => 'randomBaAccId1',
+            'account_type'  => 'current',
         ]);
 
-        $ba2 = $this->createBankingAccount();
+        $bankingAccount2 = $this->fixtures->create('banking_account', [
+            'id'            => 'randomBaAccId2',
+            'account_type'  => 'current',
+        ]);
 
-        $adminId = 'randomAdmin123';
-
-        $this->fixtures->create('admin', [
-            'id'     => $adminId,
+        $randomAdmin = $this->fixtures->create('admin', [
             'org_id' => '100000razorpay'
         ]);
 
         $this->ba->adminAuth();
 
+        $admin = $this->ba->getAdmin();
+
         $row = [
             PermissionEntity::NAME        => PermissionName::ASSIGN_BANKING_ACCOUNT_REVIEWER,
             PermissionEntity::CATEGORY    => PermissionCategory::RAZORPAYX_BANKING,
@@ -1106,38 +1109,38 @@ class BankingAccountTest extends TestCase
 
         $permission = $this->fixtures->create('permission', $row);
 
-        DB::table(Table::PERMISSION_MAP)->insert([
-            'permission_id'     => $permission['id'],
-            'entity_id'         => 'RzpAdminRoleId',
-            'entity_type'       => 'role',
-        ]);
+        $adminRole = $admin->roles()->first();
 
-        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = "admin_".$adminId;
-        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = "bacc_".$ba1['id'];
-        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = $ba2['id'];
+        $adminRole->permissions()->attach($permission);
+
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = $randomAdmin->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = $bankingAccount1->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = $bankingAccount2->getPublicId();
 
         $this->startTest();
 
-        $bankingAccount1 = $this->getDbEntityById('banking_account', $ba1['id']);
+        $bankingAccount1 = $this->getDbEntityById('banking_account', $bankingAccount1->getId());
+        $bankingAccount2 = $this->getDbEntityById('banking_account', $bankingAccount1->getId());
 
-        $bankingAccount2 = $this->getDbEntityById('banking_account', $ba2['id']);
-
-        $this->assertEquals($adminId, $bankingAccount1['reviewer_id']);
-
-        $this->assertEquals($adminId, $bankingAccount2['reviewer_id']);
+        $this->assertEquals($randomAdmin->getId(), $bankingAccount1['reviewer_id']);
+        $this->assertEquals($randomAdmin->getId(), $bankingAccount2['reviewer_id']);
     }
 
     public function testBulkAssignInvalidReviewersToBankingAccounts()
     {
-        $ba1 = $this->fixtures->create('banking_account', [
-            'account_type'          => 'current',
+        $bankingAccount1 = $this->fixtures->create('banking_account', [
+            'id'            => 'randomBaAccId1',
+            'account_type'  => 'current',
         ]);
 
-        $ba2 = $this->createBankingAccount();
-
-        $adminId = 'randomAdmin123';
+        $bankingAccount2 = $this->fixtures->create('banking_account', [
+            'id'            => 'randomBaAccId2',
+            'account_type'  => 'current',
+        ]);
 
         $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
 
         $row = [
             PermissionEntity::NAME        => PermissionName::ASSIGN_BANKING_ACCOUNT_REVIEWER,
@@ -1150,29 +1153,26 @@ class BankingAccountTest extends TestCase
 
         $permission = $this->fixtures->create('permission', $row);
 
-        DB::table(Table::PERMISSION_MAP)->insert([
-            'permission_id'     => $permission['id'],
-            'entity_id'         => 'RzpAdminRoleId',
-            'entity_type'       => 'role',
-        ]);
+        $adminRole = $admin->roles()->first();
 
-        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = "admin_".$adminId;
-        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = "bacc_".$ba1['id'];
-        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = $ba2['id'];
+        $adminRole->permissions()->attach($permission);
+
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = 'admin_wrongAdminId12';
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = $bankingAccount1->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = $bankingAccount2->getPublicId();
 
         $this->startTest();
     }
 
     public function testBulkAssignReviewersToInvalidBankingAccounts()
     {
-        $adminId = 'randomAdmin123';
-
-        $this->fixtures->create('admin', [
-            'id'     => $adminId,
+        $randomAdmin = $this->fixtures->create('admin', [
             'org_id' => '100000razorpay'
         ]);
 
         $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
 
         $row = [
             PermissionEntity::NAME        => PermissionName::ASSIGN_BANKING_ACCOUNT_REVIEWER,
@@ -1185,18 +1185,13 @@ class BankingAccountTest extends TestCase
 
         $permission = $this->fixtures->create('permission', $row);
 
-        DB::table(Table::PERMISSION_MAP)->insert([
-            'permission_id'     => $permission['id'],
-            'entity_id'         => 'RzpAdminRoleId',
-            'entity_type'       => 'role',
-        ]);
+        $adminRole = $admin->roles()->first();
 
-        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = "admin_".$adminId;
-        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = "bacc_wrongAccount11";
-        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = "bacc_wrongAccount12";
+        $adminRole->permissions()->attach($permission);
 
-        $this->testData[__FUNCTION__]['response']['content']['failedItems'][0]['id'] = "wrongAccount11";
-        $this->testData[__FUNCTION__]['response']['content']['failedItems'][1]['id'] = "wrongAccount12";
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = $randomAdmin->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = 'bacc_wrongCurAccId1';
+        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = 'bacc_wrongCurAccId2';
 
         $this->startTest();
     }
