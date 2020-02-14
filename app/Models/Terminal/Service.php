@@ -405,20 +405,34 @@ class Service extends Base\Service
      */
     public function migrateTerminal(string $terminalId)
     {
-        $this->repo->transaction(function () use ($terminalId) {
-            $client = new TerminalsServiceClient($this->app);
+        $client = new TerminalsServiceClient($this->app);
 
-            $terminal = $this->repo->terminal->getById($terminalId);
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+
+        $this->repo->transaction(function () use ($terminal, $client) {
+
 
             $this->repo->terminal->lockForUpdateAndReload($terminal);
 
+            if ($terminal->isSynced() === true)
+            {
+                $data = [
+                    Entity::TERMINAL_ID         => $terminal->getId(),
+                ];
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_TERMINAL_ALREADY_SYNCED, $data);
+
+                return;
+            }
+
             $migrateTerminalResponse = $client->migrateTerminal($terminal);
 
-            $fetchTerminalResponse = $client->fetchTerminalById($terminalId);
+            $fetchTerminalResponse = $client->fetchTerminalById($terminal->getId());
 
             if ($this->isMigrateTerminalSuccess($terminal, $migrateTerminalResponse, $fetchTerminalResponse) === true)
             {
-                $this->processMigrateTerminalSuccsess($terminal);
+                $this->processMigrateTerminalSuccess($terminal);
             }
             else
             {

@@ -1398,6 +1398,11 @@ class Entity extends Base\PublicEntity
         return ($this->isCardEnabled() === true);
     }
 
+    public function isSynced()
+    {
+        return $this->getSyncStatus() === SyncStatus::SYNC_SUCCESS;
+    }
+
     public  function isValidVirtualVpaForTerminal(string $virtualVpa)
     {
         $prefix = $this->getAttribute(self::VIRTUAL_UPI_ROOT) . $this->getAttribute(self::VIRTUAL_UPI_MERCHANT_PREFIX);
