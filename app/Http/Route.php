@@ -1419,6 +1419,7 @@ final class Route
         'd2c_bureau_details_patch'                => ['patch',     'd2c_bureau_details/{id}',                                  'D2cController@patchDetails'                               ],
         'd2c_bureau_details_otp_submit'           => ['post',      'd2c_bureau_details/{id}/otp_submit',                       'D2cController@getReportWithOtp'                           ],
         'd2c_bureau_reports_patch'                => ['patch',     'd2c_bureau_reports/{id}',                                  'D2cController@patchReport'                                ],
+        'd2c_bureau_reports_download'             => ['get',       'd2c_bureau_reports/{id}/download_url',                     'D2cController@getReportDownloadUrl'                       ],
 
         // routes for Rendering Preferences / Options service
         'create_merchant_options'                 => ['post',      'options',                                                   'OptionsController@createOptions'                         ],
@@ -2309,6 +2310,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'd2c_bureau_reports_download',
         'payout_update_pull_payout_status',
         'payout_links_settings_post',
         'payout_links_settings_get',
@@ -2831,6 +2833,7 @@ final class Route
         ];
 
     public static $routePermission = [
+        'd2c_bureau_reports_download'              => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
         'payout_update_pull_payout_status'         => '*',
         'merchant_activation_update_website_status'=> '*',
         'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,

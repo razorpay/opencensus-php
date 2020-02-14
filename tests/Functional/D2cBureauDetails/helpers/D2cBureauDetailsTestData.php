@@ -91,5 +91,17 @@ return [
 //                'created_at'        => 1571374473
             ],
         ],
+    ],
+
+    'testGetDownloadUrl' => [
+        'request' => [
+            'url' => '/d2c_bureau_reports/{id}/download_url',
+            'method'    => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'signed_url'    => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf',
+            ],
+        ],
     ]
 ];
