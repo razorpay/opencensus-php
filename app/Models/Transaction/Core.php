@@ -1556,7 +1556,7 @@ class Core extends Base\Core
             ]
         );
 
-        $txn->setBalance(null);
+        $txn->setBalance($this->merchantBalance);
 
         $txn->setBalanceUpdated(true);
 
