@@ -20,6 +20,8 @@ class Core extends Base\Core
 
     const TIME_INTERVAL_MINS = 60;
 
+    const DCC_MARK_UP_PERCENTAGE = 5;
+
     public function __construct()
     {
         parent::__construct();
@@ -131,7 +133,7 @@ class Core extends Base\Core
     {
         $convertedAmount = $baseAmount * $rate;
 
-        return (int) ceil($convertedAmount);
+        return (int) ceil($convertedAmount + ((self::DCC_MARK_UP_PERCENTAGE * $convertedAmount) / 100));
     }
 
     /*
