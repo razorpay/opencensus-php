@@ -3518,6 +3518,7 @@ final class Route
         'batch_validate_file'                          => '*',
         'batch_download_file'                          => '*',
         'merchant_partner_configs_fetch'               => '*',
+        'bank_account_fetch'                           => '*',
     ];
 
     public static $direct = [
