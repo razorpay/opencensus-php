@@ -380,11 +380,6 @@ class Core extends Base\Core
                                                             string $balanceType,
                                                             string $txnType) : int
     {
-        if ((in_array($txnType, self::NEGATIVE_FLOWS[$balanceType]) === false))
-        {
-            return 0;
-        }
-
         $balance = $merchant->getBalanceByTypeOrFail($balanceType);
 
         $reserveAmount = $this->getReserveAmount($merchant, $balanceType);
