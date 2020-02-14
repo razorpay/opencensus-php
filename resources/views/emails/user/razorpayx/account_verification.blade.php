@@ -190,7 +190,7 @@
 
                                                         <div class="para-dark center font-size-medium margin-bottom-24" style="color: #9195A6; font-size: 14px; line-height: 1.5; margin-bottom: 24px; text-align: center;">
                                                             We will use this email address to send communication regarding your RazorpayX account. Hit the button below to verify.
-                                                            <a class="link btn primary font-bold" href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST).'/confirm?token='. $token}}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 185px; font-family: Trebuchet MS; color: #FFF; background-color: #3281FF; border-color: #3281FF; margin: 24px auto 0 auto; display: block;">
+                                                            <a class="link btn primary font-bold" href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST).'/confirm?token='. $token}}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; width: 185px; font-family: Trebuchet MS; color: #FFF; background-color: #3281FF; border-color: #3281FF; margin: 24px auto 0 auto; display: block;">
                                                                 VERIFY EMAIL
                                                             </a>
                                                         </div>
