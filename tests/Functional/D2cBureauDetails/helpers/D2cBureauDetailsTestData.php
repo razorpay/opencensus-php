@@ -31,6 +31,8 @@ return [
                 'last_name'     => 'doe',
                 'email'         => 'test@razorpay.com',
                 'state'         => 'PB',
+                'date_of_birth' => '1996-10-10',
+                'gender'        => 'male'
             ]
         ],
         'response' => [
