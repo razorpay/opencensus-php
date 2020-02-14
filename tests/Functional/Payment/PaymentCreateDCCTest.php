@@ -104,10 +104,52 @@ class PaymentCreateDCCTest extends TestCase
         });
     }
 
-    private function getDefaultPaymentFlowsRequestData()
+    public function testPaymentFlowsDccDisabledMerchants()
     {
-        $iin = $this->fixtures->iin->create(['iin' => '414366', 'country' => 'US', 'issuer' => 'UTIB', 'network' => 'Visa',
+        $this->fixtures->merchant->removeFeatures(['dcc']);
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
+    }
+
+    public function testPaymentFlowsNonInternationalCards()
+    {
+        $iin = $this->fixtures->iin->create(['iin' => '414366', 'country' => 'IN', 'issuer' => 'UTIB', 'network' => 'Visa',
             'flows'   => ['3ds' => '1', 'pin' => '1', 'otp' => '1',]]);
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData($iin));
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(false, $responseContent['is_international']);
+        $this->assertEquals('INR', $responseContent['card_currency']);
+        $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
+    }
+
+    public function testPaymentFlowsDccNonSupportedNetworkCards()
+    {
+        $iin = $this->fixtures->iin->create(['iin' => '414366', 'country' => 'US', 'issuer' => 'UTIB', 'network' => 'RUPAY',
+            'flows'   => ['3ds' => '1', 'pin' => '1', 'otp' => '1',]]);
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData($iin));
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(true, $responseContent['is_international']);
+        $this->assertEquals('USD', $responseContent['card_currency']);
+        $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
+    }
+
+    private function getDefaultPaymentFlowsRequestData($iin = null)
+    {
+        if ($iin === null)
+        {
+            $iin = $this->fixtures->iin->create(['iin' => '414366', 'country' => 'US', 'issuer' => 'UTIB', 'network' => 'Visa',
+                'flows'   => ['3ds' => '1', 'pin' => '1', 'otp' => '1',]]);
+        }
 
         $flowsData = [
             'content' => ['amount' => 50000, 'currency' => 'INR', 'iin' => $iin->getIin()],
