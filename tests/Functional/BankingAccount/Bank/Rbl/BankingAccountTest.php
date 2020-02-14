@@ -1080,17 +1080,17 @@ class BankingAccountTest extends TestCase
 
     public function testBulkAssignReviewersToBankingAccounts()
     {
-        $bankingAccount1 = $this->fixtures->create('banking_account', [
+        $bankingAccount1 = $this->fixtures->on('test')->create('banking_account', [
             'id'            => 'randomBaAccId1',
             'account_type'  => 'current',
         ]);
 
-        $bankingAccount2 = $this->fixtures->create('banking_account', [
+        $bankingAccount2 = $this->fixtures->on('test')->create('banking_account', [
             'id'            => 'randomBaAccId2',
             'account_type'  => 'current',
         ]);
 
-        $randomAdmin = $this->fixtures->create('admin', [
+        $randomAdmin = $this->fixtures->on('test')->create('admin', [
             'org_id' => '100000razorpay'
         ]);
 
@@ -1107,7 +1107,7 @@ class BankingAccountTest extends TestCase
             PermissionEntity::ASSIGNABLE  => true,
         ];
 
-        $permission = $this->fixtures->create('permission', $row);
+        $permission = $this->fixtures->on('test')->create('permission', $row);
 
         $adminRole = $admin->roles()->first();
 
