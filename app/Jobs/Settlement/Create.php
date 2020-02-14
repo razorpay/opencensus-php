@@ -208,6 +208,21 @@ class Create extends Job
 
         $batchSize = (new Initiator)->getLimitForChannel($channel);
 
+        $merchantCountKey = ((int) Cache::get($this->totalMerchantCountKey));
+
+        // if there total merchant count is zero that means settlement creation process completed
+        $isCompleted = ($merchantCountKey === 0);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_CREATE_REDIS_VALUES,
+            [
+                'channel'           => $channel,
+                'merchant_id'       => $this->merchantId,
+                'channel_count'     => $channelCount,
+                'merchant_count'    => $merchantCountKey,
+                'is_completed'      => $isCompleted,
+            ]);
+
         // if there enough settlement to transfer then initiate the transfer
         if ($count === $batchSize)
         {
@@ -215,9 +230,6 @@ class Create extends Job
 
             return;
         }
-
-        // if there total merchant count is zero that means settlement creation process completed
-        $isCompleted = (((int) Cache::get($this->totalMerchantCountKey)) === 0);
 
         // if process is not complete then do not initiate transfer
         if ($isCompleted === false)

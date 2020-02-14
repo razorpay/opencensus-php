@@ -367,6 +367,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|alpha_num|min:8',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected static $billdeskEditTerminalRules = [
@@ -765,6 +767,11 @@ class Validator extends Base\Validator
         Entity::TPV                        => 'sometimes|in:0,1,2',
     ];
 
+    protected static $netbankingAxisEditTerminalRules = [
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+    ];
+
     protected static $nachCitiTerminalRules = [
         Entity::GATEWAY                    => 'required|in:nach_citi',
         Entity::NACH                       => 'required|boolean|in:1',
@@ -858,6 +865,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD2  => 'required|string',
         Entity::GATEWAY_SECURE_SECRET2      => 'required|string',
+        Entity::TPV                         => 'sometimes|in:0,1,2'
     ];
 
     protected static $netbankingCsbEditTerminalRules = [
@@ -870,6 +878,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
+        Entity::TPV                         => 'sometimes|in:0,1,2'
     ];
 
     protected static $netbankingBobEditTerminalRules = [

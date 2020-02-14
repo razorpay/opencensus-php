@@ -1356,4 +1356,20 @@ class TerminalTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testCreateCybersourceYesBTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals('yesb', $terminal['gateway_acquirer']);
+
+        // Adding below assert to check if the org is being associated to terminal (via merchant) properly
+        $this->assertEquals('100000razorpay', $terminal['org_id']);
+    }
 }

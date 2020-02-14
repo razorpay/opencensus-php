@@ -16,19 +16,27 @@ abstract class Event
 
     protected $customProperties = [];
 
+    protected $metaDetails = [];
+
     protected $exception = null;
 
     protected $properties = [];
 
     protected $app = null;
 
-    public function __construct(Base\PublicEntity $entity = null, \Throwable $ex = null, array $customProperties = [])
+    public function __construct(Base\PublicEntity $entity = null,
+                                \Throwable $ex = null,
+                                array $customProperties = [],
+                                array $metaDetails =[]
+    )
     {
         $this->app = App::getFacadeRoot();
 
         $this->entity = $entity;
 
         $this->customProperties = $customProperties;
+
+        $this->metaDetails = $metaDetails;
 
         $this->exception = $ex;
     }

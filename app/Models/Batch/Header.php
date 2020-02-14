@@ -797,6 +797,13 @@ class Header
     const IIN_MC_MASTERCARD_COUNTRY              = 'COUNTRY';
     const IIN_MC_MASTERCARD_REGION               = 'REGION';
 
+
+    const ADJUSTMENT_REFERENCE_ID   = 'reference_id';
+    const ADJUSTMENT_MERCHANT_ID    = 'merchant_id';
+    const ADJUSTMENT_AMOUNT         = 'amount';
+    const ADJUSTMENT_BALANCE_TYPE   = 'balance_type';
+    const ADJUSTMENT_DESCRIPTION    = 'description';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -2473,7 +2480,23 @@ class Header
             self::INPUT => [
                 self::MDR_ADJUSTMENT_TRANSACTION_ID,
             ],
-        ]
+        ],
+        Type::ADJUSTMENT => [
+            self::INPUT => [
+                self::ADJUSTMENT_REFERENCE_ID,
+                self::ADJUSTMENT_MERCHANT_ID,
+                self::ADJUSTMENT_AMOUNT,
+                self::ADJUSTMENT_BALANCE_TYPE,
+                self::ADJUSTMENT_DESCRIPTION,
+            ],
+            self::OUTPUT => [
+                self::ADJUSTMENT_REFERENCE_ID,
+                self::ADJUSTMENT_MERCHANT_ID,
+                self::ADJUSTMENT_AMOUNT,
+                self::ADJUSTMENT_BALANCE_TYPE,
+                self::ADJUSTMENT_DESCRIPTION,
+            ],
+        ],
     ];
 
     /**

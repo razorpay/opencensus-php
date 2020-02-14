@@ -219,6 +219,23 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+
+    public function getPastInvoicesByStatusAndMerchatId(
+        int $pastTime,
+        array $statuses = [],
+        array $merchantIds = [],
+        int $limit = 500,
+        string $type = Type::LINK): Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->where(Entity::TYPE, '=' ,$type)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->whereIn(Entity::STATUS, $statuses)
+                    ->where(Entity::UPDATED_AT, '<=', $pastTime)
+                    ->limit($limit)
+                    ->get();
+    }
+
     public function fetchIssuedInvoicesOfSubscription(Subscription\Entity $subscription)
     {
         return $this->newQuery()

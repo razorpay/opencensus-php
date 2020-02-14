@@ -314,6 +314,8 @@ class Processor
 
             $this->preProcessDCCInputs($input, $payment, $gatewayInput);
 
+            $this->eventPaymentCreated();
+
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
@@ -347,6 +349,15 @@ class Processor
         }
     }
 
+    protected function eventPaymentCreated()
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $this->payment,
+        ];
+
+        $this->app['events']->fire('api.payment.created', $eventPayload);
+    }
+
     protected function appendMetadataForPayment(array & $input)
     {
         if ($this->app['basicauth']->isPrivateAuth() === true)
@@ -378,7 +389,15 @@ class Processor
             ],
         ];
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $properties);
+        $metaDetails = [
+            'metadata'  => $properties,
+            'read_key'  => array(),
+            'write_key' => 'request.id',
+        ];
+
+        $metaDetails['metadata']['request']['id'] = $this->app['request']->getId();
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $metaDetails, $properties);
     }
 
     public function getPayment(): Payment\Entity
@@ -864,7 +883,7 @@ class Processor
         $coproto = [
             'type'    => 'respawn',
             'request' => [
-                'url'     => $this->route->getUrlWithPublicAuthInQueryParam($currentRouteName),
+                'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
                 'method'  => 'POST',
                 'content' => [
                     'input' => array_assoc_flatten($input, '%s[%s]'),
