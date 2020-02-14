@@ -287,6 +287,10 @@ export default class User {
     return this.findTag('enable_RBL_role');
   }
 
+  get isAuthLinkRoleEnabled() {
+    return this.findTag('enable_auth_link_role');
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 

@@ -13,6 +13,7 @@ import {
 } from 'merchant/reducers/team';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import {AuthLinkRoles} from "../../../../helpers/data";
 
 let ROLES = without(roles, rolesList.OWNER);
 @connect(state => state.session, {
@@ -113,6 +114,10 @@ export default class EditInvitation extends Component {
           allRoles = { rbl_agent: RBLRoles.rbl_agent };
         }
       }
+    }
+
+    if (user.isAuthLinkRoleEnabled) {
+      allRoles = { ...allRoles, ...AuthLinkRoles };
     }
 
     let ROLES = allRoles;
