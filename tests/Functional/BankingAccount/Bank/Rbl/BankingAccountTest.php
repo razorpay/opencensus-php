@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Constants\Table;
 use RZP\Models\Contact;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
@@ -9,11 +10,14 @@ use RZP\Models\BankingAccount\AccountType;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Mail\BankingAccount\StatusNotifications\Created;
 use RZP\Mail\BankingAccount\StatusNotifications\Processed;
 use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
+use RZP\Models\Admin\Permission\Entity as PermissionEntity;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
+use RZP\Models\Admin\Permission\Category as PermissionCategory;
 
 class BankingAccountTest extends TestCase
 {
@@ -1072,5 +1076,128 @@ class BankingAccountTest extends TestCase
         $this->fixtures->create('banking_account_detail', $attributes[0]);
         $this->fixtures->create('banking_account_detail', $attributes[1]);
 
+    }
+
+    public function testBulkAssignReviewersToBankingAccounts()
+    {
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_type'          => 'current',
+        ]);
+
+        $ba2 = $this->createBankingAccount();
+
+        $adminId = 'randomAdmin123';
+
+        $this->fixtures->create('admin', [
+            'id'     => $adminId,
+            'org_id' => '100000razorpay'
+        ]);
+
+        $this->ba->adminAuth();
+
+        $row = [
+            PermissionEntity::NAME        => PermissionName::ASSIGN_BANKING_ACCOUNT_REVIEWER,
+            PermissionEntity::CATEGORY    => PermissionCategory::RAZORPAYX_BANKING,
+            PermissionEntity::DESCRIPTION => 'Adds reviewer to banking account',
+            PermissionEntity::CREATED_AT  => time(),
+            PermissionEntity::UPDATED_AT  => time(),
+            PermissionEntity::ASSIGNABLE  => true,
+        ];
+
+        $permission = $this->fixtures->create('permission', $row);
+
+        DB::table(Table::PERMISSION_MAP)->insert([
+            'permission_id'     => $permission['id'],
+            'entity_id'         => 'RzpAdminRoleId',
+            'entity_type'       => 'role',
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = "admin_".$adminId;
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = "bacc_".$ba1['id'];
+        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = $ba2['id'];
+
+        $this->startTest();
+
+        $bankingAccount1 = $this->getDbEntityById('banking_account', $ba1['id']);
+
+        $bankingAccount2 = $this->getDbEntityById('banking_account', $ba2['id']);
+
+        $this->assertEquals($adminId, $bankingAccount1['reviewer_id']);
+
+        $this->assertEquals($adminId, $bankingAccount2['reviewer_id']);
+    }
+
+    public function testBulkAssignInvalidReviewersToBankingAccounts()
+    {
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_type'          => 'current',
+        ]);
+
+        $ba2 = $this->createBankingAccount();
+
+        $adminId = 'randomAdmin123';
+
+        $this->ba->adminAuth();
+
+        $row = [
+            PermissionEntity::NAME        => PermissionName::ASSIGN_BANKING_ACCOUNT_REVIEWER,
+            PermissionEntity::CATEGORY    => PermissionCategory::RAZORPAYX_BANKING,
+            PermissionEntity::DESCRIPTION => 'Adds reviewer to banking account',
+            PermissionEntity::CREATED_AT  => time(),
+            PermissionEntity::UPDATED_AT  => time(),
+            PermissionEntity::ASSIGNABLE  => true,
+        ];
+
+        $permission = $this->fixtures->create('permission', $row);
+
+        DB::table(Table::PERMISSION_MAP)->insert([
+            'permission_id'     => $permission['id'],
+            'entity_id'         => 'RzpAdminRoleId',
+            'entity_type'       => 'role',
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = "admin_".$adminId;
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = "bacc_".$ba1['id'];
+        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = $ba2['id'];
+
+        $this->startTest();
+    }
+
+    public function testBulkAssignReviewersToInvalidBankingAccounts()
+    {
+        $adminId = 'randomAdmin123';
+
+        $this->fixtures->create('admin', [
+            'id'     => $adminId,
+            'org_id' => '100000razorpay'
+        ]);
+
+        $this->ba->adminAuth();
+
+        $row = [
+            PermissionEntity::NAME        => PermissionName::ASSIGN_BANKING_ACCOUNT_REVIEWER,
+            PermissionEntity::CATEGORY    => PermissionCategory::RAZORPAYX_BANKING,
+            PermissionEntity::DESCRIPTION => 'Adds reviewer to banking account',
+            PermissionEntity::CREATED_AT  => time(),
+            PermissionEntity::UPDATED_AT  => time(),
+            PermissionEntity::ASSIGNABLE  => true,
+        ];
+
+        $permission = $this->fixtures->create('permission', $row);
+
+        DB::table(Table::PERMISSION_MAP)->insert([
+            'permission_id'     => $permission['id'],
+            'entity_id'         => 'RzpAdminRoleId',
+            'entity_type'       => 'role',
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = "admin_".$adminId;
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = "bacc_wrongAccount11";
+        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = "bacc_wrongAccount12";
+
+        $this->testData[__FUNCTION__]['response']['content']['failedItems'][0]['id'] = "wrongAccount11";
+        $this->testData[__FUNCTION__]['response']['content']['failedItems'][1]['id'] = "wrongAccount12";
+
+        $this->startTest();
     }
 }

@@ -835,5 +835,57 @@ return [
                 ],
             ],
         ],
+    ],
+
+    'testBulkAssignReviewersToBankingAccounts' => [
+        'request'  => [
+            'url'     => '/banking_accounts/bulk_assign_reviewer',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success'       =>  2,
+                'failed'        =>  0,
+                'failedItems'   =>  [],
+            ],
+        ],
+    ],
+
+    'testBulkAssignInvalidReviewersToBankingAccounts' => [
+        'request'  => [
+            'url'     => '/banking_accounts/bulk_assign_reviewer',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success'       =>  0,
+                'failed'        =>  2,
+                'error'   =>  'The id provided does not exist',
+            ],
+        ],
+    ],
+
+    'testBulkAssignReviewersToInvalidBankingAccounts' => [
+        'request'  => [
+            'url'     => '/banking_accounts/bulk_assign_reviewer',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success'       =>  0,
+                'failed'        =>  2,
+                'failedItems'   =>  [
+                    [
+                        'error'     => 'The id provided does not exist'
+                    ],
+                    [
+                        'error'     => 'The id provided does not exist'
+                    ],
+                ],
+            ],
+        ],
     ]
 ];
