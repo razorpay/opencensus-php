@@ -404,6 +404,10 @@ return [
                 'description' => 'Bulk Capture Payment',
                 'assignable'  => true,
                 'workflow'    => false,
+            ],
+            Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS => [
+                'description' => 'Allow downloads of credit bureau reports of merchants',
+                'assignable'  => true,
             ]
         ],
 

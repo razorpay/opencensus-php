@@ -451,6 +451,7 @@ final class Route
         'adj_add'                                  => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
         'adj_add_reverse'                          => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                             => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
+        'adj_add_batch'                            => ['post',     'adjustments/batch',                              'AdjustmentController@postAdjustmentBatch'                          ],
         'adjustments_split_for_dispute'            => ['post',     'adjustments/split_adjustments',                  'AdjustmentController@splitAdjustments'                             ],
         'mock_hdfc_enroll'                         => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                        => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
@@ -1418,6 +1419,7 @@ final class Route
         'd2c_bureau_details_patch'                => ['patch',     'd2c_bureau_details/{id}',                                  'D2cController@patchDetails'                               ],
         'd2c_bureau_details_otp_submit'           => ['post',      'd2c_bureau_details/{id}/otp_submit',                       'D2cController@getReportWithOtp'                           ],
         'd2c_bureau_reports_patch'                => ['patch',     'd2c_bureau_reports/{id}',                                  'D2cController@patchReport'                                ],
+        'd2c_bureau_reports_download'             => ['get',       'd2c_bureau_reports/{id}/download_url',                     'D2cController@getReportDownloadUrl'                       ],
 
         // routes for Rendering Preferences / Options service
         'create_merchant_options'                 => ['post',      'options',                                                   'OptionsController@createOptions'                         ],
@@ -1820,6 +1822,7 @@ final class Route
         'merchant_inheritance_parent_set_bulk',
         'mdr_adjustment',
         'pricing_add_plan_rule_bulk',
+        'adj_add_batch',
         'admin_lead_verify',
         'admin_authentication',
         'admin_forgot_password',
@@ -2307,6 +2310,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'd2c_bureau_reports_download',
         'payout_update_pull_payout_status',
         'payout_links_settings_post',
         'payout_links_settings_get',
@@ -2829,6 +2833,7 @@ final class Route
         ];
 
     public static $routePermission = [
+        'd2c_bureau_reports_download'              => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
         'payout_update_pull_payout_status'         => '*',
         'merchant_activation_update_website_status'=> '*',
         'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
@@ -2836,6 +2841,7 @@ final class Route
         'payout_links_settings_post'               => Permission::EDIT_MERCHANT,
         'payout_links_settings_get'                => Permission::EDIT_MERCHANT,
         'pricing_add_plan_rule_bulk'               => '*',
+        'adj_add_batch'                            => '*',
         'reminder_admin'                           => Permission::REMINDER_OPERATION,
         'merchant_document_admin_fetch'            => '*',
         'group_create'                             => Permission::CREATE_GROUP,
@@ -3937,6 +3943,7 @@ final class Route
             'merchant_inheritance_parent_set_bulk',
             'mdr_adjustment',
             'entity_bulk_update',
+            'adj_add_batch',
         ],
 
         'stork' => [

@@ -1399,6 +1399,23 @@ return [
         ],
     ],
 
+    'testPaymentWebhookShouldNotHaveTerminalIdData' =>  [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'payment.authorized',
+            'contains' => ['payment'],
+            'payload' => [
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'status'            => 'authorized',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testWebhookDeactivate' => [
         'request' => [
             'url' => '',

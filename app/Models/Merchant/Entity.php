@@ -740,6 +740,13 @@ class Entity extends Base\PublicEntity
         return (in_array($featureName, $assignedFeatures, true) === true);
     }
 
+    public function isFeatureEnabledOnNonPurePlatformPartner(string $featureName): bool
+    {        
+        $nonPurePlatformPartner = $this->getNonPurePlatformPartner();
+
+        return isset($nonPurePlatformPartner) ? $nonPurePlatformPartner->isFeatureEnabled($featureName) : false;
+    }
+
     public function isAtLeastOneFeatureEnabled(array $features): bool
     {
         $assignedFeatures = $this->getEnabledFeatures();

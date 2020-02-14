@@ -895,6 +895,43 @@ class Validator extends Base\Validator
         });
     }
 
+    protected function validateAdjustmentEntries(array & $entries, array $params, ME $merchant)
+    {
+        $referenceIds = array_map(function ($entry)
+                                            {
+                                                return $entry[Header::ADJUSTMENT_REFERENCE_ID];
+                                            }, $entries);
+
+        $nonUniqueIds =array_diff_assoc($referenceIds, array_unique($referenceIds));
+
+        if (empty($nonUniqueIds) !== true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, null, 'non unique reference_id found' . implode(' ', $nonUniqueIds));
+        }
+
+        array_map(function ($entry)
+        {
+            $entry[Header::ADJUSTMENT_BALANCE_TYPE] = $entry[Header::ADJUSTMENT_BALANCE_TYPE] ?: Merchant\Balance\Type::PRIMARY;
+
+            $this->checkValidBalanceTypeForAdjustment($entry[Header::ADJUSTMENT_BALANCE_TYPE], $entry[Header::ADJUSTMENT_REFERENCE_ID]);
+
+        }, $entries);
+    }
+
+    private function checkValidBalanceTypeForAdjustment(string $balanceType, string $referenceId)
+    {
+        $validBalanceTypes = [
+            Merchant\Balance\Type::PRIMARY,
+            Merchant\Balance\Type::BANKING,
+            Merchant\Balance\Type::COMMISSION,
+        ];
+
+        if (in_array($balanceType, $validBalanceTypes, true) === false)
+        {
+            throw new BadRequestValidationFailureException('invalid balance type'. $balanceType . 'for reference id'. $referenceId);
+        }
+    }
+
     protected function validateEntriesWithPublicExceptionHandled(array & $entries, \Closure $validator)
     {
         // Indexed errors map against row number.
