@@ -67,22 +67,27 @@ class TerminalMigrationTest extends TestCase
                                     ->andReturnUsing($closure);
     }
 
+    protected function getDefaultTerminalServiceResponse() : \Requests_Response
+    {
+        $terminal = $this->getLastEntity(Entity::TERMINAL, true);
+
+        Terminal\Entity::verifyIdAndSilentlyStripSign($terminal['id']);
+
+        $terminalEntity = $this->terminalRepository->findOrFail($terminal['id']);
+
+        $response =  new \Requests_Response;
+
+        $responseData = ['data' => $terminalEntity->toArrayWithPassword()];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
     public function testAssignTerminalTerminalServiceUpMigrateTerminalVariant()
     {
         $this->mockTerminalsServiceSendRequest(function($a, $b, $c) {
-            $terminal = $this->getLastEntity(Entity::TERMINAL, true);
-
-            Terminal\Entity::verifyIdAndSilentlyStripSign($terminal['id']);
-
-            $terminalEntity = $this->terminalRepository->findOrFail($terminal['id']);
-
-            $response =  new \Requests_Response;
-
-            $responseData = ['data' => $terminalEntity->toArrayWithPassword()];
-
-            $response->body = json_encode($responseData);
-
-            return $response;
+           return $this->getDefaultTerminalServiceResponse();
         });
 
         $this->razorxValue = 'on';
@@ -96,6 +101,24 @@ class TerminalMigrationTest extends TestCase
         $terminalEntity = $this->terminalRepository->findOrFail($response['id']);
 
         $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminalEntity->getSyncStatus());
+    }
+
+    public function testAssignTerminalTerminalServiceDownMigrateTerminalVariant()
+    {
+        $this->mockTerminalsServiceSendRequest(function () {
+            throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
+        }, 1);
+        $this->razorxValue = 'on';
+
+        $url = '/merchants/'. $this->merchant->getKey(). '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->expectException(\Requests_Exception_Transport_cURL::class);
+
+        $this->expectExceptionMessage('curl timed out');
+
+        $this->startTest();
     }
 
     public function testAssignTerminalControlVariant()
