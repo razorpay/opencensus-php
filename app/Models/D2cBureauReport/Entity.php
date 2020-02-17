@@ -60,6 +60,11 @@ class Entity extends Base\PublicEntity
         self::INTERESTED     => 'bool',
     ];
 
+    public function getUfhFileId()
+    {
+        return $this->getAttribute(self::UFH_FILE_ID);
+    }
+
     public function merchant()
     {
         return $this->belongsTo(\RZP\Models\Merchant\Entity::class);

@@ -388,9 +388,11 @@ class Handler extends ExceptionHandler
     {
         $this->setErrorMetadataIfApplicable($exception);
 
-        $this->ifTestingThenRethrowException($exception);
-
         $error = $exception->getError();
+
+        $data = $exception->getData();
+
+        $this->ifTestingThenRethrowException($exception);
 
         return ApiResponse::generateErrorResponse($error, $debug);
     }
@@ -399,11 +401,11 @@ class Handler extends ExceptionHandler
     {
         $this->setErrorMetadataIfApplicable($exception);
 
-        $this->ifTestingThenRethrowException($exception);
-
         $error = $exception->getError();
 
         $data = $exception->getData();
+
+        $this->ifTestingThenRethrowException($exception);
 
         return ApiResponse::generateNachNbErrorResponse($error, $data, $debug);
     }
@@ -436,10 +438,15 @@ class Handler extends ExceptionHandler
             {
                 $metadata['order_id'] = $data['order_id'];
             }
+            if (isset($data['method']) === true)
+            {
+                $error->setPaymentMethod($data['method']);
+            }
 
             $error->setMetadata($metadata);
         }
     }
+
 
     protected function getExceptionData($exception)
     {

@@ -29,7 +29,7 @@
     }
   ?>
   @if (isset($data['request']))
-    <form action="{{$data['request']['url']}}" method="post"
+    <form action="{{$data['request']['url']}}" method="post">
       @foreach ($data['request']['content'] as $key => $value)
         <input type="hidden" name="{{$key}}" value="{{$value}}">
       @endforeach

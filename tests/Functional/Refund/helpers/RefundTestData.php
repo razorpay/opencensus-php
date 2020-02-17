@@ -945,4 +945,46 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED
         ]
     ],
+
+    'testInstantRefundsNotSupportedOnNonRZPOrg' => [
+        'request'   => [
+            'content' => [
+                'speed' => 'optimum',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Instant refund not supported for the payment',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED
+        ]
+    ],
+
+    'testInstantRefundsNotSupportedForFeatureNotEnabledMerchants' => [
+        'request'   => [
+            'content' => [
+                'speed' => 'optimum',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Instant refund not supported for the payment',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED
+        ]
+    ],
 ];

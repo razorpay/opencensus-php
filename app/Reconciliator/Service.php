@@ -203,15 +203,31 @@ class Service extends Base\Service
                     continue;
                 }
 
+                //
+                // Overwrite the data in two cases :
+                // 1. Existing CPS data is empty.
+                // 2. For gateway_transaction_id mismatch, we want to
+                //    replace the data, as confirmed by CPS team.
+                //    Ref : https://razorpay.slack.com/archives/C847BUR61/p1578048952001800
+                //
                 if (empty($response[$paymentId][$field]) === true)
                 {
-                    // Existing CPS data is empty, Overwrite it
                     $pushData[$field] = $misParams[$field];
                 }
                 else if (trim($response[$paymentId][$field]) !== $misParams[$field])
                 {
                     // CPS data and MIS data both are non empty and we have mismatch.
-                    // Trace alert and don't save this MIS value.
+                    //
+                    // If the field is gateway_transaction_id, we simply overwrite.
+                    if ($field === Constants::GATEWAY_TRANSACTION_ID)
+                    {
+                        $pushData[$field] = $misParams[$field];
+
+                        // skip trace as this mismatch is expected.
+                        continue;
+                    }
+
+                    // Trace alert
                     $this->trace->info(
                         TraceCode::RECON_MISMATCH,
                         [
@@ -224,9 +240,6 @@ class Service extends Base\Service
                             'batch_id'                  => $input['batch_id'],
                         ]
                     );
-
-                    // Skip saving this param
-                    continue;
                 }
             }
         }

@@ -80,4 +80,6 @@ final class RazorxTreatment
     // Decides whether or not to display tr attribute in upi_transfer entity
     const UPI_TRANSFER_TR = 'upi_transfer_tr';
 
+    // Onboard merchant on RazorpayX test mode
+    const RAZORPAY_X_TEST_MODE_ONBOARDING = 'razorpayx_x_test_mode_onboarding';
 }
