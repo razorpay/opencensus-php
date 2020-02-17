@@ -75,9 +75,6 @@ class CreateBankingAccountStatementTable extends Migration
             $table->integer(Entity::POSTED_DATE)
                   ->nullable();
 
-            $table->integer(Entity::RECONCILED_AT)
-                  ->nullable();
-
             $table->string(Entity::PONUM, 255)
                   ->nullable();
 

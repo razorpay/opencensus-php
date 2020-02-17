@@ -6,16 +6,13 @@ use Mail;
 use File;
 
 use RZP\Exception;
-use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Models\External;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Models\BankingAccount;
-Use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\BankingAccount\StatementMail;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -383,70 +380,45 @@ class Core extends Base\Core
 
         if ($reversal === null)
         {
-            // checking if we have any existing debit entry for this UTR
-            $existingPayout = $this->fetchExistingPayoutIfPresent($basEntity);
+            // For all modes except NEFT, the logic to map a credit row to payout is
+            // same. However for NEFT, PONUM is the only field out of all present
+            // in the statement that matches with the payout. But the PONUM field returned
+            // by FTS response is not being persisted anywhere as of now and adding columns in
+            // FTA table is not feasible as we are trying to remove complete dependency from FTA
+            // and move to FTS. Also persisting this information in Payout level is also not the
+            // right way as this info is bank specific. So for NEFT in order to link a credit
+            // txn to a debit txn we are matching its PONUM to any existing txn with same PONUM
+            // The value of PONUM might not be unique and so we are explicitly checking for date
+            // and amount also while finding the payout.
 
-            if ($existingPayout === null)
+            // Once we have other CA Integration in picture, this code will need to be structured in a
+            // manner that the based on a statement, logic to figure out a payout will be present
+            // in the respective bank processors. Or this logic will completely moved out to FTS.
+
+            $bankPonum = $basEntity->getPonum();
+
+            $existingDebitTxn = $this->repo->banking_account_statement->findDebitTxnWithPonum(
+                $bankPonum,
+                $basEntity->getAmount(),
+                $basEntity->getChannel());
+
+            if ($existingDebitTxn !== null)
             {
-                // For all modes except NEFT, the logic to map a credit row to payout is
-                // shared. However for NEFT, PONUM is the only field out of all present
-                // in the statement that matches with the payout. But the PONUM field returned
-                // by FTS response is not being persisted anywhere as of now and adding columns in
-                // FTA table is not feasible as we are trying to remove complete dependency from FTA
-                // and move to FTS. Also persisting this information in Payout level is also not the
-                // right way as this info is bank specific. So for NEFT in order to link a credit
-                // txn to a debit txn we are matching its PONUM to any existing txn with same PONUM
-                // The value of PONUM might not be unique and so we are explicitly checking for date
-                // and amount also while finding the payout.
+                // getting the payout for this BAS entry
+                $payoutId = $existingDebitTxn->getEntityId();
 
-                // Once we have other CA Integration in picture, this code will need to be structured in a
-                // manner that the based on a statement, logic to figure out a payout will be present
-                // in the respective bank processors. Or this logic will completely moved out to FTS.
+                $existingPayout = $this->repo->payout->findByIdAndMerchant($payoutId, $basEntity->merchant);
 
-                $bankPonum = $basEntity->getPonum();
-
-                $existingDebitTxn = $this->repo->banking_account_statement->findDebitTxnWithPonum(
-                    $bankPonum,
-                    $basEntity->getAmount(),
-                    $basEntity->getTransactionDate(),
-                    $basEntity->getChannel());
-
-                if ($existingDebitTxn !== null)
+                if ($existingPayout !== null)
                 {
-                    // getting the payout for this BAS entry
-                    $payoutId = $existingDebitTxn->getEntityId();
-
-                    $existingPayout = $this->repo->payout->findByIdAndMerchant($payoutId, $basEntity->merchant);
+                    $reversal = $existingPayout->reversal;
                 }
             }
 
-            if ($existingPayout !== null)
+            if ($reversal === null)
             {
-                // since we are able to figure the payout linked to the credit txn
-                // we want to update the payout to reversed state. However we will
-                // not be updating the payout status here as we want to propogate
-                // the changes to FTS first and keep only one entry point for
-                // payout status updates.
-                $fundTransferAttempt = $this->repo->fund_transfer_attempt->getFTSAttemptBySourceId(
-                                                                                               $existingPayout->getId(),
-                                                                                    Constants\Entity::PAYOUT,
-                                                                                         true);
-
-                if ($fundTransferAttempt !== null)
-                {
-                    $request = [
-                        Attempt\Constants::GATEWAY_REF_NO   => $fundTransferAttempt->getFTSTransferId(),
-                        Attempt\Constants::BANK_STATUS_CODE => Attempt\Status::FAILURE,
-                        Payout\Entity::REMARKS              => 'Update through bank account statement',
-                        Payout\Entity::RETURN_UTR           => $basEntity->getUtr(),
-                        Attempt\Entity::CMS_REF_NO          => $basEntity->getBankTransactionId(),
-                    ];
-
-                    (new Payout\Core)->updateFtsWithSource($existingPayout, $request);
-                }
+                return null;
             }
-
-            return null;
         }
         //
         // TODO: Explore creating a reversal entity and its transaction here
@@ -495,23 +467,6 @@ class Core extends Base\Core
         (new DownstreamProcessor('fund_account_payout', $payout, $this->mode))->processTransaction();
 
         $this->repo->saveOrFail($payout);
-
-        $fundTransferAttempt = $this->repo->fund_transfer_attempt->getFTSAttemptBySourceId($payout->getId(),
-                                                                                Constants\Entity::PAYOUT,
-                                                                                    true);
-
-        if ($fundTransferAttempt !== null)
-        {
-            $request = [
-                Attempt\Constants::GATEWAY_REF_NO   => $fundTransferAttempt->getFTSTransferId(),
-                Attempt\Constants::BANK_STATUS_CODE => Attempt\Status::PROCESSED,
-                Payout\Entity::REMARKS              => 'Update through bank account statement',
-                Payout\Entity::UTR                  => $basEntity->getUtr(),
-                Attempt\Entity::CMS_REF_NO          => $basEntity->getBankTransactionId(),
-            ];
-
-            (new Payout\Core)->updateFtsWithSource($payout, $request);
-        }
 
         return $payout;
     }

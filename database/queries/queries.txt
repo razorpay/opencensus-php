@@ -5590,8 +5590,6 @@ ALTER TABLE pricing
      MODIFY COLUMN amount_range_min BIGINT(20) unsigned DEFAULT NULL;
 
 ALTER TABLE merchant_details
-
-    ADD COLUMN additional_websites varchar(511) DEFAULT NULL AFTER business_website;
     ADD COLUMN kyc_id char(14) DEFAULT NULL ;
 
 ALTER TABLE payouts
@@ -5600,7 +5598,6 @@ ALTER TABLE payouts
 
 
 ALTER TABLE banking_account_statement
-    ADD COLUMN reconciled_at INT DEFAULT NULL AFTER transaction_date,
     ADD COLUMN ponum VARCHAR(255) DEFAULT NULL AFTER reconciled_at;
 
 ALTER TABLE merchants
@@ -5619,4 +5616,3 @@ ALTER TABLE disputes
     ADD COLUMN base_currency CHAR(3) DEFAULT NULL AFTER base_amount,
     ADD COLUMN gateway_amount BIGINT UNSIGNED DEFAULT NULL AFTER base_currency,
     ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL AFTER gateway_amount;
->>>>>>> bc6208a4b6d50e3c07305b8d6483c540c6f419f2

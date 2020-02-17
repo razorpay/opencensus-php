@@ -57,13 +57,13 @@ class Entity extends Base\PublicEntity
     // NEFT/000036602888/Bene A/C DOES NOT EXIST
     // IMPS R-000811000008-REVERSAL-RAZORPAY TESTING
     // RTGS/HDFCH20191002661/ASDFG/HDFC/000240
-    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
+    const CREDIT_REGEX = '/^(RTGS\/|R-)(.*?)(\/|-)/';
 
     const DEBIT_REGEX = '/^(.*?)-/';
 
-    const NEFT_PONUM_REGEX = '/^(NEFT\/)(.*?)(\/)/';
-
     const NEFT_RTGS_DEBIT_REGEX = '/^(RTGS\/|NEFT\/)(.*?)(\/)/';
+
+    const NEFT_PONUM_REGEX = '/^(NEFT\/)(.*?)(\/)/';
 
     protected static $sign = 'bas';
 
@@ -380,13 +380,14 @@ class Entity extends Base\PublicEntity
             }
             else
             {
-                $match = preg_match(self::NEFT_RTGS_DEBIT_REGEX, $description, $matches);
+                $regex = self::NEFT_RTGS_DEBIT_REGEX;
+
+                $match = preg_match($regex, $description, $matches);
 
                 if ($match === 1)
                 {
                     $match = $matches[2];
                 }
-
             }
         }
 

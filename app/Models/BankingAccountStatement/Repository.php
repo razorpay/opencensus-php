@@ -24,12 +24,11 @@ class Repository extends Base\Repository
                     ->exists();
     }
 
-    public function findDebitTxnWithPonum($ponum, $amount, $bankTxnDate, $channel)
+    public function findDebitTxnWithPonum($ponum, $amount, $channel)
     {
         return $this->newQuery()
                     ->where(Entity::PONUM, $ponum)
                     ->where(Entity::AMOUNT, $amount)
-                    ->where(Entity::TRANSACTION_DATE, $bankTxnDate)
                     ->where(Entity::CHANNEL, $channel)
                     ->where(Entity::TYPE, 'debit')
                     ->first();

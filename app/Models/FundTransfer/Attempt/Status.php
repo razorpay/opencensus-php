@@ -9,8 +9,6 @@ class Status
     const FAILED        = 'failed';
     const PROCESSED     = 'processed';
     const REVERSED      = 'reversed';
-    const FAILURE       = 'failure';
-    const SUCCESS       = 'success';
 
     const PENDING_RECONCILIATION = self::INITIATED;
 

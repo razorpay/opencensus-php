@@ -27,7 +27,6 @@ use RZP\Jobs\QueuedPayouts;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Currency\Currency;
-use RZP\Services\FTS\FundTransfer;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
@@ -538,35 +537,6 @@ class Core extends Base\Core
         $payout = $this->processWorkflowActionOnPayout($payout, false, $input);
 
         return $payout;
-    }
-
-    public function updateFtsWithSource(Payout\Entity $payout, $input)
-    {
-        // We will not be marking the payout to processed or reversed state here and will rely
-        // on FTS to update the payout status. This is to ensure there is no discrepancy
-        // of payout status b/w FTS and API.
-
-        if (in_array($payout->getStatus(), Status::$finalStatuses, true) === true)
-        {
-            return;
-        }
-
-        try
-        {
-            $fundTransfer = new FundTransfer();
-
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_FTS_MAPPING_CREATION_REQUEST,
-                [
-                    'input' => $request
-                ]);
-
-            $response = $fundTransfer->bulkUpdateFtsAttempts([$input]);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException();
-        }
     }
 
     protected function processWorkflowActionOnPayout(Entity $payout, bool $approve, array $input): Entity
@@ -1247,7 +1217,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function database/queries/queries.txtreversePayout(Entity $payout, string $reverseReason = null)
+    protected function reversePayout(Entity $payout, string $reverseReason = null)
     {
         $this->trace->info(
             TraceCode::PAYOUT_REVERSAL_INITIATED,

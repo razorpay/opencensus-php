@@ -558,12 +558,11 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
     }
 
-    // case to test reversals mapping in RBL BAS
+    // case to test reversals mapping in RBL BAS for RTGS, same day reversals have same UTR
     public function testRblAccountStatementTxnMappingCase4()
     {
         $channel = Channel::RBL;
 
-        // NEFT
         $this->setupForRblPayout($channel, 'RTGS', 20000300);
 
         $payout = $this->getDbLastEntity('payout');
@@ -587,145 +586,30 @@ class RblBankingAccountStatementTest extends TestCase
 
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
 
-        $external = $this->getDbLastEntity('external');
+        $externals = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
         $payout = $this->getDbLastEntity('payout');
-        $reversal = $this->getDbLastEntity('reversal');
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
-        $this->assertEquals($external['id'], $basEntries[0]['entity_id']);
-        $this->assertEquals($external['transaction_id'], $basEntries[0]['transaction_id']);
-        $this->assertEquals($external['banking_account_statement_id'], $basEntries[0]['id']);
+        $this->assertEquals($externals[0]['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($externals[0]['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals($externals[0]['banking_account_statement_id'], $basEntries[0]['id']);
 
         $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
         $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
         $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
 
-        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[1]['entity_type']);
-        $this->assertEquals($reversal['id'], $basEntries[2]['entity_id']);
-        $this->assertEquals($reversal['transaction_id'], $basEntries[1]['transaction_id']);
-        $this->assertEquals($reversal['banking_account_statement_id'], $basEntries[1]['id']);
-
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[2]['entity_type']);
+        $this->assertEquals($externals[1]['id'], $basEntries[2]['entity_id']);
+        $this->assertEquals($externals[1]['transaction_id'], $basEntries[2]['transaction_id']);
+        $this->assertEquals($externals[1]['banking_account_statement_id'], $basEntries[2]['id']);
 
         $feeBreakup1 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[0]['transaction_id']]);
         $feeBreakup2 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[1]['transaction_id']]);
         $feeBreakup3 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[2]['transaction_id']]);
 
-
         $this->assertEquals(0, $feeBreakup1->count());
         $this->assertEquals(2, $feeBreakup2->count());
         $this->assertEquals(0, $feeBreakup3->count());
-
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $payout = $this->getDbLastEntity('payout');
-        $external = $this->getDbLastEntity('external');
-        $updatedTxn = $this->getDbLastEntity('transaction');
-        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
-        $updatedExternalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
-
-        $this->assertEquals(1, count($updatedExternalEntries));
-        $this->assertEquals($external['balance_id'], $payout['balance_id']);
-
-        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
-        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
-        $this->assertEquals($updatedTxn['id'], $payout['transaction_id']);
-
-        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
-        $this->assertEquals($external['id'], $basEntries[0]['entity_id']);
-        $this->assertEquals($external['transaction_id'], $basEntries[0]['transaction_id']);
-        $this->assertEquals($external['banking_account_statement_id'], $basEntries[0]['id']);
-
-        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
-        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
-        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
-
-        $feeBreakup1 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[0]['transaction_id']]);
-        $feeBreakup2 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[1]['transaction_id']]);
-        $this->assertEquals(0, $feeBreakup1->count());
-        $this->assertEquals(2, $feeBreakup2->count());
-
-        $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup2[0]['name']);
-        $this->assertEquals(0, $feeBreakup2[1]['amount']);
-        $this->assertEquals(EntityConstants::TAX, $feeBreakup2[1]['name']);
-    }
-
-    // case to test RBL IFT Txn mappin
-    public function testRblAccountStatementTxnMappingCase5()
-    {
-        $channel = Channel::RBL;
-
-        $this->setupForRblPayout($channel, 'IFT', 20000300);
-
-        $payout = $this->getDbLastEntity('payout');
-s($payout);
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-s($attempt);
-        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
-
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'M2012']);
-
-        // Fetch account statement from RBL
-        $mockedResponse = $this->getRblDataResponseForIFT();
-
-        $this->setMozartMockResponse($mockedResponse);
-
-        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
-
-        $this->testData[__FUNCTION__] = $testData;
-        $this->ba->cronAuth();
-        $this->startTest();
-
-        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
-
-        $payoutTxn = $this->getDbLastEntity('transaction');
-
-        $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
-
-        $payoutEntries = $this->getDbEntities('payout', ['balance_id' => $payout['balance_id']]);
-
-        $payout = $this->getDbLastEntity('payout');
-
-        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
-        $this->assertEquals($externalEntries[0]['id'], $basEntries[0]['entity_id']);
-        $this->assertEquals($externalEntries[0]['transaction_id'], $basEntries[0]['transaction_id']);
-        $this->assertEquals($externalEntries[0]['banking_account_statement_id'], $basEntries[0]['id']);
-
-        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
-        $this->assertEquals($payoutEntries[0]['id'], $basEntries[1]['entity_id']);
-        $this->assertEquals($payoutEntries[0]['transaction_id'], $basEntries[1]['transaction_id']);
-
-        $this->assertEquals(EntityConstants::PAYOUT, $payoutTxn['type']);
-        $this->assertNotNull($payout['transaction_id']);
-
-        $feeBreakup1 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[0]['transaction_id']]);
-        $feeBreakup2 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[1]['transaction_id']]);
-
-        $this->assertEquals(0, $feeBreakup1->count());
-        $this->assertEquals(2, $feeBreakup2->count());
-
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-
-        $this->assertEquals('processed', $payout['status']);
     }
 
     protected function setupForRblPayout($channel = Channel::RBL, $mode = 'IMPS', $amount = 10095)
@@ -859,7 +743,7 @@ s($attempt);
                                     'amountValue' => '400103.00'
                                 ],
                                 'txnCat' => 'TBI',
-                                'txnId' => '  S429655',
+                                'txnId' => '  S429658',
                                 'txnSrlNo' => ' 498',
                                 'valueDate' => '2015-12-29T00:00:00.000'
                             ],
@@ -880,7 +764,7 @@ s($attempt);
                                     'amountValue' => '200100.00'
                                 ],
                                 'txnCat' => 'TBI',
-                                'txnId' => '  S622997',
+                                'txnId' => '  S55959',
                                 'txnSrlNo' => ' 498',
                                 'valueDate' => '2015-12-29T00:00:00.000'
                             ],
