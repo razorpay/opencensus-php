@@ -25,9 +25,13 @@ class Core extends Base\Core
      */
     public function create(array $input, Merchant\Entity $merchant, bool $partialPayment = false)
     {
+        $secureTrace = $input;
+
+        unset($secureTrace['bank_account']['account_number'], $secureTrace['bank_account']['name']);
+
         $this->trace->info(
             TraceCode::ORDER_CREATE_REQUEST,
-            $input
+            $secureTrace
         );
 
         $order = new Entity;
