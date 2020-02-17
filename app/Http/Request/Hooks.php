@@ -37,9 +37,9 @@ class Hooks
 
         $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
 
-        $variant = $this->app->razorx->getTreatment('10000000000000', self::TRACE_REQUEST_FEATURE, $this->mode);
+        $variant = $options['show_trace'] ?? false;
 
-        if ($variant === 'on')
+        if ($variant === true)
         {
             $hooks->register('curl.after_request', [$this, 'traceCurlInfo']);
         }

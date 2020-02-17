@@ -2,19 +2,76 @@
 
 namespace RZP\Http\Request;
 
-use Requests;
+use Requests as Req;
 
-class Request
+class Requests
 {
+    /**
+     * POST method
+     *
+     * @var string
+     */
+    const POST = 'POST';
+
+    /**
+     * PUT method
+     *
+     * @var string
+     */
+    const PUT = 'PUT';
+
+    /**
+     * GET method
+     *
+     * @var string
+     */
+    const GET = 'GET';
+
+    /**
+     * HEAD method
+     *
+     * @var string
+     */
+    const HEAD = 'HEAD';
+
+    /**
+     * DELETE method
+     *
+     * @var string
+     */
+    const DELETE = 'DELETE';
+
+    /**
+     * OPTIONS method
+     *
+     * @var string
+     */
+    const OPTIONS = 'OPTIONS';
+
+    /**
+     * TRACE method
+     *
+     * @var string
+     */
+    const TRACE = 'TRACE';
+
+    /**
+     * PATCH method
+     *
+     * @link https://tools.ietf.org/html/rfc5789
+     * @var string
+     */
+    const PATCH = 'PATCH';
+
     const TRACE_REQUEST_FEATURE = 'request_trace';
 
-    public static function request($url, $headers = array(), $data = array(), $type = Requests::GET, $options = array())
+    public static function request($url, $headers = array(), $data = array(), $type = Request::GET, $options = array())
     {
         $hooks = new Hooks();
 
         $hooks->addCurlProperties($url, $options);
 
-        return Requests::request($url, $headers, $data, $type, $options);
+        return Req::request($url, $headers, $data, $type, $options);
     }
 
     public static function get($url, $headers = array(), $options = array())
@@ -23,7 +80,7 @@ class Request
 
         $hooks->addCurlProperties($url, $options);
 
-        return Requests::get($url, $headers, $options);
+        return Req::get($url, $headers, $options);
     }
 
     public static function head($url, $headers = array(), $options = array()) {
@@ -31,7 +88,7 @@ class Request
 
         $hooks->addCurlProperties($url, $options);
 
-        return Requests::head($url, $headers, $options);
+        return Req::head($url, $headers, $options);
     }
 
     public static function delete($url, $headers = array(), $options = array()) {
@@ -39,7 +96,7 @@ class Request
 
         $hooks->addCurlProperties($url, $options);
 
-        return Requests::delete($url, $headers, $options);
+        return Req::delete($url, $headers, $options);
     }
 
     public static function trace($url, $headers = array(), $options = array()) {
@@ -47,7 +104,7 @@ class Request
 
         $hooks->addCurlProperties($url, $options);
 
-        return Requests::trace($url, $headers, $options);
+        return Req::trace($url, $headers, $options);
     }
 
     public static function post($url, $headers = array(), $data = array(), $options = array()) {
@@ -55,7 +112,7 @@ class Request
 
         $hooks->addCurlProperties($url, $options);
 
-        return Requests::post($url, $headers, $data, $options);
+        return Req::post($url, $headers, $data, $options);
     }
 
     public static function put($url, $headers = array(), $data = array(), $options = array()) {
@@ -63,7 +120,7 @@ class Request
 
         $hooks->addCurlProperties($url, $options);
 
-        return Requests::put($url, $headers, $data, $options);
+        return Req::put($url, $headers, $data, $options);
     }
 
     public static function options($url, $headers = array(), $data = array(), $options = array()) {
@@ -71,7 +128,7 @@ class Request
 
         $hooks->addCurlProperties($url, $options);
 
-        return Requests::options($url, $headers, $data, $options);
+        return Req::options($url, $headers, $data, $options);
     }
 
     public static function patch($url, $headers, $data = array(), $options = array()) {
@@ -79,6 +136,6 @@ class Request
 
         $hooks->addCurlProperties($url, $options);
 
-        return Requests::patch($url, $headers, $data, $options);
+        return Req::patch($url, $headers, $data, $options);
     }
 }

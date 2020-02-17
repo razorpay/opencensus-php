@@ -5,7 +5,7 @@ namespace RZP\Services;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-use RZP\Http\Request\Request;
+use RZP\Http\Request\Requests;
 
 class SmartRouting
 {
@@ -185,7 +185,7 @@ class SmartRouting
             {
                 if ($method === 'POST' or $method === 'PUT')
                 {
-                    $response = Request::$method(
+                    $response = Requests::$method(
                         $request['url'],
                         $request['headers'],
                         json_encode($request['content']),
@@ -193,7 +193,7 @@ class SmartRouting
                 }
                 else
                 {
-                    $response = Request::$method(
+                    $response = Requests::$method(
                         $request['url'],
                         $request['headers'],
                         $request['options']);
