@@ -60,13 +60,14 @@ class TerminalMigrationTest extends TestCase
         $this->ba->adminAuth();
     }
 
-    protected function mockTerminalsServiceSendRequest($closure, $times = 1)
+    protected function mockTerminalsServiceSendRequest($closure, $times = 2)
     {
         $this->terminalsServiceMock->shouldReceive('sendRequest')
+                                    ->times($times)
                                     ->andReturnUsing($closure);
     }
 
-    public function testAssignTerminalTerminalServiceUpRazorxOn()
+    public function testAssignTerminalTerminalServiceUpMigrateTerminalVariant()
     {
         $this->mockTerminalsServiceSendRequest(function($a, $b, $c) {
             $terminal = $this->getLastEntity(Entity::TERMINAL, true);
@@ -96,4 +97,20 @@ class TerminalMigrationTest extends TestCase
 
         $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminalEntity->getSyncStatus());
     }
+
+    public function testAssignTerminalControlVariant()
+    {
+        $this->mockTerminalsServiceSendRequest(null, 0);
+
+        $url = '/merchants/'. $this->merchant->getKey(). '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $response = $this->startTest();
+
+        $terminalEntity = $this->terminalRepository->findOrFail($response['id']);
+
+        $this->assertEquals(Terminal\SyncStatus::NOT_SYNCED, $terminalEntity->getSyncStatus());
+    }
+
 }
