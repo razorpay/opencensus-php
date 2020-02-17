@@ -488,12 +488,7 @@ class Processor
 
     protected function preProcessDCCInputs(array $input, Payment\Entity $payment)
     {
-        if ($payment->isCard() === false)
-        {
-            return;
-        }
-
-        if ($payment->merchant->isDCCEnabled() == false)
+        if (($payment->isCard() === false) or ($payment->merchant->isDCCEnabled() === false))
         {
             return;
         }
