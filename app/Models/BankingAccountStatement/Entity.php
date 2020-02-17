@@ -38,7 +38,6 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID        = 'transaction_id';
     const POSTED_DATE           = 'posted_date';
     const TRANSACTION_DATE      = 'transaction_date';
-    const RECONCILED_AT         = 'reconciled_at';
     const PONUM                 = 'ponum';
 
     // Used to find out which format the banking account statement is to be generated
@@ -86,7 +85,6 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_DATE,
         self::UTR,
         self::PONUM,
-        self::RECONCILED_AT,
     ];
 
     protected $visible = [
@@ -113,7 +111,6 @@ class Entity extends Base\PublicEntity
         self::PONUM,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::RECONCILED_AT,
     ];
 
     protected $public = [
@@ -254,11 +251,6 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::UTR, $utr);
-    }
-
-    public function setReconciledAt($timestamp)
-    {
-        $this->setAttribute(self::RECONCILED_AT, $timestamp);
     }
 
     public function setPonum($ponum = null)
