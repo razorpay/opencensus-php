@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 
 use Mockery;
+use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -66,9 +67,13 @@ class TerminalMigrationTest extends TestCase
         $this->mockTerminalsServiceSendRequest(function($a, $b, $c) {
             $terminal = $this->getLastEntity(Entity::TERMINAL, true);
 
+            Terminal\Entity::verifyIdAndSilentlyStripSign($terminal['id']);
+
+            $terminalEntity = (new Terminal\Repository)->findOrFail($terminal['id']);
+
             $response =  new \Requests_Response;
 
-            $responseData = ['data' => []];
+            $responseData = ['data' => $terminalEntity->toArrayWithPassword()];
 
             $response->body = json_encode($responseData);
 
