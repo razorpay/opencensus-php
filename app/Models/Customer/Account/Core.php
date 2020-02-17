@@ -109,11 +109,11 @@ class Core extends Base\Core
      */
     protected function create(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
-        $secureTrace = $input;
+        $inputTrace = $input;
 
-        unset($secureTrace['name'], $secureTrace['email'], $secureTrace['contact']);
+        unset($inputTrace['name'], $inputTrace['email'], $inputTrace['contact']);
 
-        $this->trace->info(TraceCode::CUSTOMER_CREATE, $secureTrace);
+        $this->trace->info(TraceCode::CUSTOMER_CREATE, $inputTrace);
 
         $customer = (new Customer\Entity)->build($input);
 
