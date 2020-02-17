@@ -6,8 +6,8 @@ use Request;
 use Throwable;
 use Requests_Session;
 use Requests_Response;
-
 use RZP\Error\ErrorCode;
+use RZP\Http\Request\Hooks;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -95,6 +95,19 @@ class Stork
 
         $this->mock = $config['mock'];
         $this->service = $config['service_prefix'] . $config['auth'][$mode]['user'];
+
+        // Options and authentication for requests.
+        $options = [
+            'timeout' => 1, // Minimum possible value is 1 second.
+            'auth' => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
+        ];
+
+        $hooks = new Hooks();
+
+        // This will add extra hook for dns resolution to ipV4 only.
+        // Doing this for internal services only
+        $hooks->addCurlProperties($config['url'], $options);
+
         $this->request = new Requests_Session(
             $config['url'],
             // Common headers for requests.
@@ -103,11 +116,8 @@ class Stork
                 'Content-Type' => 'application/json',
             ],
             [],
-            // Options and authentication for requests.
-            [
-                'timeout' => 1, // Minimum possible value is 1 second.
-                'auth' => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
-            ]);
+            $options
+        );
     }
 
     public function request(string $path, array $payload): Requests_Response
