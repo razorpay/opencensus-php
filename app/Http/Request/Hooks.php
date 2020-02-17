@@ -18,17 +18,17 @@ class Hooks
 
     const TRACE_REQUEST_FEATURE    = 'trace_request_metric';
 
-    public function __construct()
+    public function __construct($url)
     {
         $this->app = App::getFacadeRoot();
 
         $this->mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $this->url = $url;
     }
 
-    public function addCurlProperties(string $url, array &$options)
+    public function addCurlProperties(array &$options)
     {
-        $this->url = $url;
-
         if (!isset($options['hooks']) === true) {
             $options['hooks'] = new Requests_Hooks();
         }
@@ -37,12 +37,14 @@ class Hooks
 
         $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
 
-        $variant = $this->app->razorx->getTreatment('10000000000000', self::TRACE_REQUEST_FEATURE, $this->mode);
+        $variant = $options['show_trace'] ?? false;
 
-        if ($variant === 'on')
+        if ($variant === true)
         {
             $hooks->register('curl.after_request', [$this, 'traceCurlInfo']);
         }
+
+        unset($options['show_trace']);
     }
 
     public function setCurlOptions($curl)
