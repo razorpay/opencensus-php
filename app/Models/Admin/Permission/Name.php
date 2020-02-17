@@ -254,6 +254,7 @@ class Name
     const MANAGE_RENDERING_PREFERENCES  	  = 'manage_rendering_preferences';
     const UPDATE_DOWNTIME_CONFIG              = 'update_downtime_config';
     const LIST_DOWNTIME_CONFIG                = 'list_downtime_config';
+    const ADJUSTMENT_BATCH_UPLOAD             = 'adjustment_batch_upload';
     const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
 
     // RazorpayX/Business banking permissions

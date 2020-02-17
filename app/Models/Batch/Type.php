@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Exception;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Type
@@ -278,6 +279,10 @@ class Type
         self::MERCHANT_CONFIG_INHERITANCE,
         self::MDR_ADJUSTMENT,
         self::ADJUSTMENT,
+    ];
+
+    public static $batchToAdminPermissionMapping = [
+        self::ADJUSTMENT    => Name::ADJUSTMENT_BATCH_UPLOAD,
     ];
 
     public static function exists(string $type)
