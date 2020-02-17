@@ -111,7 +111,7 @@ class Core extends Base\Core
     {
         $inputTrace = $input;
 
-        unset($inputTrace['name'], $inputTrace['email'], $inputTrace['contact']);
+        unset($inputTrace[Entity::NAME], $inputTrace[Entity::EMAIL], $inputTrace[Entity::CONTACT]);
 
         $this->trace->info(TraceCode::CUSTOMER_CREATE, $inputTrace);
 
