@@ -1077,9 +1077,11 @@ class Service extends Base\Service
     {
         RuntimeManager::setTimeLimit(10000);
 
-        $input['count']   = 5000;
+        $input['count'] = 5000;
+
         $input['afterId'] = $input['afterId'] ?? null;
-        $count            = 0;
+
+        $count = 0;
 
         while (true)
         {
@@ -1098,8 +1100,8 @@ class Service extends Base\Service
                                [
                                    'message' => 'Merchant POC update request for Unclaimed From Service before Job',
                                    'count'   => $count,
+                                   'startId' => $merchants->first()->getId(),
                                    'endId'   => $merchants->last()->getId(),
-
                                ]
             );
 

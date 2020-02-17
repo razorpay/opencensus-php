@@ -45,6 +45,8 @@ class Selector extends Base\Core
 
     const RAZORX_ASYNC = 'payments_hit_routing_service_async';
 
+    const RAZORX_ASYNC_AUTHN = 'payments_hit_routing_service_authentication';
+
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\RuleFilter::class,
@@ -92,7 +94,7 @@ class Selector extends Base\Core
     ];
 
 
-    public function __construct(array $input, Terminal\Options $options)
+    public function __construct(array $input, Terminal\Options $options = null)
     {
         parent::__construct();
 
@@ -317,6 +319,85 @@ class Selector extends Base\Core
         }
 
         return $sortedTerminals;
+    }
+
+    public function sendAuthenticationData($terminal, $authnTerminals)
+    {
+        $payment = $this->input['payment'];
+
+        if (in_array($payment->getMethod(), [Method::CARD, Method::EMI]) === true) {
+
+            if ($this->shouldHitRoutingService(self::RAZORX_ASYNC_AUTHN, $payment->getId()) === true)
+            {
+                $this->sendParametersToSmartRoutingAuthN($payment, $this->input['merchant'], $terminal, $authnTerminals);
+            }
+        }
+    }
+
+    private function sendParametersToSmartRoutingAuthN($payment, $merchant, $terminal, $selectedAuthN)
+    {
+        try
+        {
+            $paymentData = $payment->toArray();
+
+            if ($payment->hasCard() === true)
+            {
+                $card = $payment->card;
+
+                $paymentData['card'] = $card->toArray();
+
+                $iin = $card->iinRelation;
+
+                if ($iin !== null)
+                {
+                    $flows = $iin->getFlows();
+
+                    $paymentData['card']['flows'] = $flows;
+                }
+            }
+
+            if ($payment->getEmiPlanId() !== null)
+            {
+                $paymentData['emi'] = $this->getPaymentEmiArray($payment);
+            }
+
+            $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
+
+            $authNTerminals = $this->getAuthNTerminals();
+
+            $validAuth = $this->getValidAuths($payment);
+
+            $merchantData = $this->getMerchantData($merchant);
+
+            $data = [
+                'payment'                           => $paymentData,
+                'merchant'                          => $merchantData,
+                'terminals'                         => array_values($terminal),
+                'authentication_terminals'          => array_values($authNTerminals),
+                'valid_auths'                       => $validAuth,
+                'selected_authentication_terminals' => array_values($selectedAuthN),
+                //'max_terminals'                   => $payment->getMaxRetryAttempt(),
+            ];
+
+            $params = null;
+
+            $this->app->smartRouting->sendNonBlockingPaymentDataAuthN($data, $params);
+
+            $this->trace->info(
+                TraceCode::SMART_ROUTING_REQUEST_AUTHENTICATION,
+                [
+                    'data' => $data,
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::SMART_ROUTING_AUTHN_PUSH_FAILED,
+                [
+                    'error'             => $e->getMessage(),
+                    'payment_id'        => $payment->getId(),
+                ]);
+        }
     }
 
     protected function getTerminals()
@@ -764,6 +845,25 @@ class Selector extends Base\Core
         $merchantData['org_id']            = $merchant->getOrgId();
 
         return $merchantData;
+    }
+
+    protected function getAuthNTerminals()
+    {
+        return AuthenticationTerminals::AUTHENTICATION_TERMINALS;
+    }
+
+    protected function getValidAuths($payment)
+    {
+        $valid = [];
+
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            $autflowObj = new Terminal\Auth\Card\AuthFilter($payment);
+
+            $valid = $autflowObj->getValidAuths();
+        }
+
+        return $valid;
     }
 
     protected function alertNetbankingTerminalNotFound(Merchant\Entity $merchant, $payment)

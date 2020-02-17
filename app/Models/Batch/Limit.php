@@ -35,7 +35,7 @@ class Limit
         Type::PARTNER_SUBMERCHANTS                  => 5000,
         Type::ENTITY_MAPPING                        => 10000,
         Type::AUTH_LINK                             => 10000,
-        Type::RECURRING_CHARGE                      => 10000,
+        Type::RECURRING_CHARGE                      => 50000,
         Type::SUB_MERCHANT                          => 5000,
         Type::SUBMERCHANT_ASSIGN                    => 50000,
         TYPE::IIN_NPCI_RUPAY                        => 50000,

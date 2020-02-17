@@ -107,6 +107,14 @@ class Gateway extends Base\Gateway
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
         {
+            if ($input['merchant']->isTPVRequired() === true)
+            {
+               throw new Exception\ServerErrorException(
+                   'Intent TPV not Supported',
+                ErrorCode::SERVER_ERROR_INTENT_TPV_NOT_SUPPORTED
+               );
+            }
+
             return $this->authorizeIntent($input);
         }
 

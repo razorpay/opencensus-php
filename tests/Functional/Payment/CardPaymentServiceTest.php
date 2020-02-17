@@ -611,6 +611,58 @@ class CardPaymentServiceTest extends TestCase
         $this->razorxValue = "on";
     }
 
+
+    public function testIvr3dsFallback()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['ivr']);
+
+        $this->mockCardVault();
+
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'ivr' => '1',
+            ]
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $paymentArray['card']['number'] = '5567630000002004';
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, 'ivr_fallback_mock');
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals($terminal->getId(), $payment['terminal_id']);
+
+        $iin = $this->getEntityById('iin', 556763, true);
+        self::assertEquals('3ds',$payment['auth_type']);
+        self::assertNotContains('ivr', $iin['flows']);
+
+
+        $this->razorxValue = "on";
+    }
+
     protected function mockCpsHeadlessAuthError(string $method, string $url, array $input)
     {
         switch($url)
@@ -818,6 +870,57 @@ class CardPaymentServiceTest extends TestCase
         }
     }
 
+    protected function mockCpsIvrFallback(string $method, string $url, array $input)
+    {
+        $input = $input['input'];
+        switch ($url) {
+
+            case 'action/authorize':
+
+                $payment = $this->getDbLastPayment();
+
+                return [
+                    'data' => [
+                        "content" => [
+                            "MD" => $payment->getId(),
+                            "PaReq" => "eJxcUt1u2jAUvucprNwvjt0fKDpxFQpsuWBru6GK3kyucwapgpM6zgZc7q32OnuSyoFgaKRI5/tRzsn5Dtxu1gX5jabOSx0HLIwCglqVWa6XcdDYX58GAamt1JksSo1xoMvgVvTgx8ogjr+jagyKHiEww7qWSyR5FgeV3P6cJNPdUzGYyvy1KeaB8xAC98kjvu1rQuDQVrAwCjnQDnbyDI1aSW07ghCQ6m2UfhWXjEX9K6AH6PU1mnQsjNyVppJboHvsdS3XKFKtDGb5S4FAW8Lrqmy0NVtxcXUNtANebkwhVtZWQ0rZDQ/Z9SBkYZ8DdUI3Nv04N9w3jqhPG23yTMzGyR/3Ps6nn7HI6m+T55V8qtjLdB4DdQ7vz6RFwSMeRYzfEBYNOR8yDrTlT/azdjOL/3//ERb2GdAD4R2VmyXZs8w5TomTRTTGoFbdJjrkDbipSo3aCg70WB9X8PGP4e7LWYrKpmORjB6eVTJ5HT0syrt0sUsWy+TwxC7b1nTWMTdbwS+iy7Zl7qMB2n0f6PHEXBDtTYoe0PN7fQ8AAP//9qvT/g==",
+                            "TermUrl" => $input['callbackUrl']
+                        ],
+                        "method" => "post",
+                        "url" => "https://api.razorpay.com/v1/gateway/acs/mpi_blade"
+                    ],
+                    "error" => [
+                        "internal_error_code" => "GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE",
+                        "gateway_error_code" => "",
+                        "gateway_error_description" => "",
+                        "description" => "IVR Authentication not available"
+                    ],
+                    "ivr" => [
+                        "disable_iin"=> true,
+                    ],
+                    "success" => true,
+                    'payment' => [
+                        'auth_type' => "3ds",
+                    ],
+                ];
+            case "action/callback" :
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test'
+                        ],
+                        'two_factor_auth' => 'Y'
+                    ],
+                   'payment' => [
+                        'auth_type' => "3ds",
+                    ],
+                ];
+
+            default :
+                return null;
+        }
+    }
+
     protected function mockCps($terminal, $responder)
     {
         $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
@@ -838,6 +941,8 @@ class CardPaymentServiceTest extends TestCase
                         return $this->mockCpsHeadlessAuthError($method, $url, $input);
                     case 'headless_incorrect_otp':
                         return $this->mockCpsHeadlessIncorrectOtp($method, $url, $input);
+                    case 'ivr_fallback_mock':
+                        return $this->mockCpsIvrFallback($method, $url, $input);
                 }
             });
     }

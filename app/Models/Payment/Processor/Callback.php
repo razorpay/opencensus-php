@@ -517,6 +517,7 @@ trait Callback
                 [
                     'payment_id'  => $this->payment->getPublicId(),
                     'order_id'    => $this->payment->getPublicOrderId(),
+                    'method'      => $this->payment->getMethod(),
                     'status'      => $status
                 ]);
         }
@@ -554,7 +555,8 @@ trait Callback
         $internalErrorCode = $e->getError()->getInternalErrorCode();
 
         $e->setData(['payment_id'  => $this->payment->getPublicId(),
-                     'order_id'    => $this->payment->getPublicOrderId()]);
+                     'order_id'    => $this->payment->getPublicOrderId(),
+                     'method'      => $this->payment->getMethod()]);
 
         if (Error\Error::hasAction($internalErrorCode) === false)
         {

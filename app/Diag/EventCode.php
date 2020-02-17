@@ -171,6 +171,11 @@ class EventCode
         'name'  => 'payment.authorization.dropped'
     ];
 
+    const PAYMENT_AUTHORIZATION_FAILED                  = [
+        'group' => 'authorization',
+        'name'  => 'payment.authorization.failed'
+    ];
+
     const PAYMENT_AUTHORIZATION_PROCESSED               = [
         'group' => 'authorization',
         'name'  => 'payment.authorization.processed'
