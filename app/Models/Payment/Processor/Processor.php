@@ -346,7 +346,7 @@ class Processor
 
     protected function eventPaymentCreated()
     {
-        $cacheKey = 'EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
+        $cacheKey = $this->mode.'_EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
 
         if ($this->cache->get($cacheKey) === null or $this->cache->get($cacheKey) === false)
         {
