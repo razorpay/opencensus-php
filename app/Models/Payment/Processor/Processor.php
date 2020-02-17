@@ -346,7 +346,8 @@ class Processor
 
     protected function eventPaymentCreated()
     {
-        $cacheKey = $this->mode.'_EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
+        // the scenario where same payment id gets generated in live and test mode is not handled currently.
+        $cacheKey = 'EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
 
         if ($this->cache->get($cacheKey) === null or $this->cache->get($cacheKey) === false)
         {
