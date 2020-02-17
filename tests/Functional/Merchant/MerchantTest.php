@@ -3458,7 +3458,13 @@ class MerchantTest extends TestCase
         //
         // Asserts cache should not have been hit the first time
         //
-        Event::assertNotDispatched(CacheHit::class);
+        Event::assertNotDispatched(CacheHit::class, function($e) {
+            foreach ($e->tags as $tag) {
+                $this->assertNotEquals('merchant_10000000000000', $tag);
+                $this->assertNotEquals('key_TheTestAuthKey', $tag);
+            }
+            return false;
+        });
 
         $this->doAuthPayment($payment);
 
@@ -6367,5 +6373,25 @@ class MerchantTest extends TestCase
         $testData['request']['content']['order_id'] = $order->getPublicId();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testEditMerchantWebsite()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id' => '1In3Yh5Mluj605',
+            'international'   => false]);
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '10000000000000']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->assertContains('abc.com', $merchant->getWhitelistedDomains());
     }
 }
