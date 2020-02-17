@@ -2181,20 +2181,20 @@ trait Authorize
             $payment->setAuthType(Payment\AuthType::PIN);
         }
 
-        $otpAuth = [
-            Payment\AuthType::IVR,
-            Payment\AuthType::OTP,
-        ];
-
-        if (in_array($gatewayInput['auth_type'], $otpAuth, true) === true)
+        if (($gatewayInput['auth_type'] === Payment\AuthType::OTP) === true)
         {
             $payment->setAuthType(Payment\AuthType::OTP);
             return;
         }
 
+        $otpAuth = [
+            Payment\AuthType::IVR,
+            Payment\AuthType::HEADLESS_OTP
+        ];
+
         if (($authType !== null) and
             ($authType === Payment\AuthType::OTP) and
-            ($gatewayInput['auth_type'] === Payment\AuthType::HEADLESS_OTP))
+            (in_array($gatewayInput['auth_type'], $otpAuth, true) === true))
         {
             $payment->setAuthType(Payment\AuthType::OTP);
         }
@@ -5145,6 +5145,10 @@ trait Authorize
         // All the IVR terminal use Otp payment flow regardless of their method
         if ($payment->terminal->isIvr() === true)
         {
+            if ($payment->getAuthType() === Payment\AuthType::_3DS)
+            {
+                return false;
+            }
             return true;
         }
 
@@ -5158,7 +5162,8 @@ trait Authorize
 
                 if (empty($gatewayInput['auth_type']) === false)
                 {
-                    if ($gatewayInput['auth_type'] === Payment\AuthType::OTP)
+                    if (($gatewayInput['auth_type'] === Payment\AuthType::OTP) or
+                        ($gatewayInput['auth_type'] === Payment\AuthType::IVR))
                     {
                         return true;
                     }
@@ -5193,6 +5198,11 @@ trait Authorize
 
                 if (($payment->getGateway() === Payment\Gateway::BAJAJ) and
                     ($payment->isEmi() === true))
+                {
+                    return true;
+                }
+
+                if ($payment->getAuthType() === Payment\AuthType::IVR)
                 {
                     return true;
                 }

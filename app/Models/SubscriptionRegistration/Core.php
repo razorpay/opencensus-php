@@ -134,6 +134,10 @@ class Core extends Base\Core
         $input[Invoice\Entity::AMOUNT] = $order->getAmount();
 
         $input[Invoice\Entity::CUSTOMER_ID] = $customer->getPublicId();
+
+        $input[Invoice\Entity::EMAIL_NOTIFY] = false;
+
+        $input[Invoice\Entity::SMS_NOTIFY] = false;
     }
 
     public function createSubscriptionRegistration(array & $input, Merchant\Entity $merchant, Customer\Entity $customer)

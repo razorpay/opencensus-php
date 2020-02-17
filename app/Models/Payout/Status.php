@@ -71,6 +71,8 @@ class Status
             self::FAILED,
         ],
         self::INITIATED => [
+            // FTA tries to update to initiated multiple times.
+            self::INITIATED,
             self::REVERSED,
             self::FAILED,
             self::PROCESSED,
@@ -208,6 +210,8 @@ class Status
      *
      * @param string      $currentStatus
      * @param string|null $previousStatus
+     *
+     * @throws BadRequestValidationFailureException
      */
     public static function validateStatusUpdate(string $currentStatus, string $previousStatus = null)
     {

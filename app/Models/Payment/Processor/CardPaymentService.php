@@ -84,7 +84,7 @@ trait CardPaymentService
 
             $this->updatePaymentFromCpsResponse($payment, $response);
 
-            $this->handleHeadlessResponse($payment, $response);
+            $this->handleDisableIIN($payment, $response);
 
             $this->handleCpsResponse($payment, $response);
 
@@ -149,7 +149,7 @@ trait CardPaymentService
 
             $this->updatePaymentFromCpsResponse($payment, $response);
 
-            $this->handleHeadlessResponse($payment, $response);
+            $this->handleDisableIIN($payment, $response);
 
             $this->handleCpsResponse($payment, $response);
 
@@ -296,13 +296,20 @@ trait CardPaymentService
         $gatewayInput['authentication_terminals'] = $authTerminals;
     }
 
-    // Handle response for headless payments
-    protected function handleHeadlessResponse($payment, $response)
+    // Handle response for headless and ivr payments where we disable iin
+    protected function handleDisableIIN($payment, $response)
     {
         if (isset($response["headless"]["disable_iin"])
             and $response["headless"]["disable_iin"] === true )
         {
             $this->disableIinFlowIfApplicable($payment, TraceCode::HEADLESS_OTP_ELF_FAILURE);
         }
+
+        if (isset($response["ivr"]["disable_iin"])
+            and $response["ivr"]["disable_iin"] === true )
+        {
+            $this->disableIinFlowIfApplicable($payment, ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE);
+        }
+
     }
 }

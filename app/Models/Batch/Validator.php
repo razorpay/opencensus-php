@@ -106,7 +106,7 @@ class Validator extends Base\Validator
 
     protected static $recurringChargeCreateRules = [
         Entity::TYPE            => 'required|in:recurring_charge',
-        Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE            => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::NAME            => 'filled|string|max:255',
         Entity::FILE_ID         => 'required_without:file|public_id',
     ];
@@ -893,6 +893,43 @@ class Validator extends Base\Validator
         {
             $this->validateInput('fundAccountTypeRow', $entry);
         });
+    }
+
+    protected function validateAdjustmentEntries(array & $entries, array $params, ME $merchant)
+    {
+        $referenceIds = array_map(function ($entry)
+                                            {
+                                                return $entry[Header::ADJUSTMENT_REFERENCE_ID];
+                                            }, $entries);
+
+        $nonUniqueIds =array_diff_assoc($referenceIds, array_unique($referenceIds));
+
+        if (empty($nonUniqueIds) !== true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, null, 'non unique reference_id found' . implode(' ', $nonUniqueIds));
+        }
+
+        array_map(function ($entry)
+        {
+            $entry[Header::ADJUSTMENT_BALANCE_TYPE] = $entry[Header::ADJUSTMENT_BALANCE_TYPE] ?: Merchant\Balance\Type::PRIMARY;
+
+            $this->checkValidBalanceTypeForAdjustment($entry[Header::ADJUSTMENT_BALANCE_TYPE], $entry[Header::ADJUSTMENT_REFERENCE_ID]);
+
+        }, $entries);
+    }
+
+    private function checkValidBalanceTypeForAdjustment(string $balanceType, string $referenceId)
+    {
+        $validBalanceTypes = [
+            Merchant\Balance\Type::PRIMARY,
+            Merchant\Balance\Type::BANKING,
+            Merchant\Balance\Type::COMMISSION,
+        ];
+
+        if (in_array($balanceType, $validBalanceTypes, true) === false)
+        {
+            throw new BadRequestValidationFailureException('invalid balance type'. $balanceType . 'for reference id'. $referenceId);
+        }
     }
 
     protected function validateEntriesWithPublicExceptionHandled(array & $entries, \Closure $validator)

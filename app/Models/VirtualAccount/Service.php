@@ -441,7 +441,7 @@ class Service extends Base\Service
 
         $currency = $input['currency'];
 
-        $formattedAmount = Currency::getSymbol($currency) . ' ' . ($input['amount'] / Currency::getExponent($currency));
+        $formattedAmount = Currency::getSymbol($currency) . ' ' . ($input['amount'] / Currency::getDenomination($currency));
 
         $payload = [
             'id'                => $virtualAccount->getPublicId(),
