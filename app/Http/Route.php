@@ -3415,7 +3415,8 @@ final class Route
         'register_offline_device'                   => '*',
 
         'fetch_batch_action_entities'               => Permission::ADMIN_BATCH_CREATE,
-        'fetch_batch_actions'                       => Permission::ADMIN_BATCH_CREATE
+        'fetch_batch_actions'                       => Permission::ADMIN_BATCH_CREATE,
+        'link_offline_device'                       => '*',
     ];
 
     public static $bankingRoutePermissions = [
