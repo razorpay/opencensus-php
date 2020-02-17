@@ -410,7 +410,7 @@ class Service extends Base\Service
      */
     public function migrateTerminal(string $terminalId) : Entity
     {
-        $client = new TerminalsServiceClient($this->app);
+        $client = $this->app['terminals_service'];
 
         $terminal = $this->repo->terminal->getById($terminalId);
 
@@ -526,5 +526,7 @@ class Service extends Base\Service
     protected function processMigrateTerminalFailure(Entity $terminal)
     {
         $terminal->setSyncStatus(SyncStatus::SYNC_FAILED);
+
+        throw new Exception\IntegrationException('terminals service field mismatch');
     }
 }

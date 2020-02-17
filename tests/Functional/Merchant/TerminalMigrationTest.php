@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Merchant;
 
 
+use Mockery;
+use RZP\Constants\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -15,6 +17,8 @@ class TerminalMigrationTest extends TestCase
     protected $razorxValue = RazorXClient::DEFAULT_CASE;
 
     protected $merchant;
+
+    protected $terminalsServiceMock;
 
     public function setUp()
     {
@@ -37,13 +41,41 @@ class TerminalMigrationTest extends TestCase
 
                 }) );
 
+        $this->terminalsServiceMock = Mockery::mock('RZP\Services\TerminalsService')->makePartial();
+
+        $this->terminalsServiceMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['terminals_service'] = $this->terminalsServiceMock;
+
+        $this->app['config']->set('terminals_service.test.url', 'https://terminals-test.razorpay.com/');
+        $this->app['config']->set('terminals_service.live.url', 'https://terminals-live.razorpay.com/');
+
         $this->merchant = $this->fixtures->create('merchant');
 
         $this->ba->adminAuth();
     }
 
+    protected function mockTerminalsServiceSendRequest($closure, $times = 1)
+    {
+        $this->terminalsServiceMock->shouldReceive('sendRequest')
+                                    ->andReturnUsing($closure);
+    }
+
     public function testAssignTerminalTerminalServiceUpRazorxOn()
     {
+        $this->mockTerminalsServiceSendRequest(function($a, $b, $c) {
+            $terminal = $this->getLastEntity(Entity::TERMINAL, true);
+
+            $response =  new \Requests_Response;
+
+            $responseData = ['data' => []];
+
+            $response->body = json_encode($responseData);
+
+            return $response;
+        });
+
+        $this->razorxValue = 'on';
 
         $url = '/merchants/'. $this->merchant->getKey(). '/terminals';
 
