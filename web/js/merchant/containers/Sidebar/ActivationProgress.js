@@ -12,12 +12,12 @@ export default RTracking((state, props, args) => {
 
   const {
     showInstantActivation,
-    instantActivation: { isL1Submitted, isBlacklistFlow },
+    instantActivation: { isL1Submitted, isBlacklistFlow }
   } = user;
 
-  let actionCopy,
-    actionContent = null,
-    trackingIntent = null;
+  let actionCopy;
+  let actionContent = null;
+  let trackingIntent = null;
 
   if (user.activation_progress < 100) {
     // If user form is still unfilled
@@ -58,7 +58,7 @@ export default RTracking((state, props, args) => {
           trackingIntent &&
             props.tracking.trackEvent(
               window.rzpQ.onbr().initiated(trackingIntent, {
-                clickSource: 'LHS_Nav_Bar',
+                clickSource: 'LHS_Nav_Bar'
               })
             );
           props.onSidebarBannerClick();

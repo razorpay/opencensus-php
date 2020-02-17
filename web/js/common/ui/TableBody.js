@@ -1,9 +1,10 @@
+import React from 'react';
 import TableLoader from 'common/ui/TableLoader';
 import EmptyTableRow from 'common/ui/EmptyTableRow';
 
 export default props => {
   let tableRowComponent;
-  let {
+  const {
     isLoading,
     emptyTableRow,
     emptyTableMsg,

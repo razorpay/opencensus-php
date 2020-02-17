@@ -4,10 +4,10 @@ import { connect } from 'react-redux';
 @connect(state => state.app)
 export default class EnityItemRow extends Component {
   render() {
-    let { id, luminateRowId, activeEntityId, activeSecEntityId } = this.props;
+    const { id, luminateRowId, activeEntityId, activeSecEntityId } = this.props;
     return (
       <tr
-        class={`${luminateRowId === id ? 'luminate' : null} ${
+        className={`${luminateRowId === id ? 'luminate' : null} ${
           activeEntityId === id || activeSecEntityId === id ? 'active' : null
         }`}
       >

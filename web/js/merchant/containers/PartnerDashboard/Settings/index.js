@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
@@ -16,12 +16,12 @@ import { trackSettingsEvents } from '../ga';
 @connect(
   state => ({
     isLoading: state.applications.loading,
-    application: state.applications.partnerApplication,
+    application: state.applications.partnerApplication
   }),
   {
     fetchPartnerApplication,
     closeModal,
-    openModal,
+    openModal
   }
 )
 export default class SettingsContainer extends Component {
@@ -41,7 +41,7 @@ export default class SettingsContainer extends Component {
           appId={this.props.application.id}
           mode={mode}
         />
-      ),
+      )
     });
   };
 
@@ -52,7 +52,7 @@ export default class SettingsContainer extends Component {
       size: 'small',
       component: (
         <ViewCredentials mode={mode} credentials={clientCredentials[type]} />
-      ),
+      )
     });
   };
 
@@ -66,23 +66,23 @@ export default class SettingsContainer extends Component {
           </NavLink>
         </header>
         <content>
-          <div class="content-wrapper content-sm partner-settings">
+          <div className="content-wrapper content-sm partner-settings">
             {isLoading ? (
-              <div class="page-spinner-container">
+              <div className="page-spinner-container">
                 <Spinner />
               </div>
             ) : (
               <>
-                <div class="panel panel-default">
-                  <div class="panel-heading">Webhook</div>
-                  <div class="list-group details-row-container partner-settings--webhook-details">
+                <div className="panel panel-default">
+                  <div className="panel-heading">Webhook</div>
+                  <div className="list-group details-row-container partner-settings--webhook-details">
                     {/* live webhook */}
                     <DetailRow
                       label="Live Webhook"
                       value={() => (
                         <button
                           onClick={this.handleManageWebhookClick('live')}
-                          class="btn btn-link"
+                          className="btn btn-link"
                         >
                           Manage
                         </button>
@@ -95,7 +95,7 @@ export default class SettingsContainer extends Component {
                       value={() => (
                         <button
                           onClick={this.handleManageWebhookClick('test')}
-                          class="btn btn-link"
+                          className="btn btn-link"
                         >
                           Manage
                         </button>
@@ -104,16 +104,16 @@ export default class SettingsContainer extends Component {
                   </div>
                 </div>
 
-                <div class="panel panel-default">
-                  <div class="panel-heading">Partner Credentials</div>
-                  <div class="list-group details-row-container">
+                <div className="panel panel-default">
+                  <div className="panel-heading">Partner Credentials</div>
+                  <div className="list-group details-row-container">
                     {/* live credentials */}
                     <DetailRow
                       label="Live Credentials"
                       value={() => (
                         <button
                           onClick={this.handleViewCredentialsClick('live')}
-                          class="btn-link"
+                          className="btn-link"
                         >
                           View
                         </button>
@@ -126,7 +126,7 @@ export default class SettingsContainer extends Component {
                       value={() => (
                         <button
                           onClick={this.handleViewCredentialsClick('test')}
-                          class="btn-link"
+                          className="btn-link"
                         >
                           View
                         </button>

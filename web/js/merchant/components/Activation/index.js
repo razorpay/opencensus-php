@@ -973,7 +973,7 @@ export default class ActivationWizard extends React.Component {
           poi_verification_status != 'incorrect_details' &&
           poi_verification_status != 'not_matched'
         ) {
-          return this.props.history.replace(`/`);
+          return this.props.history.replace('/');
         }
       });
       return response;
@@ -1075,7 +1075,7 @@ export default class ActivationWizard extends React.Component {
             1
           );
           fireAnalyticsEvents({
-            fbData: `KYC_complete_greylist`,
+            fbData: 'KYC_complete_greylist',
             bingData: greylistData,
             liData: conversionId,
             twiData: txnId,
@@ -1090,7 +1090,7 @@ export default class ActivationWizard extends React.Component {
             1
           );
           fireAnalyticsEvents({
-            fbData: `KYC_complete_whitelist`,
+            fbData: 'KYC_complete_whitelist',
             bingData: whitelistData,
             liData: conversionId,
             twiData: txnId,
@@ -1149,7 +1149,7 @@ export default class ActivationWizard extends React.Component {
         this.props.showKYCStatusModal({
           modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
         });
-        this.props.history.replace(`/`);
+        this.props.history.replace('/');
       }
       return response;
     } catch (err) {
@@ -1271,12 +1271,12 @@ export default class ActivationWizard extends React.Component {
 
       // Update Business Subcategory in view
       let el = document.querySelector(
-        `.form-container [name=business_subcategory]`
+        '.form-container [name=business_subcategory]'
       );
       el && (el.value = '');
 
       // Update Business Model in view
-      el = document.querySelector(`.form-container [name=business_model]`);
+      el = document.querySelector('.form-container [name=business_model]');
       el && (el.value = '');
     }
 
@@ -1573,7 +1573,7 @@ export default class ActivationWizard extends React.Component {
                 // **5. Alert: Form is Submitted
 
                 icon = 'i-check';
-                msg = `Our team will review the form and submitted documents.`;
+                msg = 'Our team will review the form and submitted documents.';
                 secondaryMsg =
                   'We will reach out on your contact email for all updates.';
               }

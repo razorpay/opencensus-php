@@ -23,14 +23,17 @@ import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import { fetchGST } from 'merchant/reducers/profile';
 import { fetchConfig } from 'merchant/reducers/config';
-import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
+import {
+  fireAnalyticsEvents,
+  setTrackData
+} from 'common/utils/googleAnalytics';
 import {
   resizeWindow,
-  updateMerchantLiveTransactionFlag,
+  updateMerchantLiveTransactionFlag
 } from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/utils/rzp-utils';
-import { setTrackData } from 'common/utils/googleAnalytics';
+
 import { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 
@@ -43,7 +46,7 @@ import RTracking from 'react-tracking';
     ...state.session,
     config: state.config,
     windowWidth: state.app.windowWidth,
-    merchant_gst: state.profile.merchant_gst,
+    merchant_gst: state.profile.merchant_gst
   }),
   {
     ...ModalActions,
@@ -51,7 +54,7 @@ import RTracking from 'react-tracking';
     ...ConfigActions,
     ...NotificationActions,
     fetchGST,
-    resizeWindow,
+    resizeWindow
   }
 )
 @RTracking(
@@ -62,7 +65,7 @@ import RTracking from 'react-tracking';
       mid: user.current,
       role: user.role,
       business_type: user.business_type,
-      activated: user.activated,
+      activated: user.activated
     };
     let utm = null;
     let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
@@ -73,14 +76,14 @@ import RTracking from 'react-tracking';
     return window.rzpQ.component('Home', {
       user: u,
       utm_params: utm,
-      gclid: gclid,
-      mode: mode,
+      gclid,
+      mode
     });
   },
   {
     dispatch: data => {
       window.rzpQ.push(data);
-    },
+    }
   }
 )
 export default class App extends Component {
@@ -91,8 +94,8 @@ export default class App extends Component {
 
     const { user } = props;
 
-    const oldModeToken = 'rzp_mode',
-      oldModeValue = LocalStorageService.getItem(oldModeToken);
+    const oldModeToken = 'rzp_mode';
+    const oldModeValue = LocalStorageService.getItem(oldModeToken);
 
     // localizing mode for each merchant so that different modes can be maintained
     // across logins/merchants
@@ -115,7 +118,7 @@ export default class App extends Component {
     }
 
     this.state = {
-      isLoading: true,
+      isLoading: true
     };
 
     this.handleResize = debounce(this.handleResize.bind(this), 200);
@@ -166,8 +169,8 @@ export default class App extends Component {
 
     Promise.all([
       this.fetchUser().then(({ data }) => {
-        let user = data;
-        let role = user.userRole;
+        const user = data;
+        const role = user.userRole;
 
         if (!currentMode) {
           currentMode = user.isActivated ? 'live' : 'test';
@@ -184,20 +187,20 @@ export default class App extends Component {
         return data;
       }),
       this.fetchOrg().then(({ data }) => {
-        let orgCode = (this.orgCode = data.custom_code);
+        const orgCode = (this.orgCode = data.custom_code);
         if (orgCode && orgCode !== 'rzp') {
           applyTheme(orgCode);
         }
       }),
       this.fetchSupportedCurrencies().then(({ data }) => {
         window.currencyList = data;
-      }),
+      })
     ])
       .then(response => {
         if (response[0].showInstantActivation) {
           setTrackData({
             eventCategory: 'Dashboard - Instant Activations',
-            eventAction: 'Show - Instant Activations Flow',
+            eventAction: 'Show - Instant Activations Flow'
           })();
 
           if (typeof window.hj === 'function') {
@@ -210,7 +213,7 @@ export default class App extends Component {
         fetchFeaturesAjax(response[0].current)
           .catch(_ => _)
           .then(data => {
-            let user = new User(response[0]);
+            const user = new User(response[0]);
             user.features = setFeatures(data.success ? data.data.features : []);
 
             this.props.updateSession({ user, mode: currentMode });
@@ -232,7 +235,7 @@ export default class App extends Component {
 
   componentWillReceiveProps({ user, history, location }) {
     if (user.isAuthenticated) {
-      let role = user.userRole;
+      const role = user.userRole;
       this.redirectToRoute(role);
 
       this.renderFPView = this.getFPView(location);
@@ -257,11 +260,11 @@ export default class App extends Component {
               setTrackData({
                 eventCategory: 'Dashboard - Instant Activations Live',
                 eventAction: 'Login',
-                eventLabel: 'MTU-Funnel',
+                eventLabel: 'MTU-Funnel'
               })();
               fireAnalyticsEvents({
                 fbData: 'live_mtu_funnel',
-                liData: 1668428,
+                liData: 1668428
               });
             }
           })
@@ -271,20 +274,20 @@ export default class App extends Component {
         setTrackData({
           eventCategory: 'Dashboard - Instant Activations Live',
           eventAction: 'Login',
-          eventLabel: 'MTU-Audience',
+          eventLabel: 'MTU-Audience'
         })();
         fireAnalyticsEvents({
           fbData: 'live_mtu_audience',
           liData: 1668436,
           quoraData: 'Purchase',
-          redditData: 'Purchase',
+          redditData: 'Purchase'
         });
         break;
     }
   };
 
   fetchUser() {
-    let user = window.rzp_user ? new User(window.rzp_user) : null;
+    const user = window.rzp_user ? new User(window.rzp_user) : null;
 
     if (user) {
       this.props.updateSession({ user });
@@ -308,7 +311,7 @@ export default class App extends Component {
       if (user && user.user) {
         if (window.setRavenContext) {
           window.setRavenContext({
-            mode: currentMode,
+            mode: currentMode
           });
         }
 
@@ -319,14 +322,14 @@ export default class App extends Component {
             dimension2: user.name, // Merchant Name
             dimension3: user.id, // Merchant ID
             dimension4: user.user.email, // Logged User Email
-            dimension5: user.role, // Logged User Role
-          },
+            dimension5: user.role // Logged User Role
+          }
         });
 
         window.trackHubs({
           name: 'identify',
           id: user.id,
-          email: user.user.email,
+          email: user.user.email
         });
       }
 
@@ -337,7 +340,7 @@ export default class App extends Component {
   }
 
   fetchOrg() {
-    let org = window.rzp_org;
+    const org = window.rzp_org;
     if (org) {
       delete window.rzp_org;
       this.props.updateSession({ org });
@@ -348,7 +351,7 @@ export default class App extends Component {
   }
 
   redirectToRoute(role) {
-    let pathname = this.props.history.location.pathname;
+    const pathname = this.props.history.location.pathname;
 
     if (
       pathname === '/' ||
@@ -358,7 +361,7 @@ export default class App extends Component {
       switch (role) {
         case [rolesList.SELLERAPP]:
         case [rolesList.AGENT]:
-          let url = '/paymentlinks';
+          const url = '/paymentlinks';
           return this.props.history.replace(url);
 
         case [rolesList.SUPPORT]:
@@ -374,9 +377,9 @@ export default class App extends Component {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Header',
       eventAction: 'Switch - Mode',
-      eventLabel: mode,
+      eventLabel: mode
     });
-    let user = this.props.user;
+    const user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
       this.props.openModal({
         size: 'small',
@@ -385,7 +388,7 @@ export default class App extends Component {
             user={this.props.user}
             onCloseClick={this.props.closeModal}
           />
-        ),
+        )
       });
     } else {
       LocalStorageService.setItem(this.modeToken, mode);
@@ -394,8 +397,8 @@ export default class App extends Component {
       window.trackHubs({
         name: 'update_property',
         data: {
-          is_live: true,
-        },
+          is_live: true
+        }
       });
     }
   };
@@ -409,17 +412,17 @@ export default class App extends Component {
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
-          message: errors,
+          message: errors
         });
       });
   };
 
   lockDashboard = cb => {
-    let email = this.props.user.user.email;
+    const email = this.props.user.user.email;
 
     if (window.Raven && window.Raven.captureMessage) {
       window.Raven.captureMessage('Dashboard Locked', {
-        level: 'info',
+        level: 'info'
       });
     }
 
@@ -440,7 +443,7 @@ export default class App extends Component {
   showGSTModal = () => {
     this.props.openModal({
       size: 'small',
-      component: <AddGST />,
+      component: <AddGST />
     });
   };
 
@@ -462,7 +465,7 @@ export default class App extends Component {
   };
 
   render() {
-    let { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
+    const { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
 
     const hasGSTIN =
       this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin;
@@ -473,7 +476,7 @@ export default class App extends Component {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'layout',
           this.orgCode,
           this.renderFPView && 'layout--fp'
@@ -522,7 +525,7 @@ export default class App extends Component {
 }
 
 function removeSplashLoader() {
-  let $splash = document.getElementById('splash');
+  const $splash = document.getElementById('splash');
   if ($splash) {
     $splash.parentElement.removeChild($splash);
   }
