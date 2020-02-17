@@ -6374,4 +6374,24 @@ class MerchantTest extends TestCase
 
         $this->runRequestResponseFlow($testData);
     }
+
+    public function testEditMerchantWebsite()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id' => '1In3Yh5Mluj605',
+            'international'   => false]);
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '10000000000000']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->assertContains('abc.com', $merchant->getWhitelistedDomains());
+    }
 }
