@@ -3458,7 +3458,13 @@ class MerchantTest extends TestCase
         //
         // Asserts cache should not have been hit the first time
         //
-        Event::assertNotDispatched(CacheHit::class);
+        Event::assertNotDispatched(CacheHit::class, function($e) {
+            foreach ($e->tags as $tag) {
+                $this->assertNotEquals('merchant_10000000000000', $tag);
+                $this->assertNotEquals('key_TheTestAuthKey', $tag);
+            }
+            return false;
+        });
 
         $this->doAuthPayment($payment);
 

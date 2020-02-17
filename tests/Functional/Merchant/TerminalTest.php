@@ -1186,7 +1186,14 @@ class TerminalTest extends TestCase
             return true;
         });
 
-        Event::assertNotDispatched(CacheHit::class);
+        Event::assertNotDispatched(CacheHit::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                $this->assertNotEquals($tag, 'terminal_10000000000000');
+            }
+            return false;
+        });
 
         $this->defaultAuthPayment();
 

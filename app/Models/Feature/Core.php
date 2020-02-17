@@ -26,6 +26,16 @@ class Core extends Base\Core
 {
     use NotifyTrait;
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        if ($this->merchant !== null)
+        {
+            $this->merchant->setLoadedFeaturesNull();
+        }
+    }
+
     /**
      * Create feature
      *
