@@ -408,19 +408,19 @@ class Service extends Base\Service
      * All logic will reside here.
      * @param Entity $terminal
      */
-    public function migrateTerminal(string $terminalId)
+    public function migrateTerminal(string $terminalId) : Entity
     {
         $client = new TerminalsServiceClient($this->app);
 
         $terminal = $this->repo->terminal->getById($terminalId);
 
 
-        $this->repo->transaction(function () use ($terminal, $client) {
+        $terminal = $this->repo->transaction(function () use ($terminal, $client) {
 
 
             $this->repo->terminal->lockForUpdateAndReload($terminal);
 
-            if ($terminal->isSynced() === true)
+            if ($terminal->isSyncStatusSuccess() === true)
             {
                 $data = [
                     Entity::TERMINAL_ID         => $terminal->getId(),
@@ -428,7 +428,7 @@ class Service extends Base\Service
 
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_TERMINAL_ALREADY_SYNCED, $data);
 
-                return;
+                return $terminal;
             }
 
             $migrateTerminalResponse = $client->migrateTerminal($terminal);
@@ -438,12 +438,18 @@ class Service extends Base\Service
             if ($this->isMigrateTerminalSuccess($terminal, $migrateTerminalResponse, $fetchTerminalResponse) === true)
             {
                 $this->processMigrateTerminalSuccess($terminal);
+
+                return $terminal;
             }
             else
             {
                 $this->processMigrateTerminalFailure($terminal);
+
+                return $terminal;
             }
         });
+
+        return $terminal;
 
     }
 
@@ -515,14 +521,10 @@ class Service extends Base\Service
     protected function processMigrateTerminalSuccess(Entity $terminal)
     {
         $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
-
-        $this->repo->terminal->saveOrFail($terminal);
     }
 
     protected function processMigrateTerminalFailure(Entity $terminal)
     {
         $terminal->setSyncStatus(SyncStatus::SYNC_FAILED);
-
-        $this->repo->terminal->saveOrFail($terminal);
     }
 }

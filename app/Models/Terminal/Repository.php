@@ -52,6 +52,52 @@ class Repository extends Base\Repository
                 'Invalid status '. $value);
         }
     }
+    // TODO refactor this after writing tests
+    public function saveOrFail($entity, array $options = array())
+    {
+        if ($entity->getId() === null)
+        {
+            if (RazorxTreatment::shouldMigrateTerminalOrFail() === true) {
+                $this->transaction(function () use ($entity, $options) {
+
+                    parent::saveOrFail($entity, $options);
+
+                    $entity = (new Terminal\Service)->migrateTerminal($entity->getId());
+
+                    parent::saveOrFail($entity, $options);
+
+                });
+            }
+            else
+            {
+                $entity->setSyncStatus(SyncStatus::NOT_SYNCED);
+
+                parent::saveOrFail($entity, $options);
+            }
+        }
+        else
+        {
+            if (RazorxTreatment::shouldMigrateTerminalOrFail() === true) {
+                $this->transaction(function () use ($entity, $options) {
+
+                    $entity->setSyncStatus(SyncStatus::NOT_SYNCED);
+
+                    parent::saveOrFail($entity, $options);
+
+                    $entity = (new Terminal\Service)->migrateTerminal($entity->getId());
+
+                    parent::saveOrFail($entity, $options);
+
+                });
+            }
+            else
+            {
+                $entity->setSyncStatus(SyncStatus::NOT_SYNCED);
+
+                parent::saveOrFail($entity, $options);
+            }
+        }
+    }
 
     public function fetchForPayment(Payment\Entity $payment)
     {

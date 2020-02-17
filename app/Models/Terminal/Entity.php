@@ -1398,7 +1398,7 @@ class Entity extends Base\PublicEntity
         return ($this->isCardEnabled() === true);
     }
 
-    public function isSynced()
+    public function isSyncStatusSuccess()
     {
         return $this->getSyncStatus() === SyncStatus::SYNC_SUCCESS;
     }
