@@ -473,6 +473,8 @@ export default class CreateOfferWizard extends React.Component {
     ];
     const checkboxFields = ['default_offer'];
 
+    const issuers = ['AMEX', 'BAJAJ'];
+
     checkboxFields.forEach(field => {
       transformed[field] = form[field] === '1' ? 1 : 0;
     });
@@ -522,10 +524,12 @@ export default class CreateOfferWizard extends React.Component {
       }
     });
     transformed.block = this.stringToInt(transformed.block);
-    if (transformed.issuer === 'AMEX') {
+
+    if (issuers.includes(transformed.issuer)) {
+      transformed.payment_network = transformed.issuer;
       delete transformed.issuer;
-      transformed.payment_network = 'AMEX';
     }
+
     return transformed;
   }
 
