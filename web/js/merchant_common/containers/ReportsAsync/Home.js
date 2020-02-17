@@ -20,7 +20,10 @@ export default class ReportHome extends React.PureComponent {
 
     if (typeof window.hj === 'function') {
       window.hj('trigger', 'report-async-started');
-      window.hj('tagRecording', ['report-async-started']);
+      window.hj('tagRecording', [
+        'report-async-started',
+        this.props.user.current,
+      ]);
     }
   }
 
