@@ -312,7 +312,7 @@ class Processor
 
             $payment = $this->payment;
 
-            $this->preProcessDCCInputs($input, $payment, $gatewayInput);
+            $this->preProcessDCCInputs($input, $payment);
 
             $this->eventPaymentCreated();
 
@@ -486,9 +486,14 @@ class Processor
         }
     }
 
-    protected function preProcessDCCInputs(array $input, Payment\Entity $payment, array & $gatewayInput)
+    protected function preProcessDCCInputs(array $input, Payment\Entity $payment)
     {
         if ($payment->isCard() === false)
+        {
+            return;
+        }
+
+        if ($payment->merchant->isDCCEnabled() == false)
         {
             return;
         }
