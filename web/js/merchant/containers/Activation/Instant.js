@@ -15,7 +15,7 @@ import {
   autoPrefixUrls,
   addPrefixToObjectKeys,
   prevent,
-  classList
+  classList,
 } from 'common/utils/rzp-utils';
 import { trackDiffInFormFields } from 'merchant/utils/track-utils';
 
@@ -24,11 +24,11 @@ import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import {
   trackhubsContactUpdate,
-  fireAnalyticsEvents
+  fireAnalyticsEvents,
 } from 'common/utils/googleAnalytics';
 import {
   showInstantActivationSuccessModal,
-  showKYCDetailsModal
+  showKYCDetailsModal,
 } from 'merchant/reducers/home';
 
 import formFields, { BUSINESS_TYPE_OPTIONS } from './L1FormMap';
@@ -77,13 +77,13 @@ const BUSINESS_CATEGORY_FIELD = 1;
 @connect(
   state => ({
     session: state.session,
-    user: state.session.user
+    user: state.session.user,
   }),
   {
     showNotification,
     updateSession,
     showInstantActivationSuccessModal,
-    showKYCDetailsModal
+    showKYCDetailsModal,
   }
 )
 export default class ActivationWizard extends React.Component {
@@ -97,7 +97,7 @@ export default class ActivationWizard extends React.Component {
         ? '1'
         : '0'), // '1' => checkbox ticked
     has_url:
-      this.props.data && this.props.data.business_website === '' ? '1' : '0' // '0' => 0th radio button, value exists
+      this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
   };
 
   constructor(props) {
@@ -125,7 +125,7 @@ export default class ActivationWizard extends React.Component {
     FORM_TABS[BUSINESS_CATEGORY_FIELD][0].options = ['--Select--'].concat(
       Object.keys(props.categories).map(c => ({
         name: c,
-        label: props.categories[c].description
+        label: props.categories[c].description,
       }))
     );
 
@@ -195,7 +195,7 @@ export default class ActivationWizard extends React.Component {
       submitted,
       international,
       promoter_pan,
-      business_type
+      business_type,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -208,12 +208,12 @@ export default class ActivationWizard extends React.Component {
       international,
       promoter_pan,
       business_type,
-      submitted: +submitted
+      submitted: +submitted,
     }));
 
     this.props.updateSession({
       user,
-      mode: session.mode
+      mode: session.mode,
     });
   }
 
@@ -223,7 +223,7 @@ export default class ActivationWizard extends React.Component {
     return fields.forEach(field =>
       tracking.trackEvent(
         window.rzpQ.onbr().initiated('act.provide_act_details', {
-          ...field
+          ...field,
         })
       )
     );
@@ -236,7 +236,7 @@ export default class ActivationWizard extends React.Component {
       method: 'POST',
       mode: 'live',
       data,
-      accountId: this.props.accountId
+      accountId: this.props.accountId,
     })
       .then(response => {
         if (this.onActivationSuccess) {
@@ -252,13 +252,13 @@ export default class ActivationWizard extends React.Component {
         updateHubSpotContactsProperties({
           ...data,
           activation_flow: this.user.activation_flow,
-          completed: true
+          completed: true,
         });
 
         const {
           isWhitelistFlow,
           isBlacklistFlow,
-          isGraylistFlow
+          isGraylistFlow,
         } = this.user.instantActivation;
 
         if (isWhitelistFlow) {
@@ -280,7 +280,7 @@ export default class ActivationWizard extends React.Component {
           twiData: 'o1ua0',
           quoraData: 'AddToWishlist',
           redditData: 'AddToWishlist',
-          fbData: 'activation_complete_success'
+          fbData: 'activation_complete_success',
         }); //fb = false, bing, linkedin, twitter, quora, reddit events are fired
 
         this.props.sendEventsForSubMerchantView(
@@ -295,7 +295,7 @@ export default class ActivationWizard extends React.Component {
         if (err.errors.length && err.errors[0]) {
           this.props.showNotification({
             type: 'error',
-            message: err.errors
+            message: err.errors,
           });
         }
 
@@ -311,7 +311,7 @@ export default class ActivationWizard extends React.Component {
           fbData: 'activation_complete_error',
           bingData: dataError,
           liData: 987412,
-          twiData: 'o1ua2'
+          twiData: 'o1ua2',
         });
 
         if (this.onActivationSuccess) {
@@ -373,15 +373,15 @@ export default class ActivationWizard extends React.Component {
     /* Step Last: */
     if (stateName) {
       this.setState({
-        [stateName]: fieldValue
+        [stateName]: fieldValue,
       });
 
       if (Object.keys(sideEffectFieldsToUpdate).length) {
         this.setState({
           dirty: {
             ...this.state.dirty,
-            ...sideEffectFieldsToUpdate
-          }
+            ...sideEffectFieldsToUpdate,
+          },
         });
       }
     } else {
@@ -389,8 +389,8 @@ export default class ActivationWizard extends React.Component {
         dirty: {
           ...this.state.dirty,
           [fieldName]: fieldValue,
-          ...sideEffectFieldsToUpdate
-        }
+          ...sideEffectFieldsToUpdate,
+        },
       });
     }
   };
@@ -405,11 +405,11 @@ export default class ActivationWizard extends React.Component {
     fireAnalyticsEvents({
       fbData: 'activation_start',
       liData: 987396,
-      twiData: 'o1u9z'
+      twiData: 'o1u9z',
     });
 
     updateHubSpotContactsProperties({
-      started: true
+      started: true,
     });
   }
 

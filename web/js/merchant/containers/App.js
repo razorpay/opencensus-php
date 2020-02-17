@@ -25,11 +25,11 @@ import { fetchGST } from 'merchant/reducers/profile';
 import { fetchConfig } from 'merchant/reducers/config';
 import {
   fireAnalyticsEvents,
-  setTrackData
+  setTrackData,
 } from 'common/utils/googleAnalytics';
 import {
   resizeWindow,
-  updateMerchantLiveTransactionFlag
+  updateMerchantLiveTransactionFlag,
 } from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/utils/rzp-utils';
@@ -46,7 +46,7 @@ import RTracking from 'react-tracking';
     ...state.session,
     config: state.config,
     windowWidth: state.app.windowWidth,
-    merchant_gst: state.profile.merchant_gst
+    merchant_gst: state.profile.merchant_gst,
   }),
   {
     ...ModalActions,
@@ -54,7 +54,7 @@ import RTracking from 'react-tracking';
     ...ConfigActions,
     ...NotificationActions,
     fetchGST,
-    resizeWindow
+    resizeWindow,
   }
 )
 @RTracking(
@@ -65,7 +65,7 @@ import RTracking from 'react-tracking';
       mid: user.current,
       role: user.role,
       business_type: user.business_type,
-      activated: user.activated
+      activated: user.activated,
     };
     let utm = null;
     let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
@@ -77,13 +77,13 @@ import RTracking from 'react-tracking';
       user: u,
       utm_params: utm,
       gclid,
-      mode
+      mode,
     });
   },
   {
     dispatch: data => {
       window.rzpQ.push(data);
-    }
+    },
   }
 )
 export default class App extends Component {
@@ -118,7 +118,7 @@ export default class App extends Component {
     }
 
     this.state = {
-      isLoading: true
+      isLoading: true,
     };
 
     this.handleResize = debounce(this.handleResize.bind(this), 200);
@@ -194,13 +194,13 @@ export default class App extends Component {
       }),
       this.fetchSupportedCurrencies().then(({ data }) => {
         window.currencyList = data;
-      })
+      }),
     ])
       .then(response => {
         if (response[0].showInstantActivation) {
           setTrackData({
             eventCategory: 'Dashboard - Instant Activations',
-            eventAction: 'Show - Instant Activations Flow'
+            eventAction: 'Show - Instant Activations Flow',
           })();
 
           if (typeof window.hj === 'function') {
@@ -260,11 +260,11 @@ export default class App extends Component {
               setTrackData({
                 eventCategory: 'Dashboard - Instant Activations Live',
                 eventAction: 'Login',
-                eventLabel: 'MTU-Funnel'
+                eventLabel: 'MTU-Funnel',
               })();
               fireAnalyticsEvents({
                 fbData: 'live_mtu_funnel',
-                liData: 1668428
+                liData: 1668428,
               });
             }
           })
@@ -274,13 +274,13 @@ export default class App extends Component {
         setTrackData({
           eventCategory: 'Dashboard - Instant Activations Live',
           eventAction: 'Login',
-          eventLabel: 'MTU-Audience'
+          eventLabel: 'MTU-Audience',
         })();
         fireAnalyticsEvents({
           fbData: 'live_mtu_audience',
           liData: 1668436,
           quoraData: 'Purchase',
-          redditData: 'Purchase'
+          redditData: 'Purchase',
         });
         break;
     }
@@ -311,7 +311,7 @@ export default class App extends Component {
       if (user && user.user) {
         if (window.setRavenContext) {
           window.setRavenContext({
-            mode: currentMode
+            mode: currentMode,
           });
         }
 
@@ -322,14 +322,14 @@ export default class App extends Component {
             dimension2: user.name, // Merchant Name
             dimension3: user.id, // Merchant ID
             dimension4: user.user.email, // Logged User Email
-            dimension5: user.role // Logged User Role
-          }
+            dimension5: user.role, // Logged User Role
+          },
         });
 
         window.trackHubs({
           name: 'identify',
           id: user.id,
-          email: user.user.email
+          email: user.user.email,
         });
       }
 
@@ -377,7 +377,7 @@ export default class App extends Component {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Header',
       eventAction: 'Switch - Mode',
-      eventLabel: mode
+      eventLabel: mode,
     });
     const user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
@@ -388,7 +388,7 @@ export default class App extends Component {
             user={this.props.user}
             onCloseClick={this.props.closeModal}
           />
-        )
+        ),
       });
     } else {
       LocalStorageService.setItem(this.modeToken, mode);
@@ -397,8 +397,8 @@ export default class App extends Component {
       window.trackHubs({
         name: 'update_property',
         data: {
-          is_live: true
-        }
+          is_live: true,
+        },
       });
     }
   };
@@ -412,7 +412,7 @@ export default class App extends Component {
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
-          message: errors
+          message: errors,
         });
       });
   };
@@ -422,7 +422,7 @@ export default class App extends Component {
 
     if (window.Raven && window.Raven.captureMessage) {
       window.Raven.captureMessage('Dashboard Locked', {
-        level: 'info'
+        level: 'info',
       });
     }
 
@@ -443,7 +443,7 @@ export default class App extends Component {
   showGSTModal = () => {
     this.props.openModal({
       size: 'small',
-      component: <AddGST />
+      component: <AddGST />,
     });
   };
 

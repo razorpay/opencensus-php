@@ -16,12 +16,12 @@ import { trackSettingsEvents } from '../ga';
 @connect(
   state => ({
     isLoading: state.applications.loading,
-    application: state.applications.partnerApplication
+    application: state.applications.partnerApplication,
   }),
   {
     fetchPartnerApplication,
     closeModal,
-    openModal
+    openModal,
   }
 )
 export default class SettingsContainer extends Component {
@@ -41,7 +41,7 @@ export default class SettingsContainer extends Component {
           appId={this.props.application.id}
           mode={mode}
         />
-      )
+      ),
     });
   };
 
@@ -52,7 +52,7 @@ export default class SettingsContainer extends Component {
       size: 'small',
       component: (
         <ViewCredentials mode={mode} credentials={clientCredentials[type]} />
-      )
+      ),
     });
   };
 

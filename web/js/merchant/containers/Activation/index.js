@@ -27,7 +27,7 @@ export default class ActivationContainer extends Component {
     this.state = {
       data: null,
       categories: null,
-      additionalModalClass: null
+      additionalModalClass: null,
     };
 
     this.fetchActivationDetails = this.fetchActivationDetails.bind(this);
@@ -48,39 +48,39 @@ export default class ActivationContainer extends Component {
               const body = document.body;
               reply(body.clientWidth, body.clientHeight);
             };
-          }
+          },
         },
         {
           name: 'notifyUnmount',
           hasReply: true,
           callback: reply => {
             this.handleUnmount = reply;
-          }
-        }
+          },
+        },
       ];
       const iaActivationMethods = [
         {
           name: 'submitForm',
-          hasReply: true
+          hasReply: true,
         },
         {
           name: 'notifyFormValidity',
-          hasReply: true
-        }
+          hasReply: true,
+        },
       ];
       const kycActivationMethods = [
         {
           name: 'notifyOnKYCSuccess',
-          hasReply: true
+          hasReply: true,
         },
         {
           name: 'notifySupportPopupOpen',
-          hasReply: true
+          hasReply: true,
         },
         {
           name: 'notifySupportPopupClose',
-          hasReply: true
-        }
+          hasReply: true,
+        },
       ];
 
       const { isL1Submitted } = props.user.instantActivation;
@@ -106,7 +106,7 @@ export default class ActivationContainer extends Component {
     return (
       additionalModalClass !== this.state.additionalModalClass &&
       this.setState({
-        additionalModalClass
+        additionalModalClass,
       })
     );
   }
@@ -117,16 +117,16 @@ export default class ActivationContainer extends Component {
         url: 'merchant/activation',
         // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
         mode: !!accountId ? this.props.session.mode : 'live',
-        accountId
+        accountId,
       }),
-      !accountId && merchantFetch('merchant/activation/business_categories')
+      !accountId && merchantFetch('merchant/activation/business_categories'),
     ]).then(([data, categories]) => {
       data = data.data;
       categories = categories && categories.data;
 
       this.setState({
         data,
-        categories
+        categories,
       });
 
       return [data, categories];
@@ -178,13 +178,13 @@ export default class ActivationContainer extends Component {
     const {
       instantActivation,
       showInstantActivation,
-      isUnregBizFlowEnabled
+      isUnregBizFlowEnabled,
     } = user;
     const {
       isL1Submitted,
       isWhitelistFlow,
       isBlacklistFlow,
-      isGraylistFlow
+      isGraylistFlow,
     } = instantActivation;
 
     const showL1Modal =
@@ -213,7 +213,7 @@ export default class ActivationContainer extends Component {
       data,
       categories,
       handleUIUpdate: this.handleUIUpdate,
-      rpc: this.rpc
+      rpc: this.rpc,
     };
     const isLoading = !data;
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
@@ -240,7 +240,7 @@ export default class ActivationContainer extends Component {
     } else if (showL1Modal) {
       modalClasses = modalClasses.concat([
         'Activation--wizard',
-        'Activation--wizard--Instant'
+        'Activation--wizard--Instant',
       ]);
       content = (
         <InstantActivation
