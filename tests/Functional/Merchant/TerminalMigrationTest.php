@@ -21,6 +21,8 @@ class TerminalMigrationTest extends TestCase
 
     protected $terminalsServiceMock;
 
+    protected $terminalRepository;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/TerminalMigrationTestData.php';
@@ -53,6 +55,8 @@ class TerminalMigrationTest extends TestCase
 
         $this->merchant = $this->fixtures->create('merchant');
 
+        $this->terminalRepository = new Terminal\Repository;
+
         $this->ba->adminAuth();
     }
 
@@ -69,7 +73,7 @@ class TerminalMigrationTest extends TestCase
 
             Terminal\Entity::verifyIdAndSilentlyStripSign($terminal['id']);
 
-            $terminalEntity = (new Terminal\Repository)->findOrFail($terminal['id']);
+            $terminalEntity = $this->terminalRepository->findOrFail($terminal['id']);
 
             $response =  new \Requests_Response;
 
@@ -86,6 +90,10 @@ class TerminalMigrationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $terminalEntity = $this->terminalRepository->findOrFail($response['id']);
+
+        $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminalEntity->getSyncStatus());
     }
 }
