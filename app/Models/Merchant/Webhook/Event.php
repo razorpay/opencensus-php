@@ -523,7 +523,7 @@ class Event
             $pos = $bitPosition[$event] ?? null;
 
             // If the event is present in the other bit position (we have two bit position arrays),
-            // it'll be taken care of in the next run with a different bitPosition set
+            // it'll be taken care of in the next run with a different bitPosition array set
             if (empty($pos) === true)
             {
                 continue;
@@ -542,6 +542,7 @@ class Event
 
     public static function isEventEnabled($hexEvent, $event)
     {
+        // This checks in both the bitPosition arrays.
         $pos = self::getBitPosition($event);
 
         return ($hexEvent >> ($pos - 1)) & 1;
@@ -554,6 +555,8 @@ class Event
 
     public static function getBitPosition(string $event): int
     {
+        // TODO: If the same event is defined in 2 arrays, throw an error? But, since this is temp, let it be for now?
+
         // The event could be either in the first bit position or the second.
         return self::$bitPosition[$event] ?? self::$bitPosition2[$event];
     }

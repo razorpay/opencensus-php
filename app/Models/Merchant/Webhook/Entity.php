@@ -250,16 +250,16 @@ class Entity extends Base\PublicEntity
         $hex = 0;
         $hex2 = 0;
 
-        $events2events = $this->getApplicableEvents($events, Event::$bitPosition2);
+        $events2Events = $this->getApplicableEvents($events, Event::$bitPosition2);
 
-        if (empty($events2events) === false)
+        if (empty($events2Events) === false)
         {
             if (isset($this->attributes[self::EVENTS2]))
             {
                 $hex2 = $this->attributes[self::EVENTS2];
             }
 
-            $this->attributes[self::EVENTS2] = Event::getHexValue($events2events, $hex2);
+            $this->attributes[self::EVENTS2] = Event::getHexValue($events2Events, $hex2);
         }
 
         $events1events = $this->getApplicableEvents($events, Event::$bitPosition);

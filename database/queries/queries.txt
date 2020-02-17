@@ -5623,4 +5623,4 @@ ALTER TABLE merchant_details
     ADD COLUMN platform varchar(40) DEFAULT NULL;
 
 ALTER TABLE webhooks
-    ADD COLUMN events2 BIGINT DEFAULT NULL AFTER events;
+    ADD COLUMN events2 BIGINT DEFAULT 0 AFTER events;
