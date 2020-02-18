@@ -486,6 +486,16 @@ class TransactionTest extends TestCase
 
     public function testHandleAsyncMerchantBalanceUpdate()
     {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
         $this->fixtures->merchant->addFeatures(['async_balance_update']);
         $payment = $this->getDefaultPaymentArray();
 
