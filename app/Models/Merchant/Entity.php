@@ -496,6 +496,17 @@ class Entity extends Base\PublicEntity
     {
         parent::refresh();
 
+        // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
+        $this->loadedFeatures = null;
+
+        return $this;
+    }
+
+    public function reload()
+    {
+        parent::reload();
+
+        // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
         $this->loadedFeatures = null;
 
         return $this;
