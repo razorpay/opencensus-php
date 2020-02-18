@@ -702,7 +702,15 @@ class Selector extends Base\Core
             ];
 
             $tracePayment = $data['payment'];
-            unset($tracePayment['email'], $tracePayment['contact'], $tracePayment['card'], $tracePayment['notes']);
+
+            // remove sensitive data from logging
+            unset($tracePayment['email'], $tracePayment['contact'], $tracePayment['notes']);
+
+            // checking card key exist or not in array
+            if (isset($tracePayment['card']) === true)
+            {
+                unset($tracePayment['card']);
+            }
 
             $this->trace->info(
                 TraceCode::SMART_ROUTING_REQUEST,
