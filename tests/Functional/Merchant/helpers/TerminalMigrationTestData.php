@@ -140,6 +140,17 @@ return [
         ],
     ],
 
+    'testUpdateTerminalTerminalsServiceDownMigrateTerminalVariant' => [
+        'request' => [
+            'content' => [
+                'toggle' => '0',
+                'remarks'  => 'Disabling terminal because of some reason',
+            ],
+            'method' => 'PUT'
+        ],
+    ],
+
+
     'testUpdateTerminalControlVariant' => [
         'request' => [
             'content' => [
