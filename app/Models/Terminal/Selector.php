@@ -701,10 +701,13 @@ class Selector extends Base\Core
                 'chance'              => $this->options->getChance(),
             ];
 
+            $tracePayment = $data['payment'];
+            unset($tracePayment['email'], $tracePayment['contact'], $tracePayment['card'], $tracePayment['notes']);
+
             $this->trace->info(
                 TraceCode::SMART_ROUTING_REQUEST,
                 [
-                    'payment'             => $data['payment'],
+                    'payment'             => $tracePayment,
                     'merchant'            => $data['merchant'],
                     'filtered_terminals'  => $data['filtered_terminals'],
                     'gateway_downtime'    => $data['gateway_downtime'],
