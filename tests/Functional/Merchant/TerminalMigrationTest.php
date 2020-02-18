@@ -217,6 +217,36 @@ class TerminalMigrationTest extends TestCase
     }
 
     // the below cases tests migration functionality when an attribute of an existing terminal is tested
+    public function testUpdateTerminalTerminalsServiceUpMigrateTerminalVariant()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', ['used' => true, 'enabled' => '1']);
+
+        $tid = $terminal['id'];
+
+        $url = '/terminals/'.$tid.'/toggle';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->razorxValue = 'on';
+
+        $this->mockTerminalsServiceSendRequest(function () use ($tid){
+
+            $data = $this->getTerminalToArrayPassword($tid);
+
+            return $this->getDefaultTerminalServiceResponse($data);
+        });
+
+        $this->startTest();
+
+        $terminalEntity = $this->terminalRepository->findOrFail($tid);
+
+        $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminalEntity->getSyncStatus());
+
+        $this->assertFalse($terminalEntity->isEnabled());
+    }
+
+
     public function testUpdateTerminalControlVariant()
     {
         $this->mockTerminalsServiceSendRequest(null, 0);
