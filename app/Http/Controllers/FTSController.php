@@ -55,4 +55,11 @@ class FTSController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function sendAlert()
+    {
+        $response = $this->app['fts_fund_transfer']->sendAlert($this->input);
+
+        return ApiResponse::json($response);
+    }
+
 }

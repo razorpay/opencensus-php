@@ -142,7 +142,7 @@ class Core extends Base\Core
 
     protected function associateDefaultOffers(Entity $order)
     {
-        $defaultOffers = (new Offer\Core)->fetchDefaultOffers();
+        $defaultOffers = (new Offer\Core)->fetchDefaultOffersForMerchant($order->getMerchantId());
 
         foreach($defaultOffers as $offer)
         {

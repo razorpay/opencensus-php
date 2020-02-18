@@ -927,4 +927,23 @@ class FundTransfer extends Base
 
         return $responseData;
     }
+
+    /**
+     * Sends Alert to FTS from dashboard
+     * Used for bank downtime and uptime manual detection from dashboard
+     *
+     * @param array $input
+     * @return array
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function sendAlert(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_ALERT_URI,
+            Requests::POST,
+            $input);
+    }
 }

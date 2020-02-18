@@ -748,7 +748,11 @@ return [
             Permission::ADMIN_BATCH_CREATE => [
                 'description' => 'Create admin type batches',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::ADJUSTMENT_BATCH_UPLOAD => [
+                'description' => 'Upload batch file to create adjustments in bulk',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::SHIELD => [

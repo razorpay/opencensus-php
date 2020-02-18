@@ -1059,4 +1059,15 @@ class Validator extends Base\Validator
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
     }
+
+    public function validateAdminRoleIfApplicable(\RZP\Models\Admin\Admin\Entity $admin , string $batchType)
+    {
+        if (isset(Type::$batchToAdminPermissionMapping[$batchType]) === true)
+        {
+            if (in_array(Type::$batchToAdminPermissionMapping[$batchType], $admin->getPermissionsList(), true) === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
+            }
+        }
+    }
 }

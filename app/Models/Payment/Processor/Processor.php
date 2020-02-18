@@ -1842,7 +1842,7 @@ class Processor
 
         (new Payment\Metric)->pushFailedMetrics($payment);
 
-        $this->eventPaymentFailed();
+        $this->eventPaymentFailed($exception);
 
         if ($this->merchant->isFeatureEnabled(Feature::PAYMENT_FAILURE_EMAIL) === true)
         {
@@ -1960,13 +1960,15 @@ class Processor
         $payment->setTwoFactorAuth($twoFactorAuth);
     }
 
-    protected function eventPaymentFailed()
+    protected function eventPaymentFailed($exception)
     {
         $eventPayload = [
             ApiEventSubscriber::MAIN => $this->payment
         ];
 
         $this->app['events']->fire('api.payment.failed', $eventPayload);
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
     }
 
     protected function setPaymentError(Exception\BaseException $e, $traceCode)
