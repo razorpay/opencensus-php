@@ -8,7 +8,7 @@ use RZP\Services\RazorXClient;
 
 class RazorxTreatment
 {
-    const shouldMigrateTerminalFeature = 'shouldMigrateTerminal';
+    const shouldMigrateTerminalFeature = 'MigrateTerminal';
     const migrateVariant = 'migrate';
 
     public static function shouldMigrateTerminalOrFail() : bool
