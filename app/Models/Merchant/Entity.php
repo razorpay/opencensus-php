@@ -231,6 +231,14 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'merchant';
 
+    /**
+     * Merchant features, saved to this variable once fetched to avoid
+     * repeated DB calls.
+     *
+     * @var null
+     */
+    protected $loadedFeatures = null;
+
     protected static $sign = '';
 
     protected static $delimiter = '';
@@ -740,6 +748,13 @@ class Entity extends Base\PublicEntity
         return (in_array($featureName, $assignedFeatures, true) === true);
     }
 
+    public function isFeatureEnabledOnNonPurePlatformPartner(string $featureName): bool
+    {        
+        $nonPurePlatformPartner = $this->getNonPurePlatformPartner();
+
+        return isset($nonPurePlatformPartner) ? $nonPurePlatformPartner->isFeatureEnabled($featureName) : false;
+    }
+
     public function isAtLeastOneFeatureEnabled(array $features): bool
     {
         $assignedFeatures = $this->getEnabledFeatures();
@@ -796,11 +811,30 @@ class Entity extends Base\PublicEntity
      *
      * @return array
      */
-    public function getEnabledFeatures()
+    public function getEnabledFeatures(): array
     {
-        return $this->features
-                    ->pluck(Feature\Entity::NAME)
-                    ->toArray();
+        // If we've already loaded features for the merchant object, return that
+        if ($this->loadedFeatures !== null)
+        {
+            return $this->loadedFeatures;
+        }
+
+        $cacheTtl = app('repo')->feature->getCacheTtl(Feature\Entity::FEATURE);
+
+        $cacheTags = Feature\Entity::getCacheTagsForNames($this->entity, $this->getId());
+
+        $this->loadedFeatures = $this->features()
+                                     ->remember($cacheTtl)
+                                     ->cacheTags($cacheTags)
+                                     ->pluck(Feature\Entity::NAME)
+                                     ->toArray();
+
+        return $this->loadedFeatures;
+    }
+
+    public function setLoadedFeaturesNull()
+    {
+        $this->loadedFeatures = null;
     }
 
     public function getEmiSubvention()

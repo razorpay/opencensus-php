@@ -5,6 +5,7 @@ namespace RZP\Models\Base\QueryCache;
 use App;
 use Config;
 use Illuminate\Support\Collection;
+
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Query\Builder as IlluminateQueryBuilder;
@@ -13,8 +14,12 @@ use Watson\Rememberable\Query\Builder as RememberableQueryBuilder;
 use RZP\Trace\TraceCode;
 
 /**
- * Overrides rememberable package's Builder class, as we need to add
+ * Class CacheQueryBuilder
+ *
+ * Overrides Rememberable package's Builder class, as we need to add
  * exception handling, in case Redis throws an error
+ *
+ * @package RZP\Models\Base\QueryCache
  */
 class CacheQueryBuilder extends RememberableQueryBuilder
 {
@@ -27,13 +32,12 @@ class CacheQueryBuilder extends RememberableQueryBuilder
      */
     public function getCached($columns = ['*'])
     {
+        /** @var Trace $trace */
         $trace = App::getFacadeRoot()['trace'];
 
         $mock = Config::get('app.query_cache.mock');
 
-        //
         // If query cache is mocked, we directly hit the db
-        //
         if ($mock === true)
         {
             return IlluminateQueryBuilder::get($columns);
@@ -55,6 +59,39 @@ class CacheQueryBuilder extends RememberableQueryBuilder
         }
     }
 
+    public function pluckCached($column, $key = null)
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $mock = Config::get('app.query_cache.mock');
+
+        //
+        // If query cache is mocked, we directly hit the db
+        //
+        if ($mock === true)
+        {
+            return IlluminateQueryBuilder::pluck($column, $key);
+        }
+
+        try
+        {
+            return parent::pluckCached($column, $key);
+        }
+        catch (\Throwable $e)
+        {
+            $trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::QUERY_CACHE_STORE_ERROR,
+                [
+                    'column'    => $column,
+                    'key'       => $key,
+                ]);
+
+            return IlluminateQueryBuilder::pluck($column, $key);
+        }
+    }
+
     /**
      * Flush the cache for the current model or a given tag name
      *
@@ -69,14 +106,13 @@ class CacheQueryBuilder extends RememberableQueryBuilder
     {
         $mock = Config::get('app.query_cache.mock');
 
-        //
         // If query cache is mocked we do not need to make cache flush call
-        //
         if ($mock === true)
         {
             return true;
         }
 
+        /** @var Trace $trace */
         $trace = App::getFacadeRoot()['trace'];
 
         $this->cacheTags($cacheTags);
@@ -91,9 +127,7 @@ class CacheQueryBuilder extends RememberableQueryBuilder
             // Firing a KeyForgotten event here, to increment the cache_flushes
             // counter. This is to detect, how many flushes happened due to entity update
             //
-            event(new KeyForgotten($this->cachePrefix, [
-                $cacheTags
-            ]));
+            event(new KeyForgotten($this->cachePrefix, [$cacheTags]));
         }
         catch (\Throwable $e)
         {

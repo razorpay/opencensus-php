@@ -35,10 +35,15 @@ class Core extends Base\Core
             Transaction\Type::PAYMENT,
             Transaction\Type::TRANSFER,
             Transaction\Type::REFUND,
+            Transaction\Type::ADJUSTMENT,
         ],
         Type::BANKING => [
-            Transaction\Type::PAYOUT
-        ]
+            Transaction\Type::PAYOUT,
+            Transaction\Type::ADJUSTMENT,
+        ],
+        Type::COMMISSION => [
+            Transaction\Type::ADJUSTMENT,
+        ],
     ];
 
     /**

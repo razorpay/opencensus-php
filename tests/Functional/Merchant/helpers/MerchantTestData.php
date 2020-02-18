@@ -671,6 +671,23 @@ return [
         ]
     ],
 
+    'testEditMerchantWebsite' => [
+        'request'  => [
+            'content' => [
+                'website' => 'http://abc.com',
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id'                  => '10000000000000',
+                'entity'              => 'merchant',
+                'website'             => 'http://abc.com',
+            ]
+        ]
+    ],
+
     'testEditMerchantInvalidWhitelistedIpsTest' => [
         'request'  => [
             'content' => [

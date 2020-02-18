@@ -221,9 +221,9 @@ class Core extends Base\Core
         }
     }
 
-    public function fetchDefaultOffers()
+    public function fetchDefaultOffersForMerchant(string $merchantId)
     {
-        $defaultOffers = $this->repo->offer->fetchAllDefaultOffersForMerchant($this->merchant->getId());
+        $defaultOffers = $this->repo->offer->fetchAllDefaultOffersForMerchant($merchantId);
 
         return $defaultOffers;
     }

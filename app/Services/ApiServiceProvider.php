@@ -356,6 +356,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerFreshdeskTicketService();
 
+        $this->registerTokenService();
+
         $this->registerTerminalsService();
     }
 
@@ -407,6 +409,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'hubspot',
             'salesforce',
             'freshdesk_client',
+            'token_service',
             'terminals_service',
         ];
     }
@@ -927,5 +930,13 @@ class ApiServiceProvider extends BaseServiceProvider
             return new TerminalsService($app);
         });
 
+    }
+
+    protected function registerTokenService()
+    {
+        $this->app->singleton('token_service', function($app)
+        {
+            return new TokenService($app);
+        });
     }
 }

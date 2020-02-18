@@ -71,6 +71,8 @@ class Status
             self::FAILED,
         ],
         self::INITIATED => [
+            // FTA tries to update to initiated multiple times.
+            self::INITIATED,
             self::REVERSED,
             self::FAILED,
             self::PROCESSED,
