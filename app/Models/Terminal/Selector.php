@@ -643,7 +643,7 @@ class Selector extends Base\Core
         {
             $response = null;
 
-            $paymentData = $payment->toArray();
+            $paymentData = $payment->toArrayGateway();
 
             if ($payment->hasCard() === true)
             {
