@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use Mail;
-use Cache;
 use Closure;
 use Mockery;
 use Carbon\Carbon;

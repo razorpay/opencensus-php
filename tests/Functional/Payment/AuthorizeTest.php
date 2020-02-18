@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Illuminate\Support\Str;
 use Mail;
 use Cache;
 use Redis;
@@ -153,7 +154,13 @@ class AuthorizeTest extends TestCase
             ->andReturn(true);
 
         Cache::shouldReceive('get')
-            ->andReturn(true);
+            ->andReturnUsing(function($key)
+            {
+                if (Str::contains($key, 'EVENT_PAYMENT_CREATED_FIRED'))
+                {
+                    return true;
+                }
+            });
 
         $this->startTest();
     }

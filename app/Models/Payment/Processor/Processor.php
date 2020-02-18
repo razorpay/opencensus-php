@@ -349,7 +349,8 @@ class Processor
         // the scenario where same payment id gets generated in live and test mode is not handled currently.
         $cacheKey = 'EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
 
-        if ($this->cache->get($cacheKey) === null or $this->cache->get($cacheKey) === false)
+        if (($this->cache->get($cacheKey) === null) or
+            ($this->cache->get($cacheKey) === false))
         {
             $eventPayload = [
                 ApiEventSubscriber::MAIN => $this->payment,
