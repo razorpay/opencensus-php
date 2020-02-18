@@ -4974,15 +4974,15 @@ class MerchantTest extends TestCase
     /**
      * Switches product of merchant from PG to BB.
      */
-    public function testMerchantSwitchProduct()
+    public function testMerchantSwitchProduct($expValue = 'on', $category2 = 'school')
     {
-        $this->enableRazorXTreatmentForXOnboarding();
+        $this->enableRazorXTreatmentForXOnboarding($expValue);
 
         $user = (new User())->createUserForMerchant();
 
         $this->fixtures->edit('merchant',
                               '10000000000000',
-                              ['activated' => true, 'business_banking' => true, 'category2' => 'school']);
+                              ['activated' => true, 'business_banking' => true, 'category2' => $category2]);
 
         $this->fixtures->create('merchant_detail',
                                 [
@@ -5170,7 +5170,7 @@ class MerchantTest extends TestCase
      */
     public function testMerchantSwitchProductWhenL1Incomplete()
     {
-        $this->testMerchantSwitchProductWhenXOnboardingExperimentOff('on', null);
+        $this->testMerchantSwitchProduct('on', null);
     }
 
     /**
