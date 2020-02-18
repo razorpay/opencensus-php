@@ -209,6 +209,23 @@ class Constants
                 'business_type' => MerchantDetails\BusinessType::REGISTERED_BUSINESS_TYPES,
             ]
         ],
+        [
+            'title'       => 'Rev-Up Chennai',
+            'description'       => 'Last 30 passes for Razorpay merchants for RevUp Chennai - claim yours today!',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'I\'m in!',
+                    'url'   => 'https://hubs.ly/H0m-tv10',
+                ],
+            ],
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/events.svg',
+            'start_ts'    => 1581964200,
+            'end_ts'      => 1582309740,
+            'filters'     => [
+                'experiments'  => ['rev_up_chennai_announcement'],
+            ]
+        ],
     ];
 
     public static function getNotifications(): array
