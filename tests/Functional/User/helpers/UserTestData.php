@@ -1304,7 +1304,7 @@ return [
             'url'     => '/users/contact/update',
             'method'  => 'patch',
             'content' => [
-                'contact_mobile' => '8877',
+                'contact_mobile' => '8877666666',
             ],
             'server'  => [
                 'HTTP_X-Dashboard-User-id' => '',
@@ -1330,7 +1330,7 @@ return [
             'url'     => '/users/contact/update',
             'method'  => 'patch',
             'content' => [
-                'contact_mobile' => '8877',
+                'contact_mobile' => '8877666666',
             ],
             'server'  => [
                 'HTTP_X-Dashboard-User-id' => '',
@@ -1356,7 +1356,7 @@ return [
             'url'     => '/users/contact/update',
             'method'  => 'patch',
             'content' => [
-                'contact_mobile' => '8877',
+                'contact_mobile' => '8877666666',
                 'otp'            => '0007',
             ],
             'server'  => [
@@ -1420,7 +1420,7 @@ return [
             'url'     => '/users/contact/update',
             'method'  => 'patch',
             'content' => [
-                'contact_mobile' => '8877',
+                'contact_mobile' => '8877666666',
             ],
             'server'  => [
                 'HTTP_X-Dashboard-User-id' => '',
@@ -1447,7 +1447,7 @@ return [
             'url'     => '/users/contact/update',
             'method'  => 'patch',
             'content' => [
-                'contact_mobile' => '8877',
+                'contact_mobile' => '8877666666',
                 'otp'            => '0007',
             ],
             'server'  => [
