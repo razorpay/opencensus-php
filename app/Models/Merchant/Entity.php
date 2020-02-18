@@ -494,22 +494,22 @@ class Entity extends Base\PublicEntity
 
     public function refresh()
     {
-        parent::refresh();
+        $instance = parent::refresh();
 
         // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
-        $this->loadedFeatures = null;
+        $instance->loadedFeatures = null;
 
-        return $this;
+        return $instance;
     }
 
     public function reload()
     {
-        parent::reload();
+        $instance = parent::reload();
 
         // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
-        $this->loadedFeatures = null;
+        $instance->loadedFeatures = null;
 
-        return $this;
+        return $instance;
     }
 
     protected function generateTransactionReportEmail($input)
