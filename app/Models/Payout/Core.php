@@ -384,8 +384,6 @@ class Core extends Base\Core
 
         $initialUtr = $payout->getUtr();
 
-        $returnUtr = $responseData[Attempt\Constants::RETURN_UTR] ?? null;
-
         $payout->setUtr($ftaData[Attempt\Constants::UTR]);
 
         $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
@@ -415,7 +413,12 @@ class Core extends Base\Core
             $payout->setFailureReason($ftaFailureReason);
         }
 
-        $payout->setReturnUtr($returnUtr);
+        if ($payout->getReturnUtr() === null)
+        {
+            $returnUtr = $ftaData[Attempt\Constants::RETURN_UTR] ?? null;
+
+            $payout->setReturnUtr($returnUtr);
+        }
 
         $this->repo->saveOrFail($payout);
 

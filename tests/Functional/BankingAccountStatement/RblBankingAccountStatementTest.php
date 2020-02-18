@@ -907,7 +907,7 @@ class RblBankingAccountStatementTest extends TestCase
                                         'amountValue' => '200003.00',
                                         'currencyCode' => 'INR'
                                     ],
-                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDate' => '2015-12-29T23:58:00.000',
                                     'txnDesc' => 'NEFT/003030303030303/Elite                       ',
                                     'txnType' => 'D'
                                 ],
@@ -928,7 +928,7 @@ class RblBankingAccountStatementTest extends TestCase
                                         'amountValue' => '200001.00',
                                         'currencyCode' => 'INR'
                                     ],
-                                    'txnDate' => '2016-01-05T00:00:00.000',
+                                    'txnDate' => '2016-01-05T00:01:00.000',
                                     'txnDesc' => 'NEFT/003030303030303/R ACCOUNT UNAVAILABLE       ',
                                     'txnType' => 'C'
                                 ],

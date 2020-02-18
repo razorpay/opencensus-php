@@ -129,6 +129,5 @@ final class Constants
     const DISABLE              = 'disable';
 
     // field added to capture reversal UTR to its payout
-
     const RETURN_UTR           = 'return_utr';
 }

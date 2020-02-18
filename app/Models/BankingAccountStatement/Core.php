@@ -400,7 +400,9 @@ class Core extends Base\Core
             $existingDebitTxn = $this->repo->banking_account_statement->findDebitTxnWithPonum(
                 $bankPonum,
                 $basEntity->getAmount(),
-                $basEntity->getChannel());
+                $basEntity->getChannel(),
+                $basEntity->getMerchantId(),
+                $basEntity->getTransactionDate());
 
             if ($existingDebitTxn !== null)
             {

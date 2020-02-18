@@ -5598,7 +5598,7 @@ ALTER TABLE payouts
 
 
 ALTER TABLE banking_account_statement
-    ADD COLUMN ponum VARCHAR(255) DEFAULT NULL AFTER reconciled_at;
+    ADD COLUMN ponum VARCHAR(255) DEFAULT NULL ;
 
 ALTER TABLE merchants
     ADD COLUMN external_id varchar(255) DEFAULT NULL AFTER partnership_url,
