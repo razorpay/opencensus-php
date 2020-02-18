@@ -127,11 +127,10 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         $rrn = $this->getReferenceNumber($row);
 
-        if (empty($rrn) === true)
-        {
-            $this->reportMissingColumn($row, implode(',', ReconciliationFields::RRN));
-        }
-        else if (strtolower($onusIndicator) === self::ONUS_INDICATOR)
+        // Not reporting missing rrn value in MIS, because it
+        // is quite frequent, and doesn't hamper recon flow.
+        if ((empty($rrn) === false)                            and
+            (strtolower($onusIndicator) === self::ONUS_INDICATOR))
         {
             // Only in case of ONUS transactions, we want to store RRN
             // In all the other cases, we want to store ARN only.
