@@ -403,7 +403,7 @@ class Entity extends Base\PublicEntity
     public function isDCCSupported(): bool
     {
         if (($this->isInternational() === true) and
-            (in_array($this->getNetworkCode(), Card\Network::getDCCSupportedNetworks())))
+            (Card\Network::isDCCSupportedNetwork($this->getNetworkCode())) === true)
         {
             return true;
         }
