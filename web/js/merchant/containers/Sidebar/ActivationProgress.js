@@ -15,9 +15,9 @@ export default RTracking((state, props, args) => {
     instantActivation: { isL1Submitted, isBlacklistFlow },
   } = user;
 
-  let actionCopy,
-    actionContent = null,
-    trackingIntent = null;
+  let actionCopy;
+  let actionContent = null;
+  let trackingIntent = null;
 
   if (user.activation_progress < 100) {
     // If user form is still unfilled

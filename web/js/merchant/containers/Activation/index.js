@@ -40,48 +40,48 @@ export default class ActivationContainer extends Component {
 
     if (window.RZP && window.RZP.appName === 'businessbanking') {
       const commonActivationMethods = [
-          {
-            name: 'notifyWindowResize',
-            hasReply: true,
-            callback: reply => {
-              this.handleUIUpdate = () => {
-                const body = document.body;
-                reply(body.clientWidth, body.clientHeight);
-              };
-            },
+        {
+          name: 'notifyWindowResize',
+          hasReply: true,
+          callback: reply => {
+            this.handleUIUpdate = () => {
+              const body = document.body;
+              reply(body.clientWidth, body.clientHeight);
+            };
           },
-          {
-            name: 'notifyUnmount',
-            hasReply: true,
-            callback: reply => {
-              this.handleUnmount = reply;
-            },
+        },
+        {
+          name: 'notifyUnmount',
+          hasReply: true,
+          callback: reply => {
+            this.handleUnmount = reply;
           },
-        ],
-        iaActivationMethods = [
-          {
-            name: 'submitForm',
-            hasReply: true,
-          },
-          {
-            name: 'notifyFormValidity',
-            hasReply: true,
-          },
-        ],
-        kycActivationMethods = [
-          {
-            name: 'notifyOnKYCSuccess',
-            hasReply: true,
-          },
-          {
-            name: 'notifySupportPopupOpen',
-            hasReply: true,
-          },
-          {
-            name: 'notifySupportPopupClose',
-            hasReply: true,
-          },
-        ];
+        },
+      ];
+      const iaActivationMethods = [
+        {
+          name: 'submitForm',
+          hasReply: true,
+        },
+        {
+          name: 'notifyFormValidity',
+          hasReply: true,
+        },
+      ];
+      const kycActivationMethods = [
+        {
+          name: 'notifyOnKYCSuccess',
+          hasReply: true,
+        },
+        {
+          name: 'notifySupportPopupOpen',
+          hasReply: true,
+        },
+        {
+          name: 'notifySupportPopupClose',
+          hasReply: true,
+        },
+      ];
 
       const { isL1Submitted } = props.user.instantActivation;
 
@@ -95,10 +95,11 @@ export default class ActivationContainer extends Component {
     }
 
     const query = QueryString.parse(props.location.search);
-    this.isSourceRX =
-      query && query.merchant && query.merchant === SOURCE_RAZORPAY_X
-        ? true
-        : false;
+    this.isSourceRX = !!(
+      query &&
+      query.merchant &&
+      query.merchant === SOURCE_RAZORPAY_X
+    );
   }
 
   setAdditionalModalClass(additionalModalClass) {
@@ -204,63 +205,61 @@ export default class ActivationContainer extends Component {
   }
 
   render() {
-    const { data, categories, additionalModalClass } = this.state,
-      { user } = this.props,
-      commonProps = {
-        accountId: this.props.accountId,
-        fetchActivationDetails: this.fetchActivationDetails,
-        data,
-        categories,
-        handleUIUpdate: this.handleUIUpdate,
-        rpc: this.rpc,
-      },
-      isLoading = !data,
-      // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
-      isModal = !!this.props.onClose,
-      showL1Modal = this.shouldShowL1Modal;
+    const { data, categories, additionalModalClass } = this.state;
+    const { user } = this.props;
+    const commonProps = {
+      accountId: this.props.accountId,
+      fetchActivationDetails: this.fetchActivationDetails,
+      data,
+      categories,
+      handleUIUpdate: this.handleUIUpdate,
+      rpc: this.rpc,
+    };
+    const isLoading = !data;
+    // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
+    const isModal = !!this.props.onClose;
+    const showL1Modal = this.shouldShowL1Modal;
 
-    let content = null,
-      modalClasses = ['animate-down'],
-      trackerIntent = null;
+    let content = null;
+    let modalClasses = ['animate-down'];
+    let trackerIntent = null;
 
     if (isLoading) {
       modalClasses = ['spinner', 'transparent'];
 
       content = (
-        <div class="spinner-container">
+        <div className="spinner-container">
           <div
-            class={classList(
+            className={classList(
               'spin-btn large page-center visible',
               isModal && 'gray'
             )}
           />
         </div>
       );
+    } else if (showL1Modal) {
+      modalClasses = modalClasses.concat([
+        'Activation--wizard',
+        'Activation--wizard--Instant',
+      ]);
+      content = (
+        <InstantActivation
+          {...commonProps}
+          onFormValidityChange={this.handleIAFormValidityChange}
+          sendEventsForSubMerchantView={this.sendEventsForSubMerchantView}
+        />
+      );
+      trackerIntent = 'act.form_fill';
     } else {
-      if (showL1Modal) {
-        modalClasses = modalClasses.concat([
-          'Activation--wizard',
-          'Activation--wizard--Instant',
-        ]);
-        content = (
-          <InstantActivation
-            {...commonProps}
-            onFormValidityChange={this.handleIAFormValidityChange}
-            sendEventsForSubMerchantView={this.sendEventsForSubMerchantView}
-          />
-        );
-        trackerIntent = 'act.form_fill';
-      } else {
-        content = (
-          <KycForm
-            {...commonProps}
-            onNewData={this.handleNewData}
-            setAdditionalModalClass={this.setAdditionalModalClass}
-            sendEventsForSubMerchantView={this.sendEventsForSubMerchantView}
-          />
-        );
-        trackerIntent = 'kyc.form_fill';
-      }
+      content = (
+        <KycForm
+          {...commonProps}
+          onNewData={this.handleNewData}
+          setAdditionalModalClass={this.setAdditionalModalClass}
+          sendEventsForSubMerchantView={this.sendEventsForSubMerchantView}
+        />
+      );
+      trackerIntent = 'kyc.form_fill';
     }
 
     if (additionalModalClass) {

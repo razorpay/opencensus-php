@@ -973,7 +973,7 @@ export default class ActivationWizard extends React.Component {
           poi_verification_status != 'incorrect_details' &&
           poi_verification_status != 'not_matched'
         ) {
-          return this.props.history.replace(`/`);
+          return this.props.history.replace('/');
         }
       });
       return response;
@@ -1075,7 +1075,7 @@ export default class ActivationWizard extends React.Component {
             1
           );
           fireAnalyticsEvents({
-            fbData: `KYC_complete_greylist`,
+            fbData: 'KYC_complete_greylist',
             bingData: greylistData,
             liData: conversionId,
             twiData: txnId,
@@ -1090,7 +1090,7 @@ export default class ActivationWizard extends React.Component {
             1
           );
           fireAnalyticsEvents({
-            fbData: `KYC_complete_whitelist`,
+            fbData: 'KYC_complete_whitelist',
             bingData: whitelistData,
             liData: conversionId,
             twiData: txnId,
@@ -1149,7 +1149,7 @@ export default class ActivationWizard extends React.Component {
         this.props.showKYCStatusModal({
           modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
         });
-        this.props.history.replace(`/`);
+        this.props.history.replace('/');
       }
       return response;
     } catch (err) {
@@ -1244,12 +1244,10 @@ export default class ActivationWizard extends React.Component {
             // Input fields are uncontrolled, so needs to be updated directly. Updating dependent field visible in view.
             document.querySelector(
               `.form-container [name=${cityField}]`
-            ).value =
-              data.city;
+            ).value = data.city;
             document.querySelector(
               `.form-container [name=${stateField}]`
-            ).value =
-              data.state_code;
+            ).value = data.state_code;
 
             this.setState({
               dirty: {
@@ -1271,12 +1269,12 @@ export default class ActivationWizard extends React.Component {
 
       // Update Business Subcategory in view
       let el = document.querySelector(
-        `.form-container [name=business_subcategory]`
+        '.form-container [name=business_subcategory]'
       );
       el && (el.value = '');
 
       // Update Business Model in view
-      el = document.querySelector(`.form-container [name=business_model]`);
+      el = document.querySelector('.form-container [name=business_model]');
       el && (el.value = '');
     }
 
@@ -1499,12 +1497,11 @@ export default class ActivationWizard extends React.Component {
           </main-title>
 
           {/* Alert: For linked account if activated */}
-          {this.isLinkedAccountForm &&
-            isFormActivated && (
-              <Alert.Info iconBefore="i-done-all">
-                The account has been activated
-              </Alert.Info>
-            )}
+          {this.isLinkedAccountForm && isFormActivated && (
+            <Alert.Info iconBefore="i-done-all">
+              The account has been activated
+            </Alert.Info>
+          )}
 
           {/* Alerts: for MAIN activation form */}
           {do {
@@ -1573,7 +1570,7 @@ export default class ActivationWizard extends React.Component {
                 // **5. Alert: Form is Submitted
 
                 icon = 'i-check';
-                msg = `Our team will review the form and submitted documents.`;
+                msg = 'Our team will review the form and submitted documents.';
                 secondaryMsg =
                   'We will reach out on your contact email for all updates.';
               }
@@ -1622,24 +1619,23 @@ export default class ActivationWizard extends React.Component {
         </main>
 
         {/* Submit form overlay view, Lock check not necessary here. Just ensured, 'Submit Form' checkbox must be disabled if locked */}
-        {!isFormSubmitted &&
-          this.state.showSubmitLayer && (
-            <main
-              className={classList(
-                'overlay-container',
-                isFormLocked && 'main--full'
-              )}
-            >
-              <SubmitForm
-                closeActivationForm={() => {
-                  this.goto(FORM_TABS.length - 1);
-                }}
-                isFormLocked={isFormLocked}
-                isLinkedAccount={this.isLinkedAccountForm}
-                submitActivationForm={this.submitForm}
-              />
-            </main>
-          )}
+        {!isFormSubmitted && this.state.showSubmitLayer && (
+          <main
+            className={classList(
+              'overlay-container',
+              isFormLocked && 'main--full'
+            )}
+          >
+            <SubmitForm
+              closeActivationForm={() => {
+                this.goto(FORM_TABS.length - 1);
+              }}
+              isFormLocked={isFormLocked}
+              isLinkedAccount={this.isLinkedAccountForm}
+              submitActivationForm={this.submitForm}
+            />
+          </main>
+        )}
 
         {/* Form Footer, to show actions btns / saving state */}
         {!isFormLocked && (
@@ -1729,11 +1725,10 @@ export default class ActivationWizard extends React.Component {
     if (i === NEEDS_CLARIFICATION_STEP) {
       return false;
     }
-    return FORM_TABS_CONTENT[i].every(
-      c =>
-        Array.isArray(c)
-          ? c.every(d => isFieldValid(d, this))
-          : isFieldValid(c, this)
+    return FORM_TABS_CONTENT[i].every(c =>
+      Array.isArray(c)
+        ? c.every(d => isFieldValid(d, this))
+        : isFieldValid(c, this)
     );
   }
 }
@@ -1896,18 +1891,16 @@ function ActivationField(field) {
   }
   return (
     <>
-      {this.isOnKYCTab() &&
-        rest.reasons &&
-        rest.reasons.length > 0 && (
-          <div className="ndc-reasons">
-            {rest.reasons.map((r, i) => (
-              <div key={i}>
-                <i className="i i-info-circle" />
-                <div>{r}</div>
-              </div>
-            ))}
-          </div>
-        )}
+      {this.isOnKYCTab() && rest.reasons && rest.reasons.length > 0 && (
+        <div className="ndc-reasons">
+          {rest.reasons.map((r, i) => (
+            <div key={i}>
+              <i className="i i-info-circle" />
+              <div>{r}</div>
+            </div>
+          ))}
+        </div>
+      )}
       <Component
         key={key}
         data-name={_name}

@@ -23,14 +23,17 @@ import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import { fetchGST } from 'merchant/reducers/profile';
 import { fetchConfig } from 'merchant/reducers/config';
-import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
+import {
+  fireAnalyticsEvents,
+  setTrackData,
+} from 'common/utils/googleAnalytics';
 import {
   resizeWindow,
   updateMerchantLiveTransactionFlag,
 } from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/utils/rzp-utils';
-import { setTrackData } from 'common/utils/googleAnalytics';
+
 import { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 
@@ -73,8 +76,8 @@ import RTracking from 'react-tracking';
     return window.rzpQ.component('Home', {
       user: u,
       utm_params: utm,
-      gclid: gclid,
-      mode: mode,
+      gclid,
+      mode,
     });
   },
   {
@@ -91,8 +94,8 @@ export default class App extends Component {
 
     const { user } = props;
 
-    const oldModeToken = 'rzp_mode',
-      oldModeValue = LocalStorageService.getItem(oldModeToken);
+    const oldModeToken = 'rzp_mode';
+    const oldModeValue = LocalStorageService.getItem(oldModeToken);
 
     // localizing mode for each merchant so that different modes can be maintained
     // across logins/merchants
@@ -166,8 +169,8 @@ export default class App extends Component {
 
     Promise.all([
       this.fetchUser().then(({ data }) => {
-        let user = data;
-        let role = user.userRole;
+        const user = data;
+        const role = user.userRole;
 
         if (!currentMode) {
           currentMode = user.isActivated ? 'live' : 'test';
@@ -184,7 +187,7 @@ export default class App extends Component {
         return data;
       }),
       this.fetchOrg().then(({ data }) => {
-        let orgCode = (this.orgCode = data.custom_code);
+        const orgCode = (this.orgCode = data.custom_code);
         if (orgCode && orgCode !== 'rzp') {
           applyTheme(orgCode);
         }
@@ -210,7 +213,7 @@ export default class App extends Component {
         fetchFeaturesAjax(response[0].current)
           .catch(_ => _)
           .then(data => {
-            let user = new User(response[0]);
+            const user = new User(response[0]);
             user.features = setFeatures(data.success ? data.data.features : []);
 
             this.props.updateSession({ user, mode: currentMode });
@@ -232,7 +235,7 @@ export default class App extends Component {
 
   componentWillReceiveProps({ user, history, location }) {
     if (user.isAuthenticated) {
-      let role = user.userRole;
+      const role = user.userRole;
       this.redirectToRoute(role);
 
       this.renderFPView = this.getFPView(location);
@@ -284,7 +287,7 @@ export default class App extends Component {
   };
 
   fetchUser() {
-    let user = window.rzp_user ? new User(window.rzp_user) : null;
+    const user = window.rzp_user ? new User(window.rzp_user) : null;
 
     if (user) {
       this.props.updateSession({ user });
@@ -337,7 +340,7 @@ export default class App extends Component {
   }
 
   fetchOrg() {
-    let org = window.rzp_org;
+    const org = window.rzp_org;
     if (org) {
       delete window.rzp_org;
       this.props.updateSession({ org });
@@ -348,7 +351,7 @@ export default class App extends Component {
   }
 
   redirectToRoute(role) {
-    let pathname = this.props.history.location.pathname;
+    const pathname = this.props.history.location.pathname;
 
     if (
       pathname === '/' ||
@@ -358,7 +361,7 @@ export default class App extends Component {
       switch (role) {
         case [rolesList.SELLERAPP]:
         case [rolesList.AGENT]:
-          let url = '/paymentlinks';
+          const url = '/paymentlinks';
           return this.props.history.replace(url);
 
         case [rolesList.SUPPORT]:
@@ -376,7 +379,7 @@ export default class App extends Component {
       eventAction: 'Switch - Mode',
       eventLabel: mode,
     });
-    let user = this.props.user;
+    const user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
       this.props.openModal({
         size: 'small',
@@ -415,7 +418,7 @@ export default class App extends Component {
   };
 
   lockDashboard = cb => {
-    let email = this.props.user.user.email;
+    const email = this.props.user.user.email;
 
     if (window.Raven && window.Raven.captureMessage) {
       window.Raven.captureMessage('Dashboard Locked', {
@@ -462,7 +465,7 @@ export default class App extends Component {
   };
 
   render() {
-    let { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
+    const { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
 
     const hasGSTIN =
       this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin;
@@ -473,7 +476,7 @@ export default class App extends Component {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'layout',
           this.orgCode,
           this.renderFPView && 'layout--fp'
@@ -522,7 +525,7 @@ export default class App extends Component {
 }
 
 function removeSplashLoader() {
-  let $splash = document.getElementById('splash');
+  const $splash = document.getElementById('splash');
   if ($splash) {
     $splash.parentElement.removeChild($splash);
   }

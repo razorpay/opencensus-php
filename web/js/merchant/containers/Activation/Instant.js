@@ -15,9 +15,10 @@ import {
   autoPrefixUrls,
   addPrefixToObjectKeys,
   prevent,
+  classList,
 } from 'common/utils/rzp-utils';
 import { trackDiffInFormFields } from 'merchant/utils/track-utils';
-import { classList } from 'common/utils/rzp-utils';
+
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
@@ -69,7 +70,7 @@ function defaultFieldProps(f) {
 }
 
 let FORM_TABS; // Maintains naming of the tabs
-let BUSINESS_CATEGORY_FIELD = 1;
+const BUSINESS_CATEGORY_FIELD = 1;
 
 @RTracking(() => window.rzpQ.component('ActivationWizard'))
 @withRouter
@@ -234,7 +235,7 @@ export default class ActivationWizard extends React.Component {
       url: 'merchant/instant_activation',
       method: 'POST',
       mode: 'live',
-      data: data,
+      data,
       accountId: this.props.accountId,
     })
       .then(response => {
@@ -267,7 +268,12 @@ export default class ActivationWizard extends React.Component {
           this.props.showKYCDetailsModal();
         }
 
-        let data = new BingDataObj('activationform', 'complete', 'success', 1);
+        const data = new BingDataObj(
+          'activationform',
+          'complete',
+          'success',
+          1
+        );
         fireAnalyticsEvents({
           bingData: data,
           liData: 987404,
@@ -283,7 +289,7 @@ export default class ActivationWizard extends React.Component {
             .success('route.linked_account.activate_account.business_details')
         );
 
-        return this.props.history.replace(`/`);
+        return this.props.history.replace('/');
       })
       .catch(err => {
         if (err.errors.length && err.errors[0]) {
@@ -295,7 +301,7 @@ export default class ActivationWizard extends React.Component {
 
         trackL1FormError();
 
-        let dataError = new BingDataObj(
+        const dataError = new BingDataObj(
           'activationform',
           'complete',
           'error',
@@ -317,11 +323,11 @@ export default class ActivationWizard extends React.Component {
   };
 
   onChange = ({ target }) => {
-    let stateName = target.getAttribute('data-name');
+    const stateName = target.getAttribute('data-name');
     let fieldValue = target.value;
-    let fieldName = target.name;
+    const fieldName = target.name;
 
-    let sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
+    const sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
     const { dirty } = this.state;
     const { data } = this.props;
 
@@ -331,34 +337,32 @@ export default class ActivationWizard extends React.Component {
           'business_website' in dirty
             ? dirty.business_website
             : this.props.data.business_website;
-        sideEffectFieldsToUpdate['business_website'] = '';
+        sideEffectFieldsToUpdate.business_website = '';
       } else {
-        sideEffectFieldsToUpdate[
-          'business_website'
-        ] = this.prevBusinessWebsiteVal;
+        sideEffectFieldsToUpdate.business_website = this.prevBusinessWebsiteVal;
       }
     }
 
     /* Step 5: Business category and sub category are always marked dirty in pairs. BE validates them in pair. */
     if (fieldName === 'business_category') {
       // Set first option in new set of subcategory. It remains '', it would convert to null before making api call.
-      sideEffectFieldsToUpdate['business_subcategory'] = '';
-      sideEffectFieldsToUpdate['business_model'] = ''; // Reset Business Model as well.
+      sideEffectFieldsToUpdate.business_subcategory = '';
+      sideEffectFieldsToUpdate.business_model = ''; // Reset Business Model as well.
 
       // Update Business Subcategory in view
       let el = document.querySelector(
-        `.form-container [name=business_subcategory]`
+        '.form-container [name=business_subcategory]'
       );
       el && (el.value = '');
 
       // Update Business Model in view
-      el = document.querySelector(`.form-container [name=business_model]`);
+      el = document.querySelector('.form-container [name=business_model]');
       el && (el.value = '');
     }
 
     if (fieldName === 'business_subcategory') {
-      sideEffectFieldsToUpdate['business_category'] =
-        dirty['business_category'] || data['business_category'];
+      sideEffectFieldsToUpdate.business_category =
+        dirty.business_category || data.business_category;
     }
 
     /* Step 6: Business website must have http/https prepended */
@@ -424,7 +428,7 @@ export default class ActivationWizard extends React.Component {
             <Collapsible
               title={collapsibleOpen => (
                 <span
-                  class="text-primary"
+                  className="text-primary"
                   onClick={() => {
                     tracking.trackEvent(
                       window.rzpQ.onbr().initiated('act.view_signup_fields')
@@ -453,8 +457,10 @@ export default class ActivationWizard extends React.Component {
     });
 
     return (
-      <div class="Activation--wizard Wizard">
-        <main class={classList('form-container', isFormLocked && 'main--full')}>
+      <div className="Activation--wizard Wizard">
+        <main
+          className={classList('form-container', isFormLocked && 'main--full')}
+        >
           <main-title class="main-title">Activate your account</main-title>
           <main-subtitle>
             <p>Enable live transactions by filling in a few more details</p>
@@ -486,11 +492,10 @@ export default class ActivationWizard extends React.Component {
 
     const isValid =
       data !== void 0 &&
-      FORM_TABS.every(
-        c =>
-          Array.isArray(c)
-            ? c.every(d => isFieldValid(d, this, data))
-            : isFieldValid(c, this, data)
+      FORM_TABS.every(c =>
+        Array.isArray(c)
+          ? c.every(d => isFieldValid(d, this, data))
+          : isFieldValid(c, this, data)
       );
 
     if (this.onFormValidityChange) {
@@ -502,7 +507,7 @@ export default class ActivationWizard extends React.Component {
 }
 
 function ActivationField(field) {
-  let {
+  const {
     _cmp: Component,
     _name,
     _when,
@@ -581,7 +586,7 @@ function isFieldValid(field, activation, data) {
     }
   }
 
-  let value = data[field.name];
+  const value = data[field.name];
   let isFieldRequired = field.required;
 
   if (typeof isFieldRequired === 'function') {
