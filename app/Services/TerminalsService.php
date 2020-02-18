@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Requests;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Exception\IntegrationException;
@@ -114,7 +115,7 @@ class TerminalsService
             if ($response->status_code >= 400)
             {
                 throw new IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
-                null,
+                ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
                 [
                     self::RESPONSE => $this->parseAndReturnResponse($response)]
                 );

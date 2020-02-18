@@ -1506,4 +1506,7 @@ class ErrorCode
     //FuzzyMatcher Error Codes
     const BAD_REQUEST_INVALID_MATCH_PERCENT                                         = 'BAD_REQUEST_INVALID_MATCH_PERCENT';
     const BAD_REQUEST_INVALID_MATCH_TYPE                                            = 'BAD_REQUEST_INVALID_MATCH_TYPE';
+
+    // Terminals service error codes
+    const SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR                          = 'SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR';
 }

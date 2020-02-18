@@ -4,12 +4,14 @@ namespace RZP\Tests\Functional\Merchant;
 
 
 use Mockery;
-use RZP\Exception\IntegrationException;
+use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Services\RazorXClient;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\IntegrationException;
+use Symfony\Component\HttpFoundation\Response;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 
 class TerminalMigrationTest extends TestCase
@@ -121,6 +123,7 @@ class TerminalMigrationTest extends TestCase
         $this->mockTerminalsServiceSendRequest(function () {
             throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
         }, 1);
+
         $this->razorxValue = 'on';
 
         $url = '/merchants/'. $this->merchant->getKey(). '/terminals';
@@ -161,6 +164,38 @@ class TerminalMigrationTest extends TestCase
 
         $this->startTest();
 
+    }
+
+    public function testAssignTerminalsServiceFailureResponseMigrateTerminalVariant()
+    {
+        $this->mockTerminalsServiceSendRequest(function () {
+            $response = $this->getDefaultTerminalServiceResponse();
+
+            $response->body = '';
+
+            $response->status_code = Response::HTTP_UNAUTHORIZED;
+
+            throw new IntegrationException('Terminals service request failed with status code : ' . $response->status_code,
+                ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
+                [
+                    'response' => []
+                ]
+            );
+        }, 1);
+
+        $this->razorxValue = 'on';
+
+        $url = '/merchants/'. $this->merchant->getKey(). '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->expectException(IntegrationException::class);
+
+        $this->expectExceptionCode(ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR);
+
+        $this->expectExceptionMessage('401');
+
+        $this->startTest();
     }
 
     public function testAssignTerminalControlVariant()
