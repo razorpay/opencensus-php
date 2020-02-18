@@ -108,7 +108,7 @@ class TerminalMigrationTest extends TestCase
            return $this->getDefaultTerminalServiceResponse();
         });
 
-        $this->razorxValue = 'on';
+        $this->razorxValue = 'migrate';
 
         $url = '/merchants/'. $this->merchant->getKey(). '/terminals';
 
@@ -127,7 +127,7 @@ class TerminalMigrationTest extends TestCase
             throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
         }, 1);
 
-        $this->razorxValue = 'on';
+        $this->razorxValue = 'migrate';
 
         $url = '/merchants/'. $this->merchant->getKey(). '/terminals';
 
@@ -155,7 +155,7 @@ class TerminalMigrationTest extends TestCase
             return $this->getDefaultTerminalServiceResponse($data);
         });
 
-        $this->razorxValue = 'on';
+        $this->razorxValue = 'migrate';
 
         $url = '/merchants/'. $this->merchant->getKey(). '/terminals';
 
@@ -186,7 +186,7 @@ class TerminalMigrationTest extends TestCase
             );
         }, 1);
 
-        $this->razorxValue = 'on';
+        $this->razorxValue = 'migrate';
 
         $url = '/merchants/'. $this->merchant->getKey(). '/terminals';
 
@@ -228,7 +228,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->razorxValue = 'on';
+        $this->razorxValue = 'migrate';
 
         $this->mockTerminalsServiceSendRequest(function () use ($tid){
 
@@ -261,7 +261,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->razorxValue = 'on';
+        $this->razorxValue = 'migrate';
 
         $this->mockTerminalsServiceSendRequest(function () use ($tid) {
             throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
@@ -297,7 +297,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->razorxValue = 'on';
+        $this->razorxValue = 'migrate';
 
         $this->mockTerminalsServiceSendRequest(function() use ($tid) {
 
@@ -336,7 +336,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->razorxValue = 'on';
+        $this->razorxValue = 'migrate';
 
         $this->mockTerminalsServiceSendRequest(function () {
             $response = $this->getDefaultTerminalServiceResponse();

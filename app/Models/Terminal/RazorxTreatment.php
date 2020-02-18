@@ -8,7 +8,8 @@ use RZP\Services\RazorXClient;
 
 class RazorxTreatment
 {
-    const shouldMigrateTerminal = 'shouldMigrateTerminal';
+    const shouldMigrateTerminalFeature = 'shouldMigrateTerminal';
+    const migrateVariant = 'migrate';
 
     public static function shouldMigrateTerminalOrFail() : bool
     {
@@ -16,13 +17,13 @@ class RazorxTreatment
 
         $mode = $app['rzp.mode'] ?? \RZP\Constants\Mode::LIVE;
 
-        $variant = $app['razorx']->getTreatment('', self::shouldMigrateTerminal, $mode);
+        $variant = $app['razorx']->getTreatment($app['request']->getId(), self::shouldMigrateTerminalFeature, $mode);
 
-        if ($variant === RazorXClient::DEFAULT_CASE)
+        if ($variant === self::migrateVariant)
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 }
