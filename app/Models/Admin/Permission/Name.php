@@ -275,6 +275,7 @@ class Name
     const REJECT_PAYOUT                       = 'reject_payout';
     const VIEW_PAYOUT                         = 'view_payout';
     const CANCEL_PAYOUT                       = 'cancel_payout';
+    const UPDATE_PAYOUT                       = 'update_payout';
     const VIEW_PAYOUT_PURPOSE                 = 'view_payout_purpose';
     const CREATE_PAYOUT_PURPOSE               = 'create_payout_purpose';
     const VIEW_PAYOUT_REVERSAL                = 'view_payout_reversal';

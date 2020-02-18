@@ -3414,9 +3414,6 @@ final class Route
 
     public static $bankingRoutePermissions = [
         // common routes between banking and admin dashboard
-        'balance_fetch'                                => '*',
-        'fetch_merchant_balance_configs'               => '*',
-        'setl_amount'                                  => '*',
         'merchant_balance_fetch'                       => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_edit_config'                         => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_details'                  => '*',
@@ -3440,7 +3437,12 @@ final class Route
         'currency_fetch_all_proxy'                     => '*',
         'reports_monthly_banking_invoice'              => '*',
         'merchant_activation_business_categories'      => '*',
+        'merchant_activation_update_website'           => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+        'fetch_merchant_balance_configs'               => '*',
+        'balance_fetch'                                => '*',
+        'setl_amount'                                  => '*',
 
+        // Specific to Banking
         'payout_bulk_create'                           => Permission::CREATE_PAYOUT_BULK,
         'payout_approve_bulk'                          => Permission::APPROVE_PAYOUT_BULK,
         'payout_reject_bulk'                           => Permission::REJECT_PAYOUT_BULK,
@@ -3449,6 +3451,7 @@ final class Route
         'payout_fetch_by_id'                           => Permission::VIEW_PAYOUT,
         'payout_fetch_multiple'                        => Permission::VIEW_PAYOUT,
         'payout_cancel'                                => Permission::CANCEL_PAYOUT,
+        'payout_update_status'                         => Permission::UPDATE_PAYOUT,
         'payout_purpose_get'                           => Permission::VIEW_PAYOUT_PURPOSE,
         'payout_purpose_post'                          => Permission::CREATE_PAYOUT_PURPOSE,
         'payout_fetch_reversals'                       => Permission::VIEW_PAYOUT_REVERSAL,
@@ -3519,6 +3522,8 @@ final class Route
         'batch_download_file'                          => '*',
         'merchant_partner_configs_fetch'               => '*',
         'bank_account_fetch'                           => '*',
+        'bank_transfer_process_test'                   => '*',
+        'pincode_get'                                  => '*',
     ];
 
     public static $direct = [
