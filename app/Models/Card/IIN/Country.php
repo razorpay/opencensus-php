@@ -1019,11 +1019,9 @@ class Country
         self::ZW => '716',
         self::AX => '248',
     ];
-
-
+    
     public static function isValid(string $type):bool
     {
         return (in_array($type, self::COUNTRY_LIST, true) === true);
     }
-
 }

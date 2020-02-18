@@ -31,7 +31,7 @@ class Core extends Base\Core
         $this->redis = $this->app['cache'];
     }
 
-    public function updateRates($currency, $time=null)
+    public function updateRates($currency, $time = null)
     {
         $currency = strtoupper($currency);
 
@@ -43,14 +43,15 @@ class Core extends Base\Core
         {
             $this->redis->forever($key, $rates);
         }
-        else {
+        else
+        {
             $this->redis->set($key, $rates, self::HISTORICAL_EXCHANGE_RATE_TTL);
         }
 
         return $rates;
     }
 
-    public function getRates($currency, $time=null)
+    public function getRates($currency, $time = null)
     {
         $key = $this->getRedisKey($currency, $time);
 
@@ -59,7 +60,7 @@ class Core extends Base\Core
         return $rates;
     }
 
-    public function getOrUpdateRates($currency, $time=null)
+    public function getOrUpdateRates($currency, $time = null)
     {
         $rates = $this->getRates($currency, $time);
 
@@ -93,7 +94,7 @@ class Core extends Base\Core
         return $baseAmount;
     }
 
-    protected function getRedisKey($currency, $time=null)
+    protected function getRedisKey($currency, $time = null)
     {
         $key = 'currency:' . self::EXCHANGE_RATE_KEY . strtoupper($currency);
 
@@ -158,7 +159,8 @@ class Core extends Base\Core
             {
                 $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $rates[$currency]);
             }
-            else {
+            else
+            {
                 unset($supportedCurrencies[$currency]);
             }
         }
