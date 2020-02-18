@@ -114,7 +114,7 @@ class Validator extends Base\Validator
 
     protected static $editContactMobileRules = [
         Entity::OTP_AUTH_TOKEN => 'sometimes|filled',
-        Entity::CONTACT_MOBILE => 'required|max:15',
+        Entity::CONTACT_MOBILE => 'required|numeric|digits_between:8,11',
         Entity::OTP            => 'sometimes|filled|min:4',
     ];
 
