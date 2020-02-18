@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 
 use Mockery;
+use RZP\Exception\IntegrationException;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Services\RazorXClient;
@@ -67,17 +68,29 @@ class TerminalMigrationTest extends TestCase
                                     ->andReturnUsing($closure);
     }
 
-    protected function getDefaultTerminalServiceResponse() : \Requests_Response
+    protected function getTerminalToArrayPassword($terminalId)
     {
-        $terminal = $this->getLastEntity(Entity::TERMINAL, true);
+        Terminal\Entity::verifyIdAndSilentlyStripSign($terminalId);
 
-        Terminal\Entity::verifyIdAndSilentlyStripSign($terminal['id']);
+        $terminalEntity = $this->terminalRepository->findOrFail($terminalId);
 
-        $terminalEntity = $this->terminalRepository->findOrFail($terminal['id']);
+        return $terminalEntity->toArrayWithPassword();
+    }
+
+    protected function getDefaultTerminalServiceResponse($data = []) : \Requests_Response
+    {
+        if ($data === [])
+        {
+            $terminal = $this->getLastEntity(Entity::TERMINAL, true);
+
+            $data = $this->getTerminalToArrayPassword($terminal[Terminal\Entity::ID]);
+
+            Terminal\Entity::verifyIdAndSilentlyStripSign($data['id']);
+        }
 
         $response =  new \Requests_Response;
 
-        $responseData = ['data' => $terminalEntity->toArrayWithPassword()];
+        $responseData = ['data' => $data];
 
         $response->body = json_encode($responseData);
 
@@ -119,6 +132,35 @@ class TerminalMigrationTest extends TestCase
         $this->expectExceptionMessage('curl timed out');
 
         $this->startTest();
+    }
+
+    public function testAssignTerminalServiceSuccessResponseBadValuesMigrateTerminalVariant()
+    {
+        $this->mockTerminalsServiceSendRequest(function() {
+
+            $terminal = $this->getLastEntity(Entity::TERMINAL, true);
+
+            Terminal\Entity::verifyIdAndSilentlyStripSign($terminal['id']);
+
+            $data = $this->getTerminalToArrayPassword($terminal['id']);
+
+            $data['gateway_terminal_password'] = '654321'; // its expected to be 123456
+
+            return $this->getDefaultTerminalServiceResponse($data);
+        });
+
+        $this->razorxValue = 'on';
+
+        $url = '/merchants/'. $this->merchant->getKey(). '/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->expectException(IntegrationException::class);
+
+        $this->expectExceptionMessage('field mismatch');
+
+        $this->startTest();
+
     }
 
     public function testAssignTerminalControlVariant()
