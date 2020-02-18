@@ -282,6 +282,47 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals(Terminal\SyncStatus::SYNC_FAILED, $terminal->getSyncStatus());
     }
 
+    public function testUpdateTerminalServiceSuccessResponseBadValuesMigrateTerminalVariant()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used' => true,
+            'enabled' => '1',
+            'sync_status' => Terminal\SyncStatus::SYNC_FAILED
+        ]);
+
+        $tid = $terminal['id'];
+
+        $url = '/terminals/' . $tid . '/toggle';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->razorxValue = 'on';
+
+        $this->mockTerminalsServiceSendRequest(function() use ($tid) {
+
+            $data = $this->getTerminalToArrayPassword($tid);
+
+            $data['enabled'] = '1'; // simulating a field mismatch that could be caused due to bug on terminals service
+
+            return $this->getDefaultTerminalServiceResponse($data);
+        });
+
+        $this->expectException(IntegrationException::class);
+
+        $this->expectExceptionMessage('field mismatch');
+
+        $this->startTest();
+
+        $this->assertTrue($terminal->isEnabled());
+
+        // here we are asserting that sync status did not get updated from the previous value
+        // the previous value was set while creating fixture('sync_status' => '3')
+        $this->assertEquals(Terminal\SyncStatus::SYNC_FAILED, $terminal->getSyncStatus());
+    }
+
+
+
 
     public function testUpdateTerminalControlVariant()
     {
