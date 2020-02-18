@@ -19,6 +19,11 @@ class Refund extends Base
         parent::__construct($entity, $product);
     }
 
+    protected function setAmount()
+    {
+        $this->amount = $this->entity->getBaseAmount();
+    }
+
     protected function getPricingRule($rules, $method)
     {
         $rules = $this->applyRefundModeFilters($rules);
