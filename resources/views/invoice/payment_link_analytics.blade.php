@@ -1,6 +1,11 @@
 <script>
   // Lamberjack analytics events
   function pushToRzpQ(event, event_options) {
+    var isProdWebsite = window.location.hostname.indexOf('razorpay.com') >= 0;
+
+    var eventOptions = event_options || {};
+    eventOptions.mode = isProdWebsite ? 'live' : 'test';
+
     window.rzpQ.push(
       window.rzpQ
       .now()
