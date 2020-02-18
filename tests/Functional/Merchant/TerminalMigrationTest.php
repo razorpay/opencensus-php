@@ -26,6 +26,8 @@ class TerminalMigrationTest extends TestCase
 
     protected $terminalRepository;
 
+    //TODO add guide to tests
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/TerminalMigrationTestData.php';
@@ -99,6 +101,7 @@ class TerminalMigrationTest extends TestCase
         return $response;
     }
 
+    // the below cases tests migration functionality when a new terminal is created
     public function testAssignTerminalTerminalServiceUpMigrateTerminalVariant()
     {
         $this->mockTerminalsServiceSendRequest(function($a, $b, $c) {
@@ -213,4 +216,26 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals(Terminal\SyncStatus::NOT_SYNCED, $terminalEntity->getSyncStatus());
     }
 
+    // the below cases tests migration functionality when an attribute of an existing terminal is tested
+    public function testUpdateTerminalControlVariant()
+    {
+        $this->mockTerminalsServiceSendRequest(null, 0);
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', ['used' => true, 'enabled' => '1']);
+
+        $tid = $terminal['id'];
+
+        $url = '/terminals/'.$tid.'/toggle';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->razorxValue = 'control';
+
+        $this->startTest();
+
+        $terminalEntity = $this->terminalRepository->findOrFail($tid);
+
+        $this->assertEquals(Terminal\SyncStatus::NOT_SYNCED, $terminalEntity->getSyncStatus());
+    }
 }
