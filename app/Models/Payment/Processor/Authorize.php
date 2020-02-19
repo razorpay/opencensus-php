@@ -2274,6 +2274,8 @@ trait Authorize
             {
                 $gatewayInput = [];
 
+                $this->preProcessForUpiIfApplicable($input);
+
                 $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
                 $this->processCurrencyConversions($payment);
@@ -2857,10 +2859,9 @@ trait Authorize
 
         if ($payment->isUpi() === true)
         {
-            $gatewayInput['upi']['flow'] = $input['_']['flow'] ?? null;
+            $gatewayInput['upi']['flow'] = $this->getUpiFlow($input) ?? null;
 
-            if ((isset($input['_']['flow']) === false) or
-                ($input['_']['flow'] !== 'intent'))
+            if ($this->isFlowIntent($input) === false)
             {
                 if (empty($payment->getVpa()) === true)
                 {
@@ -3194,7 +3195,7 @@ trait Authorize
     protected function setGatewayInputForUpi($input, & $gatewayInput)
     {
         // Key may not be present. Hence `??` and not `?:`
-        $gatewayInput['upi']['expiry_time'] = $input['upi']['expiry_time'] ??
+        $gatewayInput['upi']['expiry_time'] = $this->getUpiExpiryTime($input) ??
                                               Processor::UPI_COLLECT_EXPIRY;
     }
 
