@@ -57,7 +57,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $retryBulkViaFtaRules = [
-        'refund_ids'      => 'required|sequential_array|max:5000',
+        'refund_ids'      => 'required|sequential_array|max:1000',
         'refund_ids.*'    => 'filled|unsigned_id',
         'transfer_method' => 'required|in:source_vpa',
     ];

@@ -1744,7 +1744,7 @@ trait Refund
 
     public function callRefundRetryFunctionOnScrooge($refund, $input)
     {
-        $dispatchDelayTime = $input['dispatch_delay_time']?? 0;
+        $dispatchDelayTime = $input[RefundConstants::DISPATCH_DELAY_TIME] ?? 0;
 
         $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $input);
 

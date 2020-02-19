@@ -1276,7 +1276,7 @@ class Service extends Base\Service
 
         $retryFailures = [];
 
-        foreach ($input['refund_ids'] as $key => $refundId)
+        foreach ($input[RefundConstants::REFUND_IDS] as $key => $refundId)
         {
             try
             {
@@ -1284,15 +1284,15 @@ class Service extends Base\Service
 
                 $ftaData = [];
 
-                switch ($input['transfer_method'])
+                switch ($input[RefundConstants::TRANSFER_METHOD])
                 {
-                    case 'source_vpa' :
+                    case RefundConstants::SOURCE_VPA :
 
                         $vpaId = $refund->payment->getVpa();
 
                         if (empty($vpaId) === false)
                         {
-                            $ftaData['vpa']['address'] = $vpaId;
+                            $ftaData[RefundConstants::VPA][RefundConstants::VPA_ADDRESS] = $vpaId;
                         }
 
                         break;
@@ -1303,13 +1303,16 @@ class Service extends Base\Service
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA);
                 }
 
-                $ftaData['dispatch_delay_time'] = $key;
+                // Grouping 5 refunds for a second delay. Max. refunds allowed per request is 1000
+                // so max delay for last group of refunds will be 199 seconds. Doing this since
+                // Max delay supported by SQS is 900 seconds
+                $ftaData[RefundConstants::DISPATCH_DELAY_TIME] = floor($key / RefundConstants::DISPATCH_BATCH_SIZE);
 
                 $this->getNewProcessor($refund->merchant)->processRefundRetry($refund, $ftaData);
             }
             catch (\Exception $ex)
             {
-                $this->trace->traceException($ex, null, null, ['refund_id' => $refundId]);
+                $this->trace->traceException($ex, null, null, [RefundConstants::REFUND_ID => $refundId]);
 
                 $retryFailures[] = $refundId;
             }
