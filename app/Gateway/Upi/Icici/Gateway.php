@@ -96,6 +96,14 @@ class Gateway extends Base\Gateway
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
         {
+            if ($input['merchant']->isTPVRequired() === true)
+            {
+               throw new Exception\ServerErrorException(
+                   'Intent TPV not Supported',
+                ErrorCode::SERVER_ERROR_INTENT_TPV_NOT_SUPPORTED
+               );
+            }
+
             return $this->authorizeIntent($input);
         }
 
@@ -446,11 +454,15 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $traceData = $data;
+
+        unset($traceData[Fields::PAYER_ACCOUNT], $traceData[Fields::PAYER_VA]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
                 'request'           => $request,
-                'decrypted_content' => $data,
+                'decrypted_content' => $traceData,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],
             ]);

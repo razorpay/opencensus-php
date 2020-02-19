@@ -32,13 +32,17 @@ class BaseResponse implements Response
      */
     protected $statusCode;
 
-    public function __construct(Requests_Response $response,  array $responseMetaData = [])
+    protected $requestInput;
+
+    public function __construct(Requests_Response $response, array $responseMetaData = [], array $input = [])
     {
         $this->response = $response;
 
         $this->responseMetaData = $responseMetaData;
 
         $this->statusCode = $response !== null ? $response->status_code : null;
+
+        $this->requestInput = $input;
 
         $this->responseBody = $this->response != null ? json_decode($response->body, true) : array();
     }

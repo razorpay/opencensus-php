@@ -231,6 +231,14 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'merchant';
 
+    /**
+     * Merchant features, saved to this variable once fetched to avoid
+     * repeated DB calls.
+     *
+     * @var null
+     */
+    protected $loadedFeatures = null;
+
     protected static $sign = '';
 
     protected static $delimiter = '';
@@ -483,6 +491,26 @@ class Entity extends Base\PublicEntity
     const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;
     const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
     const RISK_THRESHOLD_DEFAULT                      = 8;
+
+    public function refresh()
+    {
+        $instance = parent::refresh();
+
+        // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
+        $instance->loadedFeatures = null;
+
+        return $instance;
+    }
+
+    public function reload()
+    {
+        $instance = parent::reload();
+
+        // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
+        $instance->loadedFeatures = null;
+
+        return $instance;
+    }
 
     protected function generateTransactionReportEmail($input)
     {
@@ -808,11 +836,30 @@ class Entity extends Base\PublicEntity
      *
      * @return array
      */
-    public function getEnabledFeatures()
+    public function getEnabledFeatures(): array
     {
-        return $this->features
-                    ->pluck(Feature\Entity::NAME)
-                    ->toArray();
+        // If we've already loaded features for the merchant object, return that
+        if ($this->loadedFeatures !== null)
+        {
+            return $this->loadedFeatures;
+        }
+
+        $cacheTtl = app('repo')->feature->getCacheTtl(Feature\Entity::FEATURE);
+
+        $cacheTags = Feature\Entity::getCacheTagsForNames($this->entity, $this->getId());
+
+        $this->loadedFeatures = $this->features()
+                                     ->remember($cacheTtl)
+                                     ->cacheTags($cacheTags)
+                                     ->pluck(Feature\Entity::NAME)
+                                     ->toArray();
+
+        return $this->loadedFeatures;
+    }
+
+    public function setLoadedFeaturesNull()
+    {
+        $this->loadedFeatures = null;
     }
 
     public function getEmiSubvention()

@@ -1039,8 +1039,12 @@ class Service extends Base\Service
 
         $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
 
+        $traceInput = $input;
+
+        unset($traceInput['account_number'], $traceInput['payer_va'], $traceInput['phone_number']);
+
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
-            'input'         => $input,
+            'input'         => $traceInput,
             'data'          => $data,
             'gateway'       => $gateway,
             'reference_id'  => $referenceId,

@@ -73,6 +73,7 @@ class Processor
     use UpiRecurring;
     use CardPaymentService;
     use NbPlusService;
+    use UpiTrait;
 
 
     /**
@@ -289,6 +290,8 @@ class Processor
             $this->setMethodForInput($input);
 
             $this->appendMetadataForPayment($input);
+
+            $this->preProcessForUpiIfApplicable($input);
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED);
 
@@ -959,6 +962,41 @@ class Processor
         ];
     }
 
+    protected function preProcessForUpiIfApplicable(array& $input)
+    {
+        if ($input['method'] !== Payment\Method::UPI)
+        {
+            return;
+        }
+
+        // New flow needs to use the UPI block, which was first utilising the `_`  meta block
+        // For backward compatibility, we still pick the values from the `_` block and set it
+        // on the `upi` block and Payments block has VPA which should be set in the `upi` block
+        // Priority is always UPI block
+        if (isset($input[Payment\Method::UPI][Payment\Entity::VPA]) === true)
+        {
+            $input[Payment\Entity::VPA] = $input[Payment\Method::UPI][Payment\Entity::VPA];
+        }
+        else if (isset($input[Payment\Entity::VPA]) === true)
+        {
+            $input[Payment\Method::UPI][Payment\Entity::VPA] =  $input[Payment\Entity::VPA];
+        }
+
+        if (isset($input[Payment\Method::UPI]['flow']) === true)
+        {
+            $input['_']['flow'] = $input[Payment\Method::UPI]['flow'];
+        }
+        else if (isset($input['_']['flow']) === true)
+        {
+            $input[Payment\Method::UPI]['flow'] = $input['_']['flow'];
+        }
+
+        if (isset($input[Payment\Method::UPI]['flow']) === false)
+        {
+            $input[Payment\Method::UPI]['flow'] = Flow::COLLECT;
+        }
+    }
+
     protected function preProcessPaymentInputsForUpi(array $input, Payment\Entity $payment)
     {
         $coproto = null;
@@ -980,7 +1018,7 @@ class Processor
          * the token linked to the vpa entity in the request. Therefore adding a check here that either the vpa should
          * be present or token should be present.
          */
-        if (((isset($input['_']['flow']) === false) or ($input['_']['flow'] === Payment\Flow::COLLECT))
+        if (($this->isFlowCollect($input))
             and (isset($input['token']) === false))
         {
             $missing[] = 'vpa';
@@ -1887,7 +1925,7 @@ class Processor
 
         (new Payment\Metric)->pushFailedMetrics($payment);
 
-        $this->eventPaymentFailed();
+        $this->eventPaymentFailed($exception);
 
         if ($this->merchant->isFeatureEnabled(Feature::PAYMENT_FAILURE_EMAIL) === true)
         {
@@ -2005,13 +2043,15 @@ class Processor
         $payment->setTwoFactorAuth($twoFactorAuth);
     }
 
-    protected function eventPaymentFailed()
+    protected function eventPaymentFailed($exception)
     {
         $eventPayload = [
             ApiEventSubscriber::MAIN => $this->payment
         ];
 
         $this->app['events']->fire('api.payment.failed', $eventPayload);
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
     }
 
     protected function setPaymentError(Exception\BaseException $e, $traceCode)

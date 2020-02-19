@@ -349,6 +349,10 @@ class Entity
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 1,
         ],
+        self::FEATURE => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 30,
+        ],
         self::TERMINAL  => [
             QueryCacheConstants::VERSION => 'v1',
            QueryCacheConstants::TTL     => 15,

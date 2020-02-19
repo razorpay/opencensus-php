@@ -14,16 +14,13 @@ class MerchantInvoice extends Job
 
     protected $year;
 
-    protected $isCorrection;
-
     public $timeout = 1800;
 
     public function __construct(
         string $merchantId,
         int $month,
         int $year,
-        string $mode,
-        bool $isCorrection)
+        string $mode)
     {
         parent::__construct($mode);
 
@@ -32,8 +29,6 @@ class MerchantInvoice extends Job
         $this->month        = $month;
 
         $this->year         = $year;
-
-        $this->isCorrection = $isCorrection;
     }
 
     public function handle()
@@ -44,7 +39,7 @@ class MerchantInvoice extends Job
         {
             $creator = new Processor($this->merchantId, $this->month, $this->year);
 
-            $creator->createInvoiceEntities($this->isCorrection);
+            $creator->createInvoiceEntities();
         }
         catch (\Throwable $e)
         {

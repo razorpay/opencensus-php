@@ -461,7 +461,10 @@ class Gateway extends Base\Gateway
 
         if ($input['merchant']->isTPVRequired())
         {
-            $contentToEncrypt[RequestFields::ACCOUNT_NUM] = $input['order']['account_number'];
+            $accNo = $input['order']['account_number'];
+            $accNo = substr_replace($accNo, "-", 4, 0);
+            $accNo = substr_replace($accNo, "-", 13, 0);
+            $contentToEncrypt[RequestFields::ACCOUNT_NUM] = $accNo;
         }
 
         $encryptedString = $this->performTwoLevelEncryptForAuth($contentToEncrypt);
