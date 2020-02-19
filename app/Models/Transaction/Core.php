@@ -1556,7 +1556,7 @@ class Core extends Base\Core
             ]
         );
 
-        $txn->setBalance(null, 0, $negativeLimit);
+        $txn->setBalance(null, null, 0);
 
         $txn->setBalanceUpdated(true);
 
