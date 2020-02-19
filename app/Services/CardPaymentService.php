@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
 use RZP\Reconciliator\Base\InfoCode;
@@ -258,6 +259,23 @@ class CardPaymentService
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
+
+        // Unset PII
+
+        // Payment Data
+        unset($request['content'][self::INPUT][Entity::PAYMENT][Payment\Entity::EMAIL]);
+        unset($request['content'][self::INPUT][Entity::PAYMENT][Payment\Entity::CONTACT]);
+
+        // Merchant Data
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::EMAIL]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::INVOICE_CODE]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::TRANSACTION_REPORT_EMAIL]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::METHODS]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::MERCHANT_DETAIL]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT_DETAIL]);
+
+        // Gateway Data
+        unset($request['content'][self::INPUT]['gateway']['otp']);
 
 
         if (empty($request['content'][self::INPUT]['terminals']) === false)
