@@ -3831,11 +3831,14 @@ final class Route
         ],
 
         'payment_links' => [
+            'merchant_fetch_config_internal',
             'send_email_for_pl_service',
             'customer_fetch_by_id',
             'create_merchant_options',
             'read_merchant_options',
             'order_create',
+            'payment_fetch_by_id',
+            'order_payments',
         ],
 
         'kotak' => [
