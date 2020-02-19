@@ -1756,7 +1756,7 @@ class Service extends Base\Service
 
     public function getMerchantFeatures()
     {
-        return (new Feature\Service)->getFeaturesForEntity($this->merchant);
+        return (new Feature\Service)->getFeaturesForMerchantPublic($this->merchant);
     }
 
     public function getEarlySettlementPricingForMerchant(): array
@@ -2000,7 +2000,7 @@ class Service extends Base\Service
 
         $this->removeFeatures($featuresToRemove, $shouldSync);
 
-        $data = (new Feature\Service)->getFeaturesForEntity($merchant);
+        $data = (new Feature\Service)->getFeaturesForMerchantPublic($merchant);
 
         return $data;
     }

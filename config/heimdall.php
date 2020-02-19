@@ -404,6 +404,10 @@ return [
                 'description' => 'Bulk Capture Payment',
                 'assignable'  => true,
                 'workflow'    => false,
+            ],
+            Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS => [
+                'description' => 'Allow downloads of credit bureau reports of merchants',
+                'assignable'  => true,
             ]
         ],
 
@@ -744,7 +748,11 @@ return [
             Permission::ADMIN_BATCH_CREATE => [
                 'description' => 'Create admin type batches',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::ADJUSTMENT_BATCH_UPLOAD => [
+                'description' => 'Upload batch file to create adjustments in bulk',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::SHIELD => [
@@ -772,6 +780,7 @@ return [
 
         PermissionCategory::REPORTING => [
             Permission::CREATE_SELF_SERVE_REPORT => 'Create Self Serve reporting configs',
+            Permission::GET_SELF_SERVE_REPORT    => 'View Self Serve reporting config',
         ],
 
         PermissionCategory::SUBSCRIPTIONS => [

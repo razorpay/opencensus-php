@@ -35,10 +35,15 @@ class Core extends Base\Core
             Transaction\Type::PAYMENT,
             Transaction\Type::TRANSFER,
             Transaction\Type::REFUND,
+            Transaction\Type::ADJUSTMENT,
         ],
         Type::BANKING => [
-            Transaction\Type::PAYOUT
-        ]
+            Transaction\Type::PAYOUT,
+            Transaction\Type::ADJUSTMENT,
+        ],
+        Type::COMMISSION => [
+            Transaction\Type::ADJUSTMENT,
+        ],
     ];
 
     /**
@@ -571,5 +576,22 @@ class Core extends Base\Core
         $reserveBalanceActivateMail = new ReserveBalanceActivateMail($data);
 
         Mail::queue($reserveBalanceActivateMail);
+    }
+
+    public function getNegativeLimit(Transaction\Entity $txn)
+    {
+        $negativeBalanceEnabled =  (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txn->getType(),
+                                                                                            $txn->merchant->getId());
+
+        $negativeLimit = 0;
+
+        if ($negativeBalanceEnabled === true)
+        {
+            //TODO: remove hardcoding of balance type to primary, for future use cases
+            $negativeLimit = -1 * $this->getMaximumNegativeAllowedForBalanceType($txn->merchant,
+                   Type::PRIMARY, $txn->getType());
+        }
+
+        return $negativeLimit;
     }
 }

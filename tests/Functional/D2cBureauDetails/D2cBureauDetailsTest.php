@@ -163,4 +163,21 @@ class D2cBureauDetailsTest extends TestCase
             'interested'        => true,
         ], $d2cBureauReport);
     }
+
+    public function testGetDownloadUrl()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
+
+        $this->testData['testSubmitOtp']['request']['url'] = strtr($this->testData['testSubmitOtp']['request']['url'], ['{id}' => $response['id'],]);
+
+        $response = $this->makeRequestAndGetContent($this->testData['testSubmitOtp']['request']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $response['id'],]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }

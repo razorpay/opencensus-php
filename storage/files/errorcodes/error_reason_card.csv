@@ -1,0 +1,139 @@
+internal_error_code,error_description,reason,failure_type,point_of_failure,next_best_action,failure_stage,recoverable
+BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,Customer authentication failed due to incorrect details,authentication_failure,Business,Customer,Retry with correct details/ another card,Authentication,D
+BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED,User has exceeded the max number of pin attempts for card,authorization_failure,Business,Customer,Retry with another card,Authentication,D
+BAD_REQUEST_PAYMENT_PIN_ATTEMPTS_EXCEEDED,User has exceeded the max number of pin attempts for card,authorization_failure,Business,Customer,Retry with another card,Authentication,D
+BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,User has cancelled the transaction,user_cancelled,Business,Customer,Please retry again,Initiation,D
+BAD_REQUEST_PAYMENT_CANCELLED,User has cancelled the transaction,user_cancelled,Business,Customer,Please retry again,Initiation,D
+BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL,User has cancelled the transaction,user_cancelled,Business,Customer,Please retry again,Initiation,D
+BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,User has cancelled the transaction,user_cancelled,Business,Customer,Please retry again,Initiation,D
+BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED,The customer has exceeded the balance or credit limit available on their card.,limit_breach,Business,Customer,Card limit exceeded - Retry with another card or payment method,Authorization,D
+BAD_REQUEST_CARD_DAILY_LIMIT_REACHED,The customer has exceeded the balance or credit limit available on their card.,limit_breach,Business,Customer,Card limit exceeded - Retry with another card or payment method,Authorization,D
+BAD_REQUEST_PAYMENT_PIN_INCORRECT,The PIN entered is incorrect,authorization_failure,Business,Customer,Retry with correct details/ another card,Authentication,D
+BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,The PIN entered is incorrect,authorization_failure,Business,Customer,Retry with correct details/ another card,Authentication,D
+BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,The CVV entered is incorrect,authorization_failure,Business,Customer,Retry with correct details/ another card,Authentication,D
+BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,The customer has exceeded the balance or credit limit available on their card.,insufficient_funds,Business,Customer,Insufficient balance - Retry with another card or payment method,Authorization,D
+BAD_REQUEST_PAYMENT_CARD_EXPIRED,The card has expired,invalid_card,Business,Customer,Retry with any other valid card,Authentication,D
+BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED,International cards are not allowed for this transaction,invalid_card,Business,Customer,Retry with domestic card,Authorization,D
+BAD_REQUEST_PAYMENT_TIMED_OUT,"The request was received, but a timeout occurred at the payment processor.",payment_timed_out,Technical,Gateway,Please try again in some time,Dynamic,I
+GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,Customer authentication failed due to incorrect details,authentication_failure,Technical,Gateway,Retry with correct details/ another card,Authentication,I
+BAD_REQUEST_AUTHENTICATION_FAILED,Customer authentication failed due to incorrect details,authentication_failure,Technical,Gateway,Retry with correct details/ another card,Authentication,I
+GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,Customer authentication failed due to incorrect details,authentication_failure,Technical,Gateway,Retry with correct details/ another card,Authentication,D
+BAD_REQUEST_PAYMENT_CARD_DECLINED,Card Payment Declined,card_declined,Technical,Gateway,Retry with another card,Authentication,D
+BAD_REQUEST_CARD_ISSUER_INVALID,"The card, or account the card is connected to, is invalid.",invalid_account,Business,Gateway,Retry with another card,Authentication,D
+GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED,"The card, or account the card is connected to, is invalid.",invalid_account,Business,Gateway,Retry with another card,Authentication,D
+GATEWAY_ERROR_CARD_INVALID_NUMBER,The card number is incorrect.,invalid_number,Business,Gateway,Retry with correct details/ another card,Authentication,D
+GATEWAY_ERROR_INVALID_CARD_TYPE,The card does not support this type of purchase.,card_not_supported,Business,Gateway,Retry with correct details/ another card,Authentication,D
+GATEWAY_ERROR_CARD_INVALID_CVV,Invalid CVV,invalid_card_cvv,Business,Gateway,Retry with correct details/ another card,Authentication,D
+GATEWAY_ERROR_CARD_INVALID_NAME,Invalid name on card,invalid_card_name,Business,Gateway,Retry with correct details/ another card,Authentication,D
+GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED,The card does not support this type of purchase.,card_not_supported,Business,Gateway,,Authentication,I
+GATEWAY_ERROR_USER_INACTIVE,Payment cancelled as the customer was inactive ,inactive_user,Technical,Gateway,,Initiation,I
+GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH,The card does not support this type of purchase.,card_not_supported,Business,Gateway,,Authentication,I
+GATEWAY_ERROR_CARD_INVALID_BRAND,The card does not support this type of purchase.,card_not_supported,Business,Gateway,,Authentication,I
+GATEWAY_ERROR_INVALID_MERCHANT,The merchant is not registered with gateway,invalid_merchant,Business,Gateway,Post failure Communication to merchant,,I
+BAD_REQUEST_MERCHANT_INVALID,The merchant is not registered with gateway,invalid_merchant,Business,Gateway,Post failure Communication to merchant,,I
+GATEWAY_ERROR_PAYMENT_DECLINED_TERMINAL_NOT_ALLOWED,The selected terminal is not allowed for payments,terminal_not_allowed,Business,Gateway,Post failure Communication to merchant,,N
+GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED,The card has been declined for an unknown reason,transaction_not_allowed,Business,Gateway,Please contact the card issuer for more information,,N
+BAD_REQUEST_INVALID_TRANSACTION_AMOUNT,Invalid amount or currency,invalid_amount,Business,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_CARD_INVALID_AMOUNT,Invalid amount or currency,invalid_amount,Business,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,Invalid amount or currency,invalid_amount,Business,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,Invalid amount or currency,invalid_amount,Business,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,Certificate validation failed,transaction_not_allowed,Technical,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,A transaction with identical amount and credit card information was submitted very recently.,duplicate_transaction,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_DUPLICATE_TRANSACTION,A transaction with identical amount and credit card information was submitted very recently.,duplicate_transaction,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_ORDER_EXISTS,A transaction with identical amount and credit card information was submitted very recently.,duplicate_transaction,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_CALLBACK_EMPTY_INPUT,Empty callback input,Gateway Transaction Error,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_INVALID_PAYMENT_DATA,Invalid Payment Data,invalid_data,Technical,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_TRANSACTION_NOT_PRESENT,Invalid Payment Data,invalid_request,Technical,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_NO_RECORDS_FOUND,Invalid Payment Data,invalid_request,Technical,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_MESSAGE_ERROR,Invalid Payment Data,invalid_request,Technical,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_REQUEST_ERROR,Invalid Payment Data,invalid_request,Technical,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_INVALID_PARES_XML,Invalid payment format,invalid_request,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_PARES_DATA_MISMATCH,Invalid Payment Data,invalid_request,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_DATA_MISMATCH,Invalid Payment Data,invalid_request,Technical,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_PAYMENT_MISSING_DATA,Missing Payment Data,invalid_amount,Technical,Gateway,System Retry,,I
+BAD_REQUEST_PAYMENT_INVALID_FORMAT,Invalid payment format,invalid_request,Technical,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_INVALID_FORMAT,Invalid payment format,invalid_request,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_INVALID_JSON,Invalid payment format,invalid_request,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_INVALID_RESPONSE,Invalid response,invalid_request,Technical,Gateway,Check with merchant/ gateway,,D
+GATEWAY_ERROR_INVALID_TRANSACTION,Invalid transaction,invalid_transaction,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED,Invalid transaction,invalid_transaction,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_DO_NOT_HONOUR_REMITTER,Do Not Honour - Lost / Stolen Card,invalid_card,Business,Gateway,Retry with another card,Authorization,D
+BAD_REQUEST_CARD_STOLEN_OR_LOST,Do Not Honour - Lost / Stolen Card,invalid_card,Business,Gateway,Retry with another card,Authorization,D
+BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,Insufficient Balance ,limit_breach,Business,Gateway,Retry with another card,Authorization,N
+GATEWAY_ERROR_DENIED_BY_RISK,Payment declined by gateway,risk_decline,Business,Gateway,Retry with another card,Authorization,N
+BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY_DUE_TO_RISK,Payment declined by gateway,risk_decline,Business,Gateway,Retry with another card,Authorization,N
+BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,Payment declined by gateway,gateway_decline,Business,Gateway,System Retry,Authorization,I
+GATEWAY_ERROR_AGGREGATOR_DOWN,Aggregator not available,Time out,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_ISSUER_UNAVAILABLE,Issuing Bank not available,bank_unavailable,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE,Issuing Bank not available,bank_unavailable,Technical,Gateway,System Retry,,I
+BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,"The request was received, but a timeout occurred at the payment processor.",payment_time_out,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_REQUEST_TIMEOUT,"The request was received, but a timeout occurred at the payment processor.",request_time_out,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_ACQUIRER_UNAVAILABLE,Payment Timed Out,bank_unavailable,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,Issuer's ACS system failed,bank_unavailable,Technical,Gateway,System Retry,,I
+BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE,Issuing Bank not available,bank_unavailable,Technical,Gateway,System Retry,,I
+<Verify Timeout>,Timeout on Verify,Time out,Technical,Gateway,System Retry,Verify,I
+BAD_REQUEST_PAYMENT_FAILED,Payment Failed,authorization_failure,Technical,Gateway,Retry with another card,Authorization,N
+BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT,Unable to authorize payment,authorization_failure,Technical,Issuer,System Retry,Authorization,I
+GATEWAY_ERROR_GENERIC_ERROR,Technical Error,gateway_transaction_error ,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_SUPPORT_FAILED,Technical Error,gateway_transaction_error ,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_TRANSACTION_DECLINED,Technical Error,gateway_transaction_error ,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_GENERIC_TRANSACTION_ERROR,Technical Error,gateway_transaction_error ,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_OTPELF_FAILURE,Technical Error,gateway_transaction_error ,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_SWITCH_UNOPERATIVE,Technical Error,gateway_transaction_error ,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_COMMUNICATION_ERROR,Technical Error,gateway_transaction_error ,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_SQL_ERROR,Technical Error,gateway_transaction_error ,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_FATAL_ERROR,Technical Error,gateway_transaction_error ,Technical,Gateway,System Retry,,I
+GATEWAY_ERROR_INTERNAL_SERVER_ERROR,Technical Error,gateway_transaction_error ,Technical,Gateway,System Retry,,I
+BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,3DS Authentication Failed,auhtorization_failure,Technical,Issuer,System Retry,Authentication,I
+BAD_REQUEST_PAYMENT_NOT_AUTHORIZED,Payment not Authorized,auhtorization_failure,Technical,Issuer,Retry with another card,Authorization,N
+BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH_DECLINED_BY_ISSUER,Payment amount too high for the customer,limit_breach,Business,Issuer,Retry with another card with higher limit,Authorization,D
+BAD_REQUEST_PAYMENT_DECLINED_BY_BANK,Declined by Bank,bank_decline,Business,Issuer,Retry with another card,Authorization,N
+BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK,"Payment declined, contact issuing bank.",bank_decline,Technical,Issuer,Retry with another card,Authorization,N
+BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT,Payment not permitted by Issuing Bank,bank_decline,Business,Issuer,Retry with another card,Authorization,N
+BAD_REQUEST_INVALID_CARD_DETAILS,Invalid card details,invalid_card,Business,Issuer,Retry with correct details/ another card,Authentication,D
+BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED,Invalid CVV,invalid_cvv,Business,Issuer,Retry with correct details/ another card,Authentication,D
+BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,Payment verification failed,verification_failure,Business,Issuer,Retry with another card,Verify,N
+BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,Blocked card,invalid_card,Business,Issuer,Retry with another card,Authorization,D
+BAD_REQUEST_CARD_FROZEN,Card frozen,invalid_card,Business,Issuer,Retry with another card,Authorization,D
+BAD_REQUEST_CARD_INACTIVE,Card inactive,invalid_card,Business,Issuer,Retry with another card,Authorization,D
+BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID,Invalid card type,invalid_card,Business,Issuer,Retry with another card,Authorization,N
+BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,Payment blocked for possible fraud,risk_decline,Business,Issuer,Retry with another card,Authorization,N
+BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,Payment blocked for possible fraud,risk_decline,Business,Issuer,Retry with another card,Authorization,N
+GATEWAY_ERROR_ENSTAGE_ERROR,Enstage error,gateway_transaction_error ,Technical,Issuer,Non actionable,,N
+BAD_REQUEST_PAYMENT_FAILED,Payment Failed,payment_failed,Technical,Gateway,Non actionable,,N
+BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED,Recurring payments not supported for merchant,invalid_request,Technical,Merchant,Post failure Communication to merchant,Initiation,N
+BAD_REQUEST_ACTION_NOT_APPROVED,Action not approved,invalid_request,Technical,Merchant,Non actionable,Initiation,N
+BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED,Insufficient Balance - Merchant limit exceeded,limit_breach,Business,Merchant,Non actionable,Initiation,N
+BAD_REQUEST_TRANSACTION_AMOUT_GREATER_THAN_REGISTERED_AMOUNT,Amount greater than registered amount,limit_breach,Business,Merchant,Non actionable,Initiation,N
+BAD_REQUEST_VALIDATION_FAILURE,Merchant validation failed,checksum_error,Technical,Merchant,Non actionable,Initiation,N
+BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED,Session expired,session_expired,Technical,Merchant,Non actionable,Initiation,N
+BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT,Operation not allowed for test account,Test account used,Technical,Merchant,Non actionable,Initiation,N
+BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,3DS Authentication Failed (headless OTP),authorization_failure,Technical,Razorpay,Non actionable,Authentication,D
+GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED,Payment capture failed,capture_failure,Technical,Razorpay,Non actionable,Capture,N
+BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE,Card authentication not available,authentication_failure,Technical,Razorpay,Non actionable,Authentication,N
+BAD_REQUEST_ORDER_EXISTS,Duplicate order ID used for payment.,duplicate_request,Technical,Razorpay,Non actionable,,N
+BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN,Invalid BIN used for payment,invalid_card,Technical,Razorpay,Retry with another card,Authentication,D
+BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,Invalid card number,invalid_card,Business,Razorpay,Retry with correct details/ another card,Authentication,D
+BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE,Invalid card number,invalid_card,Business,Razorpay,Retry with correct details/ another card,Authentication,D
+BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,Invalid expiry date,invalid_card,Business,Razorpay,Retry with correct details/ another card,Authentication,D
+BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY,Invalid amount or currency,invalid_card,Business,Razorpay,Retry with another card,,D
+BAD_REQUEST_INVALID_COUNTRY,Invalid country,invalid_card,Business,Razorpay,Retry with another card,Authentication,D
+GATEWAY_ERROR_INVALID_PAYMENT_DATA,Payment Failed,invalid_request,Technical,Razorpay,Non actionable,,N
+GATEWAY_ERROR_TRANSACTION_NOT_PRESENT,Payment Failed,transaction_not_found,Technical,Razorpay,Non actionable,,N
+GATEWAY_ERROR_NO_RECORDS_FOUND,Payment Failed,transaction_not_found,Technical,Razorpay,Non actionable,,N
+BAD_REQUEST_PAYMENT_INVALID_FORMAT,Payment Failed,invalid_request,Technical,Razorpay,Non actionable,,N
+BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR,Invalid payment format,Incorrect Request,Technical,Razorpay,Non actionable,,N
+BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,Invalid account,invalid_account,Technical,Razorpay,Non actionable,Initiation,N
+GATEWAY_ERROR_NO_CREDIT_ACCOUNT,No Credit Account,invalid_account,Business,Razorpay,Non actionable,Initiation,N
+BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,No Credit Account,invalid_account,Business,Razorpay,Non actionable,Initiation,N
+BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID,Unauthorized account used,invalid_account,Business,Razorpay,Non actionable,Initiation,N
+BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN,Transaction not permitted by card holder,invalid_card,Technical,Razorpay,Retry with another card,Initiation,N
+BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED,Insufficient Balance - Razorpay limit exceeded,limit_breach,Business,Razorpay,Non actionable,Initiation,N
+BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,Payment blocked for possible fraud,risk_decline,Business,Razorpay,Retry with another card,Authorization,N
+BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK,Payment Timed Out,payment_time_out,Technical,Razorpay,System Retry,Initiation,I
+SERVER_ERROR_LOGICAL_ERROR,Unknown Error,server_error,Technical,Razorpay,Non actionable,Initiation,N
+SERVER_ERROR_INVALID_ARGUMENT,Unknown Error,server_error,Technical,Razorpay,Non actionable,Initiation,N
+SERVER_ERROR_RUNTIME_ERROR,Unknown Error,server_error,Technical,Razorpay,Non actionable,Initiation,N
+SERVER_ERROR,Unknown Error,server_error,Technical,Razorpay,Non actionable,Initiation,N
+SERVER_ERROR_ASSERTION_ERROR,Unknown Error,server_error,Technical,Razorpay,Non actionable,Initiation,N
+GATEWAY_ERROR_UNKNOWN_ERROR,Unknown Error,gateway_transaction_error ,Technical,Razorpay,Non actionable,Initiation,N

@@ -613,19 +613,22 @@ class Core extends Base\Core
     {
         $extraInfo = $input['extra_info'] ?? [];
 
+        $gatewayErrorCode = $input['gateway_error_code'] ?? '';
+
         $ftaData = [
-            'bank_account_id'   => $fta->getBankAccountId(),
-            'vpa_id'            => $fta->getVpaId(),
-            'merchant_id'       => $fta->getMerchantId(),
-            'fta_id'            => $fta->getId(),
-            'source_id'         => $fta->source->getId(),
-            'utr'               => $fta->getUtr(),
-            'mode'              => $fta->getMode(),
-            'remarks'           => $fta->getRemarks(),
-            'fta_status'        => $fta->getStatus(),
-            'is_fts'            => $fta->getIsFTS(),
-            'bank_status_code'  => $fta->getBankStatusCode(),
-            'failure_reason'    => $fta->getFailureReason(),
+            'bank_account_id'          => $fta->getBankAccountId(),
+            'vpa_id'                   => $fta->getVpaId(),
+            'merchant_id'              => $fta->getMerchantId(),
+            'fta_id'                   => $fta->getId(),
+            'source_id'                => $fta->source->getId(),
+            'utr'                      => $fta->getUtr(),
+            'mode'                     => $fta->getMode(),
+            'remarks'                  => $fta->getRemarks(),
+            'fta_status'               => $fta->getStatus(),
+            'is_fts'                   => $fta->getIsFTS(),
+            'bank_status_code'         => $fta->getBankStatusCode(),
+            'failure_reason'           => $fta->getFailureReason(),
+            Entity::GATEWAY_ERROR_CODE => $gatewayErrorCode,
         ] + $extraInfo;
 
         if (isset($ftaData['return_utr']) === true)
