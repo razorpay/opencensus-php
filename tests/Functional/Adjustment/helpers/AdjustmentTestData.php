@@ -95,5 +95,27 @@ return [
                 'description'   => 'reserve_primary balance add',
             ],
         ]
-    ]
+    ],
+
+    'testCreateNegativeAdjustmentWithLowBalance' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  -5000,
+                'type'          =>  'primary',
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'INR',
+                'description'   =>  'loan payment reference id : some_id'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => -5000,
+                'currency'      => 'INR',
+                'description'   => 'loan payment reference id : some_id',
+            ],
+        ]
+    ],
 ];

@@ -8,6 +8,7 @@ use Illuminate\Http\UploadedFile;
 use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Dispute\Reason\Network;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -16,6 +17,8 @@ use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
 use RZP\Mail\Dispute\Creation as DisputeCreationMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Dispute\File\Service as DisputeFileService;
+use RZP\Mail\Dispute\BulkCreation as DisputeBulkCreationMail;
 use RZP\Mail\Dispute\Admin\AcceptedAdmin as DisputeAcceptedForAdminMail;
 use RZP\Mail\Dispute\Admin\SubmittedAdmin as DisputeSubmittedForAdminMail;
 
@@ -885,6 +888,106 @@ class DisputeTest extends TestCase
         $this->assertEquals(false, $payment['disputed']);
     }
 
+    public function testPhaseBasedBulkCreateDisputes()
+    {
+        $fileData = $this->getBulkDisputeUploadedFileData();
+
+        $uploadedFile = $this->getBulkDisputeUploadedXLSXFileFromFileData($fileData);
+
+        $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
+
+        $testData['request']['url'] = '/disputes/bulk-create';
+
+        $this->startTest($testData);
+
+        $fileRowByPaymentIdMap = [];
+
+        foreach ($fileData as $fileRow)
+        {
+            $fileRowByPaymentIdMap[$fileRow['payment_id']] = $fileRow;
+        }
+
+        $disputes = $this->getEntities('dispute')['items'];
+
+        $this->assertCount(count($fileData), $disputes);
+
+        foreach ($disputes as $disputeEntityItem)
+        {
+            $fileRow = $fileRowByPaymentIdMap[$disputeEntityItem['payment_id']];
+
+            $this->assertEquals($fileRow['amount'], $disputeEntityItem['amount']);
+
+            $this->assertEquals($fileRow['gateway_dispute_id'], $disputeEntityItem['gateway_dispute_id']);
+
+            $this->assertEquals($fileRow['gateway_dispute_status'], $disputeEntityItem['status']);
+
+            $this->assertEquals($fileRow['reason_code'], $disputeEntityItem['reason_code']);
+
+            $this->assertEquals($fileRow['phase'], $disputeEntityItem['phase']);
+        }
+    }
+
+    public function testPhaseBasedBulkCreateMails()
+    {
+        Mail::fake();
+
+        $fileData = $this->getBulkDisputeUploadedFileData();
+
+        $uploadedFile = $this->getBulkDisputeUploadedXLSXFileFromFileData($fileData);
+
+        $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
+
+        $testData['request']['url'] = '/disputes/bulk-create';
+
+        $this->startTest($testData);
+
+        $fileRowByPaymentIdMap = [];
+
+        $totalPhaseAmounts = [];
+
+        foreach ($fileData as $fileRow)
+        {
+            $fileRowByPaymentIdMap[$fileRow['payment_id']] = $fileRow;
+
+            $phase = $fileRow['phase'];
+
+            $amount = $fileRow['amount'];
+
+            if (isset($totalPhaseAmounts[$phase]) === false)
+            {
+                $totalPhaseAmounts[$phase] = 0;
+            }
+
+            $totalPhaseAmounts[$phase] += $amount;
+        }
+
+        $expectedData = [
+            'file_row_map' => $fileRowByPaymentIdMap,
+            'total_amount' => $totalPhaseAmounts,
+        ];
+
+        Mail::assertQueued(DisputeBulkCreationMail::class, function ($mail) use ($expectedData)
+        {
+            $mailData = $mail->viewData;
+
+            $this->assertTrue(Phase::exists($mailData['phase']));
+
+            $this->assertEquals($expectedData['total_amount'][$mailData['phase']], $mailData['totalAmount']);
+
+            foreach ($mailData['disputesDataTable'] as $disputeRow)
+            {
+                $fileRow = $expectedData['file_row_map'][$disputeRow['payment_id']];
+
+                $this->assertEquals($fileRow['gateway_dispute_id'], $disputeRow['case_id']);
+
+                $this->assertEquals($fileRow['phase'], $disputeRow['phase']);
+            }
+
+            return ($mail->hasFrom('disputes@razorpay.com') and
+                ($mail->hasTo('test@razorpay.com')));
+        });
+    }
+
     // ---------------------------- helper methods-------------------------------
 
     protected function updateCreateTestData(string $paymentId = null): array
@@ -1015,5 +1118,126 @@ class DisputeTest extends TestCase
         copy($originalFile, 'tests/Functional/Storage/' . $name);
 
         return $this->createUploadedFile('tests/Functional/Storage/' . $name);
+    }
+
+    protected function getBulkDisputeUploadedFileData()
+    {
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
+
+        $fileData = [];
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100001',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'reason_code'            => $reason['code'],
+            'phase'                  => Phase::CHARGEBACK,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'amount'                 => 10000,
+            'skip_email'             => 'N',
+            'contact'                => null,
+        ];
+
+        $fileData[] = $row;
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100002',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'reason_code'            => $reason['code'],
+            'phase'                  => Phase::PRE_ARBITRATION,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'amount'                 => 20000,
+            'skip_email'             => 'N',
+            'contact'                => null,
+        ];
+
+        $fileData[] = $row;
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100003',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'reason_code'            => $reason['code'],
+            'phase'                  => Phase::ARBITRATION,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'amount'                 => 30000,
+            'skip_email'             => 'N',
+            'contact'                => null,
+        ];
+
+        $fileData[] = $row;
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100004',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'reason_code'            => $reason['code'],
+            'phase'                  => Phase::RETRIEVAL,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'amount'                 => 40000,
+            'skip_email'             => 'N',
+            'contact'                => null,
+        ];
+
+        $fileData[] = $row;
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100005',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'reason_code'            => $reason['code'],
+            'phase'                  => Phase::FRAUD,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'amount'                 => 50000,
+            'skip_email'             => 'N',
+            'contact'                => null,
+        ];
+
+        $fileData[] = $row;
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100006',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'reason_code'            => $reason['code'],
+            'phase'                  => Phase::CHARGEBACK,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'amount'                 => 60000,
+            'skip_email'             => 'N',
+            'contact'                => null,
+        ];
+
+        $fileData[] = $row;
+
+        return $fileData;
+    }
+
+    protected function getBulkDisputeUploadedXLSXFileFromFileData($fileData)
+    {
+        $inputExcelFile = (new DisputeFileService)->createExcelFile(
+            $fileData,
+            'bulk_dispute_test_input',
+            'files/dispute/test'
+        );
+
+        $uploadedFile = $this->createUploadedFile($inputExcelFile);
+
+        return $uploadedFile;
     }
 }

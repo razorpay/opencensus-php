@@ -627,6 +627,8 @@ class Core extends Base\Core
         if (isset($input[Merchant\Entity::WEBSITE]) === true)
         {
             $data[Entity::BUSINESS_WEBSITE] = $input[Merchant\Entity::WEBSITE];
+
+            (new Merchant\Core())->updateWhitelistedDomain($merchant, $input);
         }
 
         if (empty($data) === false)

@@ -19,6 +19,11 @@ class Core extends Base\Core
         // Validator expects publicId
         $input[Entity::PAYMENT_ID] = $payment->getPublicId();
 
+        if (isset($input[Entity::RISK_SCORE]) === false)
+        {
+            $input[Entity::RISK_SCORE] = -1;
+        }
+
         $risk->build($input);
 
         $risk->payment()->associate($payment);

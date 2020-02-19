@@ -17,7 +17,8 @@ class PanProcessorResponse  extends BaseResponse
 
         $extractedData = [
             Constants::PAN_NAME_FROM_NSDL => $this->responseBody['data']['content']['response']['result']['name'] ?? null,
-            Constants::SUCCESS            => true
+            Constants::SUCCESS            => true,
+            Constants::DOCUMENT_TYPE      => Constants::PROMOTER_PAN,
         ];
 
         return array_merge($data, $extractedData);

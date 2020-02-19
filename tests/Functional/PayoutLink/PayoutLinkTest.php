@@ -1205,7 +1205,7 @@ class PayoutLinkTest extends TestCase
 
     protected function mockRedisSuccess($funcName, $payoutLinkId)
     {
-        $token = (new TokenService())->generate($payoutLinkId);
+        $token = $this->app['token_service']->generate($payoutLinkId);
 
         $this->testData[$funcName]['request']['content']['token'] = $token;
     }

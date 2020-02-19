@@ -671,6 +671,23 @@ return [
         ]
     ],
 
+    'testEditMerchantWebsite' => [
+        'request'  => [
+            'content' => [
+                'website' => 'http://abc.com',
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id'                  => '10000000000000',
+                'entity'              => 'merchant',
+                'website'             => 'http://abc.com',
+            ]
+        ]
+    ],
+
     'testEditMerchantInvalidWhitelistedIpsTest' => [
         'request'  => [
             'content' => [
@@ -4731,7 +4748,51 @@ return [
         ],
     ],
 
+    'testMerchantSwitchProductWhenXOnboardingExperimentOff' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenL1Incomplete' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testMerchantSwitchProductWhenMerchantNotActivated' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenMerchantNotActivatedAndL1Incomplete' => [
         'request'  => [
             'url'     => '/merchants/product-switch',
             'method'  => 'post',

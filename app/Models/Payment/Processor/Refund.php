@@ -17,6 +17,7 @@ use RZP\Models\Reversal;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\Card\Type;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
@@ -123,7 +124,8 @@ trait Refund
     {
         return ((isset($input[RefundEntity::SPEED]) === true) and
                 (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
-                ($this->isCapturedPaymentAndFeatureEnabled($payment) === false));
+                (($this->isCapturedPaymentAndFeatureEnabled($payment) === false) or
+                 ($payment->merchant->org->getId() !== Org\Entity::RAZORPAY_ORG_ID)));
     }
 
     protected function pushMetrics()
