@@ -349,10 +349,10 @@ class CardPaymentService
        // For axis_migs we don't send gateway request in redirect case,
        // We redirect customer with actual request content which has card and terminal details,
        // Unsetting these fields before logging is mandatory
-       unset($trace_response['data']['content']['vpc_CardNum']);
-       unset($trace_response['data']['content']['vpc_AccessCode']);
-       unset($trace_response['data']['content']['vpc_CardExp']);
-       unset($trace_response['data']['content']['vpc_CardSecurityCode']);
+       unset($traceResponse['data']['content']['vpc_CardNum']);
+       unset($traceResponse['data']['content']['vpc_AccessCode']);
+       unset($traceResponse['data']['content']['vpc_CardExp']);
+       unset($traceResponse['data']['content']['vpc_CardSecurityCode']);
 
         $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $traceResponse ?? []);
     }
