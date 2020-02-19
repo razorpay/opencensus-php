@@ -461,10 +461,15 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
+        $traceResult = $result;
+
+        unset($traceResult[ResponseFields::PAYER_VA], $traceResult[ResponseFields::PHONE_NUMBER], $traceResult[ResponseFields::ACCOUNT_NUMBER]);
+
+
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
             'body'              => $responseBody,
             'decrypted'         => $response,
-            'parsed'            => $result,
+            'parsed'            => $traceResult,
             'gateway'           => $this->gateway,
             'type'              => $type
         ]);
@@ -502,8 +507,12 @@ class Gateway extends Base\Gateway
             assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
         }
 
+        $traceContent = $content;
+
+        unset($traceContent[ResponseFields::PAYER_VA], $traceContent[ResponseFields::PHONE_NUMBER], $traceContent[ResponseFields::ACCOUNT_NUMBER]);
+
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'parsed'            => $content,
+            'parsed'            => $traceContent,
             'type'              => $gatewayPayment->getType()
         ]);
 
