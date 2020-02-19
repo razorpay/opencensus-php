@@ -414,6 +414,8 @@ trait Inquiry
 
         unset($traceVerifyData['content']);
 
+        unset($traceVerifyData['data']['member']);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $traceVerifyData);
