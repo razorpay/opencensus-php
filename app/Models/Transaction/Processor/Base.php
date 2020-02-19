@@ -623,7 +623,7 @@ abstract class Base extends BaseCore
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
-        $this->txn->setBalance($this->merchantBalance->getBalance());
+        $this->txn->setBalance($this->merchantBalance->getBalance(), $oldBalance, $negativeLimit);
 
         if (in_array($this->txn->getType(), Balance\Core::NEGATIVE_FLOWS[Balance\Type::PRIMARY]) === true)
         {
