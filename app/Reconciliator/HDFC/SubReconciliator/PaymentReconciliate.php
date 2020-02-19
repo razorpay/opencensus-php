@@ -35,6 +35,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_ARN                            = 'arn_no';
     const COLUMN_AUTH_CODE                      = 'approv_code';
     const COLUMN_SEQUENCE_NUMBER                = 'sequence_number';
+    const COLUMN_MERCHANT_CODE                  = 'merchant_code';
 
     const COLUMN_TERMINAL_NUMBER                = 'terminal_number';
     const COLUMN_GATEWAY_TRANSACTION_ID         = 'tran_id';

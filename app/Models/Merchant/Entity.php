@@ -492,6 +492,26 @@ class Entity extends Base\PublicEntity
     const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
     const RISK_THRESHOLD_DEFAULT                      = 8;
 
+    public function refresh()
+    {
+        $instance = parent::refresh();
+
+        // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
+        $instance->loadedFeatures = null;
+
+        return $instance;
+    }
+
+    public function reload()
+    {
+        $instance = parent::reload();
+
+        // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
+        $instance->loadedFeatures = null;
+
+        return $instance;
+    }
+
     protected function generateTransactionReportEmail($input)
     {
         $email = array($input[self::EMAIL]);
