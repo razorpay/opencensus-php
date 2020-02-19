@@ -1276,7 +1276,7 @@ class Service extends Base\Service
 
         $retryFailures = [];
 
-        foreach ($input['refund_ids'] as $refundId)
+        foreach ($input['refund_ids'] as $key => $refundId)
         {
             try
             {
@@ -1302,6 +1302,8 @@ class Service extends Base\Service
                 {
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA);
                 }
+
+                $ftaData['dispatch_delay_time'] = $key;
 
                 $this->getNewProcessor($refund->merchant)->processRefundRetry($refund, $ftaData);
             }
