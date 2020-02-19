@@ -153,7 +153,7 @@ class Service extends Base\Service
 
                     $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::NAME]  = $merchant->getName();
                     $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::EMAIL] = $merchant->getEmail();
-                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]][Constants::DISPUTES][] = $disputeEntity[Entity::ID];
+                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]][Constants::DISPUTES][$disputeEntity[Entity::PHASE]][] = $disputeEntity[Entity::ID];
 
                     $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity);
                 }
@@ -528,6 +528,25 @@ class Service extends Base\Service
         $input[Reason\Entity::NETWORK] = $network;
 
         $res = $networkCode[1];
+
+        return $res;
+    }
+
+    public function formatValuePhase($res)
+    {
+        if (empty($res) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'phase cant be empty'
+            );
+        }
+
+        if (Phase::exists($res) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid phase \'' . $res . '\''
+            );
+        }
 
         return $res;
     }

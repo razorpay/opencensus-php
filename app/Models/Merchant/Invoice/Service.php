@@ -38,11 +38,6 @@ class Service extends Base\Service
         return ['count' => $count];
     }
 
-    public function createCorrectionInvoice(array $input)
-    {
-        return (new Core)->queueCorrectionInvoiceInvoice($input);
-    }
-
     public function requestBankingInvoice(array $input)
     {
         (new Validator)->validateInput(Validator::BANKING_INVOICE_GENERATE, $input);

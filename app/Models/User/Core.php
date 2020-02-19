@@ -18,6 +18,7 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Services\TokenService;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
@@ -1352,5 +1353,32 @@ class Core extends Base\Core
         $customProperties = ['email' => $userEmail];
 
         $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, null, $customProperties);
+    }
+
+    /**
+     * Verify user through otp sent to email.
+     * Generates and stores a user verification token in redis.
+     * This token has to be passed in subsequent calls which need user authorization.
+     *
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Entity $user
+     * @return array
+     */
+    public function verifyUserThroughEmail(array $input, Merchant\Entity $merchant, Entity $user) : array
+    {
+        /** @var Validator $validator */
+        $validator = $user->getValidator();
+
+        $validator->validateInput('verifyUserThroughEmail', $input);
+
+        $this->verifyOtp($input + ['action' => 'user_auth'], $merchant, $user);
+
+        /** @var TokenService $tokenService */
+        $tokenService  = $this->app['token_service'];
+
+        $token = $tokenService->generate($user->getId());
+
+        return [Entity::OTP_AUTH_TOKEN => $token];
     }
 }

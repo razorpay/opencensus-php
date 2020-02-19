@@ -38,6 +38,9 @@ class Entity extends Base\PublicEntity
     const TOKEN                         = 'token';
     const EXPIRY_TIME                   = 'expiryTime';
 
+    // This token is used for user authorization between api calls
+    const OTP_AUTH_TOKEN                = 'otp_auth_token';
+
     const ACTION                        = 'action';
     const USER_ID                       = 'user_id';
     const MERCHANT_ID                   = 'merchant_id';
