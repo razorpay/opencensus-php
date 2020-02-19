@@ -1167,9 +1167,9 @@ class Service extends Base\Service
 
         $data = $merchant->getPaymentFlows($iinEntity);
 
-        if (isset($input['currency']) and
-            isset($input['amount']) and
-            empty($iinEntity) === false)
+        if ((isset($input['currency'])) and
+            (isset($input['amount'])) and
+            (empty($iinEntity) === false))
         {
             $data[IIN\Constants::IS_INTERNATIONAL] = $iinEntity->isInternational();
 
@@ -1179,8 +1179,8 @@ class Service extends Base\Service
 
             $data['card_currency'] = $cardHomeCurrency;
 
-            if ($merchant->isDCCEnabled() === true and
-                $iinEntity->isDCCSupported() === true)
+            if (($merchant->isDCCEnabled() === true) and
+                ($iinEntity->isDCCSupported() === true))
             {
                 $dccInfo = $this->getDCCInfo($input['amount'], $input['currency']);
 
