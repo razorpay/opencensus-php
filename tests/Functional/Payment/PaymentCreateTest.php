@@ -2696,4 +2696,32 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals('paid', $lastOrder['status']);
     }
+
+    public function testUpiBlock()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiBlockPaymentArray();
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $lastPayment = $this->getLastEntity('payment');
+
+        $this->assertSame('authorized', $lastPayment['status']);
+    }
+
+    public function testUpiBlockFail()
+    {
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The vpa field is not required and not shouldn\'t be sent.');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiBlockPaymentArray();
+
+        $payment['upi']['flow'] = 'intent';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+    }
 }
