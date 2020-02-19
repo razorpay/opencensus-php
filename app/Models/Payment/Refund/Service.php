@@ -1268,6 +1268,58 @@ class Service extends Base\Service
             ]);
     }
 
+    public function retryBulkViaFta(array $input)
+    {
+        (new Validator)->validateInput('retry_bulk_via_fta', $input);
+
+        $this->trace->info(TraceCode::REFUND_RETRY_BULK_VIA_FTA_INITIATED, $input);
+
+        $retryFailures = [];
+
+        foreach ($input['refund_ids'] as $refundId)
+        {
+            try
+            {
+                $refund = $this->repo->refund->findOrFail($refundId);
+
+                $ftaData = [];
+
+                switch ($input['transfer_method'])
+                {
+                    case 'source_vpa' :
+
+                        $vpaId = $refund->payment->getVpa();
+
+                        if (empty($vpaId) === false)
+                        {
+                            $ftaData['vpa']['address'] = $vpaId;
+                        }
+
+                        break;
+                }
+
+                if (empty($ftaData) === true)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA);
+                }
+
+                $this->getNewProcessor($refund->merchant)->processRefundRetry($refund, $ftaData);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex, null, null, ['refund_id' => $refundId]);
+
+                $retryFailures[] = $refundId;
+            }
+        }
+
+        return [
+            'success_count' => count($input['refund_ids']) - count($retryFailures),
+            'failure_count' => count($retryFailures),
+            'failed_ids'    => $retryFailures,
+        ];
+    }
+
     public function directRetryBulk(array $input)
     {
         (new Validator)->validateInput('direct_retry_bulk', $input);

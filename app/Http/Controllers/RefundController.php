@@ -157,6 +157,15 @@ class RefundController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postRefundRetryBulkViaFta()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->retryBulkViaFta($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postRefundDirectRetryBulk()
     {
         $input = Request::all();
