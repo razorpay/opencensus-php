@@ -15,6 +15,18 @@ class RazorxTreatment
     {
         $app = App::getFacadeRoot();
 
+        if ($app['api.route']->getCurrentRouteName() === 'terminal_migrate_cron')
+        {
+            return false;
+        }
+
+        return self::getRazorxTreatment();
+    }
+
+    protected static function getRazorxTreatment(): bool
+    {
+        $app = App::getFacadeRoot();
+
         $mode = $app['rzp.mode'] ?? \RZP\Constants\Mode::LIVE;
 
         $variant = $app['razorx']->getTreatment($app['request']->getId(), self::shouldMigrateTerminalFeature, $mode);

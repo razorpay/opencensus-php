@@ -97,6 +97,8 @@ class Repository extends Base\Repository
                 parent::saveOrFail($entity, $options);
             }
         }
+
+        return $entity;
     }
 
     public function fetchForPayment(Payment\Entity $payment)

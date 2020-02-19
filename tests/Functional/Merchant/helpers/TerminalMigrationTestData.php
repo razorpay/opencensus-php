@@ -158,6 +158,9 @@ return [
             ],
             'method' => 'PUT'
         ],
+        'response'  => [
+
+        ],
     ],
 
     'testUpdateTerminalServiceFailureResponseMigrateTerminalVariant' => [
