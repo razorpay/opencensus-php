@@ -49,8 +49,6 @@ class UserAccess
 
     private $razorx;
 
-    private $mode;
-
     /**
      * UserAccess constructor.
      *
@@ -65,8 +63,6 @@ class UserAccess
         $this->router = $app['router'];
 
         $this->razorx = $app->razorx;
-
-        $this->mode = $app['rzp.mode'];
 
         $this->userRoleScope = new UserRolesScope();
 
@@ -241,7 +237,7 @@ class UserAccess
             // TODO: This is added to identify impact on other clients if unauthorised requests are blocked
             $variant = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
                                                    RazorxTreatment::RAZORPAY_X_DENY_ACCESS,
-                                                   $this->mode ?? 'live');
+                                                   $this->ba->getMode());
 
             $this->trace->traceException($e,
                 Trace::INFO,
