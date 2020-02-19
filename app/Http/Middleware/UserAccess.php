@@ -183,9 +183,6 @@ class UserAccess
         $this->ba->setRequestOriginProduct($product);
     }
 
-    /**
-     * @param string $route
-     */
     private function validateUserAccess(string $route)
     {
         $userAccessResponse = $this->ba->isProductBanking() ? $this->validateBankingUserAccess($route) :
@@ -236,15 +233,13 @@ class UserAccess
         {
             // TODO: This is added to identify impact on other clients if unauthorised requests are blocked
             $variant = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
-                                                   RazorxTreatment::RAZORPAY_X_DENY_ACCESS,
+                                                   RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED,
                                                    $this->ba->getMode());
 
             $this->trace->traceException($e,
                 Trace::INFO,
                 TraceCode::BANKING_ACCOUNT_USER_PERMISSION_ERROR,
                 [
-                    'route'      => $route,
-                    'user_id'    => $this->ba->getUser()->getId(),
                     'experiment' => $variant,
                 ]);
 
@@ -267,7 +262,6 @@ class UserAccess
      */
     private function validateBankingUserRoutePolicy($route)
     {
-
         $userRole = $this->getUserRole();
 
         $routePermission = $this->getRoutePermission($route);

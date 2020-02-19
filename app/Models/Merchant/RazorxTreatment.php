@@ -84,5 +84,5 @@ final class RazorxTreatment
     const RAZORPAY_X_TEST_MODE_ONBOARDING = 'razorpayx_x_test_mode_onboarding';
 
     // Access control to allow pg request after new acl
-    const RAZORPAY_X_DENY_ACCESS = 'razorpayx_x_deny_access';
+    const RAZORPAY_X_ACL_DENY_UNAUTHORISED = 'razorpay_x_acl_deny_unauthorised';
 }

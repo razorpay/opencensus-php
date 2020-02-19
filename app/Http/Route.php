@@ -3530,7 +3530,6 @@ final class Route
         'batch_fetch_by_id'                            => '*',
         'batch_validate_file'                          => '*',
         'batch_download_file'                          => '*',
-        'merchant_partner_configs_fetch'               => '*',
         'bank_account_fetch'                           => '*',
         'bank_transfer_process_test'                   => '*',
         'pincode_get'                                  => '*',
