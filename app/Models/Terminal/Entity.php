@@ -355,6 +355,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::MPAN,
+        self::SYNC_STATUS,
     ];
 
     protected static function boot()
@@ -755,6 +756,15 @@ class Entity extends Base\PublicEntity
 
         return $array;
     }
+
+    protected function setPublicSyncStatusAttribute(array & $array)
+    {
+        if (isset($array[self::SYNC_STATUS]) === true)
+        {
+            unset($array[self::SYNC_STATUS]);
+        }
+    }
+
 
     //----------------------END PUBLIC SETTERS----------------
 
