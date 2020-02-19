@@ -502,6 +502,13 @@ class Service extends Base\Service
                 $responseValue = '';
             }
 
+            if (is_array($originalValue) === true)
+            {
+                sort($originalValue);
+
+                sort($responseValue);
+            }
+
             if ($originalValue != $responseValue)
             {
                 $data = [
