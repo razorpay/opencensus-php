@@ -357,6 +357,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_RETRY_RESULT                                   = 'REFUND_RETRY_RESULT';
     const REFUND_RETRY_SKIPPED                                  = 'REFUND_RETRY_SKIPPED';
     const REFUND_RETRY_BULK_INITIATED                           = 'REFUND_RETRY_BULK_INITIATED';
+    const REFUND_RETRY_BULK_VIA_FTA_INITIATED                   = 'REFUND_RETRY_BULK_VIA_FTA_INITIATED';
     const REFUND_RETRY_BULK_DISPATCHED                          = 'REFUND_RETRY_BULK_DISPATCHED';
     const REFUND_MARK_PROCESSED_BULK_INITIATED                  = 'REFUND_MARK_PROCESSED_BULK_INITIATED';
     const REFUND_MARK_PROCESSED_BULK_SUMMARY                    = 'REFUND_MARK_PROCESSED_BULK_SUMMARY';
