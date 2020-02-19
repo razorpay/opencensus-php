@@ -2667,12 +2667,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setPublicTerminalIdAttribute(array & $array)
     {
         $merchant = $this->merchant;
-        
+
         if ($merchant->isFeatureEnabledOnNonPurePlatformPartner(Feature\Constants::TERMINAL_ONBOARDING) === true)
         {
             $terminalId = $this->getTerminalId();
 
-            $signedTerminalId = isset($terminalId) ? (new Terminal\Entity())->getSignedId($terminalId) : null; 
+            $signedTerminalId = isset($terminalId) ? (new Terminal\Entity())->getSignedId($terminalId) : null;
 
             $array[self::TERMINAL_ID] = $signedTerminalId;
 
@@ -3000,7 +3000,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $data = $this->toArray();
 
-        if ($this->isCard())
+        if ($this->isCard() === true)
         {
             $data['amount'] = $this->getGatewayAmount();
             $data['currency'] = $this->getGatewayCurrency();
