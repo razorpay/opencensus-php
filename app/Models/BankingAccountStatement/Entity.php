@@ -60,7 +60,7 @@ class Entity extends Base\PublicEntity
 
     const DEBIT_REGEX = '/^(.*?)-/';
 
-    const NEFT_RTGS_DEBIT_REGEX = '/^(RTGS\/|NEFT\/)(.*?)(\/)/';
+    const RTGS_DEBIT_REGEX = '/^(RTGS\/)(.*?)(\/)/';
 
     const NEFT_PONUM_REGEX = '/^(NEFT\/)(.*?)(\/)/';
 
@@ -255,7 +255,8 @@ class Entity extends Base\PublicEntity
 
     public function setPonum($ponum = null)
     {
-        if (empty($ponum) === true)
+        if ((empty($ponum) === true) and
+            ($this->getChannel() === Channel::RBL))
         {
             $ponum = $this->getPonumFromDescription();
         }
@@ -372,7 +373,7 @@ class Entity extends Base\PublicEntity
             }
             else
             {
-                $regex = self::NEFT_RTGS_DEBIT_REGEX;
+                $regex = self::RTGS_DEBIT_REGEX;
 
                 $match = preg_match($regex, $description, $matches);
 
