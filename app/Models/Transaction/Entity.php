@@ -550,7 +550,7 @@ class Entity extends Base\PublicEntity
 
     public function setBalance($balance, $oldBalance, $negativeLimit = 0)
     {
-        if ($balance < $oldBalance)
+        if ($balance <= $oldBalance)
         {
             assertTrue($balance >= $negativeLimit);
         }
