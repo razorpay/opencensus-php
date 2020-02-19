@@ -548,9 +548,10 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ESCROW_BALANCE, $balance);
     }
 
-    public function setBalance($balance, $oldBalance, $negativeLimit = 0)
+    public function setBalance($balance, int $oldBalance, int $negativeLimit = 0)
     {
-        if ($balance <= $oldBalance)
+        if (($balance !== null) and
+            ($balance <= $oldBalance))
         {
             assertTrue($balance >= $negativeLimit);
         }
