@@ -1883,7 +1883,7 @@ trait Refund
 
         if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
-            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getAmount(),
+            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getNetAmount(),
                                                             Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
 
@@ -2998,10 +2998,10 @@ trait Refund
     {
         try
         {
-            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getAmount(),
+            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getNetAmount(),
                                                         Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             if ($type === 'refund')
             {
