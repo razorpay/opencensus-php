@@ -28,13 +28,14 @@ class Fee extends Base\Core
 
     protected $repo;
 
-    const DEFAULT_PRICING_PLAN_ID       = '1hDYlICobzOCYt';
-    const EMI_SUB_PRICING_PLAN_ID       = '1EmiSubPricing';
-    const DEFAULT_QR_CODE_PLAN_ID       = 'A8UwvIbaL8n4Q8';
-    const DEFAULT_EMI_PLAN_ID           = 'ArGUUem5z3UADv';
-    const DEFAULT_BANK_TRANSFER_PLAN_ID = '8gP5505KgDVWIh';
-    const DEFAULT_BANKING_PLAN_ID       = 'BTo98voDY05ueB';
-    const DEFAULT_VIRTUAL_UPI_PLAN_ID   = 'E9t4ljLBnt2cad';
+    const DEFAULT_PRICING_PLAN_ID         = '1hDYlICobzOCYt';
+    const EMI_SUB_PRICING_PLAN_ID         = '1EmiSubPricing';
+    const DEFAULT_QR_CODE_PLAN_ID         = 'A8UwvIbaL8n4Q8';
+    const DEFAULT_EMI_PLAN_ID             = 'ArGUUem5z3UADv';
+    const DEFAULT_BANK_TRANSFER_PLAN_ID   = '8gP5505KgDVWIh';
+    const DEFAULT_BANKING_PLAN_ID         = 'BTo98voDY05ueB';
+    const DEFAULT_VIRTUAL_UPI_PLAN_ID     = 'E9t4ljLBnt2cad';
+    const DEFAULT_INSTANT_REFUNDS_PLAN_ID = 'DefaultPricing';
 
     public function __construct()
     {
@@ -66,6 +67,15 @@ class Fee extends Base\Core
         $method = $entity->getMethod();
 
         return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method, $entity->merchant);
+    }
+
+    public function getInstantRefundsDefaultPricingPlanForMethod($entity)
+    {
+        $feature = EntityConstants::REFUND;
+
+        $method = $entity->getMethod();
+
+        return $this->repo->getInstantRefundsDefaultPricingPlanForMethod($feature, $method, $entity->merchant);
     }
 
     /**

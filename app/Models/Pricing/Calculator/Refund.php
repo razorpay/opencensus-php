@@ -3,6 +3,7 @@
 namespace RZP\Models\Pricing\Calculator;
 
 use RZP\Models\Pricing;
+use RZP\Models\Admin\Org;
 use RZP\Models\Base as BaseModel;
 
 /**
@@ -28,6 +29,26 @@ class Refund extends Base
     {
         $rules = $this->applyRefundModeFilters($rules);
 
+        $rules = $this->applyRefundAmountRangeFilters($rules);
+
+        //
+        // In refunds - specifically Instant Refunds we have defined a default pricing plan
+        // If merchant specific rules are not found after filtering, we want to apply the default pricing plan
+        // instead of failing refund creation.
+        //
+        // This is possible only with this approach because merchant may have some rules defined, not all.
+        // In that scenario to cover all cases default pricing plan will be invoked only if merchant rules are not enough
+        //
+        // And this default pricing only applies to RZP Org merchants. Instant Refunds is restricted to only these merchants.
+        //
+        if ((count($rules) === 0) and
+            ($this->entity->merchant->getOrgId() === Org\Entity::RAZORPAY_ORG_ID))
+        {
+            $rules = (new Pricing\Fee)->getInstantRefundsDefaultPricingPlanForMethod($this->entity);
+
+            $rules = $this->applyRefundModeFilters($rules);
+        }
+
         $rule = $this->applyAmountRangeFilterAndReturnOneRule($rules);
 
         return $rule;
@@ -49,5 +70,16 @@ class Refund extends Base
         ];
 
         return $this->applyFiltersOnRules($rules, $filters);
+    }
+
+    protected function applyRefundAmountRangeFilters($rules)
+    {
+        $filters = [
+            [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters);
+
+        return $rules;
     }
 }
