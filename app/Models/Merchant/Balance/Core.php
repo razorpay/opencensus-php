@@ -578,6 +578,11 @@ class Core extends Base\Core
     {
         if ($txn->getType() === Transaction\Type::PAYMENT)
         {
+            if ($txn->source === null)
+            {
+                return 0;
+            }
+            
             $payment =  $txn->source;
 
             $method = $payment->getMethod();

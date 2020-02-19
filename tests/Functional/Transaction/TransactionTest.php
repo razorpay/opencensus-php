@@ -415,6 +415,16 @@ class TransactionTest extends TestCase
 
         $this->assertTrue($balance['balance'] === -1000);
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
         $this->makeRequestAndCatchException(function ()
         {
             $this->createDirectSettlementPayment();
