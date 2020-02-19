@@ -925,7 +925,7 @@ class Core extends Base\Core
 
         $this->repo->balance->updateBalance($merchantBalance);
 
-        $txn->setBalance($merchantBalance->getBalance(), $negativeLimit);
+        $txn->setBalance($merchantBalance->getBalance());
 
         if (in_array($txn->getType(), Balance\Core::NEGATIVE_FLOWS[Balance\Type::PRIMARY]) === true)
         {
@@ -1556,7 +1556,7 @@ class Core extends Base\Core
             ]
         );
 
-        $txn->setBalance($this->merchantBalance);
+        $txn->setBalance(null);
 
         $txn->setBalanceUpdated(true);
 
