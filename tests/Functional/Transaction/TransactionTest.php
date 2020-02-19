@@ -361,7 +361,6 @@ class TransactionTest extends TestCase
         $this->assertEquals($oldBalance['balance'] - $refund['amount'], $balance['balance']);
     }
 
-
     public function testDirectSettlementNoMerchnatBalance()
     {
          $this->fixtures->create('credits', [
@@ -370,9 +369,11 @@ class TransactionTest extends TestCase
             'merchant_id' => '10000000000000',
         ]);
 
-        $this->fixtures->merchant->editBalance('100', '10000000000000');
+        $this->fixtures->merchant->editBalance(0, '10000000000000');
 
-        $oldBalance = $this->getEntityById('balance', '10000000000000', true);
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertTrue($balance['balance'] === 0);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
@@ -390,6 +391,40 @@ class TransactionTest extends TestCase
         },BadRequestException::class, 'Payment failed');
 
         $payment = $this->getLastEntity('payment', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+
+        $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testDirectSettlementNegativeMerchnatBalance()
+    {
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 0,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->merchant->editBalance(-1000, '10000000000000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertTrue($balance['balance'] === -1000);
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $this->createDirectSettlementPayment();
+        },BadRequestException::class, 'Payment failed');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
 
         $this->assertEquals('netbanking_hdfc', $payment['gateway']);
         $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
@@ -612,6 +647,7 @@ class TransactionTest extends TestCase
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
         $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+
         $payment = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
