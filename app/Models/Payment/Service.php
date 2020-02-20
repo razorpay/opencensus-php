@@ -1695,6 +1695,19 @@ class Service extends Base\Service
         return (new Verify)->verifyPayment($payment);
     }
 
+    /**
+     * Certain gateways require gateway data such as bank reference number for payment verification
+     * to function accurately
+     *
+     * @param $payment
+     * @param null $gatewayData
+     * @return null|string
+     */
+    public function verifyPaymentWithGatewayData($payment, $gatewayData = null)
+    {
+        return (new Verify)->verifyPayment($payment, null, $gatewayData);
+    }
+
     public function sendReminderMerchantMailForAuthorizedPayments()
     {
         $result = [
