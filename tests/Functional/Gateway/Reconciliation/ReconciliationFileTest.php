@@ -2734,13 +2734,19 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->edit('card_fss', $gatewayPayment1['id'], ['ref' => null]);
 
-        $entries[] = $this->overrideFssSbiRecon($gatewayPayment1, $gatewayPayment1['payment_id']);
+        $paymentArray = $this->getDbLastEntityToArray('payment');
+        $entries[] = $this->overrideFssSbiRecon($paymentArray);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getDbLastEntityToArray('refund');
+        $entries[] = $this->overrideFssSbiRecon($refund, 'Refund');
 
         $file = $this->writeToCsvFile($entries, 'IPAYMIS_MID_Date');
 
         $this->runForFiles([$file], 'CardFssSbi');
 
-        $transactionEntity = $this->getDbLastEntity('transaction');
+        $transactionEntity = $this->getDbEntity('transaction', ['type' => 'payment']);
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
         $this->assertNotNull($transactionEntity['reconciled_type']);
@@ -2759,6 +2765,11 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals( $gatewayFee + $gst, $transactionEntity->getGatewayFee());
 
         $this->assertEquals($gst, $transactionEntity->getGatewayServiceTax());
+
+        $transactionEntity = $this->getDbEntity('transaction', ['type' => 'refund']);
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_type']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -3139,25 +3150,32 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
-    private function overrideFssSbiRecon(array $gatewayPayment, string $entityId, $transactionType = 'Purchase')
+    private function overrideFssSbiRecon(array $entity, $transactionType = 'Purchase')
     {
         $facade = $this->testData['facades']['testFssSbiRecon'];
 
-        $facade['TXN_AMT']                  = number_format($gatewayPayment['amount'] / 100, 2);
+        $facade['TXN_AMT']                  = number_format($entity['amount'] / 100, 2);
 
         $facade['TRANSACTION_TYPE']         = $transactionType;
 
-        $facade['PRCHS_ MERCHANT_TXNNO']    = $entityId;
+        // Payment/refund id
+        $facade['MERCHANT_TXNNO']           = $entity['id'];
 
-        $facade['MERCHANT_TXNNO']           = $entityId;
+        // Auth code
+        $facade['APPROVE_CODE']             = '13234';
 
-        $facade['APPROVE_CODE']             = $gatewayPayment['auth'];
-
-        $facade['TXN_REF']                = '01231232131';
+        // RRN
+        $facade['TXN_REF']                  = '01231232131';
 
         $facade['VAT_AMT']                  = '0.00';
         $facade['MTS_MSF_FIXFEE']           = '0.00';
         $facade['MTS_TOTL_CSF_AMT']         = '0.00';
+
+        if ($transactionType === 'Refund')
+        {
+            // Payment id
+            $facade['PRCHS_ MERCHANT_TXNNO']    = $entity['payment_id'];
+        }
 
         return $facade;
     }
