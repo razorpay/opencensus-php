@@ -2377,6 +2377,7 @@ final class Route
         'feature_get',
         'batch_create_admin',
         'send_test_sms',
+        'invoice_cancel_by_batch',
         'file_upload_admin',
         'admin_dummy_account_test',
         'admin_get_file',
