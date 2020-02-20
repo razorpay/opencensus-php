@@ -177,7 +177,6 @@ class Repository extends Base\Repository
      * calculates the sum of `fee` and `tax` for the instant speed refunds
      *  - captured for a merchant in a given time frame
      *  - based on filter type passed REFUND_LTE_1K, REFUND_GT_1K_LTE_10K, REFUND_GT_10K
-     *  - When correction flag is true the adds condition where created in given time frame
      *
      * @param string $merchantId
      * @param int $start

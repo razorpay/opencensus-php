@@ -1461,6 +1461,9 @@ class VirtualAccountTest extends TestCase
 
             $this->assertArraySelectiveEquals($testData, $data);
 
+            $paymentArray = $data['event']['payload']['payment']['entity'];
+            $this->assertArrayNotHasKey('terminal_id', $paymentArray);
+
             return true;
         });
 

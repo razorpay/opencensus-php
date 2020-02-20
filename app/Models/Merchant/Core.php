@@ -264,6 +264,8 @@ class Core extends Base\Core
 
         $this->upsertLegalEntity($subMerchant, $legalEntityInput);
 
+        $this->addToDefaultUnclaimedGroup($subMerchant);
+
         return $subMerchant;
     }
 

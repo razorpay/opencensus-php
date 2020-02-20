@@ -70,6 +70,10 @@ class Otp extends Mailable
                         Carbon::now(Timezone::IST)->format('m D, Y, H:i A'));
                 }
                 break;
+
+            case 'verify_email':
+                $subject = "Razorpay Software Private Ltd | OTP to {$this->getFormattedAction()}";
+                break;
         }
 
         $this->subject($subject);
@@ -96,6 +100,10 @@ class Otp extends Mailable
         {
             case 'create_payout':
                 $view = 'emails.user.otp_create_payout';
+                break;
+
+            case 'verify_email':
+                $view = 'emails.user.otp_email_verify';
                 break;
 
             // Generic fall back template.

@@ -66,6 +66,19 @@ class UpiTransferTest extends TestCase
         $this->assertEquals($upiTransfer['expected'], true);
     }
 
+    public function testProcessFailedUpiTransferPayment()
+    {
+        $this->processUpiTransfer(__FUNCTION__, false);
+
+        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+        $payment     = $this->getLastEntity('payment', true);
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertNull($payment);
+        $this->assertNull($upiTransfer);
+        $this->assertNull($upi);
+    }
+
     public function testProcessUpiTransferRefund()
     {
         $this->processUpiTransfer();
@@ -178,7 +191,7 @@ class UpiTransferTest extends TestCase
         return $vpa;
     }
 
-    protected function processUpiTransfer($function = __FUNCTION__)
+    protected function processUpiTransfer($function = __FUNCTION__, $valid = true)
     {
         $this->ba->privateAuth();
 
@@ -190,7 +203,7 @@ class UpiTransferTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertTrue($response['valid']);
+        $this->assertEquals($response['valid'], $valid);
 
         return $response;
     }

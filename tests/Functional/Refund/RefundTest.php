@@ -3717,4 +3717,32 @@ class RefundTest extends TestCase
         $this->assertEquals('test', $bankAccount['beneficiary_name']);
         $this->assertEquals('refund', $bankAccount['type']);
     }
+
+    public function testInstantRefundsNotSupportedOnNonRZPOrg()
+    {
+        $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $dummyOrg['id']]);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
+    public function testInstantRefundsNotSupportedForFeatureNotEnabledMerchants()
+    {
+        $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $dummyOrg['id']]);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+    }
 }

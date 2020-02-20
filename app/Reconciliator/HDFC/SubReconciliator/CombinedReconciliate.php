@@ -61,4 +61,18 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
         return $reconType;
     }
+
+    /**
+     * Many of the HDFC MIS files, have been found to contain
+     * additional UPI transactions, recently, making the batches partially
+     * processed, even after processing all the entries in it.
+     *
+     * @param $row
+     * @return bool
+     */
+    protected function skipRestOfFile($row)
+    {
+        return ((isset($row[PaymentReconciliate::COLUMN_MERCHANT_CODE]) === true)  and
+            ($row[PaymentReconciliate::COLUMN_MERCHANT_CODE] === 'UPI TRANSACTIONS'));
+    }
 }

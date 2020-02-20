@@ -451,13 +451,13 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
                                 @if (isset($data['merchant']))
                                     <div id="merchant">
                                         <div id="merchant-name">
-                                            @if(isset($checkout_options['name']))
+                                            @if(empty($checkout_options['name']) === false)
                                                 {{{ $checkout_options['name'] }}}
                                             @else
                                                 {{{ $invoice_data['merchant_label'] }}}
                                             @endif
                                         </div>
-                                        @if(isset($checkout_options['description']))
+                                        @if(empty($checkout_options['description']) === false)
                                             <div id="merchant-desc">{{$checkout_options['description']}}</div>
                                         @endif
                                     </div>
@@ -522,13 +522,13 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
                     @if (isset($data['merchant']))
                         <div id="merchant">
                             <div id="merchant-name">
-                                @if(isset($checkout_options['name']))
+                                @if(empty($checkout_options['name']) === false)
                                     {{{ $checkout_options['name'] }}}
                                 @else
                                     {{{ $invoice_data['merchant_label'] }}}
                                 @endif
                             </div>
-                            @if(isset($checkout_options['description']))
+                            @if(empty($checkout_options['description']) === false)
                                 <div id="merchant-desc">{{$checkout_options['description']}}</div>
                             @endif
                         </div>
