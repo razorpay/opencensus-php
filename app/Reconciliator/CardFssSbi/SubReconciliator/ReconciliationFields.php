@@ -25,4 +25,8 @@ class ReconciliationFields
     const TXN_REF               = 'TXN_REF';
 
     const APPROVE_CODE          = 'APPROVE_CODE';
+
+    const TRANSACTION_TYPE      = 'TRANSACTION_TYPE';
+
+    const PRCHS_MERCHANT_TXNNO  = 'PRCHS_ MERCHANT_TXNNO';
 }

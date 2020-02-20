@@ -6,7 +6,7 @@ use RZP\Reconciliator\Base\SubReconciliator;
 
 class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 {
-    const ONUS_INDICATOR = 'ONUS';
+    const ONUS_INDICATOR = 'onus';
 
     const COLUMN_PAYMENT_AMOUNT = ReconciliationFields::TRANSACTION_AMOUNT;
 
@@ -39,7 +39,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         $rrn = $this->getReferenceNumber($row);
 
-        if (strtolower($onusIndicator) === self::ONUS_INDICATOR)
+        if ($onusIndicator === self::ONUS_INDICATOR)
         {
             // Only in case of ONUS transactions, we want to store RRN
             // In all the other cases, we want to store ARN only.

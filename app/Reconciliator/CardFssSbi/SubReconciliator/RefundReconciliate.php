@@ -1,0 +1,103 @@
+<?php
+
+namespace RZP\Reconciliator\CardFssSbi\SubReconciliator;
+
+use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
+use RZP\Models\Base\PublicEntity;
+use RZP\Reconciliator\Base\InfoCode;
+use RZP\Reconciliator\Base\SubReconciliator\Helper as Helper;
+
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
+{
+    const ONUS_INDICATOR = 'onus';
+
+    const BLACKLISTED_COLUMNS = [
+        ReconciliationFields::CARD_NO,
+    ];
+
+    public function getRefundId(array $row)
+    {
+        $refundId = $row[ReconciliationFields::MERCHANT_TXN_NO] ?? null;
+
+        return trim(str_replace("'", '', $refundId));
+    }
+
+    protected function getPaymentId(array $row)
+    {
+        $paymentId = $row[ReconciliationFields::PRCHS_MERCHANT_TXNNO] ?? null;
+
+        return trim(str_replace("'", '', $paymentId));
+    }
+
+    protected function getGatewayRefund(string $refundId)
+    {
+        return $this->repo
+            ->card_fss
+            ->findOrFailRefundByRefundId($refundId);
+    }
+
+    protected function getReconRefundAmount(array $row)
+    {
+        $amt = $row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null;
+
+        // Refund amounts are marked as negative values
+        $amt = $amt * -1;
+
+        return Helper::getIntegerFormattedAmount($amt);
+    }
+
+    protected function getArn(array $row)
+    {
+        $rrn = $row[ReconciliationFields::TXN_REF] ?? null;
+
+        if (empty($rrn) === true)
+        {
+            $this->reportMissingColumn($row, implode(',', ReconciliationFields::TXN_REF));
+        }
+
+        $onusIndicator = $this->getOnusIndicator($row);
+
+        if ($onusIndicator === self::ONUS_INDICATOR)
+        {
+            return $rrn;
+        }
+
+        return null;
+    }
+
+    protected function getOnusIndicator($row)
+    {
+        return strtolower($row[ReconciliationFields::ONUS_INDICATOR] ?? '');
+    }
+
+    protected function validateRefundAmountEqualsReconAmount(array $row)
+    {
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $refundAmount = ($convertCurrency === true) ? $this->refund->getBaseAmount() : $this->refund->getAmount();
+
+        if ($refundAmount !== $this->getReconRefundAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => InfoCode::AMOUNT_MISMATCH,
+                    'refund_id'         => $this->refund->getId(),
+                    'expected_amount'   => $refundAmount,
+                    'recon_amount'      => $this->getReconRefundAmount($row),
+                    'currency'          => $this->refund->getCurrency(),
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
+    {
+        $gatewayRefund->setRef($arn);
+    }
+}
