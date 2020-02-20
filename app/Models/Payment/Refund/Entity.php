@@ -135,6 +135,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::BASE_AMOUNT,
+        self::GATEWAY_AMOUNT,
+        self::GATEWAY_CURRENCY,
         self::STATUS,
         self::ERROR_CODE,
         self::INTERNAL_ERROR_CODE,

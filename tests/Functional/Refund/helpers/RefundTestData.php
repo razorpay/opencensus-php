@@ -987,4 +987,16 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED
         ]
     ],
+
+    'testRefundOnCapturedDCCPaymentWithVoidRefund' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
 ];
