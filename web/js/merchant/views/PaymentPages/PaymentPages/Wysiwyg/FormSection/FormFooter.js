@@ -69,7 +69,7 @@ export default class FormFooter extends React.PureComponent {
         <img
           id="fin-logo"
           alt="pay-methods"
-          src="https://cdn.razorpay.com/static/assets/upi_visa_mc_ae_pc.png"
+          src="https://cdn.razorpay.com/static/assets/pay_methods_branding.png"
         />
 
         <button class="btn btn-gradient">
