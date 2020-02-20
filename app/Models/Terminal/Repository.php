@@ -64,13 +64,15 @@ class Repository extends Base\Repository
 
                     $entity = (new Terminal\Service)->migrateTerminal($entity->getId());
 
+                    $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+
                     parent::saveOrFail($entity, $options);
 
                 });
             }
             else
             {
-                $entity->setSyncStatus(SyncStatus::NOT_SYNCED);
+                $entity->setSyncStatus($syncStatus);
 
                 parent::saveOrFail($entity, $options);
             }
@@ -85,6 +87,8 @@ class Repository extends Base\Repository
                     parent::saveOrFail($entity, $options);
 
                     $entity = (new Terminal\Service)->migrateTerminal($entity->getId());
+
+                    $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
                     parent::saveOrFail($entity, $options);
 

@@ -367,7 +367,7 @@ class Service extends Base\Service
 
                 $terminal->setSyncStatus(SyncStatus::SYNC_IN_PROGRESS);
 
-                $this->repo->terminal->saveOrFail($terminal);
+                $this->repo->terminal->saveOrFail($terminal, [],SyncStatus::SYNC_IN_PROGRESS);
 
                 $succesCount += 1;
             }
@@ -527,7 +527,7 @@ class Service extends Base\Service
 
     protected function processMigrateTerminalSuccess(Entity $terminal)
     {
-        $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+        $this->repo->terminal->saveOrFail($terminal, [], SyncStatus::SYNC_SUCCESS);
     }
 
     protected function processMigrateTerminalFailure(Entity $terminal)
