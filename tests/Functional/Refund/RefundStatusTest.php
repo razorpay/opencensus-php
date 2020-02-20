@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Refund;
 
+use RZP\Models\Pricing\Fee;
 use RZP\Services\Scrooge;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -17,82 +18,38 @@ class RefundStatusTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    /**
-     * @var Terminal
-     */
-
-    protected $sharedTerminal;
-
-    protected $payment = null;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/RefundStatusTestData.php';
 
         parent::setUp();
-
-        $this->payment = $this->fixtures->create('payment:captured');
-
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
-
-        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
-
-        $this->ba->privateAuth();
     }
 
-    // flipkart - from scrooge
-    // snapdeal - real status
-    // card_transfer_refund - speed_requested, speed_processed
-
-    // card
-    // upi
-    // wallet
-
-    public function createUpiPayment()
+    protected function capturePaymentForMerchant($id, $amount, $merchantId, $currency = 'INR')
     {
-        $this->gateway = Gateway::UPI_MINDGATE;
+        $request = array(
+            'method'  => 'POST',
+            'url'     => '/payments/' . $id . '/capture',
+            'content' => array('amount' => $amount));
 
-        $payment = $this->getDefaultUpiPaymentArray();
+        if ($currency !== 'INR')
+        {
+            $request['content']['currency'] = $currency;
+        }
 
-        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+        $this->ba->privateAuth('rzp_test_' . $merchantId);
 
-        $paymentId = $response['payment_id'];
+        $content = $this->makeRequestAndGetContent($request);
 
-        // Co Proto must be working
-        $this->assertEquals('async', $response['type']);
+        $this->assertArrayHasKey('amount', $content);
+        $this->assertArrayHasKey('status', $content);
 
-        $upiEntity = $this->getLastEntity('upi', true);
+        $this->assertEquals($content['status'], 'captured');
 
-        $payment = $this->getEntityById('payment', $paymentId, true);
-
-        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
-
-        $response = $this->makeS2SCallbackAndGetContent($content);
-
-        // We should have gotten a successful response
-        $this->assertEquals(['success' => true], $response);
-
-        // The payment should now be authorized
-        $payment = $this->getEntityById('payment', $paymentId, true);
-        $this->assertEquals('authorized', $payment['status']);
-
-        $upiEntity = $this->getLastEntity('upi', true);
-        $this->assertNotNull($upiEntity['npci_reference_id']);
-        $this->assertNotNull($payment['acquirer_data']['rrn']);
-        $this->assertNotNull($payment['acquirer_data']['upi_transaction_id']);
-
-        $this->assertEquals($payment['reference16'], $upiEntity['npci_reference_id']);
-        $this->assertNotNull($upiEntity['gateway_payment_id']);
-        $this->assertEquals($payment['reference1'],$upiEntity['gateway_payment_id']);
-        $this->assertSame('00', $upiEntity['status_code']);
-
-        // Add a capture as well, just for completeness sake
-        $this->capturePayment($paymentId, $payment['amount']);
-
-        return $payment;
+        return $content;
     }
 
-    public function testInstantRefundSuccessful()
+    public function testInstantRefunds()
     {
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
@@ -122,6 +79,8 @@ class RefundStatusTest extends TestCase
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
+        $this->ba->privateAuth();
+
         $this->assertCreatedInstantRefundResponses(__FUNCTION__, $refund);
 
         $this->assertInitiatedInstantRefundResponses(__FUNCTION__, $refund);
@@ -129,47 +88,120 @@ class RefundStatusTest extends TestCase
         $this->assertProcessedInstantRefundResponses(__FUNCTION__, $refund);
     }
 
-    protected function assertRefundResponse($callee, $refund, $status, $speedRequested, $speedProcessed)
+    public function testFlipkartRefunds()
     {
-        $expectedFieldsToBeAbsent = [];
+        $merchantId = 'BbaYzzPW541Aut';
 
-        if (empty($status) === false)
-        {
-            $this->testData[$callee]['response']['content']['status'] = $status;
-        }
-        else
-        {
-            $expectedFieldsToBeAbsent[] = 'status';
-        }
+        $this->fixtures->merchant->createAccount($merchantId);
 
-        if (empty($status) === false)
-        {
-            $this->testData[$callee]['response']['content']['speed_requested'] = $speedRequested;
-        }
-        else
-        {
-            $expectedFieldsToBeAbsent[] = 'speed_requested';
-        }
+        $this->fixtures->on('live')->merchant->edit($merchantId, ['activated' => true, 'live' => true]);
+        $this->fixtures->on('live')->merchant->edit($merchantId, ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
 
-        if (empty($status) === false)
+        $payment = $this->defaultAuthPayment();
+
+        $this->fixtures->payment->edit(substr($payment['id'], 4), ['merchant_id' => $merchantId]);
+
+        $payment = $this->capturePaymentForMerchant($payment['id'], $payment['amount'], $merchantId);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
         {
-            $this->testData[$callee]['response']['content']['speed_processed'] = $speedProcessed;
-        }
-        else
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundPayment(
+            $payment['id'],
+            $payment['amount'],
+            [],
+            [],
+            false,
+            [
+                'key'    => 'rzp_test_'.$merchantId,
+                'secret' => 'TheKeySecretForTests'
+            ]
+        );
+
+        $refundEntity = $this->getDbEntityById('refund', substr($refund['id'], 5));
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertEquals($merchantId, $refundEntity['merchant_id']);
+
+        $this->ba->privateAuth('rzp_test_' . $merchantId);
+
+        $this->assertFlipkartRefundResponses(__FUNCTION__, $refund);
+    }
+
+    public function testSnapdealRefunds()
+    {
+        $merchantId = 'ByWbZS28NK9CeG';
+
+        $this->fixtures->merchant->createAccount($merchantId);
+
+        $this->fixtures->on('live')->merchant->edit($merchantId, ['activated' => true, 'live' => true]);
+        $this->fixtures->on('live')->merchant->edit($merchantId, ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
+        $payment = $this->defaultAuthPayment();
+
+        $this->fixtures->payment->edit(substr($payment['id'], 4), ['merchant_id' => $merchantId]);
+
+        $payment = $this->capturePaymentForMerchant($payment['id'], $payment['amount'], $merchantId);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
         {
-            $expectedFieldsToBeAbsent[] = 'speed_processed';
-        }
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
 
-        $this->testData[$callee]['request']['url'] = '/refunds/' . $refund['id'];
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
 
-        $this->ba->privateAuth();
+            return $content;
+        });
 
-        $response = $this->runRequestResponseFlow($this->testData[$callee]);
+        $refund = $this->refundPayment(
+            $payment['id'],
+            $payment['amount'],
+            [],
+            [],
+            false,
+            [
+                'key'    => 'rzp_test_'.$merchantId,
+                'secret' => 'TheKeySecretForTests'
+            ]
+        );
 
-        foreach ($expectedFieldsToBeAbsent as $fieldToBeAbsent)
-        {
-            $this->assertTrue(empty($response[$fieldToBeAbsent]));
-        }
+        $refundEntity = $this->getDbEntityById('refund', substr($refund['id'], 5));
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertEquals($merchantId, $refundEntity['merchant_id']);
+
+        $this->ba->privateAuth('rzp_test_' . $merchantId);
+
+        $this->assertSnapdealRefundResponses(__FUNCTION__, $refund);
     }
 
     protected function updateRefundStatus($refund, $status)
@@ -190,6 +222,47 @@ class RefundStatusTest extends TestCase
     protected function updateRefundSpeedDecisioned($refund, $speedDecisioned)
     {
         $this->fixtures->refund->edit(substr($refund['id'], 3), [Refund\Entity::SPEED_DECISIONED => $speedDecisioned]);
+    }
+
+    protected function assertRefundResponse($callee, $refund, $status, $speedRequested, $speedProcessed)
+    {
+        $expectedFieldsToBeAbsent = [];
+
+        if (empty($status) === false)
+        {
+            $this->testData[$callee]['response']['content']['status'] = $status;
+        }
+        else
+        {
+            $expectedFieldsToBeAbsent[] = 'status';
+        }
+
+        if (empty($speedRequested) === false)
+        {
+            $this->testData[$callee]['response']['content']['speed_requested'] = $speedRequested;
+        }
+        else
+        {
+            $expectedFieldsToBeAbsent[] = 'speed_requested';
+        }
+
+        if (empty($speedProcessed) === false)
+        {
+            $this->testData[$callee]['response']['content']['speed_processed'] = $speedProcessed;
+        }
+        else
+        {
+            $expectedFieldsToBeAbsent[] = 'speed_processed';
+        }
+
+        $this->testData[$callee]['request']['url'] = '/refunds/' . $refund['id'];
+
+        $response = $this->runRequestResponseFlow($this->testData[$callee]);
+
+        foreach ($expectedFieldsToBeAbsent as $fieldToBeAbsent)
+        {
+            $this->assertTrue(empty($response[$fieldToBeAbsent]));
+        }
     }
 
     protected function assertCreatedInstantRefundResponses($callee, $refund)
@@ -363,11 +436,17 @@ class RefundStatusTest extends TestCase
             if ((isset($datum['scrooge_status']) === false) and
                 (isset($datum['scrooge_speed'])) === false)
             {
+                //
+                // Not calling scrooge - regular merchants / snapdeal
+                //
                 $this->app->scrooge->expects($this->never())
                                    ->method('getPublicRefund');
             }
             else if (isset($datum['scrooge_status']) === false)
             {
+                //
+                // Calling scrooge for speed - instant refunds merchants
+                //
                 $scroogeResponse = [
                     'code' => 200,
                     'body' => [
@@ -375,12 +454,16 @@ class RefundStatusTest extends TestCase
                     ]
                 ];
 
-                $this->app->scrooge->method('getPublicRefund')
+                $this->app->scrooge->expects($this->atLeastOnce())
+                                   ->method('getPublicRefund')
                                    ->with($refund['id'], ['speed' => 1, 'status' => 0])
                                    ->willReturn($scroogeResponse);
             }
             else if (isset($datum['scrooge_speed']) === false)
             {
+                //
+                // Calling scrooge for status - Flipkart merchant
+                //
                 $scroogeResponse = [
                     'code' => 200,
                     'body' => [
@@ -388,11 +471,17 @@ class RefundStatusTest extends TestCase
                     ]
                 ];
 
-                $this->app->scrooge->method('getPublicRefund')
+                $this->app->scrooge->expects($this->atLeastOnce())
+                                   ->method('getPublicRefund')
+                                   ->with($refund['id'], ['speed' => 0, 'status' => 1])
                                    ->willReturn($scroogeResponse);
             }
             else
             {
+                //
+                // Calling scrooge for speed and status - should be very rare - like in case of instant refunds on
+                // Flipkart merchants
+                //
                 $scroogeResponse = [
                     'code' => 200,
                     'body' => [
@@ -401,11 +490,192 @@ class RefundStatusTest extends TestCase
                     ]
                 ];
 
-                $this->app->scrooge->method('getPublicRefund')
+                $this->app->scrooge->expects($this->atLeastOnce())
+                                   ->method('getPublicRefund')
+                                   ->with($refund['id'], ['speed' => 1, 'status' => 1])
                                    ->willReturn($scroogeResponse);
             }
 
             $this->assertRefundResponse($callee, $refund, $datum['status'], $datum['speed_requested'], $datum['speed_processed']);
         }
+    }
+
+    protected function assertFlipkartRefundResponses($callee, $refund)
+    {
+        // status	    scrooge_status	public_status
+        // created		pending		    pending
+        // created		processed	    processed
+        // created		failed		    failed
+        // initiated	pending		    pending
+        // initiated	processed	    processed
+        // initiated 	failed		    failed
+        // processed	NA			    processed
+        // failed		pending		    pending
+        // failed		processed	    processed
+        // failed		failed		    failed
+        // reversed	    NA			    failed
+
+        $data = [
+            [
+                'db_status'           => Refund\Status::PROCESSED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::PROCESSED,
+                'speed_requested'     => '',
+                'speed_processed'     => ''
+            ],
+            [
+                'db_status'           => Refund\Status::CREATED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::PENDING,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
+                'scrooge_status'      => Refund\Status::PENDING
+            ],
+            [
+                'db_status'           => Refund\Status::CREATED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::PROCESSED,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
+                'scrooge_status'      => Refund\Status::PROCESSED
+            ],
+            [
+                'db_status'           => Refund\Status::CREATED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::FAILED,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
+                'scrooge_status'      => Refund\Status::FAILED
+            ],
+            [
+                'db_status'           => Refund\Status::INITIATED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::PENDING,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
+                'scrooge_status'      => Refund\Status::PENDING
+            ],
+            [
+                'db_status'           => Refund\Status::INITIATED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::PROCESSED,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
+                'scrooge_status'      => Refund\Status::PROCESSED
+            ],
+            [
+                'db_status'           => Refund\Status::INITIATED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::FAILED,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
+                'scrooge_status'      => Refund\Status::FAILED
+            ],
+            [
+                'db_status'           => Refund\Status::FAILED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::PENDING,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
+                'scrooge_status'      => Refund\Status::PENDING
+            ],
+            [
+                'db_status'           => Refund\Status::FAILED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::PROCESSED,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
+                'scrooge_status'      => Refund\Status::PROCESSED
+            ],
+            [
+                'db_status'           => Refund\Status::FAILED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::FAILED,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
+                'scrooge_status'      => Refund\Status::FAILED
+            ],
+            [
+                'db_status'           => Refund\Status::REVERSED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::FAILED,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
+            ],
+        ];
+
+        $this->iterateOverDataAndAssertRefundResponse($callee, $refund, $data);
+    }
+
+    protected function assertSnapdealRefundResponses($callee, $refund)
+    {
+        // status	    public_status
+        // created		pending
+        // initiated	pending
+        // processed	processed
+        // failed		pending
+
+        $data = [
+            [
+                'db_status'           => Refund\Status::CREATED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::PENDING,
+                'speed_requested'     => '',
+                'speed_processed'     => ''
+            ],
+            [
+                'db_status'           => Refund\Status::INITIATED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::PENDING,
+                'speed_requested'     => '',
+                'speed_processed'     => ''
+            ],
+            [
+                'db_status'           => Refund\Status::FAILED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::PENDING,
+                'speed_requested'     => '',
+                'speed_processed'     => ''
+            ],
+            [
+                'db_status'           => Refund\Status::PROCESSED,
+                'db_speed_requested'  => Refund\Speed::NORMAL,
+                'db_speed_processed'  => Refund\Speed::NORMAL,
+                'db_speed_decisioned' => Refund\Speed::NORMAL,
+                'status'              => Refund\Status::PROCESSED,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
+            ],
+        ];
+
+        $this->iterateOverDataAndAssertRefundResponse($callee, $refund, $data);
     }
 }
