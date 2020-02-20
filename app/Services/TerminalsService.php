@@ -30,10 +30,12 @@ class TerminalsService
     const PATH              = 'path';
     const METHOD            = 'method';
     const RESPONSE          = 'response';
+    const DATA              = 'data';
 
 
-    const CREATE_TERMINAL      = 'create_terminal';
-    const FETCH_TERMINAL_BY_ID = 'fetch_terminal_by_id';
+    const CREATE_TERMINAL         = 'create_terminal';
+    const FETCH_TERMINAL_BY_ID    = 'fetch_terminal_by_id';
+    const DELETE_TERMINAL_BY_ID   = 'delete_terminal_by_id';
 
     const PARAMS = [
         self::CREATE_TERMINAL       =>   [
@@ -43,6 +45,10 @@ class TerminalsService
         self::FETCH_TERMINAL_BY_ID  =>   [
             self::PATH   => 'v1/terminals/%s',
             self::METHOD => Requests::GET,
+        ],
+        self::DELETE_TERMINAL_BY_ID => [
+            self::PATH   => 'v1/terminals/%s',
+            self::METHOD => Requests::DELETE,
         ],
     ];
 
@@ -74,7 +80,18 @@ class TerminalsService
 
         $response = $this->sendRequest($path, '', $params[self::METHOD]);
 
-        return $this->parseAndReturnResponse($response)['data'];
+        return $this->parseAndReturnResponse($response)[self::DATA];
+    }
+
+    public function deleteTerminalById(string $terminalId): array
+    {
+        $params = self::PARAMS[self::DELETE_TERMINAL_BY_ID];
+
+        $path = sprintf($params[self::PATH], $terminalId);
+
+        $response = $this->sendRequest($path, '', $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA];
     }
 
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST): \Requests_Response
@@ -183,6 +200,4 @@ class TerminalsService
         return $this->app['config']->get($passwordConfig);
 
     }
-
-
 }
