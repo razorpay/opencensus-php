@@ -75,13 +75,13 @@ class Service extends Base\Service
 
     public function getBatchById(string $id, Merchant\Entity $merchant = null): array
     {
-        if (($this->merchant === null) and
-            ($merchant !== null))
+        if ((empty($this->merchant) === false) and
+            (empty($merchant) === true))
         {
-            $this->merchant = $merchant;
+            $merchant = $this->merchant;
         }
 
-        $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id, $this->merchant);
+        $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id, $merchant);
 
         if ($responseBatch !== null)
         {
@@ -94,7 +94,7 @@ class Service extends Base\Service
             return $responseBatch;
         }
 
-        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $merchant);
 
         $input = [Entity::TYPE => $batch->getAttribute(Entity::TYPE) ];
 

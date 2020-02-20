@@ -58,13 +58,31 @@ class BatchCancel extends Job
     {
         parent::handle();
 
-        if ($this->merchant !== null)
+        $batch = [];
+
+        if (empty($this->merchant) === false)
         {
             $batch = (new Batch\Service())->getBatchById($this->batchId, $this->merchant);
         }
         else
         {
+            // fetchBatchById() checks for admin auth. Is this check possible from here?
             $batch = (new Batch\Service())->fetchBatchById($this->batchId);
+        }
+
+        if ($batch === [])
+        {
+            $this->trace->debug(
+                TraceCode::BATCH_NOT_FOUND, // To be changed
+                [
+                    'batch_id'      => $this->batchId,
+                    'merchant_id'   => $this->merchant ? $this->merchant->getId() : null,
+                ]
+            );
+
+            $this->delete();
+
+            return;
         }
 
         $batchStatus = $batch[Batch\Entity::STATUS];
@@ -116,6 +134,8 @@ class BatchCancel extends Job
         }
 
         $this->trace->debug(TraceCode::INVOICE_BATCH_CANCEL_SUMMARY, $summary);
+
+        $this->delete();
     }
 
     protected function cancel(InvoiceModel\Entity $invoice, array & $summary)
