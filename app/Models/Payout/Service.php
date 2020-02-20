@@ -74,7 +74,11 @@ class Service extends Base\Service
         /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+        $payoutValidator =  $payout->getValidator();
+
+        $payoutValidator->validatePayoutStatusForApproveOrReject();
+
+        $payoutValidator->validateInput('approvePayout', array_only($input, Entity::QUEUE_IF_LOW_BALANCE));
 
         $this->user->validateInput('verifyOtp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
 
