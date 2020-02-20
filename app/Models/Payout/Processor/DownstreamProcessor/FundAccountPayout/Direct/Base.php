@@ -21,7 +21,7 @@ class Base extends FundAccountPayout\Base
 {
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA. For now have hardcoded this
     // to 2 minutes . So if last fetched at was while ago (more than 2 minutes) only then we will fetch.
-    const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = 2; //in minutes
+    const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = 50; //in minutes
 
     public function process(Entity $payout, PublicEntity $ftaAccount)
     {
