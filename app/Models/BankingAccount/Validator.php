@@ -16,6 +16,8 @@ class Validator extends Base\Validator
     const INTERNAL_EDIT_STATUS  = 'internal_edit_status';
     const ACTIVATED_STATUS      = 'activated_status';
 
+    const FETCH_GATEWAY_BALANCE = 'fetch_gateway_balance';
+
     protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
     ];
@@ -156,6 +158,11 @@ class Validator extends Base\Validator
         Entity::PINCODES,
     ];
 
+    protected static $fetchGatewayBalanceRules = [
+        Entity::CHANNEL     => 'required|string',
+        Entity::MERCHANT_ID => 'required|string',
+    ];
+
     public function validatePincodes(array $input)
     {
         foreach ($input[Entity::PINCODES] as $pincode)
@@ -215,6 +222,24 @@ class Validator extends Base\Validator
                     Entity::STATUS,
                     [
                         Entity::STATUS => $status,
+                    ]);
+            }
+        }
+    }
+
+    public function validateChannelForFetchingGatewayBalance(array $input)
+    {
+        if (isset($input[Entity::CHANNEL]) === true)
+        {
+            $channel = array_get($input, Entity::CHANNEL);
+
+            if (Channel::isValidDirectTypeChannel($channel) === false)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Not a valid direct type channel: ' . $channel,
+                    Entity::CHANNEL,
+                    [
+                        Entity::CHANNEL => $channel,
                     ]);
             }
         }

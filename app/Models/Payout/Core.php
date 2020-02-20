@@ -3,10 +3,10 @@
 namespace RZP\Models\Payout;
 
 use App;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Constants;
-use Carbon\Carbon;
 use RZP\Models\Base;
 use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
@@ -25,6 +25,8 @@ use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Jobs\QueuedPayouts;
 use RZP\Models\Transaction;
+use RZP\Constants\Timezone;
+use RZP\Models\BankingAccount;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
@@ -32,6 +34,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 /**
@@ -435,9 +438,48 @@ class Core extends Base\Core
         {
             // We get balance via payout since we would have already fetched balance entity
             // when fetching the payouts list. Avoiding an extra DB query here by doing this.
+
             $balanceEntity = $payouts->first()->balance;
 
+            // In case of current accounts(direct), balance in balance entity is stale since in our system we create
+            // transactions only when we fetch account statement from bank.So for current account we can't use balance
+            // from balance table.
+            // So before making payout we need to get balance amount in account from gateway.
+            // We check if account type is direct or not. If direct then fetch balance from gateway if balance last
+            // fetched at was a while ago(using threshold to decide that).Use this balance amount to dispatch payout.
+            // If account type shared then use balance amount from balance entity.
+
             $balanceAmount = $balanceEntity->getBalance();
+
+            if ($balanceEntity->getAccountType() === Merchant\Balance\AccountType::DIRECT)
+            {
+                /** @var BankingAccount\Entity $merchantBankingAccount */
+                $merchantBankingAccount = $balanceEntity->bankingAccount;
+
+                $balanceLastFetchedAt = $merchantBankingAccount->getBalanceLastFetchedAt();
+
+                $nowTime = Carbon::now(Timezone::IST);
+
+                $diffTime = $nowTime->diffInMinutes(Carbon::createFromTimestamp($balanceLastFetchedAt, Timezone::IST));
+
+                if ($diffTime > FundAccountPayout\Direct\Base::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING)
+                {
+                    $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance(
+                        [
+                            Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
+                            Entity::MERCHANT_ID => $balanceEntity->getMerchantId(),
+                        ]
+                    );
+
+                    //need reload since we are updating banking account entity because of above call
+                    if ($response['success'] === true)
+                    {
+                        $merchantBankingAccount->reload();
+                    }
+                }
+
+                $balanceAmount = $merchantBankingAccount->getGatewayBalance();
+            }
 
             $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts);
 

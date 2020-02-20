@@ -5616,6 +5616,10 @@ ALTER TABLE disputes
     ADD COLUMN gateway_amount BIGINT UNSIGNED DEFAULT NULL AFTER base_currency,
     ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL AFTER gateway_amount;
 
+ALTER TABLE banking_accounts
+    ADD COLUMN gateway_balance BIGINT DEFAULT NULL,
+    ADD COLUMN balance_last_fetched_at INT DEFAULT NULL;
+
 ALTER TABLE merchant_details
     ADD COLUMN estd_year smallint(4) DEFAULT NULL,
     ADD COLUMN authorized_signatory_residential_address varchar(255) DEFAULT NULL,

@@ -1744,6 +1744,8 @@ trait Refund
 
     public function callRefundRetryFunctionOnScrooge($refund, $input)
     {
+        $dispatchDelayTime = $input[RefundConstants::DISPATCH_DELAY_TIME] ?? 0;
+
         $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $input);
 
         $data['mode'] = $this->mode;
@@ -1755,7 +1757,7 @@ trait Refund
 
         try
         {
-            ScroogeRefundRetry::dispatch($data);
+            ScroogeRefundRetry::dispatch($data)->delay($dispatchDelayTime);
         }
         catch (\Throwable $e)
         {
@@ -1883,7 +1885,7 @@ trait Refund
 
         if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
-            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getAmount(),
+            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getNetAmount(),
                                                             Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
 
@@ -2998,10 +3000,10 @@ trait Refund
     {
         try
         {
-            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getAmount(),
+            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getNetAmount(),
                                                         Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             if ($type === 'refund')
             {

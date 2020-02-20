@@ -192,7 +192,8 @@ return [
                 'brand_color' => null,
                 'transaction_report_email' => [
                     'test@razorpay.com'
-                ]
+                ],
+                'default_refund_speed' =>  'normal',
             ],
         ],
     ],
@@ -1268,6 +1269,26 @@ return [
                     'nemo@razorpay.com',
                     'hello@razorpay.com'
                 ]
+            ]
+        ]
+    ],
+
+    'testEditMerchantConfigWithDefaultRefundSpeed' => [
+        'request' => [
+            'content' => [
+                'default_refund_speed' => 'optimum',
+            ],
+            'url' => '/account/config',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+                'default_refund_speed' =>'optimum',
             ]
         ]
     ],
