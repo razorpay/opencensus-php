@@ -761,6 +761,8 @@ trait Authorize
 
             if ($payment->getGateway() === Payment\Gateway::HDFC_DEBIT_EMI)
             {
+                $emiPlan = $payment->emiPlan()->first();
+
                 $response = array_merge(
                     $response,
                     [
@@ -769,6 +771,8 @@ trait Authorize
                             'schedule' => 'https://cdn.razorpay.com/static/assets/hdfc/debitemi/schedule.json',
                         ],
                         'mode' => 'hdfc_debit_emi',
+                        'emi_duration' => $emiPlan->getDuration(),
+                        'emi_rate' => ($emiPlan->getRate() / 100),
                     ]
                 );
             }
