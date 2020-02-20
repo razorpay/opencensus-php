@@ -1361,4 +1361,15 @@ return [
             'content' => [],
         ],
     ],
+
+    'testBulkDisputeCreateMailAttachment' => [
+        'request' => [
+            'url' => '/disputes/bulk_create',
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];
