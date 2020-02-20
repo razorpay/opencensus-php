@@ -3624,6 +3624,174 @@ class RefundTest extends TestCase
         Mail::assertNotQueued(BalancePositiveAlert::class);
     }
 
+    //International Currency Tests for negative balance
+    public function testRefundWithZeroBalanceInternationalCurrency()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('balance', 50000, 0, 0);
+
+        $payment = $this->defaultAuthPayment(['amount' => 200, 'currency' => 'USD']);
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 0]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertQueued(NegativeBalanceAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('test@razorpay.com', $viewData['email']);
+
+            $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+            $this->assertEquals('-20 INR', $viewData['balance']);
+
+            $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testRefundWithNegativeBalanceAndInternationalCurrency()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('balance', 210000, 0, 0);
+
+        //should not fail 2USD -> 142 INR
+        $payment = $this->defaultAuthPayment(['amount' => 200, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -4800]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
+    public function testRefundWithNegativeBalanceAndInternationalCurrencyCrossingThreshold()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('balance', 210000, 0, 0);
+
+        //should fail: 2000 USD -> 1.85 Lakhs INR
+        $payment = $this->defaultAuthPayment(['amount' => 200000, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -4800]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
+    public function testRefundWithNegativeRefundCreditsAndInternationalCurrency()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('credits', 210000, -4800, 0);
+
+        $payment = $this->defaultAuthPayment(['amount' => 200, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000',
+            [
+                'balance'           => 50000,
+                'refund_credits'    => -4800
+            ]
+        );
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
+    public function testRefundWithNegativeRefundCreditsAndInternationalCurrencyCrossingThreshold()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('credits', 210000, -4800, 0);
+
+        $payment = $this->defaultAuthPayment(['amount' => 200000, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000',
+            [
+                'balance'           => 50000,
+                'refund_credits'    => -4800
+            ]
+        );
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
+    public function testRefundWithNegativeAndReserveBalanceAndInternationalCurrency()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('balance', 21000, 0, 1000);
+
+        //should fail: 20USD -> 1426 INR
+        $payment = $this->defaultAuthPayment(['amount' => 2000, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -4800]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
+    public function testRefundWithNegativeAndReserveBalanceAndInternationalCurrencyCrossingThreshold()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('balance', 210000, 0, 0);
+
+        $payment = $this->defaultAuthPayment(['amount' => 200000, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -4800]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
     private function negativeRefundFixtures(string $refundSource,
                                             int $negativeLimit,
                                             int $refundCredits = 0,

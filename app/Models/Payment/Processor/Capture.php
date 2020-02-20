@@ -57,12 +57,7 @@ trait Capture
 
         $this->setPayment($payment);
 
-        // set the input currency if missing and payment currency is INR
-        if ((isset($input['currency']) === false) and
-            ($payment->getCurrency() === Currency\Currency::INR))
-        {
-            $input['currency'] = Currency\Currency::INR;
-        }
+        $input['currency'] = $payment->getCurrency();
 
         $payment->getValidator()->validateInput('capture', $input);
 

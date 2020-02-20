@@ -68,10 +68,14 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($content);
 
+        $traceContent = $content;
+
+        unset($traceContent[Fields::REF3], $traceContent[Fields::CLIENT_ACCOUNT_NUMBER]);
+
         $request = array(
             'url' => $this->getUrl('pay'),
             'method' => 'post',
-            'content' => $content);
+            'content' => $traceContent);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
