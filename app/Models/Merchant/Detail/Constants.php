@@ -33,7 +33,6 @@ class Constants
     const CLARIFICATION_REASON = 'clarification_reason';
 
     // penny testing constants
-
     const MERCHANT_ID                                   = 'merchant_id';
     const ACCOUNT_STATUS                                = 'account_status';
     const REGISTERED_NAME                               = 'registered_name';

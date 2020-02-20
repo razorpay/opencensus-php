@@ -125,7 +125,6 @@ class ValidationFields
             return [$field];
         }
 
-
         //
         // In case of unregistered as a poa document merchant can submit multiple documents
         // Like aadhaar , passport , voter id , driver license so returning a default document type
