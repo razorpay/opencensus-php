@@ -66,14 +66,16 @@ class Base extends FundAccountPayout\Base
 
         if ($diffTime > self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING)
         {
-            (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
+            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
                                         Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
                                         Entity::MERCHANT_ID => $merchantBankingAccount->getMerchantId(),
                                         ]);
 
             //need reload since we are updating banking account entity because of above call
-            $merchantBankingAccount->reload();
-
+            if ($response['success'] === true)
+            {
+                $merchantBankingAccount->reload();
+            }
         }
 
         $merchantBalance = $merchantBankingAccount->getGatewayBalance();

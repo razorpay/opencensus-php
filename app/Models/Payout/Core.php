@@ -464,7 +464,7 @@ class Core extends Base\Core
 
                 if ($diffTime > FundAccountPayout\Direct\Base::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING)
                 {
-                    (new BankingAccount\Core)->fetchAndUpdateGatewayBalance(
+                    $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance(
                         [
                             Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
                             Entity::MERCHANT_ID => $balanceEntity->getMerchantId(),
@@ -472,7 +472,10 @@ class Core extends Base\Core
                     );
 
                     //need reload since we are updating banking account entity because of above call
-                    $merchantBankingAccount->reload();
+                    if ($response['success'] === true)
+                    {
+                        $merchantBankingAccount->reload();
+                    }
                 }
 
                 $balanceAmount = $merchantBankingAccount->getGatewayBalance();

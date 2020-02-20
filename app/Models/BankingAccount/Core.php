@@ -605,15 +605,17 @@ class Core extends Base\Core
 
         // every gateway processor must implement fetchGatewayBalance function. This function sends Mozart request
         // to fetch balance from gateway and return balance.
-        $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
+        try
+        {
+            $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
 
-        $bankingAccount->setGatewayBalance($balance);
+            $bankingAccount->setGatewayBalance($balance);
 
-        $bankingAccount->setBalanceLastFetchedAt(Carbon::now()->getTimestamp());
+            $bankingAccount->setBalanceLastFetchedAt(Carbon::now()->getTimestamp());
 
-        $this->repo->saveOrFail($bankingAccount);
+            $this->repo->saveOrFail($bankingAccount);
 
-        $this->trace->info(
+            $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_SUCCEEDED,
                 [
                     Entity::CHANNEL         => $channel,
@@ -623,7 +625,23 @@ class Core extends Base\Core
                 ]
             );
 
-        return ['success' => true];
+            return ['success' => true];
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
+                [
+                    Entity::CHANNEL         => $channel,
+                    Entity::MERCHANT_ID     => $merchantId,
+                    Entity::ACCOUNT_NUMBER  => $bankingAccount->getAccountNumber(),
+                    Entity::GATEWAY_BALANCE => $bankingAccount->getGatewayBalance(),
+                ]
+            );
+
+            return ['success' => false];
+        }
+
     }
 
     protected function getGatewayProcessorClass($channel)
