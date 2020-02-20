@@ -1774,17 +1774,23 @@ trait Refund
     {
         $payment = $refund->payment;
 
-        $verifyResponse = $this->verifyRefund($refund);
+        $refundedOnGateway = $this->mutex->acquireAndRelease(
+            $payment->getId(),
+            function() use ($data, $payment, $refund)
+            {
+                $verifyResponse = $this->verifyRefund($refund);
 
-        // true  if refunded
-        // false if not refunded
-        $refundedOnGateway = $verifyResponse[Payment\Gateway::SUCCESS];
+                // true  if refunded
+                // false if not refunded
+                $refundedOnGateway = $verifyResponse[Payment\Gateway::SUCCESS];
 
-        if ($refundedOnGateway === false)
-        {
-            $refundedOnGateway = $this->mutex->acquireAndRelease(
-                $payment->getId(),
-                function() use ($data, $payment, $refund)
+                if ($refundedOnGateway === true)
+                {
+                    $refund->setStatusProcessed();
+
+                    $this->setRefundReference1($verifyResponse);
+                }
+                else if ($refund->isStatusFailed() === true)
                 {
                     //
                     // Setting retry to true, will use this action later to decide weather
@@ -1794,17 +1800,15 @@ trait Refund
                     //
                     $refundResponse = $this->callRefundFunction($refund, $payment, $data, true);
 
+                    $this->setRefundReference1($refundResponse);
+
+                    $refund->incrementAttempts();
+
                     return $refundResponse[Payment\Gateway::SUCCESS];
-                });
+                }
 
-            $refund->incrementAttempts();
-        }
-        else
-        {
-            $refund->setStatusProcessed();
-        }
-
-        $this->setRefundReference1($verifyResponse);
+                return $verifyResponse[Payment\Gateway::SUCCESS];
+            });
 
         $refund->setGatewayRefunded($refundedOnGateway);
 
