@@ -35,7 +35,7 @@ class Fee extends Base\Core
     const DEFAULT_BANK_TRANSFER_PLAN_ID   = '8gP5505KgDVWIh';
     const DEFAULT_BANKING_PLAN_ID         = 'BTo98voDY05ueB';
     const DEFAULT_VIRTUAL_UPI_PLAN_ID     = 'E9t4ljLBnt2cad';
-    const DEFAULT_INSTANT_REFUNDS_PLAN_ID = 'DefaultPricing';
+    const DEFAULT_INSTANT_REFUNDS_PLAN_ID = 'EIccfYpbLnrp6E';
 
     public function __construct()
     {
