@@ -397,6 +397,11 @@ class Core extends Base\Core
 
             $bankPonum = $basEntity->getPonum();
 
+            if ($bankPonum === null)
+            {
+                return null;
+            }
+
             $existingDebitTxn = $this->repo->banking_account_statement->findDebitTxnWithPonum(
                 $bankPonum,
                 $basEntity->getAmount(),
@@ -406,6 +411,15 @@ class Core extends Base\Core
 
             if ($existingDebitTxn !== null)
             {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_PONUM_MATCH,
+                    [
+                        'debit'     => $existingDebitTxn->getId(),
+                        'credit'    => $basEntity->getId(),
+                        'ponum'     => $basEntity->getPonum(),
+                    ]
+                );
+
                 // getting the payout for this BAS entry
                 $payoutId = $existingDebitTxn->getEntityId();
 
