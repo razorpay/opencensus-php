@@ -116,40 +116,44 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const COUPON_CODE                        = 'coupon_code';
     const REFERRAL_CODE                      = 'referral_code';
 
-    const SUBMIT                             = 'submit';
-    const ARCHIVE                            = 'archive';
-    const ARCHIVED                           = 'archived';
-    const REJECTION_REASONS                  = 'rejection_reasons';
-    const ALLOWED_NEXT_ACTIVATION_STATUSES   = 'allowed_next_activation_statuses';
-    const VERIFICATION                       = 'verification';
-    const CAN_SUBMIT                         = 'can_submit';
-    const REVIEWER                           = 'reviewer';
-    const MERCHANTS                          = 'merchants';
-    const ACTIVATION_FLOW                    = 'activation_flow';
-    const INTERNATIONAL_ACTIVATION_FLOW      = 'international_activation_flow';
-    const LIVE_TRANSACTION_DONE              = 'live_transaction_done';
-    const KYC_CLARIFICATION_REASONS          = 'kyc_clarification_reasons';
-    const KYC_ADDITIONAL_DETAILS             = 'kyc_additional_details';
-    const CLARIFICATION_REASONS              = 'clarification_reasons';
-    const ADDITIONAL_DETAILS                 = 'additional_details';
-    const KYC_ID                             = 'kyc_id';
+    const SUBMIT                                   = 'submit';
+    const ARCHIVE                                  = 'archive';
+    const ARCHIVED                                 = 'archived';
+    const REJECTION_REASONS                        = 'rejection_reasons';
+    const ALLOWED_NEXT_ACTIVATION_STATUSES         = 'allowed_next_activation_statuses';
+    const VERIFICATION                             = 'verification';
+    const CAN_SUBMIT                               = 'can_submit';
+    const REVIEWER                                 = 'reviewer';
+    const MERCHANTS                                = 'merchants';
+    const ACTIVATION_FLOW                          = 'activation_flow';
+    const INTERNATIONAL_ACTIVATION_FLOW            = 'international_activation_flow';
+    const LIVE_TRANSACTION_DONE                    = 'live_transaction_done';
+    const KYC_CLARIFICATION_REASONS                = 'kyc_clarification_reasons';
+    const KYC_ADDITIONAL_DETAILS                   = 'kyc_additional_details';
+    const CLARIFICATION_REASONS                    = 'clarification_reasons';
+    const ADDITIONAL_DETAILS                       = 'additional_details';
+    const KYC_ID                                   = 'kyc_id';
+    const ESTD_YEAR                                = 'estd_year';
+    const AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS = 'authorized_signatory_residential_address';
+    const AUTHORIZED_SIGNATORY_DOB                 = 'authorized_signatory_dob';
+    const PLATFORM                                 = 'platform';
 
     // fields_pending field is used in new Account APIs.
-    const FIELDS_PENDING                     = 'fields_pending';
+    const FIELDS_PENDING = 'fields_pending';
 
     // required_fields is used in older APIs
-    const REQUIRED_FIELDS                    = 'required_fields';
+    const REQUIRED_FIELDS = 'required_fields';
 
     // Enum values used for product activation status
-    const PENDING                            = 'pending';
-    const APPROVED                           = 'approved';
-    const REJECTED                           = 'rejected';
+    const PENDING  = 'pending';
+    const APPROVED = 'approved';
+    const REJECTED = 'rejected';
 
     // For mailers
-    const ACTIVATION_DURATION                = '4-5 working days';
+    const ACTIVATION_DURATION = '4-5 working days';
 
     // Other general use input constants
-    const FILE                               = 'file';
+    const FILE = 'file';
 
     protected $entity = 'merchant_detail';
 
@@ -248,6 +252,10 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::BANK_DETAILS_VERIFICATION_STATUS,
         self::POA_VERIFICATION_STATUS,
         self::ADDITIONAL_WEBSITES,
+        self::ESTD_YEAR,
+        self::AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS,
+        self::AUTHORIZED_SIGNATORY_DOB,
+        self::PLATFORM,
     ];
 
     protected $public = [
@@ -346,6 +354,10 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::KYC_CLARIFICATION_REASONS,
         self::KYC_ADDITIONAL_DETAILS,
         self::ADDITIONAL_WEBSITES,
+        self::ESTD_YEAR,
+        self::AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS,
+        self::AUTHORIZED_SIGNATORY_DOB,
+        self::PLATFORM,
     ];
 
     protected $defaults = [
@@ -570,6 +582,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return Address\Utility::formatAddressAsText(
             [
                 Address\Entity::LINE1     => $this->getBusinessRegisteredAddress(),
+                Address\Entity::LINE2     => $this->getBusinessRegisteredAddressLine2(),
                 Address\Entity::CITY      => $this->getBusinessRegisteredCity(),
                 Address\Entity::STATE     => $this->getBusinessRegisteredStateName(),
                 Address\Entity::COUNTRY   => 'India',

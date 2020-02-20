@@ -18,7 +18,6 @@ use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
-use RZP\Models\Merchant\Balance;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
@@ -26,6 +25,7 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Offer;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 
 trait Capture
 {
@@ -57,12 +57,7 @@ trait Capture
 
         $this->setPayment($payment);
 
-        // set the input currency if missing and payment currency is INR
-        if ((isset($input['currency']) === false) and
-            ($payment->getCurrency() === Currency\Currency::INR))
-        {
-            $input['currency'] = Currency\Currency::INR;
-        }
+        $input['currency'] = $payment->getCurrency();
 
         $payment->getValidator()->validateInput('capture', $input);
 
@@ -668,7 +663,7 @@ trait Capture
                     'message'    => $e->getMessage(),
                 ]);
 
-            $this->updateMerchantBalance($payment, $transaction);
+            $this->updateMerchantBalance($payment, $txn);
         }
     }
 

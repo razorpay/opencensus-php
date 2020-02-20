@@ -1461,6 +1461,9 @@ class VirtualAccountTest extends TestCase
 
             $this->assertArraySelectiveEquals($testData, $data);
 
+            $paymentArray = $data['event']['payload']['payment']['entity'];
+            $this->assertArrayNotHasKey('terminal_id', $paymentArray);
+
             return true;
         });
 
@@ -1596,7 +1599,7 @@ class VirtualAccountTest extends TestCase
 
         $this->expectExceptionMessage('Access to requested resource not available');
 
-        $virtualAccount = (new Core)->createForBankingBalance($merchant);
+        $virtualAccount = (new Core)->createForBankingBalance($merchant, $merchant->sharedBankingBalance);
 
         // Case 2: Success
 
@@ -1604,7 +1607,7 @@ class VirtualAccountTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        $virtualAccount = (new Core)->createForBankingBalance($merchant);
+        $virtualAccount = (new Core)->createForBankingBalance($merchant, $merchant->sharedBankingBalance);
         $this->assertEquals($merchant->sharedBankingBalance->getId(), $virtualAccount->getBalanceId());
         $this->assertNotEmpty($virtualAccount->bankAccount);
         $this->assertStringStartsWith('222444', $virtualAccount->bankAccount->getAccountNumber());

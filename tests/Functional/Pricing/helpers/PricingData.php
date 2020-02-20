@@ -1630,9 +1630,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 10,
+                'count' => 12,
                 'entity' => 'collection',
                 'items' => [
+                    [
+                        'name' => 'testDefaultVpaPlan',
+                    ],
                     [
                         'name' => 'PP190AMEX290',
                     ],
@@ -1641,6 +1644,9 @@ return [
                     ],
                     [
                         'name' => 'DefaultSubMerchant',
+                    ],
+                    [
+                        'name' => 'Zero banking default plan',
                     ],
                     [
                         'name' => 'Banking default plan',
@@ -1772,9 +1778,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'count'  => 10,
+                'count'  => 12,
                 'entity' => 'collection',
                 'items'  => [
+                    [
+                        'name' => 'testDefaultVpaPlan',
+                    ],
                     [
                         'name' => 'PP190AMEX290',
                     ],
@@ -1783,6 +1792,9 @@ return [
                     ],
                     [
                         'name' => 'DefaultSubMerchant',
+                    ],
+                    [
+                        'name' => 'Zero banking default plan',
                     ],
                     [
                         'name' => 'Banking default plan',
@@ -1954,6 +1966,11 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'testDefaultVpaPlan',
+                    'rules_count' => 1,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'PP190AMEX290',
                     'rules_count' => 9,
                     'type'        => 'pricing',
@@ -1969,8 +1986,13 @@ return [
                     'type'        => 'pricing',
                 ],
                 [
+                    'plan_name'   => 'Zero banking default plan',
+                    'rules_count' => 2,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 8,
+                    'rules_count' => 12,
                     'type'        => 'pricing',
                 ],
                 [
@@ -2034,6 +2056,11 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'testDefaultVpaPlan',
+                    'rules_count' => 1,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'PP190AMEX290',
                     'rules_count' => 9,
                     'type'        => 'pricing',
@@ -2049,8 +2076,13 @@ return [
                     'type'        => 'pricing',
                 ],
                 [
+                    'plan_name'   => 'Zero banking default plan',
+                    'rules_count' => 2,
+                    'type'        => 'pricing',
+                ],
+                [
                     'plan_name'   => 'Banking default plan',
-                    'rules_count' => 8,
+                    'rules_count' => 12,
                     'type'        => 'pricing',
                 ],
                 [

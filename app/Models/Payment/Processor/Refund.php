@@ -17,6 +17,7 @@ use RZP\Models\Reversal;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\Card\Type;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
@@ -33,6 +34,7 @@ use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -122,7 +124,8 @@ trait Refund
     {
         return ((isset($input[RefundEntity::SPEED]) === true) and
                 (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
-                ($this->isCapturedPaymentAndFeatureEnabled($payment) === false));
+                (($this->isCapturedPaymentAndFeatureEnabled($payment) === false) or
+                 ($payment->merchant->org->getId() !== Org\Entity::RAZORPAY_ORG_ID)));
     }
 
     protected function pushMetrics()
@@ -1741,6 +1744,8 @@ trait Refund
 
     public function callRefundRetryFunctionOnScrooge($refund, $input)
     {
+        $dispatchDelayTime = $input[RefundConstants::DISPATCH_DELAY_TIME] ?? 0;
+
         $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $input);
 
         $data['mode'] = $this->mode;
@@ -1752,7 +1757,7 @@ trait Refund
 
         try
         {
-            ScroogeRefundRetry::dispatch($data);
+            ScroogeRefundRetry::dispatch($data)->delay($dispatchDelayTime);
         }
         catch (\Throwable $e)
         {
@@ -1875,16 +1880,21 @@ trait Refund
             'refund_id'         => $refund->getId(),
         ];
 
+        $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant(Transaction\Type::REFUND,
+                                                            $merchant->getId());
+
         if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
-            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getAmount(),
-                                                            Transaction\Type::REFUND);
+            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getNetAmount(),
+                                                            Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
 
         if ($merchant->getRefundSource() === RefundSource::BALANCE)
         {
-            return $this->checkMerchantBalance($merchant, $refund, $type, $traceData);
+            return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled);
         }
+
+        return false;
     }
 
     protected function getGatewayDataForRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
@@ -2985,14 +2995,15 @@ trait Refund
     private function checkMerchantBalance(Merchant\Entity $merchant,
                                           RefundEntity $refund,
                                           string $type,
-                                          array $traceData)
+                                          array $traceData,
+                                          bool $negativeBalanceEnabled = false)
     {
         try
         {
-            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getAmount(),
-                                                        Transaction\Type::REFUND);
+            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getNetAmount(),
+                                                        Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             if ($type === 'refund')
             {

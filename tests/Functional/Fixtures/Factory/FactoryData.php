@@ -81,6 +81,25 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\Merchant\FreshdeskTicket\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'merchant_id'   => '10000000000000',
+                'ticket_id'     => '1',
+                'ticket_details' => '{
+                    \'email\': \'sujata@razorpay.com\',
+                    \'subject\': \'Reserve Balance test ticket\',
+                    \'description\': \'This is a testing ticket for the new ticket API, please ignore.\',
+                    \'priority\': 1,
+                    \'status\': 2,
+                    \'custom_fields\' : {
+                        \'cf_requester_category\': \'Prospect\',
+                        \'cf_requestor_subcategory\': \'For Reserve balance\'
+                    }
+                }',
+                'type'            => 'reserve_balance_activate',
+            ]
+        );
+
         $factory(\RZP\Models\Merchant\Referral\Entity::class, [
             'id'                 => $faker->uniqueid,
             'merchant_id'        => '10000000000000',

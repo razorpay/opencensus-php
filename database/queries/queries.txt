@@ -5589,6 +5589,9 @@ ALTER TABLE `merchant_documents`
 ALTER TABLE pricing
      MODIFY COLUMN amount_range_min BIGINT(20) unsigned DEFAULT NULL;
 
+ALTER TABLE payouts
+    ADD COLUMN pricing_rule_id char(14) DEFAULT NULL;
+
 ALTER TABLE merchant_details
     ADD COLUMN kyc_id char(14) DEFAULT NULL ;
 
@@ -5616,3 +5619,9 @@ ALTER TABLE disputes
 ALTER TABLE banking_accounts
     ADD COLUMN gateway_balance BIGINT DEFAULT NULL,
     ADD COLUMN balance_last_fetched_at INT DEFAULT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN estd_year smallint(4) DEFAULT NULL,
+    ADD COLUMN authorized_signatory_residential_address varchar(255) DEFAULT NULL,
+    ADD COLUMN authorized_signatory_dob date DEFAULT NULL,
+    ADD COLUMN platform varchar(40) DEFAULT NULL;

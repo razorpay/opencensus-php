@@ -134,6 +134,10 @@ class Core extends Base\Core
         $input[Invoice\Entity::AMOUNT] = $order->getAmount();
 
         $input[Invoice\Entity::CUSTOMER_ID] = $customer->getPublicId();
+
+        $input[Invoice\Entity::EMAIL_NOTIFY] = false;
+
+        $input[Invoice\Entity::SMS_NOTIFY] = false;
     }
 
     public function createSubscriptionRegistration(array & $input, Merchant\Entity $merchant, Customer\Entity $customer)
@@ -681,7 +685,7 @@ class Core extends Base\Core
         $token = $subscriptionRegistration->token;
 
         if ((empty($input[Entity::SUCCEED]) === false) and
-            ($input[Entity::SUCCEED] === true))
+            (boolval($input[Entity::SUCCEED]) === true))
         {
             $this->updateTestTokenEntityRegister($token, Token\RecurringStatus::CONFIRMED);
         }
@@ -690,7 +694,7 @@ class Core extends Base\Core
             $this->updateTestTokenEntityRegister(
                 $token,
                 Token\RecurringStatus::REJECTED,
-                'rejected by npci'
+                'Drawers signature differs'
             );
         }
 

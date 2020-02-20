@@ -32,6 +32,15 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->payout_link;
     }
 
+    public function getStatus(string $payoutLinkId)
+    {
+        $payoutLink = $this->repo
+                           ->payout_link->findByPublicId($payoutLinkId);
+
+        return [Entity::STATUS => $payoutLink->getStatus()];
+    }
+
+
     public function updateSettings(string $merchantId, array $input)
     {
         $merchant = $this->repo->merchant->findByPublicId($merchantId);

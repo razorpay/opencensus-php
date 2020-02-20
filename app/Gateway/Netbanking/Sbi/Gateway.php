@@ -269,11 +269,15 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_CODE    => $gatewayMerchantId,
         ];
 
+        $traceRequestArray = $requestArray;
+        
+        unset($traceRequestArray[RequestFields::DEBIT_ACCOUNT_NUMBER]);
+
         $this->traceGatewayPaymentRequest(
             [
                 'encrypted'     => $content,
                 'content'       => $contentToEncrypt,
-                'request_array' => $requestArray,
+                'request_array' => $traceRequestArray,
                 'merchant_code' => $gatewayMerchantId,
                 'gateway'       => $this->gateway
             ],

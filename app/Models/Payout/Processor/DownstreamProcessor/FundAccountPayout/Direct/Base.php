@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Dire
 
 use Carbon\Carbon;
 
+use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -11,6 +12,7 @@ use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
 use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
@@ -31,6 +33,8 @@ class Base extends FundAccountPayout\Base
 
         if ($queued === false)
         {
+            $this->setFeeAndTaxForPayout($payout);
+
             $this->createFundTransferAttempt($payout, $ftaAccount);
         }
     }
@@ -129,5 +133,39 @@ class Base extends FundAccountPayout\Base
                 strtoupper($channel) . ' does not support ' . $mode . ' payouts to ' . strtoupper($destinationType)
             );
         }
+    }
+
+    protected function setFeeAndTaxForPayout($payout)
+    {
+        list($fees, $tax, $pricingRuleId) = $this->calculateFeesAndTaxForPayouts($payout);
+
+        if (empty($pricingRuleId) === true)
+        {
+            throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
+        }
+
+        $payout->setFees($fees);
+
+        $payout->setTax($tax);
+
+        $payout->setPricingRuleId($pricingRuleId);
+    }
+
+    protected function calculateFeesAndTaxForPayouts(Entity $payout)
+    {
+        list($fees, $tax, $feesSplit) = (new Pricing\PayoutFee)->calculateMerchantFees($payout);
+
+        $feesSplitData = $feesSplit->toArray();
+
+        foreach ($feesSplitData as $feesSplit)
+        {
+            // Set pricingRuleId from the feesSplit (there are two entries and at least one has pricingRuleId)
+            if (empty($feesSplit[Entity::PRICING_RULE_ID]) === false)
+            {
+                $pricingRuleId = $feesSplit[Entity::PRICING_RULE_ID];
+            }
+        }
+
+        return [$fees, $tax, $pricingRuleId];
     }
 }

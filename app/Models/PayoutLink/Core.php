@@ -63,7 +63,7 @@ class Core extends Base\Core
 
         $this->raven = $this->app['raven'];
 
-        $this->tokenService = new TokenService();
+        $this->tokenService = $this->app['token_service'];
 
         $this->mutex = $this->app['api.mutex'];
     }
@@ -637,7 +637,7 @@ class Core extends Base\Core
             'receipt'                 => $payoutLink->getReceipt(),
             'merchant_logo_url'       => $this->merchant->getFullLogoUrlWithSize(),
             'payout_link_description' => $payoutLink->getDescription(),
-            'primary_color'           => $this->merchant->getBrandColor(),
+            'primary_color'           => $this->merchant->getBrandColorElseDefault(),
             'merchant_name'           => $this->merchant->getDisplayNameElseName(),
             'allow_upi'               => $this->allowUpi($payoutLink),
             'banking_url'             => $this->config['applications.banking_service_url'],

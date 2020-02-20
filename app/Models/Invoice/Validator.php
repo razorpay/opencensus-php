@@ -273,6 +273,13 @@ class Validator extends Base\Validator
         Entity::AMOUNT => 'required|integer|min_amount'
     ];
 
+    protected static $paymentLinkServiceSendEmailRules = [
+        E::INVOICE          => 'required|array',
+        'to'                => 'required|email',
+        'view'              => 'required|string|custom',
+        'subject'           => 'required|string',
+    ];
+
     //
     // Custom validators.
     //
@@ -302,6 +309,18 @@ class Validator extends Base\Validator
     protected static $validExternalEntities = [
         E::SUBSCRIPTION_REGISTRATION,
     ];
+
+    public function validateView($attribute, $value)
+    {
+        if (view()->exists($value) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'View not found',
+                'view',
+                ['view' => $value,]
+            );
+        }
+    }
 
     public function validateAmount(array $input)
     {
@@ -762,6 +781,15 @@ class Validator extends Base\Validator
 
                 break;
 
+            case 'deleteInvoice':
+
+                $allowedStatuses = [
+                    Status::CANCELLED,
+                    Status::EXPIRED,
+                ];
+
+                break;
+
             default:
                 $allowedStatuses = [
                     Status::DRAFT,
@@ -981,11 +1009,16 @@ class Validator extends Base\Validator
 
     public function validateCancelInvoicesOfBatch(array $batch)
     {
-        if (($batch[Batch\Entity::STATUS] !== Batch\Status::PROCESSED) and
-            ($batch[Batch\Entity::STATUS] !== Batch\Status::PARTIALLY_PROCESSED)
-        )
+        if (in_array($batch[Batch\Entity::STATUS], Batch\Status::BATCH_STATUSES_VALID_FOR_CANCEL) === false)
         {
-            throw new BadRequestValidationFailureException('batch should be in processed or partially processed status to cancel');
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_FILE_STATUS_INVALID_FOR_CANCEL,
+                $batch[Batch\Entity::STATUS],
+                [
+                    'batch_id'  => $batch[Batch\Entity::ID],
+                    'status'    => $batch[Batch\Entity::STATUS],
+                ]
+            );
         }
     }
 

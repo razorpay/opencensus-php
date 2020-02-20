@@ -175,8 +175,7 @@ class FeatureAccess
         // Fetch all the features of the application that is trying to access the resource
         $appFeatures = $this->repo
                             ->feature
-                            ->getApplicationFeatures($this->ba->getOAuthApplicationId())
-                            ->pluck(Feature\Entity::NAME)
+                            ->getApplicationFeatureNames($this->ba->getOAuthApplicationId())
                             ->all();
 
         $routeFeaturesAvailableWithApp = array_intersect($routeFeatures, $appFeatures);

@@ -70,6 +70,7 @@ class PayoutLinkTest extends TestCase
     const CANCEL                = 'cancel';
     const FUND_ACCOUNTS         = 'fund-accounts';
     const INITIATE              = 'initiate';
+    const STATUS                = 'status';
 
     public function setUp()
     {
@@ -1155,6 +1156,21 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPayoutLinkStatusApi()
+    {
+        $this->ba->publicAuth();
+
+        $payoutLink = $this->fixtures->create('payout_link',
+                                              [
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
+
+        $this->setUrl(__FUNCTION__, $payoutLink->getPublicId(), self::STATUS);
+
+        $this->startTest();
+
+    }
+
     public function testPayoutAmountAboveLimitFailsCreation()
     {
         $this->ba->privateAuth();
@@ -1189,7 +1205,7 @@ class PayoutLinkTest extends TestCase
 
     protected function mockRedisSuccess($funcName, $payoutLinkId)
     {
-        $token = (new TokenService())->generate($payoutLinkId);
+        $token = $this->app['token_service']->generate($payoutLinkId);
 
         $this->testData[$funcName]['request']['content']['token'] = $token;
     }

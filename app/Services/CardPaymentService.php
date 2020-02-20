@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
 use RZP\Reconciliator\Base\InfoCode;
@@ -25,6 +26,7 @@ class CardPaymentService
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
     const X_RAZORPAY_MODE_HEADER   = 'X-Razorpay-Mode';
     const X_REQUEST_ID             = 'X-Request-ID';
+    const X_RZP_TESTCASE_ID        = 'X-RZP-TESTCASE-ID';
 
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
@@ -128,6 +130,8 @@ class CardPaymentService
             self::X_RAZORPAY_APP_HEADER    => 'api',
         ];
 
+
+
         return $headers;
     }
 
@@ -225,6 +229,16 @@ class CardPaymentService
             ],
         ];
 
+        if ($this->app->environment('production') === false)
+        {
+            $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
+
+            if (empty($testCaseId) === false)
+            {
+                $request['headers'][self::X_RZP_TESTCASE_ID] = $testCaseId;
+            }
+        }
+
         $this->traceRequest($request);
 
         $response = $this->sendRawRequest($request);
@@ -245,6 +259,23 @@ class CardPaymentService
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
+
+        // Unset PII
+
+        // Payment Data
+        unset($request['content'][self::INPUT][Entity::PAYMENT][Payment\Entity::EMAIL]);
+        unset($request['content'][self::INPUT][Entity::PAYMENT][Payment\Entity::CONTACT]);
+
+        // Merchant Data
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::EMAIL]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::INVOICE_CODE]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::TRANSACTION_REPORT_EMAIL]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::METHODS]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::MERCHANT_DETAIL]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT_DETAIL]);
+
+        // Gateway Data
+        unset($request['content'][self::INPUT]['gateway']['otp']);
 
 
         if (empty($request['content'][self::INPUT]['terminals']) === false)
@@ -331,7 +362,17 @@ class CardPaymentService
 
     protected function traceResponse($response)
     {
-        $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $response ?? []);
+       $traceResponse = $response;
+
+       // For axis_migs we don't send gateway request in redirect case,
+       // We redirect customer with actual request content which has card and terminal details,
+       // Unsetting these fields before logging is mandatory
+       unset($traceResponse['data']['content']['vpc_CardNum']);
+       unset($traceResponse['data']['content']['vpc_AccessCode']);
+       unset($traceResponse['data']['content']['vpc_CardExp']);
+       unset($traceResponse['data']['content']['vpc_CardSecurityCode']);
+
+        $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $traceResponse ?? []);
     }
 
     protected function jsonToArray($json)
@@ -556,6 +597,10 @@ class CardPaymentService
         if (empty($error['gateway_error_code']) === false)
         {
             $this->handleGatewayErrors($error, $response);
+        }
+        else if ($errorCode !== '')
+        {
+            throw new Exception\BadRequestException($errorCode);
         }
         else
         {

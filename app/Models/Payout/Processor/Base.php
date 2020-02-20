@@ -290,6 +290,7 @@ class Base extends BaseCore
         // Skip workflow if its not enabled for the merchant or
         // if the workflow is enabled, check if the request if from API and merchant wants to
         // skip workflow for requests through API
+        // also skip workflow for test mode
         //
         if ($this->isWorkflowApplicable() === false)
         {
@@ -345,6 +346,8 @@ class Base extends BaseCore
 
             $this->repo->saveOrFail($payout);
 
+            $this->app->events->fire('api.payout.pending', [$payout]);
+
             $this->workflowActivated = true;
         }
         catch (\Throwable $t)
@@ -375,13 +378,16 @@ class Base extends BaseCore
         $isApiRequest = $this->app['basicauth']->isStrictPrivateAuth();
 
         //
-        // Skip workflow if its not enabled for the merchant or
+        // Skip workflow if:
+        // test mode
+        // workflow is not enabled for the merchant or
         // if the workflow is enabled, check if the request if from API and merchant wants to
         // skip workflow for requests through API
         //
-        if (($areWorkflowsEnabled === false) or
+        if (($this->isTestMode() === true) or
+            ($areWorkflowsEnabled === false) or
             (($isApiRequest === true) and
-                ($hasSkipWorkflowFeature === true)))
+             ($hasSkipWorkflowFeature === true)))
         {
             return false;
         }
@@ -516,8 +522,11 @@ class Base extends BaseCore
         // If SKIP_HOLD_FUNDS_ON_PAYOUT feature is enabled for merchant,
         // then we don't check the merchant funds_on_hold and proceed with payout creation
         //
-        if (($this->merchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false) and
-            ($this->merchant->getHoldFunds() === true))
+        // We check funds_on_hold only for live mode. We don't care about funds on hold in test mode.
+        //
+        if (($this->isLiveMode() === true) and
+            ($this->merchant->getHoldFunds() === true) and
+            ($this->merchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);

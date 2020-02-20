@@ -1756,7 +1756,7 @@ class Service extends Base\Service
 
     public function getMerchantFeatures()
     {
-        return (new Feature\Service)->getFeaturesForEntity($this->merchant);
+        return (new Feature\Service)->getFeaturesForMerchantPublic($this->merchant);
     }
 
     public function getEarlySettlementPricingForMerchant(): array
@@ -2000,7 +2000,7 @@ class Service extends Base\Service
 
         $this->removeFeatures($featuresToRemove, $shouldSync);
 
-        $data = (new Feature\Service)->getFeaturesForEntity($merchant);
+        $data = (new Feature\Service)->getFeaturesForMerchantPublic($merchant);
 
         return $data;
     }
@@ -3528,6 +3528,32 @@ class Service extends Base\Service
         });
     }
 
+    public function enableBusinessBankingTestMode(array $input)
+    {
+        $merchantIds = $input['merchant_ids'] ?? [];
+        $skip        = $input['skip'] ?? 0;
+        $limit       = $input['limit'] ?? 500;
+
+        $bankingAccounts = $this->repo->banking_account->fetchBankingAccounts($merchantIds, $skip, $limit);
+
+        foreach ($bankingAccounts as $bankingAccount)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_X_TEST_MODE_MIGRATION,
+                [
+                    'banking_account_id'  => $bankingAccount->getId(),
+                    'merchant_id'         => $bankingAccount->merchant->getId(),
+                ]
+            );
+
+            $this->app['basicauth']->setMerchant($bankingAccount->merchant);
+
+            (new Activate)->activateBusinessBankingIfApplicable($bankingAccount->merchant);
+        }
+
+        return ['processed' => count($bankingAccounts)];
+    }
+
     /**
      * Checks if a merchant exists with the input email
      * and if it is marked as a partner
@@ -3756,5 +3782,107 @@ class Service extends Base\Service
         $referral = (new Referral\Core)->createOrFetch($merchant);
 
         return $referral->toArrayPublic();
+    }
+
+
+    /**
+     * @param array $record
+     */
+    public function actionPerform(array $record)
+    {
+        $attribute = [];
+        $settings  = [];
+
+        $this->segregateInputFieldsAndSettings($record, $attribute, $settings);
+
+        (new Validator)->validateInput('entity_batch_action', $settings);
+
+        $core = CE::getEntityCoreClass($settings[Constants::ENTITY]);
+
+        $batch_action = $settings[Constants::BATCH_ACTION];
+
+        $function = camel_case($batch_action);
+
+        $core->$function($settings[Entity::ID], $attribute);
+    }
+
+
+    /**
+     * @param array $input
+     *
+     * @return Base\PublicCollection
+     */
+    public function merchantsBulkUpdate(array $input)
+    {
+        $response = new Base\PublicCollection();
+
+        foreach ($input as $record)
+        {
+            try
+            {
+                $this->actionPerform($record);
+
+                $response->push($record);
+            }
+            catch (Exception\BaseException $exception)
+            {
+                $this->setErrorAttributesToResponse($record, $exception, $response);
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param array                   $record
+     * @param Exception\BaseException $exception
+     * @param Base\PublicCollection   $response
+     */
+    public function setErrorAttributesToResponse(array $record, Exception\BaseException $exception, Base\PublicCollection $response)
+    {
+        $this->trace->traceException($exception,
+                                     Trace::INFO,
+                                     TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST);
+        $exceptionData = [
+            'error'                 => [
+                Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+            ],
+            Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+        ];
+
+        $response->push(array_merge($record, $exceptionData));
+    }
+
+    /**
+     * @param array $record
+     * @param array $attribute
+     * @param array $settings
+     */
+    protected function segregateInputFieldsAndSettings(array $record, array & $attribute, array & $settings)
+    {
+        $settings = array_only($record, Constants::$EntityBatchActionSettingParams);
+
+        $attribute = array_diff($record, $settings);
+    }
+
+    /**
+     * @return array
+     */
+    public function getBatchActionEntities(): array
+    {
+        $batchAction = (new Core())->getBatchActionEntities();
+
+        return $batchAction;
+    }
+
+    /**
+     * @return array
+     */
+    public function getBatchActions(): array
+    {
+        $batchAction = (new Core())->getBatchActions();
+
+        return $batchAction;
     }
 }

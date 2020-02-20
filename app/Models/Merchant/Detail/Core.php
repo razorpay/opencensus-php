@@ -627,6 +627,8 @@ class Core extends Base\Core
         if (isset($input[Merchant\Entity::WEBSITE]) === true)
         {
             $data[Entity::BUSINESS_WEBSITE] = $input[Merchant\Entity::WEBSITE];
+
+            (new Merchant\Core())->updateWhitelistedDomain($merchant, $input);
         }
 
         if (empty($data) === false)
@@ -1970,5 +1972,21 @@ class Core extends Base\Core
                     break;
             }
         }
+    }
+
+    /**
+     * this function is called dynemically to update merchant details through batch action.
+     * This unction name is derived from action name.
+     *
+     * @param string $merchantId
+     * @param array  $input
+     */
+    public function updateEntity(string $merchantId, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        (new Validator())->validateInput('update_entity_batch_action', $input);
+
+        $this->editMerchantDetailFields($merchant, $input);
     }
 }

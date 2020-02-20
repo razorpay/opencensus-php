@@ -264,6 +264,8 @@ class Core extends Base\Core
 
         $this->upsertLegalEntity($subMerchant, $legalEntityInput);
 
+        $this->addToDefaultUnclaimedGroup($subMerchant);
+
         return $subMerchant;
     }
 
@@ -3079,5 +3081,29 @@ class Core extends Base\Core
         }
 
         return new Base\PublicCollection;
+    }
+
+    public function getAllMerchantIds($input): Base\PublicCollection
+    {
+        return $this->repo->merchant->fetchAllMerchantIDs($input);
+    }
+    /**
+     * @return array
+     */
+    public function getBatchActionEntities(): array
+    {
+        $batchActionEntities = BatchActionEntity::BATCH_ACTION_ENTITIES;
+
+        return $batchActionEntities;
+    }
+
+    /**
+     * @return array
+     */
+    public function getBatchActions(): array
+    {
+        $batchActions = BatchAction::BATCH_ACTIONS;
+
+        return $batchActions;
     }
 }

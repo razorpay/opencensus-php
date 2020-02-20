@@ -92,6 +92,7 @@ class Base extends Core
     const PAYUMONEY              = 'PayuMoney';
     const EBS                    = 'Ebs';
     const FIRST_DATA             = 'FirstData';
+    const PAYLATER_ICICI         = 'PaylaterIcici';
     const UPI_ICICI              = 'UpiIcici';
     const ADMIN                  = 'admin';
     const HITACHI                = 'Hitachi';
@@ -166,13 +167,14 @@ class Base extends Core
         self::CARD_FSS_HDFC          => ['merchantops@fss.co.in'],
         self::ATOM                   => [],
         self::CARD_FSS_BOB           => [],
-        self::CARD_FSS_SBI           => [],
+        self::CARD_FSS_SBI           => ['ipay.support@sbi.co.in'],
         self::UPI_AXIS               => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
         self::UPI_HULK               => [],
         self::AMEX                   => [],
         self::ISG                    => [],
         self::PHONEPE                => [],
+        self::PAYLATER_ICICI         => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
         self::PAYPAL                 => [],
         self::VAS_AXIS               => [],

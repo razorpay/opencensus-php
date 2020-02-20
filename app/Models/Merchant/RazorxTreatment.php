@@ -80,6 +80,6 @@ final class RazorxTreatment
     // Decides whether or not to display tr attribute in upi_transfer entity
     const UPI_TRANSFER_TR = 'upi_transfer_tr';
 
-    // Display Parent Payment Id
-    const DISPLAY_PARENT_PAYMENT_ID = 'display_parent_payment_id';
+    // Onboard merchant on RazorpayX test mode
+    const RAZORPAY_X_TEST_MODE_ONBOARDING = 'razorpayx_x_test_mode_onboarding';
 }

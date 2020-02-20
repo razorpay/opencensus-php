@@ -2,9 +2,10 @@
 
 namespace RZP\Services;
 
-use Requests;
+
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Http\Request\Request;
 
 class SmartRouting
 {
@@ -46,6 +47,11 @@ class SmartRouting
 
     const SEND_PAYMENT_DATA  = [
         'url'       =>  "/route",
+        'method'    =>  "POST",
+    ];
+
+    const SEND_PAYMNENT_AUTHN = [
+        'url'       =>  "/route_authn",
         'method'    =>  "POST",
     ];
 
@@ -92,6 +98,11 @@ class SmartRouting
     public function sendNonBlockingPaymentData($data, $params)
     {
         $this->sendRequest(self::SEND_PAYMENT_DATA, $data, null, $params, self::REQUEST_TIMEOUT_ASYNC);
+    }
+
+    public function sendNonBlockingPaymentDataAuthN($data, $params)
+    {
+        $this->sendRequest(self::SEND_PAYMNENT_AUTHN, $data, null, $params, self::REQUEST_TIMEOUT_ASYNC);
     }
 
     protected function sendNonBlockingRequest($action, $data = null, $id = null, $params)
@@ -184,7 +195,7 @@ class SmartRouting
             {
                 if ($method === 'POST' or $method === 'PUT')
                 {
-                    $response = Requests::$method(
+                    $response = Request::$method(
                         $request['url'],
                         $request['headers'],
                         json_encode($request['content']),
@@ -192,7 +203,7 @@ class SmartRouting
                 }
                 else
                 {
-                    $response = Requests::$method(
+                    $response = Request::$method(
                         $request['url'],
                         $request['headers'],
                         $request['options']);
