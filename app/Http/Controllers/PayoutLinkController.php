@@ -1,0 +1,150 @@
+<?php
+
+namespace RZP\Http\Controllers;
+
+use ApiResponse;
+
+class PayoutLinkController extends Controller
+{
+    use Traits\HasCrudMethods;
+
+    public function update(string $id)
+    {
+        return ApiResponse::json('Not Supported');
+    }
+
+    public function delete(string $id)
+    {
+        return ApiResponse::json('Not Supported');
+    }
+
+    public function getStatus(string $payoutLinkId)
+    {
+        $response = $this->service()->getStatus($payoutLinkId);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    public function allowCors()
+    {
+        $response = ApiResponse::json([]);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    /**
+     * This is a POST request because,
+     * 1. It takes a TOKEN which should be sent in the Body and not URL Param
+     * 2. Browsers cannot send Body in a GET request
+     * @param string $payoutLinkId
+     * @return mixed
+     */
+    public function getFundAccountsOfContact(string $payoutLinkId)
+    {
+        $response = $this->service()->getFundAccountsOfContact($payoutLinkId, $this->input);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    /**
+     * Route to update the merchant level settings for payout links
+     * @param $merchantId
+     * @return
+     */
+    public function updateSettings($merchantId)
+    {
+        $response = $this->service()->updateSettings($merchantId, $this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Route to get the merchant level settings for payout links
+     * @param $merchantId
+     * @return
+     */
+    public function getSettings($merchantId)
+    {
+        $response = $this->service()->getSettings($merchantId, $this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * This api call will take the fund-account details, and initiate the payout
+     * @param string $payoutLinkId
+     * @return array
+     */
+    public function initiate(string $payoutLinkId)
+    {
+        $response = $this->service()->initiate($payoutLinkId, $this->input);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    public function generateAndSendCustomerOtp(string $payoutLinkId)
+    {
+        $response = $this->service()->generateAndSendCustomerOtp($payoutLinkId, $this->input);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    public function verifyCustomerOtp(string $payoutLinkId)
+    {
+        $response = $this->service()->verifyCustomerOtp($payoutLinkId, $this->input);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    public function viewHostedPage($payoutLinkId)
+    {
+        $response = $this->service()->viewHostedPage($payoutLinkId);
+
+        return $response;
+    }
+
+    public function cancel(string $payoutLinkId)
+    {
+        $data = $this->service()->cancel($payoutLinkId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function pullPayoutStatus(string $payoutLinkId)
+    {
+        $response =$this->service()->pullPayoutStatus($payoutLinkId);
+
+        return ApiResponse::json($response);
+    }
+
+    private function addCorsHeaders(& $response)
+    {
+        $response->headers->set('Access-Control-Allow-Origin', $this->config['applications.payout_links.url']);
+
+        $response->headers->set('Access-Control-Allow-Credentials' , 'true');
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+    }
+}

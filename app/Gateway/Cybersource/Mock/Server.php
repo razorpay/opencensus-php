@@ -149,29 +149,52 @@ class Server extends Base\Mock\Server
         $input = json_decode($input, true);
         $entities = $input['entities'];
 
-        $response = [
-            'data' =>
-                [
-                    '_raw' => '',
-                    'attempt_id' => $entities['payment']['id'],
-                    'avs_code' => 'Y',
-                    'card_category' => null,
-                    'card_group' => null,
-                    'cv_code' => 'M',
-                    'gateway_reference_id1' => '5474993075916772203012',
-                    'gateway_reference_id2' => '016153570198200',
-                    'gateway_reference_id3' => '831000',
-                    'payment_id' => $entities['payment']['id'],
-                    'processorResponse' => '00',
-                    'processor_code' => '01',
-                    'reason_code' => 100,
-                    'received' => true,
-                    'rrn' => '184090',
-                    'status' => 'authorized',
-                ],
-            'error' => null,
-            'success' => true,
-        ];
+        switch ($entities['card']['number'])
+        {
+            case 4444333322221111:
+                $response = [
+                    'data' =>
+                    [
+                        '_raw'                  => '',
+                        'attempt_id'            => $entities['payment']['id'],
+                        'status'                => 'authorized',
+                        'received'              => true,
+                        'avs_code'              => 'X',
+                        'gateway_reference_id1' => '4465840340765000001541',
+                        'gateway_reference_id3' => '888888',
+                        'payment_id'            => 'Bi7fYtbRhkouOX',
+                        'processorResponse'     => '100',
+                        'reason_code'           => 100
+                    ],
+                    'error' => null,
+                    'success' => true,
+                ];
+                break;
+            default:
+                $response = [
+                    'data' =>
+                    [
+                        '_raw'                  => '',
+                        'attempt_id'            => $entities['payment']['id'],
+                        'avs_code'              => 'Y',
+                        'card_category'         => null,
+                        'card_group'            => null,
+                        'cv_code'               => 'M',
+                        'gateway_reference_id1' => '5474993075916772203012',
+                        'gateway_reference_id2' => '016153570198200',
+                        'gateway_reference_id3' => '831000',
+                        'payment_id'            => $entities['payment']['id'],
+                        'processorResponse'     => '00',
+                        'processor_code'        => '01',
+                        'reason_code'           => 100,
+                        'received'              => true,
+                        'rrn'                   => '184090',
+                        'status'                => 'authorized',
+                    ],
+                    'error' => null,
+                    'success' => true,
+                ];
+        }
 
         $this->content($response, 'pay_init');
 

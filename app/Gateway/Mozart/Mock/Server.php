@@ -100,6 +100,20 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $mandateCreateObj, Action::AUTH_INIT);
     }
 
+    public function authVerify($input)
+    {
+        $authVerifyObj = new AuthVerifyData();
+
+        return $this->processMockResponse($input, $authVerifyObj, Action::AUTH_VERIFY);
+    }
+
+    public function checkBalance($input)
+    {
+        $checkBalanceObj = new CheckBalanceData();
+
+        return $this->processMockResponse($input, $checkBalanceObj, Action::CHECK_BALANCE);
+    }
+
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
@@ -194,6 +208,11 @@ class Server extends Base\Mock\Server
                         $content[UpiJuspay\Fields::GATEWAY_RESPONSE_CODE]    = 'U69';
                         $content[UpiJuspay\Fields::GATEWAY_RESPONSE_MESSAGE] = 'Transaction is failed';
                         break;
+
+                    case 'intentPayment':
+                        $content[UpiJuspay\Fields::TYPE]  = 'MERCHANT_CREDITED_VIA_PAY';
+                        unset($content[UpiJuspay\Fields::EXPIRY]);
+                        break;
                 }
                 // TODO: Create proper signature
                 $server['HTTP_X-Merchant-Payload-Signature']                      = 'signature';
@@ -231,7 +250,7 @@ class Server extends Base\Mock\Server
 
         $response['hash'] = $hash;
 
-        return [json_encode($response)];
+        return json_encode($response);
     }
 
     public function getFailedAsyncCallbackContent(array $payment)
@@ -256,7 +275,7 @@ class Server extends Base\Mock\Server
 
         $response['hash'] = $hash;
 
-        return [json_encode($response)];
+        return json_encode($response);
     }
 
     protected function wallet_phonepe($input)
@@ -575,6 +594,28 @@ class Server extends Base\Mock\Server
                     "success" => false
                 ];
                 break;
+            case "6":
+                $responseBody = [
+                    "data" => [
+                    "_raw" => "{\"REQTYPE\":\"N\",\"BANKCODE\":\"00031\",\"MID\":\"999000000000069\",\"TID\":\"12380309\",\"REQRRN\":\"DrZX1T3gRojN470\",\"RESDTTM\":\"13122019104436\",\"RESCODE\":\"05\",\"RESDESC\":\"Duplicate Merchant code\"}",
+                    "description" => "Duplicate Merchant code",
+                    "res_code" => "05",
+                    "retry" => "false",
+                    "status" => "terminal_creation_failed"
+                    ],
+                    "error" =>  [
+                    "description" => "",
+                    "gateway_error_code" => "05",
+                    "gateway_error_description" => "(No error description was mapped for this error code)",
+                    "gateway_status_code" => 200,
+                    "internal_error_code" => "GATEWAY_ERROR_UNKNOWN_ERROR"
+                    ],
+                    "next" => [],
+                    "success" => false
+                ];
+                break;
+
+
         }
 
         $response = \Response::make($responseBody);
@@ -595,7 +636,7 @@ class Server extends Base\Mock\Server
                 $responseBody = [
                     'data' => [
                         'description'   => 'Success',
-                        'res_code'        => '00',
+                        'res_code'      => '00',
                         'status'        => 'terminal_activation_successful',
                         '_raw'          => '{\'TID\':\'9137251R\',\'REQRRN\':null,\'RESDTTM\':\'23082019134719\',\'RESCODE\':\'00\',\'RESDESC\':\'Success\',\'REQTYPE\':\'N\',\'BANKCODE\':\'00031\',\'MID\':\'999122000040351\'}'
                     ],
@@ -610,7 +651,7 @@ class Server extends Base\Mock\Server
                 $responseBody = [
                     'data' => [
                         'description'   => 'Failed',
-                        'res_code'        => '00',
+                        'res_code'      => '00',
                         'status'        => 'terminal_activation_failed',
                         '_raw'          => '{\'TID\':\'9137251R\',\'REQRRN\':null,\'RESDTTM\':\'23082019134719\',\'RESCODE\':\'00\',\'RESDESC\':\'Success\',\'REQTYPE\':\'N\',\'BANKCODE\':\'00031\',\'MID\':\'999122000040351\'}'
                     ],
@@ -621,6 +662,155 @@ class Server extends Base\Mock\Server
                     'success'           => true,
                 ];
                 break;
+        }
+
+        $response = \Response::make($responseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
+    public function decrypt($input)
+    {
+        $data = json_decode($input, true);
+
+        $signature = $data['signature'];
+
+        $decryptedMessage = [
+            'paymentMethod' => 'TOKENIZED_CARD',
+            'version'       => '1.0',
+            'paymentMethodDetails' => [
+                'dpan'            => '4444333322221111',
+                'expirationMonth' => '10',
+                'expirationYear'  => '2021',
+                'authMethod'      => '3DS',
+                '3dsCryptogram'   => 'AAAAAA',
+                '3dsEciIndicator' => 'eci indicator',
+            ],
+            'gatewayMerchantId' => '10000000000000',
+            'messageId'         => 'some message id',
+            'messageExpiration' => '1492343123',
+        ];
+
+        $responseBody = [];
+
+        switch ($signature)
+        {
+            Case "MEQCID2npCOWMBWTr5hfCzT2cou0UcZou3drDTA8wC3eXi78AiAhJefYECEw6AnyWbpTbOhwXQ1fSEQMiOxXkOJtmrw5sg==":
+                $responseBody = [
+                    'data' => [
+                        '_raw'             => '',
+                        'decryptedMessage' => $decryptedMessage,
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => true,
+                ];
+                break;
+            Case "MEQCID2npCOWMBWTr5hfCzT2cou0UcZou3drDTA8wC3eXi78AiAhJefYECEw6AnyWbpTbOhwXQ1fSEQMiOxXkOJtmrw5sg==2":
+                $responseBody = [
+                    'data' => [
+                        '_raw'             => '',
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => false,
+                ];
+                break;
+        }
+
+        $response = \Response::make($responseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
+    public function disableTerminal($body)
+    {
+        $mockCase = $this->app['config']->get('worldline_terminal_onboarding_disable.case');
+
+        switch ($mockCase)
+        {
+            case "1":
+            default:
+                $responseBody = [
+                    'data' => [
+                    'description'   => 'Success',
+                    'res_code'      => '00',
+                    'status'        => 'terminal_deactivation_successful'
+                ],
+                'error'             => [],
+                'external_trace_id' => '',
+                'mozart_id'         => 'ckfw236r1gensdphqs51',
+                'next'              => null,
+                'success'           => true,
+            ];
+            break;
+            case "2":
+                $responseBody = [
+                    'data' => [
+                    'description'   => 'Failed',
+                    'res_code'      => '00',
+                    'status'        => 'terminal_deactivation_failed'
+                ],
+                'error'             => [],
+                'external_trace_id' => '',
+                'mozart_id'         => 'ckfw236r1gensdphqs51',
+                'next'              => null,
+                'success'           => false,
+            ];
+
+        }
+
+
+        $response = \Response::make($responseBody);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
+    public function enableTerminal($body)
+    {
+        $mockCase = $this->app['config']->get('worldline_terminal_onboarding_enable.case');
+
+        switch ($mockCase)
+        {
+            case "1":
+            default:
+                $responseBody = [
+                    'data' => [
+                    'description'   => 'Success',
+                    'res_code'      => '00',
+                    'status'        => 'terminal_reactivation_successful'
+                ],
+                'error'             => [],
+                'external_trace_id' => '',
+                'mozart_id'         => 'wefw236r1wdf2hqs51',
+                'next'              => null,
+                'success'           => true,
+            ];
+            break;
+            case "2":
+                $responseBody = [
+                    'data' => [
+                    'description'   => 'Failed',
+                    'res_code'      => '00',
+                    'status'        => 'terminal_reactivation_failed'
+                ],
+                'error'             => [],
+                'external_trace_id' => '',
+                'mozart_id'         => 'wefw236r1wdf2hqs51',
+                'next'              => null,
+                'success'           => false,
+            ];
+            break;
         }
 
         $response = \Response::make($responseBody);

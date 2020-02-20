@@ -38,6 +38,9 @@ class Entity extends Base\PublicEntity
     const TOKEN                         = 'token';
     const EXPIRY_TIME                   = 'expiryTime';
 
+    // This token is used for user authorization between api calls
+    const OTP_AUTH_TOKEN                = 'otp_auth_token';
+
     const ACTION                        = 'action';
     const USER_ID                       = 'user_id';
     const MERCHANT_ID                   = 'merchant_id';
@@ -176,6 +179,20 @@ class Entity extends Base\PublicEntity
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
                     ->withPivot([self::ROLE, self::PRODUCT])
                     ->orderByRaw($sql, [$this->getEmail()]);
+    }
+
+    public function primaryMerchants()
+    {
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->withPivot([self::ROLE, self::PRODUCT])
+                    ->wherePivot(self::PRODUCT, 'primary');
+    }
+
+    public function bankingMerchants()
+    {
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->withPivot([self::ROLE, self::PRODUCT])
+                    ->wherePivot(self::PRODUCT, 'banking');
     }
 
     public function invitations()
@@ -331,7 +348,7 @@ class Entity extends Base\PublicEntity
     protected function getRestrictedAttribute(): bool
     {
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 2);
-        
+
         if (count($merchantIds) !== 1)
         {
             return false;

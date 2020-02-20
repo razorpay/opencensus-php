@@ -13,6 +13,7 @@ use RZP\Reconciliator\Core;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Messenger;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\RequestProcessor;
@@ -39,6 +40,7 @@ class SubReconciliate extends Base\Core
     const BATCH_ID              = 'batch_id';
     const ATTEMPT_NUMBER        = 'attempt_number';
     const RECON_ENTITY_ID       = 'recon_entity_id';
+    const RECON_NET_AMOUNT      = 'recon_net_amount';
 
     /**
      * For few gateways, we do not get the RZP  payment/refund ID
@@ -285,6 +287,7 @@ class SubReconciliate extends Base\Core
         $row[self::BATCH_ID]                = '';
         $row[self::ATTEMPT_NUMBER]          = '';
         $row[self::RECON_ENTITY_ID]         = '';
+        $row[self::RECON_NET_AMOUNT]        = '';
 
         static::$reconOutputData[] = $row;
 
@@ -397,6 +400,24 @@ class SubReconciliate extends Base\Core
         }
     }
 
+    protected function persistGatewayAmount(Base\Entity $entity, array $rowDetails)
+    {
+        $gatewayAmount = $rowDetails[BaseReconciliate::GATEWAY_AMOUNT];
+
+        $transaction = $entity->transaction;
+
+        if (($gatewayAmount === null) or
+            ($transaction === null) or
+            ($transaction->getGatewayAmount() !== null))
+        {
+            return;
+        }
+
+        $transaction->setGatewayAmount($gatewayAmount);
+
+        $this->repo->saveOrFail($transaction);
+    }
+
     protected function checkIfAlreadyReconciled($entity)
     {
         $transaction = $entity->transaction;
@@ -450,6 +471,25 @@ class SubReconciliate extends Base\Core
     }
 
     /**
+     * To be overridden in child class
+     * @param array $rowDetails
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function persistGatewayUtr(array $rowDetails, PublicEntity $gatewayPayment)
+    {
+        return;
+    }
+
+    /**
+     * Being used in Worldline gateway (VasAxis) only.
+     * If present, will be saved in worldline entity
+     */
+    protected function getGatewayUtr($row)
+    {
+        return null;
+    }
+
+    /**
      * Not all gateways provide us with gateway_settled_at.
      * Hence, we send back null for these gateways.
      *
@@ -457,6 +497,18 @@ class SubReconciliate extends Base\Core
      * @return null
      */
     protected function getGatewaySettledAt(array $row)
+    {
+        return null;
+    }
+
+    /**
+     * Not all gateways provide us with gateway_amount.
+     * Hence, we send back null for these gateways.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getGatewayAmount(array $row)
     {
         return null;
     }
@@ -595,6 +647,11 @@ class SubReconciliate extends Base\Core
         static::$reconOutputData[static::$currentRowNumber][self::ATTEMPT_NUMBER] = $attemptNumber;
     }
 
+    protected function setReconNetAmountInOutput(float $reconNetAmount)
+    {
+        static::$reconOutputData[static::$currentRowNumber][self::RECON_NET_AMOUNT] = $reconNetAmount;
+    }
+
     /**
      * For certain rows, where we are not able to successfully identify the payment
      * or refund entity to reconcile, we mark the row processing as success or failure
@@ -731,7 +788,6 @@ class SubReconciliate extends Base\Core
             [
                 'message'           => 'Unable to get the expected column.',
                 'column_name'       => $columnName,
-                'row'               => $row,
                 'gateway'           => $this->gateway
             ]);
     }
@@ -773,5 +829,20 @@ class SubReconciliate extends Base\Core
     protected function modifyRowIfNeeded(&$row)
     {
         return;
+    }
+
+    /**
+     * Child gateway sub reconciliator need to override
+     * this function, UPI Transactions kept turning up in
+     * MIS. Although they already were reconciled, their
+     * being in the file, threw slack alerts.
+     *
+     * Currently only used in HDFC.
+     * @param $row
+     * @return bool
+     */
+    protected function skipRestOfFile($row)
+    {
+        return false;
     }
 }

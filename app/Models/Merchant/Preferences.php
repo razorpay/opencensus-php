@@ -115,12 +115,18 @@ class Preferences
     const MID_RBL_INTERIM_PROCESS   = 'D83Pk7NqU6URGe';
     const MID_MSR_LAW_CLG_VFH       = 'CxqHOiYBc8yG4U';
     const MID_BOB                   = 'CxOgfvYhxGztjJ';
+    const MID_BOB_2                 = 'DyLpdroA9jOWcY';
+    const MID_BOB_3                 = 'DyLsgu8Kh683Ja';
     const MID_BAGIC                 = 'CYseUgx4bt9VFp';
     const MID_IMPACT_SCHOOL_ARCH    = 'D89MU9wL8ptnEM';
     const MID_VEL_TECH_HIGH_TECH    = 'CxrfYIK8mrctAN';
     const MID_MSRIT_EXAM_FEES_VFH   = 'CxqX32TCfZaHnQ';
     const MID_INST_ENG_AND_TECH_LKO = 'D88kPwDCDxbBu3';
     const MID_RBL_AGRI_LOAN         = 'DX4AnDB4Z9kzg0';
+    const MID_RBL_INTERIM_PROCESS2  = 'DqPTv7SI18A7y8';
+    const MID_LENDING_KART          = 'DfLPWHXDWcfB2Y';
+    const MID_BFL                   = 'ChcYXdL7jtknMN';
+    const MID_ICICI_PRUDENTIAL      = 'DyP8dTjuXkgcAA';
 
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';

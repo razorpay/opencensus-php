@@ -18,4 +18,5 @@ class Url
     const VERIFY            = '/olamoney/v2/query';
     const AUTHORIZE_V2      = '/credit-app/postpaid';
     const REFUND_V3         = '/olamoney/v3/refund';
+    const ELIGIBILITY       = '/olamoney/v1/postpaid/eligibility';
 }

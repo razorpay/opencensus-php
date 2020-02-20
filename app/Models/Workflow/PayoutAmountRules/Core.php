@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use RZP\Models\Base;
+use RZP\Models\Workflow;
 use RZP\Models\Merchant;
 
 class Core extends Base\Core
@@ -55,5 +56,48 @@ class Core extends Base\Core
         }
 
         return $evaluatedRule;
+    }
+
+    /**
+     * @param array $rules
+     * @param Merchant\Entity $merchant
+     *
+     * @return Base\PublicCollection
+     */
+    public function create(array $rules, Merchant\Entity $merchant)
+    {
+        // Insert all rules together into database
+        $payoutAmountRules = $this->repo->transaction(function() use ($rules, $merchant)
+        {
+            $payoutAmountRules = new Base\PublicCollection();
+
+            foreach ($rules as $rule)
+            {
+                $workflow = null;
+
+                if (empty($rule[Entity::WORKFLOW_ID]) === false)
+                {
+                    $workflow = $this->repo->workflow->findByPublicId($rule[Entity::WORKFLOW_ID]);
+                }
+
+                unset($rule[Entity::WORKFLOW_ID]);
+
+                $payoutAmountRule = new Entity();
+
+                $payoutAmountRule->merchant()->associate($merchant);
+
+                $payoutAmountRule->workflow()->associate($workflow);
+
+                $payoutAmountRule->build($rule);
+
+                $payoutAmountRules->push($payoutAmountRule);
+
+                $this->repo->saveOrFail($payoutAmountRule);
+            }
+
+            return $payoutAmountRules;
+        });
+
+        return $payoutAmountRules;
     }
 }

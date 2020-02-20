@@ -43,6 +43,8 @@ class Core extends Base\Core
         }
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
+        $this->validateAdminRoleIfApplicable($input);
+
         $batch = (new Entity)->build($input);
 
         $batch->creator()->associate($creator);
@@ -59,6 +61,8 @@ class Core extends Base\Core
 
         if ($processor->shouldSendToBatchService())
         {
+            $processor->addSettingsIfRequired($input);
+
             $batchResponse = $this->app->batchService->forwardToBatchServiceRequest($input, $merchant, $ufhFile);
 
             return (new ResponseEntity)->fill($batchResponse);
@@ -73,6 +77,16 @@ class Core extends Base\Core
         $this->dispatchOnQueueForProcessingIfApplicable($batch, $input);
 
         return $batch;
+    }
+
+    private function validateAdminRoleIfApplicable($input)
+    {
+        $auth = $this->app['basicauth'];
+
+        if ($auth->isAdminAuth() === true)
+        {
+            (new Validator)->validateAdminRoleIfApplicable($auth->getAdmin(), $input[Entity::TYPE]);
+        }
     }
 
     /**

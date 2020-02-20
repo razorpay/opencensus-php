@@ -63,7 +63,7 @@ return [
                 'email' => 'test@localhost.com',
             ],
             'url'     => '/merchants',
-            'method'  => 'POST'
+            'method'  => 'POST',
         ],
         'response' => [
             'content' => [
@@ -155,6 +155,46 @@ return [
                 ],
             ]
         ]
+    ],
+
+    'testCheckSalesforceGroupForSubmerchantCreate' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'   => 'NewSubmerchant',
+                'name' => 'Submerchant',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => 'NewSubmerchant',
+                'name'            => 'Submerchant',
+                'email'           => 'test@razorpay.com',
+                'pricing_plan_id' => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
+    'testCheckSalesforceGroupForMarketplaceLinkedAccount' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 2',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => '7gcKngYfqyDMjN',
+                'name'            => 'Linked Account 2',
+                'email'           => 'linkedaccount@razorpay.com',
+                'pricing_plan_id' => '1In3Yh5Mluj605',
+            ],
+        ],
     ],
 
     'testCreateSubMerchant' => [
@@ -1037,4 +1077,22 @@ return [
         ],
     ],
 
+    'testBalanceConfigInTestAfterCreatedMerchant' => [
+        'request'  => [
+            'url'    => '/balance_configs',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    '0' => [
+                        'type'                          => 'primary',
+                        'negative_limit_auto'          => 0,
+                        'negative_limit_manual'        => 0,
+                        'negative_transaction_flows'   => ['payment']
+                    ]
+                ]
+            ]
+        ]
+    ],
 ];

@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use DB;
 use Redis;
 use Carbon\Carbon;
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -837,6 +838,84 @@ class VerifyTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testVerifyGooglePayCardPayments()
+    {
+        $payment = $this->fixtures->create('payment', []);
+
+        $payment->setAuthenticationGateway('google_pay');
+        $payment->setStatus(Payment\Status::AUTHORIZED);
+
+        (new Payment\Repository)->saveOrFail($payment);
+
+        $request = array(
+            'url'     => '/gateway/google_pay/verify',
+            'method'  => 'get',
+            'content' => [
+                'pgTransactionRefId' => 'pay_' . $payment['id']
+            ],
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['STATUS'], 'SUCCESS');
+    }
+
+    public function testVerifyGooglePayCardPaymentNotFound()
+    {
+        $payment = $this->fixtures->create('payment', []);
+
+        $payment->setAuthenticationGateway('google_pay');
+        $payment->setStatus(Payment\Status::AUTHORIZED);
+
+        (new Payment\Repository)->saveOrFail($payment);
+
+        $request = array(
+            'url'     => '/gateway/google_pay/verify',
+            'method'  => 'get',
+            'content' => [
+                'pgTransactionRefId' => 'pay_10000000000000',
+            ],
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            }
+        );
+    }
+
+
+    public function testVerifyGooglePayCardPaymentNotOfGooglePay()
+    {
+        $payment = $this->fixtures->create('payment', []);
+
+        $payment->setStatus(Payment\Status::AUTHORIZED);
+
+        (new Payment\Repository)->saveOrFail($payment);
+
+        $request = array(
+            'url'     => '/gateway/google_pay/verify',
+            'method'  => 'get',
+            'content' => [
+                'pgTransactionRefId' => 'pay_' . $payment['id'],
+            ],
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            }
+        );
+    }
+
     public function testInvalidFilter()
     {
         $this->setupRedisMock();
@@ -1293,7 +1372,7 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMock($paymentArray = [])
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex', 'client'])
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex', 'client', 'exists'])
                           ->getMock();
 
         Redis::shouldReceive('connection')
@@ -1311,7 +1390,7 @@ class VerifyTest extends TestCase
         Redis::shouldReceive('incr')
             ->andReturn(1);
 
-         Redis::shouldReceive('expire')
+        Redis::shouldReceive('expire')
             ->andReturn(true);
 
         $redisMock->method('set')->will($this->returnCallback(function ($resourceId, $requestId) use ($paymentArray)
@@ -1342,6 +1421,8 @@ class VerifyTest extends TestCase
                 ->andReturn("control");
 
         $redisMock->method('get')->will($this->returnValue(''));
+
+        $redisMock->method('exists')->will($this->returnValue(0));
     }
 
     protected function setupRedisMockForBlockedGateway($paymentArray = [])

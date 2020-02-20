@@ -18,10 +18,10 @@ use RZP\Services\HubspotClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
-use RZP\Mail\User\AccountVerification;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Mail\User\AccountVerification;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -633,7 +633,7 @@ class UserTest extends TestCase
                 ]);
 
         $merchant = $this->fixtures->create('merchant', [
-            'second_factor_auth'    =>  true,
+            'second_factor_auth' => true,
         ]);
 
         $mappingData = [
@@ -1287,11 +1287,12 @@ class UserTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(AccountVerification::class, function ($mail)
+        Mail::assertQueued(AccountVerification::class,function ($mail)
         {
             $viewData = $mail->viewData;
 
             $this->assertArrayHasKey('org', $viewData);
+
             $this->assertArrayHasKey('token', $viewData);
 
             $this->assertEquals('emails.user.account_verification', $mail->view);
@@ -1875,5 +1876,59 @@ class UserTest extends TestCase
         $this->startTest();
 
         Carbon::setTestNow();
+    }
+
+    public function testVerifyUserThroughEmail()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditContactMobileByUserOnBankingWithoutAuthToken()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->startTest();
+    }
+
+    protected function mockRedisSuccess($funcName, $userId)
+    {
+        $token = $this->app['token_service']->generate($userId);
+
+        $this->testData[$funcName]['request']['content']['otp_auth_token'] = $token;
+    }
+
+    public function testEditContactMobileByUserAndVerifyForBanking()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->mockRedisSuccess(__FUNCTION__ , $user->getId());
+
+        $response = $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($response['contact_mobile_verified'], true);
+
+        $this->assertEquals($response['contact_mobile_verified'], $userDb['contact_mobile_verified']);
+
+        $this->assertEquals($testData['request']['content']['contact_mobile'], $userDb['contact_mobile']);
     }
 }

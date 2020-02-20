@@ -196,6 +196,50 @@ class GroupMapSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::GROUP)->insert(
+                array(
+                    'id'            =>  'E15BhsdMSofcUJ',
+                    'name'          =>  'SF_UNCLAIMED_GROUP_ID',
+                    'description'   =>  'Salesforce Unclaimed Group',
+                    'org_id'        =>  '100000razorpay',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    'deleted_at'    =>  null,
+                )
+            );
+
+            DB::table(Table::GROUP)->insert(
+                array(
+                    'id'            =>  'E15FKNaXgALD6Y',
+                    'name'          =>  'SF_CLAIMED_MERCHANTS_GROUP_ID',
+                    'description'   =>  'Salesforce Claimed Merchants Group',
+                    'org_id'        =>  '100000razorpay',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    'deleted_at'    =>  null,
+                )
+            );
+
+            DB::table(Table::GROUP_MAP)->insert(
+                array(
+                    'group_id'     =>  'E15FKNaXgALD6Y',
+                    'entity_id'    =>  'E34ct85lm9wLEz',
+                    'entity_type'  =>  'group'
+                )
+            );
+
+            DB::table(Table::GROUP)->insert(
+                array(
+                    'id'            =>  'E34ct85lm9wLEz',
+                    'name'          =>  'SF_CLAIMED_SME_GROUP_ID',
+                    'description'   =>  'Salesforce Claimed SME Group',
+                    'org_id'        =>  '100000razorpay',
+                    'created_at'    =>  time(),
+                    'updated_at'    =>  time(),
+                    'deleted_at'    =>  null,
+                )
+            );
+
         });
     }
 }

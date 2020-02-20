@@ -25,6 +25,7 @@
 namespace RZP\Gateway\Hdfc;
 
 use App;
+use Carbon\Carbon;
 use RZP\Diag\EventCode;
 use RZP\Error;
 use RZP\Exception;
@@ -34,6 +35,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Payment\AuthType;
 use RZP\Models\Payment\RecurringType;
@@ -797,7 +799,7 @@ class Gateway extends Base\Gateway
         // Create xml from the fields
         $request['content'] = Utility::createXml($request['data']);
 
-        $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN_V2;
+        $domain = $this->getDomainUrl();
 
         $request['url'] = $domain . $request['url'];
 
@@ -855,6 +857,25 @@ class Gateway extends Base\Gateway
 
             $this->checkResponseErrorCode($response);
         }
+    }
+
+    protected function getDomainUrl()
+    {
+        $payment = $this->input['payment'];
+
+        // HDFC FSS Migration
+        $migrationTimeStampSoft         = 1579091400; // 15 Jan, 2020. 18:00:00
+        $migrationTimeStampHard         = 1579242600; // 17 Jan, 2020. 12:00:00
+        $paymentCreationTimeStamp       = $payment['created_at'];
+        $currentTimeStamp               = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if (($paymentCreationTimeStamp > $migrationTimeStampSoft) or
+            ($currentTimeStamp > $migrationTimeStampHard))
+        {
+            return ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V3 : Urls::TEST_DOMAIN_V3;
+        }
+
+        return ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN_V2;
     }
 
     protected function checkForServiceUnavailability($response)
@@ -1187,11 +1208,12 @@ class Gateway extends Base\Gateway
             ($PaRes['Message']['PARes']['TX']['status'] === 'N'))
         {
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                Error\ErrorCode::GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED,
                 null,
                 null,
                 [
-                    'txn_data' => $PaRes['Message']['PARes']['TX']
+                    'txn_data'     => $PaRes['Message']['PARes']['TX'],
+                    'pares_status' => $PaRes['Message']['PARes']['TX']['status'] ?? 'N',
                 ],
                 null,
                 Base\Action::AUTHENTICATE);

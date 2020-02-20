@@ -6,121 +6,121 @@ use RZP\Error\PublicErrorDescription;
 
 return [
     'testBankingInvoiceEntityCreateForGivenMonthYear' => [
-        'rx_transactions'      => [
-            'amount'        => 500,
-            'tax'           => 90,
+        'rx_transactions' => [
+            'amount' => 500,
+            'tax'    => 90,
         ],
     ],
     'testBankingInvoiceEntityCreateForMultipleAccountsForGivenMonthYear'  => [
-        'rx_transactions'   =>[
+        'rx_transactions' => [
             [
                 "amount" => 900,
-                "tax" => 162,
+                "tax"    => 162,
             ],
             [
                 "amount" => 500,
-                "tax" => 90,
+                "tax"    => 90,
             ],
         ],
     ],
     'testBankingInvoiceEntityCreateForMultipleAccountsForGivenMonthYearForMultipleMerchants' => [
-        'rx_transactions'   =>[
+        'rx_transactions' => [
             [
-                'merchant_id' =>  "100000Razorpay",
-                'amount' =>  500,
-                'tax' =>  90,
+                'merchant_id' => "100000Razorpay",
+                'amount'      => 500,
+                'tax'         => 90,
             ],
             [
-                'merchant_id' =>  "10000000000000",
-                'amount' =>  900,
-                'tax' =>  162,
+                'merchant_id' => "10000000000000",
+                'amount'      => 900,
+                'tax'         => 162,
             ],
             [
-                'merchant_id' =>  "10000000000000",
-                'amount' =>  500,
-                'tax' =>  90,
+                'merchant_id' => "10000000000000",
+                'amount'      => 500,
+                'tax'         => 90,
             ],
         ],
     ],
     'testBankingInvoiceEntityCreateForMultipleAccountsForGivenMonthYearForGivenMerchantWithNoBankingTransaction'=>[
-        'rx_transactions'   =>[
+        'rx_transactions' => [
             [
                 "amount" => 0,
-                "tax" => 0,
+                "tax"    => 0,
             ],
             [
                 "amount" => 0,
-                "tax" => 0,
+                "tax"    => 0,
             ],
         ],
     ],
     'testBankingInvoiceEntityCreateForMultipleAccountsForGivenMonthYearWithPayoutReversed' => [
-        'rx_transactions'   =>[
+        'rx_transactions' => [
             [
-                'type' =>   "rx_transactions",
-                'amount' =>  0,
-                'tax' =>  0,
+                'type'   => "rx_transactions",
+                'amount' => 0,
+                'tax'    => 0,
             ],
             [
-                'type' =>   "rx_transactions",
-                'amount' =>  500,
-                'tax' =>  90,
+                'type'   => "rx_transactions",
+                'amount' => 500,
+                'tax'    => 90,
             ],
         ],
     ],
     'testBankingInvoiceEntityCreateForMultipleAccountsWithPayoutReversalInNextMonthAndNoPayoutsNextMonth' => [
-        'rx_transactions'   =>[
+        'rx_transactions' => [
             [
-                'month' => 8,
-                'year'  => 2019,
-                'amount' =>  -900,
-                'tax' =>  -162,
+                'month'  => 8,
+                'year'   => 2019,
+                'amount' => -900,
+                'tax'    => -162,
             ],
             [
-                'month' => 8,
-                'year'  => 2019,
-                'amount' =>  0,
-                'tax' =>  0,
+                'month'  => 8,
+                'year'   => 2019,
+                'amount' => 0,
+                'tax'    => 0,
             ],
             [
-                'month' => 7,
-                'year'  => 2019,
-                'amount' =>  900,
-                'tax' =>  162,
+                'month'  => 7,
+                'year'   => 2019,
+                'amount' => 900,
+                'tax'    => 162,
             ],
             [
-                'month' => 7,
-                'year'  => 2019,
-                'amount' =>  500,
-                'tax' =>  90,
+                'month'  => 7,
+                'year'   => 2019,
+                'amount' => 500,
+                'tax'    => 90,
             ],
         ],
     ],
     'testBankingInvoiceEntityCreateForMultipleAccountsWithPayoutReversalInNextMonthAndSomePayoutsNextMonthFromAnotherBankingBalance' => [
-        'rx_transactions'   =>[
+        'rx_transactions' => [
             [
-                'month' => 8,
-                'year'  => 2019,
-                'amount' =>  -900,
-                'tax' =>  -162,
+                'month'  => 8,
+                'year'   => 2019,
+                'amount' => -900,
+                'tax'    => -162,
             ],
             [
-                'month' => 8,
-                'year'  => 2019,
-                'amount' =>  500,
-                'tax' =>  90,
+                'month'  => 8,
+                'year'   => 2019,
+                'amount' => 500,
+                'tax'    => 90,
             ],
             [
-                'month' => 7,
-                'year'  => 2019,
-                'amount' =>  900,
-                'tax' =>  162,
+                'month'  => 7,
+                'year'   => 2019,
+                'amount' => 900,
+                'tax'    => 162,
             ],
             [
-                'month' => 7,
-                'year'  => 2019,
-                'amount' =>  500,
-                'tax' =>  90,
+                'month'  => 7,
+                'year'   => 2019,
+                'amount' => 500,
+                'tax'    => 90,
             ],
         ],
     ],
@@ -129,59 +129,48 @@ return [
             'method'  => 'GET',
             'url'     => '/merchants/banking/invoices',
             'content' => [
-                'month' => 7,
-                'year'  => 2019,
+                'month'       => 7,
+                'year'        => 2019,
                 ],
             ],
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 2,
+                'count' => 1,
                 'items' =>  [
                     [
                         'month'          => 7,
                         'year'           => 2019,
-                        'amount'         => 900,
-                        'tax'            => 162,
-                        'account_number' => '1234567',
-                    ],
-                    [
-                        'month'          => 7,
-                        'year'           => 2019,
-                        'amount'         => 500,
-                        'tax'            => 90,
-                        'account_number' => '12345',
+                        'amount'         => 1400,
+                        'tax'            => 252,
                     ],
                 ],
             ],
         ],
     ],
-    'testFetchMultipleBankingInvoicesGivenAccountNumber' => [
+    'testFetchMultipleBankingInvoicesWhenMonthIsGivenWithoutYear' => [
         'request'  => [
             'method'  => 'GET',
             'url'     => '/merchants/banking/invoices',
             'content' => [
-                'month'          => 7,
-                'year'           => 2019,
-                'account_number' => '1234567',
+                'month'       => 7,
             ],
         ],
         'response' => [
             'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'month'          => 7,
-                        'year'           => 2019,
-                        'amount'         => 900,
-                        'tax'            => 162,
-                        'account_number' => '1234567',
-                    ],
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only month not allowed . Year should be sent with month or only year can be sent',
                 ],
             ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
+
     'testFetchMultipleBankingInvoicesGivenNoInputs' => [
         'request'  => [
             'method'  => 'GET',
@@ -191,35 +180,19 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 4,
+                'count'  => 2,
                 'items'  => [
                     [
                         'month'          => 8,
                         'year'           => 2019,
                         'amount'         => 0,
                         'tax'            => 0,
-                        'account_number' => '1234567',
-                    ],
-                    [
-                        'month'          => 8,
-                        'year'           => 2019,
-                        'amount'         => 0,
-                        'tax'            => 0,
-                        'account_number' => '12345',
                     ],
                     [
                         'month'          => 7,
                         'year'           => 2019,
-                        'amount'         => 900,
-                        'tax'            => 162,
-                        'account_number' => '1234567',
-                    ],
-                    [
-                        'month'          => 7,
-                        'year'           => 2019,
-                        'amount'         => 500,
-                        'tax'            => 90,
-                        'account_number' => '12345',
+                        'amount'         => 1400,
+                        'tax'            => 252,
                     ],
                 ],
             ],
@@ -261,6 +234,159 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
+        ],
+    ],
+
+    'testBankingInvoiceDownloadFromAdminDashboard' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/reports/invoice/banking',
+            'content' => [
+                "month"          => 7,
+                "year"           => 2019,
+                "send_email"     => false,
+                "to_emails"      => ["kunal.sikri@razorpay.com"]
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'file_id' => 'rzp_file_mock_id_1000000_file'
+            ],
+        ],
+    ],
+
+    'testBankingInvoiceWithFailedPayoutsInGivenMonthAndYear' => [
+        'rx_transactions' => [
+            'amount' => 1509,
+            'tax'    => 272,
+        ],
+    ],
+
+    'testBankingInvoiceWithFailedPayoutsInGivenMonthButInitiatedPreviousMonthAndNoPayoutsInGivenMonth' => [
+        'rx_transactions' => [
+            'amount' => -500,
+            'tax'    => -90,
+        ],
+    ],
+
+    'testMerchantInvoiceFetchFromAdminDashboardWhenMonthIsGivenWithYearAndMerchantId' => [
+        'rx_transactions' => [
+            'month'       => 7,
+            'year'        => 2019,
+            'merchant_id' => '10000000000000',
+            'amount'      => 500,
+            'tax'         => 90,
+        ],
+    ],
+
+    'testMerchantInvoiceFetchFromAdminDashboardWhenMonthIsGivenWithoutYearButWithMerchantId' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/merchant_invoice',
+            'content' => [
+                'month'       => 7,
+                'merchant_id' => '10000000000000',
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Year and merchant_id should be sent with month or only year can be sent with merchant_id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+    'testBankingInvoiceEmailFromAdminDashboard' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/reports/invoice/banking',
+            'content' => [
+                "month"          => 7,
+                "year"           => 2019,
+                "send_email"     => true,
+                "to_emails"      => ["kunal.sikri@razorpay.com"]
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'file_id' => null
+            ],
+        ],
+    ],
+
+    'testMerchantInvoiceFetchFromAdminDashboardWhenMonthIsGivenWithoutYearAndMerchantId' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/merchant_invoice',
+            'content' => [
+                'month' => 7,
+            ],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Year and merchant_id should be sent with month or only year can be sent with merchant_id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testMerchantInvoiceFetchFromAdminDashboardWhenYearIsGivenWithMerchantId' => [
+        'rx_transactions' => [
+            'year'        => 2019,
+            'merchant_id' => '10000000000000',
+            'amount'      => 500,
+            'tax'         => 90,
+        ],
+    ],
+
+    'testMerchantInvoiceFetchFromAdminDashboardWhenYearIsGivenWithoutMerchantId' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/admin/merchant_invoice',
+            'content' => [
+                'year' => 2019,
+            ],
+            'server'  => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only year not allowed . Year should be sent with merchant_id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
 ];

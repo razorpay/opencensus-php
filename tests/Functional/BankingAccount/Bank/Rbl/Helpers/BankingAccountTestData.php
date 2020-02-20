@@ -132,6 +132,23 @@ return [
         ],
     ],
 
+    'testUpdateBankingAccountToPicked' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PICKED,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PICKED,
+            ],
+        ],
+    ],
+
     'testUpdatedStatusFromProcessingToUnserviceable' => [
         'request'  => [
             'url'     => '/banking_account',
@@ -802,6 +819,37 @@ return [
                 'count'  => 0,
                 'admin'  => true,
                 'items'  => [],
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchOnProxyAuth' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'account_number'    => '2224440041626905',
+                        'status'            => 'created',
+                        'balance'           => [
+                            'balance'       => 200,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                    [
+                        'account_number'    => '1234567808',
+                        'status'            => 'created',
+                        'balance'           => [
+                            'balance'       => 100000,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                ],
             ],
         ],
     ]

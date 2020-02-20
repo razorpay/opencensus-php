@@ -18,7 +18,7 @@ use RZP\Models\Settlement\Channel as BankingChannel;
 
 class Core extends Base\Core
 {
-    public function createAdjustment(array $input, $merchant): Entity
+    public function createAdjustment(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(
             TraceCode::ADJUSTMENT_CREATE_REQUEST,
@@ -52,7 +52,17 @@ class Core extends Base\Core
 
         unset($adjInput[Entity::TYPE]);
 
-        $balance = $merchant->getBalanceByTypeOrFail($balanceType);
+        $sendReserveBalanceMail = false;
+
+        if (($balanceType === Balance\Type::RESERVE_BANKING) or
+            ($balanceType === Balance\Type::RESERVE_PRIMARY))
+        {
+            [$balance, $sendReserveBalanceMail] = (new Balance\Core)->createOrFetchReserveBalance($merchant, $balanceType, $this->mode);
+        }
+        else
+        {
+            $balance = $merchant->getBalanceByTypeOrFail($balanceType);
+        }
 
         $adj = (new Adjustment\Entity)->build($adjInput);
 
@@ -62,10 +72,20 @@ class Core extends Base\Core
              ->setEntityAndId($adj->getEntity(), $merchant->getId())
              ->handle((new \stdClass), $adj);
 
+        $adjustment = null;
+
         if (isset($input[Entity::AMOUNT]) === true)
         {
             // Creating adjustment only, since no invoice record is reqd
-            return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
+            $adjustment = $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
+
+            $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_SUCCESSFULL,
+                [
+                    'adjustment transaction'  => $adjustment,
+                    'balance_type'             => $balanceType,
+                    'merchant_id'              => $merchant->getMerchantId()
+                ]
+            );
         }
         else
         {
@@ -89,9 +109,14 @@ class Core extends Base\Core
                     return $adjustment;
                 }
             );
-
-            return $adjustment;
         }
+
+        if ($sendReserveBalanceMail === true)
+        {
+            (new Balance\Core)->sendReserveBalanceActivatedMail($merchant, $balance);
+        }
+
+        return $adjustment;
     }
 
     public function createAdjustmentForSource(array $input, Base\PublicEntity $source): Entity

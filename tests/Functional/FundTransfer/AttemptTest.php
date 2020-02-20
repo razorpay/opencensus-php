@@ -428,11 +428,7 @@ class AttemptTest extends TestCase
             'content'   => $content
         ];
 
-        Queue::fake();
-
         $this->makeRequestAndGetContent($request);
-
-        Queue::assertPushed(FtsFundTransfer::class, 1);
 
         $payout = $this->getLastEntity('payout', true);
 
@@ -511,11 +507,7 @@ class AttemptTest extends TestCase
             'content'   => $content
         ];
 
-        Queue::fake();
-
         $this->makeRequestAndGetContent($request);
-
-        Queue::assertPushed(FtsFundTransfer::class, 1);
 
         $payout = $this->getLastEntity('payout', true);
 
@@ -540,6 +532,14 @@ class AttemptTest extends TestCase
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        //state transition has been added for fta update where initiated to reversed state transition is not allowed.
+        //first it will be changed to processed and then into reversed state.
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
 
         $this->updateFta(
             $attempt['fts_transfer_id'],
@@ -596,11 +596,7 @@ class AttemptTest extends TestCase
             'content'   => $content
         ];
 
-        Queue::fake();
-
         $this->makeRequestAndGetContent($request);
-
-        Queue::assertPushed(FtsFundTransfer::class, 1);
 
         $payout = $this->getLastEntity('payout', true);
 

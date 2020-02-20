@@ -54,7 +54,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(83, $count);
+        $this->assertEquals(82, $count);
 
         $this->assertArrayNotHasKey('recurring', $content);
     }
@@ -80,7 +80,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(83, $count);
+        $this->assertEquals(82, $count);
     }
 
     public function testBulkMethodUpdate()
@@ -483,5 +483,28 @@ class MethodsTest extends TestCase
 
         $this->assertFalse($merchantMethods->isSubTypeEnabled(SubType::BUSINESS));
 
+    }
+
+    public function testMerchantPaybackInEmiOptions()
+    {
+        $this->ba->proxyAuth();
+
+        $emiPlanEntity = $this->fixtures->emi_plan->create(
+            [
+                'bank'        => 'HDFC',
+                'methods'     => 'card',
+                'merchant_id' => '100000Razorpay',
+                'subvention'  => 'customer',
+                'duration'    => 9,
+                'merchant_payback' => 1000
+            ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::EDIT_METHODS]);
+
+        $this->fixtures->merchant->enableEmi('10000000000000');
+
+        $response = $this->startTest();
+
+        $this->assertTrue(isset($response["emi_options"][$emiPlanEntity->getBank()][0]["merchant_payback"]));
     }
 }

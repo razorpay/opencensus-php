@@ -8,12 +8,14 @@ use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
+use RZP\Models\Reversal;
+use RZP\Models\External;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
+use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
-use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\BankingAccountStatement\Entity as BankingAccountStatementEntity;
+use RZP\Models\FundAccount\Validation;
 
 /**
  * Class Repository
@@ -133,7 +135,6 @@ class Repository extends Transaction\Repository
      * SELECT *
      * FROM transactions
      * WHERE debit != 0
-     *    OR (credit = 0 AND debit = 0)
      *
      * @param BuilderEx $query
      * @param array     $params
@@ -143,21 +144,7 @@ class Repository extends Transaction\Repository
         $action = $params[Entity::ACTION];
         $actionColumn = $this->dbColumn($action);
 
-        if ($action === Entity::DEBIT)
-        {
-            $oppositeActionColumn = $this->dbColumn(Entity::CREDIT);
-        }
-        else
-        {
-            $oppositeActionColumn = $this->dbColumn(Entity::DEBIT);
-        }
-
-        $query->where($actionColumn, '!=', 0)
-              ->orWhere(function ($query) use ($actionColumn, $oppositeActionColumn)
-              {
-                  $query->where($actionColumn, 0)
-                        ->where($oppositeActionColumn, 0);
-              });
+        $query->where($actionColumn, '>', 0);
     }
 
     /**
@@ -178,7 +165,7 @@ class Repository extends Transaction\Repository
      *
      * @param BuilderEx $query
      * @param array     $params
-    */
+     */
     protected function addQueryParamContactId(BuilderEx $query, array $params)
     {
         $contactId        = $params[Entity::CONTACT_ID];
@@ -200,6 +187,62 @@ class Repository extends Transaction\Repository
 
         $query->where($transactionEntityIdColumn, $payoutId);
         $query->where($transactionTypeColumn, E::PAYOUT);
+    }
+
+    /**
+     * SELECT transactions.*
+     * FROM   transactions
+     *        LEFT JOIN payouts
+     *                ON payouts.id = transactions.entity_id
+     *        LEFT JOIN bank_transfers
+     *                ON bank_transfers.id = transactions.entity_id
+     *        LEFT JOIN external
+     *                ON external.id = transactions.entity_id
+     *        LEFT JOIN reversals
+     *                ON reversals.id = transactions.entity_id
+     * WHERE  transactions.merchant_id = '10000000000000'
+     *        AND (`bank_transfers`.`utr` = 'Dq87pSmknY5aDy'
+     *              or `payouts`.`utr` = 'Dq87pSmknY5aDy'
+     *              or `external`.`utr` = 'Dq87pSmknY5aDy'
+     *              or `reversals`.`utr` = 'Dq87pSmknY5aDy'
+     *            )
+     * ORDER  BY created_at DESC,
+     *           id DESC
+     * LIMIT  10
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamUtr(BuilderEx $query, array $params)
+    {
+        $utr                     = $params[Entity::UTR];
+        $payoutUtrColumn         = $this->repo->payout->dbColumn(Payout\Entity::UTR);
+        $bankTransferUtrColumn   = $this->repo->bank_transfer->dbColumn(\RZP\Models\BankTransfer\Entity::UTR);
+        $externalUtrColumn       = $this->repo->external->dbColumn(\RZP\Models\External\Entity::UTR);
+        $reversalUtrColumn       = $this->repo->reversal->dbColumn(\RZP\Models\Reversal\Entity::UTR);
+        $favUtrColumn            = $this->repo->fund_account_validation->dbColumn(Validation\Entity::UTR);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryPayout($query, true);
+        $this->joinQueryBankTransfer($query);
+        $this->joinQueryExternal($query);
+        $this->joinQueryReversal($query);
+        $this->joinQueryFav($query);
+
+        $query->where(function ($query) use (
+            $bankTransferUtrColumn,
+            $utr,
+            $payoutUtrColumn,
+            $externalUtrColumn,
+            $reversalUtrColumn,
+            $favUtrColumn)
+        {
+            $query->orWhere($bankTransferUtrColumn, $utr)
+                  ->orWhere($payoutUtrColumn, $utr)
+                  ->orWhere($externalUtrColumn,$utr)
+                  ->orWhere($reversalUtrColumn,$utr)
+                  ->orWhere($favUtrColumn,$utr);
+        });
     }
 
     /**
@@ -411,7 +454,14 @@ class Repository extends Transaction\Repository
         $query->where($modeColumn, $mode);
     }
 
-    protected function joinQueryPayout(BuilderEx $query)
+    /**
+     * Join with payouts table, by default on inner join,
+     * if the leftJoin param is true join using leftJoin
+     *
+     * @param BuilderEx $query
+     * @param bool      $leftJoin
+     */
+    protected function joinQueryPayout(BuilderEx $query, bool $leftJoin = false)
     {
         $payoutTable = $this->repo->payout->getTableName();
 
@@ -420,7 +470,9 @@ class Repository extends Transaction\Repository
             return;
         }
 
-        $query->join(
+        $joinType = ($leftJoin === true) ? 'leftJoin' : 'join';
+
+        $query->$joinType(
             $payoutTable,
             function(JoinClause $join)
             {
@@ -430,6 +482,93 @@ class Repository extends Transaction\Repository
 
                 $join->on($payoutIdColumn, $transactionEntityIdColumn);
                 $join->where($transactionTypeColumn, Transaction\Type::PAYOUT);
+            });
+    }
+
+    protected function joinQueryBankTransfer(BuilderEx $query)
+    {
+        $bankTransferTable = $this->repo->bank_transfer->getTableName();
+
+        if ($query->hasJoin($bankTransferTable) === true)
+        {
+            return;
+        }
+
+        $query->leftJoin(
+            $bankTransferTable,
+            function(JoinClause $join)
+            {
+                $bankTransferIdColumn      = $this->repo->bank_transfer->dbColumn(BankTransfer\Entity::ID);
+                $transactionEntityIdColumn = $this->dbColumn(Entity::ENTITY_ID);
+                $transactionTypeColumn     = $this->dbColumn(Entity::TYPE);
+
+                $join->on($bankTransferIdColumn, $transactionEntityIdColumn);
+                $join->where($transactionTypeColumn, Transaction\Type::BANK_TRANSFER);
+            });
+    }
+
+    protected function joinQueryExternal(BuilderEx $query)
+    {
+        $externalTable = $this->repo->external->getTableName();
+
+        if ($query->hasJoin($externalTable) === true)
+        {
+            return;
+        }
+        $query->leftJoin(
+            $externalTable,
+            function(JoinClause $join)
+            {
+                $externalIdColumn          = $this->repo->external->dbColumn(External\Entity::ID);
+                $transactionEntityIdColumn = $this->dbColumn(Entity::ENTITY_ID);
+                $transactionTypeColumn     = $this->dbColumn(Entity::TYPE);
+
+                $join->on($externalIdColumn, $transactionEntityIdColumn);
+                $join->where($transactionTypeColumn, Transaction\Type::EXTERNAL);
+            });
+    }
+
+    protected function joinQueryReversal(BuilderEx $query)
+    {
+        $reversalTable = $this->repo->reversal->getTableName();
+
+        if ($query->hasJoin($reversalTable) === true)
+        {
+            return;
+        }
+
+        $query->leftJoin(
+            $reversalTable,
+            function(JoinClause $join)
+            {
+                $reversalIdColumn          = $this->repo->reversal->dbColumn(Reversal\Entity::ID);
+                $transactionEntityIdColumn = $this->dbColumn(Entity::ENTITY_ID);
+                $transactionTypeColumn     = $this->dbColumn(Entity::TYPE);
+
+                $join->on($reversalIdColumn, $transactionEntityIdColumn);
+                $join->where($transactionTypeColumn, Transaction\Type::REVERSAL);
+            });
+    }
+
+    protected function joinQueryFav(BuilderEx $query)
+    {
+        $FAVTable = $this->repo->fund_account_validation->getTableName();
+
+        if ($query->hasJoin($FAVTable) === true)
+        {
+            return;
+        }
+
+        $query->leftJoin(
+            $FAVTable,
+            function(JoinClause $join)
+            {
+                $favIdColumn               = $this->repo->fund_account_validation->dbColumn(Validation\Entity::ID);
+                $transactionEntityIdColumn = $this->dbColumn(Entity::ENTITY_ID);
+                $transactionTypeColumn     = $this->dbColumn(Entity::TYPE);
+
+                $join->on($favIdColumn, $transactionEntityIdColumn);
+                $join->where($transactionTypeColumn, Transaction\Type::FUND_ACCOUNT_VALIDATION);
             });
     }
 

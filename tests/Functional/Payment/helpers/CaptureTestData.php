@@ -623,4 +623,100 @@ return [
             'status_code' => 200,
         ]
     ],
+
+    'testEmandateCaptureWithSufficientBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+    'testEmandateCaptureWithZeroBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testCaptureWithNegativeBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
+    'testEmandateCaptureWithNegativeBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testEmandateCaptureWithNegativeBalanceCrossingThreshold' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bad request',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                  => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED,
+        ]
+    ],
+
+    'testEmandateCaptureWithNegativeAndReserveBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testEmandateCaptureWithSufficientFeeCredits' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testEmandateCaptureWithInSufficientFeeCredits' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testEmandateCaptureWithFeeCreditsAndReserveBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'amount' => 0
+            ],
+        ],
+    ],
+
+    'testCaptureAddBalanceToNegativeBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
 ];

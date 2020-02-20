@@ -68,7 +68,7 @@ class Validator extends Base\Validator
         Entity::NOTES                       => 'sometimes',
         Entity::VIRTUAL_UPI_HANDLE          => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_ROOT            => 'required_if:type.upi_transfer,1|string',
-        Entity::VIRTUAL_UPI_MERCHANT_PREFIX => 'required_if:type.upi_transfer,1|string',
+        Entity::VIRTUAL_UPI_MERCHANT_PREFIX => 'sometimes_if:type.upi_transfer,1|string',
     ];
 
     protected static $editTerminalGateways = [
@@ -367,6 +367,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|alpha_num|min:8',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected static $billdeskEditTerminalRules = [
@@ -479,6 +481,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
         Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER          => 'sometimes|string|max:50',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
     ];
 
     protected static $netbankingIndusindEditTerminalRules = [
@@ -694,7 +697,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::VIRTUAL_UPI_HANDLE         => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_ROOT           => 'required_if:type.upi_transfer,1|string',
-        Entity::VIRTUAL_UPI_MERCHANT_PREFIX=> 'required_if:type.upi_transfer,1|string',
+        Entity::VIRTUAL_UPI_MERCHANT_PREFIX=> 'sometimes_if:type.upi_transfer,1|string',
     ];
 
     protected static $upiAxisTerminalRules = [
@@ -760,6 +763,11 @@ class Validator extends Base\Validator
         // The below fields are used only for Emandate terminals, hence "sometimes"
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+    ];
+
+    protected static $netbankingAxisEditTerminalRules = [
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
     ];
@@ -854,6 +862,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2  => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2      => 'required|string',
+        Entity::TPV                         => 'sometimes|in:0,1,2'
     ];
 
     protected static $netbankingCsbEditTerminalRules = [
@@ -861,8 +873,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
+        Entity::TPV                         => 'sometimes|in:0,1,2'
     ];
 
     protected static $netbankingBobEditTerminalRules = [

@@ -72,18 +72,18 @@ return [
         'password'  => env('MOZART_PASSWORD'),
         'username'  => env('MOZART_USERNAME'),
 
-        'test'  =>  [
+        'test' => [
             'mock'      => env('MOZART_TEST_MOCK', false),
             'url'       => env('MOZART_TEST_URL'),
             'password'  => env('MOZART_TEST_PASSWORD'),
             'username'  => env('MOZART_TEST_USERNAME'),
         ],
 
-        'live'  =>  [
-            'mock'      => env('MOZART_LIVE_MOCK', false),
-            'url'       => env('MOZART_LIVE_URL'),
-            'password'  => env('MOZART_LIVE_PASSWORD'),
-            'username'  => env('MOZART_LIVE_USERNAME'),
+        'live' => [
+            'mock'     => env('MOZART_LIVE_MOCK', false),
+            'url'      => env('MOZART_LIVE_URL'),
+            'password' => env('MOZART_LIVE_PASSWORD'),
+            'username' => env('MOZART_LIVE_USERNAME'),
         ]
     ],
 
@@ -91,6 +91,14 @@ return [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
         'secret'    => env('RAVEN_SECRET'),
+    ],
+
+    'kyc' => [
+        'mock'           => env('KYC_MOCK', false),
+        'url'            => env('KYC_URL'),
+        'password'       => env('KYC_PASSWORD'),
+        'authentication' => env('KYC_AUTH_NAME'),
+        'x_service_id'   => env('KYC_SERVICE_ID')
     ],
 
     'reminders' => [
@@ -137,8 +145,8 @@ return [
             'username'  => env('GOVERNOR_CPS_SERVICE_KEY'),
             'password'  => env('GOVERNOR_CPS_SERVICE_SECRET'),
         ],
-        'adminapi'=> [
-            'username' => env('GOVERNOR_ADMINAPI_SERVICE_KEY' ),
+        'adminapi' => [
+            'username' => env('GOVERNOR_ADMINAPI_SERVICE_KEY'),
             'password' => env('GOVERNOR_ADMINAPI_SERVICE_SECRET'),
         ],
         'url'       => env('GOVERNOR_LIVE_URL'),
@@ -176,7 +184,8 @@ return [
         'secret'        => env('LUMBERJACK_SECRET'),
         'key'           => env('LUMBERJACK_KEY'),
         'mock'          => env('LUMBERJACK_MOCK', false),
-        'identifier'    => env('LUMBERJACK_API_IDENTIFIER')
+        'identifier'    => env('LUMBERJACK_API_IDENTIFIER'),
+        'static_key'    => env('LUMBERJACK_STATIC_KEY'),
     ],
 
     'harvester' => [
@@ -208,6 +217,15 @@ return [
         'mock'      => env('EXCHANGE_MOCK', false),
         'url'       => env('EXCHANGE_URL'),
         'appId'     => env('EXCHANGE_APP_ID')
+    ],
+
+    'freshdesk' => [
+        'url'           => env('FRESHDESK_URL'),
+        'sandbox'       => env('FRESHDESK_SANDBOX', false),
+        'sandbox_url'   => env('FRESHDESK_SANDBOX_URL'),
+        'token'         => env('FRESHDESK_TOKEN'),
+        'sandbox_token' => env('FRESHDESK_SANDBOX_TOKEN'),
+        'mock'          => env('FRESHDESK_MOCK', false),
     ],
 
     'zoho' => [
@@ -326,12 +344,20 @@ return [
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
     ],
 
+    'payment_links' => [
+        'secret'   => env('APP_PAYMENT_LINKS_SECRET'),
+    ],
+
     'myoperator' => [
         'mock'      => env('MYOPERATOR_MOCK'),
         'api_token' => env('MYOPERATOR_API_TOKEN'),
     ],
 
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),
+
+    'payout_links' => [
+            'url' => env('APP_PAYOUT_LINKS_URL', 'https://payout-links.razorpay.com')
+        ],
 
     'vajra' => [
         'secret'   => env('APP_VAJRA_SECRET'),
@@ -373,7 +399,10 @@ return [
 
     'doppler' => [
         'mock'      => env('DOPPLER_MOCK'),
-        'topic'     => env('DOPPLER_SNS_TOPIC')
+        'topic'     => env('DOPPLER_SNS_TOPIC'),
+        'url'       => env('DOPPLER_LIVE_URL'),
+        'key'       => env('DOPPLER_KEY'),
+        'secret'    => env('DOPPLER_API_SECRET')
     ],
 
     'non_blocking_http' => [
@@ -407,11 +436,39 @@ return [
         ],
     ],
 
+    'nbplus_payment_service' => [
+        'mock'      => env('NBPLUS_PAYMENT_SERVICE_MOCK', false),
+        'username'  => env('NBPLUS_PAYMENT_SERVICE_KEY'),
+        'password'  => env('NBPLUS_PAYMENT_SERVICE_SECRET'),
+        'url'       => [
+            'live' => env('NBPLUS_PAYMENT_SERVICE_LIVE_URL'),
+            'test' => env('NBPLUS_PAYMENT_SERVICE_TEST_URL'),
+        ],
+    ],
+
     'automation' => [
         'secret' => env('AUTOMATION_API_SECRET'),
     ],
 
-    'kyc_service' => [
-        'mock' => env('KYC_SERVICE_MOCK', false),
+    'salesforce' => [
+        'mock'          => env('SALESFORCE_MOCK', false),
+        'url'           => env('SALESFORCE_URL'),
+        'username'      => env('SALESFORCE_USERNAME'),
+        'password'      => env('SALESFORCE_PASSWORD'),
+        'client_id'     => env('SALESFORCE_CLIENT_ID'),
+        'client_secret' => env('SALESFORCE_CLIENT_SECRET'),
+    ],
+
+    'terminals_service' => [
+        'mock'          => env('TERMINALS_SERVICE_MOCK', false),
+        'live'          => [
+            'password'      => env('TERMINALS_SERVICE_LIVE_PASSWORD'),
+            'url'           => env('TERMINALS_SERVICE_LIVE_URL'),
+        ],
+        'test'          => [
+            'password'      => env('TERMINALS_SERVICE_TEST_PASSWORD'),
+            'url'           => env('TERMINALS_SERVICE_TEST_URL'),
+        ],
+
     ],
 ];

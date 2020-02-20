@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Merchant\Invoice;
 
-use File;
-
 use App;
+use File;
+use Mail;
 
 use Carbon\Carbon;
+use Monolog\Logger;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -14,19 +15,22 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
-use RZP\Services\UfhService;
 use RZP\Base\RuntimeManager;
+use RZP\Services\UfhService;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Report\Types\BankingInvoiceReport;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Mail\Report\RazorpayX\MerchantBankingInvoice;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Merchant\Preferences as MerchantPreferences;
-use RZP\Jobs\MerchantInvoiceCorrection as MerchantInvoiceCorrectionJob;
+use RZP\Mail\Merchant\MerchantInvoiceExecutionReport as MerchantInvoiceExecutionReport;
 
 class Core extends Base\Core
 {
+    use FileHandlerTrait;
+
     const STORE_TYPE = 'file';
 
     const DASHBOARD_FILE_URL = '%sufh/file/%s';
@@ -77,15 +81,6 @@ class Core extends Base\Core
         }
 
         //
-        // When true, payment transactions will be considered from the month
-        // specified by `$invoiceDate` where created and captured in same month
-        // All other transaction will we considered on created date
-        //
-        $isCorrection = (isset($input['correction']) === true) ?
-                        (bool) $input['correction'] :
-                        false;
-
-        //
         // in case merchant id is given in the request then dont have to spawn the k8s job
         // can directly queue the mid and generate the invoice
         //
@@ -93,7 +88,7 @@ class Core extends Base\Core
         {
             $merchantIds = $input['merchant_ids'];
 
-            $this->processMerchantInvoice($this->mode, $year, $month, $merchantIds, $isCorrection);
+            $this->processMerchantInvoice($this->mode, $year, $month, $merchantIds);
         }
         else
         {
@@ -103,59 +98,6 @@ class Core extends Base\Core
 
             $this->app->k8s_client->createInvoiceJob($this->mode, $year, $month);
         }
-    }
-
-    public function queueCorrectionInvoiceInvoice(array $input)
-    {
-        $this->trace->info(TraceCode::MERCHANT_INVOICE_CORRECTION_REQUEST, $input);
-
-        (new Validator)->validateInput('correction_queue', $input);
-
-        $invoiceDate = Carbon::createFromDate(
-            $input['year'],
-            $input['month'],
-            1,
-            Timezone::IST);
-
-        $merchantIds = [];
-
-        if (isset($input['merchant_ids']) === true)
-        {
-            $merchantIds = $input['merchant_ids'];
-        }
-
-        $batch  = 10000;
-
-        $offset = 0;
-
-        $defaultDelay = 0;
-
-        do
-        {
-            $merchantIds = $this->repo
-                                ->merchant
-                                ->fetchActivatedMerchantsBeforeTimestamp(
-                                    $batch,
-                                    $offset,
-                                    $invoiceDate->endOfMonth()->timestamp,
-                                    $merchantIds);
-
-            $count = count($merchantIds);
-
-            $offset += $count;
-
-            foreach ($merchantIds as $merchantId)
-            {
-                MerchantInvoiceCorrectionJob::dispatch(
-                                                $merchantId,
-                                                $invoiceDate->month,
-                                                $invoiceDate->year,
-                                                $this->mode)
-                                            // Assign a delay between 0 and 900 so that tasks are distributed
-                                            // over 15 minute period
-                                            ->delay($defaultDelay++ % 901);
-            }
-        } while ($count === $batch);
     }
 
     public function createAdjustmentInvoiceEntity(Adjustment\Entity $adjustment, array $input): Entity
@@ -241,7 +183,6 @@ class Core extends Base\Core
 
         return $count;
     }
-
 
     public function generateInvoiceReport($input)
     {
@@ -331,7 +272,7 @@ class Core extends Base\Core
         return sprintf(self::DASHBOARD_FILE_URL, $this->config['applications.dashboard.url'], $fileId);
     }
 
-    public function processMerchantInvoice($mode, $year, $month, $merchantIds = [], $isCorrection = false)
+    public function processMerchantInvoice($mode, $year, $month, $merchantIds = [])
     {
         //
         // merchant_ids_excluded is an array of merchant ids coming from input,
@@ -344,7 +285,6 @@ class Core extends Base\Core
             [
                 'month'                 => $month,
                 'year'                  => $year,
-                'is_correction'         => $isCorrection,
                 'merchant_ids'          => $merchantIds,
                 'merchant_ids_excluded' => $merchantIdsExcluded,
                 'mode'                  => $mode
@@ -381,8 +321,7 @@ class Core extends Base\Core
                                             $merchantId,
                                             $month,
                                             $year,
-                                            $mode,
-                                            $isCorrection)
+                                            $mode)
                                             // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
                                             ->delay($i++ % 901);
             }
@@ -401,10 +340,11 @@ class Core extends Base\Core
      *
      * @param int $year
      * @param int $month
+     * @return array
      */
     public function verify(int $year, int $month): array
     {
-        $result = $this->repo->merchant_invoice->verify($year, $month);
+        [$result, $activeMerchants] = $this->repo->merchant_invoice->verify($year, $month);
 
         if ($result->isEmpty() === true)
         {
@@ -415,7 +355,7 @@ class Core extends Base\Core
             TraceCode::MERCHANT_INVOICE_CREATION_SKIPPED,
             [
                 'count'        => $result->count(),
-                'merchant_ids' => $result->toArray(),
+                'merchant_ids' => $result->getIds(),
             ]);
 
         (new SlackNotification)->send(
@@ -426,6 +366,46 @@ class Core extends Base\Core
             null,
             $result->count());
 
-        return $result->toArray();
+        $merchantIds = [];
+
+        $result->each(
+            function($merchant) use (& $merchantIds)
+            {
+                $merchantIds[] = [ 'Merchant_id' => $merchant->getId()];
+            });
+
+        $totalInvoiceCreated = $activeMerchants - $result->count();
+
+        try
+        {
+            $fileName = $this->createCsvFile($merchantIds, 'merchant_invoice_summary_' . $month . '_' . $year,
+                                        null, 'files/report');
+
+            $data = [
+                'month'                    => $month,
+                'year'                     => $year,
+                'total_merchants'          => $activeMerchants,
+                'total_invoice_created'    => $totalInvoiceCreated,
+                'total_invoice_skipped'    => $result->count(),
+                'attachment'               => $fileName,
+            ];
+
+            $email = new MerchantInvoiceExecutionReport($data);
+
+            Mail::send($email);
+
+            unlink($fileName);
+
+            return $result->getIds();
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR
+            );
+
+            throw $e;
+        }
     }
 }

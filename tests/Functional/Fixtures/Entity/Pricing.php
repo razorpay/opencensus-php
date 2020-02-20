@@ -434,6 +434,21 @@ class Pricing extends Base
                 'max_fee'             => 5000,
                 'org_id'              => '100000razorpay',
             ],
+            [
+                'id'                  => '1zE31zbybacab6',
+                'plan_id'             => 'E9t4ljLBnt2cad',
+                'plan_name'           => 'testDefaultVpaPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'upi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 200,
+                'fixed_rate'          => 0,
+                'max_fee'             => 5000,
+                'receiver_type'       => 'vpa',
+                'org_id'              => '100000razorpay',
+            ],
         ];
 
         return $rows;
@@ -456,6 +471,8 @@ class Pricing extends Base
     public function createDefaultBankingPlan()
     {
         $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getBankingPlanData());
+
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getZeroBankingPlanData());
     }
 
     public function createStandardPlan()
@@ -722,6 +739,30 @@ class Pricing extends Base
         $this->addPricingRulesToDb([$row]);
     }
 
+    public function createRBLDirectPayoutPricingPlan()
+    {
+        $pricingPlanId = '1hDYlICobzOCYt';
+
+        $row = [
+            'id'                  => '1ZE3CYqf1zbyaF',
+            'plan_id'             => $pricingPlanId,
+            'plan_name'           => 'testRBLPlan',
+            'product'             => 'banking',
+            'feature'             => 'payout',
+            'payment_method'      => 'fund_transfer',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 500,
+            'org_id'              => '100000razorpay',
+            'account_type'        => 'direct',
+            'channel'             => 'rbl',
+        ];
+
+        $this->addPricingRulesToDb([$row]);
+    }
+
     public function createInstantRefundsPricingPlan()
     {
         $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
@@ -745,6 +786,18 @@ class Pricing extends Base
                 'plan_name'           => 'testDefaultPlan',
                 'feature'             => 'refund',
                 'payment_method'      => 'upi',
+                'fixed_rate'          => 100,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 50000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => '1zE3CYqf1zbyCC',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'netbanking',
                 'fixed_rate'          => 100,
                 'amount_range_active' => 1,
                 'amount_range_min'    => 100,

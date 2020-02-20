@@ -14,8 +14,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Base\InfoCode;
+use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
-use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 
 class Service extends Base\Service
@@ -33,11 +33,6 @@ class Service extends Base\Service
      */
     const BATCH_SUMMARY_SKIP_GATEWAYS = [
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
-    ];
-
-    const CPS_PARAMS = [
-        Reconciliate::GATEWAY_TRANSACTION_ID,
-        Reconciliate::AUTH_CODE,
     ];
 
     /**
@@ -199,7 +194,7 @@ class Service extends Base\Service
 
         if (empty($response[$paymentId]) === false)
         {
-            foreach (self::CPS_PARAMS as $field)
+            foreach (Constants::CPS_PARAMS as $field)
             {
                 if (empty($misParams[$field]) === true)
                 {
@@ -208,18 +203,34 @@ class Service extends Base\Service
                     continue;
                 }
 
+                //
+                // Overwrite the data in two cases :
+                // 1. Existing CPS data is empty.
+                // 2. For gateway_transaction_id mismatch, we want to
+                //    replace the data, as confirmed by CPS team.
+                //    Ref : https://razorpay.slack.com/archives/C847BUR61/p1578048952001800
+                //
                 if (empty($response[$paymentId][$field]) === true)
                 {
-                    // Existing CPS data is empty, Overwrite it
                     $pushData[$field] = $misParams[$field];
                 }
                 else if (trim($response[$paymentId][$field]) !== $misParams[$field])
                 {
                     // CPS data and MIS data both are non empty and we have mismatch.
-                    // Raise alert and don't save this MIS value.
-                    $this->messenger->raiseReconAlert(
+                    //
+                    // If the field is gateway_transaction_id, we simply overwrite.
+                    if ($field === Constants::GATEWAY_TRANSACTION_ID)
+                    {
+                        $pushData[$field] = $misParams[$field];
+
+                        // skip trace as this mismatch is expected.
+                        continue;
+                    }
+
+                    // Trace alert
+                    $this->trace->info(
+                        TraceCode::RECON_MISMATCH,
                         [
-                            'trace_code'                => TraceCode::RECON_MISMATCH,
                             'info_code'                 => InfoCode::CPS_PAYMENT_AUTH_DATA_MISMATCH,
                             'payment_id'                => $paymentId,
                             'field'                     => $field,
@@ -229,9 +240,6 @@ class Service extends Base\Service
                             'batch_id'                  => $input['batch_id'],
                         ]
                     );
-
-                    // Skip saving this param
-                    continue;
                 }
             }
         }
@@ -267,6 +275,89 @@ class Service extends Base\Service
             TraceCode::RECON_INFO,
             [
                 'info_code' => InfoCode::RECON_CPS_QUEUE_DISPATCH,
+                'queue'     => $queueName,
+                'payload'   => $pushData,
+                'gateway'   => $input['gateway'],
+                'batch_id'  => $input['batch_id'],
+            ]
+        );
+    }
+
+    public function persistGatewayDataAfterNbPlusReconResponse(array $response, array $input, $entity)
+    {
+        $paymentId = $input['payment_id'];
+
+        $misParams = $input['recon_params'];
+
+        $gatewayParams = $input['gateway_params'];
+
+        $dataToUpdate = [];
+
+        $responseData = $response['items'];
+
+        if (empty($responseData[$paymentId]) === false)
+        {
+            foreach ($gatewayParams as $field)
+            {
+                if (empty($misParams[$field]) === true)
+                {
+                    continue;
+                }
+
+                if (empty($responseData[$paymentId][$field]) === true)
+                {
+                    $dataToUpdate[$field] = $misParams[$field];
+                }
+                else if (trim($responseData[$paymentId][$field]) !== $misParams[$field])
+                {
+                    $this->trace->info(
+                        TraceCode::RECON_MISMATCH,
+                        [
+                            'info_code'                 => InfoCode::NBPLUS_DATA_MISMATCH,
+                            'payment_id'                => $paymentId,
+                            'field'                     => $field,
+                            'db_reference_number'       => $responseData[$paymentId][$field],
+                            'recon_reference_number'    => $misParams[$field],
+                            'gateway'                   => $input['gateway'],
+                            'batch_id'                  => $input['batch_id'],
+                        ]
+                    );
+                }
+            }
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => InfoCode::NBPLUS_DATA_ABSENT,
+                    'payment_id'    => $paymentId,
+                    'gateway'       => $input['gateway'],
+                    'batch_id'      => $input['batch_id'],
+                ]);
+
+            return;
+        }
+
+        if (empty($dataToUpdate) === true)
+        {
+            return;
+        }
+
+        $dataToUpdate['payment_id'] = $paymentId;
+
+        // Final Payload
+        $pushData['entity_name'] = $entity;
+        $pushData['recon_data']  = $dataToUpdate;
+
+        $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
+
+        Queue::pushRaw(json_encode($pushData), $queueName);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code' => InfoCode::RECON_NBPLUS_QUEUE_DISPATCH,
                 'queue'     => $queueName,
                 'payload'   => json_encode($pushData),
             ]

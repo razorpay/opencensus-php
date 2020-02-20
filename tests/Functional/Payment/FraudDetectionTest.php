@@ -62,7 +62,7 @@ class FraudDetectionTest extends TestCase
         $this->assertEquals('PAYMENT_FAILED_DUE_TO_BLOCKED_CARD', $riskEntity['reason']);
 
         // We are not storing riskScore if it is not tagged by maxmind source
-        $this->assertNull($riskEntity['risk_score']);
+        $this->assertEquals(-1, $riskEntity['risk_score']);
 
         $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
 
@@ -94,6 +94,39 @@ class FraudDetectionTest extends TestCase
             'PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND', $riskEntity['reason']);
 
         $this->assertNotNull($riskEntity['risk_score']);
+    }
+
+    public function testSkipMaxmindCheckForAmexPayments()
+    {
+        $this->mockRazorx();
+        $this->mockShield();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => "American Express",
+                'type'    => 'debit',
+            ]);
+
+        $payment['card']['number'] = '5149066434045615';
+        $payment['card']['cvv']    = '1234';
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayKeysExist($response, ['razorpay_payment_id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $paymentAnalytics = $this->getLastEntity('payment_analytics', true);
+
+        $this->assertEquals($paymentAnalytics['risk_score'], 35);
+
+        $this->assertEquals($paymentAnalytics['risk_engine'], 'shield');
     }
 
     public function testFraudNotDetected()
@@ -264,9 +297,17 @@ class FraudDetectionTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $payment['card']['number'] = '341111111111111';
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 514906,
+                'network' => 'Visa',
+                'type'    => 'debit',
+                'country' => 'US',
+                'enabled' => '1'
+            ]);
 
-        $payment['card']['cvv'] = '1234';
+        $payment['card']['number'] = '5149067611060906';
 
         $data = $this->testData['testFraudDetectionFailedByShieldDetectedByMaxMind'];
 
@@ -418,5 +459,64 @@ class FraudDetectionTest extends TestCase
     public function testFraudDetectionWithPlatformRandom()
     {
         $this->runPlatformTest('xyz', 'others');
+    }
+
+    protected function runPayloadTest($payment, $comparatorFunc)
+    {
+        $this->mockRazorx();
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing($comparatorFunc);
+
+        $this->app->instance('shield', $shieldClient);
+
+        $this->doAuthPayment($payment);
+
+    }
+
+    public function testFraudDetectionForUpiFlowIntent()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+
+        $payment['_'] = ['flow' => 'intent'];
+
+        $comparatorFunc = function ($payload) {
+            return [
+                "action" => (($payload['input']['upi_type'] === 'intent') ? 'allow': 'block'),
+                "max_rule_weight" => 0,
+                "maxmind_score" => null,
+                "triggered_rule_weight" => 0,
+            ];
+        };
+
+        $this->runPayloadTest($payment, $comparatorFunc);
+    }
+
+    public function testFraudDetectionForUpiFlowCollect()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $comparatorFunc = function ($payload) {
+            return [
+                "action" => (($payload['input']['upi_type'] === 'collect') ? 'allow': 'block'),
+                "max_rule_weight" => 0,
+                "maxmind_score" => null,
+                "triggered_rule_weight" => 0,
+            ];
+        };
+
+        $this->runPayloadTest($payment, $comparatorFunc);
     }
 }

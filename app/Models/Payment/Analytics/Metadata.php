@@ -67,6 +67,8 @@ class Metadata
     const S2S           = 's2s';
     // No checkout: Our code, merchant not involved, for push payments only
     const PUSH          = 'push';
+    // Payment UI made for Legacy Browsers like IE 8
+    const LEGACYJS      = 'legacyjs';
 
     const LIBRARY_VALUES = [
         self::CHECKOUTJS    => 1,
@@ -75,6 +77,7 @@ class Metadata
         self::CUSTOM        => 4,
         self::DIRECT        => 5,
         self::PUSH          => 6,
+        self::LEGACYJS      => 7,
     ];
 
     // Browser values
@@ -100,8 +103,8 @@ class Metadata
 
     const WOOCOMMERCE   = 'woocommerce';
     const MAGENTO       = 'magento';
-    const CS_CART       = 'cs_cart';
-    const OPEN_CART     = 'open_cart';
+    const CSCART        = 'cscart';
+    const OPENCART      = 'opencart';
     const SHOPIFY       = 'shopify';
     const WHMCS         = 'whmcs';
     const ARASTTA       = 'arastta';
@@ -111,8 +114,8 @@ class Metadata
     const INTEGRATION_VALUES = [
         self::WOOCOMMERCE   => 1,
         self::MAGENTO       => 2,
-        self::CS_CART       => 3,
-        self::OPEN_CART     => 4,
+        self::CSCART        => 3,
+        self::OPENCART      => 4,
         self::SHOPIFY       => 5,
         self::WHMCS         => 6,
         self::ARASTTA       => 7,

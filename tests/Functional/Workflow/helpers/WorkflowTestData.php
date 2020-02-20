@@ -151,4 +151,26 @@ return [
             ]
         ]
     ],
+    'testCreateWorkflowWithCreatePayoutPermissionWithoutMerchantId' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/workflows',
+            'content' => [
+                'name' => 'Test workflow',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Merchant id should be passed for this permission',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED,
+        ],
+    ],
 ];

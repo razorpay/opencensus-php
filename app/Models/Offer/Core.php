@@ -104,7 +104,7 @@ class Core extends Base\Core
 
         $checker = new Checker($offer, $verbose);
 
-        if ($checker->checkApplicabilityForPayment($payment) === false)
+        if ($checker->checkApplicabilityForPayment($payment, $payment->order) === false)
         {
             $this->trace->info(
                 TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT,
@@ -139,25 +139,19 @@ class Core extends Base\Core
         //In case of discounted offer where Rzp modifies the amount, if offer validations fails
         //and merchant does not want to block payment for that offer, setting the original order amount
         //again for payment amount.
-        $order = $payment->order;
 
-        if($order->isDiscountApplicable() && $input['order_amount'] !== null)
+        if(($offer->getOfferType() === Constants::INSTANT_OFFER) and ($input['order_amount'] !== null ))
         {
             $payment->setAmount($input['order_amount']);
 
             $payment->setBaseAmount($input['order_amount']);
         }
 
-        //Setting discount flag to false to avoid modify amount to discounted amount while capturing the
-        // payment.
-        $order->setDiscount(false);
-
         //As offer is not applicable, dissociating it
         $payment->dissociateOffer($offer);
-
     }
 
-    public function fetchMerchantOffersForCheckout(Merchant\Entity $merchant)
+    public function fetchSharedAccOffersForCheckout(Merchant\Entity $merchant)
     {
         $merchantId = $merchant->getId();
 
@@ -176,7 +170,7 @@ class Core extends Base\Core
 
         $sharedOffers = $groupedOffers->get(Account::SHARED_ACCOUNT) ?? new PublicCollection;
 
-        $applicableOffers = $directOffers;
+        $applicableOffers = new PublicCollection();
 
         //
         // For shared merchant offers if there is no similar offer (i,e for same method,
@@ -213,6 +207,25 @@ class Core extends Base\Core
         }
 
         return $offer;
+    }
+
+    public function validateDefaultOfferForOrder(Order\Entity $order, Entity $offer)
+    {
+        $verbose = true;
+
+        $checker = new Checker($offer, $verbose);
+
+        if ($checker->checkValidityOnOrder($order) === true)
+        {
+            return $offer;
+        }
+    }
+
+    public function fetchDefaultOffersForMerchant(string $merchantId)
+    {
+        $defaultOffers = $this->repo->offer->fetchAllDefaultOffersForMerchant($merchantId);
+
+        return $defaultOffers;
     }
 
     public function fetchSharedOffers()
@@ -376,7 +389,7 @@ class Core extends Base\Core
         {
             $checker = new Checker($offer, $verbose);
 
-            if ($checker->checkApplicabilityForPayment($payment))
+            if ($checker->checkApplicabilityForPayment($payment, $order))
             {
                 $applicableOffers[] = $offer->getPublicId();
             }

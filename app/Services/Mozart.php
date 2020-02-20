@@ -64,7 +64,10 @@ class Mozart
 
         $this->config = $app['config'];
 
-        $this->mode = $app['rzp.mode'];
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
     }
 
     public function sendMozartRequest(
@@ -238,11 +241,7 @@ class Mozart
                 $errorCode = TraceCode::MOZART_SERVICE_REQUEST_TIMEOUT;
             }
 
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                $errorCode
-            );
+            $this->trace->traceException($e, Trace::ERROR, $errorCode);
 
             throw $e;
         }
@@ -340,7 +339,8 @@ class Mozart
      * Check for gateway errors
      *
      * @param array $response
-     * @param bool $useMozartErrorCode whether to use internal error codes mapped by mozart.
+     * @param bool  $useMozartMappedInternalErrorCode whether to use internal error codes mapped by mozart.
+     *
      * @throws Exception\GatewayErrorException
      */
     protected function checkGatewayErrorsAndThrowException(array $response, bool $useMozartMappedInternalErrorCode)

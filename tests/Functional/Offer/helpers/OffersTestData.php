@@ -23,7 +23,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -59,7 +60,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -95,7 +97,8 @@ return [
                 'ends_at'             => 1639758568,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -134,7 +137,8 @@ return [
                 'ends_at'             => 1639758568,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -170,7 +174,8 @@ return [
                     'ends_at'             => 1639758568,
                     'display_text'        => 'Some more details',
                     'terms'               => 'Some more details',
-                    'block'               =>  1
+                    'block'               =>  1,
+                    'type'                =>  'instant'
                 ],
                 'merchant_ids' => [
                     '10000000000000',
@@ -202,7 +207,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -235,7 +241,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -271,7 +278,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -308,7 +316,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -340,7 +349,8 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details',
-                'block'               =>  1
+                'block'           =>  1,
+                'type'            =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -374,7 +384,8 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details',
-                'block'               =>  1
+                'block'           =>  1,
+                'type'            =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -411,7 +422,8 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details',
-                'block'               =>  1
+                'block'           =>  1,
+                'type'            =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -447,7 +459,8 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details',
-                'block'               =>  1
+                'block'           =>  1,
+                'type'            =>  'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -484,7 +497,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -518,7 +532,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -552,7 +567,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -586,7 +602,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -619,7 +636,8 @@ return [
                 'ends_at'            => 1546300800,
                 'display_text'       => 'Some more details',
                 'terms'              => 'Some more details',
-                'block'               =>  1
+                'block'              =>  1,
+                'type'               => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -653,7 +671,8 @@ return [
                 'ends_at'            => 1546300800,
                 'display_text' => 'Some more details',
                 'terms' => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -688,7 +707,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -723,7 +743,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -759,7 +780,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -794,7 +816,8 @@ return [
                 'ends_at'             => 1350993070,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -826,7 +849,8 @@ return [
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -860,7 +884,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -893,7 +918,8 @@ return [
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -918,15 +944,16 @@ return [
             'content' => [
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
-                'payment_network'     => 'AMEX',
+                'issuer'              => 'HDFC',
                 'emi_subvention'      => true,
-                'emi_durations'       => ['9', '9'],
+                'emi_durations'       => ['6'],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -936,10 +963,10 @@ return [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
-                'payment_network'     => 'AMEX',
+                'issuer'              => 'HDFC',
                 'max_payment_count'   => 2,
-                'min_amount'          => 316389,
-                'emi_durations'       => [9],
+                'min_amount'          => 26366,
+                'emi_durations'       => [6],
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details'
             ]
@@ -960,7 +987,8 @@ return [
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -987,11 +1015,12 @@ return [
                 'payment_method'      => 'emi',
                 'payment_network'     => 'BAJAJ',
                 'emi_subvention'      => true,
-                'emi_durations'       => [3,6,9,12],
+                'emi_durations'       => [9],
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant',
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -1022,7 +1051,8 @@ return [
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -1055,7 +1085,8 @@ return [
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -1064,7 +1095,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid emi durations given 7, 5'
+                    'description' => 'Invalid emi durations given 3, 7, 5'
                 ]
             ],
             'status_code' => 400,
@@ -1362,7 +1393,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -1395,7 +1427,8 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details',
-                'block'               =>  1
+                'block'           =>  1,
+                'type'            => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -1430,7 +1463,8 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details',
-                'block'               =>  1
+                'block'           =>  1,
+                'type'            => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -1465,7 +1499,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -1504,7 +1539,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -1537,7 +1573,8 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details',
-                'block'               =>  1
+                'block'           =>  1,
+                'type'            => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -1569,7 +1606,8 @@ return [
                 'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details',
-                'block'               =>  1
+                'block'           =>  1,
+                'type'            => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'
@@ -1604,7 +1642,8 @@ return [
                 'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details',
-                'block'               =>  1
+                'block'               =>  1,
+                'type'                => 'instant'
             ],
             'url'    => '/offers',
             'method' => 'POST'

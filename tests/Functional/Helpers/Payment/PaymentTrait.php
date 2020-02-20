@@ -6,6 +6,7 @@ use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
+use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Constants\Shield as ShieldConstants;
 use Symfony\Component\DomCrawler\Crawler;
@@ -1013,6 +1014,11 @@ trait PaymentTrait
             $input['fta_data'] = $data['fta_data'];
         }
 
+        if (isset($data['mode_requested']) === true)
+        {
+            $input['mode_requested'] = $data['mode_requested'];
+        }
+
         $this->ba->scroogeAuth();
 
         $request = array(
@@ -1069,6 +1075,11 @@ trait PaymentTrait
                 case 3471:
                     $event = 'processed_event';
                     $refund[RefundEntity::SPEED_PROCESSED] = 'instant';
+                    break;
+
+                // Emandate Debit
+                case 4000:
+                    $event = 'processed_event';
                     break;
             }
 
@@ -1536,6 +1547,19 @@ trait PaymentTrait
 
         $payment['method'] = 'upi';
         $payment['vpa'] = 'vishnu@icici';
+
+        return $payment;
+    }
+
+    protected function getDefaultUpiBlockPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+
+        $payment['upi'] = [
+            'vpa'   => 'vishnu@icici'
+        ];
 
         return $payment;
     }
@@ -2490,5 +2514,52 @@ trait PaymentTrait
 
         $this->app->scrooge->method('getFileBasedRefunds')
                            ->willReturn($scroogeResponse);
+    }
+
+    protected function callFTAPatchRoute($content = [])
+    {
+        $this->ba->adminAuth();
+
+        $request = array(
+            'method'    => 'PATCH',
+            'url'       => '/fund_transfer_attempts',
+            'content'   => $content
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function markProcessedInstantRefundFailed($refund, $fta)
+    {
+        $strippedFtaId = substr($fta['id'], 4);
+
+        $ftaUpdateContent = [];
+        $ftaUpdateContent[$strippedFtaId]['status'] = 'failed';
+        $ftaUpdateContent[$strippedFtaId]['remarks'] = 'transaction got reversed';
+        $ftaUpdateContent[$strippedFtaId]['failure_reason'] = '[manual] transaction got reversed';
+
+        $this->callFTAPatchRoute($ftaUpdateContent);
+
+        $event = 'fee_only_reversal_event';
+        $this->scroogeUpdateRefundStatus($refund, $event);
+
+        $event = 'processed_to_file_init_event';
+        $status = 'file_init';
+        $this->scroogeUpdateRefundStatus($refund, $event, $status);
+    }
+
+    protected function enableRazorXTreatmentForRazorXRefund()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
     }
 }

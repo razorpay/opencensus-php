@@ -24,7 +24,7 @@ class PaysecureGatewayTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    protected $paymentEntityGateway = 'hitachi';
+    protected $paymentEntityGateway = 'paysecure';
 
     const HITACHI_MID = 'sample_hitachi_mid';
     const HITACHI_TID = 'sample_hitachi_tid';
@@ -315,6 +315,53 @@ class PaysecureGatewayTest extends TestCase
                 Entity::STATUS        => 'failure',
                 Entity::ACTION        => 'authorize',
                 Entity::ERROR_CODE    => '406',
+                Entity::ERROR_MESSAGE => 'Not Authenticated',
+            ],
+            $gatewayPayment
+        );
+    }
+
+    public function testInititiate2CardEnrollmentError()
+    {
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'initiate2')
+                {
+                    $content['status']      = 'failure';
+                    $content['errorcode']   = '412';
+                    $content['errormsg']    = 'Not Authenticated';
+                    $content['RedirectURL'] = '';
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'failed',
+                'amount'  => 50000,
+                'method'  => 'card',
+                'gateway' => $this->paymentEntityGateway,
+            ],
+            $payment
+        );
+
+        $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertArraySelectiveEquals(
+            [
+                Entity::STATUS        => 'failure',
+                Entity::ACTION        => 'authorize',
+                Entity::ERROR_CODE    => '412',
                 Entity::ERROR_MESSAGE => 'Not Authenticated',
             ],
             $gatewayPayment
@@ -637,7 +684,7 @@ class PaysecureGatewayTest extends TestCase
 
         $payment = $this->getDbLastEntityToArray('payment');
 
-        //temporary: make gateway hitachi until paysecure has not been added to scrooge
+        // Set Mock gateway to hitachi
         $this->gateway = 'hitachi';
 
         $this->mockServerContentFunction(
@@ -664,14 +711,13 @@ class PaysecureGatewayTest extends TestCase
             [
                 'amount'     => 1000,
                 'payment_id' => $payment['id'],
-                'gateway'    => 'hitachi',
+                'gateway'    => 'paysecure',
                 'is_scrooge' => true,
                 'status'     => 'processed',
             ],
             $refund
         );
 
-        //temporary: make gateway paysecure for other testcases
         $this->gateway = 'paysecure';
     }
 
@@ -683,7 +729,7 @@ class PaysecureGatewayTest extends TestCase
 
         $this->clearMockFunction();
 
-        //temporary: make gateway hitachi until paysecure has not been added to scrooge
+        // Set Mock gateway to hitachi
         $this->gateway = 'hitachi';
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -710,14 +756,13 @@ class PaysecureGatewayTest extends TestCase
             [
                 'amount'     => 1000,
                 'payment_id' => $payment['id'],
-                'gateway'    => 'hitachi',
+                'gateway'    => 'paysecure',
                 'is_scrooge' => true,
                 'status'     => 'processed',
             ],
             $refund
         );
 
-        //temporary: make gateway paysecure for other testcases
         $this->gateway = 'paysecure';
     }
 

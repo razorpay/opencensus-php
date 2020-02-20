@@ -253,6 +253,12 @@ return [
                         RejectionReasons::DESCRIPTION => RejectionReasons::DUPLICATE_OR_ERRENOUS_CREATION_DESCRIPTION,
                     ],
                 ],
+                RejectionReasons::PROHIBITED_BUSINESSES => [
+                    [
+                        RejectionReasons::CODE        => RejectionReasons::IMPROPER_DOCUMENTATION,
+                        RejectionReasons::DESCRIPTION => RejectionReasons::IMPROPER_DOCUMENTATION_DESCRIPTION,
+                    ],
+                ],
             ],
         ],
     ],
@@ -329,26 +335,34 @@ return [
     'testMerchantDetailsPatch' => [
         'request'  => [
             'content' => [
-                'business_operation_address'    => 'Test address',
-                'business_operation_state'      => 'Karnataka',
-                'business_operation_city'       => 'Bengaluru',
-                'business_operation_pin'        => '560030',
-                'business_category'             => 'financial_services',
-                'business_subcategory'          => 'lending',
-                'international_activation_flow' => 'whitelist',
+                'business_operation_address'               => 'Test address',
+                'business_operation_state'                 => 'Karnataka',
+                'business_operation_city'                  => 'Bengaluru',
+                'business_operation_pin'                   => '560030',
+                'business_category'                        => 'financial_services',
+                'business_subcategory'                     => 'lending',
+                'international_activation_flow'            => 'whitelist',
+                'estd_year'                                => '2020',
+                'authorized_signatory_residential_address' => '12345rtyuk',
+                'authorized_signatory_dob'                 => '1992-12-12',
+                'platform'                                 => 'web',
             ],
             'url'     => '/merchants/details',
             'method'  => 'PATCH',
         ],
         'response' => [
             'content' => [
-                'business_operation_address'    => 'Test address',
-                'business_operation_state'      => 'Karnataka',
-                'business_operation_city'       => 'Bengaluru',
-                'business_operation_pin'        => '560030',
-                'business_category'             => 'financial_services',
-                'business_subcategory'          => 'lending',
-                'international_activation_flow' => 'whitelist',
+                'business_operation_address'               => 'Test address',
+                'business_operation_state'                 => 'Karnataka',
+                'business_operation_city'                  => 'Bengaluru',
+                'business_operation_pin'                   => '560030',
+                'business_category'                        => 'financial_services',
+                'business_subcategory'                     => 'lending',
+                'international_activation_flow'            => 'whitelist',
+                'estd_year'                                => '2020',
+                'authorized_signatory_residential_address' => '12345rtyuk',
+                'authorized_signatory_dob'                 => '1992-12-12',
+                'platform'                                 => 'web',
             ],
         ],
     ],
@@ -1354,4 +1368,54 @@ return [
             ],
         ],
     ],
+
+    'testGetMerchantDetailsWithBalanceConfigs' => [
+        'request'  => [
+            'url'    => '/merchants/details',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'confirmed' => false,
+                'balance_configs'    => [
+                    'items' => [
+                            '0' => [
+                                'id'                            =>  '100ab000ab00ab',
+                                'balance_id'                    =>  '100abc000abc00',
+                                'type'                          =>  'banking',
+                                'negative_transaction_flows'   =>  ['payout'],
+                                'negative_limit_auto'          =>  5000000,
+                                'negative_limit_manual'        =>  5000000
+                            ],
+                            '1' => [
+                                'id'                            =>  '100yz000yz00yz',
+                                'balance_id'                    =>  '100def000def00',
+                                'type'                          =>  'primary',
+                                'negative_transaction_flows'   =>  ['refund'],
+                                'negative_limit_auto'           =>  5000000,
+                                'negative_limit_manual'         =>  5000000
+                            ],
+                    ]
+                ],
+                'is_inheritance_parent' =>  false,
+            ],
+        ],
+    ],
+
+    'testStoreCaseInsensitiveDomain' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_name'    => 'facebook',
+                'business_website' => 'https://EXAMPLE.CoM',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'business_website' => 'https://EXAMPLE.CoM',
+            ],
+        ],
+    ],
+
 ];

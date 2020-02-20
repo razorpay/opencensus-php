@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
+use RZP\Exception\ServerErrorException;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -156,19 +157,51 @@ class UpiIciciGatewayTest extends TestCase
 
         $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
         $this->assertNull($payment['vpa']);
+        $this->assertNull($upiEntity['npci_reference_id']);
 
         $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
-        $upi = $this->getLastEntity('upi', true);
+        $upi = $this->getEntityById('upi', $upiEntity['id'], true);
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals($payment['vpa'], 'user@icici');
         $this->assertEquals('ICIC', $upi['bank']);
         $this->assertEquals('icici', $upi['acquirer']);
         $this->assertEquals('icici', $upi['provider']);
+        $this->assertSame('12345678987654321', $upi['npci_reference_id']);
         $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+    }
+
+    public function testIntentTpvPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $terminal->setAttribute('tpv', 2)->saveOrFail();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $order = $this->startTest($this->testData['testTpvPayment']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['vpa']);
+        $payment['_']['flow'] = 'intent';
+
+        $payment['amount'] = $order['amount'];
+        $payment['bank'] = 'RATN';
+        $payment['order_id'] = $order['id'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            ServerErrorException::class,
+            'Intent TPV not Supported');
     }
 
     public function testPaymentWithExpiryPublicAuth()

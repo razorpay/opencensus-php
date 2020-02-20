@@ -15,6 +15,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Refund;
 use RZP\Jobs\ScroogeRefundUpdate;
 use Razorpay\Trace\Logger as Trace;
@@ -337,6 +338,9 @@ class Service extends Base\Service
      *               }
      *           }
      *       },
+     *   "extra_data":[
+     *       "ifsc_code"
+     *   ]
      *   "refund_ids":["C6rXXXXXXXX43","C6rQQL1KTvb43"]
      * }
      *
@@ -366,6 +370,9 @@ class Service extends Base\Service
      *                }
      *            }
      *        }
+     *       "extra_data": {
+     *           "ifsc_code": "HDFC0000001"
+     *       }
      *    }
      *}
      */
@@ -467,11 +474,33 @@ class Service extends Base\Service
                                 foreach ($values as $value)
                                 {
                                     $map[$value] = $entity[$value];
+
+                                    $getter = 'get' . studly_case($value);
+
+                                    if ((empty($map[$value]) === true) and
+                                        (method_exists($entity, $getter) === true))
+                                    {
+                                        $map[$value] = $entity->{$getter}();
+                                    }
                                 }
 
                                 $response[RefundConstants::ENTITIES][$key] = $map;
                             }
                         }
+                    }
+
+                    if (isset($input[RefundConstants::EXTRA_DATA]) === true)
+                    {
+                        $res = [];
+
+                        foreach ($input[RefundConstants::EXTRA_DATA] as $paramKey)
+                        {
+                            $func = 'getExtraData' . studly_case($paramKey);
+
+                            $res[$paramKey] = (method_exists($this, $func)) ? $this->$func($refund) : null;
+                        }
+
+                        $response[RefundConstants::EXTRA_DATA] = $res;
                     }
 
                     $responseArray[$id] = $response;
@@ -499,6 +528,11 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::SCROOGE_FETCH_ENTITIES, $traceData);
 
         return $responseArray;
+    }
+
+    protected function getExtraDataIfscCode(Entity $refund)
+    {
+        return BankCodes::getIfscForBankCode($refund->payment->getBank());
     }
 
     public function fetchMultiple($input)
@@ -1232,6 +1266,63 @@ class Service extends Base\Service
             [
                 'total' => $total
             ]);
+    }
+
+    public function retryBulkViaFta(array $input)
+    {
+        (new Validator)->validateInput('retry_bulk_via_fta', $input);
+
+        $this->trace->info(TraceCode::REFUND_RETRY_BULK_VIA_FTA_INITIATED, $input);
+
+        $retryFailures = [];
+
+        foreach ($input[RefundConstants::REFUND_IDS] as $key => $refundId)
+        {
+            try
+            {
+                $refund = $this->repo->refund->findOrFail($refundId);
+
+                $ftaData = [];
+
+                switch ($input[RefundConstants::TRANSFER_METHOD])
+                {
+                    case RefundConstants::SOURCE_VPA :
+
+                        $vpaId = $refund->payment->getVpa();
+
+                        if (empty($vpaId) === false)
+                        {
+                            $ftaData[RefundConstants::VPA][RefundConstants::VPA_ADDRESS] = $vpaId;
+                        }
+
+                        break;
+                }
+
+                if (empty($ftaData) === true)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA);
+                }
+
+                // Grouping 5 refunds for a second delay. Max. refunds allowed per request is 1000
+                // so max delay for last group of refunds will be 199 seconds. Doing this since
+                // Max delay supported by SQS is 900 seconds
+                $ftaData[RefundConstants::DISPATCH_DELAY_TIME] = floor($key / RefundConstants::DISPATCH_BATCH_SIZE);
+
+                $this->getNewProcessor($refund->merchant)->processRefundRetry($refund, $ftaData);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex, null, null, [RefundConstants::REFUND_ID => $refundId]);
+
+                $retryFailures[] = $refundId;
+            }
+        }
+
+        return [
+            'success_count' => count($input['refund_ids']) - count($retryFailures),
+            'failure_count' => count($retryFailures),
+            'failed_ids'    => $retryFailures,
+        ];
     }
 
     public function directRetryBulk(array $input)

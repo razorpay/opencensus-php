@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Constants\Environment;
+use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Card;
@@ -51,6 +53,11 @@ trait HeadlessOtp
 
     protected function canRunHeadlessOtpFlow($payment, $gatewayInput)
     {
+        if ($payment[Payment\Entity::CPS_ROUTE] === Payment\Entity::CARD_PAYMENT_SERVICE)
+        {
+            return false;
+        }
+
         if (empty($gatewayInput['auth_type']) === false)
         {
             if ($gatewayInput['auth_type'] === Payment\AuthType::HEADLESS_OTP)
@@ -383,6 +390,12 @@ trait HeadlessOtp
 
     protected function disableIinFlowIfApplicable($payment, $code)
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment(Environment::PRODUCTION) === true))
+        {
+            return;
+        }
+
         if ($payment->hasCard() === false)
         {
             return;

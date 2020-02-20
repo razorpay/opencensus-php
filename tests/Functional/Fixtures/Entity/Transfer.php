@@ -60,4 +60,9 @@ class Transfer extends Base
     {
 
     }
+
+    public function editProcessedAt(string $processedAt, string $id)
+    {
+        $this->fixtures->edit('transfer', $id, ['processed_at' => $processedAt]);
+    }
 }

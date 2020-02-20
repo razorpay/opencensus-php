@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Exception;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Type
@@ -52,6 +53,10 @@ class Type
 
     const PRICING_RULE              = 'pricing_rule';
 
+    const MERCHANT_CONFIG_INHERITANCE = 'merchant_config_inheritance';
+
+    const MDR_ADJUSTMENT            = 'mdr_adjustment';
+
     // Batch Terminal Creation
     const TERMINAL                  = 'terminal';
 
@@ -87,6 +92,8 @@ class Type
 
     const ADMIN_BATCH           = 'admin_batch';
 
+    const ADJUSTMENT            = 'adjustment';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -114,6 +121,9 @@ class Type
         self::MPAN,
         self::PRICING_RULE,
         self::ADMIN_BATCH,
+        self::MERCHANT_CONFIG_INHERITANCE,
+        self::MDR_ADJUSTMENT,
+        self::ADJUSTMENT,
     ];
 
     /**
@@ -179,6 +189,7 @@ class Type
         self::MPAN,
         self::PRICING_RULE,
         self::ADMIN_BATCH,
+        self::ADJUSTMENT,
     ];
 
     /**
@@ -246,7 +257,13 @@ class Type
         self::FUND_ACCOUNT,
         self::SUBMERCHANT_ASSIGN,
         self::PRICING_RULE,
+        self::RECURRING_CHARGE,
+        self::AUTH_LINK,
+        self::VIRTUAL_BANK_ACCOUNT,
         self::PARTNER_SUBMERCHANTS,
+        self::OAUTH_MIGRATION_TOKEN,
+        self::LINKED_ACCOUNT_REVERSAL,
+        self::ADJUSTMENT,
     ];
 
     /**
@@ -259,6 +276,13 @@ class Type
         self::PAYOUT,
         self::FUND_ACCOUNT,
         self::PRICING_RULE,
+        self::MERCHANT_CONFIG_INHERITANCE,
+        self::MDR_ADJUSTMENT,
+        self::ADJUSTMENT,
+    ];
+
+    public static $batchToAdminPermissionMapping = [
+        self::ADJUSTMENT    => Name::ADJUSTMENT_BATCH_UPLOAD,
     ];
 
     public static function exists(string $type)

@@ -6,8 +6,10 @@ use App;
 use Response;
 use Exception;
 use ApiResponse;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -262,6 +264,13 @@ class Handler extends ExceptionHandler
 
         $this->traceException($exception, $level, $code);
 
+        $data = $exception->getData();
+
+        if (Payment\Gateway::isNachNbResponseFlow($data) === true)
+        {
+            return $this->recoverableNachNbErrorResponse($this->isDebug(), $exception);
+        }
+
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 
@@ -377,12 +386,67 @@ class Handler extends ExceptionHandler
 
     protected function recoverableErrorResponse($debug, $exception = null)
     {
-        $this->ifTestingThenRethrowException($exception);
+        $this->setErrorMetadataIfApplicable($exception);
 
         $error = $exception->getError();
 
+        $data = $exception->getData();
+
+        $this->ifTestingThenRethrowException($exception);
+
         return ApiResponse::generateErrorResponse($error, $debug);
     }
+
+    protected function recoverableNachNbErrorResponse($debug, $exception = null)
+    {
+        $this->setErrorMetadataIfApplicable($exception);
+
+        $error = $exception->getError();
+
+        $data = $exception->getData();
+
+        $this->ifTestingThenRethrowException($exception);
+
+        return ApiResponse::generateNachNbErrorResponse($error, $data, $debug);
+    }
+
+    protected function setErrorMetadataIfApplicable($exception)
+    {
+        $error = $exception->getError();
+
+        $data = $exception->getData();
+
+        $isMetadataFeatureEnabled = false;
+
+        if (($this->app['basicauth'] !== null) and
+            $this->app['basicauth']->getMerchant() !== null)
+        {
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+        }
+
+        $metadata = null;
+
+        if ($isMetadataFeatureEnabled === true)
+        {
+            if (isset($data['payment_id']) === true)
+            {
+                $metadata['payment_id'] = $data['payment_id'];
+            }
+            if (isset($data['order_id']) === true)
+            {
+                $metadata['order_id'] = $data['order_id'];
+            }
+            if (isset($data['method']) === true)
+            {
+                $error->setPaymentMethod($data['method']);
+            }
+
+            $error->setMetadata($metadata);
+        }
+    }
+
 
     protected function getExceptionData($exception)
     {

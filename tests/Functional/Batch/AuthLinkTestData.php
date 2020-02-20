@@ -119,6 +119,19 @@ return [
         ],
     ],
 
+    'testCreateBatchOfNachAuthLinks' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'auth_link',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testValidateBatchWithInvalidHeaders' => [
         'request'   => [
             'url'     => '/batches/validate',

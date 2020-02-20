@@ -1,0 +1,83 @@
+<?php
+
+namespace RZP\Models\Merchant\FreshdeskTicket;
+
+use RZP\Models\Base;
+
+class Entity extends Base\PublicEntity
+{
+    const ID                = 'id';
+    const MERCHANT_ID       = 'merchant_id';
+    const TICKET_ID         = 'ticket_id';
+    const TYPE              = 'type';
+    const TICKET_DETAILS    = 'ticket_details';
+
+    protected $entity = 'merchant_freshdesk_tickets';
+
+    protected $generateIdOnCreate = true;
+
+    protected $fillable = [
+        self::TICKET_ID,
+        self::TYPE,
+        self::TICKET_DETAILS,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::MERCHANT_ID,
+        self::TICKET_ID,
+        self::TYPE,
+        self::TICKET_DETAILS,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    protected $casts = [
+        self::TICKET_DETAILS   => 'json',
+    ];
+
+    protected $public = [
+        self::ID,
+        self::MERCHANT_ID,
+        self::TICKET_ID,
+        self::TYPE,
+        self::TICKET_DETAILS,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    public function merchant()
+    {
+        return $this->belongsTo(\RZP\Models\Merchant\Entity::class);
+    }
+
+    public function getTicketId() : string
+    {
+        return $this->getAttribute(self::TICKET_ID);
+    }
+
+    public function getTicketType() : string
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function getTicketDetails() : string
+    {
+        return $this->getAttribute(self::TICKET_DETAILS);
+    }
+
+    public function setTicketId(string $ticketId)
+    {
+        $this->setAttribute(self::TICKET_ID, $ticketId);
+    }
+
+    public function setTicketType(string $type)
+    {
+        $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setTicketDetails(string $ticketDetails)
+    {
+        $this->setAttribute(self::TICKET_DETAILS, $ticketDetails);
+    }
+}

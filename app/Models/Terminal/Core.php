@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Core extends Base\Core
@@ -218,17 +219,14 @@ class Core extends Base\Core
         $existingTerminals = $this->repo->terminal->getNonFailedByParams($params);
 
         $gateway = $terminal->getGateway();
-        
+
         //
         // Checks that existing terminals don't
         // have same gateway field as the new one
         //
         $terminal->getValidator()->validateExistingTerminalsCount($existingTerminals);
 
-        if (in_array($gateway, Gateway::MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS) === false)
-        {
-            $this->validateExistingTerminalGatewayMerchantId($terminal);
-        }
+        $this->validateExistingTerminalGatewayMerchantId($terminal, $gateway);
 
         $this->validateExistingMpan($terminal);
     }
@@ -400,14 +398,19 @@ class Core extends Base\Core
         return $this->getBanksForTerminal($terminal);
     }
 
-    protected function validateExistingTerminalGatewayMerchantId(Entity $terminal)
+    protected function validateExistingTerminalGatewayMerchantId(Entity $terminal, $gateway)
     {
         // Check no record with same 'gateway_merchant_id' exists
         $params = [
             Entity::GATEWAY                 => $terminal->getGateway(),
             Entity::GATEWAY_MERCHANT_ID     => $terminal->getGatewayMerchantId(),
-            Entity::GATEWAY_MERCHANT_ID2    => $terminal->getGatewayMerchantId2()
+            Entity::GATEWAY_MERCHANT_ID2    => $terminal->getGatewayMerchantId2(),
         ];
+
+        if (in_array($gateway, Gateway::MULTIPLE_TERMINALS_FOR_SAME_GATEWAY_MERCHANT_GATEWAYS) === true)
+        {
+            $params[Entity::GATEWAY_TERMINAL_ID] = $terminal->getGatewayTerminalId();
+        }
 
         $this->checkIfExists($params, $terminal);
     }
@@ -480,9 +483,14 @@ class Core extends Base\Core
         //
         if ($existingTerminals->count() !== 0)
         {
+            $description = PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS . $existingTerminals->pluck(Entity::ID)->first();
+                        
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
-                $field);
+                ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
+                $field,
+                null,
+                $description
+            );
         }
     }
 

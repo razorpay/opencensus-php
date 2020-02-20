@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Entity::PURPOSE         => 'required|filled|string|max:30|in:refund,settlement,penny_testing',
         Entity::SOURCE_TYPE     => 'required|filled|string|max:32|in:refund,payout,settlement,fund_account_validation',
         // This will be used while generating response while mock. Only used in api based settlements
-        'failed_response'       => 'sometimes|int',
+        'failed_response'       => 'sometimes|string',
         'ignore_time_limit'     => 'sometimes|string',
     ];
 
@@ -50,20 +50,23 @@ class Validator extends Base\Validator
     ];
 
     protected static $ftsStatusUpdateRules = [
-        Entity::UTR              => 'sometimes|string',
-        Entity::STATUS           => 'required|string|custom',
-        Entity::REMARKS          => 'sometimes|string',
-        Entity::NARRATION        => 'sometimes|string',
-        Entity::DATE_TIME        => 'sometimes|string',
-        Entity::SOURCE_ID        => 'required_with:source_type|string',
-        Entity::SOURCE_TYPE      => 'required_with:source_id|string',
-        Entity::FAILURE_REASON   => 'sometimes|string',
-        Entity::MODE             => 'sometimes|string',
-        'bank_processed_time'    => 'sometimes|string',
-        'fund_transfer_id'       => 'required|int',
-        'extra_info'             => 'sometimes',
-        'extra_info.*'           => 'sometimes',
-        Entity::BANK_STATUS_CODE => 'sometimes|string',
+        Entity::UTR                  => 'sometimes|string',
+        Entity::STATUS               => 'required|string|custom',
+        Entity::REMARKS              => 'sometimes|string',
+        Entity::NARRATION            => 'sometimes|string',
+        Entity::DATE_TIME            => 'sometimes|string',
+        Entity::SOURCE_ID            => 'required_with:source_type|string',
+        Entity::SOURCE_TYPE          => 'required_with:source_id|string',
+        Entity::FAILURE_REASON       => 'sometimes|string',
+        Entity::MODE                 => 'sometimes|string',
+        'bank_processed_time'        => 'sometimes|string',
+        'fund_transfer_id'           => 'required|int',
+        'extra_info'                 => 'sometimes',
+        'extra_info.*'               => 'sometimes',
+        'return_utr'                 => 'sometimes|string',
+        Entity::BANK_STATUS_CODE     => 'sometimes|string',
+        Entity::GATEWAY_REF_NO       => 'sometimes|string',
+        Entity::GATEWAY_ERROR_CODE   => 'sometimes|string',
     ];
 
     protected  static $ftsFundTransferRules = [

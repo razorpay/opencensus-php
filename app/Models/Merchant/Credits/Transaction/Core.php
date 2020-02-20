@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Credits\Transaction;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Credits;

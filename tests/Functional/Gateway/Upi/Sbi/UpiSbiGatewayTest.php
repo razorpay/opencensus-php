@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
+use Mail;
 use Excel;
 use Mockery;
 use Carbon\Carbon;
@@ -25,11 +26,14 @@ use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Gateway\Upi\Sbi\Status as SbiStatus;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class UpiSbiGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     /**
      * @var Payment variable
@@ -525,6 +529,7 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testRefundFileFlow()
     {
+        Mail::fake();
         $payments = [];
 
         // Create 3 payments
@@ -536,10 +541,18 @@ class UpiSbiGatewayTest extends TestCase
         $refundAmount = [50000, 50000, 10000];
 
         $refunds = [];
+        $refundEntities = [];
 
         foreach ($payments as $count => $payment)
         {
             $refunds[] = $this->refundPayment($payment[Payment\Entity::ID], $refundAmount[$count]);
+
+            $refundEntity = $this->getDbLastEntity('refund');
+
+            $refundEntities[] = $refundEntity;
+
+            // Upi Sbi refunds have moved to scrooge
+            $this->assertEquals(1, $refundEntity['is_scrooge']);
         }
 
         foreach ($refunds as $refund)
@@ -551,6 +564,15 @@ class UpiSbiGatewayTest extends TestCase
         // Refund a 4th payment
         $payment = $this->createCapturedPayment();
         $this->refundPayment($payment[Payment\Entity::ID]);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        $refundEntities[] = $refundEntity;
+
+        // Upi Sbi refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse($refundEntities);
 
         $data = $this->generateRefundsExcelForSbiUpi();
 
@@ -568,6 +590,8 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals('file_store', $file['entity']);
         $this->assertEquals('SBI_UPI_' . $time .'.csv', $file['location']);
         $this->assertEquals('SBI_UPI_' . $time, $file['name']);
+
+        Mail::assertQueued(RefundFileMail::class);
     }
 
     public function testUpiResponseAssertionFailure()

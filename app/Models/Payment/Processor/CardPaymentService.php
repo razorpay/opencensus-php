@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Gateway\Base\Metric;
 use RZP\Diag\EventCode;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Models\Admin;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -18,7 +20,8 @@ trait CardPaymentService
 
     public function canAuthorizeViaCps(Payment\Entity $payment): bool
     {
-        if ($payment->isMethodCardOrEmi() == false)
+        if (($payment->isMethodCardOrEmi() === false) or
+            ($payment->isGooglePayCard() === true))
         {
             return false;
         }
@@ -75,19 +78,65 @@ trait CardPaymentService
 
     public function callCpsAction($payment, $gateway, $action, $gatewayData)
     {
-        $response = $this->app['card.payments']->action($gateway, $action, $gatewayData);
-
-        $this->updatePaymentFromCpsResponse($payment, $response);
-
-        $this->handleCpsResponse($payment, $response);
-
-        // If action is verify we get verify trace data
-        if ($action === Action::VERIFY)
+        try
         {
-            return $response;
+            $response = $this->app['card.payments']->action($gateway, $action, $gatewayData);
+
+            $this->updatePaymentFromCpsResponse($payment, $response);
+
+            $this->handleDisableIIN($payment, $response);
+
+            $this->handleCpsResponse($payment, $response);
+
+            // If action is verify we get verify trace data
+            if ($action === Action::VERIFY)
+            {
+                return $response;
+            }
+
+            $this->pushDimensions($action, $gatewayData, Metric::SUCCESS, $gateway);
+
+            return $response['data'];
+        }
+        catch (\Throwable $exc)
+        {
+            $previousExc = $exc->getPrevious();
+
+            if (($previousExc instanceof \Requests_Exception) and
+                    ($previousExc->getType() === 'curlerror'))
+            {
+                $excData = curl_errno($previousExc->getData());
+
+                $this->pushDimensions($action, $gatewayData, Metric::CURL_ERROR, $excData);
+            }
+            else
+            {
+                $excData = 'UKNOWN';
+
+                if($exc instanceof Exception\BaseException)
+                {
+                    $excData = $exc->getError()->getClass();
+                }
+                $this->pushDimensions($action, $gatewayData, Metric::FAILED, $gateway, $excData);
+            }
+
+            throw $exc;
         }
 
-        return $response['data'];
+
+    }
+
+    protected function pushDimensions($action, $input, $status, $gateway, $excData = null)
+    {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->runningUnitTests() === false))
+        {
+            return;
+        }
+
+        $gatewayMetric = new Metric;
+
+        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $gateway, $excData);
     }
 
     protected function callCpsAuthorizeAcrossTerminals(Payment\Entity $payment, array $data)
@@ -99,6 +148,8 @@ trait CardPaymentService
             $response = $this->app['card.payments']->authorizeAcrossTerminals($payment, $data, $this->selectedTerminals);
 
             $this->updatePaymentFromCpsResponse($payment, $response);
+
+            $this->handleDisableIIN($payment, $response);
 
             $this->handleCpsResponse($payment, $response);
 
@@ -190,12 +241,13 @@ trait CardPaymentService
                 'response'    => $response,
             ]);
 
-            // (new Admin\Service)->setConfigKeys([Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED => 0]);
+            // (new Admin\Service)->setConfigKey([Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED => 0]);
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED
             );
         }
+
 
         $response = $this->app['card.payments']->checkForErrors($response);
     }
@@ -240,5 +292,22 @@ trait CardPaymentService
         ]);
 
         $gatewayInput['authentication_terminals'] = $authTerminals;
+    }
+
+    // Handle response for headless and ivr payments where we disable iin
+    protected function handleDisableIIN($payment, $response)
+    {
+        if (isset($response["headless"]["disable_iin"])
+            and $response["headless"]["disable_iin"] === true )
+        {
+            $this->disableIinFlowIfApplicable($payment, TraceCode::HEADLESS_OTP_ELF_FAILURE);
+        }
+
+        if (isset($response["ivr"]["disable_iin"])
+            and $response["ivr"]["disable_iin"] === true )
+        {
+            $this->disableIinFlowIfApplicable($payment, ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE);
+        }
+
     }
 }

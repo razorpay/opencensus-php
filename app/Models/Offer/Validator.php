@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Emi;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -19,6 +20,8 @@ class Validator extends Base\Validator
     const CASHBACK_CRITERIA = 'cashback_criteria';
     const OFFER_PERIOD      = 'offer_period';
     const EMI_ISSUER        = 'emi_issuer';
+    const MERCHANT_CATEGORY = 'merchant_category';
+    const OFFER_FEATURE_BLOCK = 'offer_feature_block';
 
     const CASHBACK_CRITERIA_PARAMS = [
         Entity::PERCENT_RATE,
@@ -41,7 +44,7 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT   => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS    => 'filled|array',
         Entity::PROCESSING_TIME     => 'filled|integer',
-        Entity::TYPE                => 'filled|in:instant,deferred',
+        Entity::TYPE                => 'required|filled|in:instant,deferred,already_discounted',
         Entity::CHECKOUT_DISPLAY    => 'filled|boolean',
         Entity::STARTS_AT           => 'filled|epoch',
         Entity::ENDS_AT             => 'required|epoch',
@@ -51,6 +54,8 @@ class Validator extends Base\Validator
         Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer|min:1',
         Entity::BLOCK               => 'required|boolean',
         Entity::ACTIVE              => 'filled|boolean',
+        Entity::DEFAULT_OFFER       => 'filled|boolean',
+        Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
     ];
 
     protected static $createBulkRules = [
@@ -65,7 +70,7 @@ class Validator extends Base\Validator
         Entity::ISSUER              => 'required_without:payment_network|filled',
         Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX,BAJAJ|filled',
         Entity::EMI_SUBVENTION      => 'required|boolean|in:1',
-        Entity::EMI_DURATIONS       => 'sometimes|array|custom',
+        Entity::EMI_DURATIONS       => 'sometimes|array',
         Entity::MIN_AMOUNT          => 'filled|integer|min:0',
         Entity::MAX_PAYMENT_COUNT   => 'filled|integer|min:1',
         Entity::PROCESSING_TIME     => 'filled|integer',
@@ -76,6 +81,9 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'required|string',
         Entity::BLOCK               => 'required|boolean',
         Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer',
+        Entity::DEFAULT_OFFER       => 'filled|boolean',
+        Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
+        Entity::TYPE                => 'required|in:instant,deferred,already_discounted',
     ];
 
     protected static $editRules = [
@@ -91,6 +99,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
+        self::MERCHANT_CATEGORY,
+        self::OFFER_FEATURE_BLOCK,
         self::CASHBACK_CRITERIA,
         self::OFFER_PERIOD,
         Entity::PAYMENT_NETWORK,
@@ -105,6 +115,7 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT,
         self::OFFER_PERIOD,
         self::EMI_ISSUER,
+        Entity::EMI_DURATIONS,
     ];
 
     protected static $editValidators = [
@@ -369,11 +380,30 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateEmiDurations(string $attribute, array $emiDurations)
+    protected function validateEmiDurations(array $input)
     {
-        $validDurations = Emi\Entity::VALID_DURATIONS;
+        if (isset($input[Entity::EMI_DURATIONS]) === false)
+        {
+            return;
+        }
+        
+        $emiRepo = new Emi\Repository();
 
-        $diff = array_diff($emiDurations, $validDurations);
+        $validDurations = [];
+
+        if (isset($input[Entity::ISSUER]) === true)
+        {
+            $validDurations = $emiRepo->fetchDurationsByMerchantAndIssuer($this->entity->merchant->getId(),
+                $input[Entity::ISSUER]);
+        }
+
+        if (isset($input[Entity::PAYMENT_NETWORK]) === true)
+        {
+            $validDurations = $emiRepo->fetchDurationsByMerchantAndNetwork($this->entity->merchant->getId(),
+                $input[Entity::PAYMENT_NETWORK]);
+        }
+
+        $diff = array_diff($input[Entity::EMI_DURATIONS], $validDurations);
 
         if (empty($diff) === false)
         {
@@ -399,6 +429,28 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid issuer name: '. $input[Entity::ISSUER]);
+        }
+    }
+
+    protected function validateMerchantCategory(array $input)
+    {
+        $isInsuranceCategory = $this->entity->merchant->isInsuranceCategory($this->entity->merchant->getCategory());
+
+        if($isInsuranceCategory === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Offer creation is not allowed for this Merchant category');
+        }
+    }
+
+    protected function validateOfferFeatureBlock(array $input)
+    {
+        $hasBlockingFeature = $this->entity->merchant->isFeatureEnabled(Constants::BLOCK_OFFER_CREATION);
+
+        if($hasBlockingFeature === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Offer creation is not allowed for Merchant');
         }
     }
 }

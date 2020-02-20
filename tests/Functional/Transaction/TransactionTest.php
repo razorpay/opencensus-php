@@ -2,8 +2,7 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
-use Carbon\Carbon;
-use RZP\Models\Transaction;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -486,6 +485,8 @@ class TransactionTest extends TestCase
 
     public function testHandleAsyncMerchantBalanceUpdate()
     {
+        $this->mockRazorx();
+
         $this->fixtures->merchant->addFeatures(['async_balance_update']);
         $payment = $this->getDefaultPaymentArray();
 
@@ -503,6 +504,79 @@ class TransactionTest extends TestCase
         $this->assertEquals($payment['id'], $transaction['entity_id']);
         $this->assertTrue($transaction['balance_updated']);
         $this->assertEquals($oldBalance['balance']+ ($payment['amount'] - $payment['fee']), $balance['balance']);
+    }
+
+    public function testTransactionHold()
+    {
+        $transaction = $this->fixtures->create('transaction', ['merchant_id' => '10000000000000']);
+
+        $request = [
+            'content' => [
+                'transaction_ids' => [$transaction->getId()],
+                'reason'          => 'Faulty Transaction',
+            ],
+            'url' => '/transactions/hold',
+            'method' => 'PATCH',
+        ];
+
+        $this->ba->adminAuth();
+
+        $result = $this->makeRequestAndGetContent($request);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($txn['on_hold']);
+
+        $this->assertEquals(1, $result['total_requests']);
+
+        $this->assertEquals(1, $result['successfully_updated']);
+
+        $this->assertEquals(0, $result['failed']);
+
+    }
+
+    public function testTransactionRelease()
+    {
+        $transaction = $this->fixtures->create('transaction', ['merchant_id' => '10000000000000']);
+
+        $request = [
+            'content' => [
+                'transaction_ids' => [$transaction->getId()],
+                'reason'          => 'Faulty Transaction',
+            ],
+            'url' => '/transactions/hold',
+            'method' => 'PATCH',
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($txn['on_hold']);
+
+        $request2 = [
+            'content' => [
+                'transaction_ids' => [$transaction->getId()],
+            ],
+            'url' => '/transactions/release',
+            'method' => 'PATCH',
+        ];
+
+        $this->ba->adminAuth();
+
+        $result = $this->makeRequestAndGetContent($request2);
+
+        $txn2 = $this->getLastEntity('transaction', true);
+
+        $this->assertFalse($txn2['on_hold']);
+
+        $this->assertEquals(1, $result['total_requests']);
+
+        $this->assertEquals(1, $result['successfully_updated']);
+
+        $this->assertEquals(0, $result['failed']);
     }
 
     protected function createMultipleTransactions()
@@ -555,5 +629,18 @@ class TransactionTest extends TestCase
         $this->org = $this->fixtures->create('org');
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
+    private function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
     }
 }

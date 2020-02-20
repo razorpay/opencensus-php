@@ -18,6 +18,7 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Services\TokenService;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
@@ -509,9 +510,9 @@ class Core extends Base\Core
                     $input[Entity::CONTACT_MOBILE] : $user->getContactMobile();
 
         return [
-            Entity::ACTION      =>  'second_factor_auth',
-            'receiver'          =>  $contact,
-            'unique_id'         =>  $user->getId(),
+            Entity::ACTION => 'second_factor_auth',
+            'receiver'     => $contact,
+            'unique_id'    => $user->getId(),
         ];
     }
 
@@ -720,17 +721,19 @@ class Core extends Base\Core
 
         $role = $input[Entity::ROLE];
 
+        $product = $input[Entity::PRODUCT] ?? $this->app['basicauth']->getRequestOriginProduct();
+
         $mappingParams = [
             'role'       => $role,
+            'updated_at' => $currentTimestamp,
             'created_at' => $currentTimestamp,
-            'updated_at' => $currentTimestamp
         ];
 
         $merchantId = $input[Entity::MERCHANT_ID];
 
         $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 
-        $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams], false);
+        $this->repo->sync($user, $product . 'Merchants', [$merchantId => $mappingParams], false);
 
         if (BankingRole::isWorkflowRole($role) === true)
         {
@@ -955,11 +958,12 @@ class Core extends Base\Core
     /**
      * Verifies otp for given input(action, token & otp).
      *
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
-     * @param  Entity          $user
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Entity $user
+     * @param bool $mock
      */
-    public function verifyOtp(array $input, Merchant\Entity $merchant, Entity $user)
+    public function verifyOtp(array $input, Merchant\Entity $merchant, Entity $user, bool $mock = false)
     {
         $this->trace->info(TraceCode::USERS_VERIFY_OTP_FOR_ACTION, compact('input'));
 
@@ -967,7 +971,7 @@ class Core extends Base\Core
 
         $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
 
-        $this->app->raven->verifyOtp($payload);
+        $this->app->raven->verifyOtp($payload, $mock);
     }
 
     /**
@@ -1349,5 +1353,32 @@ class Core extends Base\Core
         $customProperties = ['email' => $userEmail];
 
         $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, null, $customProperties);
+    }
+
+    /**
+     * Verify user through otp sent to email.
+     * Generates and stores a user verification token in redis.
+     * This token has to be passed in subsequent calls which need user authorization.
+     *
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Entity $user
+     * @return array
+     */
+    public function verifyUserThroughEmail(array $input, Merchant\Entity $merchant, Entity $user) : array
+    {
+        /** @var Validator $validator */
+        $validator = $user->getValidator();
+
+        $validator->validateInput('verifyUserThroughEmail', $input);
+
+        $this->verifyOtp($input + ['action' => 'user_auth'], $merchant, $user);
+
+        /** @var TokenService $tokenService */
+        $tokenService  = $this->app['token_service'];
+
+        $token = $tokenService->generate($user->getId());
+
+        return [Entity::OTP_AUTH_TOKEN => $token];
     }
 }

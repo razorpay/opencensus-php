@@ -15,42 +15,41 @@ use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 
 class BankingInvoiceReport extends BaseReport
 {
+    const DATE_FORMAT                = 'd/m/Y h:i A';
+    const BILLING_PERIOD_DATE_FORMAT = 'd/m/Y';
+
     const TAX                       = 'tax';
-    // Report headings
     const GST_SAC_CODE              = 'GST.SAC Code';
     const DESCRIPTION               = 'description';
     const AMOUNT                    = 'amount';
-
     const SGST                      = 'SGST_9%';
     const CGST                      = 'CGST_9%';
     const IGST                      = 'IGST_18%';
     const TAX_TOTAL                 = 'tax_total';
     const GRAND_TOTAL               = 'grand_total';
 
-    const PAGES                     = 'pages';
-    const SUMMARY_TITLE             = 'invoice_summary';
-    const TAX_INVOICE               = 'tax_invoice';
+    const TITLE                     = 'title';
+    const TOTAL                     = 'total';
+    const TAX_INVOICE               = 'Tax Invoice';
     const ROWS                      = 'rows';
-    const DOCUMENT_NO               = 'document_no';
-    const DOCUMENT_DATE             = 'document_date';
-    const DATE_FORMAT               = 'd/m/Y';
     const ACCOUNT_NUMBER            = 'account_number';
+    const ACCOUNT_TYPE              = 'account_type';
+    const CHANNEL                   = 'channel';
     const GSTIN                     = 'gstin';
     const INVOICE_NUMBER            = 'invoice_number';
     const INVOICE_ID                = 'id';
     const INVOICE_DATE              = 'invoice_date';
-    const MONTHLY_INVOICE           = 'monthly_invoice';
     const BILLING_PERIOD            = 'billing_period';
     const ISSUED_TO                 = 'issued_to';
     const ADDRESS                   = 'address';
     const BUSINESS_REGISTERED_CITY  = 'business_registered_city';
     const BUSINESS_REGISTERED_STATE = 'business_registered_state';
     const BUSINESS_REGISTERED_PIN   = 'business_registered_pin';
+    const COMBINED                  = 'combined';
 
     const VALIDATION_RULES          = [
         'year'           => 'required|digits:4',
         'month'          => 'required|digits_between:1,2',
-        'account_number' => 'required|alpha_num|between:5,22',
     ];
 
     protected $month;
@@ -73,16 +72,11 @@ class BankingInvoiceReport extends BaseReport
 
         $this->year = $input['year'];
 
-        $this->merchant->getValidator()->validateAndTranslateAccountNumberForBanking($input);
+        $invoices = $this->repo->merchant_invoice->fetchBankingInvoiceReportData($this->merchant->getId(),
+                                                                                 $this->month,
+                                                                                 $this->year);
 
-        $balanceId = $input[BankingAccountEntity::BALANCE_ID];
-
-        $invoice = $this->repo->merchant_invoice->fetchBankingInvoiceReportData($this->merchant->getId(),
-                                                                                $this->month,
-                                                                                $this->year,
-                                                                                $balanceId);
-
-        if (empty($invoice) === true)
+        if (count($invoices) === 0)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invoice not generated yet for merchant',
@@ -91,13 +85,17 @@ class BankingInvoiceReport extends BaseReport
                     'merchant_id' => $this->merchant->getId(),
                     'year'        => $this->year,
                     'month'       => $this->month,
-                    'balance_id'  => $balanceId,
                 ]);
         }
 
-        $reportData = $this->getInvoiceReportData($invoice);
+        foreach ($invoices as $invoice)
+        {
+            $reportData = $this->getInvoiceReportData($invoice);
 
-        $invoiceReport = $this->groupDataForSummaryByPageType($invoice, $reportData);
+            $combinedData[$reportData[self::ACCOUNT_NUMBER]] = array_except($reportData, self::ACCOUNT_NUMBER);
+        }
+
+        $invoiceReport = $this->groupDataForInvoice($invoice, $combinedData);
 
         return $invoiceReport;
     }
@@ -112,6 +110,14 @@ class BankingInvoiceReport extends BaseReport
 
         // Current row
         $row = $this->getNewRow();
+
+        $row[self::ACCOUNT_NUMBER] = $invoice->getAccountNumberAttribute();
+
+        $balance = $this->repo->balance->getBalanceByAccountNumberOrFail($row[self::ACCOUNT_NUMBER]);
+
+        $row[self::ACCOUNT_TYPE] = $balance->getAccountType();
+
+        $row[self::CHANNEL] = $balance->getChannel();
 
         $row[self::GST_SAC_CODE] = Invoice\Type::getGstSacCodeForType($type);
 
@@ -138,7 +144,7 @@ class BankingInvoiceReport extends BaseReport
             $row[self::SGST] = $taxComponentValue;
         }
 
-        $reportData[] = $row;
+        $reportData = $row;
 
         return $reportData;
     }
@@ -149,7 +155,7 @@ class BankingInvoiceReport extends BaseReport
 
         return [
             MerchantEntity::MERCHANT_ID     => $this->merchant->getAttribute(MerchantEntity::ID),
-            MerchantEntity::BILLING_LABEL   => $this->merchant->getAttribute(MerchantEntity::BILLING_LABEL),
+            MerchantEntity::NAME            => $this->merchant->getAttribute(MerchantEntity::NAME),
             self::ADDRESS                   => $merchantDetail->getAttribute(Detail\Entity::BUSINESS_REGISTERED_ADDRESS),
             self::BUSINESS_REGISTERED_CITY  => $merchantDetail->getAttribute(Detail\Entity::BUSINESS_REGISTERED_CITY),
             self::BUSINESS_REGISTERED_STATE => $merchantDetail->getAttribute(Detail\Entity::BUSINESS_REGISTERED_STATE),
@@ -167,8 +173,8 @@ class BankingInvoiceReport extends BaseReport
                     ->endOfMonth()
                     ->getTimestamp();
 
-        $from = Carbon::createFromTimestamp($from,Timezone::IST)->format(self::DATE_FORMAT);
-        $to = Carbon::createFromTimestamp($to,Timezone::IST)->format(self::DATE_FORMAT);
+        $from = Carbon::createFromTimestamp($from,Timezone::IST)->format(self::BILLING_PERIOD_DATE_FORMAT);
+        $to = Carbon::createFromTimestamp($to,Timezone::IST)->format(self::BILLING_PERIOD_DATE_FORMAT);
 
         return $from . '-' . $to;
     }
@@ -178,49 +184,37 @@ class BankingInvoiceReport extends BaseReport
         return Calculator\Base::getTaxComponentsForMerchant($gstin, $this->merchant);
     }
 
-    protected function groupDataForSummaryByPageType(Invoice\Entity $invoice, array $allRows)
+    protected function groupDataForInvoice(Invoice\Entity $invoice, array $allRows)
     {
         if (empty($allRows) === true)
         {
             return [];
         }
 
-        $finalRow = $this->getFinalRow($allRows);
+        $finalRow = $this->getNewRow();
 
-        $allRows[] = $finalRow;
+        $finalRow[self::DESCRIPTION] = self::TOTAL;
 
-        $amount = $finalRow[self::GRAND_TOTAL];
+        $this->constructFinalRow($allRows, $finalRow);
+
+        $allRows[self::COMBINED] = $finalRow;
 
         $invoiceReport = [
-            self::SUMMARY_TITLE  => [
-                self::ROWS => [
-                    self::DOCUMENT_NO       => $invoice->getInvoiceNumber(),
-                    self::DOCUMENT_DATE     => $this->getInvoiceDate($invoice->getCreatedAt()),
-                    self::DESCRIPTION       => self::MONTHLY_INVOICE,
-                    self::AMOUNT            => $amount,
-            ]],
+            self::TITLE          => self::TAX_INVOICE,
             self::ISSUED_TO      => $this->getIssuedToDetails(),
             self::INVOICE_NUMBER => $invoice->getInvoiceNumber(),
             self::INVOICE_ID     => $invoice->getId(),
             self::BILLING_PERIOD => $this->getBillingPeriod(),
             self::INVOICE_DATE   => $this->getInvoiceDate($invoice->getCreatedAt()),
             self::GSTIN          => $invoice->getGstin(),
-            self::PAGES          => [
-                self::TAX_INVOICE => [
-                    self::ROWS  => $allRows
-                ],
-            ],
+            self::ROWS           => $allRows
         ];
 
         return $invoiceReport;
     }
 
-    protected function getFinalRow(array $rows): array
+    protected function constructFinalRow(array $rows, array& $finalRow)
     {
-        $finalRow = $this->getNewRow();
-
-        $finalRow[self::DESCRIPTION] = 'Total';
-
         foreach ($rows as $row)
         {
             $finalRow[self::AMOUNT]         += $row[self::AMOUNT];
@@ -230,8 +224,6 @@ class BankingInvoiceReport extends BaseReport
             $finalRow[self::CGST]           += $row[self::CGST];
             $finalRow[self::SGST]           += $row[self::SGST];
         }
-
-        return $finalRow;
     }
 
     protected function getNewRow(): array

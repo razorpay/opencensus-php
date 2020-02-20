@@ -737,16 +737,14 @@ class BasicAuth
 
         $this->setKeylessPublicAuthAttributes($entityId);
 
-        // Sets the key instance if it exists, gets used in forming signature for payment authorize response
-        $key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
-
         $this->authCreds = new KeyAuthCreds($this->app);
 
-        $this->authCreds->setKeyEntity($key);
-
         $this->authCreds->setModeAndDbConnection($mode);
-
         $this->authCreds->setAndCheckMerchantActivatedForLive($merchant);
+
+        // Sets the key instance if it exists, gets used in forming signature for payment authorize response
+        $key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+        $this->authCreds->setKeyEntity($key);
 
         // Removes key_id from request if it existed with empty values
         $this->removeRequestKey(self::KEY_ID);
@@ -1749,7 +1747,7 @@ class BasicAuth
      * 1. Check if merchant is marked as a partner
      * 2. Set partner merchant id in the auth context
      * 3. Fetch account_id from header
-     * 4. If account_id header is null, set partner merchant as current merchant, 
+     * 4. If account_id header is null, set partner merchant as current merchant,
      *      allow access for whitelisted routes,
      *      set attributes to just as they would be in private auth and return
      * 5. Set current merchant as sub-merchant
@@ -1775,18 +1773,18 @@ class BasicAuth
         $route = $this->router->currentRouteName();
 
         // If accountId is empty in partner Auth, then instead of submerchant's behalf, partner should be able to make
-        // requests on his own behalf (for whitelisted routes), just like private auth, so we are setting attributes just as they would be 
+        // requests on his own behalf (for whitelisted routes), just like private auth, so we are setting attributes just as they would be
         // in case of private auth
         if (empty($accountId) === true)
         {
             if (in_array($route, Route::$partnerCredentialsWithoutSubmerchantIdWhitelist, true) === true)
             {
                 $this->isPartnerAuth = false;
-            
+
                 $this->authCreds->unsetPartnerClient();
-    
+
                 $this->authCreds->unsetPartnerApplicationId();
-                
+
                 return;
             }
 

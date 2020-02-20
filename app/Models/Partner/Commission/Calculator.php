@@ -953,9 +953,9 @@ class Calculator extends Base\Core
 
             if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
             {
-                $traceData = $this->getTraceData();
+                $this->traceContext(TraceCode::COMMISSION_NOT_DEFINED);
 
-                $this->trace->traceException($ex, Trace::ERROR, TraceCode::COMMISSION_NOT_DEFINED, $traceData);
+                $this->trace->traceException($ex);
 
                 $feeDetails['is_valid']  = false;
 

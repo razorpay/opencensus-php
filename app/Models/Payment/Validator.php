@@ -24,9 +24,13 @@ use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
+use RZP\Models\Payment\Processor\UpiTrait;
 
 class Validator extends Base\Validator
 {
+
+    use UpiTrait;
+
     protected $trace;
 
     public function __construct($entity = null)
@@ -61,6 +65,11 @@ class Validator extends Base\Validator
         'emi_duration'                  => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'                   => 'sometimes|nullable|string|max:255|utf8',
         'email'                         => 'sometimes|nullable|email',
+        'upi.vpa'                       => 'sometimes_if:method,upi|filled|string',
+        'upi.type'                      => 'sometimes_if:method,upi|filled|string',
+        'upi.flow'                      => 'sometimes_if:method,upi|filled|string',
+        'upi.start_date'                => 'sometimes_if:method,upi|filled|epoch',
+        'upi.end_date'                  => 'sometimes_if:method,upi|filled|epoch',
         'upi_provider'                  => 'sometimes_if:method,upi|filled|string|custom',
         'contact'                       => 'sometimes|nullable|contact_syntax',
         'billing_address'               => 'sometimes',
@@ -104,6 +113,7 @@ class Validator extends Base\Validator
         'provider'                      => 'required_if:method,cardless_emi,paylater|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
         'payment_id'                    => 'sometimes_if:method,cardless_emi',
+        'application'                   => 'sometimes|filled|string|in:google_pay',
         'device'                        => 'sometimes',
     ];
 
@@ -218,7 +228,8 @@ class Validator extends Base\Validator
 
     protected static $paymentCardMigrateRules = [
         'limit'                             => 'sometimes|integer',
-        'migrate_missing_fingerprint_cards' => 'sometimes|boolean'
+        'migrate_missing_fingerprint_cards' => 'sometimes|boolean',
+        'time_window'                       => 'sometimes|integer',
     ];
 
     protected static $mandateUpdateRules = [
@@ -250,6 +261,7 @@ class Validator extends Base\Validator
         'auth_type',
         'preferred_auth',
         'payment_provider',
+        'upi_block',
     ];
 
     protected static $minAmountCheckRules = [
@@ -565,6 +577,16 @@ class Validator extends Base\Validator
             return;
         }
 
+        /*
+         * Checking if the card payment is of Google Pay. If it is of Google Pay then there are no
+         * card details.
+         */
+        if (((isset($input['application'])) === true) and
+            ($input['application'] === 'google_pay'))
+        {
+            return;
+        }
+
         if ((isset($input['recurring']) === true) and
             ($input['recurring'] === '1') and
             (empty($input['token']) === false))
@@ -643,8 +665,7 @@ class Validator extends Base\Validator
                     'Amount for UPI payment cannot be greater than ₹100000.00');
             }
 
-            if ((isset($input['_']['flow']) === true) and
-                ($input['_']['flow'] === 'intent'))
+            if ($this->isFlowIntent($input))
             {
                 return;
             }
@@ -706,6 +727,14 @@ class Validator extends Base\Validator
 
     public function validateCardAndCvv(array $input)
     {
+        /*
+            No card details when the payment is for Google Pay for cards.
+        */
+        if ((isset($input['application']) === true) and ($input['application'] === 'google_pay'))
+        {
+            return;
+        }
+
         if (isset($input['card']) === false)
         {
             throw new Exception\BadRequestException(
@@ -1088,6 +1117,36 @@ class Validator extends Base\Validator
                 'Cannot force authorize on this gateway',
                 'gateway',
                 $gateway);
+        }
+    }
+
+    protected function validateUpiBlock($input)
+    {
+        if (isset($input['upi']['vpa']) === true)
+        {
+            $this->validateVpa('upi.vpa', $input['upi']['vpa']);
+        }
+        if ((isset($input['upi']['type']) === true) and
+            ($input['upi']['type'] === 'otm'))
+        {
+            if ((isset($input['upi']['start_date']) === false) or
+                (isset($input['upi']['end_date']) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'UPI OTM payments require start_date and end_date',
+                    'upi',
+                    ['input'=> $input]
+                    );
+            }
+
+            if ($input['upi']['start_date'] > $input['upi']['end_date'])
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid start_date for UPI OTM Payment, start date cannot be greater than end date',
+                    'upi.start_date',
+                    ['input'=> $input]
+                );
+            }
         }
     }
 }

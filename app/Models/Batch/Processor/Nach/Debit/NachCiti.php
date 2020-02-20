@@ -89,4 +89,23 @@ class NachCiti extends Base
     {
         return Status::isDebitSuccess($content[self::GATEWAY_RESPONSE_CODE]);
     }
+
+    /**
+     * @param array $content
+     * @return bool
+     * @throws Exception\GatewayErrorException
+     */
+    protected function isRejected(array $content): bool
+    {
+        return Status::isDebitRejected($content[self::GATEWAY_RESPONSE_CODE]);
+    }
+
+    protected function parseFileAndCleanEntries(string $filePath): array
+    {
+        $entries = $this->parseFile($filePath);
+
+        array_shift($entries);
+
+        return $this->cleanParsedEntries($entries);
+    }
 }

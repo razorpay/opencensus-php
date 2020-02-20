@@ -38,21 +38,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchBankingInvoiceReportData(string $merchantId, int $month, int $year, $balanceId)
+    public function fetchBankingInvoiceReportData(string $merchantId, int $month, int $year)
     {
-        $balanceIDColumn = $this->repo->merchant_invoice->dbColumn(Entity::BALANCE_ID);
-
         $typeColumn = $this->repo->merchant_invoice->dbColumn(Entity::TYPE);
 
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where($typeColumn, '=', Type::RX_TRANSACTIONS)
-                    ->where($balanceIDColumn, '=', $balanceId)
                     ->where(Entity::MONTH, '=', $month)
                     ->where(Entity::YEAR, '=', $year)
-                    // We do first only for banking invoice report data since we know
-                    // there will be exactly one row only for now - rx_transactions
-                    ->first();
+                    ->get();
     }
 
     /**
@@ -98,9 +93,9 @@ class Repository extends Base\Repository
      *
      * @param int $year
      * @param int $month
-     * @return Base\PublicCollection
+     * @return array
      */
-    public function verify(int $year, int $month): Base\PublicCollection
+    public function verify(int $year, int $month)
     {
         $endOfMonth = Carbon::create($year, $month, 1, 0, 0, 0, Timezone::IST)->endOfMonth();
 
@@ -127,14 +122,19 @@ class Repository extends Base\Repository
 
         $activeMerchants = $this->repo->merchant->getQueryForActiveMerchants();
 
-        return $activeMerchants->where($activatedAt, '<=', $endOfMonth->getTimestamp())
-                               ->whereNotIn($merchantId, Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS)
-                               ->where(function ($query) use ($parentId)
-                               {
-                                   $query->whereNotIn($parentId, Merchant\Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
-                                         ->orWhereNull($parentId);
-                               })
-                               ->whereNotIn($merchantId, $invoiceCreatedMerchantIds)
-                               ->get();
+        $totalActiveMerchants = $activeMerchants->get()
+                                                ->count();
+
+        $invoiceCreationFailedMerchantIds = $activeMerchants->where($activatedAt, '<=', $endOfMonth->getTimestamp())
+                                           ->whereNotIn($merchantId, Merchant\Preferences::NO_MERCHANT_INVOICE_MIDS)
+                                           ->where(function ($query) use ($parentId)
+                                           {
+                                               $query->whereNotIn($parentId, Merchant\Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
+                                                     ->orWhereNull($parentId);
+                                           })
+                                           ->whereNotIn($merchantId, $invoiceCreatedMerchantIds)
+                                           ->get();
+
+        return [$invoiceCreationFailedMerchantIds, $totalActiveMerchants];
     }
 }

@@ -25,6 +25,8 @@ class EsSync extends Job
     private $repo;
     private $esRepo;
 
+    public $timeout = 4000;
+
     public function __construct(
         string $mode,
         string $action,

@@ -26,6 +26,11 @@ class RegisterAccount extends Job
     protected $channel;
 
     /**
+     * @var int
+     */
+    public $timeout = 60;
+
+    /**
      * @var string
      */
     protected $queueConfigKey = 'fts_register_account';

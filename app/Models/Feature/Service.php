@@ -47,7 +47,7 @@ class Service extends Base\Service
 
         foreach ($features as $feature)
         {
-            $data[Constants::FEATURES][$feature] = "1";
+            $data[Constants::FEATURES][$feature] = '1';
         }
 
         $merchant = $this->merchant;
@@ -92,22 +92,22 @@ class Service extends Base\Service
                                               ->feature
                                               ->fetchByEntityTypeAndEntityId($entityType, $entityId);
 
-        // all_features is a list of currently available features in the system
-        $response['all_features'] = array_keys(Constants::$featureValueMap);
+        $response['all_features'] =  array_keys(Constants::$featureValueMap);
 
         return $response;
     }
 
     /**
-     * Delete the feature association with an entity
-     *
-     * @param string $routeEndpoint
-     * @param string $entityId
-     * @param string $featureName
-     * @param array  $input
-     *
-     * @return array
-     */
+    * Delete the feature association with an entity
+    *
+    * @param string $routeEndpoint
+    * @param string $entityId
+    * @param string $featureName
+    * @param array $input
+    *
+    * @return array
+    * @throws Exception\BadRequestException
+    */
     public function deleteEntityFeature(
         string $routeEndpoint,
         string $entityId,
@@ -294,19 +294,11 @@ class Service extends Base\Service
         RuntimeManager::setTimeLimit(300);
     }
 
-    public function getFeaturesForEntity($entity)
+    public function getFeaturesForMerchantPublic(Merchant\Entity $merchant)
     {
-        $entityId = $entity->getId();
-
         $data['features'] = [];
 
-        // refresh the features here, if it has been accessed before in the
-        // same request context.
-        $entity->load('features');
-
-        $enabledFeatures = $entity->features
-                                  ->pluck(\RZP\Models\Feature\Entity::NAME)
-                                  ->toArray();
+        $enabledFeatures = $merchant->getEnabledFeatures();
 
         foreach (Constants::$visibleFeaturesMap as $visibleFeature => $featureDetails)
         {

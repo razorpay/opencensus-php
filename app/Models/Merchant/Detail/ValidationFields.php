@@ -125,6 +125,11 @@ class ValidationFields
             return [$field];
         }
 
+
+        //
+        // In case of unregistered as a poa document merchant can submit multiple documents
+        // Like aadhaar , passport , voter id , driver license so returning a default document type
+        //
         if (array_key_exists($field, self::UNREGISTERED_DOCUMENT_FIELDS) === true)
         {
             return [Type::AADHAR_FRONT, Type::AADHAR_BACK];

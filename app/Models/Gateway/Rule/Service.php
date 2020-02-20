@@ -30,16 +30,25 @@ class Service extends Base\Service
 
         $rule = $this->repo->gateway_rule->findOrFailPublic($id);
 
-        $this->repo->deleteOrFail($rule);
-
-        // try catch added temporarily
         try
         {
-            $this->app->smartRouting->deleteGatewayRule($id, $rule->getGroup());
+            $this->repo->transaction(function () use ($rule, $id)
+            {
+                $this->repo->deleteOrFail($rule);
+
+                $response =  $this->app->smartRouting->deleteGatewayRule($id, $rule->getGroup());
+
+                if ($response === null)
+                {
+                    throw new Exception\RuntimeException('Router rule delete failed', $rule->toArray());
+                }
+            });
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::SMART_ROUTING_SERVICE_ERROR);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::GATEWAY_RULE_DELETE_REQUEST);
+
+            throw $e;
         }
 
         return $rule->toArrayDeleted();

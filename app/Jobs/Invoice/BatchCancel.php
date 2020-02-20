@@ -3,15 +3,20 @@
 namespace RZP\Jobs\Invoice;
 
 use RZP\Jobs\Job;
+use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Invoice as InvoiceModel;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 /**
  * - Asynchronously cancels all issued invoices/payment links of given batch.
  */
 class BatchCancel extends Job
 {
+    const RETRY_DELAY           = 60;
+
+    const MAX_RETRY_ATTEMPTS    = 5;
     /**
      * {@inheritDoc}
      */
@@ -33,21 +38,68 @@ class BatchCancel extends Job
      */
     protected $core;
 
+    protected $merchant;
+
     const TOTAL_INVOICES_COUNT = 'total_invoices_count';
     const FAILED_INVOICE_IDS   = 'failed_invoice_ids';
 
-    public function __construct(string $mode, string $batchId, int $successCount)
+    public function __construct(string $mode, string $batchId, int $successCount, MerchantEntity $merchant = null)
     {
         parent::__construct($mode);
 
         $this->batchId = $batchId;
 
         $this->successCount = $successCount;
+
+        $this->merchant = $merchant;
     }
 
     public function handle()
     {
         parent::handle();
+
+        $batch = [];
+
+        if (empty($this->merchant) === false)
+        {
+            $batch = (new Batch\Service())->getBatchById($this->batchId, $this->merchant);
+        }
+        else
+        {
+            $batch = (new Batch\Service())->fetchBatchById($this->batchId);
+        }
+
+        if ($batch === [])
+        {
+            $this->trace->debug(
+                TraceCode::BATCH_NOT_FOUND, // To be changed
+                [
+                    'batch_id'      => $this->batchId,
+                    'merchant_id'   => $this->merchant ? $this->merchant->getId() : null,
+                ]
+            );
+
+            $this->delete();
+
+            return;
+        }
+
+        $batchStatus = $batch[Batch\Entity::STATUS];
+
+        if (($batchStatus !== Batch\Status::PROCESSED) and
+            ($batchStatus !== Batch\Status::CANCELLED))
+        {
+            if ($this->attempts() <= self::MAX_RETRY_ATTEMPTS)
+            {
+                $this->release(self::RETRY_DELAY);
+            }
+            else
+            {
+                $this->delete();
+            }
+
+            return;
+        }
 
         $this->core = new InvoiceModel\Core;
 
@@ -81,6 +133,8 @@ class BatchCancel extends Job
         }
 
         $this->trace->debug(TraceCode::INVOICE_BATCH_CANCEL_SUMMARY, $summary);
+
+        $this->delete();
     }
 
     protected function cancel(InvoiceModel\Entity $invoice, array & $summary)

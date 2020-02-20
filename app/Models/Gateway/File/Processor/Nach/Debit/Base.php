@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
+use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\Nach;
 
@@ -13,13 +14,22 @@ abstract class Base extends Nach\Base
 {
     public function fetchEntities(): PublicCollection
     {
+        if (Holidays::isWorkingDay(Carbon::now(Timezone::IST)) === false)
+        {
+            return new PublicCollection();
+        }
+
         $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
-            ->getTimestamp();
+                        ->addHours(9)
+                        ->getTimestamp();
+
+        $begin = $this->getLastWorkingDay($begin);
 
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-            ->getTimestamp();
+                      ->addHours(9)
+                      ->getTimestamp();
 
-        $tokens = $this->repo->token->fetchPendingNachDebit($this->gateway, $begin, $end);
+        $tokens = $this->repo->token->fetchPendingNachDebit( static::GATEWAY, $begin, $end);
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 

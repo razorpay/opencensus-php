@@ -12,7 +12,7 @@ class Status
 
     const PENDING_RECONCILIATION = self::INITIATED;
 
-    const BULK_UPDATE_STATUSES = [
+    const STATUSES = [
         self::FAILED,
         self::PROCESSED,
         self::INITIATED,
@@ -20,8 +20,23 @@ class Status
         self::REVERSED,
     ];
 
+    // allowed state transition when webhook is fired from fts
+    const ALLOWED_STATE_TRANSITION = [
+        self::CREATED   => [self::CREATED, self::INITIATED, self::PROCESSED, self::FAILED],
+        self::INITIATED => [self::INITIATED, self::FAILED, self::PROCESSED, self::REVERSED],
+        self::PROCESSED => [self::PROCESSED, self::REVERSED],
+        self::REVERSED  => [self::REVERSED],
+        self::FAILED    => [self::FAILED],
+    ];
+
     public static function isValidForBulkUpdate(string $status) : bool
     {
-        return (in_array($status, self::BULK_UPDATE_STATUSES, true) === true);
+        return (in_array($status, self::STATUSES, true) === true);
+    }
+
+    // checks if state transition is possible or not when webhook got fired from fts transfer
+    public static function isValidStateTransition(string $currentStatus, string $nextStatus) : bool
+    {
+        return (in_array($nextStatus, self::ALLOWED_STATE_TRANSITION[$currentStatus], true) === true);
     }
 }

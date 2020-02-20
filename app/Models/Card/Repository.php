@@ -204,41 +204,42 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findCardsWithoutFingerprint(int $limit)
+    public function findCardsWithoutFingerprint(int $limit, int $timestamp, int $timeWindow)
     {
         $window = 1200;
+        $startTime = $timestamp;
+        $endTime = min($startTime + $timeWindow, time() - $window);
 
-        $timestamp = time() - $window;
+        $baseQuery = $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::CREATED_AT, '>=', $startTime)
+                    ->where(Entity::CREATED_AT, '<=', $endTime);
 
-        /*
-         * Split queries into two (Fingerprint with Null, Fingerprint with empty) to fix query timeouts.
-         */
+        $minId = $baseQuery->min(Entity::ID);
+        $maxId = $baseQuery->max(Entity::ID);
 
-        $cardsWithNullFingerprint = $this->newQuery()
-            ->WhereNull(Entity::GLOBAL_FINGERPRINT)
-            ->whereNotNull(Entity::VAULT_TOKEN)
-            ->where(Entity::CREATED_AT, '<=', $timestamp)
-            ->orderBy(Entity::CREATED_AT, 'desc')
-            ->limit($limit)
-            ->get();
+        if ($minId !== null and $maxId !== null)
+        {
+            return $this->newQueryWithConnection($this->getSlaveConnection())
+                ->where(Entity::VAULT, '=', Vault::RZP_VAULT)
+                ->WhereNull(Entity::GLOBAL_FINGERPRINT)
+                ->whereNotNull(Entity::VAULT_TOKEN)
+                ->where(Entity::ID, '>=', $minId)
+                ->where(Entity::ID, '<=', $maxId)
+                ->orderBy(Entity::ID, 'desc')
+                ->limit($limit)
+                ->get();
+        }
 
-        $cardsWithEmptyFingerprint = $this->newQuery()
-            ->Where(Entity::GLOBAL_FINGERPRINT, '=', '')
-            ->whereNotNull(Entity::VAULT_TOKEN)
-            ->where(Entity::CREATED_AT, '<=', $timestamp)
-            ->orderBy(Entity::CREATED_AT, 'desc')
-            ->limit($limit)
-            ->get();
-
-        return $cardsWithNullFingerprint->merge($cardsWithEmptyFingerprint)->all();
+        return [];
     }
 
     public function migrateCardVaultTokenBulk($existingToken, $newToken, $globalFingerprint)
     {
-        $limit = 1000;
+        $limit = 5000;
 
         $this->newQuery()
             ->where(Entity::VAULT_TOKEN, '=', $existingToken)
+            ->WhereNull(Entity::GLOBAL_FINGERPRINT)
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->limit($limit)
             ->update(['vault_token' => $newToken, 'global_fingerprint' => $globalFingerprint]);

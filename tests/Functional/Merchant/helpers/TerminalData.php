@@ -364,14 +364,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
         ],
     ],
 
@@ -511,14 +511,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
         ],
     ],
 
@@ -565,14 +565,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
         ],
     ],
 
@@ -636,6 +636,17 @@ return [
         'request' => [
             'url' => '/merchants/10abcdefghsdfs/terminals/testatomrandom',
             'method' => 'DELETE'
+        ],
+        'response' => [
+              'content' => [
+            ]
+        ],
+    ],
+
+    'testDeleteTerminal2' => [
+        'request' => [
+            'url' => '/terminals/testatomrandom',
+            'method' => 'DELETE',
         ],
         'response' => [
               'content' => [
@@ -1083,7 +1094,8 @@ return [
     'testToggleTerminal' => [
         'request' => [
             'content' => [
-                'toggle' => '0'
+                'toggle' => '0',
+                'remarks'  => 'Disabling terminal because of some reason',
             ],
         'method' => 'PUT'
         ],
@@ -1554,7 +1566,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1601,7 +1612,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1719,7 +1729,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1964,7 +1973,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -2243,6 +2251,28 @@ return [
         ]
     ],
 
+
+    'testEnableTerminalFailedOnGateway'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'Terminal enable failed on gateway',
+                ],
+            ],
+            'status_code' => 502
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TERMINAL_ENABLE_FAILED
+        ],
+    ],
+
+
+
     'testDisableTerminal'  => [
         'request' => [
             'method' => 'PUT'
@@ -2250,7 +2280,7 @@ return [
         'response' => [
             'content' => [
                 'entity'              => 'terminal',
-                'status'              => 'activated',
+                'status'              => 'deactivated',
                 'enabled'             =>  false,
                 'notes'               =>  'some notes',
                 'mpan'                =>  [
@@ -2262,6 +2292,26 @@ return [
         ]
     ],
 
+    'testDisableTerminalFailedOnGateway'  => [
+        'request' => [
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'Terminal disable failed on gateway',
+                ],
+            ],
+            'status_code' => 502
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_TERMINAL_DISABLE_FAILED
+        ],
+    ],
+
+
     'testOnlyActivatedTerminalShouldBeEnabled'  => [
         'request' => [
             'method' => 'PUT'
@@ -2270,14 +2320,14 @@ return [
             'content'  => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only terminals in activated state can be enabled',
+                    'description' => 'Only deactivated terminals can be enabled',
                 ],
             ],
             'status_code' => 400
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_ACTIVATED_TERMINALS_CAN_BE_ENABLED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_DEACTIVATED_TERMINALS_CAN_BE_ENABLED
         ],
     ],
 
@@ -2398,6 +2448,33 @@ return [
             ]
         ]
     ],
+
+    'testTerminalOnboardingCreateTerminalForNonActivatedMerchant' => [
+        'request' => [
+            'content' => [
+                'mpan' => [
+                  'mastercard'  => '1234567880123456',
+                  'visa'        => '1234567890123456',
+                  'rupay'       => '1234567890123457'
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The merchant has not been activated. This action can only be taken for activated merchants',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED
+        ],
+    ],
+
 
     'testTerminalOnboardingCreateTerminalWithSameFields' => [
         'request' => [
@@ -2555,8 +2632,8 @@ return [
                     Terminal\Type::NON_RECURRING => '1',
                     Terminal\Type::UPI_TRANSFER  => '1',
                 ],
-                'virtual_upi_root'            => 'rzp.',
-                'virtual_upi_merchant_prefix' => 'pay.',
+                'virtual_upi_root'            => 'rzpy.',
+                'virtual_upi_merchant_prefix' => 'payto00000',
                 'virtual_upi_handle'          => 'hdfcbank',
             ],
             'method'  => 'POST',
@@ -2654,4 +2731,56 @@ return [
             ]
         ]
     ],
+    'testCreateJuspayIntentTerminal'           =>  [
+        'request'   => [
+            'content'   => [
+                'gateway'                       => 'upi_juspay',
+                'gateway_acquirer'              => 'axis',
+                'category'                      => '1234',
+                'gateway_merchant_id'           => 'MER0000000000111',
+                'gateway_merchant_id2'          => 'MERCHANNEL0000000000111',
+                'gateway_secure_secret'         => 'NotUsedAsOfNow',
+                'upi'                           => 1,
+                'vpa'                           => 'abcd@some',
+                'type'                          => [
+                    'non_recurring'             => '1',
+                    'pay'                       => '1'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'MER0000000000111',
+                'gateway_acquirer'          =>  'axis',
+                'enabled'                   => true
+            ]
+        ]
+    ],
+
+    'testCreateCybersourceYesBTerminal'      => [
+        'request'   => [
+            'content'   => [
+                'gateway'                   => 'cybersource',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_terminal_id'       => 'randommerchantid',
+                'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_secure_secret2'    => 'secure_secret2',
+                'gateway_access_code'       => 'access_code',
+                'gateway_acquirer'          => 'yesb',
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'recurring_3ds'     => '0',
+                    'recurring_non_3ds' => '1',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_acquirer'          => 'yesb',
+                'enabled'                   =>  true
+            ]
+        ]
+    ]
 ];

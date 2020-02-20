@@ -93,6 +93,8 @@ class MerchantCreateTest extends TestCase
 
         $this->checkBalances();
 
+        $this->checkBalanceConfigs();
+
         $this->checkNetbankingBanks();
 
         $this->checkMethods();
@@ -139,6 +141,16 @@ class MerchantCreateTest extends TestCase
         $this->runRequestResponseFlow($this->testData['testBalanceInLiveAfterCreatedMerchant']);
     }
 
+    protected function checkBalanceConfigs()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
+
+        $this->runRequestResponseFlow($this->testData['testBalanceConfigInTestAfterCreatedMerchant']);
+    }
+
+
     protected function checkNetbankingBanks()
     {
         $this->checkNetbankingBanksInMode(Mode::TEST);
@@ -153,9 +165,12 @@ class MerchantCreateTest extends TestCase
         $methods = $this->getEntityById('methods', '1X4hRFHFx4UiXt', true);
 
         $expectedMethods = [
-            'amex'     => false,
-            'mobikwik' => false,
-            'paytm'    => false
+            'amex'          => true,
+            'mobikwik'      => true,
+            'paytm'         => false,
+            'jiomoney'      => true,
+            'airtelmoney'   => true,
+            'paylater'      => true,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methods);
@@ -197,6 +212,47 @@ class MerchantCreateTest extends TestCase
         $content = $this->runRequestResponseFlow($testData);
 
         $this->assertSame(array(), $content['disabled']);
+    }
+
+    public function testCheckSalesforceGroupForSubmerchantCreate()
+    {
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
+
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->startTest();
+
+        $merchantMap = \DB::connection('test')->table('merchant_map')
+                          ->where('merchant_id', 'NewSubmerchant')
+                          ->first();
+
+        $this->assertEquals($merchantMap->entity_id, 'E15BhsdMSofcUJ');
+        $this->assertEquals($merchantMap->entity_type, 'group');
+        $this->assertEquals($merchantMap->merchant_id, 'NewSubmerchant');
+    }
+
+    public function  testCheckSalesforceGroupForMarketplaceLinkedAccount()
+    {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        $merchantMap = \DB::connection('test')->table('merchant_map')
+                          ->where('merchant_id', '7gcKngYfqyDMjN')
+                          ->first();
+
+        $this->assertEquals($merchantMap->entity_id, 'E15BhsdMSofcUJ');
+        $this->assertEquals($merchantMap->entity_type, 'group');
+        $this->assertEquals($merchantMap->merchant_id, '7gcKngYfqyDMjN');
     }
 
     public function testCreateSubMerchant()
@@ -1331,7 +1387,7 @@ class MerchantCreateTest extends TestCase
     {
         foreach (['test', 'live'] as $mode)
         {
-            $otpAuthFeature = $this->getDbEntity('feature', [], $mode);
+            $otpAuthFeature = $this->getDbEntity('feature', ['name' => 'otp_auth_default'], $mode);
 
             $this->assertEquals(FeatureConstants::OTP_AUTH_DEFAULT, $otpAuthFeature->getName());
         }

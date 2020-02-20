@@ -42,6 +42,7 @@ class MailTags
     const AIRTEL_MONEY_REFUNDS_MAIL             = 'airtel_money_refunds_mail';
     const AIRTEL_MONEY_FAILED_REFUNDS_MAIL      = 'airtel_money_failed_refunds_mail';
     const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';
+    const ICICI_PAYLATER_REFUNDS_MAIL           = 'icici_paylater_refunds_mail';
     const INDIAN_BANK_NETBANKING_REFUNDS_MAIL   = 'indianbank_netbanking_refunds_mail';
     const CBI_NETBANKING_REFUNDS_MAIL           = 'cbi_netbanking_refunds_mail';
     const CANARA_NETBANKING_REFUNDS_MAIL        = 'canara_netbanking_refunds_mail';
@@ -57,6 +58,7 @@ class MailTags
     const HDFC_FSS_FAILED_REFUNDS_MAIL          = 'fss_failed_refunds_mail';
     const AXIS_CYBERSOURCE_FAILED_REFUNDS_MAIL  = 'axis_cybersource_failed_refunds_mail';
     const FAILED_REFUNDS_MAIL                   = 'failed_refunds_mail';
+    const UPI_SBI_REFUNDS_MAIL                  = 'upi_sbi_refunds_mail';
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
@@ -106,6 +108,9 @@ class MailTags
     const RBL_ENACH_DEBIT_MAIL             = 'rbl_enach_debit_mail';
     const RBL_ENACH_REGISTER_MAIL          = 'rbl_enach_register_mail';
 
+    const CITI_NACH_REGISTER_MAIL          = 'citi_nach_register_mail';
+    const CITI_NACH_DEBIT_MAIL             = 'citi_nach_debit_mail';
+
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
     const FEE_CREDITS_ALERT                = 'fee_credits_alert';
@@ -127,8 +132,10 @@ class MailTags
     const WELCOME                          = 'welcome';
     const ACCOUNT_ACTIVATED                = 'account_activated';
     const INSTANT_ACTIVATION               = 'instant_activation';
+    const NEEDS_CLARIFICATION              = 'needs_clarification';
     const SUB_MERCHANT_ADDED               = 'sub_merchant_added';
     const AFFILIATE_ADDED                  = 'affiliate_added';
+    const ACCOUNT_REJECTED                 = 'account_rejected';
 
     const ICICI_FILES                      = 'icici_files';
     const CBI_FILES                        = 'cbi_files';
@@ -173,7 +180,15 @@ class MailTags
 
     const BANKING_ACCOUNT_X_PRO_ACTIVATION = 'banking_account_x_pro_activation';
 
-    const PARTNER_ON_BOARDED             = 'partner_on_boarded';
+    const PARTNER_ON_BOARDED                            = 'partner_on_boarded';
+    const NEGATIVE_BALANCE_THRESHOLD_ALERT              = 'negative_balance_threshold_alert';
+    const BALANCE_NEGATIVE_ALERT                        = 'balance_negative_alert';
+    const BALANCE_POSITIVE_ALERT                        = 'balance_positve_alert';
+    const RESERVE_BALANCE_ACTIVATED                     = 'reserve_balance_activated';
+
+
+    //Merchant Invoice tags
+    const MERCHANT_INVOICE_EXECUTION_SUMMARY            = 'merchant_invoice_execution_summary';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

@@ -54,4 +54,14 @@ class RequestHeader
     const X_IDEMPOTENT_KEY              = 'X-Idempotent-Key';
 
     const X_TASK_ID                     = 'X-Task-ID';
+    const X_SERVICE_ID                  = 'X-Service-ID';
+
+    const X_RAZORPAY_TRACKID            = 'X-Razorpay-TrackId';
+
+    const AUTHORIZATION                 = 'AUTHORIZATION';
+    const BEARER                        = 'Bearer';
+
+    // For testing purpose
+    const X_RZP_TESTCASE_ID             = 'X-RZP-TESTCASE-ID';
+
 }

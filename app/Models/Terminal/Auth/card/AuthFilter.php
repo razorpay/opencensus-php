@@ -22,7 +22,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class AuthFilter extends Terminal\Auth\Base
 {
-    public function isValidAuth($authType) : bool
+    public function isValidAuth($authType, $authenticationGateways) : bool
     {
         $payment = $this->payment;
 
@@ -37,7 +37,7 @@ class AuthFilter extends Terminal\Auth\Base
                 break;
 
             case Payment\AuthType::HEADLESS_OTP:
-                return $this->canRunHeadlessOtpFlow($payment);
+                return $this->canRunHeadlessOtpFlow($payment, $authenticationGateways);
                 break;
 
             case Payment\AuthType::_3DS:
@@ -73,6 +73,7 @@ class AuthFilter extends Terminal\Auth\Base
     protected function canRunIvrFlow(Payment\Entity $payment): bool
     {
         if (($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === true) and
+            (is_null($payment->card) === false) and
             ($payment->card->iinRelation !== null) and
             ($this->isAuthTypeOtp($payment) === true) and
             ($payment->card->iinRelation->supports(IIN\Flow::IVR) === true))
@@ -86,6 +87,7 @@ class AuthFilter extends Terminal\Auth\Base
     protected function canRunAxisExpressPay(Payment\Entity $payment): bool
     {
         if (($payment->merchant->isAxisExpressPayEnabled() === true) and
+            (is_null($payment->card) === false) and
             ($payment->card->iinRelation !== null) and
             ($payment->card->iinRelation->getIssuer() === IFSC::UTIB) and
             ($this->isAuthTypeOtp($payment) === true) and
@@ -97,16 +99,28 @@ class AuthFilter extends Terminal\Auth\Base
         return false;
     }
 
-    protected function canRunHeadlessOtpFlow(Payment\Entity $payment): bool
+    protected function canRunHeadlessOtpFlow(Payment\Entity $payment, $authenticationGateways=[]): bool
     {
-       if (($this->isAuthTypeOtp($payment) === true) and
-           ($this->merchant->isHeadlessEnabled() === true) and
-           ($payment->card->iinRelation !== null) and
-           ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true) and
-           (Payment\Gateway::supportsHeadlessBrowser($payment->getGateway(), $payment->card->iinRelation->getNetworkCode()) === true))
+        if (($this->isAuthTypeOtp($payment) === true) and
+            ($this->merchant->isHeadlessEnabled() === true) and
+            (is_null($payment->card) === false) and
+            ($payment->card->iinRelation !== null) and
+            ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true))
 
         {
-            return true;
+            if (Payment\Gateway::supportsHeadlessBrowser($payment->getGateway(), $payment->card->iinRelation->getNetworkCode()) === true)
+            {
+                return true;
+            }
+
+            foreach ($authenticationGateways as $authenticationGateway)
+            {
+                if ((isset($authenticationGateway)) and
+                    (Payment\Gateway::supportsHeadlessBrowser($authenticationGateway, $payment->card->iinRelation->getNetworkCode()) === true))
+                {
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -115,6 +129,7 @@ class AuthFilter extends Terminal\Auth\Base
     protected function canRunPinFlow(Payment\Entity $payment): bool
     {
         if (($this->merchant->isFeatureEnabled(Feature\Constants::ATM_PIN_AUTH) === true) and
+            (is_null($payment->card) === false) and
             ($payment->card->iinRelation !== null) and
             ($payment->card->iinRelation->supports(IIN\Flow::PIN) === true) and
             ($payment->terminal->isPin() === true))

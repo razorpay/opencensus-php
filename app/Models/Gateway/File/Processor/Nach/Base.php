@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor;
 use RZP\Exception\GatewayFileException;
@@ -87,5 +88,36 @@ abstract class Base extends Processor\Base
     protected function getFormattedAmount($amount)
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function formatDataForMail($files)
+    {
+        $mailData = [
+            'files'     => [],
+        ];
+
+        foreach ($files as $file)
+        {
+            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+
+            $mailData['files'][] = [
+                'signed_url' => $signedUrl,
+                'file_name'  => $file->getLocation(),
+            ];
+        }
+
+        return $mailData;
+    }
+
+    protected function getLastWorkingDay($timestamp)
+    {
+        $date = (new Carbon())->timestamp($timestamp);
+
+        while (Holidays::isWorkingDay($date) === false)
+        {
+            $date = $date->subDay();
+        }
+
+        return $date->timestamp;
     }
 }

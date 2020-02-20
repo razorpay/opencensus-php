@@ -44,6 +44,8 @@ class Entity extends Base\PublicEntity
     const EXCEL_FILE_ID          = 'excel_file_id';
     const INITIATE_AT            = 'initiate_at';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
+    const GATEWAY_REF_NO         = 'gateway_ref_no';
+    const GATEWAY_ERROR_CODE     = 'gateway_error_code';
 
     //Fund transfer retry constants
     const FILE                  = 'file';
@@ -105,6 +107,7 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::IS_FTS,
         self::FTS_TRANSFER_ID,
+        self::GATEWAY_REF_NO,
         self::NARRATION,
         self::REMARKS,
         self::DATE_TIME,
@@ -338,6 +341,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::IS_FTS);
     }
 
+    public function getGatewayRefNo()
+    {
+        return $this->getAttribute(self::GATEWAY_REF_NO);
+    }
+
     public function hasBankAccount()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
@@ -418,6 +426,11 @@ class Entity extends Base\PublicEntity
     public function setIsFTS(bool $isFTS)
     {
         $this->setAttribute(self::IS_FTS, $isFTS);
+    }
+
+    public function setGatewayRefNo(string $gatewayRefNo)
+    {
+        $this->setAttribute(self::GATEWAY_REF_NO, $gatewayRefNo);
     }
 
     // ------------------------------ modifiers --------------------------------

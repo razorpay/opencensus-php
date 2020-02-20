@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Vpa;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
@@ -9,6 +11,8 @@ use RZP\Models\VirtualAccount;
 
 class Entity extends Base\PublicEntity
 {
+    use SoftDeletes;
+
     const ID                   = 'id';
     const ENTITY_ID            = 'entity_id';
     const ENTITY_TYPE          = 'entity_type';
@@ -16,6 +20,7 @@ class Entity extends Base\PublicEntity
     const HANDLE               = 'handle';
     const MERCHANT_ID          = 'merchant_id';
     const FTS_FUND_ACCOUNT_ID  = 'fts_fund_account_id';
+    const DELETED_AT           = 'deleted_at';
 
     const ADDRESS = 'address';
 

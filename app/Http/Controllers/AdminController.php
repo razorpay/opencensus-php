@@ -348,6 +348,24 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateMerchantPoc()
+    {
+        $input = Request::all();
+
+        $this->service()->updateMerchantPoc($input);
+
+        return ApiResponse::json([]);
+    }
+
+    public function unclaimedMerchantPoc()
+    {
+        $input = Request::all();
+
+        $this->service()->unclaimedMerchantPoc($input);
+
+        return ApiResponse::json([]);
+    }
+
     public function getPvtResponse()
     {
         $input = Request::all();
@@ -376,5 +394,12 @@ class AdminController extends Controller
 
         $this->trace->info(TraceCode::STORK_ADMIN_RESPONSE, $response);
         return ApiResponse::json($response);
+    }
+
+    public function getModeConfigInstruments()
+    {
+        $data = $this->service()->getModeConfigInstruments();
+
+        return ApiResponse::json($data);
     }
 }

@@ -12,6 +12,7 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Role;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Environment;
 
 class Entity extends Base\Entity
 {
@@ -114,5 +115,18 @@ class Entity extends Base\Entity
     public function getName()
     {
         return $this->getAttribute(self::NAME);
+    }
+
+    /**
+     *
+     * @return array
+     */
+    public function getSalesForceGroupId()
+    {
+        return [
+            Constant::SALESFORCE_CLAIMED_MERCHANTS_GROUP_ID => Constant::SF_CLAIMED_MERCHANTS_GROUP_ID,
+            Constant::SALESFORCE_CLAIMED_SME_GROUP_ID       => Constant::SF_CLAIMED_SME_GROUP_ID,
+            Constant::SALESFORCE_UNCLAIMED_GROUP_ID         => Constant::SF_UNCLAIMED_GROUP_ID
+        ];
     }
 }

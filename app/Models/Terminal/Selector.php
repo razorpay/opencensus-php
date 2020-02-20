@@ -7,6 +7,7 @@ use Cache;
 use Config;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Diag\EventCode;
 use RZP\Models\Terminal;
@@ -39,6 +40,12 @@ class Selector extends Base\Core
     const EXECUTION_TYPE_SYNC = 'sync';
 
     const EXECUTION_TYPE_ASYNC = 'async';
+
+    const RAZORX_SYNC = 'payments_hit_routing_service';
+
+    const RAZORX_ASYNC = 'payments_hit_routing_service_async';
+
+    const RAZORX_ASYNC_AUTHN = 'payments_hit_routing_service_authentication';
 
     protected static $filters = [
         Filters\TransactionFilter::class,
@@ -87,7 +94,7 @@ class Selector extends Base\Core
     ];
 
 
-    public function __construct(array $input, Terminal\Options $options)
+    public function __construct(array $input, Terminal\Options $options = null)
     {
         parent::__construct();
 
@@ -165,7 +172,7 @@ class Selector extends Base\Core
 
 
         // checking filtered terminals and razorX experiment for smart routing
-        if ($this->shouldHitRoutingService($payment->getId()) === true)
+        if ($this->shouldHitRoutingService(self::RAZORX_SYNC, $payment->getId()) === true)
         {
 
             try
@@ -209,17 +216,6 @@ class Selector extends Base\Core
                 {
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
 
-                    // temporary - needs to be removed once parity analysis is complete
-                    $this->trace->info(
-                        TraceCode::SMART_ROUTING_TERMINALS_COUNT_IS_ZERO,
-                        [
-                            'terminals_from_smart_routing'  => $newSelectedTerminals,
-                            'is_error_timeout'              => $terminalSetReceivedFromSmartRouting != null ? false : true,
-                            'payment_id'                    => $payment->getId(),
-
-                        ]);
-
-
                     if (empty($sortedTerminals) === false)
                     {
                         $this->trace->error(
@@ -228,6 +224,7 @@ class Selector extends Base\Core
                                 'terminals_from_api'            => $sortedTerminals,
                                 'terminals_from_smart_routing'  => $newSelectedTerminals,
                                 'payment_id'                    => $payment->getId(),
+                                'method'                        => $payment->getMethod(),
 
                             ]);
                     }
@@ -260,7 +257,7 @@ class Selector extends Base\Core
 
             $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
             //Send the smart routing request in async mode
-            if ($this->shouldHitRoutingServiceInAsync($payment->getId()) === true)
+            if ($this->shouldHitRoutingService(self::RAZORX_ASYNC, $payment->getId()) === true)
             {
                 $this->sendParametersToSmartRoutingService($payment,
                     $this->input['merchant'], $allTerminals, $sortedTerminals, self::EXECUTION_TYPE_ASYNC);
@@ -324,12 +321,104 @@ class Selector extends Base\Core
         return $sortedTerminals;
     }
 
+    public function sendAuthenticationData($terminal, $authnTerminals)
+    {
+        $payment = $this->input['payment'];
+
+        if (in_array($payment->getMethod(), [Method::CARD, Method::EMI]) === true) {
+
+            if ($this->shouldHitRoutingService(self::RAZORX_ASYNC_AUTHN, $payment->getId()) === true)
+            {
+                $this->sendParametersToSmartRoutingAuthN($payment, $this->input['merchant'], $terminal, $authnTerminals);
+            }
+        }
+    }
+
+    private function sendParametersToSmartRoutingAuthN($payment, $merchant, $terminal, $selectedAuthN)
+    {
+        try
+        {
+            $paymentData = $payment->toArray();
+
+            if ($payment->hasCard() === true)
+            {
+                $card = $payment->card;
+
+                $paymentData['card'] = $card->toArray();
+
+                $iin = $card->iinRelation;
+
+                if ($iin !== null)
+                {
+                    $flows = $iin->getFlows();
+
+                    $paymentData['card']['flows'] = $flows;
+                }
+            }
+
+            if ($payment->getEmiPlanId() !== null)
+            {
+                $paymentData['emi'] = $this->getPaymentEmiArray($payment);
+            }
+
+            $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
+
+            $authNTerminals = $this->getAuthNTerminals();
+
+            $validAuth = $this->getValidAuths($payment);
+
+            $merchantData = $this->getMerchantData($merchant);
+
+            $data = [
+                'payment'                           => $paymentData,
+                'merchant'                          => $merchantData,
+                'terminals'                         => array_values($terminal),
+                'authentication_terminals'          => array_values($authNTerminals),
+                'valid_auths'                       => $validAuth,
+                'selected_authentication_terminals' => array_values($selectedAuthN),
+                //'max_terminals'                   => $payment->getMaxRetryAttempt(),
+            ];
+
+            $params = null;
+
+            $this->app->smartRouting->sendNonBlockingPaymentDataAuthN($data, $params);
+
+            $this->trace->info(
+                TraceCode::SMART_ROUTING_REQUEST_AUTHENTICATION,
+                [
+                    'data' => $data,
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::SMART_ROUTING_AUTHN_PUSH_FAILED,
+                [
+                    'error'             => $e->getMessage(),
+                    'payment_id'        => $payment->getId(),
+                ]);
+        }
+    }
+
     protected function getTerminals()
     {
-        // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
-        $merchantTerminals = $this->repo
-                                  ->terminal
-                                  ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
+        $response = $this->app->razorx->getTreatment($this->input['merchant']->getId(), 'payments_fetch_config_parent_terminal',
+                    $this->mode);
+
+        if ($response === 'on')
+        {
+            // Fetch all terminals (enabled/disabled) for both the current merchant, parent merchant and the shared Merchant
+            $merchantTerminals = $this->repo
+                                      ->terminal
+                                      ->getTerminalForMerchantParentMerchantAndSharedMerchant($this->input['merchant']);
+        }
+        else
+        {
+            // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
+            $merchantTerminals = $this->repo
+                                      ->terminal
+                                      ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
+        }
 
         $payment = $this->input['payment'];
 
@@ -505,6 +594,18 @@ class Selector extends Base\Core
 
             $merchant = $this->input['merchant'];
 
+            if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_HITACHI_AUTO_ONBOARD) === true)
+            {
+                $this->trace->info(
+                    TraceCode::SKIPPING_HITACHI_AUTOMATIC_ONBOARDING,
+                    [
+                        'payment'             => $payment,
+                        'merchant'            => $merchant,
+                    ]);
+
+                return;
+            }
+
             if (($payment->isMethod(Method::CARD) === true) and ($payment->isBharatQr() === false)
                 and (in_array($merchant->getCategory(), GatewayProcessor::HITACHI_BLACKLISTED_MCC) === false))
             {
@@ -572,7 +673,8 @@ class Selector extends Base\Core
 
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
 
-            if (in_array($paymentData['method'], [Method::CARD, Method::UPI, Method::EMI]) === true )
+            if ((in_array($paymentData['method'], [Method::CARD, Method::UPI, Method::EMI]) === true ) and
+                ($payment->isGooglePayCard() === false))
             {
                 $downtimes = $this->repo->useSlave(function () use ($allTerminals) {
                     return (new Downtime\Core)->getApplicableDowntimesForPayment($allTerminals, $this->input);
@@ -607,6 +709,7 @@ class Selector extends Base\Core
                     'filtered_terminals'  => $data['filtered_terminals'],
                     'gateway_downtime'    => $data['gateway_downtime'],
                     'failed_terminals'    => $data['failed_terminals'],
+                    'execution_type'      => $executionType,
                 ]);
 
             if ($executionType === self::EXECUTION_TYPE_SYNC)
@@ -640,7 +743,7 @@ class Selector extends Base\Core
         return $response;
     }
 
-    protected function shouldHitRoutingService(string $paymentId = null)
+    protected function shouldHitRoutingService(string $feature, string $paymentId = null)
     {
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
@@ -661,38 +764,7 @@ class Selector extends Base\Core
             return false;
         }
 
-        $response = $this->app->razorx->getTreatment($paymentId, 'payments_hit_routing_service', $this->mode);
-
-        if ($response === 'on')
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function shouldHitRoutingServiceInAsync(string $paymentId = null)
-    {
-        $isProduction = $this->app->environment(Environment::PRODUCTION);
-
-        if ($isProduction === false)
-        {
-            return false;
-        }
-
-        if ($this->isTestMode() === true)
-        {
-            return false;
-        }
-
-        if ($paymentId === null)
-        {
-            $this->trace->info(TraceCode::PAYMENT_ID_NULL);
-
-            return false;
-        }
-
-        $response = $this->app->razorx->getTreatment($paymentId, 'payments_hit_routing_service_async', $this->mode);
+        $response = $this->app->razorx->getTreatment($paymentId, $feature, $this->mode);
 
         if ($response === 'on')
         {
@@ -773,6 +845,25 @@ class Selector extends Base\Core
         $merchantData['org_id']            = $merchant->getOrgId();
 
         return $merchantData;
+    }
+
+    protected function getAuthNTerminals()
+    {
+        return AuthenticationTerminals::AUTHENTICATION_TERMINALS;
+    }
+
+    protected function getValidAuths($payment)
+    {
+        $valid = [];
+
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            $autflowObj = new Terminal\Auth\Card\AuthFilter($payment);
+
+            $valid = $autflowObj->getValidAuths();
+        }
+
+        return $valid;
     }
 
     protected function alertNetbankingTerminalNotFound(Merchant\Entity $merchant, $payment)

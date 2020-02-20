@@ -41,6 +41,13 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
      */
     protected $payment;
 
+    protected $reconciled;
+
+    /**
+     * @var Gateway Refund Entity
+     */
+    protected $gatewayRefund;
+
     /**
      * @var Refund\Entity
      */
@@ -88,16 +95,18 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setMerchantIdInOutput($this->refund->getMerchantId());
 
+        $this->calculateAndSetNetAmountInOutputFile($row);
+
         try
         {
-            $this->runPreReconciledAtCheckRecon($rowDetails);
+            $this->reconciled = $this->checkIfAlreadyReconciled($this->refund);
 
-            $reconciled = $this->checkIfAlreadyReconciled($this->refund);
+            $this->runPreReconciledAtCheckRecon($rowDetails);
 
             // Increment the total count for the summary
             $this->setSummaryCount(self::TOTAL_SUMMARY, $refundId);
 
-            if ($reconciled === true)
+            if ($this->reconciled === true)
             {
                 $this->handleAlreadyReconciled($refundId, $this->refund->transaction->getReconciledAt());
 
@@ -154,6 +163,21 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         }
 
         return null;
+    }
+
+    /**
+     * Fetches refund amount and sets in the
+     * output file as negative as it is debit.
+     *
+     * @param array $row
+     */
+    protected function calculateAndSetNetAmountInOutputFile(array $row)
+    {
+        $grossAmt = intval($this->getReconRefundAmount($row));
+
+        $netAmount = (-1) * $grossAmt / 100;
+
+        $this->setReconNetAmountInOutput($netAmount);
     }
 
     public function resetRowProcessingAttributes()
@@ -303,6 +327,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
     {
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
 
+        $this->persistGatewayAmount($this->refund, $rowDetails);
+
         $this->persistRefundArn($rowDetails);
 
         $this->persistGatewayData($rowDetails);
@@ -427,6 +453,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
 
+        $this->persistGatewayAmount($this->refund, $rowDetails);
+
         $this->setRefundProcessedWithoutArn($this->refund);
 
         return true;
@@ -508,7 +536,11 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 
+        $gatewayAmount = $this->getGatewayAmount($row);
+
         $arn = $this->getArn($row);
+
+        $gatewayUtr = $this->getGatewayUtr($row);
 
         $gatewayTransactionId = $this->getGatewayTransactionId($row);
 
@@ -517,7 +549,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         $rowDetails = [
             BaseReconciliate::REFUND_ID              => $refundId,
             BaseReconciliate::GATEWAY_SETTLED_AT     => $gatewaySettledAt,
+            BaseReconciliate::GATEWAY_AMOUNT         => $gatewayAmount,
             BaseReconciliate::ARN                    => trim($arn),
+            BaseReconciliate::GATEWAY_UTR            => trim($gatewayUtr),
             BaseReconciliate::REFERENCE_NUMBER       => trim($referenceNumber),
             BaseReconciliate::GATEWAY_TRANSACTION_ID => trim($gatewayTransactionId),
         ];
@@ -831,6 +865,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         $this->persistGatewayTransactionId($rowDetails, $gatewayRefund);
 
+        $this->persistGatewayUtr($rowDetails, $gatewayRefund);
+
         if ($this->isScroogeRefund() === true)
         {
             //
@@ -943,10 +979,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
                     'amount'                    => $this->refund->getAmount(),
@@ -980,10 +1018,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         if ((empty($dbReferenceNumber) === false) and
             ($dbReferenceNumber !== $referenceNumber))
         {
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
                     'amount'                    => $this->refund->getAmount(),

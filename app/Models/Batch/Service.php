@@ -5,8 +5,6 @@ namespace RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
 use RZP\Exception\ServerNotFoundException;
 use RZP\Models\Merchant\Request\Service as MerchantRequestService;
 
@@ -23,7 +21,8 @@ class Service extends Base\Service
 
     private function validateBatchTypeForUserRole($input)
     {
-        if ($this->auth->isProxyAuth() === true)
+        if (($this->auth->isProxyAuth() === true) and
+            (empty($this->auth->getAdmin()) === true))
         {
             $mode = $this->mode ?? 'live';
 
@@ -43,7 +42,11 @@ class Service extends Base\Service
 
         $fetchResult = $this->core()->fetchWithSettings($input, $this->merchant);
 
-        if (isset($input['type']) and ($this->app->batchService->isMigratingBatchType($input['type']) === true))
+        $input['types'] = $this->validateBatchTypes($input);
+
+        if ((isset($input['type']) and
+            ($this->app->batchService->isMigratingBatchType($input['type']) === true)) or
+            (empty($input['types']) === false))
         {
             $fetchResult = $this->app->batchService->getBatchesFromBatchServiceAndMerge($fetchResult, $input, $this->merchant);
         }
@@ -51,11 +54,34 @@ class Service extends Base\Service
         return $fetchResult;
     }
 
-    public function getBatchById(string $id): array
+    public function validateBatchTypes($input): array
     {
-        $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id, $this->merchant);
+        if(isset($input['types']) == false)
+        {
+            return [];
+        }
+        $types = [];
+        foreach ($input['types'] as $type)
+        {
+            if($this->app->batchService->isMigratingBatchType($type)===true)
+            {
+                array_push($types, $type);
+            }
+        }
+        return $types;
+    }
 
-        if ($responseBatch != null)
+    public function getBatchById(string $id, Merchant\Entity $merchant = null): array
+    {
+        if ((empty($this->merchant) === false) and
+            (empty($merchant) === true))
+        {
+            $merchant = $this->merchant;
+        }
+
+        $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id, $merchant);
+
+        if ($responseBatch !== null)
         {
             $this->app->batchService->prepareBatchItemResponse($responseBatch);
 
@@ -66,7 +92,7 @@ class Service extends Base\Service
             return $responseBatch;
         }
 
-        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $merchant);
 
         $input = [Entity::TYPE => $batch->getAttribute(Entity::TYPE) ];
 
@@ -83,17 +109,9 @@ class Service extends Base\Service
      */
     public function fetchBatchById(string $id): array
     {
-        if ($this->auth->isAdminAuth() === false)
-        {
-            throw (new \Exception(
-                PublicErrorDescription::BAD_REQUEST_ERROR,
-                PublicErrorCode::BAD_REQUEST_ERROR
-            ));
-        }
-
         $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id);
 
-        if ($responseBatch != null)
+        if ($responseBatch !== null)
         {
             $this->app->batchService->prepareBatchItemResponse($responseBatch);
 
@@ -250,5 +268,25 @@ class Service extends Base\Service
         $result = $this->repo->batch->getReconFilesCountByGateway($input);
 
         return $result->toArray();
+    }
+
+    public function stopBatchProcessIfRequired(array $batch)
+    {
+        $batchId = $batch[Entity::ID];
+
+        if ($batch[Entity::STATUS] === Status::PROCESSED)
+        {
+            $this->trace->info(
+                TraceCode::STOP_BATCH_PROCESS_NOT_REQUIRED,
+                [
+                    'batch_id'  => $batchId,
+                    'status'    => $batch[Entity::STATUS],
+                ]
+            );
+
+            return;
+        }
+
+        $this->app->batchService->cancelBatchInBatchService($batchId);
     }
 }

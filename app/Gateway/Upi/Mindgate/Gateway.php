@@ -383,6 +383,8 @@ class Gateway extends Base\Gateway
 
     public function getUpiTransferData(array $input)
     {
+        $this->checkForUpiTransferPaymentFailure($input);
+
         $amount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
 
         $upiTransferData = [
@@ -397,12 +399,18 @@ class Gateway extends Base\Gateway
             UpiTransfer\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::CALLBACK_RESPONSE_PGMID],
             UpiTransfer\GatewayResponseParams::NPCI_REFERENCE_ID     => $input[ResponseFields::NPCI_UPI_TXN_ID],
             UpiTransfer\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
+            UpiTransfer\GatewayResponseParams::TRANSACTION_REFERENCE => $input[ResponseFields::PAYMENT_ID],
         ];
 
         return [
             'callback_data'     => $input,
             'upi_transfer_data' => $upiTransferData
         ];
+    }
+
+    protected function checkForUpiTransferPaymentFailure($input)
+    {
+        $this->checkCallbackResponseStatus($input);
     }
 
     /**
@@ -453,10 +461,15 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
+        $traceResult = $result;
+
+        unset($traceResult[ResponseFields::PAYER_VA], $traceResult[ResponseFields::PHONE_NUMBER], $traceResult[ResponseFields::ACCOUNT_NUMBER]);
+
+
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
             'body'              => $responseBody,
             'decrypted'         => $response,
-            'parsed'            => $result,
+            'parsed'            => $traceResult,
             'gateway'           => $this->gateway,
             'type'              => $type
         ]);
@@ -494,8 +507,12 @@ class Gateway extends Base\Gateway
             assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
         }
 
+        $traceContent = $content;
+
+        unset($traceContent[ResponseFields::PAYER_VA], $traceContent[ResponseFields::PHONE_NUMBER], $traceContent[ResponseFields::ACCOUNT_NUMBER]);
+
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'parsed'            => $content,
+            'parsed'            => $traceContent,
             'type'              => $gatewayPayment->getType()
         ]);
 

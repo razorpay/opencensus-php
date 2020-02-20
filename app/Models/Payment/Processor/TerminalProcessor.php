@@ -9,6 +9,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
 use RZP\Models\BankTransfer;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Account;
 use RZP\Exception\LogicException;
 use RZP\Models\VirtualAccount\Provider;
@@ -88,6 +89,35 @@ class TerminalProcessor extends Base\Core
 
         $gatewayInput['auth_type'] = $terminal['auth_type'];
 
+        ////// Async call to Smart Rounting To select AuthNterminals
+        try
+        {
+            $input = [
+                'payment'  => $this->payment,
+                'merchant' => $this->payment->merchant,
+            ];
+
+            $terminalSelector = new Terminal\Selector($input);
+
+            $terminalAuthZ = $this->payment->terminal->toArray();
+
+            $terminalsAuthZ = [$terminalAuthZ];
+
+            $terminals = [$terminal];
+
+            $terminalSelector->sendAuthenticationData($terminalsAuthZ, $terminals);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::SMART_ROUTING_AUTHN_REQUEST_FAILED,
+                [
+                    'message' => 'Failed to send authentication data to smart routing',
+                    'paymnet_id' => $payment->getId(),
+                ]
+            );
+        }
+
         if (empty($terminal['authentication_gateway'] === false))
         {
             $gatewayInput['authenticate'] = [
@@ -127,7 +157,7 @@ class TerminalProcessor extends Base\Core
                 catch(\Throwable $ex)
                 {
                     $this->trace->traceException(
-                        $e,
+                        $ex,
                         Trace::CRITICAL,
                         TraceCode::AUTH_SELECTION_FAILURE_V2,
                         ['payment_id' => $payment->getId()]

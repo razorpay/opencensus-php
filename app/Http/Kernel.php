@@ -27,6 +27,7 @@ class Kernel extends HttpKernel
         'web' => [
             Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            Middleware\SameSiteSession::class,
             \Illuminate\Session\Middleware\StartSession::class,
             Middleware\TemporaryStartSession::class,
             // \Illuminate\View\Middleware\ShareErrorsFromSession::class,
@@ -56,10 +57,12 @@ class Kernel extends HttpKernel
         Middleware\EventTracker::class,
         Middleware\P2p::class,
         Middleware\IdempotentHandler::class,
+        Middleware\RequestContextHandler::class,
 
         // Route group middleware
         Middleware\EncryptCookies::class,
         \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        Middleware\SameSiteSession::class,
         \Illuminate\Session\Middleware\StartSession::class,
         Middleware\TemporaryStartSession::class,
     ];
@@ -82,5 +85,6 @@ class Kernel extends HttpKernel
         'p2p'                 => Middleware\P2p::class,
         'idempotent'          => Middleware\IdempotentHandler::class,
         'failure_interceptor' => Middleware\FailureEventsInterceptor::class,
+        'request_context'     => Middleware\RequestContextHandler::class,
     ];
 }

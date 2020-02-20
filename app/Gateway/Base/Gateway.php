@@ -385,6 +385,20 @@ class Gateway
         $this->action = ACTION::VERIFY_TERMINAL;
     }
 
+    public function enableTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = Action::ENABLE_TERMINAL;
+    }
+
+    public function disableTerminal(array $input)
+    {
+        $this->input = $input;
+
+        $this->action = Action::DISABLE_TERMINAL;
+    }
+
     public function debit(array $input)
     {
         $this->input = $input;
@@ -730,8 +744,8 @@ class Gateway
         $riskScore = $input['payment_analytics']['risk_score'];
 
         if (($riskScore > $input['merchant']->getRiskThreshold()) and
-            (($input['card'][Card\Entity::INTERNATIONAL] === true) or
-             ($input['card'][Card\Entity::NETWORK] === Card\Network::AMEX)))
+            (($input['card'][Card\Entity::INTERNATIONAL] === true) and
+             ($input['card'][Card\Entity::NETWORK] !== Card\Network::AMEX)))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_GATEWAY,
@@ -1309,7 +1323,7 @@ class Gateway
 
         $type = strtoupper($type);
 
-        if (($this->env === 'func') and
+        if (($this->env === 'func' or $this->env === 'automation') and
             (isset($this->externalMockDomain) === true))
         {
             return $this->getExternalMockUrl($type);

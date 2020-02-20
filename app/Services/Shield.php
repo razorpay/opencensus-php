@@ -21,6 +21,12 @@ class Shield
 
     protected $shieldClient;
 
+    protected $merchantCore;
+
+    protected $ba;
+
+    protected $repo;
+
     public function __construct($app)
     {
         $this->request = $app['request'];
@@ -28,6 +34,12 @@ class Shield
         $this->shieldClient = $app['shield'];
 
         $this->trace = $app['trace'];
+
+        $this->ba = $app['basicauth'];
+
+        $this->repo = $app['repo'];
+
+        $this->merchantCore = new Merchant\Core;
 
     }
 
@@ -114,6 +126,8 @@ class Shield
 
         $this->populatePaymentRequestDetails($payment, $payloadDetails);
 
+        $payloadDetails[ShieldConstants::PAYMENT_PRODUCT] = $this->getPaymentProduct($payment);
+
         $payloadDetails[ShieldConstants::CREATED_AT] = Carbon::now()->getTimestamp();
 
         $shieldPayload = [
@@ -134,11 +148,11 @@ class Shield
         $payloadDetails[ShieldConstants::MERCHANT_CATEGORY_CODE]  = (string) $merchant->getCategory();
         $payloadDetails[ShieldConstants::MERCHANT_RISK_THRESHOLD] = $merchant->getRiskThreshold();
         $payloadDetails[ShieldConstants::MERCHANT_WEBSITE]        = $merchant->merchantDetail->getWebsite();
+        $payloadDetails[ShieldConstants::MERCHANT_CREATED_AT]     = $merchant->getCreatedAt();
+        $payloadDetails[ShieldConstants::MERCHANT_ACTIVATED_AT]   = $merchant->getActivatedAt();
 
-        if ($merchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === true)
-        {
-            $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_DOMAINS] = (array) $merchant->getWhitelistedDomains();
-        }
+        $this->populateWhiteListedDomains($merchant, $payloadDetails);
+
     }
 
     protected function populatePaymentDetails(Payment\Entity $payment, array & $payloadDetails)
@@ -169,11 +183,16 @@ class Shield
                 break;
 
             case Payment\Method::UPI:
-                $payloadDetails[ShieldConstants::VPA] = $payment->getVpa();
+                $payloadDetails[ShieldConstants::VPA]      = $payment->getVpa();
+                $payloadDetails[ShieldConstants::UPI_TYPE] = $payment->getMetadata('flow') ?? 'collect';
 
                 break;
 
             case Payment\Method::CARD:
+                if ($payment->isGooglePayCard() === true)
+                {
+                    break;
+                }
             case Payment\Method::EMI:
                 $card = $payment->card;
 
@@ -198,6 +217,12 @@ class Shield
     {
         $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE] = $this->request->header('Accept-Language');
 
+        $shieldMetadata = $payment->getMetadata('shield');
+
+        if ((is_array($shieldMetadata) === true) && (isset($shieldMetadata['fhash']) === true)) {
+            $payloadDetails[ShieldConstants::FRONTEND_FP_HASH] = $shieldMetadata['fhash'];
+        }
+
         $paymentAnalytics = $payment->getMetadata('payment_analytics');
 
         if (is_null($paymentAnalytics) === true)
@@ -206,6 +231,7 @@ class Shield
         }
 
         $payloadDetails[ShieldConstants::IP]               = $paymentAnalytics->getIp();
+        $payloadDetails[ShieldConstants::CHECKOUT_ID]      = $paymentAnalytics->getCheckoutId();
         $payloadDetails[ShieldConstants::USER_AGENT]       = $paymentAnalytics->getUserAgent();
         $payloadDetails[ShieldConstants::REFERER]          = $paymentAnalytics->getReferer();
         $payloadDetails[ShieldConstants::BROWSER]          = $paymentAnalytics->getBrowser();
@@ -216,5 +242,106 @@ class Shield
         $payloadDetails[ShieldConstants::ATTEMPTS]         = $paymentAnalytics->getAttempts();
         $payloadDetails[ShieldConstants::PLATFORM]         = $paymentAnalytics->getPlatform();
         $payloadDetails[ShieldConstants::PLATFORM_VERSION] = $paymentAnalytics->getPlatformVersion();
+        $payloadDetails[ShieldConstants::INTEGRATION]      = $paymentAnalytics->getIntegration();
+    }
+
+    protected function populateWhiteListedDomains(Merchant\Entity $merchant, array & $payloadDetails)
+    {
+        if ($merchant->isFeatureEnabled(Feature::VALIDATE_MERCHANT_DOMAIN) === false)
+        {
+            return;
+        }
+
+        $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_DOMAINS] = (array) $merchant->getWhitelistedDomains();
+        /*
+            Requirement:
+                Send partner whitelisted domains, if applicable, along with merchant whitelisted domains
+
+            If payment is driven by a partner then,
+                Collect the partner whitelisted domains and record in partner_urls
+
+            If payment is not driven by a partner then,
+                Get all affiliated partners
+                For all partners of type -> ["Aggregator", "FullyManaged", "PurePlatform"] collect the whitelisted domains
+                and record in partners urls
+
+        */
+
+        $partnerMerchantId = $this->ba->getPartnerMerchantId();
+        $isPaymentInitiatedByPartner = ((is_null($partnerMerchantId) === false) and ($partnerMerchantId != $merchant->getId()));
+
+        $partnerWhitelistedDomains = [];
+
+        if ($isPaymentInitiatedByPartner === true)
+        {
+            $partnerMerchant = $this->repo->merchant->find($partnerMerchantId);
+
+            $partnerWhitelistedDomains[$partnerMerchant->getId()] = (array) $partnerMerchant->getWhitelistedDomains();
+        }
+        else
+        {
+            $partnerMerchants = $this->merchantCore->fetchAffiliatedPartners($merchant->getId());
+
+            foreach ($partnerMerchants as $partnerMerchant)
+            {
+                if (($partnerMerchant->isAggregatorPartner() === true) or
+                    ($partnerMerchant->isFullyManagedPartner() === true) or
+                    ($partnerMerchant->isPurePlatformPartner() === true))
+                {
+                    $partnerWhitelistedDomains[$partnerMerchant->getId()] = (array) $partnerMerchant->getWhitelistedDomains();
+                }
+            }
+        }
+
+        $payloadDetails[ShieldConstants::IS_PARTNER_INITIATED_PAYMENT] = $isPaymentInitiatedByPartner;
+
+        $payloadDetails[ShieldConstants::PARTNER_WHITELISTED_DOMAINS] = $partnerWhitelistedDomains;
+    }
+
+    protected function getPaymentProduct(Payment\Entity $payment)
+    {
+        $product = ShieldConstants::PRODUCT_PAYMENT_GATEWAY;
+
+        $paymentLinkId = $payment->getPaymentLinkId();
+
+        $authType = $payment->getAuthType();
+        $receiverType = $payment->getReceiverType();
+
+        $invoiceType = '';
+        $invoiceEntityType = '';
+
+        $method = $payment->getMethod();
+
+        if ($payment->hasInvoice() === true)
+        {
+            $invoiceType = $payment->invoice->getType();
+            $invoiceEntityType = $payment->invoice->getEntityType();
+        }
+        if (($invoiceType === 'link') and (empty($invoiceEntityType) === true))
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_LINKS;
+        }
+        else if ($invoiceType === 'invoice')
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_INVOICES;
+        }
+        else if ($invoiceType === 'ecod')
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_EPOS;
+        }
+        else if (is_null($paymentLinkId) === false)
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_LINKS;
+        }
+        else if ($method === 'transfer')
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_ROUTE;
+        }
+        else if ((empty($receiverType) === false) and (in_array($receiverType, ['bank_account', 'qr_code', 'vpa']) === true))
+        {
+            $product = ShieldConstants::PRODUCT_PAYMENT_SMART_COLLECT;
+        }
+
+        return $product;
     }
 }

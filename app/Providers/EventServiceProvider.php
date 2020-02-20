@@ -78,12 +78,15 @@ class EventServiceProvider extends ServiceProvider
         P2p\TransactionCompleted::class => [
             Listeners\P2pWebhookListener::class,
             Listeners\P2pNotificationListener::class,
+            Listeners\P2pReminderListener::class,
         ],
         P2p\TransactionFailed::class => [
             Listeners\P2pWebhookListener::class,
             Listeners\P2pNotificationListener::class,
         ],
-
+        P2p\VpaCreated::class        => [
+            Listeners\P2pWebhookListener::class,
+        ],
     ];
 
     public function boot()

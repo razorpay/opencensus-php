@@ -52,6 +52,8 @@ class Payment extends Validator
         Entity::EMI_PLAN            => 'sometimes',
         Entity::DISPUTES            => 'sometimes',
         Entity::REFERENCE16         => 'sometimes',
+        Entity::ACCOUNT_ID          => 'sometimes|string',
+        Entity::TERMINAL_ID         => 'sometimes',
     );
 
     protected function validateMethod($attribute, $value)

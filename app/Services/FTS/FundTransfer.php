@@ -15,6 +15,8 @@ use RZP\Models\Bank\IFSC as IFSC;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Vpa\Core as VPACore;
+use RZP\Models\Base\PublicCollection;
+use RZP\Constants\Mode as ModeConstants;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankAccount\Core as BankAccountCore;
@@ -49,13 +51,6 @@ class FundTransfer extends Base
         Constants::PAYOUT,
         Constants::SETTLEMENT,
         Constants::FUND_ACCOUNT_VALIDATION,
-    ];
-
-    const CHANNEL_WISE_IFSC_IDENTIFIER = [
-        Channel::RBL     => IFSC::RATN,
-        Channel::CITI    => IFSC::CITI,
-        Channel::ICICI   =>IFSC::ICIC,
-        Channel::YESBANK => IFSC::YESB,
     ];
 
     public function __construct($app)
@@ -128,10 +123,24 @@ class FundTransfer extends Base
             $product = Constants::PENNY_TESTING;
         }
 
-        if (($sourceType === Constants::PAYOUT) and
-            ($this->fta->isRefund() === true))
+        if ($sourceType === Constants::PAYOUT)
         {
-            $product = Constants::PAYOUT_REFUND;
+            // Note: Yesbank NEFT/RTGS and UPI integration both uses same source account in FTS.
+            // Now, if Mode is UPI then beneficiary registration is not required.
+            // As a result, transfers via mode UPI will not have a entry in beneficiary status entity.
+            // So, adding a temporary fix for this now to enable yesbank UPI.
+            // TODO: Need to have a better way of handling such situations.
+            // Thread: https://razorpay.slack.com/archives/CNXASR0H3/p1576752834010000
+            // JIRA: https://razorpay.atlassian.net/browse/RX-1112
+            if (($this->fta->getChannel() === Channel::YESBANK) and ($this->fta->getMode() === Mode::UPI))
+            {
+                $product = Constants::PAYOUT_REFUND;
+            }
+
+            if ($this->fta->isRefund() === true)
+            {
+                $product = Constants::PAYOUT_REFUND;
+            }
         }
 
         $request = [
@@ -184,6 +193,15 @@ class FundTransfer extends Base
             Constants::INITIATE_AT       => $this->fta->getInitiateAt(),
             Constants::PREFERRED_CHANNEL => $channel,
         ];
+
+        //
+        // In case of refunds - we need to use base amount
+        // since there could be payments of international currencies and in FTA we are always using INR
+        //
+        if ($sourceType === Entity::REFUND)
+        {
+            $request[Constants::AMOUNT] = $this->source->getBaseAmount();
+        }
 
         if (($channel === Channel::RBL) and ($sourceType === Entity::PAYOUT))
         {
@@ -552,11 +570,20 @@ class FundTransfer extends Base
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
-        $ifscIdentifier = self::CHANNEL_WISE_IFSC_IDENTIFIER[$channel];
+        $ifscIdentifier = IFSC::YESB;
 
-        if (starts_with($ifscFirstFour, $ifscIdentifier) === true)
+        if ((starts_with($ifscFirstFour, $ifscIdentifier) === true) and ($channel === Channel::YESBANK))
         {
-            return Mode::IFT;
+            $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+            if (is_numeric($ifscLastDigits) === true)
+            {
+                return Mode::IFT;
+            }
+            else
+            {
+                return Mode::NEFT;
+            }
         }
 
         if ($this->amount <= Constants::IMPS_CUTOFF_AMOUNT)
@@ -593,7 +620,7 @@ class FundTransfer extends Base
 
     public function bulkUpdateFtsAttempts(array $input)
     {
-        $this->setDashboardAuthAndAdminHeader();
+        $this->setAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_UPDATE_URI,
@@ -601,19 +628,55 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function modifyModeIfRequired()
+    {
+        // Assumption is that the validation would have happened already before this
+        // step and hence we can assume that the bank account exists and is valid.
+        $channel = $this->fta->getChannel();
+
+        $ba = $this->fta->bankAccount;
+
+        if (empty($ba) === false)
+        {
+            $ifsc = $ba->getIfscCode();
+
+            $ifscFirstFour = substr($ifsc, 0, 4);
+
+            $ifscIdentifier = IFSC::YESB;
+
+            if ((starts_with($ifscFirstFour, $ifscIdentifier) === true) and ($channel === Channel::YESBANK))
+            {
+                $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
+
+                if (is_numeric($ifscLastDigits) === true)
+                {
+                    $this->fta->setMode(Mode::IFT);
+                }
+                else
+                {
+                    $this->fta->setMode(Mode::NEFT);
+                }
+            }
+        }
+    }
+
     public function shouldAllowTransfersViaFts()
     {
+        if ($this->mode === ModeConstants::TEST)
+        {
+            return [false, 'Transfers not allowed on test mode'];
+        }
+
         list($mode, $shouldUpdateMode) = $this->getFTSFundTransferMode();
+
+        $this->modifyModeIfRequired();
 
         if ($shouldUpdateMode === true)
         {
             $this->fta->setMode($mode);
         }
 
-        if ($mode === Mode::UPI)
-        {
-            return [false, 'Upi not supported'];
-        }
+        $mode = $this->fta->getMode();
 
         $allowedModes = Mode::get24x7FtsTransferModes();
 
@@ -634,33 +697,54 @@ class FundTransfer extends Base
 
     public function addInitiateAtIfRequired()
     {
-        if (($this->fta->getSourceType() === FundTransferAttempt\Type::PAYOUT) and
-            ($this->fta->source->isBalanceTypeBanking() === true))
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $minuteOffset = random_int(15, 59);
+
+        if ($this->fta->source->isBalanceTypeBanking() === true)
         {
-            $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+            // We don't want to sent requests for FTS for test mode
+            // until FTS has proper setup for test mode which is being maintained
+            if ($this->mode === ModeConstants::TEST)
+            {
+                return false;
+            }
 
             if (($currentTime < $this->bankingStartTime) &&
                 (TransferHoliday::isWorkingDay(Carbon::now(Timezone::IST)) === true))
             {
-                $this->fta->setInitiateAt($this->bankingStartTime);
+                $this->fta->setInitiateAt(Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, $minuteOffset, 0, Timezone::IST)
+                          ->getTimestamp());
             }
             else
             {
                 $this->fta->setInitiateAt(TransferHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
-                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->getTimestamp());
+                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->addMinutes($minuteOffset)->getTimestamp());
             }
-
-            return true;
+        }
+        else
+        {
+            if (($currentTime < $this->bankingStartTime) &&
+                (SettlementHoliday::isWorkingDay(Carbon::now(Timezone::IST)) === true))
+            {
+                $this->fta->setInitiateAt(Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, $minuteOffset, 0, Timezone::IST)
+                          ->getTimestamp());
+            }
+            else
+            {
+                $this->fta->setInitiateAt(SettlementHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
+                          ->addHours(Constants::RTGS_CUTOFF_HOUR_MIN)->addMinutes($minuteOffset)->getTimestamp());
+            }
         }
 
-        return false;
+        return true;
     }
 
     public function initialize(string $ftaId)
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
-        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)
+        $this->bankingStartTime = Carbon::createFromTime(Constants::RTGS_CUTOFF_HOUR_MIN, 15, 0, Timezone::IST)
                                         ->getTimestamp();
 
         $this->bankingEndTimeRtgs = Carbon::createFromTime(Constants::RTGS_REVISED_CUTOFF_HOUR_MAX,
@@ -731,7 +815,7 @@ class FundTransfer extends Base
 
     public function getBulkTransferStatus(array $input)
     {
-        $this->setDashboardAuthAndAdminHeader();
+        $this->setAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_FETCH_STATUS,
@@ -741,7 +825,7 @@ class FundTransfer extends Base
 
     public function checkTransferStatus(array $input)
     {
-        $this->setDashboardAuthAndAdminHeader();
+        $this->setAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_CHECK_STATUS,
@@ -751,10 +835,123 @@ class FundTransfer extends Base
 
     public function getRawBankStatus(array $input)
     {
-        $this->setDashboardAuthAndAdminHeader();
+        $this->setAdminHeader();
 
         return $this->createAndSendRequest(
             parent::FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS,
+            Requests::POST,
+            $input);
+    }
+
+    public function getBulkStatus(array $input)
+    {
+        (new Validator)->validateInput('fetch_transfer_status', $input);
+
+        try
+        {
+            $attempts = $this->FTACore->getAttemptsFromIds($input['fta_ids']);
+
+            $ftsTransferIds = $this->getFtsTransferIdFromAttempts($attempts);
+
+            $response  = $this->createAndSendRequest(
+                parent::FUND_TRANSFER_ATTEMPTS_STATUS_FETCH,
+                Requests::GET,
+                [ 'id' => $ftsTransferIds ])['body']['transfers'];
+
+            $data = $this->extractFtsResponse($response);
+
+            return $this->combineStatusForApiAndFTS($attempts, $data);
+
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::FTS_TRANSFER_STATUS_FETCH_FAILED,
+                [
+                    'input' => $input,
+                ]);
+        }
+
+        return [];
+    }
+
+    protected function getFtsTransferIdFromAttempts(PublicCollection  $attempts)
+    {
+        $ftsTransferIds = [];
+
+        foreach ($attempts as $attempt)
+        {
+            $ftsTransferId = $attempt->getFtsTransferId();
+
+            $ftsTransferIds[] = $ftsTransferId;
+        }
+
+        return implode("," ,$ftsTransferIds);
+    }
+
+    protected function extractFtsResponse(array $response)
+    {
+        $result = [];
+
+        foreach ($response as $val)
+        {
+
+          $result[$val['id']] = $val['status'];
+        }
+
+        return $result;
+    }
+
+    protected function combineStatusForApiAndFTS(PublicCollection $attempts, array $response)
+    {
+        $responseData = [];
+
+        $ftsFetchedIds = array_keys($response);
+
+        foreach ($attempts as $attempt)
+        {
+            $ftsTransferId = $attempt->getFtsTransferId();
+
+            $ftsTransferStatus = '';
+
+            $source = $attempt->source;
+
+            if (array_key_exists($ftsTransferId, $ftsFetchedIds) === true)
+            {
+                $ftsTransferStatus = $response[ $ftsTransferId ];
+            }
+
+            $responseData[$attempt->getId()] = [
+                'fta_status'          => $attempt->getStatus(),
+                'source_id'           => $attempt->getSourceId(),
+                'source_type'         => $attempt->getSourceType(),
+                'source_status'       => $source->getStatus(),
+                'gateway_ref_no'      => $attempt->getGatewayRefNo(),
+                'fts_transfer_id'     => $ftsTransferId,
+                'fts_transfer_status' => $ftsTransferStatus,
+            ];
+        }
+
+        return $responseData;
+    }
+
+    /**
+     * Sends Alert to FTS from dashboard
+     * Used for bank downtime and uptime manual detection from dashboard
+     *
+     * @param array $input
+     * @return array
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function sendAlert(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_ALERT_URI,
             Requests::POST,
             $input);
     }

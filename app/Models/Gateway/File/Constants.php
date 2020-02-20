@@ -25,6 +25,7 @@ class Constants
     const CSB              = 'csb';
     const AXIS_MIGS        = 'axis_migs';
     const ICIC_FIRST_DATA  = 'icic_first_data';
+    const PAYLATER_ICICI   = 'paylater_icici';
     const HDFC_CYBERSOURCE = 'hdfc_cybersource';
     const AXIS_CYBERSOURCE = 'axis_cybersource';
     const HDFC_EMANDATE    = 'hdfc_emandate';
@@ -52,12 +53,20 @@ class Constants
     const PAPER_NACH_CITI       = 'paper_nach_citi';
 
     /**
+     * Scrooge file based refunds related constants
+     */
+    const QUERY_LIMIT              = 50000;
+    const SCROOGE_MAX_ATTEMPTS     = 1;
+    const FETCH_FROM_SCROOGE_COUNT = 500;
+
+    /**
      * Stores a mapping of valid banks for each file type
      */
     const SUPPORTED_TARGETS = [
         Type::REFUND => [
             self::HDFC,
             self::ICICI,
+            self::PAYLATER_ICICI,
             self::IBK,
             self::CSB,
             self::ALLA,
@@ -154,6 +163,7 @@ class Constants
             // todo: Fix the receipients
             self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::PAYLATER_ICICI=> ['icici.paylater.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::IBK           => ['refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
             self::UPI_SBI       => ['refunds@razorpay.com'],

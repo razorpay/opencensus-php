@@ -41,4 +41,11 @@ class D2cController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getReportDownloadUrl(string $id)
+    {
+        $response = $this->service(Entity::D2C_BUREAU_REPORT)->getDownloadUrl($id);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -1328,13 +1328,13 @@ return [
                     'entity' => [
                         'entity'            => 'terminal',
                         'status'            => 'activated',
-                        'enabled'           =>  false,
+                        'enabled'           =>  true,
                     ],
                 ],
             ],
         ],
     ],
-    
+
     'testTerminalOnboardingCreationFailedWebhook' => [
         'request' => [
             'url'     => '/terminals/onboard/creation',
@@ -1362,7 +1362,7 @@ return [
                         'status'            => 'failed',
                         'enabled'           =>  false,
                         'error_code'        => 'SERVER_ERROR_TERMINAL_ONBOARDING_FAILED',
-                        'error_description' => 'Duplicate MVISAPAN', 
+                        'error_description' => 'Duplicate MVISAPAN',
                     ],
                 ],
             ],
@@ -1397,6 +1397,43 @@ return [
                 ],
             ],
         ],
+    ],
+
+    'testPaymentWebhookShouldNotHaveTerminalIdData' =>  [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'payment.authorized',
+            'contains' => ['payment'],
+            'payload' => [
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'status'            => 'authorized',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testWebhookDeactivate' => [
+        'request' => [
+            'url' => '',
+            'content' => [
+                'mode' => 'test'
+            ],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testWebhookDeactivateData' => [
+        'subject' => 'Razorpay | Webhook deactivated after 24 hours from last successful delivery for Test Merchant',
+        'mode' => 'test',
+        'url' => 'http://webhook.com/v1/dummy/route',
     ],
 
     'createSettingsForWebhookTranslateUrl' => [

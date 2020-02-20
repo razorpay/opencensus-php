@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
 use RZP\Reconciliator\Base\InfoCode;
@@ -25,6 +26,7 @@ class CardPaymentService
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
     const X_RAZORPAY_MODE_HEADER   = 'X-Razorpay-Mode';
     const X_REQUEST_ID             = 'X-Request-ID';
+    const X_RZP_TESTCASE_ID        = 'X-RZP-TESTCASE-ID';
 
     const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
@@ -128,6 +130,8 @@ class CardPaymentService
             self::X_RAZORPAY_APP_HEADER    => 'api',
         ];
 
+
+
         return $headers;
     }
 
@@ -189,7 +193,12 @@ class CardPaymentService
 
         unset($input['authentication_terminals']);
 
-        $response = $this->sendRequest('POST', self::AUTHORIZE , $input);
+        $content = [
+            self::INPUT   => $input
+        ];
+
+
+        $response = $this->sendRequest('POST', self::AUTHORIZE , $content);
 
         return $response;
     }
@@ -220,6 +229,16 @@ class CardPaymentService
             ],
         ];
 
+        if ($this->app->environment('production') === false)
+        {
+            $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
+
+            if (empty($testCaseId) === false)
+            {
+                $request['headers'][self::X_RZP_TESTCASE_ID] = $testCaseId;
+            }
+        }
+
         $this->traceRequest($request);
 
         $response = $this->sendRawRequest($request);
@@ -240,6 +259,35 @@ class CardPaymentService
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
         unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
+
+        // Unset PII
+
+        // Payment Data
+        unset($request['content'][self::INPUT][Entity::PAYMENT][Payment\Entity::EMAIL]);
+        unset($request['content'][self::INPUT][Entity::PAYMENT][Payment\Entity::CONTACT]);
+
+        // Merchant Data
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::EMAIL]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::INVOICE_CODE]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::TRANSACTION_REPORT_EMAIL]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::METHODS]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::MERCHANT_DETAIL]);
+        unset($request['content'][self::INPUT][Entity::MERCHANT_DETAIL]);
+
+        // Gateway Data
+        unset($request['content'][self::INPUT]['gateway']['otp']);
+
+
+        if (empty($request['content'][self::INPUT]['terminals']) === false)
+        {
+            foreach ($request['content'][self::INPUT]['terminals'] as $index => $terminal)
+            {
+                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
+                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
+                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_SECURE_SECRET]);
+                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
+            }
+        }
 
         $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_REQUEST, $request);
     }
@@ -298,9 +346,11 @@ class CardPaymentService
         $code = $response->status_code;
 
         $responseBody = $this->jsonToArray($response->body);
+        $responseBody['success'] = false;
 
         if ($this->isSuccessResponse($code, $responseBody))
         {
+            $responseBody['success'] = true;
             if ($this->action === Action::VERIFY)
             {
                 return $this->processVerifyResponse($responseBody);
@@ -312,7 +362,17 @@ class CardPaymentService
 
     protected function traceResponse($response)
     {
-        $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $response ?? []);
+       $traceResponse = $response;
+
+       // For axis_migs we don't send gateway request in redirect case,
+       // We redirect customer with actual request content which has card and terminal details,
+       // Unsetting these fields before logging is mandatory
+       unset($traceResponse['data']['content']['vpc_CardNum']);
+       unset($traceResponse['data']['content']['vpc_AccessCode']);
+       unset($traceResponse['data']['content']['vpc_CardExp']);
+       unset($traceResponse['data']['content']['vpc_CardSecurityCode']);
+
+        $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $traceResponse ?? []);
     }
 
     protected function jsonToArray($json)
@@ -343,7 +403,7 @@ class CardPaymentService
 
     protected function isSuccessResponse($code, $responseBody)
     {
-        if (($code === 200) and (empty($responseBody[self::ERROR]) === true))
+        if ($code === 200)
         {
             return true;
         }
@@ -439,6 +499,12 @@ class CardPaymentService
 
     public function checkForErrors($response)
     {
+        if ((empty($response['success']) === false) and
+            ($response['success'] === true))
+        {
+            return;
+        }
+
         if (empty($response[self::ERROR]) === true)
         {
             return;
@@ -451,11 +517,11 @@ class CardPaymentService
         switch ($class)
         {
             case ErrorClass::GATEWAY:
-                $this->handleGatewayErrors($response[self::ERROR]);
+                $this->handleGatewayErrors($response[self::ERROR], $response);
                 break;
 
             case ErrorClass::BAD_REQUEST:
-                $this->handleBadRequestErrors($response[self::ERROR]);
+                $this->handleBadRequestErrors($response[self::ERROR], $response);
                 break;
 
             case ErrorClass::SERVER:
@@ -482,7 +548,7 @@ class CardPaymentService
         return $class;
     }
 
-    protected function handleGatewayErrors(array $error)
+    protected function handleGatewayErrors(array $error, array $response)
     {
         $errorCode = $error['internal_error_code'];
 
@@ -505,11 +571,11 @@ class CardPaymentService
         }
     }
 
-    protected function handleBadRequestErrors(array $error)
+    protected function handleBadRequestErrors(array $error, array $response)
     {
         $errorCode = $error['internal_error_code'];
 
-        $data = $error['data'] ?? null;
+        $data = $response['data'] ?? null;
 
         $description = $error['description'] ?? null;
 
@@ -519,9 +585,22 @@ class CardPaymentService
                 ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION);
         }
 
+        if ($errorCode == ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+                null,
+                $data
+            );
+        }
+
         if (empty($error['gateway_error_code']) === false)
         {
-            $this->handleGatewayErrors($error);
+            $this->handleGatewayErrors($error, $response);
+        }
+        else if ($errorCode !== '')
+        {
+            throw new Exception\BadRequestException($errorCode);
         }
         else
         {
