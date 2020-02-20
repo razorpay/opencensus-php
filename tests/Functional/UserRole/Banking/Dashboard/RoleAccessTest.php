@@ -2,10 +2,10 @@
 
 namespace RZP\Tests\Functional\UserRole;
 
-use RZP\Http\Middleware\UserAccess;
 use RZP\Http\Route;
 use RZP\Models\User\BankingRole;
 use RZP\Tests\Functional\TestCase;
+use RZP\Http\Middleware\UserAccess;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\UserRole\Banking\Dashboard\BankingRoleTrait;
@@ -26,10 +26,54 @@ class RoleAccessTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/RoleAccessTestData.php';
+
         parent::setUp();
 
         $this->userRolePermissionMap = new UserRolePermissionsMap();
         $this->routePermissions = Route::$bankingRoutePermissions;
+    }
+
+    public function testGrantAccessWhenExperimentOff()
+    {
+        $user = $this->fixtures->create('user',['id'  => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::VIEW_ONLY,
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->mockRazorXTreatmentAccessDenyUnauthorised("off");
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testDenyAccessWhenExperimentOn()
+    {
+        $user = $this->fixtures->create('user',['id'  => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::VIEW_ONLY,
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->mockRazorXTreatmentAccessDenyUnauthorised("on");
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->startTest();
     }
 
     public function testAllRoleAccesses()

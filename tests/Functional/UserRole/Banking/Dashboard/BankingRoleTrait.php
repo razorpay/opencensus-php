@@ -1,9 +1,9 @@
 <?php
 
-
 namespace RZP\Tests\Functional\UserRole\Banking\Dashboard;
 
-
+use RZP\Models\Merchant;
+use RZP\Services\RazorXClient;
 use RZP\Models\User\BankingRole;
 
 trait BankingRoleTrait
@@ -213,5 +213,27 @@ trait BankingRoleTrait
     protected function getUserRolePermissibleRouteMap(string $role)
     {
         return $this->getUserRoleRouteMap()[$role] ?? null;
+    }
+
+    protected function mockRazorXTreatmentAccessDenyUnauthorised($value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                        ->setConstructorArgs([$this->app])
+                        ->setMethods(['getTreatment'])
+                        ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                                    function ($mid, $feature, $mode) use ($value)
+                                    {
+                                        if ($feature === Merchant\RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED)
+                                        {
+                                            return $value;
+                                        }
+
+                                        return 'off';
+                                    }));
     }
 }
