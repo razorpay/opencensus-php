@@ -29,7 +29,7 @@ class Refund extends Base
     {
         $rules = $this->applyRefundModeFilters($rules);
 
-        $rules = $this->applyRefundAmountRangeFilters($rules);
+        $rule = $this->applyRefundAmountRangeFiltersAndReturnApplicableRule($rules);
 
         //
         // In refunds - specifically Instant Refunds we have defined a default pricing plan
@@ -41,15 +41,15 @@ class Refund extends Base
         //
         // And this default pricing only applies to RZP Org merchants. Instant Refunds is restricted to only these merchants.
         //
-        if ((count($rules) === 0) and
+        if (($rule === null) and
             ($this->entity->merchant->getOrgId() === Org\Entity::RAZORPAY_ORG_ID))
         {
             $rules = (new Pricing\Fee)->getInstantRefundsDefaultPricingPlanForMethod($this->entity);
 
             $rules = $this->applyRefundModeFilters($rules);
-        }
 
-        $rule = $this->applyAmountRangeFilterAndReturnOneRule($rules);
+            $rule = $this->applyAmountRangeFilterAndReturnOneRule($rules);
+        }
 
         return $rule;
     }
@@ -72,7 +72,7 @@ class Refund extends Base
         return $this->applyFiltersOnRules($rules, $filters);
     }
 
-    protected function applyRefundAmountRangeFilters($rules)
+    protected function applyRefundAmountRangeFiltersAndReturnApplicableRule($rules)
     {
         $filters = [
             [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
@@ -80,6 +80,13 @@ class Refund extends Base
 
         $rules = $this->applyFiltersOnRules($rules, $filters);
 
-        return $rules;
+        if (count($rules) === 0)
+        {
+            return null;
+        }
+
+        $rule = $this->chooseRuleWithAmount($rules, $this->amount);
+
+        return $rule;
     }
 }
