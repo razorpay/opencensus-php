@@ -416,4 +416,31 @@ class TerminalMigrationTest extends TestCase
 
         $this->assertEquals(Terminal\SyncStatus::NOT_SYNCED, $terminalEntity->getSyncStatus());
     }
+
+    // below are test cases for deleting a terminal. there are two types of delete for a terminal depending on whether payment
+    // had happened on that terminal or not
+
+    public function testDeleteTerminalControlVariant()
+    {
+        $this->mockTerminalsServiceSendRequest(null, 0);
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', ['used' => true, 'enabled' => '1']);
+
+        $tid = $terminal['id'];
+
+        $url = '/terminals/'.$tid;
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->razorxValue = 'control';
+
+        $beforeCount = DB::table('terminals')->count();
+
+        $this->startTest();
+
+        $afterCount = DB::table('terminals')->count();
+
+        $this->assertEquals($beforeCount - 1, $afterCount);
+    }
 }
