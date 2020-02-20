@@ -11,14 +11,12 @@ class RazorxTreatment
     const shouldMigrateTerminalFeature = 'MigrateTerminal';
     const migrateVariant = 'migrate';
 
-    public static function shouldMigrateTerminalOrFail() : bool
+    public static function shouldMigrateTerminal(string $newSyncStatus) : bool
     {
-        $app = App::getFacadeRoot();
-
-        if ($app['api.route']->getCurrentRouteName() === 'terminal_migrate_cron')
-        {
-            return false;
-        }
+       if ($newSyncStatus !== SyncStatus::NOT_SYNCED)
+       {
+           return false;
+       }
 
         return self::getRazorxTreatment();
     }

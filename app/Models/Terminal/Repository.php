@@ -53,11 +53,11 @@ class Repository extends Base\Repository
         }
     }
     // TODO refactor this after writing tests
-    public function saveOrFail($entity, array $options = array())
+    public function saveOrFail($entity, array $options = array(), string $syncStatus = SyncStatus::NOT_SYNCED)
     {
         if ($entity->getId() === null)
         {
-            if (RazorxTreatment::shouldMigrateTerminalOrFail() === true) {
+            if (RazorxTreatment::shouldMigrateTerminal($syncStatus) === true) {
                 $this->transaction(function () use ($entity, $options) {
 
                     parent::saveOrFail($entity, $options);
@@ -77,7 +77,7 @@ class Repository extends Base\Repository
         }
         else
         {
-            if (RazorxTreatment::shouldMigrateTerminalOrFail() === true) {
+            if (RazorxTreatment::shouldMigrateTerminal($syncStatus) === true) {
                 $this->transaction(function () use ($entity, $options) {
 
                     $entity->setSyncStatus(SyncStatus::NOT_SYNCED);
@@ -92,7 +92,7 @@ class Repository extends Base\Repository
             }
             else
             {
-                $entity->setSyncStatus(SyncStatus::NOT_SYNCED);
+                $entity->setSyncStatus($syncStatus);
 
                 parent::saveOrFail($entity, $options);
             }
