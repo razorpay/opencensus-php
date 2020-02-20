@@ -3748,6 +3748,7 @@ class RefundTest extends TestCase
 
     public function testRefundOnCapturedDCCPaymentWithVoidRefund()
     {
+        Mail::fake();
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
             'type' =>
                 [
@@ -3771,7 +3772,6 @@ class RefundTest extends TestCase
         $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
 
         $payment = $this->getDefaultPaymentArray();
-
         $payment['card'] = [
             'number'       => CardNumber::VALID_ENROLL_NUMBER,
             'expiry_month' => '02',
@@ -3779,7 +3779,6 @@ class RefundTest extends TestCase
             'cvv'          => 123,
             'name'         => 'Test Card'
         ];
-
         $payment['dcc_currency'] = $cardCurrency;
         $payment['dcc_amount'] = $usdAmount;
         $payment['currency_request_id'] = $currencyRequestId;
@@ -3788,12 +3787,15 @@ class RefundTest extends TestCase
 
         $payment = $this->getLastEntity('payment');
 
-        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+        $refund = $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('refund', true);
 
+        $this->assertEquals(true, $refund['gateway_refunded']);
         $this->assertEquals($usdAmount, $refund['gateway_amount']);
         $this->assertEquals($cardCurrency, $refund['gateway_currency']);
+
+        Mail::assertQueued(RefundedMail::class);
     }
 
     private function getDefaultPaymentFlowsRequestData($iin = null)
