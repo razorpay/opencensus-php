@@ -29,6 +29,18 @@ return [
         ],
     ],
 
+    'testFlipkartRefundsWithFeatureShowRefundPublicStatus' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/refunds/',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+            ],
+        ],
+    ],
+
     'testSnapdealRefunds' => [
         'request' => [
             'method'  => 'get',
