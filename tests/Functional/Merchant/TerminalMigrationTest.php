@@ -9,6 +9,7 @@ use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Support\Facades\DB;
 use RZP\Exception\IntegrationException;
 use Symfony\Component\HttpFoundation\Response;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -114,11 +115,17 @@ class TerminalMigrationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
+        $beforeCount = DB::table('terminals')->count();
+
         $response = $this->startTest();
 
         $terminalEntity = $this->terminalRepository->findOrFail($response['id']);
 
         $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminalEntity->getSyncStatus());
+
+        $afterCount = Db::table('terminals')->count();
+
+        $this->assertEquals($beforeCount + 1, $afterCount);
     }
 
     public function testAssignTerminalTerminalServiceDownMigrateTerminalVariant()
@@ -137,7 +144,13 @@ class TerminalMigrationTest extends TestCase
 
         $this->expectExceptionMessage('curl timed out');
 
+        $beforeCount = DB::table('terminals')->count();
+
         $this->startTest();
+
+        $afterCount = Db::table('terminals')->count();
+
+        $this->assertEquals($beforeCount, $afterCount);
     }
 
     public function testAssignTerminalServiceSuccessResponseBadValuesMigrateTerminalVariant()
@@ -165,8 +178,13 @@ class TerminalMigrationTest extends TestCase
 
         $this->expectExceptionMessage('field mismatch');
 
+        $beforeCount = DB::table('terminals')->count();
+
         $this->startTest();
 
+        $afterCount = Db::table('terminals')->count();
+
+        $this->assertEquals($beforeCount, $afterCount);
     }
 
     public function testAssignTerminalsServiceFailureResponseMigrateTerminalVariant()
@@ -198,7 +216,13 @@ class TerminalMigrationTest extends TestCase
 
         $this->expectExceptionMessage('401');
 
+        $beforeCount = DB::table('terminals')->count();
+
         $this->startTest();
+
+        $afterCount = Db::table('terminals')->count();
+
+        $this->assertEquals($beforeCount, $afterCount);
     }
 
     public function testAssignTerminalControlVariant()
@@ -213,7 +237,13 @@ class TerminalMigrationTest extends TestCase
 
         $terminalEntity = $this->terminalRepository->findOrFail($response['id']);
 
+        $beforeCount = DB::table('terminals')->count();
+
         $this->assertEquals(Terminal\SyncStatus::NOT_SYNCED, $terminalEntity->getSyncStatus());
+
+        $afterCount = Db::table('terminals')->count();
+
+        $this->assertEquals($beforeCount, $afterCount);
     }
 
     // the below cases tests migration functionality when an attribute of an existing terminal is tested
