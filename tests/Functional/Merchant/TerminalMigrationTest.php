@@ -252,7 +252,7 @@ class TerminalMigrationTest extends TestCase
             'terminal:shared_axis_terminal', [
                 'used' => true,
                 'enabled' => '1',
-                'sync_status' => Terminal\SyncStatus::SYNC_FAILED
+                'sync_status' => Terminal\SyncStatus::SYNC_SUCCESS
             ]);
 
         $tid = $terminal['id'];
@@ -267,9 +267,9 @@ class TerminalMigrationTest extends TestCase
             throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
         }, 1);
 
-        $this->expectException(\Requests_Exception_Transport_cURL::class);
+        $this->expectException(IntegrationException::class);
 
-        $this->expectExceptionMessage('curl timed out');
+        $this->expectExceptionMessage('sync failed');
 
         $this->startTest();
 
@@ -277,8 +277,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->assertTrue($terminal->isEnabled());
 
-        // here we are asserting that sync status did not get updated from the previous value
-        // the previous value was set while creating fixture('sync_status' => '3')
+
         $this->assertEquals(Terminal\SyncStatus::SYNC_FAILED, $terminal->getSyncStatus());
     }
 
@@ -310,7 +309,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->expectException(IntegrationException::class);
 
-        $this->expectExceptionMessage('field mismatch');
+        $this->expectExceptionMessage('sync failed');
 
         $this->startTest();
 
@@ -355,7 +354,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->expectException(IntegrationException::class);
 
-        $this->expectExceptionMessage('401');
+        $this->expectExceptionMessage('sync failed');
 
         $this->startTest();
 

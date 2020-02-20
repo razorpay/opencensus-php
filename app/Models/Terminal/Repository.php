@@ -58,7 +58,7 @@ class Repository extends Base\Repository
         if ($entity->getId() === null)
         {
             if (RazorxTreatment::shouldMigrateTerminal($syncStatus) === true) {
-                $this->transaction(function () use ($entity, $options) {
+                $this->transaction(function () use (& $entity, $options) {
 
                     parent::saveOrFail($entity, $options);
 
@@ -80,15 +80,24 @@ class Repository extends Base\Repository
         else
         {
             if (RazorxTreatment::shouldMigrateTerminal($syncStatus) === true) {
-                $this->transaction(function () use ($entity, $options) {
+                $this->transaction(function () use (& $entity, $options) {
 
                     $entity->setSyncStatus(SyncStatus::NOT_SYNCED);
 
                     parent::saveOrFail($entity, $options);
 
-                    $entity = (new Terminal\Service)->migrateTerminal($entity->getId());
+                    try
+                    {
+                        $entity = (new Terminal\Service)->migrateTerminal($entity->getId());
 
-                    $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+                        $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+                    }
+                    catch (\Exception $exception)
+                    {
+                        $entity->setSyncStatus(SyncStatus::SYNC_FAILED);
+
+                    }
+
 
                     parent::saveOrFail($entity, $options);
 
@@ -100,6 +109,10 @@ class Repository extends Base\Repository
 
                 parent::saveOrFail($entity, $options);
             }
+        }
+        if ($entity->getSyncStatus() === SyncStatus::SYNC_FAILED)
+        {
+            throw new Exception\IntegrationException('terminals service sync failed');
         }
 
         return $entity;
