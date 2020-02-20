@@ -261,7 +261,19 @@ class Entity extends Base\PublicEntity
     {
         $amount = $txn->getNetAmount();
 
+        $oldBalance = $this->getBalance();
+
         $this->addAmount($amount);
+
+        $newBalance = $this->getBalance();
+
+        // if the balance after is update is greater than the previous balance,
+        // even if it is still negative, we should update the balance.
+
+        if ($newBalance > $oldBalance)
+        {
+            return;
+        }
 
         $data = [
             'balance'     => $this->toArray(),
