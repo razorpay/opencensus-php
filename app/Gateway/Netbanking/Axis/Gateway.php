@@ -424,11 +424,7 @@ class Gateway extends Base\Gateway
 
         $data = array_merge($defaultData, $data);
 
-        $traceData = $data;
-
-        unset($traceData[RequestFields::BANK_ACCOUNT_NUMBER]);
-
-        $this->traceGatewayPaymentRequest($traceData, $input);
+        $this->traceGatewayPaymentRequest($data, $input);
 
         $stringToEncrypt = $this->prepareStringToEncrypt($data);
 

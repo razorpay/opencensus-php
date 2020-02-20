@@ -454,15 +454,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $traceData = $data;
-
-        unset($traceData[Fields::PAYER_ACCOUNT], $traceData[Fields::PAYER_VA]);
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
                 'request'           => $request,
-                'decrypted_content' => $traceData,
+                'decrypted_content' => $data,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],
             ]);
