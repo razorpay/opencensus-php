@@ -122,6 +122,10 @@ trait Refund
 
     protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
     {
+        //
+        // Pricing is defined only for merchants of RZP Org - please refer calculator/refund.php : getPricingRule()
+        // before removing org checks
+        //
         return ((isset($input[RefundEntity::SPEED]) === true) and
                 (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
                 (($this->isCapturedPaymentAndFeatureEnabled($payment) === false) or
