@@ -130,7 +130,7 @@ class Core extends Base\Core
         return floor(time() / (self::TIME_INTERVAL_MINS * 60)) * (self::TIME_INTERVAL_MINS * 60);
     }
 
-    private function getConvertedAmount($baseAmount, $rate)
+    public function getConvertedAmount($baseAmount, $rate)
     {
         $convertedAmount = $baseAmount * $rate;
 

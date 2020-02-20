@@ -5621,3 +5621,7 @@ ALTER TABLE merchant_details
     ADD COLUMN authorized_signatory_residential_address varchar(255) DEFAULT NULL,
     ADD COLUMN authorized_signatory_dob date DEFAULT NULL,
     ADD COLUMN platform varchar(40) DEFAULT NULL;
+
+ALTER TABLE refunds
+    ADD COLUMN gateway_amount INTEGER UNSIGNED DEFAULT NULL AFTER base_amount,
+    ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL AFTER gateway_amount;

@@ -105,6 +105,8 @@ trait Reversal
 
         $refund->setBaseAmount();
 
+        $refund->setGatewayAmountCurrency();
+
         $refund->balance()->associate($refund->merchant->primaryBalance);
 
         $this->validateMerchantBalance($refund, 'reversal');

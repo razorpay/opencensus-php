@@ -3759,4 +3759,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return (($paymentMetaEntity !== null) and ($paymentMetaEntity->getGatewayCurrency() !== null)) ?
                 $paymentMetaEntity->getGatewayCurrency() : $this->getCurrency();
     }
+
+    public function isDCC()
+    {
+        $paymentMetaEntity = $this->paymentMeta;
+
+        if ($paymentMetaEntity === null)
+        {
+            return false;
+        }
+
+        return (($paymentMetaEntity->getGatewayCurrency() !== $this->getCurrency()) or
+            ($paymentMetaEntity->getGatewayAmount() !== $this->getAmount()));
+    }
 }
