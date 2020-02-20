@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccount;
 
+use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
@@ -444,9 +445,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Balance\Entity::class);
     }
 
-    public function reviewer()
+    public function reviewers()
     {
-        return $this->belongsTo(Admin\Entity::class);
+        return $this->morphToMany(Admin\Entity::class, 'entity', Table::AUDITOR_MAP, 'entity_id', 'auditor_id')->withPivot('auditor_type');
     }
 
     public function activationStates()

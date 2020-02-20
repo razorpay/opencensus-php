@@ -149,6 +149,9 @@ class Table
     const ADMIN_LEAD            = 'admin_leads';
     const ORG_FIELD_MAP         = 'org_field_map';
 
+    // Mapping auditors to entities for a generic use case
+    const AUDITOR_MAP           = 'auditor_map';
+
     // Workflows
     const WORKFLOW              = 'workflows';
     const WORKFLOW_STEP         = 'workflow_steps';

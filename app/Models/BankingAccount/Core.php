@@ -736,7 +736,7 @@ class Core extends Base\Core
 
         $reviewer = $this->repo->admin->findOrFailPublic($reviewerId);
 
-        $bankingAccount->reviewer()->associate($reviewer);
+        $bankingAccount->reviewers()->attach($reviewer, ['auditor_type' => 'reviewer']);
 
         $this->repo->saveOrFail($bankingAccount);
     }
