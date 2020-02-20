@@ -14,6 +14,7 @@ use RZP\Constants\Entity as CE;
 use RZP\Models\Batch\Constants;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Entity as ME;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Webhook\Stork;
 use RZP\Models\Merchant\Account\Entity as Account;
 use RZP\Models\Batch\Helpers\SubMerchant as Helper;
@@ -387,7 +388,7 @@ class SubMerchant extends Base
             if ($subMerchant->getEmail() !== $input[Merchant\Entity::EMAIL])
             {
                 $entry[Header::STATUS]            = Status::FAILURE;
-                $entry[Header::ERROR_DESCRIPTION] = TraceCode::MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT;
+                $entry[Header::ERROR_DESCRIPTION] = PublicErrorDescription::MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT;
 
                 return null;
             }
