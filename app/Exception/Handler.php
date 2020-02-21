@@ -313,7 +313,10 @@ class Handler extends ExceptionHandler
          */
         $stack = explode("\n", $exception->getTraceAsString());
 
-        $stack = $this->hideSensitiveInformationFromStack($stack);
+        if ($exception->getCode() === ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED)
+        {
+            $stack = $this->hideSensitiveInformationFromStack($stack);
+        }
 
         if ($level === 0)
         {
