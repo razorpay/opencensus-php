@@ -255,7 +255,7 @@ class ManualReconciliate extends CombinedReconciliate
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        return ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
+        return ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getGatewayAmount();
     }
 
     /**

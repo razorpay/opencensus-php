@@ -297,7 +297,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        $expectedCurrency = ($convertCurrency === true) ? Currency::INR : $this->payment->getCurrency();
+        $expectedCurrency = ($convertCurrency === true) ? Currency::INR : $this->payment->getGatewayCurrency();
 
         $reconCurrency = $row[self::COLUMN_CURRENCY] ?? null;
 
