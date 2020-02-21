@@ -10,10 +10,6 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     const COLUMN_PAYMENT_AMOUNT = ReconciliationFields::TRANSACTION_AMOUNT;
 
-    const BLACKLISTED_COLUMNS = [
-        ReconciliationFields::CARD_NO,
-    ];
-
     public function getPaymentId(array $row)
     {
         $paymentId = $row[ReconciliationFields::MERCHANT_TXN_NO] ?? null;

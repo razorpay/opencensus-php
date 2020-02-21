@@ -12,10 +12,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     const ONUS_INDICATOR = 'onus';
 
-    const BLACKLISTED_COLUMNS = [
-        ReconciliationFields::CARD_NO,
-    ];
-
     public function getRefundId(array $row)
     {
         $refundId = $row[ReconciliationFields::MERCHANT_TXN_NO] ?? null;
@@ -33,8 +29,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     protected function getGatewayRefund(string $refundId)
     {
         return $this->repo
-            ->card_fss
-            ->findOrFailRefundByRefundId($refundId);
+                    ->card_fss
+                    ->findOrFailRefundByRefundId($refundId);
     }
 
     protected function getReconRefundAmount(array $row)
