@@ -2,9 +2,9 @@
 
 namespace RZP\Models\BankingAccount;
 
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Merchant\Balance;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -198,7 +198,6 @@ class Entity extends Base\PublicEntity
         self::REVIEWERS,
         self::PASSWORD,
         self::AUDITOR_ID,
-
     ];
 
     protected $public = [

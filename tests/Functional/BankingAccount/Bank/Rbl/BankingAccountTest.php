@@ -1,6 +1,5 @@
 <?php
 
-use RZP\Constants\Table;
 use RZP\Models\Contact;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
@@ -10,14 +9,11 @@ use RZP\Models\BankingAccount\AccountType;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Mail\BankingAccount\StatusNotifications\Created;
 use RZP\Mail\BankingAccount\StatusNotifications\Processed;
 use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
-use RZP\Models\Admin\Permission\Entity as PermissionEntity;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
-use RZP\Models\Admin\Permission\Category as PermissionCategory;
 
 class BankingAccountTest extends TestCase
 {
