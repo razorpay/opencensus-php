@@ -61,6 +61,35 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
     }
 
+    public function testDccForMccPayment()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['amount'] = 5000;
+        $payment['currency'] = 'USD';
+
+        $flowsData = [
+            'content' => ['amount' => $payment['amount'], 'currency' => $payment['currency'], 'card_number' => $payment['card']['number']],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(false, $responseContent['is_international']);
+        $this->assertArrayNotHasKey('currency_request_id', $responseContent);
+        $this->assertArrayNotHasKey('all_currencies', $responseContent);
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['convert_currency'], true);
+        $this->assertEquals($payment['base_amount'], 50000);
+    }
+
     public function testPaymentCreateWithDccInvalidAmount()
     {
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
