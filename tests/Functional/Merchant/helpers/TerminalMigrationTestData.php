@@ -250,6 +250,16 @@ return [
         ],
     ],
 
+    'testDeleteTerminalWithPaymentTerminalsServiceUpBadResponseMigrateVariant' => [
+        'request' => [
+            'method' => 'DELETE'
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
     'testDeleteTerminalWithPaymentControlVariant' => [
         'request' => [
             'method' => 'DELETE'
