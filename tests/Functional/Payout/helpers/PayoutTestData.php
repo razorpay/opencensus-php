@@ -973,6 +973,46 @@ return [
             ],
         ],
     ],
+    'testCreateMerchantPayoutOnDemandNonBankingHours' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 20000000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 19763410,
+                'currency'    => 'INR',
+                'tax'         => 36090,
+                'fees'        => 236590,
+                'notes'       => []
+            ],
+        ],
+    ],
+    'testCreateMerchantPayoutOnDemandHoliday' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 20000000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 19763410,
+                'currency'    => 'INR',
+                'tax'         => 36090,
+                'fees'        => 236590,
+                'notes'       => []
+            ],
+        ],
+    ],
     'testCreateMerchantPayoutOnDemandExceedAmountLimit' => [
         'request' => [
             'method'  => 'POST',
@@ -994,6 +1034,29 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testCreateMerchantPayoutOnDemandExceedAmountLimitNonBankingHours'=> [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 20000100,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Please provide an amount less than 2 Lakhs to get a settlement at this point of time.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
         ],
     ],
     'testCreateMerchantPayoutExceedAmountLimit' => [

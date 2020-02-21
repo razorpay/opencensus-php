@@ -2547,6 +2547,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
+    // Trace code for ES ON Demand
+    const IMPS_AMOUNT_LIMIT_EXCEEDED                            = 'IMPS_AMOUNT_LIMIT_EXCEEDED';
+    const ES_ON_DEMAND_INITIATE_TIMESTAMP                       = 'ES_ON_DEMAND_INITIATE_TIMESTAMP';
+    const ES_ON_DEMAND_INITIATED_ON_NON_WORKING_DAY             = 'ES_ON_DEMAND_INITIATED_ON_NON_WORKING_DAY';
+    const ES_ON_DEMAND_INITIATED_ON_NON_BANKING_HOUR            = 'ES_ON_DEMAND_INITIATED_ON_NON_BANKING_HOUR';
+
     //Trace Code for SalesForce POC updates
     const MERCHANT_POC_UPDATE_REQUEST                           = 'MERCHANT_POC_UPDATE_REQUEST';
     const MERCHANT_GROUP_DETACH_REQUEST                         = 'MERCHANT_GROUP_DETACH_REQUEST';
@@ -2560,6 +2566,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SF_POC_ADMINS_REMOVAL_ERROR                           = 'SF_POC_ADMINS_REMOVAL_ERROR';
     const SF_POC_GROUP_REMOVAL_ERROR                            = 'SF_POC_GROUP_REMOVAL_ERROR';
     const REMOVAL_HISTORICAL_ADMINS_FROM_GROUP                  = 'REMOVAL_HISTORICAL_ADMINS_FROM_GROUP';
+
     // Trace Code for Workflow Rules
     const WORKFLOW_PAYOUT_RULES_ATTACHMENT                      = 'WORKFLOW_PAYOUT_RULES_ATTACHMENT';
 
