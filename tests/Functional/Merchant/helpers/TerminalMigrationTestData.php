@@ -230,6 +230,16 @@ return [
         ],
     ],
 
+    'testDeleteTerminalWithPaymentTerminalsServiceUpMigrateVariant' => [
+        'request' => [
+            'method' => 'DELETE'
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
     'testDeleteTerminalWithPaymentControlVariant' => [
         'request' => [
             'method' => 'DELETE'

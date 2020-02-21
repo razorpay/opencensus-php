@@ -102,6 +102,34 @@ class TerminalMigrationTest extends TestCase
         return $response;
     }
 
+    protected function getTerminalsServiceResponseForTerminalNotFound()
+    {
+        $response = new \Requests_Response;
+
+        $response->body = '
+   {
+    "data": null,
+    "error": {
+        "internal_error_code": "BAD_REQUEST_ERROR",
+        "gateway_error_code": "",
+        "gateway_error_description": "",
+        "description": "invalid request sent"
+    }
+}';
+        $response->status_code = Response::HTTP_BAD_REQUEST;
+
+        return $response;
+    }
+
+    protected function getTerminalsServiceResponseForTerminalDeleted()
+    {
+        $response = new \Requests_Response;
+
+        $response->body = '{"data": null}';
+
+        return $response;
+    }
+
     private function makePaymentAndGetTerminalId()
     {
         $this->doAuthAndCapturePayment();
@@ -449,28 +477,13 @@ class TerminalMigrationTest extends TestCase
 
             if ($method == \Requests::DELETE)
             {
-                $response->body = '{"data": null}';
-
-                return $response;
+                return $this->getTerminalsServiceResponseForTerminalDeleted();
             }
 
             if ($method == \Requests::GET)
             {
-               $response->body = '
-   {
-    "data": null,
-    "error": {
-        "internal_error_code": "BAD_REQUEST_ERROR",
-        "gateway_error_code": "",
-        "gateway_error_description": "",
-        "description": "invalid request sent"
-    }
-}';
+                return $this->getTerminalsServiceResponseForTerminalNotFound();
             }
-
-            $response->status_code = Response::HTTP_BAD_REQUEST;
-
-            return $response;
 
         }, 2);
 
@@ -545,11 +558,7 @@ class TerminalMigrationTest extends TestCase
 
             if ($method == \Requests::DELETE)
             {
-                $response = new  \Requests_Response;
-
-                $response->body = '{"data": null}';
-
-                return $response;
+                return $this->getTerminalsServiceResponseForTerminalDeleted();
             }
 
             if ($method == \Requests::GET)
@@ -601,13 +610,50 @@ class TerminalMigrationTest extends TestCase
 
 
     // tests for delete terminal + migration on a terminal which has a payment
+    public function testDeleteTerminalWithPaymentTerminalsServiceUpMigrateVariant()
+    {
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+            if ($method === \Requests::DELETE)
+            {
+                return $this->getTerminalsServiceResponseForTerminalDeleted();
+            }
+
+            if ($method === \Requests::GET)
+            {
+                return $this->getTerminalsServiceResponseForTerminalNotFound();
+            }
+        }, 2);
+
+        $tid = $this->makePaymentAndGetTerminalId();
+
+        $this->razorxValue = 'migrate';
+
+        $url = '/terminals/'.$tid;
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $beforeCount = DB::table('terminals')->count();
+
+        $this->startTest();
+
+        $afterCount = DB::table('terminals')->count();
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+        $terminalEntity = DB::table('terminals')->where('id', '=', $tid)->first(); // stdClass object
+
+        $this->assertNotNull($terminalEntity->deleted_at);
+
+        $this->assertEquals(Terminal\SyncStatus::getValueForSyncStatusString(Terminal\SyncStatus::SYNC_SUCCESS),
+            $terminalEntity->sync_status);
+    }
+
+
     public function testDeleteTerminalWithPaymentControlVariant()
     {
         $this->mockTerminalsServiceSendRequest(null, 0);
 
         $tid = $this->makePaymentAndGetTerminalId();
-
-        $this->razorxValue = 'control';
 
         $url = '/terminals/'.$tid;
 

@@ -509,6 +509,10 @@ class Repository extends Base\Repository
             if (RazorxTreatment::shouldMigrateTerminal($syncStatus) === true)
             {
                 (new Terminal\Service)->migrateTerminalDelete($entity->getId());
+
+                $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+
+                $this->repo->terminal->saveOrFail($entity, [], SyncStatus::SYNC_SUCCESS);
             }
 
             if ($count === 0)
