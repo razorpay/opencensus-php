@@ -62,7 +62,7 @@ class Repository extends Base\Repository
 
                     parent::saveOrFail($entity, $options);
 
-                    $entity = (new Terminal\Service)->migrateTerminal($entity->getId());
+                    $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
 
                     $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
@@ -88,7 +88,7 @@ class Repository extends Base\Repository
 
                     try
                     {
-                        $entity = (new Terminal\Service)->migrateTerminal($entity->getId());
+                        $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
 
                         $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
                     }
@@ -506,6 +506,8 @@ class Repository extends Base\Repository
 
         return $this->transaction(function() use ($entity, $count)
         {
+            (new Terminal\Service)->migrateTerminalDelete($entity->getId());
+
             if ($count === 0)
             {
                 $entity->forceDelete();

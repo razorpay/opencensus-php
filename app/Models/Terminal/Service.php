@@ -405,10 +405,10 @@ class Service extends Base\Service
 
     /**
      * This function is the entrypoint for migrating a terminal to Terminals service.
-     * All logic will reside here.
+     * All logic will reside here for create and update
      * @param Entity $terminal
      */
-    public function migrateTerminal(string $terminalId) : Entity
+    public function migrateTerminalCreateOrUpdate(string $terminalId) : Entity
     {
         $client = $this->app['terminals_service'];
 
@@ -453,6 +453,32 @@ class Service extends Base\Service
 
     }
 
+    public function migrateTerminalDelete(string $terminalId)
+    {
+        $client = $this->app['terminals_service'];
+
+        $terminal = $this->repo->terminal->getById($terminalId);
+
+        $terminal = $this->repo->transaction(function () use ($terminal, $client) {
+
+            $this->repo->terminal->lockForUpdateAndReload($terminal);
+
+            $client->deleteTerminalById($terminal->getId());
+
+            try
+            {
+                $client->fetchTerminalById($terminal->getId());
+
+                throw new Exception\IntegrationException('delete failed. should not have reached here');
+            }
+            catch (\Exception $exception)
+            {
+                // assert on message and rethrow if not correct
+
+            }
+
+        });
+    }
 
     protected function createTerminalMigrateJob(Terminal\Entity $terminal)
     {

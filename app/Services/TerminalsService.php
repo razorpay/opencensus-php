@@ -91,7 +91,7 @@ class TerminalsService
 
         $response = $this->sendRequest($path, '', $params[self::METHOD]);
 
-        return $this->parseAndReturnResponse($response)[self::DATA];
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST): \Requests_Response
