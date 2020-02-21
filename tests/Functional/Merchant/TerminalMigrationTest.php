@@ -513,6 +513,59 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminal->getSyncStatus());
     }
 
+    public function testDeleteTerminalNoPaymentTerminalsServiceUpBadResponseOnTerminalFetchMigrateVariant()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $tid = $terminal['id'];
+
+        $url = '/terminals/'.$tid;
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->razorxValue = 'migrate';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
+
+            $this->assertStringEndsWith('/' . $tid, $path);
+
+            if ($method == \Requests::DELETE)
+            {
+                $response = new  \Requests_Response;
+
+                $response->body = '{"data": null}';
+
+                return $response;
+            }
+
+            if ($method == \Requests::GET)
+            {
+                return $this->getDefaultTerminalServiceResponse();
+            }
+        }, 2);
+
+        $this->expectException(IntegrationException::class);
+
+        $this->expectExceptionMessage('got non empty response when fetching a deleted terminal');
+
+        $beforeCount = DB::table('terminals')->count();
+
+        $this->startTest();
+
+        $afterCount = DB::table('terminals')->count();
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+        $terminal = $this->terminalRepository->findOrFail($tid);
+
+        $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminal->getSyncStatus());
+    }
+
     public function testDeleteTerminalNoPaymentControlVariant()
     {
         $this->mockTerminalsServiceSendRequest(null, 0);

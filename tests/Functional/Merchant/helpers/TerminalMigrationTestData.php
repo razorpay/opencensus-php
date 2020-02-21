@@ -209,6 +209,16 @@ return [
         ],
     ],
 
+    'testDeleteTerminalNoPaymentTerminalsServiceUpBadResponseOnTerminalFetchMigrateVariant' => [
+        'request' => [
+            'method' => 'DELETE'
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
     'testDeleteTerminalNoPaymentControlVariant' => [
         'request' => [
             'url' => '/merchants/10abcdefghsdfs/terminals/testatomrandom',
