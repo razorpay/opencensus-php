@@ -933,16 +933,6 @@ class Processor extends Base\Core
                      ->transaction
                      ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $balance, $params);
 
-        // Filter to keep only transactions having their channel as yesbank when balance type is commissions.
-        if (($txns->isEmpty() === false) and
-            ($balanceType === Balance\Type::COMMISSION))
-        {
-            $txns = $txns->filter(function ($txn)
-            {
-                return ($txn->getChannel() === Settlement\Channel::YESBANK);
-            });
-        }
-
         // If there are no transactions to settle then return
         if ($txns->isEmpty() === true)
         {
