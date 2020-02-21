@@ -200,6 +200,30 @@ class UpiJuspayGatewayTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
     }
 
+    public function testIntentPaymentWhenRefIdAbsent()
+    {
+        $this->enableIntentFlow();
+
+        $this->payment['description'] = 'intentWithRefIdAbsent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $this->assertEquals('intent', $response['type']);
+
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $payment = $this->getDbLastPayment();
+
+        $request = $this->mockServer()->getCallbackRequest($payment->toArray());
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $payment->refresh();
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+
     protected function enableIntentFlow($description = 'intentPayment')
     {
         $this->terminal = $this->fixtures->create('terminal:upi_juspay_intent_terminal');
