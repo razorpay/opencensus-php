@@ -592,6 +592,12 @@ final class Route
         'customer_get_wallet_statement'            => ['get',      'customers/{id}/statement',                       'CustomerController@getCustomerWalletStatement'                     ],
         'reminder_send'                            => ['post',     'reminders/send/{mode}/{entity}/{namespace}/{id}','RemindersController@sendReminder'                                  ],
         'reminder_service'                         => ['any',      'reminders/service/{path?}',                      'RemindersController@handleAny'                                     ],
+        'offline_verification_service_get'         => ['get',      'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
+        'offline_verification_service_put'         => ['put',      'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
+        'offline_verification_service_post'        => ['post',     'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
+        'offline_verification_service_patch'       => ['patch',    'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
+        'offline_verification_service_delete'      => ['delete',   'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
+        'offline_verification_webhook'             => ['post',     'offline_verification/webhook/v1/ecom_update_status', 'OfflineVerificationController@handleWebhook'                   ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
         'reminder_next_run'                        => ['get',      'reminders/next_run/{entity}/{id}',               'RemindersController@remindersNextRun'                              ],
         'invoice_create'                           => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
@@ -1820,6 +1826,7 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'offline_verification_webhook',
         'merchant_inheritance_parent_set_bulk',
         'mdr_adjustment',
         'pricing_add_plan_rule_bulk',
@@ -2312,6 +2319,11 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'offline_verification_service_get',
+        'offline_verification_service_put',
+        'offline_verification_service_post',
+        'offline_verification_service_patch',
+        'offline_verification_service_delete',
         'd2c_bureau_reports_download',
         'payout_update_pull_payout_status',
         'payout_links_settings_post',
@@ -2838,6 +2850,11 @@ final class Route
         ];
 
     public static $routePermission = [
+        'offline_verification_service_get'         => Permission::OFFLINE_VERIFICATION_SERVICE_VIEW,
+        'offline_verification_service_post'        => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
+        'offline_verification_service_patch'       => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
+        'offline_verification_service_put'         => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
+        'offline_verification_service_delete'      => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
         'd2c_bureau_reports_download'              => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
         'payout_update_pull_payout_status'         => '*',
         'merchant_activation_update_website_status'=> '*',
@@ -3866,6 +3883,10 @@ final class Route
 
         'rbl' => [
             'banking_account_webhook_account_info',
+        ],
+
+        'ecom' => [
+            'offline_verification_webhook',
         ],
 
         // BharatQR routes are not authenticated

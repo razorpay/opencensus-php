@@ -257,23 +257,25 @@ return array(
         'FCM'             => LaravelFCM\Facades\FCM::class,
     ],
 
-    'context'                      => env('CONTEXT'),
+    'context'                             => env('CONTEXT'),
 
-    'checkout'                     => env('CHECKOUT_URL'),
+    'checkout'                            => env('CHECKOUT_URL'),
 
-    'invoice'                      => env('INVOICE_URL'),
+    'invoice'                             => env('INVOICE_URL'),
 
-    'payment_link_hosted_base_url' => env('PAYMENT_LINK_HOSTED_BASE_URL'),
+    'payment_link_hosted_base_url'        => env('PAYMENT_LINK_HOSTED_BASE_URL'),
 
-    'cdn_v1_url'                   => env('CDN_V1_URL'),
+    'cdn_v1_url'                          => env('CDN_V1_URL'),
 
-    'proxy_enabled'                => env('PROXY_ENABLED'),
+    'proxy_enabled'                       => env('PROXY_ENABLED'),
 
-    'proxy_address'                => env('PROXY_ADDRESS'),
+    'proxy_address'                       => env('PROXY_ADDRESS'),
 
-    'subscription_proxy_timeout'   => env('SUBSCRIPTION_PROXY_TIMEOUT', 10),
+    'subscription_proxy_timeout'          => env('SUBSCRIPTION_PROXY_TIMEOUT', 10),
 
-    'throw_exception_in_testing'   => env('THROW_EXCEPTION_IN_TESTING', true),
+    'offline_verification_proxy_timeout'  => env('OFFLINE_VERIFICATION_PROXY_TIMEOUT', 10),
+
+    'throw_exception_in_testing'          => env('THROW_EXCEPTION_IN_TESTING', true),
 
     'data_store' => [
         'mock' => env('DATA_STORE_MOCK', false)
