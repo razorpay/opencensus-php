@@ -499,14 +499,17 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function deleteOrFail($entity)
+    public function deleteOrFail($entity, string $syncStatus = SyncStatus::NOT_SYNCED)
     {
         $count = $this->repo->payment->getTotalUsedCountForTerminal(
                     $entity->getId());
 
-        return $this->transaction(function() use ($entity, $count)
+        return $this->transaction(function() use ($entity, $count, $syncStatus)
         {
-            (new Terminal\Service)->migrateTerminalDelete($entity->getId());
+            if (RazorxTreatment::shouldMigrateTerminal($syncStatus) === true)
+            {
+                (new Terminal\Service)->migrateTerminalDelete($entity->getId());
+            }
 
             if ($count === 0)
             {

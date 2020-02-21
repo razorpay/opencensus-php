@@ -209,7 +209,7 @@ return [
         ],
     ],
 
-    'testDeleteTerminalControlVariant' => [
+    'testDeleteTerminalNoPaymentControlVariant' => [
         'request' => [
             'url' => '/merchants/10abcdefghsdfs/terminals/testatomrandom',
             'method' => 'DELETE'
