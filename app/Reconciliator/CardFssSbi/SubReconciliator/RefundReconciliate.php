@@ -12,6 +12,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     const ONUS_INDICATOR = 'onus';
 
+    const COLUMN_REFUND_AMOUNT = ReconciliationFields::TRANSACTION_AMOUNT;
+
     public function getRefundId(array $row)
     {
         $refundId = $row[ReconciliationFields::MERCHANT_TXN_NO] ?? null;
@@ -37,9 +39,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     {
         $amt = $row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null;
 
-        // Refund amounts are marked as negative values
-        $amt = $amt * -1;
-
         return Helper::getIntegerFormattedAmount($amt);
     }
 
@@ -49,7 +48,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         if (empty($rrn) === true)
         {
-            $this->reportMissingColumn($row, implode(',', ReconciliationFields::TXN_REF));
+            $this->reportMissingColumn($row, ReconciliationFields::TXN_REF);
         }
 
         $onusIndicator = $this->getOnusIndicator($row);
@@ -65,31 +64,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     protected function getOnusIndicator($row)
     {
         return strtolower($row[ReconciliationFields::ONUS_INDICATOR] ?? '');
-    }
-
-    protected function validateRefundAmountEqualsReconAmount(array $row)
-    {
-        $convertCurrency = $this->payment->getConvertCurrency();
-
-        $refundAmount = ($convertCurrency === true) ? $this->refund->getBaseAmount() : $this->refund->getAmount();
-
-        if ($refundAmount !== $this->getReconRefundAmount($row))
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'info_code'         => InfoCode::AMOUNT_MISMATCH,
-                    'refund_id'         => $this->refund->getId(),
-                    'expected_amount'   => $refundAmount,
-                    'recon_amount'      => $this->getReconRefundAmount($row),
-                    'currency'          => $this->refund->getCurrency(),
-                    'gateway'           => $this->gateway
-                ]);
-
-            return false;
-        }
-
-        return true;
     }
 
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)

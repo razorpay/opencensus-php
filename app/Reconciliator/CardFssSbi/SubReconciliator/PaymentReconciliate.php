@@ -82,7 +82,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         if ($authCode === null)
         {
-            $this->reportMissingColumn($row, implode(',', ReconciliationFields::APPROVE_CODE));
+            $this->reportMissingColumn($row, ReconciliationFields::APPROVE_CODE);
 
             return null;
         }
