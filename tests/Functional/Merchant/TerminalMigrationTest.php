@@ -626,6 +626,12 @@ class TerminalMigrationTest extends TestCase
 
         $tid = $this->makePaymentAndGetTerminalId();
 
+        $terminal = $this->terminalRepository->findOrFail($tid);
+
+        $terminal->setSyncStatus(Terminal\SyncStatus::NOT_SYNCED);
+
+        $terminal->saveOrFail();
+
         $this->razorxValue = 'migrate';
 
         $url = '/terminals/'.$tid;
@@ -648,6 +654,46 @@ class TerminalMigrationTest extends TestCase
             $terminalEntity->sync_status);
     }
 
+    public function testDeleteTerminalWithPaymentTerminalsServiceDownMigrateVariant()
+    {
+        $tid = $this->makePaymentAndGetTerminalId();
+
+        $terminal = $this->terminalRepository->findOrFail($tid);
+
+        $terminal->setSyncStatus(Terminal\SyncStatus::NOT_SYNCED);
+
+        $terminal->saveOrFail();
+
+        $url = '/terminals/'.$tid;
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->razorxValue = 'migrate';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+            throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
+        }, 1);
+
+        $this->expectException(\Requests_Exception_Transport_cURL::class);
+
+        $this->expectExceptionMessage('curl');
+
+        $beforeCount = DB::table('terminals')->count();
+
+        $this->startTest();
+
+        $afterCount = DB::table('terminals')->count();
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+        $terminal = $this->terminalRepository->findOrFail($tid);
+
+        // at the start of test, we set sync status of terminal to not_synced.
+        // we are asserting that the value hasnt changed.
+        $this->assertEquals(Terminal\SyncStatus::NOT_SYNCED, $terminal->getSyncStatus());
+
+        $this->assertNotNull($terminal->getDeletedAt());
+    }
 
     public function testDeleteTerminalWithPaymentControlVariant()
     {
