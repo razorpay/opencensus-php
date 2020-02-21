@@ -110,6 +110,11 @@ class Sdk extends Base\Request
         parent::setValidate($validate);
     }
 
+    public function mergeUdf(array $udf)
+    {
+        $this->udf = array_merge($this->udf, $udf);
+    }
+
     protected function setRequestCommonProperties()
     {
         $this->setSdk(self::AXIS);
