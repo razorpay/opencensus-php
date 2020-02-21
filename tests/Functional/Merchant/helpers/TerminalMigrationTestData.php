@@ -229,4 +229,14 @@ return [
             ]
         ],
     ],
+
+    'testDeleteTerminalWithPaymentControlVariant' => [
+        'request' => [
+            'method' => 'DELETE'
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
 ];

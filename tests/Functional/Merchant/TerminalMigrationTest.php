@@ -102,6 +102,15 @@ class TerminalMigrationTest extends TestCase
         return $response;
     }
 
+    private function makePaymentAndGetTerminalId()
+    {
+        $this->doAuthAndCapturePayment();
+
+        $payment = $this->getLastPayment(true);
+
+        return $payment['terminal_id'];
+    }
+
     // the below cases tests migration functionality when a new terminal is created
     public function testAssignTerminalTerminalServiceUpMigrateTerminalVariant()
     {
@@ -588,5 +597,37 @@ class TerminalMigrationTest extends TestCase
         $afterCount = DB::table('terminals')->count();
 
         $this->assertEquals($beforeCount - 1, $afterCount);
+    }
+
+
+    // tests for delete terminal + migration on a terminal which has a payment
+    public function testDeleteTerminalWithPaymentControlVariant()
+    {
+        $this->mockTerminalsServiceSendRequest(null, 0);
+
+        $tid = $this->makePaymentAndGetTerminalId();
+
+        $this->razorxValue = 'control';
+
+        $url = '/terminals/'.$tid;
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->razorxValue = 'control';
+
+        $beforeCount = DB::table('terminals')->count();
+
+        $this->startTest();
+
+        $afterCount = DB::table('terminals')->count();
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+        $terminalEntity = DB::table('terminals')->where('id', '=', $tid)->first(); // stdClass object
+
+        $this->assertNotNull($terminalEntity->deleted_at);
+
+        $this->assertEquals(Terminal\SyncStatus::getValueForSyncStatusString(Terminal\SyncStatus::NOT_SYNCED),
+                            $terminalEntity->sync_status);
     }
 }
