@@ -199,6 +199,16 @@ return [
         ],
     ],
 
+    'testDeleteTerminalNoPaymentTerminalsServiceDownMigrateVariant' => [
+        'request' => [
+            'method' => 'DELETE'
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
     'testDeleteTerminalControlVariant' => [
         'request' => [
             'url' => '/merchants/10abcdefghsdfs/terminals/testatomrandom',

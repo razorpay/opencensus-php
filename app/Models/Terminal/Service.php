@@ -461,23 +461,23 @@ class Service extends Base\Service
 
         $terminal = $this->repo->transaction(function () use ($terminal, $client) {
 
-            $this->repo->terminal->lockForUpdateAndReload($terminal);
+        $this->repo->terminal->lockForUpdateAndReload($terminal);
 
-            $client->deleteTerminalById($terminal->getId());
+        $client->deleteTerminalById($terminal->getId());
 
-            try
-            {
-                $client->fetchTerminalById($terminal->getId());
+        try
+        {
+            $client->fetchTerminalById($terminal->getId());
 
-                throw new Exception\IntegrationException('delete failed. should not have reached here');
-            }
-            catch (\Exception $exception)
-            {
-                // assert on message and rethrow if not correct
+            throw new Exception\IntegrationException('delete failed. should not have reached here');
+        }
+        catch (\Exception $exception)
+        {
+            // assert on message and rethrow if not correct
+            s($exception->getMessage());
+        }
 
-            }
-
-        });
+    });
     }
 
     protected function createTerminalMigrateJob(Terminal\Entity $terminal)

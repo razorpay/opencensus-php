@@ -475,6 +475,44 @@ class TerminalMigrationTest extends TestCase
 
     }
 
+    public function testDeleteTerminalNoPaymentTerminalsServiceDownMigrateVariant()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+                'used'        => true,
+                'enabled'     => '1',
+                'sync_status' => 'sync_success',
+            ]);
+
+        $tid = $terminal['id'];
+
+        $url = '/terminals/'.$tid;
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->razorxValue = 'migrate';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+            throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
+        }, 1);
+
+        $this->expectException(\Requests_Exception_Transport_cURL::class);
+
+        $this->expectExceptionMessage('curl');
+
+        $beforeCount = DB::table('terminals')->count();
+
+        $this->startTest();
+
+        $afterCount = DB::table('terminals')->count();
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+        $terminal = $this->terminalRepository->findOrFail($tid);
+
+        $this->assertEquals(Terminal\SyncStatus::SYNC_SUCCESS, $terminal->getSyncStatus());
+    }
+
     public function testDeleteTerminalNoPaymentControlVariant()
     {
         $this->mockTerminalsServiceSendRequest(null, 0);
