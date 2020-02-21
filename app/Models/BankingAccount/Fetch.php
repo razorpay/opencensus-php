@@ -21,7 +21,7 @@ class Fetch extends BaseFetch
             Entity::ACCOUNT_TYPE          => 'sometimes|string',
         ],
         BasicAuth\Type::PRIVILEGE_AUTH => [
-            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,banking_account_details',
+            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,banking_account_details,reviewers',
         ]
     ];
 

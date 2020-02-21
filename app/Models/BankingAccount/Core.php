@@ -710,6 +710,7 @@ class Core extends Base\Core
             }
             catch (\Exception $e)
             {
+                sd($e);
                 $failedItems[] = [
                     Entity::ID          => $bankingAccountId,
                     'error'             => $e->getMessage()
@@ -735,6 +736,16 @@ class Core extends Base\Core
         AdminEntity::verifyIdAndStripSign($reviewerId);
 
         $reviewer = $this->repo->admin->findOrFailPublic($reviewerId);
+
+        // If banking account already has a reviewer, detach the reviewer from the banking account.
+        // The new reviewer will be attached to the banking account below,
+        // effectively assigning the banking account the new reviewer.
+        if (empty($bankingAccount->reviewers()) === false)
+        {
+            $reviewerId = $bankingAccount->reviewers()->first()->pivot->auditor_id;
+
+            $bankingAccount->reviewers()->detach($reviewerId);
+        }
 
         $bankingAccount->reviewers()->attach($reviewer, ['auditor_type' => 'reviewer']);
 

@@ -105,8 +105,11 @@ class Entity extends Base\PublicEntity
     // Relation Constants
     const BANKING_ACCOUNT_DETAILS = 'banking_account_details';
     const BALANCE                 = 'balance';
+    const REVIEWERS               = 'reviewers';
 
+    // Constants for reviewers() relation
     const REVIEWER_ID   = 'reviewer_id';
+    const AUDITOR_ID    = 'auditor_id';
 
     const IDS           = 'ids';
 
@@ -192,8 +195,9 @@ class Entity extends Base\PublicEntity
         // 'banking_account_details' works fine
         //
         'bankingAccountDetails',
+        self::REVIEWERS,
         self::PASSWORD,
-        self::REVIEWER_ID,
+        self::AUDITOR_ID,
 
     ];
 

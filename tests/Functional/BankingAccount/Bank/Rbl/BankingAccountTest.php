@@ -1080,17 +1080,17 @@ class BankingAccountTest extends TestCase
 
     public function testBulkAssignReviewersToBankingAccounts()
     {
-        $bankingAccount1 = $this->fixtures->on('test')->create('banking_account', [
+        $bankingAccount1 = $this->fixtures->create('banking_account', [
             'id'            => 'randomBaAccId1',
             'account_type'  => 'current',
         ]);
 
-        $bankingAccount2 = $this->fixtures->on('test')->create('banking_account', [
+        $bankingAccount2 = $this->fixtures->create('banking_account', [
             'id'            => 'randomBaAccId2',
             'account_type'  => 'current',
         ]);
 
-        $randomAdmin = $this->fixtures->on('test')->create('admin', [
+        $randomAdmin = $this->fixtures->create('admin', [
             'org_id' => '100000razorpay'
         ]);
 
@@ -1107,7 +1107,7 @@ class BankingAccountTest extends TestCase
             PermissionEntity::ASSIGNABLE  => true,
         ];
 
-        $permission = $this->fixtures->on('test')->create('permission', $row);
+        $permission = $this->fixtures->create('permission', $row);
 
         $adminRole = $admin->roles()->first();
 
@@ -1119,11 +1119,14 @@ class BankingAccountTest extends TestCase
 
         $this->startTest();
 
-        $bankingAccount1 = $this->getDbEntityById('banking_account', $bankingAccount1->getId());
-        $bankingAccount2 = $this->getDbEntityById('banking_account', $bankingAccount1->getId());
+//        $auditorLog1 = $this->getDbEntityById('auditor_map', $bankingAccount1->getId());
+//        $auditorLog2 = $this->getDbEntityById('auditor_map', $bankingAccount1->getId());
 
-        $this->assertEquals($randomAdmin->getId(), $bankingAccount1['reviewer_id']);
-        $this->assertEquals($randomAdmin->getId(), $bankingAccount2['reviewer_id']);
+        $auditorId1 = $bankingAccount1->reviewers()->first()->pivot->auditor_id;
+        $auditorId2 = $bankingAccount2->reviewers()->first()->pivot->auditor_id;
+
+        $this->assertEquals($randomAdmin->getId(), $auditorId1);
+        $this->assertEquals($randomAdmin->getId(), $auditorId2);
     }
 
     public function testBulkAssignInvalidReviewersToBankingAccounts()
