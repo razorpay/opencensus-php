@@ -770,6 +770,7 @@ class Entity extends Base\PublicEntity
     public function setGatewayAmountCurrency()
     {
         $this->setGatewayAmount();
+
         $this->setGatewayCurrency();
     }
 
