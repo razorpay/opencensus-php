@@ -466,6 +466,8 @@ class Service extends Base\Service
 
         $client->deleteTerminalById($terminal->getId());
 
+        $data = [];
+
         try
         {
             $data = $client->fetchTerminalById($terminal->getId());
