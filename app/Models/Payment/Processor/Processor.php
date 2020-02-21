@@ -533,6 +533,8 @@ class Processor
                 ];
 
                 $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+                $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
             }
         }
     }
