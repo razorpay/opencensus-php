@@ -1096,31 +1096,11 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $admin = $this->ba->getAdmin();
-
-        $row = [
-            PermissionEntity::NAME        => PermissionName::ASSIGN_BANKING_ACCOUNT_REVIEWER,
-            PermissionEntity::CATEGORY    => PermissionCategory::RAZORPAYX_BANKING,
-            PermissionEntity::DESCRIPTION => 'Adds reviewer to banking account',
-            PermissionEntity::CREATED_AT  => time(),
-            PermissionEntity::UPDATED_AT  => time(),
-            PermissionEntity::ASSIGNABLE  => true,
-        ];
-
-        $permission = $this->fixtures->create('permission', $row);
-
-        $adminRole = $admin->roles()->first();
-
-        $adminRole->permissions()->attach($permission);
-
         $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = $randomAdmin->getPublicId();
         $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = $bankingAccount1->getPublicId();
         $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = $bankingAccount2->getPublicId();
 
         $this->startTest();
-
-//        $auditorLog1 = $this->getDbEntityById('auditor_map', $bankingAccount1->getId());
-//        $auditorLog2 = $this->getDbEntityById('auditor_map', $bankingAccount1->getId());
 
         $auditorId1 = $bankingAccount1->reviewers()->first()->pivot->auditor_id;
         $auditorId2 = $bankingAccount2->reviewers()->first()->pivot->auditor_id;
@@ -1143,23 +1123,6 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $admin = $this->ba->getAdmin();
-
-        $row = [
-            PermissionEntity::NAME        => PermissionName::ASSIGN_BANKING_ACCOUNT_REVIEWER,
-            PermissionEntity::CATEGORY    => PermissionCategory::RAZORPAYX_BANKING,
-            PermissionEntity::DESCRIPTION => 'Adds reviewer to banking account',
-            PermissionEntity::CREATED_AT  => time(),
-            PermissionEntity::UPDATED_AT  => time(),
-            PermissionEntity::ASSIGNABLE  => true,
-        ];
-
-        $permission = $this->fixtures->create('permission', $row);
-
-        $adminRole = $admin->roles()->first();
-
-        $adminRole->permissions()->attach($permission);
-
         $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = 'admin_wrongAdminId12';
         $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = $bankingAccount1->getPublicId();
         $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = $bankingAccount2->getPublicId();
@@ -1174,23 +1137,6 @@ class BankingAccountTest extends TestCase
         ]);
 
         $this->ba->adminAuth();
-
-        $admin = $this->ba->getAdmin();
-
-        $row = [
-            PermissionEntity::NAME        => PermissionName::ASSIGN_BANKING_ACCOUNT_REVIEWER,
-            PermissionEntity::CATEGORY    => PermissionCategory::RAZORPAYX_BANKING,
-            PermissionEntity::DESCRIPTION => 'Adds reviewer to banking account',
-            PermissionEntity::CREATED_AT  => time(),
-            PermissionEntity::UPDATED_AT  => time(),
-            PermissionEntity::ASSIGNABLE  => true,
-        ];
-
-        $permission = $this->fixtures->create('permission', $row);
-
-        $adminRole = $admin->roles()->first();
-
-        $adminRole->permissions()->attach($permission);
 
         $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = $randomAdmin->getPublicId();
         $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = 'bacc_wrongCurAccId1';

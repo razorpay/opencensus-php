@@ -710,7 +710,6 @@ class Core extends Base\Core
             }
             catch (\Exception $e)
             {
-                sd($e);
                 $failedItems[] = [
                     Entity::ID          => $bankingAccountId,
                     'error'             => $e->getMessage()
@@ -737,12 +736,14 @@ class Core extends Base\Core
 
         $reviewer = $this->repo->admin->findOrFailPublic($reviewerId);
 
+        $existingReviewer = $bankingAccount->reviewers()->first();
+
         // If banking account already has a reviewer, detach the reviewer from the banking account.
         // The new reviewer will be attached to the banking account below,
         // effectively assigning the banking account the new reviewer.
-        if (empty($bankingAccount->reviewers()) === false)
+        if (empty($existingReviewer) === false)
         {
-            $reviewerId = $bankingAccount->reviewers()->first()->pivot->auditor_id;
+            $reviewerId = $existingReviewer->pivot->auditor_id;
 
             $bankingAccount->reviewers()->detach($reviewerId);
         }

@@ -788,6 +788,10 @@ return [
                 'description' => 'Updating banking account details of the merchant',
                 'assignable'  => true,
             ],
+            Permission::ASSIGN_BANKING_ACCOUNT_REVIEWER => [
+                'description' => 'Adds reviewer to banking account',
+                'assignable'  => true,
+            ]
         ],
 
         PermissionCategory::PAYOUTS => [
