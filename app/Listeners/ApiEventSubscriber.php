@@ -1413,7 +1413,7 @@ class ApiEventSubscriber extends Base\Core
 
         try
         {
-            (new Stork)->processEvent($event, $this->getMode());
+            (new Stork)->processEventSafe($event, $this->getMode());
         }
         catch (Throwable $e)
         {
