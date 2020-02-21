@@ -35,9 +35,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $sfPocDataRules = [
-        'totalSize' => 'required|integer',
-        'done'      => 'required|boolean',
-        'records'   => 'required|array',
+        'totalSize'      => 'required|integer',
+        'done'           => 'required|boolean',
+        'nextRecordsUrl' => 'sometimes|string',
+        'records'        => 'required|array',
     ];
 
     protected static $sfPocRecordRules = [
