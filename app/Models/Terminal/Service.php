@@ -548,6 +548,10 @@ class Service extends Base\Service
 
             if (is_array($originalValue) === true)
             {
+                $originalValue = $originalValue ?? [];
+
+                $responseValue = $responseValue ?? [];
+
                 sort($originalValue);
 
                 sort($responseValue);
