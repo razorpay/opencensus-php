@@ -1184,7 +1184,8 @@ class Service extends Base\Service
             $data['card_currency'] = $cardHomeCurrency;
 
             if (($merchant->isDCCEnabled() === true) and
-                ($iinEntity->isDCCSupported() === true))
+                ($iinEntity->isDCCSupported() === true) and
+                ($input['currency'] === Currency\Currency::INR))
             {
                 $dccInfo = $this->getDCCInfo($input['amount'], $input['currency']);
 
