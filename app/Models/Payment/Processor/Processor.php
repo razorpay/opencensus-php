@@ -1234,6 +1234,14 @@ class Processor
         {
             $variant = $this->getRazorxVariant($payment, self::CARD_PAYMENTS_PREFIX);
 
+            // To route all ivr payments through payments-card
+            if (($variant !== 'cardps') and
+                (isset($gatewayInput['auth_type']) === true) and
+                ($gatewayInput['auth_type'] === 'ivr'))
+            {
+                $variant = 'cardps';
+            }
+
             $this->setPaymentService($payment, $variant);
         }
     }
