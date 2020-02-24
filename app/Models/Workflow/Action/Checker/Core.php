@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Error\ErrorCode;
+use RZP\Models\User\BankingRole;
 use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
@@ -64,7 +65,14 @@ class Core extends Base\Core
         //
 
         // Get checker roles
-        $checkerRoleIds = $checkerEntity->roles()->allRelatedIds()->toArray();
+        if ($checkerType === 'admin')
+        {
+            $checkerRoleIds = $checkerEntity->roles()->allRelatedIds()->toArray();
+        }
+        else
+        {
+            $checkerRoleIds = $this->getUserRoleIdsInMerchant($checkerEntity->getId());
+        }
 
         $currentLevel = $action->getCurrentLevel();
 
@@ -257,5 +265,29 @@ class Core extends Base\Core
         {
             (new Action\Service)->executeAction($action->getPublicId(), $role, $checkerEntity);
         }
+    }
+
+    /**
+     * @param string $userId
+     * @return array
+     */
+    protected function getUserRoleIdsInMerchant(string $userId) : array
+    {
+        $mapping = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(),
+                                                                 $userId,
+                                                                 null,
+                                                                 'banking'
+                                                                 );
+
+        $roleCode = $mapping->pivot->role;
+
+        $roleName = (new BankingRole())->getNamesForWorkflowRoles([$roleCode]);
+
+        $roleId = $this->repo->role->newQueryWithoutTimestamps()
+                                   ->where('name', '=', $roleName)
+                                   ->pluck('id')
+                                   ->toArray();
+
+        return $roleId;
     }
 }
