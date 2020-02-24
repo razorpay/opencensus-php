@@ -2369,6 +2369,7 @@ class Gateway
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
             self::PAYSECURE,
+            self::AMEX,
         ];
 
         return (in_array($gateway, $gateways, true));
