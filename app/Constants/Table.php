@@ -253,6 +253,8 @@ class Table
 
     const OPTIONS              = 'options';
 
+    const UPI_MANDATE          = 'upi_mandates';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,
         Entity::AXIS_GENIUS         => self::MIGS,

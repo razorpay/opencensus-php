@@ -143,6 +143,8 @@ class Entity
     const D2C_BUREAU_REPORT          = 'd2c_bureau_report';
     const BANKING_ACCOUNT_STATE      = 'banking_account_state';
 
+    const UPI_MANDATE                = 'upi_mandate';
+
     // heimdall
     const ORG                   = 'org';
     const ORG_HOSTNAME          = 'org_hostname';
