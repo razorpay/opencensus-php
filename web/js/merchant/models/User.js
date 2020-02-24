@@ -287,6 +287,18 @@ export default class User {
     return this.findTag('enable_RBL_role');
   }
 
+  get isAuthLinkRoleEnabled() {
+    return this.findTag('Enable_auth_link_role');
+  }
+
+  get isAuthLinkTokenAndPaymentsEnabled() {
+    return this.userRole !== rolesList.AUTH_LINK_AGENT && this.userRole !== rolesList.AUTH_LINK_SUPERVISOR;
+  }
+
+  get isAuthLinkBatchUploadEnabled() {
+    return this.userRole !== rolesList.AUTH_LINK_AGENT;
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 

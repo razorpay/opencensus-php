@@ -12,6 +12,7 @@ import { without } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import {AuthLinkRoles} from "../../../../helpers/data";
 
 const selector = formValueSelector('newInvitation');
 @connect(
@@ -96,6 +97,10 @@ export default class NewInvitation extends Component {
       } else if (user.isRBLRoleEnabled) {
         ROLES = { ...ROLES, ...RBLRoles }; // Allowed only for roles with edit access as per permissions map
       }
+    }
+
+    if (user.isAuthLinkRoleEnabled) {
+      ROLES = { ...ROLES, ...AuthLinkRoles };
     }
 
     return (

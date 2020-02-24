@@ -151,8 +151,10 @@ export default class SubscriptionsController extends React.Component {
             </ShowWhen>
 
             <ShowWhen additionalCondition={user => user.isChargeAtWillEnabled}>
-              <NavLink to="/recurring_payments">Payments</NavLink>
-              <NavLink to="/tokens">Tokens</NavLink>
+              <ShowWhen additionalCondition={user => user.isAuthLinkTokenAndPaymentsEnabled}>
+                <NavLink to="/recurring_payments">Payments</NavLink>
+                <NavLink to="/tokens">Tokens</NavLink>
+              </ShowWhen>
               <NavLink to="/registration_links">
                 Registration Links{' '}
                 <span>
@@ -164,9 +166,11 @@ export default class SubscriptionsController extends React.Component {
                   </Popover>
                 </span>
               </NavLink>
-              <NavLink exact to="/subscriptions/batchuploads">
-                Batch Upload
-              </NavLink>
+              <ShowWhen additionalCondition={user => user.isAuthLinkBatchUploadEnabled}>
+                <NavLink exact to="/subscriptions/batchuploads">
+                  Batch Upload
+                </NavLink>
+              </ShowWhen>
             </ShowWhen>
           </header>
 
