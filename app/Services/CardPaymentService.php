@@ -26,6 +26,7 @@ class CardPaymentService
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
     const X_RAZORPAY_MODE_HEADER   = 'X-Razorpay-Mode';
     const X_REQUEST_ID             = 'X-Request-ID';
+    const X_RAZORPAY_TRACKID       = 'X-Razorpay-TrackId';
     const X_RZP_TESTCASE_ID        = 'X-RZP-TESTCASE-ID';
 
     const REQUEST_TIMEOUT = 75; // Seconds
@@ -226,6 +227,7 @@ class CardPaymentService
             'headers' => [
                 self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
                 self::X_REQUEST_ID             => $this->app['request']->getId(),
+                self::X_RAZORPAY_TRACKID       => $this->app['req.context']->getTrackId(),
             ],
         ];
 

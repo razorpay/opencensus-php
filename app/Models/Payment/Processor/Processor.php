@@ -292,7 +292,16 @@ class Processor
 
             $this->preProcessForUpiIfApplicable($input);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED);
+            $meta = [
+                'metadata' => [
+                    'trackId' => $this->app['req.context']->getTrackId()
+
+                ],
+                'read_key' => array('trackId'),
+                'write_key' => '',
+            ];
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED, null, null, $meta);
 
             $payment = $this->buildPaymentEntity($input);
 
@@ -326,7 +335,7 @@ class Processor
 
             $this->logRequestTime($payment, $startTime);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
 
             return $paymentData;
         }
@@ -343,7 +352,7 @@ class Processor
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
 
             throw $e;
         }
@@ -392,10 +401,10 @@ class Processor
         $metaDetails = [
             'metadata'  => $properties,
             'read_key'  => array(),
-            'write_key' => 'request.id',
+            'write_key' => 'trackId',
         ];
 
-        $metaDetails['metadata']['request']['id'] = $this->app['request']->getId();
+        $metaDetails['metadata']['trackId'] = $this->app['req.context']->getTrackId();
 
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $metaDetails, $properties);
     }
@@ -2008,7 +2017,7 @@ class Processor
 
         $this->app['events']->fire('api.payment.failed', $eventPayload);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
     }
 
     protected function setPaymentError(Exception\BaseException $e, $traceCode)
@@ -3417,7 +3426,7 @@ class Processor
     {
         $payment = $this->retrieve($id);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED, $payment);
 
         $diff = time() - $payment->getCreatedAt();
 
