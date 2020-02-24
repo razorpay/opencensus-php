@@ -936,13 +936,15 @@ class Validator extends Base\Validator
             throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, null, 'non unique reference_id found' . implode(' ', $nonUniqueIds));
         }
 
-        array_map(function ($entry)
+        foreach ($entries as $key => $entry)
         {
-            $entry[Header::ADJUSTMENT_BALANCE_TYPE] = $entry[Header::ADJUSTMENT_BALANCE_TYPE] ?: Merchant\Balance\Type::PRIMARY;
+            $entry[Header::ADJUSTMENT_BALANCE_TYPE] = trim($entry[Header::ADJUSTMENT_BALANCE_TYPE]) ?:
+                                                                Merchant\Balance\Type::PRIMARY;
+
+            $entries[$key] = $entry;
 
             $this->checkValidBalanceTypeForAdjustment($entry[Header::ADJUSTMENT_BALANCE_TYPE], $entry[Header::ADJUSTMENT_REFERENCE_ID]);
-
-        }, $entries);
+        }
     }
 
     private function checkValidBalanceTypeForAdjustment(string $balanceType, string $referenceId)
