@@ -334,9 +334,9 @@ class TerminalMigrationTest extends TestCase
             throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
         }, 1);
 
-        $this->expectException(IntegrationException::class);
+        $this->expectException(\Requests_Exception_Transport_cURL::class);
 
-        $this->expectExceptionMessage('sync failed');
+        $this->expectExceptionMessage('timed out');
 
         $this->startTest();
 
@@ -345,7 +345,7 @@ class TerminalMigrationTest extends TestCase
         $this->assertTrue($terminal->isEnabled());
 
 
-        $this->assertEquals(Terminal\SyncStatus::SYNC_FAILED, $terminal->getSyncStatus());
+        $this->assertEquals(Terminal\SyncStatus::SYNC_FAILED, $terminalEntity->getSyncStatus());
     }
 
     public function testUpdateTerminalServiceSuccessResponseBadValuesMigrateTerminalVariant()
@@ -376,7 +376,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->expectException(IntegrationException::class);
 
-        $this->expectExceptionMessage('sync failed');
+        $this->expectExceptionMessage('field mismatch');
 
         $this->startTest();
 
@@ -421,7 +421,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->expectException(IntegrationException::class);
 
-        $this->expectExceptionMessage('sync failed');
+        $this->expectExceptionMessage('401');
 
         $this->startTest();
 

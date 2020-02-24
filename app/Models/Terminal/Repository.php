@@ -86,18 +86,9 @@ class Repository extends Base\Repository
 
                     parent::saveOrFail($entity, $options);
 
-                    try
-                    {
-                        $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
+                    $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
 
-                        $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
-                    }
-                    catch (\Exception $exception)
-                    {
-                        $entity->setSyncStatus(SyncStatus::SYNC_FAILED);
-
-                    }
-
+                    $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
                     parent::saveOrFail($entity, $options);
 
@@ -109,10 +100,6 @@ class Repository extends Base\Repository
 
                 parent::saveOrFail($entity, $options);
             }
-        }
-        if ($entity->getSyncStatus() === SyncStatus::SYNC_FAILED)
-        {
-            throw new Exception\IntegrationException('terminals service sync failed');
         }
 
         return $entity;
