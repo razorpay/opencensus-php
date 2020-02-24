@@ -1155,6 +1155,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_RETRY_REQUEST                                  = 'PAYOUT_RETRY_REQUEST';
     const PAYOUT_QUEUE_DISPATCH_INIT                            = 'PAYOUT_QUEUE_DISPATCH_INIT';
     const PAYOUT_QUEUE_DISPATCH_COMPLETE                        = 'PAYOUT_QUEUE_DISPATCH_COMPLETE';
+    const PAYOUT_COMPOSITE_CREATE_REQUEST                       = 'PAYOUT_COMPOSITE_CREATE_REQUEST';
+    const COMPOSITE_PAYOUT_CREATED                              = 'COMPOSITE_PAYOUT_CREATED';
     const PAYOUT_QUEUE_DISPATCH_FAILED                          = 'PAYOUT_QUEUE_DISPATCH_FAILED';
     const PAYOUT_QUEUE_REQUEST                                  = 'PAYOUT_QUEUE_REQUEST';
     const PAYOUT_QUEUE_JOB_FAILURE_EXCEPTION                    = 'PAYOUT_QUEUE_JOB_FAILURE_EXCEPTION';
