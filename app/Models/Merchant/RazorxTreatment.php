@@ -82,4 +82,7 @@ final class RazorxTreatment
 
     // Onboard merchant on RazorpayX test mode
     const RAZORPAY_X_TEST_MODE_ONBOARDING = 'razorpayx_x_test_mode_onboarding';
+
+    // Access control to allow pg request after new acl
+    const RAZORPAY_X_ACL_DENY_UNAUTHORISED = 'razorpay_x_acl_deny_unauthorised';
 }

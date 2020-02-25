@@ -315,6 +315,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::DEFAULT_REFUND_SPEED,
     ];
 
     const INTERNAL_CONFIG_LIST = [

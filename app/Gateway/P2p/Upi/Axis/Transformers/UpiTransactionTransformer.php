@@ -25,6 +25,13 @@ class UpiTransactionTransformer extends Transformer
                 ];
                 break;
 
+            case TransactionAction::PAY:
+                $output = [
+                    Entity::ACTION  => Action::INITIATE_PAY,
+                    Entity::STATUS  => Status::COMPLETED,
+                ];
+                break;
+
             case TransactionAction::REQUEST_MONEY:
                 $output = [
                     Entity::ACTION  => Action::INITIATE_COLLECT,
@@ -75,6 +82,7 @@ class UpiTransactionTransformer extends Transformer
                 break;
 
             case UpiAction::CUSTOMER_DEBITED_VIA_COLLECT:
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT:
                 $output = [
                     Entity::ACTION  => Action::INCOMING_COLLECT,
                     Entity::STATUS  => Status::COMPLETED,
@@ -83,6 +91,7 @@ class UpiTransactionTransformer extends Transformer
                 break;
 
             case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_PAY:
                 $output = [
                     Entity::ACTION  => Action::INITIATE_PAY,
                     Entity::STATUS  => Status::COMPLETED,

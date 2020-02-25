@@ -81,6 +81,8 @@ class UserRolePermissionsMap
                  Permission::UPDATE_MERCHANT_FEATURE,
                  Permission::CREATE_BATCH,
                  Permission::ASSIGN_MERCHANT_HANDLE,
+                 Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+                 Permission::UPDATE_PAYOUT,
              ],
 
              BankingRole::ADMIN => [
@@ -113,6 +115,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_FUND_ACCOUNT_VALIDATION,
                  Permission::VALIDATE_FUND_ACCOUNT,
                  Permission::VIEW_FUND_ACCOUNT,
+                 Permission::UPDATE_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT_BULK,
                  Permission::VALIDATE_FUND_ACCOUNT,
@@ -140,6 +143,8 @@ class UserRolePermissionsMap
                  Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
                  Permission::MERCHANT_INSTANT_ACTIVATION,
                  Permission::CREATE_BATCH,
+                 Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+                 Permission::UPDATE_PAYOUT,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -172,6 +177,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_FUND_ACCOUNT_VALIDATION,
                  Permission::VALIDATE_FUND_ACCOUNT,
                  Permission::VIEW_FUND_ACCOUNT,
+                 Permission::UPDATE_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT_BULK,
                  Permission::VALIDATE_FUND_ACCOUNT,
@@ -195,6 +201,7 @@ class UserRolePermissionsMap
                  Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
                  Permission::MERCHANT_INSTANT_ACTIVATION,
                  Permission::CREATE_BATCH,
+                 Permission::UPDATE_PAYOUT,
              ],
 
              BankingRole::VIEW_ONLY => [

@@ -72,6 +72,7 @@ class Processor
     use UpiRecurring;
     use CardPaymentService;
     use NbPlusService;
+    use UpiTrait;
 
 
     /**
@@ -289,7 +290,18 @@ class Processor
 
             $this->appendMetadataForPayment($input);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED);
+            $this->preProcessForUpiIfApplicable($input);
+
+            $meta = [
+                'metadata' => [
+                    'trackId' => $this->app['req.context']->getTrackId()
+
+                ],
+                'read_key' => array('trackId'),
+                'write_key' => '',
+            ];
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED, null, null, $meta);
 
             $payment = $this->buildPaymentEntity($input);
 
@@ -323,7 +335,7 @@ class Processor
 
             $this->logRequestTime($payment, $startTime);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
 
             return $paymentData;
         }
@@ -340,7 +352,7 @@ class Processor
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
 
             throw $e;
         }
@@ -389,10 +401,10 @@ class Processor
         $metaDetails = [
             'metadata'  => $properties,
             'read_key'  => array(),
-            'write_key' => 'request.id',
+            'write_key' => 'trackId',
         ];
 
-        $metaDetails['metadata']['request']['id'] = $this->app['request']->getId();
+        $metaDetails['metadata']['trackId'] = $this->app['req.context']->getTrackId();
 
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $metaDetails, $properties);
     }
@@ -908,6 +920,41 @@ class Processor
         ];
     }
 
+    protected function preProcessForUpiIfApplicable(array& $input)
+    {
+        if ($input['method'] !== Payment\Method::UPI)
+        {
+            return;
+        }
+
+        // New flow needs to use the UPI block, which was first utilising the `_`  meta block
+        // For backward compatibility, we still pick the values from the `_` block and set it
+        // on the `upi` block and Payments block has VPA which should be set in the `upi` block
+        // Priority is always UPI block
+        if (isset($input[Payment\Method::UPI][Payment\Entity::VPA]) === true)
+        {
+            $input[Payment\Entity::VPA] = $input[Payment\Method::UPI][Payment\Entity::VPA];
+        }
+        else if (isset($input[Payment\Entity::VPA]) === true)
+        {
+            $input[Payment\Method::UPI][Payment\Entity::VPA] =  $input[Payment\Entity::VPA];
+        }
+
+        if (isset($input[Payment\Method::UPI]['flow']) === true)
+        {
+            $input['_']['flow'] = $input[Payment\Method::UPI]['flow'];
+        }
+        else if (isset($input['_']['flow']) === true)
+        {
+            $input[Payment\Method::UPI]['flow'] = $input['_']['flow'];
+        }
+
+        if (isset($input[Payment\Method::UPI]['flow']) === false)
+        {
+            $input[Payment\Method::UPI]['flow'] = Flow::COLLECT;
+        }
+    }
+
     protected function preProcessPaymentInputsForUpi(array $input, Payment\Entity $payment)
     {
         $coproto = null;
@@ -929,7 +976,7 @@ class Processor
          * the token linked to the vpa entity in the request. Therefore adding a check here that either the vpa should
          * be present or token should be present.
          */
-        if (((isset($input['_']['flow']) === false) or ($input['_']['flow'] === Payment\Flow::COLLECT))
+        if (($this->isFlowCollect($input))
             and (isset($input['token']) === false))
         {
             $missing[] = 'vpa';
@@ -1195,6 +1242,14 @@ class Processor
         if ($this->isCardPaymentServiceConfigEnabled() === true)
         {
             $variant = $this->getRazorxVariant($payment, self::CARD_PAYMENTS_PREFIX);
+
+            // To route all ivr payments through payments-card
+            if (($variant !== 'cardps') and
+                (isset($gatewayInput['auth_type']) === true) and
+                ($gatewayInput['auth_type'] === 'ivr'))
+            {
+                $variant = 'cardps';
+            }
 
             $this->setPaymentService($payment, $variant);
         }
@@ -1962,7 +2017,7 @@ class Processor
 
         $this->app['events']->fire('api.payment.failed', $eventPayload);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
     }
 
     protected function setPaymentError(Exception\BaseException $e, $traceCode)
@@ -3371,7 +3426,7 @@ class Processor
     {
         $payment = $this->retrieve($id);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED, $payment);
 
         $diff = time() - $payment->getCreatedAt();
 

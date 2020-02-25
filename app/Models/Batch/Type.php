@@ -92,6 +92,8 @@ class Type
 
     const ADMIN_BATCH           = 'admin_batch';
 
+    const ENTITY_UPDATE_ACTION = 'entity_update_action';
+
     const ADJUSTMENT            = 'adjustment';
 
     public static $disabledTypes = [
@@ -122,6 +124,7 @@ class Type
         self::PRICING_RULE,
         self::ADMIN_BATCH,
         self::MERCHANT_CONFIG_INHERITANCE,
+        self::ENTITY_UPDATE_ACTION,
         self::MDR_ADJUSTMENT,
         self::ADJUSTMENT,
     ];
@@ -278,6 +281,7 @@ class Type
         self::PRICING_RULE,
         self::MERCHANT_CONFIG_INHERITANCE,
         self::MDR_ADJUSTMENT,
+        self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
     ];
 

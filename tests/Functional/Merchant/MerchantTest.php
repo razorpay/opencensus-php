@@ -1119,6 +1119,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantConfigWithDefaultRefundSpeed()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testMerchantUpdateKeyAccess()
     {
         $attribute = ['business_website' => 'https://www.example.com'];

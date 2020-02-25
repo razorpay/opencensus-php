@@ -133,4 +133,32 @@ class PaymentEvent extends Event
             $properties['metadata'] = $metadata;
         }
     }
+
+    protected function getEventMetaDetails()
+    {
+        if ($this->entity !== null)
+        {
+            if ((empty($this->metaDetails) === true))
+            {
+                $this->metaDetails = [
+                    'metadata' => [
+                        'payment' => [
+                            'id' => $this->entity->getPublicId()
+                        ]
+                    ],
+                    'read_key' => array('payment.id'),
+                    'write_key' => ''
+                ];
+            }
+
+            if (empty($this->entity->getMetadata()) === false)
+            {
+                $this->metaDetails['metadata']['payment']['metadata'] = $this->entity->getMetadata();
+
+                $this->metaDetails['write_key'] = 'payment.id';
+            }
+        }
+
+        return $this->metaDetails;
+    }
 }

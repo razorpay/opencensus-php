@@ -181,4 +181,39 @@ return [
         ],
     ],
 
+    'testFetchAuthLinkForAuthLinkSupervisorRole' => [
+        'request'  => [
+            'url'     => '/batches',
+            'X-Dashboard-User-Id' => '100AgentUserId',
+            'X-Dashboard-User-Role' => 'auth_link_supervisor',
+            'method'  => 'get',
+            'content' => [
+                'type' => 'auth_link',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchAuthLinkForAuthLinkAgentRole' => [
+        'request'  => [
+            'url'     => '/batches',
+            'X-Dashboard-User-Id' => '100AgentUserId',
+            'X-Dashboard-User-Role' => 'auth_link_supervisor',
+            'method'  => 'get',
+            'content' => [
+                'type' => 'auth_link',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
 ];

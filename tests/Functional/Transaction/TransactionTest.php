@@ -2,8 +2,7 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
-use Carbon\Carbon;
-use RZP\Models\Transaction;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -486,6 +485,8 @@ class TransactionTest extends TestCase
 
     public function testHandleAsyncMerchantBalanceUpdate()
     {
+        $this->mockRazorx();
+
         $this->fixtures->merchant->addFeatures(['async_balance_update']);
         $payment = $this->getDefaultPaymentArray();
 
@@ -628,5 +629,18 @@ class TransactionTest extends TestCase
         $this->org = $this->fixtures->create('org');
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
+    private function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
     }
 }

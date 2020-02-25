@@ -970,6 +970,10 @@ class DisputeTest extends TestCase
         {
             $mailData = $mail->viewData;
 
+            $this->assertArrayHasKey('merchant', $mail->viewData);
+
+            $this->assertArrayHasKey('disputesDataTable', $mail->viewData);
+
             $this->assertTrue(Phase::exists($mailData['phase']));
 
             $this->assertEquals($expectedData['total_amount'][$mailData['phase']], $mailData['totalAmount']);
@@ -982,6 +986,49 @@ class DisputeTest extends TestCase
 
                 $this->assertEquals($fileRow['phase'], $disputeRow['phase']);
             }
+
+            return ($mail->hasFrom('disputes@razorpay.com') and
+                ($mail->hasTo('test@razorpay.com')));
+        });
+    }
+
+    public function testBulkDisputeCreateMailAttachment()
+    {
+        Mail::fake();
+
+        $fileData = $this->getBulkDisputeUploadedFileData();
+
+        $uploadedFile = $this->getBulkDisputeUploadedXLSXFileFromFileData($fileData);
+
+        $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
+
+        $testData['request']['url'] = '/disputes/bulk-create';
+
+        $this->startTest($testData);
+
+        Mail::assertQueued(DisputeBulkCreationMail::class, function ($mail)
+        {
+            $this->assertNotEmpty($mail->rawAttachments);
+
+            $this->assertArrayHasKey('data', $mail->rawAttachments[0]);
+
+            $this->assertArrayHasKey('name', $mail->rawAttachments[0]);
+
+            $this->assertArrayHasKey('options', $mail->rawAttachments[0]);
+
+            $this->assertArrayHasKey('options', $mail->rawAttachments[0]);
+
+            $this->assertInternalType('string', $mail->rawAttachments[0]['data']);
+
+            $this->assertEquals('application/csv', $mail->rawAttachments[0]['options']['mime']);
+
+            $attachmentFilePrefix = DisputeBulkCreationMail::BULK_DISPUTE_ATTACHMENT_FILE_NAME;
+
+            $attachmentFileExtension = '.csv';
+
+            $this->assertStringStartsWith($attachmentFilePrefix, $mail->rawAttachments[0]['name']);
+
+            $this->assertStringEndsWith($attachmentFileExtension, $mail->rawAttachments[0]['name']);
 
             return ($mail->hasFrom('disputes@razorpay.com') and
                 ($mail->hasTo('test@razorpay.com')));
@@ -1140,7 +1187,6 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 10000,
             'skip_email'             => 'N',
-            'contact'                => null,
         ];
 
         $fileData[] = $row;
@@ -1156,7 +1202,6 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 20000,
             'skip_email'             => 'N',
-            'contact'                => null,
         ];
 
         $fileData[] = $row;
@@ -1172,7 +1217,6 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 30000,
             'skip_email'             => 'N',
-            'contact'                => null,
         ];
 
         $fileData[] = $row;
@@ -1188,7 +1232,6 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 40000,
             'skip_email'             => 'N',
-            'contact'                => null,
         ];
 
         $fileData[] = $row;
@@ -1204,7 +1247,6 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 50000,
             'skip_email'             => 'N',
-            'contact'                => null,
         ];
 
         $fileData[] = $row;
@@ -1220,7 +1262,6 @@ class DisputeTest extends TestCase
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 60000,
             'skip_email'             => 'N',
-            'contact'                => null,
         ];
 
         $fileData[] = $row;

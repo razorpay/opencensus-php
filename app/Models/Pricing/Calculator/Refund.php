@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Pricing\Calculator;
 
+use RZP\Exception;
 use RZP\Models\Pricing;
+use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\Base as BaseModel;
 
 /**
@@ -19,11 +22,58 @@ class Refund extends Base
         parent::__construct($entity, $product);
     }
 
+    protected function setAmount()
+    {
+        $this->amount = $this->entity->getBaseAmount();
+    }
+
     protected function getPricingRule($rules, $method)
     {
-        $rules = $this->applyRefundModeFilters($rules);
+        $rule = null;
 
-        $rule = $this->applyAmountRangeFilterAndReturnOneRule($rules);
+        try
+        {
+            $rules = $this->applyRefundModeFilters($rules);
+
+            $rule = $this->applyAmountRangeFilterAndReturnOneRule($rules);
+        }
+        catch (\Throwable $ex)
+        {
+            //
+            // In refunds - specifically Instant Refunds we have defined a default pricing plan
+            // If merchant specific rules are not found after filtering, we want to apply the default pricing plan
+            // instead of failing refund creation.
+            //
+            // This is possible only with this approach because merchant may have some rules defined, not all.
+            // In that scenario to cover all cases default pricing plan will be invoked only
+            // if merchant rules are not enough
+            //
+            // And this default pricing only applies to RZP Org merchants.
+            // Instant Refunds is restricted to only these merchants.
+            // This check has been kept at Payment/Processor/Refund.php : isInvalidInstantRefundsRequest()
+            // https://github.com/razorpay/api/blob/faa1c6291b8e594d86785da15ad552cd8c2f9833/app/Models/Payment/Processor/Refund.php#L128
+            //
+            if (($rule === null) and
+                ($this->entity->merchant->getOrgId() === Org\Entity::RAZORPAY_ORG_ID))
+            {
+                $rules = (new Pricing\Fee)->getInstantRefundsDefaultPricingPlanForMethod($this->entity);
+
+                $rules = $this->applyRefundModeFilters($rules);
+
+                $rule = $this->applyAmountRangeFilterAndReturnOneRule($rules);
+            }
+        }
+
+        if ($rule === null)
+        {
+            throw new Exception\LogicException(
+                'Invalid rule count: 0, Merchant Id: ' . $this->entity->getMerchantId(),
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
+                [
+                    'refund_id' => $this->entity->getId(),
+                    'method'    => $this->entity->getMethod(),
+                ]);
+        }
 
         return $rule;
     }

@@ -23,18 +23,7 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
 
     public function initiatePay(Response $response)
     {
-        $request = $this->initiateSdkRequest(TransactionAction::SEND_MONEY);
-
-        $transformer = new TransactionRequestTransformer($this->input->toArray());
-
-        $transformer->put(Fields::ACTION, TransactionAction::SEND_MONEY);
-        $transformer->put(Fields::MERCHANT_CUSTOMER_ID, $this->getMerchantCustomerId());
-        $transformer->put(Fields::TIMESTAMP, $this->getTimeStamp());
-        $transformer->put(Fields::UPI_REQUEST_ID, $this->getUpiRequestId());
-
-        $request->merge($transformer->transform());
-
-        $response->setRequest($request);
+        $this->initiateAuthorize($response);
     }
 
     public function initiateCollect(Response $response)
@@ -66,6 +55,11 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
     public function initiateAuthorize(Response $response)
     {
         $transformer = new TransactionRequestTransformer($this->input->toArray());
+
+        $transformer->put('context', [
+            'handle_code'   => $this->getContextHandleCode()
+        ]);
+
         $action = $transformer->transformAction();
 
         $transformer->put(Fields::ACTION, $action);
@@ -76,6 +70,8 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
         $request = $this->initiateSdkRequest($action);
 
         $request->merge($transformer->transform());
+
+        $request->mergeUdf($transformer->transformUdf());
 
         $response->setRequest($request);
     }
