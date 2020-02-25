@@ -1114,6 +1114,13 @@ app
           return true;
         }
 
+        if (
+          window.location.hostname !== 'dashboard.razorpay.com' &&
+          !$scope.login.data.captcha
+        ) {
+          $scope.login.data.captcha = 'Faked';
+        }
+
         var payload = {
           method: 'post',
           url: '/user/signin',
