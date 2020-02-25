@@ -2552,8 +2552,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
     // Trace code for ES ON Demand
-    const IMPS_AMOUNT_LIMIT_EXCEEDED                            = 'IMPS_AMOUNT_LIMIT_EXCEEDED';
     const ES_ON_DEMAND_INITIATE_TIMESTAMP                       = 'ES_ON_DEMAND_INITIATE_TIMESTAMP';
+    const ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED               = 'ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED';
     const ES_ON_DEMAND_INITIATED_ON_NON_WORKING_DAY             = 'ES_ON_DEMAND_INITIATED_ON_NON_WORKING_DAY';
     const ES_ON_DEMAND_INITIATED_ON_NON_BANKING_HOUR            = 'ES_ON_DEMAND_INITIATED_ON_NON_BANKING_HOUR';
 

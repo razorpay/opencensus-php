@@ -1049,7 +1049,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Please provide an amount less than 2 Lakhs to get a settlement at this point of time.',
+                    'description' => 'Please provide an amount less than 2 Lacs to get a settlement at this point of time.',
                 ],
             ],
             'status_code' => 400,
