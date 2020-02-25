@@ -111,6 +111,7 @@ class Base extends Core
     const BAJAJFINSERV           = 'BajajFinserv';
     const GETSIMPL               = 'Getsimpl';
     const VAS_AXIS               = 'VasAxis';
+    const YES_BANK               = 'YesBank';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -180,6 +181,7 @@ class Base extends Core
         self::VAS_AXIS               => [],
         self::GETSIMPL               => [],
         self::BAJAJFINSERV           => ['remiecftransactions@bizsupportc.com'],
+        self::YES_BANK               => ['yesacquirer@insolutionsglobal.com'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -258,7 +260,8 @@ class Base extends Core
 
         Gateway::CYBERSOURCE            => [
             Gateway::ACQUIRER_AXIS   => self::AXIS,
-            Gateway::ACQUIRER_HDFC   => self::HDFC
+            Gateway::ACQUIRER_HDFC   => self::HDFC,
+            Gateway::ACQUIRER_YESB   => self::YES_BANK,
         ],
 
         Gateway::CARD_FSS               => [
