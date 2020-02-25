@@ -221,7 +221,16 @@ class Service extends Base\Service
 
         $ownerEmail = $value['Owner']['Email'];
 
-        $adminEmails = explode(',', $value['Managers_In_Role_Hierarchy__c']);
+        if (empty($value['Managers_In_Role_Hierarchy__c']) === true)
+        {
+            $adminEmails = [];
+        }
+        else
+        {
+            $emails = rtrim($value['Managers_In_Role_Hierarchy__c'], ',');
+
+            $adminEmails = explode(',', $emails);
+        }
 
         array_push($adminEmails, $ownerEmail);
 
@@ -1003,7 +1012,19 @@ class Service extends Base\Service
     {
         foreach ($input['records'] as $key => $value)
         {
-            (new Validator())->validateInput('sf_poc_record', $value);
+            try
+            {
+                (new Validator())->validateInput('sf_poc_record', $value);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::SF_POC_UPDATE_ERROR, [
+                    'message' => 'Error in record data',
+                    'record'  => $value,
+                ]);
+
+                continue;
+            }
 
             $recordAdminIds = $this->getAdminIdsFromEmails($value);
 
