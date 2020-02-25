@@ -84,9 +84,7 @@ class Stork
      *
      * Worker exists for now in api service itself to save development time and
      * devops ask. Ideally there should be a shared queue and stork itself
-     * should drain that queue. Just for who may argue why not just queue in
-     * the first place and avoid processEvent() altogether- the reason is in
-     * some tech spec, please check.
+     * should drain that queue.
      *
      * @param  Event\Entity $event
      * @param  string       $mode
@@ -103,7 +101,7 @@ class Stork
         {
             $this->trace->traceException($e, Logger::ERROR, TraceCode::STORK_DISPATCH_EVENT_FAILED);
 
-            // Exception for this call i.e. dispatch() is suppressed and logged withing by the dispatcher.
+            // Exception for this call i.e. dispatch() is suppressed and logged within by the dispatcher.
             WebhookEvent::dispatch($mode, $event->merchant, $event->getAttributes());
         }
     }

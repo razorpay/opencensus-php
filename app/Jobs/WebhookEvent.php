@@ -23,10 +23,10 @@ class WebhookEvent extends Job
      *
      * It is not possible to serialize Event\Entity itself and send over queue
      * because that is not a real entity and during unserialize(during handle)
-     * it fails in laravel worker's code. And hence need to pass the arrayed
-     * event attributes and construct the event entity again on handle. And this
-     * is why need to pass Merchant\Entity explicitly and associate with event
-     * in handle().
+     * it fails in laravel worker's code. Worker code does db query on model's
+     * table with given id. And hence need to pass the arrayed event attributes
+     * and construct the event entity again on handle. And this is why need to
+     * pass Merchant\Entity explicitly and associate with event in handle().
      *
      * @var array
      */
