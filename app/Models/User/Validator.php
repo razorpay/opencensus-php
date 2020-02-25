@@ -66,6 +66,8 @@ class Validator extends Base\Validator
         Entity::EMAIL                 => 'required|email',
         Entity::PASSWORD              => 'required|between:6,50',
         Entity::OTP                   => 'sometimes|filled',
+        Entity::CAPTCHA               => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE       => 'sometimes|string',
     ];
 
     protected static $setup2faMobileRules = [
@@ -172,6 +174,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
+        'captcha'
+    ];
+
+    protected static $loginValidators = [
         'captcha'
     ];
 
