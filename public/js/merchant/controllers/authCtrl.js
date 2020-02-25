@@ -1113,6 +1113,10 @@ app
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
         }
+        const data = {
+          email: $scope.login.data.user_email,
+          password: $scope.login.data.user_password,
+        };
 
         if (
           window.location.hostname !== 'dashboard.razorpay.com' &&
@@ -1125,7 +1129,7 @@ app
           method: 'post',
           url: '/user/signin',
           transformRequest: transformRequestAsFormPost,
-          data: $scope.login.data,
+          data: data,
         };
 
         var request = $http(payload);
