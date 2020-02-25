@@ -175,7 +175,8 @@ class UserTest extends TestCase
 
         $content = [
             'email'    => $user['email'],
-            'password' => 'hello1234'
+            'password' => 'hello1234',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -608,7 +609,8 @@ class UserTest extends TestCase
 
         $content = [
             'email'    => $user['email'],
-            'password' => 'hello123'
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -649,7 +651,8 @@ class UserTest extends TestCase
 
         $content = [
             'email'    => $user['email'],
-            'password' => 'hello123'
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -677,6 +680,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'otp'      => \RZP\Services\Raven::MOCK_VALID_OTP,
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -708,6 +712,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -735,6 +740,7 @@ class UserTest extends TestCase
         $content = [
             'email'    => $user['email'],
             'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -760,6 +766,7 @@ class UserTest extends TestCase
         $content = [
             'email'    => $user['email'],
             'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -790,6 +797,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -819,6 +827,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -843,6 +852,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -874,6 +884,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -899,6 +910,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -924,6 +936,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'contact_mobile'   => '8888888888',
+
         ];
 
         $testData['request']['content'] = $content;
