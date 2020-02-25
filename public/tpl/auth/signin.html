@@ -39,6 +39,14 @@
               <input ng-if="!lockme" type="email" placeholder="yourname@company.com" name="user_email" id="email" ng-model="login.data.user_email" class="form-control auth-form-input" required>
               <label class="form-label auth-subheading" for="password">Password</label>
               <input type="password" placeholder="Password" name="user_password" ng-model="login.data.user_password" class="form-control auth-form-input" required>
+              <div
+                class="google-captcha"
+                no-captcha
+                g-recaptcha-response="login.data.captcha"
+                theme="light"
+                control="noCaptchaControl"
+                site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
+              </div>
               <div ng-if="!lockme && isOrgCheckDone" class="highlight-clickable-text forgot-password-text" ng-click="goToForgotPwd()">
                 Forgot Password?
               </div>
