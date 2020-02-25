@@ -498,6 +498,38 @@ class Service extends Base\Service
     });
     }
 
+    public function migrateTerminalAddMerchant(Terminal\Entity $terminal, Merchant\Entity $merchant)
+    {
+        $client = $this->app['terminals_service'];
+
+        $client->addMerchantToTerminal($terminal, $merchant);
+
+        $merchant_terminal_fetched = $client->fetchMerchantTerminalById($terminal->getId(), $merchant->getId());
+
+        if (($terminal->getId() != $merchant_terminal_fetched[Terminal\Entity::TERMINAL_ID] ) or
+            ($merchant->getId() != $merchant_terminal_fetched[Merchant\Entity::MERCHANT_ID]))
+        {
+            $original = [
+                Terminal\Entity::TERMINAL_ID    => $terminal->getId(),
+                Merchant\Entity::MERCHANT_ID    => $merchant->getId(),
+            ];
+
+            $fetched = [
+                Terminal\Entity::TERMINAL_ID    => $merchant_terminal_fetched[Terminal\Entity::TERMINAL_ID],
+                Merchant\Entity::MERCHANT_ID    => $merchant_terminal_fetched[Merchant\Entity::MERCHANT_ID],
+            ];
+
+            $data = [
+                'original' => $original,
+                'fetched'  => $fetched,
+            ];
+
+            throw new Exception\IntegrationException(
+                ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
+                $data);
+        }
+    }
+
     protected function createTerminalMigrateJob(Terminal\Entity $terminal)
     {
         $data = [

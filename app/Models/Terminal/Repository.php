@@ -532,7 +532,12 @@ class Repository extends Base\Repository
 
     public function addMerchantToTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
-        $terminal->merchants()->attach($merchant);
+        $this->repo->transaction(function () use ($terminal, $merchant) {
+            $terminal->merchants()->attach($merchant);
+
+            (new Terminal\Service)->migrateTerminalAddMerchant($terminal, $merchant);
+
+        });
     }
 
     public function removeMerchantFromTerminal(Entity $terminal, Merchant\Entity $merchant)

@@ -7,6 +7,7 @@ use Requests;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Exception\IntegrationException;
 
 class TerminalsService
@@ -33,9 +34,11 @@ class TerminalsService
     const DATA              = 'data';
 
 
-    const CREATE_TERMINAL         = 'create_terminal';
-    const FETCH_TERMINAL_BY_ID    = 'fetch_terminal_by_id';
-    const DELETE_TERMINAL_BY_ID   = 'delete_terminal_by_id';
+    const CREATE_TERMINAL                   = 'create_terminal';
+    const FETCH_TERMINAL_BY_ID              = 'fetch_terminal_by_id';
+    const DELETE_TERMINAL_BY_ID             = 'delete_terminal_by_id';
+    const ADD_MERCHANT_TO_TERMINAL          = 'add_merchant_to_terminal';
+    const FETCH_MERCHANT_TERMINAL_BY_ID     = 'fetch_merchant_terminal_by_id';
 
     const PARAMS = [
         self::CREATE_TERMINAL       =>   [
@@ -49,6 +52,14 @@ class TerminalsService
         self::DELETE_TERMINAL_BY_ID => [
             self::PATH   => 'v1/terminals/%s',
             self::METHOD => Requests::DELETE,
+        ],
+        self::ADD_MERCHANT_TO_TERMINAL => [
+            self::PATH   => 'v1/terminals/submerchant',
+            self::METHOD => Requests::POST,
+        ],
+        self::FETCH_MERCHANT_TERMINAL_BY_ID => [
+            self::PATH   => 'v1/terminals/submerchant/verify/%s_%s',
+            self::METHOD => Requests::GET,
         ],
     ];
 
@@ -88,6 +99,31 @@ class TerminalsService
         $params = self::PARAMS[self::DELETE_TERMINAL_BY_ID];
 
         $path = sprintf($params[self::PATH], $terminalId);
+
+        $response = $this->sendRequest($path, '', $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function addMerchantToTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant) : array
+    {
+        $params = self::PARAMS[self::ADD_MERCHANT_TO_TERMINAL];
+
+        $content = [
+            Terminal\Entity::TERMINAL_ID => $terminal->getId(),
+            Merchant\Entity::MERCHANT_ID => $merchant->getId(),
+        ];
+
+        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function fetchMerchantTerminalById(string $terminalId, string $merchantId)
+    {
+        $params = self::PARAMS[self::FETCH_MERCHANT_TERMINAL_BY_ID];
+
+        $path = sprintf($params[self::PATH], $terminalId, $merchantId);
 
         $response = $this->sendRequest($path, '', $params[self::METHOD]);
 
