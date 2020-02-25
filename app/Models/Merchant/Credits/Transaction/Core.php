@@ -12,9 +12,9 @@ use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
-    const MERCHANT_CREDIT_TRANSACTIONS_MUTEX_PREFIX = 'merchant_credit_transactions_';
-    const MERCHANT_CREDIT_TRANSACTIONS_MUTEX_LOCK_TIMEOUT = 30; // seconds
-    const MERCHANT_CREDIT_TRANSACTIONS_MUTEX_ACQUIRE_RETRY_LIMIT = 5;
+    const MERCHANT_CREDIT_TYPE_MUTEX_PREFIX = 'merchant_credit_type_';
+    const MERCHANT_CREDIT_TYPE_MUTEX_TIMEOUT = 30; // seconds
+    const MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT = 5;
 
     public function create(Credits\Entity $credit, Transaction\Entity $txn, string $creditsUsed)
     {
@@ -42,7 +42,7 @@ class Core extends Base\Core
     {
         $mutex = App::getFacadeRoot()['api.mutex'];
 
-        $mutexKey = self::MERCHANT_CREDIT_TRANSACTIONS_MUTEX_PREFIX. $txn->merchant->getId();
+        $mutexKey = self::MERCHANT_CREDIT_TYPE_MUTEX_PREFIX . $txn->merchant->getId() . '_' . $creditType;
 
         $mutex->acquireAndRelease(
             $mutexKey,
@@ -75,9 +75,9 @@ class Core extends Base\Core
                     }
                 });
             },
-            self::MERCHANT_CREDIT_TRANSACTIONS_MUTEX_LOCK_TIMEOUT,
+            self::MERCHANT_CREDIT_TYPE_MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS,
-            self::MERCHANT_CREDIT_TRANSACTIONS_MUTEX_ACQUIRE_RETRY_LIMIT
+            self::MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT
         );
     }
 
@@ -89,9 +89,11 @@ class Core extends Base\Core
      * @param int $creditAmount
      * @param Transaction\Entity $txn
      * @param string $forwardTxnId
+     * @param string $creditType
      * @throws Exception\LogicException
      */
-    public function createCreditReversalTransaction(int $creditAmount, Transaction\Entity $txn, string $forwardTxnId)
+    public function createCreditReversalTransaction(
+        int $creditAmount, Transaction\Entity $txn, string $forwardTxnId, string $creditType)
     {
         if ($creditAmount >= 0)
         {
@@ -100,41 +102,40 @@ class Core extends Base\Core
 
         $creditAmount = -1 * $creditAmount;
 
+        // credit_transactions used in the forward transaction in reverse order
+        $creditTransactions = $this->repo->credit_transaction->getAllCreditLogsOfTransaction($forwardTxnId);
+
+        $creditIds = $creditTransactions->pluck(Entity::CREDITS_ID)
+                                        ->toArray();
+
+        $creditsUsed = $creditTransactions->pluck(Entity::CREDITS_USED)
+                                          ->toArray();
+
+        $creditsToReverse = [];
+
+        foreach ($creditIds as $key => $creditId)
+        {
+            // When all the credit logs are reversed with used amount/fee
+            if ($creditAmount === 0)
+            {
+                break;
+            }
+
+            $toReverse = min($creditAmount, $creditsUsed[$key]);
+
+            $creditAmount -= $toReverse;
+
+            $creditsToReverse[$creditId] = -1 * $toReverse;
+        }
+
         $mutex = App::getFacadeRoot()['api.mutex'];
 
-        $mutexKey = self::MERCHANT_CREDIT_TRANSACTIONS_MUTEX_PREFIX. $txn->merchant->getId();
+        $mutexKey = self::MERCHANT_CREDIT_TYPE_MUTEX_PREFIX . $txn->merchant->getId() . '_' . $creditType;
 
         $mutex->acquireAndRelease(
             $mutexKey,
-            function() use ($txn, $creditAmount, $forwardTxnId)
+            function() use ($txn, $creditsToReverse)
             {
-
-                // credit_transactions used in the forward transaction in reverse order
-                $creditTransactions = $this->repo->credit_transaction->getAllCreditLogsOfTransaction($forwardTxnId);
-
-                $creditIds = $creditTransactions->pluck(Entity::CREDITS_ID)
-                    ->toArray();
-
-                $creditsUsed = $creditTransactions->pluck(Entity::CREDITS_USED)
-                    ->toArray();
-
-                $creditsToReverse = [];
-
-                foreach ($creditIds as $key => $creditId)
-                {
-                    // When all the credit logs are reversed with used amount/fee
-                    if ($creditAmount === 0)
-                    {
-                        break;
-                    }
-
-                    $toReverse = min($creditAmount, $creditsUsed[$key]);
-
-                    $creditAmount -= $toReverse;
-
-                    $creditsToReverse[$creditId] = -1 * $toReverse;
-                }
-
                 $credits = $this->repo->credits->getCreditEntities(array_keys($creditsToReverse));
 
                 //
@@ -149,9 +150,9 @@ class Core extends Base\Core
                     }
                 });
             },
-            self::MERCHANT_CREDIT_TRANSACTIONS_MUTEX_LOCK_TIMEOUT,
+            self::MERCHANT_CREDIT_TYPE_MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS,
-            self::MERCHANT_CREDIT_TRANSACTIONS_MUTEX_ACQUIRE_RETRY_LIMIT
+            self::MERCHANT_CREDIT_TYPE_MUTEX_ACQUIRE_RETRY_LIMIT
         );
     }
 
