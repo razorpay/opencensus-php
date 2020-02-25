@@ -8,9 +8,40 @@ import Input from 'common/new-ui/Input';
 
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 
+const captchaKey = '6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4';
+
 @withRouter
 export default class PasswordReLogin extends Component {
-  state = {};
+  state = {
+    gResponse: null
+  };
+
+  componentDidMount() {
+    const self = this;
+
+    window.gResponse = token => {
+      self.setState({
+        gResponse: token
+      });
+    };
+
+    if (window.grecaptcha) {
+      window.grecaptcha.ready(() => {
+        const gCaptchaParent = document.getElementsByClassName(
+          'g-recaptcha'
+        )[0];
+
+        window.grecaptcha.render(gCaptchaParent, {
+          sitekey: captchaKey,
+          callback: window.gResponse
+        });
+      });
+    }
+  }
+
+  resetCaptcha() {
+    window.grecaptcha.reset();
+  }
 
   refreshPage() {
     location.hash = '/access/signin';
@@ -22,11 +53,22 @@ export default class PasswordReLogin extends Component {
 
     this.setState({ isPending: true });
 
+    let captcha = this.state.gResponse;
+
+    if (window.location.hostname !== 'dashboard.razorpay.com') {
+      captcha = 'Faked';
+    }
+
+    const reqPayload = {
+      ...formData,
+      captcha
+    };
+
     ajax({
       url: '/user/signin',
       method: 'post',
       appendModeInURL: false,
-      data: formData,
+      data: reqPayload
     })
       .then(resp => {
         if (resp.success) {
@@ -39,9 +81,10 @@ export default class PasswordReLogin extends Component {
           this.props.resumeLockActionCB();
         } else {
           this.setState({ isPending: false });
+
           throw {
             errors:
-              'Some network issue. Please re-enter password or Reload the page.',
+              'Some network issue. Please re-enter password or Reload the page.'
           };
         }
       })
@@ -50,17 +93,19 @@ export default class PasswordReLogin extends Component {
 
         this.props.showNotification({
           type: 'error',
-          message: errors,
+          message: errors
         });
+
+        this.resetCaptcha();
       });
   };
 
   render() {
     return (
-      <ModalMask maskClosable={false} class={'password-relogin'} isBlur={true}>
+      <ModalMask maskClosable={false} class="password-relogin" isBlur={true}>
         <Modal showCloseBtn={false}>
           <ModalContent>
-            <div class="heading">
+            <div className="heading">
               Your account is locked
               <div clas="underline" />
             </div>
@@ -77,7 +122,7 @@ export default class PasswordReLogin extends Component {
                 type="password"
                 placeholder="Enter Password"
                 class="Input--inline is-focused Input-addons--transparent"
-                addonBefore={<i class="i i-outline-lock" />}
+                addonBefore={<i className="i i-outline-lock" />}
                 autoFocus
               />
 
@@ -89,6 +134,9 @@ export default class PasswordReLogin extends Component {
                 {this.state.isPending ? 'Unlocking...' : 'Unlock'}
               </Button.Primary>
             </Form>
+
+            {/* recaptcha */}
+            <div className="g-recaptcha" />
 
             <p>
               Logged in as <b>{this.props.userEmail}</b>

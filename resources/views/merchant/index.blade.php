@@ -49,10 +49,12 @@
     window.pl_customized_form_fields = {!! $pl_customized_form_fields !!};
     window.is_pl_customer_name_field_enabled = {!! $is_pl_customer_name_field_enabled !!};
   </script>
+
   <!-- Raven Code -->
   @if(env('APP_ENV') === 'production')
     <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
   @endif
+  <script src="https://www.google.com/recaptcha/api.js?render=explicit"></script>
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else
   <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
