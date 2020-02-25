@@ -4,14 +4,11 @@ namespace RZP\Tests\Functional\Invitation;
 
 use DB;
 use Mail;
-use Carbon\Carbon;
 
-use RZP\Constants\Table;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
 
 class InvitationTest extends TestCase
 {
@@ -173,83 +170,7 @@ class InvitationTest extends TestCase
                        ->first();
 
         $this->assertEquals('manager', $merchants->role);
-    }
 
-    public function testAcceptInvitationByAlreadyExistingUserOnX()
-    {
-        $this->mockRazorxTreatment('on');
-
-        $this->fixtures->create('user',
-            [
-                'id'    => '1000InviteUser',
-                'email' => 'testteaminvite@razorpay.com'
-            ]);
-
-        DB::table('merchant_users')
-            ->insert([
-                'merchant_id'    => self::DEFAULT_MERCHANT_ID,
-                'user_id'        => '1000InviteUser',
-                'product'        => 'banking',
-                'role'           => 'finance_l1',
-                'created_at'  => Carbon::now()->getTimestamp(),
-                'updated_at'  => Carbon::now()->getTimestamp(),
-            ]);
-
-        $invitation = $this->fixtures->create('invitation', [
-            'email'     => 'testteaminvite@razorpay.com',
-            'product'   => 'banking',
-            'role'      => 'admin'
-        ]);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testAcceptInvitationByAlreadyExistingUserOnXWithExperimentOff()
-    {
-        $this->mockRazorxTreatment('off');
-
-        $this->fixtures->create('user',
-            [
-                'id'    => '1000InviteUser',
-                'email' => 'testteaminvite@razorpay.com'
-            ]);
-
-        DB::table(Table::MERCHANT_USERS)
-            ->insert([
-                'merchant_id'    => self::DEFAULT_MERCHANT_ID,
-                'user_id'        => '1000InviteUser',
-                'product'        => 'banking',
-                'role'           => 'finance_l1',
-                'created_at'  => Carbon::now()->getTimestamp(),
-                'updated_at'  => Carbon::now()->getTimestamp(),
-            ]);
-
-        $invitation = $this->fixtures->create('invitation', [
-            'email'     => 'testteaminvite@razorpay.com',
-            'product'   => 'banking',
-            'role'      => 'admin'
-        ]);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-
-        $data = DB::table(Table::MERCHANT_USERS)->where(MerchantUserEntity::MERCHANT_ID, '=', self::DEFAULT_MERCHANT_ID)
-                                                ->where(MerchantUserEntity::USER_ID, '=', '1000InviteUser')
-                                                ->where(MerchantUserEntity::PRODUCT, '=', 'banking')
-                                                ->get();
-
-        $this->assertEquals(count($data), 2);
     }
 
     public function testAcceptInvitationByRestrictedMerchant()
@@ -612,7 +533,7 @@ class InvitationTest extends TestCase
         $this->startTest();
     }
 
-    protected function mockRazorxTreatment(string $returnValue = 'On')
+    protected function mockRazorxTreatment()
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -623,7 +544,7 @@ class InvitationTest extends TestCase
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->willReturn($returnValue);
+                          ->willReturn('On');
     }
 
     public function testPostSendInvitationByMerchantRestricted()
