@@ -1116,13 +1116,14 @@ app
         const data = {
           email: $scope.login.data.user_email,
           password: $scope.login.data.user_password,
+          captcha: $scope.login.data.captcha,
         };
 
         if (
           window.location.hostname !== 'dashboard.razorpay.com' &&
           !$scope.login.data.captcha
         ) {
-          $scope.login.data.captcha = 'Faked';
+          data.captcha = 'Faked';
         }
 
         var payload = {
