@@ -410,4 +410,22 @@ class Validator extends Base\Validator
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
     }
+
+    public function validatePasswordIsNotSameAsLastThree(string $newPassword)
+    {
+        $oldPassword = $this->entity->getAttribute(Entity::PASSWORD);
+        $oldPassword1 = $this->entity->getAttribute(Entity::OLD_PASSWORD_1);
+        $oldPassword2 = $this->entity->getAttribute(Entity::OLD_PASSWORD_2);
+
+        assertTrue($oldPassword);
+
+        foreach (array_filter([$oldPassword, $oldPassword1, $oldPassword2]) as $old)
+        {
+            if (Hash::check($newPassword, $old) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD);
+            }
+        }
+    }
 }

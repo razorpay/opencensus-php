@@ -5621,3 +5621,8 @@ ALTER TABLE merchant_details
     ADD COLUMN authorized_signatory_residential_address varchar(255) DEFAULT NULL,
     ADD COLUMN authorized_signatory_dob date DEFAULT NULL,
     ADD COLUMN platform varchar(40) DEFAULT NULL;
+
+ALTER TABLE users
+    ADD COLUMN old_password1 varchar(100) DEFAULT NULL,
+    ADD COLUMN old_password2 varchar(100) DEFAULT NULL,
+    ADD COLUMN old_password3 varchar(100) DEFAULT NULL;
