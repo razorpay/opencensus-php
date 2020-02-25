@@ -138,7 +138,7 @@ class Service extends Base\Service
                 return [[$error], null];
             }
 
-            return [['Email or password is invalid.'], null];
+            return [['Incorrect email or password. To reset your password click on "Forgot Password" link.'], null];
         }
 
         Auth::login($genericUser, false);
