@@ -66,6 +66,8 @@ class DashboardUserProvider implements UserProvider
      */
     public function retrieveByCredentials(array $credentials)
     {
+        $credentials['captcha_disable'] = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
+
         list($error, $genericUser) = (new User\Service)->loginOnApi($credentials);
 
         if (empty($error) === true)
