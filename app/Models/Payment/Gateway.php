@@ -2356,6 +2356,15 @@ class Gateway
         return false;
     }
 
+    public static function shouldAlwaysRouteThroughCardPaymentService($gateway)
+    {
+        $gateways = [
+            self::PAYTM,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
     public static function isCardPaymentServiceGateway($gateway)
     {
         $gateways = [
@@ -2369,6 +2378,7 @@ class Gateway
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
             self::PAYSECURE,
+            self::PAYTM,
             self::AMEX,
         ];
 

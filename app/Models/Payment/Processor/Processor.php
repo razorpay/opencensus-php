@@ -156,6 +156,11 @@ class Processor
     const CARD_PAYMENTS_PREFIX                  = 'card_payments_gateway_routing';
     const NB_PLUS_PAYMENTS_PREFIX               = 'nb_plus_payments_gateway_routing';
     const CARD_PAYMENTS_AUTHORIZE_ALL_TERMINALS = 'card_payments_authorize_all_terminals';
+
+    /**
+     * Card payment service feature flag
+     */
+    const CARD_PAYMENT_SERVICE_VARIANT_PREFIX          = 'cardps';
     /**
      * 3D Secure international feature flag
      */
@@ -1241,6 +1246,12 @@ class Processor
     {
         if ($this->isCardPaymentServiceConfigEnabled() === true)
         {
+            if (Payment\Gateway::shouldAlwaysRouteThroughCardPaymentService($payment->getGateway()))
+            {
+                $this->setPaymentService($payment, self::CARD_PAYMENT_SERVICE_VARIANT_PREFIX);
+                return;
+            }
+
             $variant = $this->getRazorxVariant($payment, self::CARD_PAYMENTS_PREFIX);
 
             // To route all ivr payments through payments-card
@@ -1307,6 +1318,7 @@ class Processor
 
     protected function setPaymentService(Payment\Entity $payment, $variant)
     {
+        //TODO Use Constants Here
         $variant = strtolower($variant);
 
         switch($variant)
