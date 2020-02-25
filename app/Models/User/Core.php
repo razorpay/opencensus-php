@@ -10,6 +10,7 @@ use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -144,6 +145,22 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    protected function restrictUserToOneRolePerMerchantAndProduct(Entity $user): bool
+    {
+        $oneRoleExp = $this->app->razorx->getTreatment(
+            $user->getId(),
+            Merchant\RazorxTreatment::RESTRICT_USER_TO_ONE_ROLE_PER_MERCHANT_AND_PRODUCT,
+            $this->mode
+        );
+
+        if (strtolower($oneRoleExp) !== 'off')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -647,9 +664,11 @@ class Core extends Base\Core
 
         $role = $input[Entity::ROLE];
 
+        $product = $input[Entity::PRODUCT] ?? $this->app['basicauth']->getRequestOriginProduct();
+
         $mappingParams = [
              'role'       => $role,
-             'product'    => $input[Merchant\Entity::PRODUCT],
+             'product'    => $product,
              'created_at' => $currentTimestamp,
              'updated_at' => $currentTimestamp
         ];
@@ -658,17 +677,23 @@ class Core extends Base\Core
 
         $this->repo->merchant->findOrFailPublic($merchantId);
 
+        // On PG, X a user can have only 1 role. If we user with any role is already present throw an exception
         $mapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
                                                                  $user->getId(),
-                                                                 $role,
-                                                                 $input[Merchant\Entity::PRODUCT]);
+                                                                 null,
+                                                                 $product);
 
-        if (empty($mapping) === false)
+        // Adding an experiment to restrict this behaviour in production if required
+        // Ideally this should never happen, but we do have some users which have multiple roles per merchant, product
+        // Since this is an unexpected use case, still adding an experiment to be safe
+        // TODO: remove this experiment once the validation has been completed
+        if ((empty($mapping) === false) and
+            ($this->restrictUserToOneRolePerMerchantAndProduct($user) === true))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS);
         }
 
-        $this->repo->attach($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
+        $this->repo->attach($user, $product . Entity::MERCHANTS, [$merchantId => $mappingParams]);
 
         if (BankingRole::isWorkflowRole($role) === true)
         {
@@ -697,9 +722,11 @@ class Core extends Base\Core
     {
         $merchantId = $input[Entity::MERCHANT_ID];
 
+        $product = $input[Entity::PRODUCT] ?? $this->app['basicauth']->getRequestOriginProduct();
+
         $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $this->repo->detach($user, Entity::MERCHANTS, $merchantId);
+        $this->repo->detach($user, $product . Entity::MERCHANTS, $merchantId);
 
         // TODO: detach roles() for RX banking workflows
 
@@ -723,13 +750,13 @@ class Core extends Base\Core
 
         $product = $input[Entity::PRODUCT] ?? $this->app['basicauth']->getRequestOriginProduct();
 
+        $merchantId = $input[Entity::MERCHANT_ID];
+
         $mappingParams = [
             'role'       => $role,
             'updated_at' => $currentTimestamp,
             'created_at' => $currentTimestamp,
         ];
-
-        $merchantId = $input[Entity::MERCHANT_ID];
 
         $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 

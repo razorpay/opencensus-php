@@ -19,7 +19,7 @@ class Validator extends Base\Validator
     const DEFAULT_CLOSE_BY_DIFF = 900;
 
     protected static $createRules = [
-        Entity::NAME                            => 'filled|string|max:40',
+        Entity::NAME                            => 'filled|string|max:255',
         Entity::AMOUNT_EXPECTED                 => 'filled|integer|min:0',
         Entity::DESCRIPTION                     => 'sometimes|nullable|string|max:2048',
         Entity::CUSTOMER_ID                     => 'filled|public_id|size:19',
@@ -32,7 +32,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NAME            => 'filled|string|max:40',
+        Entity::NAME            => 'filled|string|max:255',
         Entity::STATUS          => 'sometimes|in:closed',
         Entity::DESCRIPTION     => 'sometimes|nullable|string|max:2048',
         Entity::NOTES           => 'sometimes|notes',
@@ -42,7 +42,7 @@ class Validator extends Base\Validator
     protected static $bankAccountReceiverOptionRules = [
         Entity::NUMERIC    => 'sometimes|boolean',
         Entity::DESCRIPTOR => 'sometimes|alpha_num|max:10',
-        Entity::NAME       => 'filled|string|max:40',
+        Entity::NAME       => 'filled|string|max:255',
     ];
 
     protected static $vpaReceiverOptionRules = [
