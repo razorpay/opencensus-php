@@ -81,4 +81,15 @@ class ApiUrl
 
         return $originDomain;
     }
+
+    public static function isBankingOriginRequest()
+    {
+        $originDomain = self::getRequestOriginUrl();
+
+        $originHost = parse_url($originDomain, PHP_URL_HOST);
+
+        $bankingHost = parse_url(config('app.banking_service_url'), PHP_URL_HOST);
+
+        return ($originHost === $bankingHost);
+    }
 }

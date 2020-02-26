@@ -13,6 +13,7 @@ use App\Base;
 use App\Generic;
 use App\Merchant;
 use App\AdminLead;
+use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\MerchantDetails;
 use App\Providers\GenericUser;
@@ -481,8 +482,10 @@ class Service extends Base\Service
                         $data = $this->updateUserDetails($data, $user);
                     }
 
+                    $isBankingRequest = ApiUrl::isBankingOriginRequest();
+
                     // if the merchant is a partner
-                    if (empty($data['merchants'][$merchant['id']]['partner_type']) === false)
+                    if (($isBankingRequest === false) and (empty($data['merchants'][$merchant['id']]['partner_type']) === false))
                     {
                         $data['merchants'][$merchant['id']]['partner'] = [];
 
