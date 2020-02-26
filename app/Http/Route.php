@@ -3544,7 +3544,7 @@ final class Route
         'merchant_product_switch'                      => Permission::MERCHANT_PRODUCT_SWITCH,
         'user_otp_create'                              => Permission::CREATE_USER_OTP,
         'banking_account_statement_generate'           => Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
-        'merchant_instant_activation_post'             => PERMISSION::MERCHANT_INSTANT_ACTIVATION,
+        'merchant_instant_activation_post'             => Permission::MERCHANT_INSTANT_ACTIVATION,
         'merchant_features_update'                     => Permission::UPDATE_MERCHANT_FEATURE,
         'banking_account_create'                       => '*',
         'merchant_activation_upload_file'              => '*',
