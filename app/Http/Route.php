@@ -3566,10 +3566,15 @@ final class Route
         'bank_account_fetch'                           => '*',
         'bank_transfer_process_test'                   => '*',
         'pincode_get'                                  => '*',
+        'merchant_edit_config_logo'                    => '*',
+        'user_update_contact'                          => '*',
+        'user_verify_through_email'                    => '*',
 
         // This should go away after the fix
         // https://razorpay.atlassian.net/browse/RX-1701
         'merchant_partner_configs_fetch'               => '*',
+        'setl_holidays'                                => '*',
+        'merchant_activation_update_website_status'    => '*',
     ];
 
     public static $direct = [
