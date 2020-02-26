@@ -1347,4 +1347,57 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testGetMerchantDetailsRegisteredBusinessWithSelectiveRequiredFields()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            MerchantDetails::MERCHANT_ID => $merchant['id'],
+            MerchantDetails::BUSINESS_TYPE => '1',
+            MerchantDetails::BUSINESS_CATEGORY => BusinessCategory::FINANCIAL_SERVICES,
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::MUTUAL_FUND,
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+    public function testGetMerchantDetailsRegisteredBusinessWithOptionalFields()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            MerchantDetails::MERCHANT_ID => $merchant['id'],
+            MerchantDetails::BUSINESS_TYPE => '1',
+            MerchantDetails::BUSINESS_CATEGORY => BusinessCategory::TOURS_AND_TRAVEL,
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::AVIATION,
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantDetailsRegisteredBusinessNgo()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            MerchantDetails::MERCHANT_ID => $merchant['id'],
+            MerchantDetails::BUSINESS_TYPE => '7',
+            MerchantDetails::BUSINESS_CATEGORY => BusinessCategory::EDUCATION,
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::SCHOOLS,
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
 }
