@@ -1015,10 +1015,16 @@ class Service extends Base\Service
             try
             {
                 (new Validator())->validateInput('sf_poc_record', $value);
+
+                $recordAdminIds = $this->getAdminIdsFromEmails($value);
+
+                $merchantId = $value['Merchant_ID__c'];
+
+                $merchantIds = $this->fetchLinkedAccountDetails($merchantId);
             }
             catch (\Exception $e)
             {
-                $this->trace->traceException($e, Trace::ERROR, TraceCode::SF_POC_UPDATE_ERROR, [
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::SF_POC_UPDATE_DATA_VALIDATION_ERROR, [
                     'message' => 'Error in record data',
                     'record'  => $value,
                 ]);
@@ -1026,18 +1032,12 @@ class Service extends Base\Service
                 continue;
             }
 
-            $recordAdminIds = $this->getAdminIdsFromEmails($value);
-
             $tagNames = strtolower($value['Owner_Role__c']);
 
             if (strpos($tagNames, 'sme') !== false)
             {
                 $currentSmeAdminIds = array_merge($recordAdminIds, $currentSmeAdminIds);
             }
-
-            $merchantId = $value['Merchant_ID__c'];
-
-            $merchantIds = $this->fetchLinkedAccountDetails($merchantId);
 
             $merchantIds[] = $merchantId;
 
