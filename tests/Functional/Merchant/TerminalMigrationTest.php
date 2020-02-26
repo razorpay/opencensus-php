@@ -1046,6 +1046,51 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals($beforeCount, $afterCount);
     }
 
+    public function testDeleteTerminalTerminalsServiceUpBadResponseMigrateVariant()
+    {
+        [$tid, $mid] = $this->testAddSubmerchantControlVariant();
+
+        $this->razorxValue = 'migrate';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
+
+            $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+            $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+            if ($method === \Requests::DELETE) {
+
+                $this->assertEquals('v1/terminals/submerchant', $path);
+
+                return $this->getTerminalsServiceResponseForEntityDeleted();
+            }
+
+            if ($method == \Requests::GET) {
+                $this->assertEquals('v2/terminals/submerchant', $path);
+
+                $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+                $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+                $response = $this->getDefaultTerminalSubmerchantFetchResponse($tid, '10000000000000');
+
+                return $response;
+            }
+        });
+
+        $this->expectExceptionMessage('delete failed on terminals service side');
+
+        $this->expectException(IntegrationException::class);
+
+        $beforeCount = $this->getMerchantTerminalCount('10000000000000', $tid);
+
+        $this->deleteSubmerchant($tid, '10000000000000');
+
+        $afterCount = $this->getMerchantTerminalCount('10000000000000', $tid);
+
+        $this->assertEquals($beforeCount, $afterCount);
+    }
+
     public function testDeleteSubmerchantControlVariant()
     {
         $this->razorxValue = 'control';
