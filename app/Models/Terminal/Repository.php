@@ -519,7 +519,15 @@ class Repository extends Base\Repository
 
     public function removeMerchantFromTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
-        $terminal->merchants()->detach($merchant);
+        $this->repo->transaction(function () use ($terminal, $merchant) {
+            $terminal->merchants()->detach($merchant);
+
+            if (RazorxTreatment::shouldMigrateSubmerchant() === true)
+            {
+                (new Terminal\Service)->migrateTerminalRemoveMerchant($terminal, $merchant);
+            }
+        });
+
     }
 
     public function getByMerchantProviderAndMethod(string $provider, string $merchantId, string $method)

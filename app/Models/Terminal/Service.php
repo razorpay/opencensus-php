@@ -531,6 +531,42 @@ class Service extends Base\Service
         }
     }
 
+    public function migrateTerminalRemoveMerchant(Terminal\Entity $terminal, Merchant\Entity $merchant)
+    {
+        $client = $this->app['terminals_service'];
+
+        $client->removeMerchantFromTerminal($terminal, $merchant);
+
+        $data = [];
+
+        try
+        {
+            $data = $client->fetchMerchantTerminalById($terminal->getId(), $merchant->getId());
+
+            if ($data !== [])
+            {
+                throw new Exception\IntegrationException(
+                    'delete failed on terminals service side
+                    got non empty response when fetching a deleted terminal
+                    . should not have reached here',
+                    ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR);
+            }
+        }
+        catch (\Exception $exception)
+        {
+            // assert on message and rethrow if not correct
+            if (($data === []) and
+                ($exception->getCode() === ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR))
+            {
+
+            }
+            else
+            {
+                throw $exception;
+            }
+        }
+    }
+
     protected function createTerminalMigrateJob(Terminal\Entity $terminal)
     {
         $data = [

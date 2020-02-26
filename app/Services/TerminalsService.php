@@ -38,6 +38,7 @@ class TerminalsService
     const FETCH_TERMINAL_BY_ID              = 'fetch_terminal_by_id';
     const DELETE_TERMINAL_BY_ID             = 'delete_terminal_by_id';
     const ADD_MERCHANT_TO_TERMINAL          = 'add_merchant_to_terminal';
+    const REMOVE_MERCHANT_FROM_TERMINAL     = 'remove_merchant_from_terminal';
     const FETCH_MERCHANT_TERMINAL_BY_ID     = 'fetch_merchant_terminal_by_id';
 
     const PARAMS = [
@@ -56,6 +57,10 @@ class TerminalsService
         self::ADD_MERCHANT_TO_TERMINAL => [
             self::PATH   => 'v1/terminals/submerchant',
             self::METHOD => Requests::POST,
+        ],
+        self::REMOVE_MERCHANT_FROM_TERMINAL => [
+            self::PATH   => 'v1/terminals/submerchant',
+            self::METHOD => Requests::DELETE,
         ],
         self::FETCH_MERCHANT_TERMINAL_BY_ID => [
             self::PATH   => 'v2/terminals/submerchant',
@@ -108,6 +113,20 @@ class TerminalsService
     public function addMerchantToTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant) : array
     {
         $params = self::PARAMS[self::ADD_MERCHANT_TO_TERMINAL];
+
+        $content = [
+            Terminal\Entity::TERMINAL_ID => $terminal->getId(),
+            Merchant\Entity::MERCHANT_ID => $merchant->getId(),
+        ];
+
+        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function removeMerchantFromTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant) : array
+    {
+        $params = self::PARAMS[self::REMOVE_MERCHANT_FROM_TERMINAL];
 
         $content = [
             Terminal\Entity::TERMINAL_ID => $terminal->getId(),

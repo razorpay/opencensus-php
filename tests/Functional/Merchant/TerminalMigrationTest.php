@@ -107,7 +107,7 @@ class TerminalMigrationTest extends TestCase
         return $response;
     }
 
-    protected function getTerminalsServiceResponseForTerminalNotFound()
+    protected function getTerminalsServiceResponseForEntityNotFound()
     {
         $response = new \Requests_Response;
 
@@ -126,7 +126,7 @@ class TerminalMigrationTest extends TestCase
         return $response;
     }
 
-    protected function getTerminalsServiceResponseForTerminalDeleted()
+    protected function getTerminalsServiceResponseForEntityDeleted()
     {
         $response = new \Requests_Response;
 
@@ -519,12 +519,12 @@ class TerminalMigrationTest extends TestCase
 
             if ($method == \Requests::DELETE)
             {
-                return $this->getTerminalsServiceResponseForTerminalDeleted();
+                return $this->getTerminalsServiceResponseForEntityDeleted();
             }
 
             if ($method == \Requests::GET)
             {
-                return $this->getTerminalsServiceResponseForTerminalNotFound();
+                return $this->getTerminalsServiceResponseForEntityNotFound();
             }
 
         }, 2);
@@ -600,7 +600,7 @@ class TerminalMigrationTest extends TestCase
 
             if ($method == \Requests::DELETE)
             {
-                return $this->getTerminalsServiceResponseForTerminalDeleted();
+                return $this->getTerminalsServiceResponseForEntityDeleted();
             }
 
             if ($method == \Requests::GET)
@@ -657,12 +657,12 @@ class TerminalMigrationTest extends TestCase
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
             if ($method === \Requests::DELETE)
             {
-                return $this->getTerminalsServiceResponseForTerminalDeleted();
+                return $this->getTerminalsServiceResponseForEntityDeleted();
             }
 
             if ($method === \Requests::GET)
             {
-                return $this->getTerminalsServiceResponseForTerminalNotFound();
+                return $this->getTerminalsServiceResponseForEntityNotFound();
             }
         }, 2);
 
@@ -753,7 +753,7 @@ class TerminalMigrationTest extends TestCase
 
             if ($method == \Requests::DELETE)
             {
-                return $this->getTerminalsServiceResponseForTerminalDeleted();
+                return $this->getTerminalsServiceResponseForEntityDeleted();
             }
 
             if ($method == \Requests::GET)
@@ -840,6 +840,8 @@ class TerminalMigrationTest extends TestCase
         $afterCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
 
         $this->assertEquals($beforeCount + 1, $afterCount);
+
+        return [$terminal['id'], '10000000000000'];
     }
 
     public function testAddSubmerchantTerminalsServiceUpMigrateVariant()
@@ -976,6 +978,44 @@ class TerminalMigrationTest extends TestCase
 
         $this->assertEquals($beforeCount, $afterCount);
 
+    }
+
+    public function testDeleteSubmerchantTerminalsServiceUpMigrateVariant()
+    {
+        [$tid, $mid] = $this->testAddSubmerchantControlVariant();
+
+        $this->razorxValue = 'migrate';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
+
+            $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+            $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+            if ($method === \Requests::DELETE)
+            {
+                $this->assertEquals('v1/terminals/submerchant', $path);
+
+                return $this->getTerminalsServiceResponseForEntityDeleted();
+            }
+
+            if ($method === \Requests::GET)
+            {
+                $this->assertEquals('v2/terminals/submerchant', $path);
+
+
+                return $this->getTerminalsServiceResponseForEntityNotFound();
+            }
+        }, 2);
+
+
+        $beforeCount = $this->getMerchantTerminalCount('10000000000000', $tid);
+
+        $this->deleteSubmerchant($tid, '10000000000000');
+
+        $afterCount = $this->getMerchantTerminalCount('10000000000000', $tid);
+
+        $this->assertEquals($beforeCount - 1, $afterCount);
     }
 
     public function testDeleteSubmerchantControlVariant()
