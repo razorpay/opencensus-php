@@ -140,6 +140,7 @@ class Validator extends Base\Validator
         Entity::ACTION        => 'required|filled|in:'
                                  . 'verify_contact,'
                                  . 'create_payout,'
+                                 . 'create_payout_link,'
                                  . 'create_payout_batch,'
                                  . 'approve_payout,'
                                  . 'approve_payout_bulk,'
@@ -147,10 +148,10 @@ class Validator extends Base\Validator
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
-        'amount'              => 'required_if:action,create_payout,approve_payout|integer|min:100',
-        'account_number'      => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk|alpha_num|between:5,22',
+        'amount'              => 'required_if:action,create_payout,approve_payout,create_payout_link|integer|min:100',
+        'account_number'      => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk,create_payout_link|alpha_num|between:5,22',
         'fund_account_id'     => 'required_if:action,create_payout|public_id|size:17',
-        'purpose'             => 'required_if:action,create_payout|string|max:30|alpha_dash_space',
+        'purpose'             => 'required_if:action,create_payout,create_payout_link|string|max:30|alpha_dash_space',
         'payout_id'           => 'required_if:action,approve_payout|public_id|size:19',
         'payout_total_amount' => 'required_if:action,approve_payout_bulk|integer|min:100',
         'payout_count'        => 'required_if:action,approve_payout_bulk|integer|min:1',

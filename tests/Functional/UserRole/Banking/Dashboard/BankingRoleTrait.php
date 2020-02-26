@@ -207,6 +207,18 @@ trait BankingRoleTrait
                 'reporting_log_create',
                 'reporting_log_update',
             ],
+
+            BankingRole::OPERATIONS => [
+                'user_otp_create',
+                'user_edit_self',
+                'user_fetch',
+                'merchant_user_reset_password',
+                'reporting_log_get',
+                'payout_fetch_by_id',
+                'payout_links_fetch_multiple',
+                'payout_links_create',
+                'payout_links_cancel',
+            ],
         ];
     }
 
