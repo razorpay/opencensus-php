@@ -1256,11 +1256,11 @@ class Gateway extends Base\Gateway
     {
         $previousActionForData = [
             Payment\Gateway::HDFC_DEBIT_EMI => [
-                Action::AUTH_INIT => null,
+                Action::AUTH_INIT   => null,
                 Action::AUTH_VERIFY => Action::AUTHORIZE,
-                Action::PAY_INIT => Action::AUTHORIZE,
-                Action::VERIFY => Action::AUTHORIZE,
-                Action::REFUND => Action::AUTHORIZE,
+                Action::PAY_INIT    => Action::AUTHORIZE,
+                Action::VERIFY      => Action::AUTHORIZE,
+                Action::REFUND      => Action::AUTHORIZE,
             ],
             Payment\Gateway::BAJAJFINSERV => [
                 Action::PAY_INIT => null,

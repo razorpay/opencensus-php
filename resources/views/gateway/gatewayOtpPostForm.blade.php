@@ -42,12 +42,6 @@
     try { CheckoutBridge.setPaymentID(data.payment_id) } catch(e){}
   </script>
   <div id="app"></div>
-    @if ((isset($data['data']['metadata']['gateway']) === true) and ($data['data']['metadata']['gateway'] === 'hdfc_debit_emi'))
-        <div id="tnc">
-            I expressly acknowledge that I agree to all the terms and conditions which I fully understand ahd have gone through schedule of charges
-            and hereby record my agreement and consent.I authorize bank to debit my account for EMI under Standing Instruction mode.
-        </div>
-    @endif
   <script type="text/javascript" src="{{$data['cdn']}}/static/payment_redirect/bundle.js" charset="utf-8"></script>
   {{-- Do not remove below form — needed to run tests --}}
   <form class="card" id="otpform" name="otpform" action="{{$data['data']['request']['url']}}" method="post">

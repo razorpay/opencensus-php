@@ -108,7 +108,7 @@ class HdfcDebitEmiTest extends TestCase
 
     }
 
-    public function testHdfcDebitEmiMissingPhoneNumber()
+    public function testHdfcDebitEmiMissingContact()
     {
 
     }
