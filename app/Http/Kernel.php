@@ -29,13 +29,13 @@ class Kernel extends HttpKernel {
             \Illuminate\Session\Middleware\StartSession::class,
             \App\Http\Middleware\SetApiHeaders::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            // \App\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
             \App\Http\Middleware\SessionInActivity::class,
         ],
         'jwt_session' => [
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Session\Middleware\StartSession::class,
-            // \App\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
         ],
     ];
 
