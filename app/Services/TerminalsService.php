@@ -58,7 +58,7 @@ class TerminalsService
             self::METHOD => Requests::POST,
         ],
         self::FETCH_MERCHANT_TERMINAL_BY_ID => [
-            self::PATH   => 'v1/terminals/submerchant/verify/%s_%s',
+            self::PATH   => 'v2/terminals/submerchant',
             self::METHOD => Requests::GET,
         ],
     ];
@@ -125,9 +125,14 @@ class TerminalsService
 
         $path = sprintf($params[self::PATH], $terminalId, $merchantId);
 
-        $response = $this->sendRequest($path, '', $params[self::METHOD]);
+        $content = [
+            Terminal\Entity::TERMINAL_ID => $terminalId,
+            Merchant\Entity::MERCHANT_ID => $merchantId,
+        ];
 
-        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+        $response = $this->sendRequest($path, $content, $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA]['items'][0] ?? [];
     }
 
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST): \Requests_Response

@@ -135,6 +135,46 @@ class TerminalMigrationTest extends TestCase
         return $response;
     }
 
+    protected function getDefaultTerminalServiceMerchantTerminalCreatedResponse(string $path, $content, $tid)
+    {
+        $this->assertEquals('v1/terminals/submerchant', $path);
+
+        $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+        $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+        return $this->getDefaultTerminalServiceResponse();
+    }
+    protected function getDefaultTerminalSubmerchantFetchResponse(string $terminalId, string $merchantId, $content, $path)
+    {
+        $this->assertEquals('v2/terminals/submerchant', $path);
+
+        $this->assertEquals($terminalId, $content[Terminal\Entity::TERMINAL_ID]);
+
+        $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+
+        $response = new \Requests_Response;
+
+        $format= '
+       {
+  "data": {
+    "count": 1,
+    "entity": "collection",
+    "items": [
+      {
+        "id": "12345678901234",
+        "merchant_id": "%s",
+        "terminal_id": "%s"
+      }
+    ]
+  }
+}';
+        $response->body = sprintf($format, $merchantId, $terminalId);
+
+        return $response;
+    }
+
     private function makePaymentAndGetTerminalId()
     {
         $this->doAuthAndCapturePayment();
@@ -809,6 +849,46 @@ class TerminalMigrationTest extends TestCase
         $this->assignSubMerchant($terminal['id'], '10000000000000');
 
         $afterCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
+
+        $this->assertEquals($beforeCount + 1, $afterCount);
+    }
+
+    public function testAddSubmerchantTerminalsServiceUpMigrateVariant()
+    {
+        $this->razorxValue = 'migrate';
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $tid = $terminal['id'];
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid){
+            if ($method == \Requests::POST)
+            {
+               return $this->getDefaultTerminalServiceMerchantTerminalCreatedResponse($path, $content, $tid);
+            }
+
+            if ($method == \Requests::GET)
+            {
+                return $this->getDefaultTerminalSubmerchantFetchResponse(
+                    $tid,
+                    '10000000000000',
+                    $content,
+                    $path);
+
+            }
+        }, 2);
+
+
+        $beforeCount = $this->getMerchantTerminalCount('10000000000000', $tid);
+
+        $this->assignSubMerchant($terminal['id'], '10000000000000');
+
+        $afterCount = $this->getMerchantTerminalCount('10000000000000', $tid);
 
         $this->assertEquals($beforeCount + 1, $afterCount);
     }

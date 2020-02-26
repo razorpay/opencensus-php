@@ -525,6 +525,7 @@ class Service extends Base\Service
             ];
 
             throw new Exception\IntegrationException(
+                'Mismatch in values while fetching from merchant_terminal table',
                 ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
                 $data);
         }
