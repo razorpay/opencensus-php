@@ -290,6 +290,12 @@ class Name
     const VIEW_PAYOUT_LINKS                   = 'view_payout_links';
     const CREATE_PAYOUT_LINKS                 = 'create_payout_links';
     const CANCEL_PAYOUT_LINKS                 = 'cancel_payout_links';
+    const SUMMARY_PAYOUT_LINKS                = 'summary_payout_links';
+    const ONBOARDING_PAYOUT_LINKS             = 'onboarding_payout_links';
+    const SETTINGS_PAYOUT_LINKS               = 'settings_payout_links';
+    const DASHBOARD_PAYOUT_LINKS              = 'dashboard_payout_links';
+    const RESEND_PAYOUT_LINKS                 = 'resend_payout_links';
+    const MERCHANT_CONFIG_LOGO                = 'merchant_config_logo';
     const VIEW_CONTACT                        = 'view_contact';
     const CREATE_CONTACT                      = 'create_contact';
     const CREATE_CONTACT_BULK                 = 'create_contact_bulk';
