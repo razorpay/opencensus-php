@@ -52,55 +52,29 @@ class Repository extends Base\Repository
                 'Invalid status '. $value);
         }
     }
-    // TODO refactor this after writing tests
+
     public function saveOrFail($entity, array $options = array(), string $syncStatus = SyncStatus::NOT_SYNCED)
     {
-        if ($entity->getId() === null)
-        {
-            if (RazorxTreatment::shouldMigrateTerminal($syncStatus) === true) {
-                $this->transaction(function () use (& $entity, $options) {
+            $entity = $this->transaction(function () use (& $entity, $options, $syncStatus)
+            {
+                $entity->setSyncStatus($syncStatus);
 
-                    parent::saveOrFail($entity, $options);
+                // dont delete this line. this line is needed to generate id for a new terminal
+                // id gets created on save
+                parent::saveOrFail($entity, $options);
 
+                if (RazorxTreatment::shouldMigrateTerminal($syncStatus) === true)
+                {
                     $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
 
                     $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
                     parent::saveOrFail($entity, $options);
+                }
 
-                });
-            }
-            else
-            {
-                $entity->setSyncStatus($syncStatus);
+                return $entity;
 
-                parent::saveOrFail($entity, $options);
-            }
-        }
-        else
-        {
-            if (RazorxTreatment::shouldMigrateTerminal($syncStatus) === true) {
-                $this->transaction(function () use (& $entity, $options) {
-
-                    $entity->setSyncStatus(SyncStatus::NOT_SYNCED);
-
-                    parent::saveOrFail($entity, $options);
-
-                    $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
-
-                    $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
-
-                    parent::saveOrFail($entity, $options);
-
-                });
-            }
-            else
-            {
-                $entity->setSyncStatus($syncStatus);
-
-                parent::saveOrFail($entity, $options);
-            }
-        }
+            });
 
         return $entity;
     }
