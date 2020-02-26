@@ -1514,4 +1514,51 @@ class MerchantBankingInvoiceTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    public function testBulkCreate()
+    {
+        $this->ba->adminAuth();
+
+        $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
+
+        $request = [
+            'url'     => '/merchants/invoice/bulk',
+            'method'  => 'POST',
+            'content' => [
+                'invoice_entities' => [
+                    [
+                        'merchant_id'   => '10000000000000',
+                        'gstin'         => '29kjsngjk213900',
+                        'amount'        => 50000,
+                        'tax'           => 400,
+                        'description'   => 'adding invoice for something from primary balance',
+                        'month'         => 8,
+                        'year'          => 2017,
+                    ],
+                    [
+                        'merchant_id'   => '10000000000000',
+                        'gstin'         => '29kjsngjk213900',
+                        'amount'        => -51100,
+                        'tax'           => -600,
+                        'description'   => 'adding invoice for something from banking balance',
+                        'month'         => 8,
+                        'year'          => 2017,
+                        'balance_id'    => $balanceId,
+                    ],
+                ]
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(2, $entities['count']);
+
+        $this->assertEquals(substr($entities['items'][0]['invoice_number'], -4), '0817');
+
+        $this->assertEquals($entities['items'][0]['balance_id'], $balanceId);
+
+        $this->assertEquals($entities['items'][1]['balance_id'], '10000000000000');
+    }
 }
