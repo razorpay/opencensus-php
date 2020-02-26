@@ -3544,7 +3544,7 @@ final class Route
         'merchant_product_switch'                      => Permission::MERCHANT_PRODUCT_SWITCH,
         'user_otp_create'                              => Permission::CREATE_USER_OTP,
         'banking_account_statement_generate'           => Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
-        'merchant_instant_activation_post'             => PERMISSION::MERCHANT_INSTANT_ACTIVATION,
+        'merchant_instant_activation_post'             => Permission::MERCHANT_INSTANT_ACTIVATION,
         'merchant_features_update'                     => Permission::UPDATE_MERCHANT_FEATURE,
         'banking_account_create'                       => '*',
         'merchant_activation_upload_file'              => '*',
@@ -3566,10 +3566,15 @@ final class Route
         'bank_account_fetch'                           => '*',
         'bank_transfer_process_test'                   => '*',
         'pincode_get'                                  => '*',
+        'merchant_edit_config_logo'                    => '*',
+        'user_update_contact'                          => '*',
+        'user_verify_through_email'                    => '*',
 
         // This should go away after the fix
         // https://razorpay.atlassian.net/browse/RX-1701
         'merchant_partner_configs_fetch'               => '*',
+        'setl_holidays'                                => '*',
+        'merchant_activation_update_website_status'    => '*',
     ];
 
     public static $direct = [
