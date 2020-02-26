@@ -135,23 +135,12 @@ class TerminalMigrationTest extends TestCase
         return $response;
     }
 
-    protected function getDefaultTerminalServiceMerchantTerminalCreatedResponse(string $path, $content, $tid)
+    protected function getDefaultTerminalServiceMerchantTerminalCreatedResponse()
     {
-        $this->assertEquals('v1/terminals/submerchant', $path);
-
-        $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
-
-        $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
-
         return $this->getDefaultTerminalServiceResponse();
     }
-    protected function getDefaultTerminalSubmerchantFetchResponse(string $terminalId, string $merchantId, $content, $path)
+    protected function getDefaultTerminalSubmerchantFetchResponse(string $terminalId, string $merchantId)
     {
-        $this->assertEquals('v2/terminals/submerchant', $path);
-
-        $this->assertEquals($terminalId, $content[Terminal\Entity::TERMINAL_ID]);
-
-        $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
 
 
         $response = new \Requests_Response;
@@ -869,11 +858,24 @@ class TerminalMigrationTest extends TestCase
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid){
             if ($method == \Requests::POST)
             {
-               return $this->getDefaultTerminalServiceMerchantTerminalCreatedResponse($path, $content, $tid);
+                $this->assertEquals('v1/terminals/submerchant', $path);
+
+                $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+                $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+
+                return $this->getDefaultTerminalServiceMerchantTerminalCreatedResponse();
             }
 
             if ($method == \Requests::GET)
             {
+                $this->assertEquals('v2/terminals/submerchant', $path);
+
+                $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+                $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
                 return $this->getDefaultTerminalSubmerchantFetchResponse(
                     $tid,
                     '10000000000000',
@@ -923,7 +925,7 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals($beforeCount, $afterCount);
     }
 
-    public function testAddSubmerchantTerminalsServiceUpBadResponse()
+    public function testAddSubmerchantTerminalsServiceUpBadResponseMigrateVariant()
     {
         $this->razorxValue = 'migrate';
 
@@ -939,21 +941,30 @@ class TerminalMigrationTest extends TestCase
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid){
             if ($method == \Requests::POST)
             {
-                return $this->getDefaultTerminalServiceMerchantTerminalCreatedResponse($path, $content, $tid);
+                $this->assertEquals('v1/terminals/submerchant', $path);
+
+                $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+                $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+                return $this->getDefaultTerminalServiceMerchantTerminalCreatedResponse();
             }
 
             if ($method == \Requests::GET)
             {
-                throw new IntegrationException('Terminals service request failed with status code : ' . Response::HTTP_BAD_REQUEST,
-                ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
-                [
-                    'response' => []
-                ]
-            );
+                $this->assertEquals('v2/terminals/submerchant', $path);
+
+                $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+                $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+                $response = $this->getDefaultTerminalSubmerchantFetchResponse(strrev($tid), '10000000000000');
+
+                return $response;
             }
         }, 2);
 
-        $this->expectExceptionMessage('failed');
+        $this->expectExceptionMessage('Mismatch');
 
         $this->expectException(IntegrationException::class);
 
