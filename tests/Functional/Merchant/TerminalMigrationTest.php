@@ -923,6 +923,50 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals($beforeCount, $afterCount);
     }
 
+    public function testAddSubmerchantTerminalsServiceUpBadResponse()
+    {
+        $this->razorxValue = 'migrate';
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $tid = $terminal['id'];
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid){
+            if ($method == \Requests::POST)
+            {
+                return $this->getDefaultTerminalServiceMerchantTerminalCreatedResponse($path, $content, $tid);
+            }
+
+            if ($method == \Requests::GET)
+            {
+                throw new IntegrationException('Terminals service request failed with status code : ' . Response::HTTP_BAD_REQUEST,
+                ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
+                [
+                    'response' => []
+                ]
+            );
+            }
+        }, 2);
+
+        $this->expectExceptionMessage('failed');
+
+        $this->expectException(IntegrationException::class);
+
+        $beforeCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
+
+        $this->assignSubMerchant($tid, '10000000000000');
+
+        $afterCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+    }
+
     public function testDeleteSubmerchantControlVariant()
     {
         $this->razorxValue = 'control';
