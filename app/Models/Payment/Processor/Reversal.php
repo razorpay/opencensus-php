@@ -97,7 +97,7 @@ trait Reversal
                 ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER);
         }
 
-        $this->validatePaymentForRefund($payment);
+        $this->validatePaymentForRefund($payment, $input);
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
