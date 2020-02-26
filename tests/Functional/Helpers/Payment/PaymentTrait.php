@@ -2549,4 +2549,18 @@ trait PaymentTrait
         $this->app->razorx->method('getTreatment')
                           ->willReturn('on');
     }
+
+    protected function assignSubMerchant(string $tid, string $mid)
+    {
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT',
+        ];
+
+        $this->ba->adminAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+    }
 }

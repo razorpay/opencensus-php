@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 
 use Mockery;
+use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
@@ -64,6 +65,10 @@ class TerminalMigrationTest extends TestCase
         $this->terminalRepository = new Terminal\Repository;
 
         $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
     }
 
     protected function mockTerminalsServiceSendRequest($closure, $times = 2)
@@ -137,6 +142,14 @@ class TerminalMigrationTest extends TestCase
         $payment = $this->getLastPayment(true);
 
         return $payment['terminal_id'];
+    }
+
+    private function getMerchantTerminalCount(string $merchantId, string $terminalId)
+    {
+        return Db::table(Table::MERCHANT_TERMINAL)
+                  ->where(Terminal\Entity::MERCHANT_ID, $merchantId)
+                  ->where(Terminal\Entity::TERMINAL_ID,  $terminalId)
+                  ->count();
     }
 
     // the below cases tests migration functionality when a new terminal is created
@@ -771,5 +784,31 @@ class TerminalMigrationTest extends TestCase
 
         $this->assertEquals(Terminal\SyncStatus::getValueForSyncStatusString(Terminal\SyncStatus::NOT_SYNCED),
                             $terminalEntity->sync_status);
+    }
+
+    // tests for syncing merchant_terminal pivot row when submerchants are added to
+    // or removed from a terminal
+
+    public function testAddSubmerchantControlVariant()
+    {
+        $this->razorxValue = 'control';
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+
+        $this->mockTerminalsServiceSendRequest(null, 0);
+
+        $beforeCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
+
+        $this->assignSubMerchant($terminal['id'], '10000000000000');
+
+        $afterCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
+
+        $this->assertEquals($beforeCount + 1, $afterCount);
     }
 }

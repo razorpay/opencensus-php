@@ -535,7 +535,10 @@ class Repository extends Base\Repository
         $this->repo->transaction(function () use ($terminal, $merchant) {
             $terminal->merchants()->attach($merchant);
 
-            (new Terminal\Service)->migrateTerminalAddMerchant($terminal, $merchant);
+            if (RazorxTreatment::shouldMigrateSubmerchant() === true)
+            {
+                (new Terminal\Service)->migrateTerminalAddMerchant($terminal, $merchant);
+            }
 
         });
     }
