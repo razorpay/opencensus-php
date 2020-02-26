@@ -118,4 +118,35 @@ return [
             ],
         ]
     ],
+
+    'testCreateAdjustmentFromBatchRoute'    => [
+        'request' => [
+            'url' => '/adjustments/batch',
+            'method' => 'POST',
+            'content' => [
+                [
+                    'amount'            =>  -5000,
+                    'type'              =>  ' ',
+                    'merchant_id'       =>  '100abc000abc00',
+                    'currency'          =>  'INR',
+                    'description'       =>  'loan payment reference id : some_id',
+                    'idempotency_key'   =>  'batch_100abc000abc01'
+                ]
+
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_100abc000abc01',
+                        'balance'           => 5000,
+                    ],
+                ],
+            ],
+        ]
+    ],
 ];

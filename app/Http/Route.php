@@ -148,6 +148,7 @@ final class Route
         'refund_retry_failed'                      => ['post',     'refunds/retry/failed',                           'RefundController@postRetryFailedRefunds'                           ],
         'refund_verify_failed'                     => ['post',     'refunds/{id}/retry',                             'RefundController@postRefundRetry'                                  ],
         'refund_verify_failed_bulk'                => ['post',     'refunds/retry/bulk',                             'RefundController@postRefundRetryBulk'                              ],
+        'refund_retry_bulk_via_fta'                => ['post',     'refunds/fta_initiate/bulk',                      'RefundController@postRefundRetryBulkViaFTA'                        ],
         'refund_without_verify_bulk'               => ['post',     'refunds/retry/direct/bulk',                      'RefundController@postRefundDirectRetryBulk'                        ],
         'refund_verify'                            => ['get',      'refunds/{id}/verify',                            'RefundController@postRefundVerify'                                 ],
         'refund_verify_bulk'                       => ['post',     'refunds/verify/bulk',                            'RefundController@postVerifyRefundsBulk'                            ],
@@ -591,6 +592,12 @@ final class Route
         'customer_get_wallet_statement'            => ['get',      'customers/{id}/statement',                       'CustomerController@getCustomerWalletStatement'                     ],
         'reminder_send'                            => ['post',     'reminders/send/{mode}/{entity}/{namespace}/{id}','RemindersController@sendReminder'                                  ],
         'reminder_service'                         => ['any',      'reminders/service/{path?}',                      'RemindersController@handleAny'                                     ],
+        'offline_verification_service_get'         => ['get',      'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
+        'offline_verification_service_put'         => ['put',      'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
+        'offline_verification_service_post'        => ['post',     'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
+        'offline_verification_service_patch'       => ['patch',    'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
+        'offline_verification_service_delete'      => ['delete',   'offline_verification/service/{path?}',           'OfflineVerificationController@handleAny'                           ],
+        'offline_verification_webhook'             => ['post',     'offline_verification/webhook/v1/ecom_update_status', 'OfflineVerificationController@handleWebhook'                   ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
         'reminder_next_run'                        => ['get',      'reminders/next_run/{entity}/{id}',               'RemindersController@remindersNextRun'                              ],
         'invoice_create'                           => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
@@ -1819,6 +1826,7 @@ final class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'offline_verification_webhook',
         'merchant_inheritance_parent_set_bulk',
         'mdr_adjustment',
         'pricing_add_plan_rule_bulk',
@@ -2311,6 +2319,11 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'offline_verification_service_get',
+        'offline_verification_service_put',
+        'offline_verification_service_post',
+        'offline_verification_service_patch',
+        'offline_verification_service_delete',
         'd2c_bureau_reports_download',
         'payout_update_pull_payout_status',
         'payout_links_settings_post',
@@ -2376,6 +2389,7 @@ final class Route
         'feature_get',
         'batch_create_admin',
         'send_test_sms',
+        'invoice_cancel_by_batch',
         'file_upload_admin',
         'admin_dummy_account_test',
         'admin_get_file',
@@ -2447,6 +2461,7 @@ final class Route
         'merchant_update_key_access',
         'refund_verify_multiple',
         'refund_verify_failed',
+        'refund_retry_bulk_via_fta',
         'refund_verify_failed_bulk',
         'refund_without_verify_bulk',
         'merchant_edit_bank_account',
@@ -2835,6 +2850,11 @@ final class Route
         ];
 
     public static $routePermission = [
+        'offline_verification_service_get'         => Permission::OFFLINE_VERIFICATION_SERVICE_VIEW,
+        'offline_verification_service_post'        => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
+        'offline_verification_service_patch'       => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
+        'offline_verification_service_put'         => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
+        'offline_verification_service_delete'      => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
         'd2c_bureau_reports_download'              => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
         'payout_update_pull_payout_status'         => '*',
         'merchant_activation_update_website_status'=> '*',
@@ -3040,6 +3060,7 @@ final class Route
         'refund_verify_multiple'                   => '*',
         'refund_verify_failed'                     => Permission::VERIFY_REFUND,
         'refund_verify_failed_bulk'                => Permission::RETRY_REFUND,
+        'refund_retry_bulk_via_fta'                => Permission::UPDATE_SCROOGE_REFUND_REFERENCE1,
         'refund_without_verify_bulk'               => Permission::RETRY_REFUND,
         'merchant_edit_bank_account'               => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_edit_email'                      => Permission::MERCHANT_EMAIL_EDIT,
@@ -3447,7 +3468,12 @@ final class Route
         'currency_fetch_all_proxy'                     => '*',
         'reports_monthly_banking_invoice'              => '*',
         'merchant_activation_business_categories'      => '*',
+        'merchant_activation_update_website'           => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+        'fetch_merchant_balance_configs'               => '*',
+        'balance_fetch'                                => '*',
+        'setl_amount'                                  => '*',
 
+        // Specific to Banking
         'payout_bulk_create'                           => Permission::CREATE_PAYOUT_BULK,
         'payout_approve_bulk'                          => Permission::APPROVE_PAYOUT_BULK,
         'payout_reject_bulk'                           => Permission::REJECT_PAYOUT_BULK,
@@ -3456,6 +3482,7 @@ final class Route
         'payout_fetch_by_id'                           => Permission::VIEW_PAYOUT,
         'payout_fetch_multiple'                        => Permission::VIEW_PAYOUT,
         'payout_cancel'                                => Permission::CANCEL_PAYOUT,
+        'payout_update_status'                         => Permission::UPDATE_PAYOUT,
         'payout_purpose_get'                           => Permission::VIEW_PAYOUT_PURPOSE,
         'payout_purpose_post'                          => Permission::CREATE_PAYOUT_PURPOSE,
         'payout_fetch_reversals'                       => Permission::VIEW_PAYOUT_REVERSAL,
@@ -3524,6 +3551,9 @@ final class Route
         'batch_fetch_by_id'                            => '*',
         'batch_validate_file'                          => '*',
         'batch_download_file'                          => '*',
+        'bank_account_fetch'                           => '*',
+        'bank_transfer_process_test'                   => '*',
+        'pincode_get'                                  => '*',
     ];
 
     public static $direct = [
@@ -3831,11 +3861,14 @@ final class Route
         ],
 
         'payment_links' => [
+            'merchant_fetch_config_internal',
             'send_email_for_pl_service',
             'customer_fetch_by_id',
             'create_merchant_options',
             'read_merchant_options',
             'order_create',
+            'payment_fetch_by_id',
+            'order_payments',
         ],
 
         'kotak' => [
@@ -3850,6 +3883,10 @@ final class Route
 
         'rbl' => [
             'banking_account_webhook_account_info',
+        ],
+
+        'ecom' => [
+            'offline_verification_webhook',
         ],
 
         // BharatQR routes are not authenticated

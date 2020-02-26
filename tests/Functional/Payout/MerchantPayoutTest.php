@@ -6,7 +6,10 @@ namespace RZP\Tests\Functional\Payout;
 use Mail;
 use Config;
 
+use Carbon\Carbon;
 use RZP\Models\Payout;
+use RZP\Models\Transaction;
+use RZP\Constants\Timezone;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
@@ -60,9 +63,13 @@ class MerchantPayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
-        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'yesbank']);
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis2']);
 
         $this->ba->proxyAuth();
+
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
 
         $this->startTest();
 
@@ -71,6 +78,8 @@ class MerchantPayoutTest extends TestCase
         $txn = $this->getLastEntity('transaction',true);
 
         $this->assertEquals('payout', $txn['type']);
+
+        $this->assertEquals('axis2', $txn['channel']);
 
         $this->assertEquals(398, $txn['amount']);
 
@@ -83,14 +92,70 @@ class MerchantPayoutTest extends TestCase
 
     public function testCreateMerchantPayoutOnDemandAmountInCrores()
     {
-        // Es on demand should be immune to 80 L limit applied to merchant/payouts.
+        // Es on demand should be immune to 80 L limit applied to merchant/payouts. Tests during banking hours.
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
 
         $this->ba->proxyAuth();
 
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
         $this->startTest();
+    }
+
+    public function testCreateMerchantPayoutOnDemandNonBankingHours()
+    {
+        // Es on demand should be given to merchants during non banking hours.
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis2']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
+
+        $this->ba->proxyAuth();
+
+        $nonBankingHour = Carbon::create(2020, 2, 18, 20, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($nonBankingHour);
+
+        $this->startTest();
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
+    }
+
+    public function testCreateMerchantPayoutOnDemandHoliday()
+    {
+        // Es on demand should be given to merchants during holidays.
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis2']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
+
+        $this->ba->proxyAuth();
+
+        $nonBankingHour = Carbon::create(2020, 2, 16, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($nonBankingHour);
+
+        $this->startTest();
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
     }
 
     public function testCreateMerchantPayoutOnDemandExceedAmountLimit()
@@ -101,6 +166,26 @@ class MerchantPayoutTest extends TestCase
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
 
         $this->ba->proxyAuth();
+
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantPayoutOnDemandExceedAmountLimitNonBankingHours()
+    {
+        // Es on demand 24x7 should fail for amounts that exceed 2 L.
+        $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
+
+        $this->ba->proxyAuth();
+
+        $nonBankingHour = Carbon::create(2020, 2, 18, 20, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($nonBankingHour);
 
         $this->startTest();
     }
@@ -165,8 +250,6 @@ class MerchantPayoutTest extends TestCase
         return $newPayout;
     }
 
-
-
     public function testCreateMerchantPayout()
     {
         $this->ba->appAuth();
@@ -195,6 +278,10 @@ class MerchantPayoutTest extends TestCase
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 100]);
 
         $this->ba->proxyAuth();
+
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
 
         $this->startTest();
     }
@@ -261,6 +348,10 @@ class MerchantPayoutTest extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis2']);
 
         $this->ba->proxyAuth();
+
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
 
         $this->startTest();
 

@@ -671,6 +671,7 @@ class Gateway
         Payment\Gateway::NETBANKING_HDFC,
         Payment\Gateway::PAYSECURE,
         Payment\Gateway::NETBANKING_KOTAK,
+        Payment\Gateway::EBS,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -2355,6 +2356,15 @@ class Gateway
         return false;
     }
 
+    public static function shouldAlwaysRouteThroughCardPaymentService($gateway)
+    {
+        $gateways = [
+            self::PAYTM,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
     public static function isCardPaymentServiceGateway($gateway)
     {
         $gateways = [
@@ -2368,6 +2378,8 @@ class Gateway
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
             self::PAYSECURE,
+            self::PAYTM,
+            self::AMEX,
         ];
 
         return (in_array($gateway, $gateways, true));

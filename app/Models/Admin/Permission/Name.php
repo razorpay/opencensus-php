@@ -265,10 +265,13 @@ class Name
 
     // Perform write operations around stork integration e.g. webhook migrations etc
     const STORK_WRITE_OPERATION               = 'stork_write_operation';
+
     // Permissions for P2P Service
     const P2P_MANAGE_MERCHANT                 = 'p2p_manage_merchant';
 
     const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';
+    const OFFLINE_VERIFICATION_SERVICE_VIEW   = 'offline_verification_service_view';
+    const OFFLINE_VERIFICATION_SERVICE_EDIT   = 'offline_verification_service_edit';
 
     const CREATE_PAYOUT_BULK                  = 'create_payout_bulk';
     const APPROVE_PAYOUT_BULK                 = 'approve_payout_bulk';
@@ -277,6 +280,7 @@ class Name
     const REJECT_PAYOUT                       = 'reject_payout';
     const VIEW_PAYOUT                         = 'view_payout';
     const CANCEL_PAYOUT                       = 'cancel_payout';
+    const UPDATE_PAYOUT                       = 'update_payout';
     const VIEW_PAYOUT_PURPOSE                 = 'view_payout_purpose';
     const CREATE_PAYOUT_PURPOSE               = 'create_payout_purpose';
     const VIEW_PAYOUT_REVERSAL                = 'view_payout_reversal';

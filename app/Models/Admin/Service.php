@@ -995,6 +995,45 @@ class Service extends Base\Service
     }
 
     /**
+     * @param array $input
+     * @param array $currentSmeAdminIds
+     * @param array $currentClaimedMerchantsIds
+     */
+    public function merchantPocUpdateOperation(array $input, array &$currentSmeAdminIds, array &$currentClaimedMerchantsIds)
+    {
+        foreach ($input['records'] as $key => $value)
+        {
+            (new Validator())->validateInput('sf_poc_record', $value);
+
+            $recordAdminIds = $this->getAdminIdsFromEmails($value);
+
+            $tagNames = strtolower($value['Owner_Role__c']);
+
+            if (strpos($tagNames, 'sme') !== false)
+            {
+                $currentSmeAdminIds = array_merge($recordAdminIds, $currentSmeAdminIds);
+            }
+
+            $merchantId = $value['Merchant_ID__c'];
+
+            $merchantIds = $this->fetchLinkedAccountDetails($merchantId);
+
+            $merchantIds[] = $merchantId;
+
+            SFMerchantPocUpdate::dispatch($this->mode, $value, $recordAdminIds);
+
+            $currentClaimedMerchantsIds = array_merge($merchantIds, $currentClaimedMerchantsIds);
+
+            $merchantIdsBatches = array_chunk($merchantIds, 1000, true);
+
+            foreach ($merchantIdsBatches as $batch)
+            {
+                EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT, $batch);
+            }
+        }
+    }
+
+    /**
      * @param $input
      *
      * @throws \Throwable
@@ -1018,49 +1057,33 @@ class Service extends Base\Service
 
         if (empty($input) === true)
         {
-            $input = $this->app->salesforce->fetchAccountDetails($input);
-        }
+            $input = $this->app->salesforce->fetchAccountDetails();
 
-        (new Validator)->validateInput('sf_poc_data', $input);
+            (new Validator)->validateInput('sf_poc_data', $input);
+
+            $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+
+            while ($input['done'] === false)
+            {
+                $input = $this->app->salesforce->fetchAccountDetails($input['nextRecordsUrl']);
+
+                (new Validator)->validateInput('sf_poc_data', $input);
+
+                $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+            }
+        }
+        else
+        {
+            (new Validator)->validateInput('sf_poc_data', $input);
+
+            $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+        }
 
         $historicalClaimedMerchantIds = $this->repo->merchant->fetchHistoricalClaimedMerchantIds($this->mode);
 
-        foreach ($input['records'] as $key => $value)
-        {
-            (new Validator())->validateInput('sf_poc_record', $value);
-
-            $recordAdminIds = $this->getAdminIdsFromEmails($value);
-
-            $tagNames = strtolower($value['Owner_Role__c']);
-
-            if (strpos($tagNames, 'sme') !== false)
-            {
-                $currentSmeAdminIds = array_merge($recordAdminIds, $currentSmeAdminIds);
-            }
-
-            $merchantId = $value['Merchant_ID__c'];
-
-            $merchantIds = $this->fetchLinkedAccountDetails($merchantId);
-
-            $merchantIds[] = $merchantId;
-
-            $currentClaimedMerchantsIds = array_merge($merchantIds, $currentClaimedMerchantsIds);
-
-            SFMerchantPocUpdate::dispatch($this->mode, $value, $recordAdminIds);
-
-            $currentClaimedMerchantsIds = array_unique( $currentClaimedMerchantsIds);
-
-            $merchantIdsBatches = array_chunk($merchantIds, 1000, true);
-
-            foreach ($merchantIdsBatches as $batch)
-            {
-                EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT, $batch);
-            }
-        }
-
         $this->removeHistoricalAdminsFromGroup($historicalSmeAdminsIds, $currentSmeAdminIds);
 
-        $deltaUnclaimedAccounts = array_diff($historicalClaimedMerchantIds, $currentClaimedMerchantsIds);
+        $deltaUnclaimedAccounts = array_diff($historicalClaimedMerchantIds, array_unique($currentClaimedMerchantsIds));
 
         if (sizeof($deltaUnclaimedAccounts) > 0)
         {

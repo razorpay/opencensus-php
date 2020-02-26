@@ -61,6 +61,19 @@ class TransactionRequestTransformer extends TransactionTransformer
                 ];
                 break;
 
+            case TransactionAction::DECLINE_COLLECT:
+                $output = [
+                    Fields::ACCOUNT_REFERENCE_ID    => $this->getAccountRefenceId(),
+                    Fields::AMOUNT                  => $this->getFormattedAmount(),
+                    Fields::CUSTOMER_VPA            => $this->getPayerVpa(),
+                    Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+                    Fields::MERCHANT_REQUEST_ID     => $this->getMerchantRequestId(),
+                    Fields::PAYEE_VPA               => $this->getPayeeVpa(),
+                    Fields::TIME_STAMP              => $this->getTimestamp(),
+                    Fields::UPI_REQUEST_ID          => $this->getUpiRequestId(),
+                ];
+                break;
+
             case TransactionAction::PAY_COLLECT:
                 $output = [
                     Fields::ACCOUNT_REFERENCE_ID    => $this->getAccountRefenceId(),
@@ -74,18 +87,19 @@ class TransactionRequestTransformer extends TransactionTransformer
                 ];
                 break;
 
-            case TransactionAction::DECLINE_COLLECT:
+            case TransactionAction::PAY:
                 $output = [
-                    Fields::ACCOUNT_REFERENCE_ID    => $this->getAccountRefenceId(),
-                    Fields::AMOUNT                  => $this->getFormattedAmount(),
-                    Fields::CUSTOMER_VPA            => $this->getPayerVpa(),
-                    Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
                     Fields::MERCHANT_REQUEST_ID     => $this->getMerchantRequestId(),
-                    Fields::PAYEE_VPA               => $this->getPayeeVpa(),
-                    Fields::TIME_STAMP              => $this->getTimestamp(),
+                    Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+                    Fields::CUSTOMER_VPA            => $this->getPayerVpa(),
+                    Fields::MERCHANT_VPA            => $this->getPayeeVpa(),
+                    Fields::AMOUNT                  => $this->getFormattedAmount(),
+                    Fields::ACCOUNT_REFERENCE_ID    => $this->getAccountRefenceId(),
+                    Fields::REMARKS                 => $this->getDescription(),
                     Fields::UPI_REQUEST_ID          => $this->getUpiRequestId(),
+                    Fields::TIMESTAMP               => $this->getTimestamp(),
                 ];
-
+                break;
         }
 
         return $output;
@@ -98,6 +112,11 @@ class TransactionRequestTransformer extends TransactionTransformer
 
         if ($type === Type::PAY)
         {
+            if($this->isOnusMerchantPayTransaction())
+            {
+                return TransactionAction::PAY;
+            }
+
             if ($flow === Flow::DEBIT)
             {
                 return TransactionAction::SEND_MONEY;
@@ -114,6 +133,18 @@ class TransactionRequestTransformer extends TransactionTransformer
                 return TransactionAction::REQUEST_MONEY;
             }
         }
+    }
+
+    public function transformUdf()
+    {
+        $udfParameters = [];
+
+        if (empty($this->input[Entity::UPI][Upi::REF_ID]) === false)
+        {
+            $udfParameters[Upi::REF_ID] = $this->input[Entity::UPI][Upi::REF_ID];
+        }
+
+        return $udfParameters;
     }
 
     public function transformModeSpecific()
@@ -165,10 +196,12 @@ class TransactionRequestTransformer extends TransactionTransformer
     {
         return $this->input[Entity::PAYER][Vpa\Entity::BENEFICIARY_NAME];
     }
+
     public function getPayeeVpa()
     {
         return $this->input[Entity::PAYEE][Vpa\Entity::ADDRESS];
     }
+
     public function getPayeeName()
     {
         return $this->input[Entity::PAYEE][Vpa\Entity::BENEFICIARY_NAME];
@@ -210,5 +243,21 @@ class TransactionRequestTransformer extends TransactionTransformer
                    $this->input[Entity::TRANSACTION][Entity::CREATED_AT];
 
         return (string) ceil($seconds / 60);
+    }
+
+    /**
+     * Determines if the intent payment is a P2M,and a onus transaction.
+     * @return bool
+     */
+    protected function isOnusMerchantPayTransaction(): bool
+    {
+        // mcc should be non-zero, means neither null nor 0000, to categorise it as P2M payment
+        if((empty($this->input[Entity::UPI][Upi::MCC]) === true) or
+           ($this->input[Entity::UPI][Upi::MCC] === '0000'))
+        {
+            return false;
+        }
+
+        return $this->input[Entity::PAYEE][Entity::HANDLE] === $this->input[Entity::CONTEXT]['handle_code'];
     }
 }

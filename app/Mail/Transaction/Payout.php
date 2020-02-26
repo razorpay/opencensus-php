@@ -3,6 +3,7 @@
 namespace RZP\Mail\Transaction;
 
 use RZP\Constants\Mode;
+use RZP\Mail\Base\Constants;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Webhook\Event;
 use RZP\Models\Payout\ViewDataSerializer;
@@ -30,7 +31,7 @@ class Payout extends Transaction
         $payoutId            = $this->source['id'];
         $formattedAmount     = amount_format_IN($this->txn['amount']);
         $maskedAccountNumber = mask_except_last4($this->balance['account_number']);
-        $modePrefix          = ($this->mode === Mode::TEST) ? '[Test Mode] ' : '';
+        $modePrefix          = ($this->mode === Mode::TEST) ? Constants::TEST_MODE_PREFIX : '';
 
         switch ($this->event)
         {
