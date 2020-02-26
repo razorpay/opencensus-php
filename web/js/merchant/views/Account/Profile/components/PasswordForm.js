@@ -17,6 +17,23 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 })
 export default class PasswordForm extends PureComponent {
   changePassword = props => {
+    let errorMessage;
+    if (props.old_password === props.password) {
+      errorMessage = 'Old password cannot be the same as the new password';
+    } else if (props.password !== props.password_confirmation) {
+      errorMessage =
+        'New password and new password confirmation should be same';
+    }
+
+    if (errorMessage) {
+      this.props.showNotification({
+        type: 'error',
+        message: errorMessage,
+      });
+
+      return;
+    }
+
     return this.props
       .updatePassword(props)
       .then(() => {

@@ -136,7 +136,7 @@ class Entity extends Base\Entity
                 $this->deleteAdminSessionRelation($hash['admin_id'], $sessionId);
             }
 
-            $this->deleteUserSessionRelation($setKey, $sessionId);
+            $this->deleteUserSessionRelation($userId, $sessionId);
         }
     }
 
