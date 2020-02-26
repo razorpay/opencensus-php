@@ -241,6 +241,7 @@ class UserAccess
                 TraceCode::BANKING_ACCOUNT_USER_PERMISSION_ERROR,
                 [
                     'experiment' => $variant,
+                    'user_role'  => $this->ba->getUserRole(),
                 ]);
 
             if (strtolower($variant) === 'on')

@@ -3554,6 +3554,10 @@ final class Route
         'bank_account_fetch'                           => '*',
         'bank_transfer_process_test'                   => '*',
         'pincode_get'                                  => '*',
+
+        // This should go aware after dashboard fix
+        // Ref https://github.com/razorpay/dashboard/pull/3456/files#diff-862e6dd8f11882d4cd5ad427cc5b76d9R446
+        'merchant_partner_configs_fetch'               => '*',
     ];
 
     public static $direct = [
