@@ -9,8 +9,73 @@ return [
             'content' => [
                 'type'    => 'nach_register',
                 'targets' => ['paper_nach_citi'],
-                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp() + 1000,
-                'end'     => Carbon::now(Timezone::IST)->getTimestamp() + 1000,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [
+                            ''
+                        ],
+                        'status'              => 'file_generated',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'type'                => 'nach_register',
+                        'target'              => 'paper_nach_citi',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testGatewayFileRegisterOnNonWorkingDay' => [
+        'request' => [
+            'content' => [
+                'type'    => 'nach_register',
+                'targets' => ['paper_nach_citi'],
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [
+                            ''
+                        ],
+                        'status'              => 'acknowledged',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'type'                => 'nach_register',
+                        'target'              => 'paper_nach_citi',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true,
+                        'comments'            => 'No data present for gateway file processing in the given time period'
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testGatewayFileDebitForPaymentCreatedOnNonWorkingDay' => [
+        'request' => [
+            'content' => [
+                'type'    => 'nach_register',
+                'targets' => ['paper_nach_citi'],
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -44,8 +109,6 @@ return [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
-                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp() + 1000,
-                'end'     => Carbon::now(Timezone::IST)->getTimestamp() + 1000,
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -68,6 +131,40 @@ return [
                         'target'              => 'paper_nach_citi',
                         'entity'              => 'gateway_file',
                         'admin'               => true
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testGatewayFileDebitOnNonWorkingDay' => [
+        'request' => [
+            'content' => [
+                'type'    => 'nach_debit',
+                'targets' => ['paper_nach_citi'],
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [
+                            ''
+                        ],
+                        'status'              => 'acknowledged',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'type'                => 'nach_debit',
+                        'target'              => 'paper_nach_citi',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true,
+                        'comments'            => 'No data present for gateway file processing in the given time period'
                     ],
                 ],
             ]

@@ -1113,6 +1113,10 @@ class AdminFetch
                 ]
             ],
 
+            Entity::D2C_BUREAU_REPORT => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::EMI_PLAN => [
                 'bank' => [
                     Fetch::LABEL  => 'Bank',

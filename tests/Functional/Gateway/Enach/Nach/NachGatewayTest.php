@@ -23,9 +23,20 @@ class NachGatewayTest extends TestCase
     use PartnerTrait;
     use FileHandlerTrait;
 
+    // 09-02-2020 Sunday
+    const FIXED_NON_WORKING_DAY_TIME = 1581223905;
+    // 10-02-2020 Monday
+    const FIXED_WORKING_DAY_AFTER_NON_WORKING_DAY_TIME = 1581313905;
+    // 10-02-2020 Tuesday
+    const FIXED_WORKING_DAY_AFTER_WORKING_DAY_TIME = 1581385905;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/NachGatewayTestData.php';
+
+        $fixedTime = (new Carbon())->timestamp(self::FIXED_WORKING_DAY_AFTER_WORKING_DAY_TIME);
+
+        Carbon::setTestNow($fixedTime);
 
         parent::setUp();
 
@@ -81,7 +92,37 @@ class NachGatewayTest extends TestCase
     {
         $this->createDummyRegisterToken();
 
-        $this->ba->adminAuth();
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    public function testGatewayFileRegisterOnNonWorkingDay()
+    {
+        $fixedTime = (new Carbon())->timestamp(self::FIXED_NON_WORKING_DAY_TIME);
+
+        Carbon::setTestNow($fixedTime);
+
+        $this->createDummyRegisterToken();
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    public function testGatewayFileDebitForPaymentCreatedOnNonWorkingDay()
+    {
+        $fixedTime = (new Carbon())->timestamp(self::FIXED_NON_WORKING_DAY_TIME);
+
+        Carbon::setTestNow($fixedTime);
+
+        $this->createDummyRegisterToken();
+
+        $fixedTime = (new Carbon())->timestamp(self::FIXED_WORKING_DAY_AFTER_NON_WORKING_DAY_TIME);
+
+        Carbon::setTestNow($fixedTime);
+
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -90,7 +131,20 @@ class NachGatewayTest extends TestCase
     {
         $this->createRecurringNachPayment();
 
-        $this->ba->adminAuth();
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    public function testGatewayFileDebitOnNonWorkingDay()
+    {
+        $fixedTime = (new Carbon())->timestamp(self::FIXED_NON_WORKING_DAY_TIME);
+
+        Carbon::setTestNow($fixedTime);
+
+        $this->createRecurringNachPayment();
+
+        $this->ba->cronAuth();
 
         $this->startTest();
     }

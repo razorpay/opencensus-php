@@ -106,7 +106,7 @@ class Validator extends Base\Validator
 
     protected static $recurringChargeCreateRules = [
         Entity::TYPE            => 'required|in:recurring_charge',
-        Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE            => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::NAME            => 'filled|string|max:255',
         Entity::FILE_ID         => 'required_without:file|public_id',
     ];
@@ -361,6 +361,33 @@ class Validator extends Base\Validator
         Entity::FILE                            => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
         Entity::CONFIG                          => 'filled|array',
     ];
+
+    protected static $entityUpdateActionCreateRules = [
+        Entity::TYPE            => 'required|in:entity_update_action',
+        Entity::NAME            => 'filled|string|max:255',
+        Entity::FILE            => 'required|file|max:3072' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG          => 'required|array|custom',
+    ];
+
+    protected static $entityUpdateActionConfigRules = [
+        Constants::BATCH_ACTION => 'required|string|custom',
+        Constants::ENTITY       => 'required|string|custom',
+    ];
+
+    public function validateConfig($attribute, $value)
+    {
+        (new Validator())->validateInput('entityUpdateActionConfig', $value);
+    }
+
+    public function validateBatchAction($attribute, $batchAction)
+    {
+        (new Merchant\Validator())->validateBatchAction($attribute, $batchAction);
+    }
+
+    public function validateEntity($attribute, $BatchActionEntity)
+    {
+        (new Merchant\Validator())->validateEntity($attribute, $BatchActionEntity);
+    }
 
     protected function validateBatch($attribute, $value)
     {
@@ -895,6 +922,45 @@ class Validator extends Base\Validator
         });
     }
 
+    protected function validateAdjustmentEntries(array & $entries, array $params, ME $merchant)
+    {
+        $referenceIds = array_map(function ($entry)
+                                            {
+                                                return $entry[Header::ADJUSTMENT_REFERENCE_ID];
+                                            }, $entries);
+
+        $nonUniqueIds =array_diff_assoc($referenceIds, array_unique($referenceIds));
+
+        if (empty($nonUniqueIds) !== true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, null, 'non unique reference_id found' . implode(' ', $nonUniqueIds));
+        }
+
+        foreach ($entries as $key => $entry)
+        {
+            $entry[Header::ADJUSTMENT_BALANCE_TYPE] = trim($entry[Header::ADJUSTMENT_BALANCE_TYPE]) ?:
+                                                                Merchant\Balance\Type::PRIMARY;
+
+            $entries[$key] = $entry;
+
+            $this->checkValidBalanceTypeForAdjustment($entry[Header::ADJUSTMENT_BALANCE_TYPE], $entry[Header::ADJUSTMENT_REFERENCE_ID]);
+        }
+    }
+
+    private function checkValidBalanceTypeForAdjustment(string $balanceType, string $referenceId)
+    {
+        $validBalanceTypes = [
+            Merchant\Balance\Type::PRIMARY,
+            Merchant\Balance\Type::BANKING,
+            Merchant\Balance\Type::COMMISSION,
+        ];
+
+        if (in_array($balanceType, $validBalanceTypes, true) === false)
+        {
+            throw new BadRequestValidationFailureException('invalid balance type'. $balanceType . 'for reference id'. $referenceId);
+        }
+    }
+
     protected function validateEntriesWithPublicExceptionHandled(array & $entries, \Closure $validator)
     {
         // Indexed errors map against row number.
@@ -1020,6 +1086,17 @@ class Validator extends Base\Validator
             ($variant !== 'on')))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+    }
+
+    public function validateAdminRoleIfApplicable(\RZP\Models\Admin\Admin\Entity $admin , string $batchType)
+    {
+        if (isset(Type::$batchToAdminPermissionMapping[$batchType]) === true)
+        {
+            if (in_array(Type::$batchToAdminPermissionMapping[$batchType], $admin->getPermissionsList(), true) === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
+            }
         }
     }
 }

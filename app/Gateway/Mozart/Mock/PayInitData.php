@@ -107,6 +107,7 @@ class PayInitData extends Base\Mock\Server
 
         switch ($entities['payment']['description']) {
             case 'intentPayment':
+            case 'intentWithRefIdAbsent':
                 $response['data'] = [];
                 $response['next'] = [
                    'redirect' => [

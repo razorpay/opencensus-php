@@ -784,7 +784,7 @@ class Gateway extends Base\Gateway
             case Payment\Gateway::NETBANKING_KVB:
                 return $response['data']['paymentId'];
             case Payment\Gateway::UPI_JUSPAY:
-                return $response['body'][UpiJuspay\Fields::MERCHANT_REQUEST_ID];
+                return $this->getPaymentIdForUpiJuspay($response);
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for getting payment id from S2S callback');
@@ -2022,7 +2022,7 @@ class Gateway extends Base\Gateway
 
         $traceReq = [
             'method' => $request['method'],
-            'url' => $request['url'],
+            'url'    => $request['url'],
         ];
 
         $this->traceGatewayPaymentRequest($traceReq, $input, $requestTraceCode);
@@ -2041,5 +2041,21 @@ class Gateway extends Base\Gateway
         $attributes = $this->getMappedAttributes($response);
 
         return [$response, $attributes];
+    }
+
+    protected function getPaymentIdForUpiJuspay($response)
+    {
+        // Getting the payment id from udf parameters in case of PAY api call
+        if ($response['body'][UpiJuspay\Fields::TYPE] === UpiJuspay\Fields::MERCHANT_CREDITED_VIA_PAY)
+        {
+            $udfParameters = json_decode($response['body'][UpiJuspay\Fields::UDF_PARAMETERS], true);
+
+            if (empty($udfParameters[UpiJuspay\Fields::REF_ID]) === false)
+            {
+                return $udfParameters[UpiJuspay\Fields::REF_ID];
+            }
+        }
+
+        return $response['body'][UpiJuspay\Fields::MERCHANT_REQUEST_ID];
     }
 }

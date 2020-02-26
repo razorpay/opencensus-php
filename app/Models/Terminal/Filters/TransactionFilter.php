@@ -126,6 +126,10 @@ class TransactionFilter extends Terminal\Filter
                 $supported = ((Gateway::isBharatQrCardNetworkSupported($network, $gateway)) and
                               (empty($terminal[strtolower($network) . '_mpan']) === false));
             }
+            else if (($terminal->getId() === 'CmRSEGymhC3lae') and ($network === Network::RUPAY))
+            {
+                return true;
+            }
             else
             {
                 $issuer = $payment->card->getIssuer();

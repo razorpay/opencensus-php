@@ -107,19 +107,19 @@ trait HeadlessOtp
             return;
         }
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_INITIATED, $payment);
 
         try
         {
             $response = $this->openHeadlessBrowser($payment, $request);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment);
 
             return $response;
         }
         catch(\Throwable $ex)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment, $ex);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment, $ex);
 
             throw $ex;
         }

@@ -1552,6 +1552,19 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultUpiBlockPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+
+        $payment['upi'] = [
+            'vpa'   => 'vishnu@icici'
+        ];
+
+        return $payment;
+    }
+
     protected function getDefaultAepsPaymentArray()
     {
         $payment = $this->getDefaultPaymentArrayNeutral();

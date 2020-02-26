@@ -116,7 +116,6 @@
   <polygon points="0,0 0,4 1,5 12,1" fill="#F4F8FF" />
   <polygon points="0,0 0,2 10,6 12,0" fill="url(#grad)" />
 </svg>
-</form>
 <main>
   <header>
     <img height="32" src="https://cdn.razorpay.com/brand/npci.png">
