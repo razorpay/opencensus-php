@@ -133,6 +133,12 @@ export default class ActivationContainer extends Component {
     });
   }
 
+  updateActivationData = activationData => {
+    this.setState({
+      data: activationData,
+    });
+  };
+
   handleNewData(data) {
     this.setState({ data });
   }
@@ -210,6 +216,7 @@ export default class ActivationContainer extends Component {
     const commonProps = {
       accountId: this.props.accountId,
       fetchActivationDetails: this.fetchActivationDetails,
+      updateActivationData: this.updateActivationData,
       data,
       categories,
       handleUIUpdate: this.handleUIUpdate,

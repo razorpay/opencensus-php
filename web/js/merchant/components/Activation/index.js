@@ -60,6 +60,9 @@ import {
   UNREGISTERED_TYPES,
   isL1Completed,
   hasSelectedBlacklistedCategory,
+  doesHaveAdditionalDocs,
+  getDefaultAdditionalDoc,
+  getAdditionalDocOptions,
 } from './ActivationUtils';
 import QueryString from 'query-string';
 import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
@@ -167,7 +170,9 @@ export default class ActivationWizard extends React.Component {
     callingApi: false,
     address_proof: 'aadhar',
     needsClarification: {},
+    additional_doc: '',
   };
+
   constructor(props) {
     super(props);
     this.prepareTabs(props);
@@ -228,6 +233,7 @@ export default class ActivationWizard extends React.Component {
 
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
+
       if (
         props.data.activation_status === 'needs_clarification' &&
         props.data.kyc_clarification_reasons
@@ -246,6 +252,7 @@ export default class ActivationWizard extends React.Component {
         );
         NEEDS_CLARIFICATION_STEP = 5;
       }
+
       if (!isL1Completed(this)) {
         //Code needs some refactoring
         FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
@@ -266,8 +273,20 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS_CONTENT[1][0].options = getBusinessTypeOptions(this);
     }
 
-    DOCUMENT_UPLOAD_STEP &&
+    if (DOCUMENT_UPLOAD_STEP) {
       SAVE_BUTTON_DISABLED_STEPS.push(DOCUMENT_UPLOAD_STEP);
+
+      if (doesHaveAdditionalDocs(this)) {
+        // set default additional doc
+        const defaultAdditionalDoc = getDefaultAdditionalDoc(this);
+        this.state.additional_doc = defaultAdditionalDoc || '';
+        const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 9;
+        FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
+          ADDITIONAL_DOC_SELECT_FIELD_INDEX
+        ].options = getAdditionalDocOptions(this);
+      }
+    }
+
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
     const prepareFileFields = a => {
@@ -1244,10 +1263,12 @@ export default class ActivationWizard extends React.Component {
             // Input fields are uncontrolled, so needs to be updated directly. Updating dependent field visible in view.
             document.querySelector(
               `.form-container [name=${cityField}]`
-            ).value = data.city;
+            ).value =
+              data.city;
             document.querySelector(
               `.form-container [name=${stateField}]`
-            ).value = data.state_code;
+            ).value =
+              data.state_code;
 
             this.setState({
               dirty: {
@@ -1290,9 +1311,17 @@ export default class ActivationWizard extends React.Component {
 
     /* Step Last: */
     if (stateName) {
-      this.setState({
-        [stateName]: fieldValue,
-      });
+      this.setState(
+        {
+          [stateName]: fieldValue,
+        },
+        () => {
+          // re-validate the tab once state changes
+          if (stateName === 'additional_doc') {
+            this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+          }
+        }
+      );
 
       if (Object.keys(sideEffectFieldsToUpdate).length) {
         this.setState({
@@ -1497,11 +1526,12 @@ export default class ActivationWizard extends React.Component {
           </main-title>
 
           {/* Alert: For linked account if activated */}
-          {this.isLinkedAccountForm && isFormActivated && (
-            <Alert.Info iconBefore="i-done-all">
-              The account has been activated
-            </Alert.Info>
-          )}
+          {this.isLinkedAccountForm &&
+            isFormActivated && (
+              <Alert.Info iconBefore="i-done-all">
+                The account has been activated
+              </Alert.Info>
+            )}
 
           {/* Alerts: for MAIN activation form */}
           {do {
@@ -1619,23 +1649,24 @@ export default class ActivationWizard extends React.Component {
         </main>
 
         {/* Submit form overlay view, Lock check not necessary here. Just ensured, 'Submit Form' checkbox must be disabled if locked */}
-        {!isFormSubmitted && this.state.showSubmitLayer && (
-          <main
-            className={classList(
-              'overlay-container',
-              isFormLocked && 'main--full'
-            )}
-          >
-            <SubmitForm
-              closeActivationForm={() => {
-                this.goto(FORM_TABS.length - 1);
-              }}
-              isFormLocked={isFormLocked}
-              isLinkedAccount={this.isLinkedAccountForm}
-              submitActivationForm={this.submitForm}
-            />
-          </main>
-        )}
+        {!isFormSubmitted &&
+          this.state.showSubmitLayer && (
+            <main
+              className={classList(
+                'overlay-container',
+                isFormLocked && 'main--full'
+              )}
+            >
+              <SubmitForm
+                closeActivationForm={() => {
+                  this.goto(FORM_TABS.length - 1);
+                }}
+                isFormLocked={isFormLocked}
+                isLinkedAccount={this.isLinkedAccountForm}
+                submitActivationForm={this.submitForm}
+              />
+            </main>
+          )}
 
         {/* Form Footer, to show actions btns / saving state */}
         {!isFormLocked && (
@@ -1725,10 +1756,11 @@ export default class ActivationWizard extends React.Component {
     if (i === NEEDS_CLARIFICATION_STEP) {
       return false;
     }
-    return FORM_TABS_CONTENT[i].every(c =>
-      Array.isArray(c)
-        ? c.every(d => isFieldValid(d, this))
-        : isFieldValid(c, this)
+    return FORM_TABS_CONTENT[i].every(
+      c =>
+        Array.isArray(c)
+          ? c.every(d => isFieldValid(d, this))
+          : isFieldValid(c, this)
     );
   }
 }
@@ -1867,20 +1899,25 @@ function ActivationField(field) {
     rest.placeholder = rest.getPlaceholder(this);
   }
 
-  if (!this.isOnKYCTab() && rest._type == 'address_proof_upload_doc') {
+  if (
+    !this.isOnKYCTab() &&
+    rest.destinationUrl === 'merchant/documents/upload'
+  ) {
     const { documents } = this.props.data;
     defaultValue =
       (documents &&
         documents[`${rest.name}`] &&
         documents[`${rest.name}`][0].id) ||
       null;
-  } else if (rest._type == 'address_proof_upload_doc') {
+  } else if (rest._type === 'address_proof_doc_upload') {
     defaultValue = this.state.dirty[rest.name] || null;
   }
 
   if (rest.isDeletable) {
     rest.onCloseClick = () => {
-      this.props.deleteFile(rest.name);
+      this.props.deleteFile(rest.name, () => {
+        this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+      });
     };
   }
 
@@ -1889,18 +1926,21 @@ function ActivationField(field) {
     if (!this.state.dirty[rest.name] && error) rest.propagatedError = error;
     else rest.propagatedError = '';
   }
+
   return (
     <>
-      {this.isOnKYCTab() && rest.reasons && rest.reasons.length > 0 && (
-        <div className="ndc-reasons">
-          {rest.reasons.map((r, i) => (
-            <div key={i}>
-              <i className="i i-info-circle" />
-              <div>{r}</div>
-            </div>
-          ))}
-        </div>
-      )}
+      {this.isOnKYCTab() &&
+        rest.reasons &&
+        rest.reasons.length > 0 && (
+          <div className="ndc-reasons">
+            {rest.reasons.map((r, i) => (
+              <div key={i}>
+                <i className="i i-info-circle" />
+                <div>{r}</div>
+              </div>
+            ))}
+          </div>
+        )}
       <Component
         key={key}
         data-name={_name}
@@ -1916,11 +1956,14 @@ function ActivationField(field) {
 
 function isFieldValid(field, activation) {
   const { props } = activation;
+  const name = field.getName ? field.getName(activation) : field.name;
   const data = props.data;
-  if (!field.name) {
+
+  if (!name) {
     // what isn't submissible is valid
     return true;
   }
+
   if (field._when) {
     // what isn't visible is valid
     if (!field._when(activation)) {
@@ -1928,7 +1971,6 @@ function isFieldValid(field, activation) {
     }
   }
 
-  const name = field.getName ? field.getName(activation) : field.name;
   const value =
     data[name] ||
     (data.documents && data.documents[name] && data.documents[name][0].id);

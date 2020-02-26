@@ -1,6 +1,11 @@
 import DetailRow from 'merchant/components/DetailRow';
 import { titleCase } from 'common/utils/rzp-utils';
-import { roles, agentRole, RBLRoles, AuthLinkRoles } from 'merchant/helpers/data';
+import {
+  roles,
+  agentRole,
+  RBLRoles,
+  AuthLinkRoles,
+} from 'merchant/helpers/data';
 
 export default ({ loggedInUser, loggedInUserRole }) => {
   let ROLES = { ...roles, ...agentRole, ...RBLRoles, ...AuthLinkRoles };

@@ -292,7 +292,10 @@ export default class User {
   }
 
   get isAuthLinkTokenAndPaymentsEnabled() {
-    return this.userRole !== rolesList.AUTH_LINK_AGENT && this.userRole !== rolesList.AUTH_LINK_SUPERVISOR;
+    return (
+      this.userRole !== rolesList.AUTH_LINK_AGENT &&
+      this.userRole !== rolesList.AUTH_LINK_SUPERVISOR
+    );
   }
 
   get isAuthLinkBatchUploadEnabled() {

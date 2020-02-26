@@ -13,7 +13,7 @@ import {
 } from 'merchant/reducers/team';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import {AuthLinkRoles} from "../../../../helpers/data";
+import { AuthLinkRoles } from '../../../../helpers/data';
 
 let ROLES = without(roles, rolesList.OWNER);
 @connect(state => state.session, {

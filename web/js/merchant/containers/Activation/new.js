@@ -323,7 +323,7 @@ export default class ActivationContainer extends React.Component {
       });
   };
 
-  deleteFile = name => {
+  deleteFile = (name, cb) => {
     const { showNotification, data } = this.props;
     const documents = data.documents;
     if (documents && Object.keys(documents).length && documents[name].length) {
@@ -334,10 +334,14 @@ export default class ActivationContainer extends React.Component {
         mode: 'live',
       })
         .then(res => {
-          showNotification({
-            type: 'success',
-            message: 'File deleted successfully',
-          });
+          if (res.success && res.data) {
+            this.props.updateActivationData(res.data);
+            cb && cb();
+            showNotification({
+              type: 'success',
+              message: 'File deleted successfully',
+            });
+          }
         })
         .catch(err => {
           showNotification({

@@ -1,14 +1,21 @@
-import { addPrefixToObjectKeys, isPresent } from 'common/utils/rzp-utils';
-import { BUSINESS_TYPE_OPTIONS } from './AccountActivationFormMap';
 import {
   trackL1FormSuccess,
   trackL1FormError,
 } from 'merchant/containers/Activation/ga_new';
-import BingDataObj from 'common/utils/bingDataObj';
 import {
   trackhubsContactUpdate,
   fireAnalyticsEvents,
 } from 'common/utils/googleAnalytics';
+import BingDataObj from 'common/utils/bingDataObj';
+import { addPrefixToObjectKeys, isPresent } from 'common/utils/rzp-utils';
+
+import { BUSINESS_TYPE_OPTIONS } from './AccountActivationFormMap';
+import {
+  ADDITIONAL_DOCS_REQUIRED_REG_BIZ,
+  DEFAULT_ADDITIONAL_DOC_REG_BIZ,
+  ADDITIONAL_DOCS_LABEL_VALUE_MAP,
+  BIZ_CAT_SUB_CAT_OPTIONAL_ADDITIONAL_DOCS,
+} from './Constants';
 
 function fireL1FormSuccessEvents(activation_flow) {
   let data = new BingDataObj('activationform', 'complete', 'success', 1);
@@ -250,6 +257,102 @@ function hasSelectedBlacklistedCategory(activation) {
   return false;
 }
 
+// Additional Docs required for only some Reg. Biz based on Biz Cat. and Biz Subcat.
+function doesHaveAdditionalDocs(activation) {
+  const bizCatSubCatPair = getBizCatSubCatPair(
+    activation.state,
+    activation.props
+  );
+  const additionalDocReqMapKey = getValuesSeparatedBySymbol(
+    bizCatSubCatPair,
+    '-'
+  );
+
+  if (
+    !!ADDITIONAL_DOCS_REQUIRED_REG_BIZ[additionalDocReqMapKey] &&
+    !isUnregisteredBusiness(activation)
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function getDefaultAdditionalDoc(activation) {
+  const bizCatSubCatPair = getBizCatSubCatPair(
+    activation.state,
+    activation.props
+  );
+  const defaultAdditionalDocMapKey = getValuesSeparatedBySymbol(
+    bizCatSubCatPair,
+    '-'
+  );
+
+  return DEFAULT_ADDITIONAL_DOC_REG_BIZ[defaultAdditionalDocMapKey];
+}
+
+function getAdditionalDocOptions(activation) {
+  const bizCatSubCatPair = getBizCatSubCatPair(
+    activation.state,
+    activation.props
+  );
+  const additionalDocsMapKey = getValuesSeparatedBySymbol(
+    bizCatSubCatPair,
+    '-'
+  );
+  const additionalDoc = ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocsMapKey];
+
+  return Object.keys(additionalDoc).map(c => {
+    const doc = additionalDoc[c];
+    return {
+      name: c,
+      label: doc.label,
+    };
+  });
+}
+
+function getValuesSeparatedBySymbol(values = [], symbol = '-') {
+  return values.join(symbol);
+}
+
+function getBizCatSubCatPair(state, props) {
+  const selectedBizCategory =
+    state.dirty.business_category || props.data.business_category;
+  const selectedBizSubCategory =
+    state.dirty.business_subcategory || props.data.business_subcategory;
+
+  return [selectedBizCategory, selectedBizSubCategory];
+}
+
+function getAdditionalDocCount(state, props) {
+  const bizCatSubCatPair = getBizCatSubCatPair(state, props);
+  const additionalDocsMapKey = getValuesSeparatedBySymbol(
+    bizCatSubCatPair,
+    '-'
+  );
+
+  if (ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocsMapKey])
+    return Object.keys(ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocsMapKey])
+      .length;
+
+  return 0;
+}
+
+function isOptionalAdditionalDoc(docKey, bizCatSubCatKey) {
+  return !!(
+    BIZ_CAT_SUB_CAT_OPTIONAL_ADDITIONAL_DOCS[docKey] &&
+    BIZ_CAT_SUB_CAT_OPTIONAL_ADDITIONAL_DOCS[docKey][bizCatSubCatKey]
+  );
+}
+
+function isAdditonalDocRequired(state, props) {
+  const { additional_doc } = state;
+  const bizCatSubCatPair = getBizCatSubCatPair(state, props);
+  const bizCatSubCatKey = getValuesSeparatedBySymbol(bizCatSubCatPair, '-');
+
+  return !isOptionalAdditionalDoc(additional_doc, bizCatSubCatKey);
+}
+
 export {
   handleInstantActivationSuccess,
   L1FormError,
@@ -271,4 +374,9 @@ export {
   getBillingLabelInfo,
   getAccountNumberInfo,
   hasSelectedBlacklistedCategory,
+  doesHaveAdditionalDocs,
+  getDefaultAdditionalDoc,
+  getAdditionalDocOptions,
+  getAdditionalDocCount,
+  isAdditonalDocRequired,
 };

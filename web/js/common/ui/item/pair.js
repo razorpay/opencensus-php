@@ -3,7 +3,12 @@ import * as id from './id';
 import { getAmount, getTime } from 'common/ui/item';
 import { makeIdLink } from 'common/ui/item/id';
 import { getIntervalCycle, subString } from 'common/utils/rzp-utils';
-import { roles, agentRole, RBLRoles, AuthLinkRoles } from 'merchant/helpers/data';
+import {
+  roles,
+  agentRole,
+  RBLRoles,
+  AuthLinkRoles,
+} from 'merchant/helpers/data';
 
 const allRoles = {
   ...roles,

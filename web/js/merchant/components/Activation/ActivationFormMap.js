@@ -34,7 +34,12 @@ import {
   getBillingLabelInfo,
   getAccountNumberInfo,
   hasSelectedBlacklistedCategory,
+  doesHaveAdditionalDocs,
+  getAdditionalDocCount,
+  isAdditonalDocRequired,
 } from './ActivationUtils';
+
+import { ADDITIONAL_DOCS_LABEL_VALUE_MAP } from './Constants';
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
@@ -729,7 +734,7 @@ const uploadFields = [
     className: 'AddressProof-upload',
     destinationUrl: 'merchant/documents/upload',
     _when: _showForIndiv,
-    _type: 'address_proof_upload_doc',
+    _type: 'address_proof_doc_upload',
     isDeletable: true,
     //linkedfields: ['address_proof'],
   },
@@ -746,17 +751,55 @@ const uploadFields = [
     className: 'AddressProof-upload',
     destinationUrl: 'merchant/documents/upload',
     _when: _showForIndiv,
-    _type: 'address_proof_upload_doc',
+    _type: 'address_proof_doc_upload',
     isDeletable: true,
     //linkedfields: ['address_proof'],
   },
+  {
+    label: 'Additional DOC',
+    _name: 'additional_doc',
+    _cmp: Input.Select,
+    options: [],
+    _when: activation =>
+      doesHaveAdditionalDocs(activation) &&
+      getAdditionalDocCount(activation.state, activation.props) > 1,
+    required: activation =>
+      isAdditonalDocRequired(activation.state, activation.props),
+  },
+  {
+    getLabel: activation => {
+      const { additional_doc } = activation.state;
+
+      const userSelectedCategory =
+        activation.state.dirty.business_category ||
+        activation.props.data.business_category;
+      const userSelectedSubcategory =
+        activation.state.dirty.business_subcategory ||
+        activation.props.data.business_subcategory;
+
+      const additionalDocMapKey = `${userSelectedCategory}-${userSelectedSubcategory}`;
+      const additionalDoc =
+        ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocMapKey][additional_doc];
+
+      return additionalDoc.label;
+    },
+    getName: activation => activation.state.additional_doc,
+    _cmp: Input.File,
+    className: 'AddressProof-upload',
+    destinationUrl: 'merchant/documents/upload',
+    isDeletable: true,
+    _when: doesHaveAdditionalDocs,
+    required: activation =>
+      isAdditonalDocRequired(activation.state, activation.props),
+  },
 ];
+
 export const ndcFields = [
   {
     label: 'Cancelled Cheque Copy',
     name: 'cancelled_cheque',
     uploadAs: 'cancelled_cheque',
-    _type: 'address_proof_upload_doc',
+    _type: 'address_proof_doc_upload',
     _autoRenderImpure: true,
     description: 'Please upload a copy of cancelled cheque.',
     _cmp: Input.File,
@@ -768,6 +811,7 @@ export const ndcFields = [
     isDeletable: false,
   },
 ];
+
 // Tabs name
 export const mainFormTabs = [
   'Contact Info',

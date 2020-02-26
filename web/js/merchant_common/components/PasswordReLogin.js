@@ -13,7 +13,7 @@ const captchaKey = '6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4';
 @withRouter
 export default class PasswordReLogin extends Component {
   state = {
-    gResponse: null
+    gResponse: null,
   };
 
   componentDidMount() {
@@ -21,7 +21,7 @@ export default class PasswordReLogin extends Component {
 
     window.gResponse = token => {
       self.setState({
-        gResponse: token
+        gResponse: token,
       });
     };
 
@@ -33,7 +33,7 @@ export default class PasswordReLogin extends Component {
 
         window.grecaptcha.render(gCaptchaParent, {
           sitekey: captchaKey,
-          callback: window.gResponse
+          callback: window.gResponse,
         });
       });
     }
@@ -61,14 +61,14 @@ export default class PasswordReLogin extends Component {
 
     const reqPayload = {
       ...formData,
-      captcha
+      captcha,
     };
 
     ajax({
       url: '/user/signin',
       method: 'post',
       appendModeInURL: false,
-      data: reqPayload
+      data: reqPayload,
     })
       .then(resp => {
         if (resp.success) {
@@ -84,7 +84,7 @@ export default class PasswordReLogin extends Component {
 
           throw {
             errors:
-              'Some network issue. Please re-enter password or Reload the page.'
+              'Some network issue. Please re-enter password or Reload the page.',
           };
         }
       })
@@ -93,7 +93,7 @@ export default class PasswordReLogin extends Component {
 
         this.props.showNotification({
           type: 'error',
-          message: errors
+          message: errors,
         });
 
         this.resetCaptcha();
