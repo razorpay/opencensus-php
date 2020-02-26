@@ -15,13 +15,13 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function getReasonIdFromAttributes(string $network, string $gatewayCode, string $code) : array
+    public function getReasonFromAttributes(string $network, string $gatewayCode, string $code) : array
     {
-        $reasonIds = $this->repo
-                          ->dispute_reason
-                          ->getReasonIdFromAttributes($network, $gatewayCode, $code)
-                          ->toArray();
+        $reasons = $this->repo
+                        ->dispute_reason
+                        ->getReasonFromAttributes($network, $gatewayCode, $code)
+                        ->toArray();
 
-        return $reasonIds;
+        return $reasons;
     }
 }

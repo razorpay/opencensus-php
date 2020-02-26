@@ -433,6 +433,8 @@ class Gateway extends Base\Gateway
         {
             Case Card\Network::VISA:
                 return '7';
+            Case Card\Network::RUPAY:
+                return '05';
             Case Card\Network::MC:
             default:
                 return '2';
@@ -477,6 +479,8 @@ class Gateway extends Base\Gateway
                 return 'spa';
             case Card\Network::AMEX:
                 return 'aesk';
+            case Card\Network::RUPAY:
+                return 'rpy';
             default:
                 return '';
         }

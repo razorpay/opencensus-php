@@ -210,4 +210,16 @@ class Scrooge extends BaseScrooge
 
         return $scroogeResponse;
     }
+
+    public function getPublicRefund(string $id, array $params = []): array
+    {
+        $scroogeResponse = [
+            'code' => 200,
+            'body' => [
+                'status' => 'pending',
+            ]
+        ];
+
+        return $scroogeResponse;
+    }
 }

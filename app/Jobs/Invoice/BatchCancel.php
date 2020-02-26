@@ -66,7 +66,6 @@ class BatchCancel extends Job
         }
         else
         {
-            // fetchBatchById() checks for admin auth. Is this check possible from here?
             $batch = (new Batch\Service())->fetchBatchById($this->batchId);
         }
 

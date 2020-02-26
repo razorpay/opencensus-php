@@ -798,6 +798,17 @@ return [
             ],
         ],
 
+        PermissionCategory::RAZORPAY_CAPITAL => [
+            Permission::OFFLINE_VERIFICATION_SERVICE_VIEW => [
+                'description' => 'Allow read access to Offline Verification Service routes/actions from dashboard',
+                'assignable'  => true,
+            ],
+            Permission::OFFLINE_VERIFICATION_SERVICE_EDIT => [
+                'description' => 'Allow edit access to Offline Verification Service routes/actions from dashboard',
+                'assignable'  => true,
+            ],
+        ],
+
         PermissionCategory::PAYOUTS => [
             Permission::CREATE_PAYOUT => [
                 'description' => 'Merchant can create a new payout',

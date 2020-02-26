@@ -1,9 +1,9 @@
 <?php
 
-
 namespace RZP\Tests\Functional\UserRole\Banking\Dashboard;
 
-
+use RZP\Models\Merchant;
+use RZP\Services\RazorXClient;
 use RZP\Models\User\BankingRole;
 
 trait BankingRoleTrait
@@ -207,11 +207,45 @@ trait BankingRoleTrait
                 'reporting_log_create',
                 'reporting_log_update',
             ],
+
+            BankingRole::OPERATIONS => [
+                'user_otp_create',
+                'user_edit_self',
+                'user_fetch',
+                'merchant_user_reset_password',
+                'reporting_log_get',
+                'payout_fetch_by_id',
+                'payout_links_fetch_multiple',
+                'payout_links_create',
+                'payout_links_cancel',
+            ],
         ];
     }
 
     protected function getUserRolePermissibleRouteMap(string $role)
     {
         return $this->getUserRoleRouteMap()[$role] ?? null;
+    }
+
+    protected function mockRazorXTreatmentAccessDenyUnauthorised($value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                        ->setConstructorArgs([$this->app])
+                        ->setMethods(['getTreatment'])
+                        ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                                    function ($mid, $feature, $mode) use ($value)
+                                    {
+                                        if ($feature === Merchant\RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED)
+                                        {
+                                            return $value;
+                                        }
+
+                                        return 'off';
+                                    }));
     }
 }

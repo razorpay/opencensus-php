@@ -66,6 +66,8 @@ class Validator extends Base\Validator
         Entity::EMAIL                 => 'required|email',
         Entity::PASSWORD              => 'required|between:6,50',
         Entity::OTP                   => 'sometimes|filled',
+        Entity::CAPTCHA               => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE       => 'sometimes|string',
     ];
 
     protected static $setup2faMobileRules = [
@@ -138,6 +140,7 @@ class Validator extends Base\Validator
         Entity::ACTION        => 'required|filled|in:'
                                  . 'verify_contact,'
                                  . 'create_payout,'
+                                 . 'create_payout_link,'
                                  . 'create_payout_batch,'
                                  . 'approve_payout,'
                                  . 'approve_payout_bulk,'
@@ -145,10 +148,10 @@ class Validator extends Base\Validator
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
-        'amount'              => 'required_if:action,create_payout,approve_payout|integer|min:100',
-        'account_number'      => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk|alpha_num|between:5,22',
+        'amount'              => 'required_if:action,create_payout,approve_payout,create_payout_link|integer|min:100',
+        'account_number'      => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk,create_payout_link|alpha_num|between:5,22',
         'fund_account_id'     => 'required_if:action,create_payout|public_id|size:17',
-        'purpose'             => 'required_if:action,create_payout|string|max:30|alpha_dash_space',
+        'purpose'             => 'required_if:action,create_payout,create_payout_link|string|max:30|alpha_dash_space',
         'payout_id'           => 'required_if:action,approve_payout|public_id|size:19',
         'payout_total_amount' => 'required_if:action,approve_payout_bulk|integer|min:100',
         'payout_count'        => 'required_if:action,approve_payout_bulk|integer|min:1',
@@ -174,6 +177,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
+        'captcha'
+    ];
+
+    protected static $loginValidators = [
         'captcha'
     ];
 
@@ -403,5 +410,23 @@ class Validator extends Base\Validator
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
+    }
+
+    public function validatePasswordIsNotSameAsLastThree(string $newPassword)
+    {
+        $oldPassword = $this->entity->getAttribute(Entity::PASSWORD);
+        $oldPassword1 = $this->entity->getAttribute(Entity::OLD_PASSWORD_1);
+        $oldPassword2 = $this->entity->getAttribute(Entity::OLD_PASSWORD_2);
+
+        assertTrue($oldPassword);
+
+        foreach (array_filter([$oldPassword, $oldPassword1, $oldPassword2]) as $old)
+        {
+            if (Hash::check($newPassword, $old) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD);
+            }
+        }
     }
 }

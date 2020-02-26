@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -796,6 +797,11 @@ class Header
     const IIN_MC_MASTERCARD_ACCEPTANCE_BRAND     = 'ACCEPTANCE_BRAND';
     const IIN_MC_MASTERCARD_COUNTRY              = 'COUNTRY';
     const IIN_MC_MASTERCARD_REGION               = 'REGION';
+
+    // entity update action batch
+    const ID = Detail\Entity::ID;
+    const BUSINESS_REGISTERED_ADDRESS = Detail\Entity::BUSINESS_REGISTERED_ADDRESS;
+    const BUSINESS_REGISTERED_STATE = Detail\Entity::BUSINESS_REGISTERED_STATE;
 
 
     const ADJUSTMENT_REFERENCE_ID   = 'reference_id';
@@ -2449,6 +2455,23 @@ class Header
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
             ]
+        ],
+
+        Type::ENTITY_UPDATE_ACTION => [
+            self::INPUT => [
+                self::ID,
+                self::BUSINESS_NAME,
+                self::BUSINESS_REGISTERED_ADDRESS,
+                self::BUSINESS_REGISTERED_STATE,
+            ],
+            self::OUTPUT => [
+                self::ID,
+                self::BUSINESS_NAME,
+                self::BUSINESS_REGISTERED_ADDRESS,
+                self::BUSINESS_REGISTERED_STATE,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
         ],
 
         Type::ADMIN_BATCH => [

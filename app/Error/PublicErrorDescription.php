@@ -807,6 +807,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS                      = 'Another payout operation is in progress. Please try again later.';
     const BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED                            = 'The payout is already being processed.';
     const BAD_REQUEST_INVALID_PASSWORD                                          = 'Invalid password';
+    const BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD                         = 'Your new password cannot match any of your last three passwords';
     const BAD_REQUEST_INVALID_LOCALE                                            = 'Issue on bank side';
     const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
     const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                       = 'Could not read card magnetic stripe';
@@ -832,11 +833,18 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_OTP_AUTH_TOKEN                                   = 'Token passed is either invalid or expired';
     const BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED                           = 'OTP generation failed';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS                               = 'Invalid Payout Link status passed';
+    const BAD_REQUEST_REWRITING_EMAIL_NOT_PERMITTED                            = 'Cannot over-write existing email information in created Payout Link';
+    const BAD_REQUEST_REWRITING_PHONE_NUMBER_NOT_PERMITTED                     = 'Cannot over-write existing phone number information in created Payout Link';
+    const BAD_REQUEST_INVALID_PAYOUT_LINK_NOTIFICATION_TYPE                    = 'Invalid Payout Link Notification Type';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS_TRANSITION                    = 'The following state transition is not allowed for this payout link';
     const BAD_REQUEST_PAYOUT_LINK_CANNOT_BE_CANCELLED_IN_THIS_STATE            = 'Payout Link cannot be cancelled in this state';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST           = 'Cannot initiate Payout Link in this state';
     const BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS                = 'Request failed because another operation is in progress';
     const BAD_REQUEST_EITHER_CONTACT_ID_OR_INFORMATION_TO_BE_SENT              = 'Either Contact ID or Contact Information is required, not both';
+    const BAD_REQUEST_EMAIL_NOTIFICATION_WITH_EMPTY_EMAIL                      = 'send_email cannot be true when contact does not have an associated email';
+    const BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE                        = 'send_sms cannot be true when contact does not have an associated phone number ';
+    const BAD_REQUEST_INVALID_CONTACT_ID                                       = 'Contact Id provided is invalid';
+    const BAD_REQUEST_CONTACT_ID_EMAIL_AND_PHONE_NUMBER_MISSING                = 'Cannot create payout link as the contact_id provided does not have either email or phone number';
 
     // Merchant Config Inheritance
     const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';

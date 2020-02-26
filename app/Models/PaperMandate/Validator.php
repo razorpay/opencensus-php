@@ -26,7 +26,6 @@ class Validator extends Base\Validator
         Entity::END_AT                   => 'sometimes|epoch|nullable',
         Entity::SECONDARY_ACCOUNT_HOLDER => 'sometimes|string|max:22|nullable',
         Entity::TERTIARY_ACCOUNT_HOLDER  => 'sometimes|string|max:22|nullable',
-        Entity::GENERATE_FORM            => 'sometimes|bool',
     ];
 
     protected static $bankAccountRules = [

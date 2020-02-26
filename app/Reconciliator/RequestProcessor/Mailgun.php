@@ -39,6 +39,7 @@ class Mailgun extends Base
         self::UPI_HDFC,
         self::UPI_HULK,
         self::CARD_FSS_HDFC,
+        self::CARD_FSS_SBI,
         self::UPI_ICICI,
         self::FREECHARGE,
         self::FIRST_DATA,

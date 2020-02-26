@@ -2,29 +2,38 @@
 
 namespace RZP\Mail\Dispute;
 
+use Carbon\Carbon;
 use RZP\Constants\MailTags;
+use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Dispute\Phase;
 
 class BulkCreation extends Base
 {
+    const BULK_DISPUTE_ATTACHMENT_FILE_NAME = 'bulk_disputes_list';
+
     protected function createViewTableData()
     {
-        $tableData = [];
-
-        foreach ($this->data[Constants::DISPUTES] as $dispute)
+        if (isset($this->data['disputesDataTable']) === false)
         {
-            $tableRow['dispute_id']          = $dispute['id'];
-            $tableRow['payment_id']          = $dispute['payment_id'];
-            $tableRow['amount']              = 'Rs. ' . floatval(sprintf('%0.2f', ($dispute['amount'] / 100)));
-            $tableRow['case_id']             = $dispute['gateway_dispute_id'];
-            $tableRow['phase']               = $dispute['phase'];
-            $tableRow['respond_by']          = date('d F Y', $dispute['respond_by']);
+            $tableData = [];
 
-            $tableData[] = $tableRow;
+            foreach ($this->data[Constants::DISPUTES] as $dispute)
+            {
+                $tableRow['dispute_id']          = $dispute['id'];
+                $tableRow['payment_id']          = $dispute['payment_id'];
+                $tableRow['amount']              = 'Rs. ' . floatval(sprintf('%0.2f', ($dispute['amount'] / 100)));
+                $tableRow['case_id']             = $dispute['gateway_dispute_id'];
+                $tableRow['phase']               = $dispute['phase'];
+                $tableRow['respond_by']          = date('d F Y', $dispute['respond_by']);
+                $tableRow['gateway_code']        = $dispute['gateway_code'];
+                $tableRow['gateway_description'] = $dispute['gateway_description'];
+
+                $tableData[] = $tableRow;
+            }
+
+            $this->data['disputesDataTable'] = $tableData;
         }
-
-        $this->data['disputesDataTable'] = $tableData;
     }
 
     protected function addSubject()
@@ -39,6 +48,8 @@ class BulkCreation extends Base
     protected function addHtmlView()
     {
         $this->createViewTableData();
+
+        $this->data['disputedAmount'] = strval(floatval(sprintf('%0.2f', ($this->data['totalAmount'] / 100))));
 
         $this->view('emails.dispute.bulk_creation');
 
@@ -57,7 +68,43 @@ class BulkCreation extends Base
         return $this;
     }
 
-    protected function getSubject()
+    protected function addAttachments()
+    {
+        $this->createViewTableData();
+
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y_H:i:s');
+
+        $fileName = sprintf('%s_%s_%s.csv', self::BULK_DISPUTE_ATTACHMENT_FILE_NAME, $this->mode, $time);
+
+        $fileData = $this->data['disputesDataTable'];
+
+        $fileDataString = $this->convertFileDataToString($fileData);
+
+        $this->attachData($fileDataString, $fileName, ['mime' => 'application/csv']);
+
+        return $this;
+    }
+
+    private function convertFileDataToString(array $arrayOfArrays) : string
+    {
+        $finalString = '';
+
+        if (count($arrayOfArrays) > 0)
+        {
+            $headers = array_keys($arrayOfArrays[0]);
+
+            $finalString .= implode(',', $headers) . PHP_EOL;
+        }
+
+        foreach ($arrayOfArrays as $array)
+        {
+            $finalString .= implode(',', $array) . PHP_EOL;
+        }
+
+        return $finalString;
+    }
+
+    private function getSubject()
     {
         $phase = $this->data['phase'];
 

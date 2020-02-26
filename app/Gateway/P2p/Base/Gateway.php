@@ -108,4 +108,9 @@ class Gateway extends Base\Gateway
 
         return $response;
     }
+
+    protected function getContextHandleCode()
+    {
+        return $this->context->handleCode();
+    }
 }

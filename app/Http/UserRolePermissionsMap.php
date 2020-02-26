@@ -81,6 +81,9 @@ class UserRolePermissionsMap
                  Permission::UPDATE_MERCHANT_FEATURE,
                  Permission::CREATE_BATCH,
                  Permission::ASSIGN_MERCHANT_HANDLE,
+                 Permission::USER_PASSWORD_RESET,
+                 Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+                 Permission::UPDATE_PAYOUT,
              ],
 
              BankingRole::ADMIN => [
@@ -113,6 +116,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_FUND_ACCOUNT_VALIDATION,
                  Permission::VALIDATE_FUND_ACCOUNT,
                  Permission::VIEW_FUND_ACCOUNT,
+                 Permission::UPDATE_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT_BULK,
                  Permission::VALIDATE_FUND_ACCOUNT,
@@ -140,6 +144,8 @@ class UserRolePermissionsMap
                  Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
                  Permission::MERCHANT_INSTANT_ACTIVATION,
                  Permission::CREATE_BATCH,
+                 Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
+                 Permission::UPDATE_PAYOUT,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -172,6 +178,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_FUND_ACCOUNT_VALIDATION,
                  Permission::VALIDATE_FUND_ACCOUNT,
                  Permission::VIEW_FUND_ACCOUNT,
+                 Permission::UPDATE_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT,
                  Permission::CREATE_FUND_ACCOUNT_BULK,
                  Permission::VALIDATE_FUND_ACCOUNT,
@@ -195,6 +202,19 @@ class UserRolePermissionsMap
                  Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
                  Permission::MERCHANT_INSTANT_ACTIVATION,
                  Permission::CREATE_BATCH,
+                 Permission::UPDATE_PAYOUT,
+             ],
+
+             BankingRole::OPERATIONS => [
+                 Permission::CREATE_USER_OTP,
+                 Permission::UPDATE_USER_PROFILE,
+                 Permission::VIEW_USER,
+                 Permission::USER_PASSWORD_RESET,
+                 Permission::VIEW_REPORTING,
+                 Permission::VIEW_PAYOUT,
+                 Permission::VIEW_PAYOUT_LINKS,
+                 Permission::CREATE_PAYOUT_LINKS,
+                 Permission::CANCEL_PAYOUT_LINKS,
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -202,6 +222,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_PAYOUT_PURPOSE,
                  Permission::VIEW_PAYOUT_REVERSAL,
                  Permission::VIEW_PAYOUT_SUMMARY,
+                 Permission::VIEW_PAYOUT_LINKS,
                  Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
                  Permission::VIEW_PAYOUT_LINKS,
                  Permission::VIEW_CONTACT,
