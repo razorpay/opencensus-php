@@ -2092,7 +2092,7 @@ trait Refund
             (in_array($payment->getGateway(), Payment\Gateway::$partialRefundDisabledGateways) === true))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUND_PARTIAL_REFUND_NOT_SUPPORTED,
+                ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED,
                 null,
                 [
                     'payment_id' => $payment->getId(),
