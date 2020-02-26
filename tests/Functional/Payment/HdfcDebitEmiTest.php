@@ -105,26 +105,50 @@ class HdfcDebitEmiTest extends TestCase
 
     public function testHdfcDebitEmiMissingEmiPlan()
     {
+        $this->createDependentEntitiesForSuccessPayment(false);
 
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
     }
 
     public function testHdfcDebitEmiMissingContact()
     {
+        $this->createDependentEntitiesForSuccessPayment(false);
 
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->payment;
+        unset($payment['contact']);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
     }
 
     // ------------- Helpers -----------------
-    protected function createDependentEntitiesForSuccessPayment()
+    protected function createDependentEntitiesForSuccessPayment($addEmiPlan = true)
     {
-        $this->fixtures->emiPlan->create(
-            [
-                'merchant_id' => '10000000000000',
-                'bank'        => 'HDFC',
-                'type'        => 'debit',
-                'rate'        => 1200,
-                'min_amount'  => 300000,
-                'duration'    => 3,
-            ]);
+        if ($addEmiPlan === true)
+        {
+            $this->fixtures->emiPlan->create(
+                [
+                    'merchant_id' => '10000000000000',
+                    'bank'        => 'HDFC',
+                    'type'        => 'debit',
+                    'rate'        => 1200,
+                    'min_amount'  => 300000,
+                    'duration'    => 3,
+                ]);
+        }
 
         $this->fixtures->iin->create(
             [
@@ -167,12 +191,13 @@ class HdfcDebitEmiTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'Token'               => '123456',
-                'Status'              => 'Success',
-                'ErrorCode'           => '0000',
-                'BankReferncNo'       => 'abc123456',
-                'EligibilityStatus'   => 'Yes',
-                'MerchantReferenceNo' => $payment['id'],
+                'Token'                      => '123456',
+                'status'                     => 'OTP_sent',
+                'AuthenticationErrorCode'    => '0000',
+                'AuthenticationErrorMessage' => '',
+                'BankReferenceNo'             => 'abc123456',
+                'EligibilityStatus'          => 'Yes',
+                'MerchantReferenceNo'        => $payment['id'],
             ],
             $mozart
         );
