@@ -1,3 +1,5 @@
+import 'babel-polyfill';
+import React from 'react';
 import 'react-dates/initialize';
 import { Provider } from 'react-redux';
 import { render } from 'react-dom';
