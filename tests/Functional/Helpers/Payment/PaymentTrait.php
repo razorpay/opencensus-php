@@ -2563,4 +2563,20 @@ trait PaymentTrait
 
         $content = $this->makeRequestAndGetContent($request);
     }
+
+    protected function deleteSubmerchant(string $tid, string $mid)
+    {
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url'    => $url,
+            'method' => 'DELETE',
+        ];
+
+        $this->ba->adminAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
 }

@@ -789,6 +789,7 @@ class TerminalMigrationTest extends TestCase
     // tests for syncing merchant_terminal pivot row when submerchants are added to
     // or removed from a terminal
 
+
     public function testAddSubmerchantControlVariant()
     {
         $this->razorxValue = 'control';
@@ -810,5 +811,30 @@ class TerminalMigrationTest extends TestCase
         $afterCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
 
         $this->assertEquals($beforeCount + 1, $afterCount);
+    }
+
+    public function testDeleteSubmerchantControlVariant()
+    {
+        $this->razorxValue = 'control';
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $this->assignSubMerchant($terminal['id'], '10000000000000');
+
+
+        $this->mockTerminalsServiceSendRequest(null, 0);
+
+        $beforeCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
+
+        $this->deleteSubmerchant($terminal['id'], '10000000000000');
+
+        $afterCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
+
+        $this->assertEquals($beforeCount - 1, $afterCount);
     }
 }
