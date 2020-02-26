@@ -257,6 +257,15 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Setters Ends-------------------------------------
 
+    // ------------ Mutators Starts -------------------
+
+    protected function setPhaseAttribute($phase)
+    {
+        $this->attributes[self::PHASE] = strtolower($phase);
+    }
+
+    // ------------ Mutators Ends ---------------------
+
     // ----------------------- Getters -----------------------------------------
 
     public function getParentId()

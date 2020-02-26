@@ -568,6 +568,44 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus();
     }
 
+    public function testYesBankReconCombinedFile()
+    {
+        $payment = $this->fixtures->create('payment:captured', [
+            'amount'    => 100
+        ]);
+
+        $card = $this->fixtures->create('card', []);
+
+        $payment->card()->associate($card);
+
+        $payment->saveOrFail();
+
+        $refund = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
+
+        $entries[] = $this->overrideYesBankPayment($payment->toArrayAdmin());
+
+        $entries[] = $this->overrideYesBankRefund($refund['id']);
+
+        $file = $this->writeToExcelFile($entries, 'fss');
+
+        $this->runForFiles([$file], 'YesBank');
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertNotNull($transaction['reconciled_type']);
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(2, $batch['success_count']);
+
+        $this->assertEquals('reconciliation', $batch['type']);
+
+        $this->assertEquals('YesBank', $batch['gateway']);
+
+        $this->assertBatchStatus();
+    }
 
     public function testCardFssReconPaymentFile()
     {
@@ -1538,6 +1576,26 @@ class ReconciliationFileTest extends TestCase
         {
             $facade[HDFCPaymentRecon::COLUMN_TERMINAL_NUMBER] = "'89050258";
         }
+
+        return $facade;
+    }
+
+    private function overrideYesBankPayment(array $payment)
+    {
+        $facade = $this->testData['facades']['yes_bank'];
+
+        $facade['MTX ID'] = substr($payment['id'], 4, 14);
+
+        return $facade;
+    }
+
+    private function overrideYesBankRefund($refundId)
+    {
+        $facade = $this->testData['facades']['yes_bank'];
+
+        $facade['MTX ID'] = $refundId;
+
+        $facade['TRANSACTION TYPE'] = 'REFUND';
 
         return $facade;
     }

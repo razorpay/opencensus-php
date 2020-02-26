@@ -196,12 +196,12 @@ class Core extends Base\Core
      */
     public static function fetchPublicStatusFromScrooge(string $merchantId): bool
     {
-        $fetchPublicStatusFromScrooge = true;
+        $fetchPublicStatusFromScrooge = false;
 
         if ((self::isRefundsPublicStatusMerchant($merchantId) === true) and
-            (self::getRefundsPublicStatusMerchantsViaScrooge()[$merchantId] === false))
+            (self::getRefundsPublicStatusMerchantsViaScrooge()[$merchantId] === true))
         {
-            $fetchPublicStatusFromScrooge = false;
+            $fetchPublicStatusFromScrooge = true;
         }
 
         return $fetchPublicStatusFromScrooge;

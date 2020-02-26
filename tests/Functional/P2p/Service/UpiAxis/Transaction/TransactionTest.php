@@ -810,7 +810,7 @@ class TransactionTest extends TestCase
         $upi = [
             'mcc'       => '1208',
             'ref_url'   => 'https::example.com',
-            'ref_id'    => 'XrefId'
+            'ref_id'    => 'fourteenchardg'
         ];
 
         $coproto = $helper->initiatePay([
@@ -837,10 +837,10 @@ class TransactionTest extends TestCase
             Fields::AMOUNT                      => $transaction->getRupeesAmount(),
             Fields::PAYER_VPA                   => $transaction->payer->getAddress(),
             Fields::PAYEE_VPA                   => $transaction->payee->getAddress(),
-            Fields::UPI_REQUEST_ID              => $transaction->upi->getNetworkTransactionId(),
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
             Fields::REMARKS                     => $transaction->getDescription(),
-            Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
             Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+            Fields::MERCHANT_REQUEST_ID         => $transaction->upi->getRefId(),
         ]);
 
         $request = $this->mockSdk()->callback();

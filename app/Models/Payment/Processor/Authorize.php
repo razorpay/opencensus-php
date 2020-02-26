@@ -88,7 +88,30 @@ trait Authorize
     {
         $this->verifyMerchantIsLiveForLiveRequest();
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_PROCESSED, $payment);
+        $meta = [
+            'metadata' => [
+                'trackId' => $this->app['req.context']->getTrackId(),
+                'payment' => [
+                    'id'           => $payment->getPublicId(),
+                    'amount'       => $payment->getAmount(),
+                    'currency'     => $payment->getCurrency(),
+                    'method'       => $payment->getMethod(),
+                    'issuer'       => $payment->getIssuer(),
+                    'type'         => $payment->getTransactionType(),
+                    'gateway'      => $payment->getGateway()
+                ]
+            ],
+            'read_key' => array('trackId'),
+            'write_key' => 'payment.id'
+        ];
+
+        if($payment->isUpi() === true) {
+            $meta['metadata']['payment'] += [
+                'vpa' => $payment->getVpa()
+            ];
+        }
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS_PROCESSED, $payment, null, $meta);
 
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
@@ -147,7 +170,7 @@ trait Authorize
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
     {
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_TERMINAL_SELECTION_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_TERMINAL_SELECTION_INITIATED, $payment);
 
         // Ensure that the selectedTerminals set here is an array of terminal entities and not a terminal collection.
         try
@@ -172,17 +195,27 @@ trait Authorize
                     'selected_terminals_ids'  => array_pluck($this->selectedTerminals, Terminal\Entity::ID),
                 ]);
 
-            $this->app['diag']->trackPaymentEvent(
+            $this->app['diag']->trackPaymentEventV2(
                 EventCode::PAYMENT_TERMINAL_SELECTION_PROCESSED,
                 $payment,
                 null,
+                [
+                    'metadata' => [
+                        'payment' => [
+                            'id'             => $payment->getPublicId(),
+                            'terminal_count' => count($this->selectedTerminals)
+                        ]
+                    ],
+                    'read_key'  => array('payment.id'),
+                    'write_key' => 'payment.id'
+                ],
                 [
                     'terminal_count' => count($this->selectedTerminals)
                 ]);
         }
         catch (\Throwable $ex)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_TERMINAL_SELECTION_PROCESSED, $payment, $ex);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_TERMINAL_SELECTION_PROCESSED, $payment, $ex);
 
             throw $ex;
         }
@@ -210,7 +243,7 @@ trait Authorize
         $this->setSelectedTerminals($payment, $gatewayInput);
 
         // we are doing this after terminal selection since we might reject payemnt if there are no terminals found
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_PROCESSED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_PROCESSED, $payment);
 
         if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
@@ -380,15 +413,27 @@ trait Authorize
                 'start'         => microtime(true),
             ];
 
-            $this->app['diag']->trackPaymentEvent(
+            $this->app['diag']->trackPaymentEventV2(
                 EventCode::PAYMENT_AUTHENTICATION_INITIATED,
                 $payment,
                 null,
                 [
+                    'metadata' => [
+                        'payment' => [
+                            'id'                      => $payment->getPublicId(),
+                            'gateway'                 => $payment->getGateway(),
+                            'authentication_gateway'  => $payment->getAuthenticationGateway(),
+                        ]
+                    ],
+                    'read_key'  => array('payment.id'),
+                    'write_key' => 'payment.id'
+                ],
+                [
                     'attempt'     => $retryAttempts,
                     'terminal_id' => $payment->getTerminalId(),
                     'gateway'     => $payment->getGateway(),
-                    'shared'      => $currentTerminal->isShared()
+                    'shared'      => $currentTerminal->isShared(),
+                    'auth_type'   => $terminalGatewayInput['auth_type'] ?? null,
                 ] + ($terminalGatewayInput['authenticate'] ?? []));
 
             try
@@ -402,10 +447,20 @@ trait Authorize
                     $request = $this->callGatewayAuthorize($payment, $terminalGatewayInput);
                 }
 
-                $this->app['diag']->trackPaymentEvent(
+                $this->app['diag']->trackPaymentEventV2(
                     EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT,
                     $payment,
                     null,
+                    [
+                        'metadata' => [
+                            'payment' => [
+                                'id' => $payment->getPublicId(),
+                                '2FA_url' => $request['url'] ?? ''
+                            ]
+                        ],
+                        'read_key' => array('payment.id'),
+                        'write_key' => 'payment.id'
+                    ],
                     [
                         'url' => $request['url'] ?? ''
                     ]);
@@ -571,7 +626,7 @@ trait Authorize
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
@@ -934,7 +989,7 @@ trait Authorize
 
     protected function runPaymentInputValidations(Payment\Entity $payment, array $input)
     {
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS2_INITIATED, $payment);
 
         try
         {
@@ -969,11 +1024,11 @@ trait Authorize
 
             $this->validateApplicationIfApplicable($payment, $input);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
         catch (\Throwable $ex)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment, $ex);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment, $ex);
 
             throw $ex;
         }
@@ -2360,7 +2415,7 @@ trait Authorize
 
         try
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RISKCHECK_INITIATED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_RISKCHECK_INITIATED, $payment);
 
             $riskSource = Risk\Source::INTERNAL;
 
@@ -2418,20 +2473,40 @@ trait Authorize
                 $this->validateFraudDetection($payment, $this->merchant);
             }
 
-            $this->app['diag']->trackPaymentEvent(
+            $this->app['diag']->trackPaymentEventV2(
                 EventCode::PAYMENT_RISKCHECK_PROCESSED,
                 $payment,
                 null,
+                [
+                    'metadata' => [
+                        'payment' => [
+                            'id'            => $payment->getPublicId(),
+                            'risk_source'   => $riskSource
+                        ]
+                    ],
+                    'read_key'  => array('payment.id'),
+                    'write_key' => 'payment.id'
+                ],
                 [
                     'risk_source'   => $riskSource
                 ]);
         }
         catch (\Throwable $ex)
         {
-            $this->app['diag']->trackPaymentEvent(
+            $this->app['diag']->trackPaymentEventV2(
                 EventCode::PAYMENT_RISKCHECK_PROCESSED,
                 $payment,
                 $ex,
+                [
+                    'metadata' => [
+                        'payment' => [
+                            'id'            => $payment->getPublicId(),
+                            'risk_source'   => $riskSource
+                        ]
+                    ],
+                    'read_key'  => array('payment.id'),
+                    'write_key' => 'payment.id'
+                ],
                 [
                     'riskSource' => $riskSource
                 ]);
@@ -3698,10 +3773,36 @@ trait Authorize
         }
         // @codingStandardsIgnoreEnd
 
-        $this->app['diag']->trackPaymentEvent(
+        $meta =  [
+            'metadata' => [
+                'payment' => [
+                    'id'    => $payment->getId(),
+                    'local' => $token->isLocal()
+                ]
+            ],
+            'read_key'  => array('payment.id'),
+            'write_key' => 'payment.id'
+        ];
+
+        if($payment->hasCard() === true)
+        {
+            $card = $payment->card;
+
+            $meta['metadata']['payment'] += [
+                'card_iin'          => $card->getIin(),
+                'card_iin_headless' => $card->isHeadLessOtp(),
+                'card_network'      => $card->getNetwork(),
+                'card_type'         => $card->getType(),
+                'card_country'      => $card->getCountry(),
+                'international'     => $payment->isInternational()
+            ];
+        }
+
+        $this->app['diag']->trackPaymentEventV2(
             EventCode::PAYMENT_CARDSAVING_PROCESSED,
             $payment,
             null,
+            $meta,
             [
                 'local' => $token->isLocal()
             ]);
@@ -4872,7 +4973,7 @@ trait Authorize
             $this->fillReturnRequestDataForMerchant($payment, $returnData);
         }
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RESPONSE_SENT, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_RESPONSE_SENT, $payment);
 
         $returnData = $this->addEmandateDisplayDetailsIfApplicable($returnData, $payment);
 
@@ -5485,7 +5586,7 @@ trait Authorize
 
         if (isset($cardInput[Card\Entity::VAULT]) === true)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CARDSAVING_INITIATED, $this->payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CARDSAVING_INITIATED, $this->payment);
         }
     }
 
@@ -6017,7 +6118,7 @@ trait Authorize
 
             $this->segment->trackPayment($payment, TraceCode::PAYMENT_AUTH_SUCCESS, $customProperties);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
             return true;
         });
@@ -6488,7 +6589,7 @@ trait Authorize
                 $payload
             );
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_RESPONSE_SENT , $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_RESPONSE_SENT , $payment);
 
             return $data;
         }

@@ -86,6 +86,9 @@ class RoleAccessTest extends TestCase
 
         // Validate for Finance L1 Role
         $this->validateAccesses(BankingRole::FINANCE_L1);
+
+        // Validate for Operations role
+        $this->validateAccesses(BankingRole::OPERATIONS);
     }
 
     protected function validateAccesses(string $role)

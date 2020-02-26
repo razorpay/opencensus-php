@@ -10,20 +10,34 @@ use RZP\Exception\BadRequestException;
 class Validator extends Base\Validator
 {
     const CONTACT_ID                       = 'contact.id';
-    const CONTACT_NAME                     = 'contact.name';
 
+    // This rule is used for the payout-link create api, along with rules for contact details,
+    // as this api supports contact creation too along with payout-link creation
     const COMPOSITE_CREATE_RULE            = 'composite_create';
     const VERIFY_OTP                       = 'verify_otp';
     const GET_FUND_ACCOUNT_BY_CONTACT_RULE = 'get_fund_account_by_contact';
     const GENERATE_OTP                     = 'generate_otp';
+    const RESEND_NOTIFICATION_RULE         = 'resend_notification';
     const ADD_FUND_ACCOUNT_RULE            = 'add_fund_account';
     const SETTINGS_RULE                    = 'settings';
     const MAX_IMPS_AMOUNT                  = 20000000;
     const MAX_UPI_AMOUNT                   = 10000000;
+    const RESEND_NOTIFICATION_PARAMS       = 'resend_notification_params';
+    const NOTIFICATION_SETTINGS            = 'notification_settings';
+
+    protected static $resendNotificationRules = [
+        Entity::SEND_EMAIL           => 'sometimes|boolean',
+        Entity::SEND_SMS             => 'sometimes|boolean',
+        Entity::CONTACT_EMAIL        => 'sometimes|nullable|email',
+        Entity::CONTACT_PHONE_NUMBER => 'sometimes|nullable|contact_syntax',
+    ];
 
     protected static $settingsRules = [
-        Mode::UPI  => 'required_without:IMPS|boolean|filled',
-        Mode::IMPS => 'required_without:UPI|boolean|filled',
+        Mode::UPI               => 'sometimes|boolean|filled',
+        Mode::IMPS              => 'sometimes|boolean|filled',
+        Entity::SUPPORT_URL     => 'sometimes|string|url',
+        Entity::SUPPORT_EMAIL   => 'sometimes|string|email',
+        Entity::SUPPORT_CONTACT => 'sometimes|string|contact_syntax'
     ];
 
     protected static $addFundAccountRules = [
@@ -47,12 +61,14 @@ class Validator extends Base\Validator
         Entity::CONTACT_EMAIL        => 'sometimes|nullable|email',
         Entity::CONTACT_PHONE_NUMBER => 'sometimes|nullable|contact_syntax',
         Entity::BALANCE_ID           => 'required|string|size:14',
-        Entity::AMOUNT               => 'required|integer|min:100|max:'. Entity::MAX_PAYOUT_LIMIT,
+        Entity::AMOUNT               => 'required|integer|min:100|max:' . Entity::MAX_PAYOUT_LIMIT,
         Entity::CURRENCY             => 'required|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
         Entity::DESCRIPTION          => 'required|string|max:255',
         Entity::PURPOSE              => 'required|filled|string|max:30|alpha_dash_space',
-        Entity::RECEIPT              => 'sometimes|string|max:40'
+        Entity::RECEIPT              => 'sometimes|string|max:40',
+        Entity::SEND_EMAIL           => 'sometimes|boolean',
+        Entity::SEND_SMS             => 'sometimes|boolean'
     ];
 
     protected static $compositeCreateRules = [
@@ -64,7 +80,8 @@ class Validator extends Base\Validator
         Entity::PURPOSE        => 'required|filled|string|max:30|alpha_dash_space',
         Entity::RECEIPT        => 'sometimes|string|max:40',
         Entity::CONTACT        => 'required|array',
-        self::CONTACT_ID       => 'required_without:contact.name|nullable|string|public_id'
+        Entity::SEND_EMAIL     => 'sometimes|boolean',
+        Entity::SEND_SMS       => 'sometimes|boolean'
     ];
 
     protected static $verifyOtpRules = [
@@ -72,9 +89,134 @@ class Validator extends Base\Validator
         Entity::CONTEXT => 'sometimes|string|min:5|max:15'
     ];
 
-    protected static $compositeCreateValidators = [
-        Entity::CONTACT
+    protected static $createValidators = [
+        Entity::CONTACT,
+        self::NOTIFICATION_SETTINGS
     ];
+
+    protected static $resendNotificationValidators = [
+        self::RESEND_NOTIFICATION_PARAMS
+    ];
+
+    protected function validateResendNotificationParams(array $input)
+    {
+        $payoutLink = $this->entity;
+
+        $payoutLinkId = $payoutLink->getPublicId();
+
+        $newEmail = $this->processEmail($input);
+
+        $newPhone = $this->processPhoneNumber($input);
+
+        $sendSms = boolval(array_pull($input, Entity::SEND_SMS, $payoutLink->getSendSms()));
+
+        if (($sendSms === true) and
+            (empty($newPhone) === true))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE,
+                                          null,
+                                          [
+                                              'send_sms'       => $sendSms,
+                                              'contact_phone'  => $payoutLink->getContactPhoneNumber(),
+                                              'payout_link_id' => $payoutLinkId
+                                          ]);
+        }
+
+        $sendEmail = boolval(array_pull($input, Entity::SEND_EMAIL, $payoutLink->getSendEmail()));
+
+        if (($sendEmail === true) and
+            (empty($newEmail) === true))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_NOTIFICATION_WITH_EMPTY_EMAIL,
+                                          null,
+                                          [
+                                              'send_email'     => $sendEmail,
+                                              'contact_email'  => $payoutLink->getContactEmail(),
+                                              'payout_link_id' => $payoutLinkId
+                                          ]);
+        }
+    }
+
+    protected function processPhoneNumber($input)
+    {
+        $payoutLink = $this->entity;
+
+        $contactPhoneNumber = array_pull($input, Entity::CONTACT_PHONE_NUMBER);
+
+        $existingContactPhoneNumber = $payoutLink->getContactPhoneNumber();
+
+        if (empty($contactPhoneNumber))
+        {
+            return $existingContactPhoneNumber;
+        }
+
+        if ((empty($contactPhoneNumber) === false) and
+            (empty($existingContactPhoneNumber) === false))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_REWRITING_PHONE_NUMBER_NOT_PERMITTED,
+                                          null,
+                                          [
+                                              'payout_link_id' => $payoutLink->getPublicId(),
+                                              'new_phone'      => $contactPhoneNumber,
+                                              'old_phone'      => $existingContactPhoneNumber
+                                          ]);
+        }
+
+        return $contactPhoneNumber;
+    }
+
+    protected function processEmail(array $input)
+    {
+        $payoutLink = $this->entity;
+
+        $contactEmail = array_pull($input, Entity::CONTACT_EMAIL);
+
+        $existingContactEmail = $payoutLink->getContactEmail();
+
+        if (empty($contactEmail) === true)
+        {
+            return $existingContactEmail;
+        }
+
+        if ((empty($contactEmail) === false) and
+            (empty($existingContactEmail) === false))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_REWRITING_EMAIL_NOT_PERMITTED,
+                                          null,
+                                          [
+                                              'payout_link_id' => $payoutLink->getPublicId(),
+                                              'new_email'      => $contactEmail,
+                                              'old_email'      => $existingContactEmail
+                                          ]);
+        }
+
+        return $contactEmail;
+    }
+
+    protected function validateNotificationSettings(array $input)
+    {
+        $sendEmail = boolval(array_pull($input, Entity::SEND_EMAIL, false));
+
+        if (($sendEmail === true) and
+            (empty($input[Entity::CONTACT_EMAIL]) === true))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_NOTIFICATION_WITH_EMPTY_EMAIL,
+                                          null,
+                                          $input
+            );
+        }
+
+        $sendSms = boolval(array_pull($input, Entity::SEND_SMS, false));
+
+        if (($sendSms === true) and
+            (empty($input[Entity::CONTACT_PHONE_NUMBER]) === true))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE,
+                                          null,
+                                          $input
+            );
+        }
+    }
 
     /**
      * Check that if contact_id is present and along with it other information is present then fail the api

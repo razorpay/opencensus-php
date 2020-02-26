@@ -71,8 +71,6 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($paperMandate);
 
-        $this->generateMandateForm($paperMandate, $input);
-
         $this->repo->loadRelations($paperMandate);
 
         $this->trace->info(TraceCode::PAPER_MANDATE_CREATED,
@@ -414,14 +412,8 @@ class Core extends Base\Core
         return $notMatching;
     }
 
-    protected function generateMandateForm(Entity $paperMandate, array $input)
+    public function generateMandateForm(Entity $paperMandate)
     {
-        if ((isset($input[Entity::GENERATE_FORM]) === true) and
-            ($input[Entity::GENERATE_FORM] === false))
-        {
-            return;
-        }
-
         $data = (new HyperVerge)->generatePaperMandateForm($paperMandate);
 
         $generatedFileId = (new FileUploader($paperMandate))->saveCreatedMandateAndFileId($data[Entity::GENERATED_IMAGE]);

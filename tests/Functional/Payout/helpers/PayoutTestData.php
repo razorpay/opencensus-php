@@ -65,7 +65,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The fund account id field is required.',
+                    'description' => 'The fund account id field is required when fund account is not present.',
                 ],
             ],
             'status_code' => 400,
@@ -1049,7 +1049,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Please provide an amount less than 2 Lakhs to get a settlement at this point of time.',
+                    'description' => 'Please provide an amount less than 2 Lacs to get a settlement at this point of time.',
                 ],
             ],
             'status_code' => 400,
