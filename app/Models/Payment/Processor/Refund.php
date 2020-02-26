@@ -1048,14 +1048,15 @@ trait Refund
      *
      * @param array $input
      *
+     * @param Payment\Entity $payment
      * @return string
      */
-    protected function getPaymentRefundType(array $input)
+    protected function getPaymentRefundType(array $input, Payment\Entity $payment)
     {
         $type = Payment\RefundStatus::PARTIAL;
 
         if ((isset($input['amount']) === false) or
-            ((int) $input['amount'] === $this->payment->getAmountUnrefunded()))
+            ((int) $input['amount'] === $payment->getAmountUnrefunded()))
         {
             $type = Payment\RefundStatus::FULL;
         }
@@ -2100,7 +2101,7 @@ trait Refund
                 ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
         }
 
-        if (($this->getPaymentRefundType($input) === Payment\RefundStatus::PARTIAL) and
+        if (($this->getPaymentRefundType($input, $payment) === Payment\RefundStatus::PARTIAL) and
             (in_array($payment->getGateway(), Payment\Gateway::$partialRefundDisabledGateways) === true))
         {
             throw new Exception\BadRequestException(
@@ -2117,7 +2118,7 @@ trait Refund
         {
             if ($this->merchant->isFeatureEnabled(Feature::VOID_REFUNDS) === true)
             {
-                if ($this->getPaymentRefundType($input) === Payment\RefundStatus::PARTIAL)
+                if ($this->getPaymentRefundType($input, $payment) === Payment\RefundStatus::PARTIAL)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_REFUND_PARTIAL_VOID_NOT_SUPPORTED);
