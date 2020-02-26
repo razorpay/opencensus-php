@@ -893,6 +893,36 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals($beforeCount + 1, $afterCount);
     }
 
+    public function testAddSubmerchantTerminalsServiceDownMigrateVariant()
+    {
+        $this->razorxValue = 'migrate';
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $tid = $terminal['id'];
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid){
+            throw new \Requests_Exception_Transport_cURL('curl timed out', 1);
+        }, 1);
+
+        $this->expectException(\Requests_Exception_Transport_cURL::class);
+
+        $this->expectExceptionMessage('curl timed out');
+
+        $beforeCount = $this->getMerchantTerminalCount('10000000000000', $tid);
+
+        $this->assignSubMerchant($terminal['id'], '10000000000000');
+
+        $afterCount = $this->getMerchantTerminalCount('10000000000000', $tid);
+
+        $this->assertEquals($beforeCount, $afterCount);
+    }
+
     public function testDeleteSubmerchantControlVariant()
     {
         $this->razorxValue = 'control';

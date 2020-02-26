@@ -45,6 +45,13 @@ class TerminalsServiceMigrateJob extends Job
 
             $data['message'] = $exception->getMessage();
 
+            $repo = new Terminal\Repository;
+
+            $terminal = $repo->findOrFail($this->terminalId);
+
+            $repo->saveOrFail($terminal, [], Terminal\SyncStatus::SYNC_FAILED);
+
+
             $this->trace->error(TraceCode::TERMINALS_SERVICE_MIGRATE_JOB_FAILED, $data);
         }
         finally
