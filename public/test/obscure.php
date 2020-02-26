@@ -273,7 +273,7 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan="40"><b>Card No: </b> </td>
-        <td><input type="text" name="card[number]" value="6084851000501223" size="25" autocomplete="cc-number"></td>
+        <td><input type="text" name="card[number]" value="4160211000261223" size="25" autocomplete="cc-number"></td>
     </tr>
     <tr>
         <td colspan="40">CVV:</td>
