@@ -33,6 +33,7 @@ class PaymentLinkTest extends TestCase
     const TEST_PL_ID_2  = '100000000001pl';
     const TEST_PPI_ID   = '10000000000ppi';
     const TEST_PPI_ID_2 = '10000000001ppi';
+    const TEST_ORDER_ID = '10000000000ord';
 
     public function setUp()
     {
@@ -43,7 +44,334 @@ class PaymentLinkTest extends TestCase
         $this->ba->proxyAuth();
     }
 
-    public function testCreatePaymentLinkWithPaymentPageItem()
+    public function testPaymentLinkMakePaymentWhenPageIsInactive()
+    {
+        $this->createPaymentLinkAndOrderForThat(['id' => self::TEST_PL_ID], ['id' => self::TEST_ORDER_ID]);
+
+        $this->fixtures->edit('payment_link',self::TEST_PL_ID,['status' => 'inactive']);
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testPaymentLinkMakePaymentWithDifferentOrder()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $this->fixtures->create('order', [
+            'id'     => self::TEST_ORDER_ID,
+            'amount' => 10000,
+        ]);
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testPaymentLinkMakePaymentWithoutOrder()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderForPaymentLinkWhenPageIsInactive()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 5000,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MANDATORY => true,
+                    PaymentLink\PaymentPageItem\Entity::STOCK => 5,
+                    PaymentLink\PaymentPageItem\Entity::QUANTITY_SOLD => 5,
+                ],
+            ],
+            PaymentLink\Entity::STATUS => PaymentLink\Status::INACTIVE,
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderForPaymentLinkWhenQuantitySoldOut()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 5000,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MANDATORY => true,
+                    PaymentLink\PaymentPageItem\Entity::STOCK => 5,
+                    PaymentLink\PaymentPageItem\Entity::QUANTITY_SOLD => 5,
+                ],
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID_2,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 10000,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MANDATORY => false,
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderForPaymentLinkWithDuplicateItem()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 1000,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MIN_PURCHASE => 3
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderForPaymentLinkWithRequiredItem()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 5000,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MANDATORY => true,
+                ],
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID_2,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 10000,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MANDATORY => false,
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderForPaymentLinkWithoutRequiredItem()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 5000,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MANDATORY => true,
+                ],
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID_2,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 10000,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MANDATORY => false,
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderForPaymentLinkWithPurchaseLesserThanMinPurchase()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 1000,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MIN_PURCHASE => 3
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderForPaymentLinkWithPurchaseGreaterThanMaxPurchase()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 1000,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MAX_PURCHASE => 3
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderForPaymentLinkWithFixedAmount()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 1000,
+                    ],
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderForPaymentLinkWithAmountGreaterThanMaxAmount()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => null,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MAX_AMOUNT => 500
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderForPaymentLinkWithAmountLessThanMinAmount()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => null,
+                    ],
+                    PaymentLink\PaymentPageItem\Entity::MIN_AMOUNT => 5000
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testUpdatePaymentLinkRemoveAllItem()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 5000,
+                    ]
+                ],
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID_2,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 10000,
+                    ]
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testUpdatePaymentLinkAddingItem()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 5000,
+                    ]
+                ],
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID_2,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 10000,
+                    ]
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testUpdatePaymentLinkDeletingItem()
+    {
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
+            PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 5000,
+                    ]
+                ],
+                [
+                    PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID_2,
+                    PaymentLink\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 10000,
+                    ]
+                ]
+            ]
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, sizeof($response[PaymentLink\Entity::PAYMENT_PAGE_ITEMS] ?? []));
+    }
+
+    public function testCreatePaymentLinkWithoutItem()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePaymentLinkWithMoreThanLimitedItem()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePaymentLinkWithDifferentCurrency()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePaymentLinkByPassingAmountWhenAmountPassed()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePaymentLinkWithMinPurchaseGreaterThanMaxPurchase()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePaymentLinkWithMinAmountGreaterThanMaxAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePaymentLinkWithSinglePaymentPageItem()
     {
         $this->startTest();
     }
@@ -336,6 +664,62 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentLinkPaymentRefundAfterNoStock()
+    {
+        $data = $this->createPaymentLinkAndOrderForThat(
+            ['id' => self::TEST_PL_ID,
+                PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
+                    [
+                        PaymentLink\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                        PaymentLink\PaymentPageItem\Entity::ITEM => [
+                            Item\Entity::AMOUNT => 5000,
+                        ],
+                        PaymentLink\PaymentPageItem\Entity::MANDATORY => true,
+                        PaymentLink\PaymentPageItem\Entity::STOCK => 5,
+                        PaymentLink\PaymentPageItem\Entity::QUANTITY_SOLD => 0,
+                    ],
+                ]
+            ],
+            [
+                'id' => self::TEST_ORDER_ID,
+                Order\Entity::PAYMENT_CAPTURE => false,
+            ]
+        );
+
+        $paymentLink = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $payment = $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order, Payment\Status::AUTHORIZED);
+
+        $this->fixtures->edit(
+            'payment_page_item',
+            self::TEST_PPI_ID,
+            [
+                'quantity_sold' => 5,
+            ]
+        );
+
+        $this->fixtures->edit(
+            'payment_link',
+            self::TEST_PL_ID,
+            [
+                'status' => PaymentLink\Status::INACTIVE,
+                'status_reason' => PaymentLink\StatusReason::COMPLETED,
+            ]
+        );
+
+        $this->fixtures->edit(
+            'payment',
+            $payment['id'],
+            [
+                'auto_captured' => true,
+            ]
+        );
+
+        $this->capturePayment($payment['id'], $payment['amount'], 'INR', 0, Payment\Status::REFUNDED);
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
@@ -471,10 +855,15 @@ class PaymentLinkTest extends TestCase
             $totalAmount += 1 * $amount;
         }
 
-        $order = $this->fixtures->create('order', [
-            'amount' => $totalAmount,
-            Order\Entity::PAYMENT_CAPTURE => true,
-        ]);
+        $orderAttribute = array_merge(
+            [
+                'amount' => $totalAmount,
+                Order\Entity::PAYMENT_CAPTURE => true,
+            ],
+            $orderAttribute
+        );
+
+        $order = $this->fixtures->create('order', $orderAttribute);
 
         $data['order'] = $order;
 
@@ -532,7 +921,11 @@ class PaymentLinkTest extends TestCase
         return $payment;
     }
 
-    protected function makePaymentForPaymentLinkWithOrderAndAssert(PaymentLinkModel\Entity $paymentLink, Order\Entity $order)
+    protected function makePaymentForPaymentLinkWithOrderAndAssert(
+        PaymentLinkModel\Entity $paymentLink,
+        Order\Entity $order,
+        $status = Payment\Status::CAPTURED
+    )
     {
         $payment = $this->getDefaultPaymentArray();
 
@@ -541,7 +934,7 @@ class PaymentLinkTest extends TestCase
         $payment[Payment\Entity::ORDER_ID]        = $order->getPublicId();
 
         $payment = $this->doAuthAndGetPayment($payment, [
-            Payment\Entity::STATUS   => Payment\Status::CAPTURED,
+            Payment\Entity::STATUS   => $status,
             Payment\Entity::ORDER_ID => $order->getPublicId(),
         ]);
 
