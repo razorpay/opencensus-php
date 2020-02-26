@@ -1414,7 +1414,8 @@ class UserTest extends TestCase
             {
                 $this->runRequestResponseFlow($testData);
             },
-            \RZP\Exception\BadRequestException::class);
+            \RZP\Exception\BadRequestException::class,
+            'Your new password cannot match any of your last three passwords');
     }
 
     public function doTestPasswordResetByTokenWithSamePassword(Entity $user)
