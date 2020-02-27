@@ -139,7 +139,7 @@ class Core extends Base\Core
     {
         return floor(time() / (self::TIME_INTERVAL_MINS * 60)) * (self::TIME_INTERVAL_MINS * 60);
     }
-    
+
     public function getConvertedAmount($baseAmount, $rate, $markUpPercent)
     {
         $convertedAmount = $baseAmount * $rate;
@@ -161,7 +161,7 @@ class Core extends Base\Core
 
         $rates = $this->getOrUpdateRates($baseCurrency, $roundedTime);
 
-        $markUpPercent = self::getDCCMarkUpPercentage($rates);
+        $markUpPercent = $this->getDCCMarkUpPercentage($rates);
 
         $supportedCurrencies = $this->getSupportedCurrenciesDetails();
 
@@ -192,7 +192,7 @@ class Core extends Base\Core
 
             if((empty($rates) === false) and (isset($rates[$requestedCurrency])))
             {
-                $markUpPercent = self::getDCCMarkUpPercentage($rates);
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates);
 
                 $requestedCurrencyData['currency'] = $requestedCurrency;
 
