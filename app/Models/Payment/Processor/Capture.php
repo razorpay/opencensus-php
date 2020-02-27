@@ -58,7 +58,7 @@ trait Capture
 
         $this->setPayment($payment);
 
-        $input['currency'] = $payment->getCurrency();
+        $input['currency'] = $payment->getGatewayCurrency();
 
         $payment->getValidator()->validateInput('capture', $input);
 

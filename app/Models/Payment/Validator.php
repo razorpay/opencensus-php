@@ -1033,7 +1033,7 @@ class Validator extends Base\Validator
                 Payment\Entity::CURRENCY,
                 [
                     'capture_currency' => $currency,
-                    'payment_currency' => $payment->getCurrency(),
+                    'payment_currency' => $payment->getGatewayCurrency(),
                     'payment_id'       => $payment->getId(),
                 ]);
         }
