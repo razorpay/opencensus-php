@@ -157,6 +157,46 @@ return [
         ]
     ],
 
+    'testCheckSalesforceGroupForSubmerchantCreate' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'   => 'NewSubmerchant',
+                'name' => 'Submerchant',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => 'NewSubmerchant',
+                'name'            => 'Submerchant',
+                'email'           => 'test@razorpay.com',
+                'pricing_plan_id' => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
+    'testCheckSalesforceGroupForMarketplaceLinkedAccount' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 2',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => '7gcKngYfqyDMjN',
+                'name'            => 'Linked Account 2',
+                'email'           => 'linkedaccount@razorpay.com',
+                'pricing_plan_id' => '1In3Yh5Mluj605',
+            ],
+        ],
+    ],
+
     'testCreateSubMerchant' => [
         'request'  => [
             'url'     => '/submerchants',
@@ -173,6 +213,24 @@ return [
                 // Email is same as the test merchant
                 'email'           => 'test@razorpay.com',
                 'pricing_plan_id' => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantAndAssignPromotionalPricingPlan' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'   => 'NewSubmerchant',
+                'name' => 'Submerchant',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => 'acc_NewSubmerchant',
+                'name'            => 'Submerchant',
+                'email'           => 'test@razorpay.com',
             ],
         ],
     ],

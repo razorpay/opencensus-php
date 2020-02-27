@@ -550,7 +550,28 @@ steps:
     when:
       event:
         - push
-
+  - name: trigger_regression_suite
+    image: plugins/webhook
+    settings:
+      urls: "https://deploy-api.razorpay.com/webhooks/webhook/x-regression"
+      content_type: application/json
+      template: { "branch" : "{{build.branch}}", "commit": "{{build.commit}}" , "status": "{{build.status}}" , "repo": "{{repo.name}}"}
+    depends_on:
+      - build-app
+      - application_test_suite
+      - features_test_suite
+      - feature_2_test_suite
+      - feature_3_test_suite
+      - feature_4_test_suite
+      - gateway_3_test_suite
+      - payment_test_suite
+      - gateway_1_test_suite
+      - gateway_2_test_suite
+    when:
+      branch:
+        - master
+      status:
+        - success  
   - name: build-notify-master
     pull: default
     image: plugins/slack

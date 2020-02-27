@@ -315,6 +315,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::DEFAULT_REFUND_SPEED,
     ];
 
     const INTERNAL_CONFIG_LIST = [
@@ -491,6 +492,26 @@ class Entity extends Base\PublicEntity
     const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;
     const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
     const RISK_THRESHOLD_DEFAULT                      = 8;
+
+    public function refresh()
+    {
+        $instance = parent::refresh();
+
+        // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
+        $instance->loadedFeatures = null;
+
+        return $instance;
+    }
+
+    public function reload()
+    {
+        $instance = parent::reload();
+
+        // Base Eloquent Model doesn't unset/refresh arbitrary keys set. So, loadedFeatures have to be unset explicitly.
+        $instance->loadedFeatures = null;
+
+        return $instance;
+    }
 
     protected function generateTransactionReportEmail($input)
     {
@@ -1101,6 +1122,14 @@ class Entity extends Base\PublicEntity
         }
 
         return $balance;
+    }
+
+    public function payoutLinks()
+    {
+        return $this->hasMany(
+            'RZP\Models\PayoutLink\Entity',
+            self::MERCHANT_ID,
+            self::ID);
     }
 
     public function bankAccount()

@@ -788,7 +788,6 @@ class SubReconciliate extends Base\Core
             [
                 'message'           => 'Unable to get the expected column.',
                 'column_name'       => $columnName,
-                'row'               => $row,
                 'gateway'           => $this->gateway
             ]);
     }
@@ -830,5 +829,20 @@ class SubReconciliate extends Base\Core
     protected function modifyRowIfNeeded(&$row)
     {
         return;
+    }
+
+    /**
+     * Child gateway sub reconciliator need to override
+     * this function, UPI Transactions kept turning up in
+     * MIS. Although they already were reconciled, their
+     * being in the file, threw slack alerts.
+     *
+     * Currently only used in HDFC.
+     * @param $row
+     * @return bool
+     */
+    protected function skipRestOfFile($row)
+    {
+        return false;
     }
 }

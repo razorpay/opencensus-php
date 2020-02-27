@@ -641,6 +641,15 @@ return [
         ],
     ],
 
+    'testCaptureWithNegativeBalance' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testEmandateCaptureWithNegativeBalance' => [
         'response' => [
             'content' => [

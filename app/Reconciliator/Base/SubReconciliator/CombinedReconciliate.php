@@ -131,6 +131,18 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
             {
                 $this->modifyRowIfNeeded($row);
 
+                if($this->skipRestOfFile($row) === true)
+                {
+                    $this->trace->info(TraceCode::RECON_INFO_ALERT,
+                        [
+                            'info_code' => Base\InfoCode::RECON_SKIP_REMAINING_FILE,
+                            'gateway'   => $this->gateway,
+                            'batch_id'  => $this->batch->getId(),
+                        ]);
+
+                    break;
+                }
+
                 $entityType = $this->getReconciliationTypeForRow($row);
 
                 try

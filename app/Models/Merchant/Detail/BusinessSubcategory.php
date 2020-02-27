@@ -44,7 +44,7 @@ class BusinessSubcategory
     const DEVELOPER                       = 'developer';
     const DIETICIAN                       = 'dietician';
     const DISTANCE_LEARNING               = 'distance_learning';
-    const DISTRIBUTION_MANAGEMENT         = 'distribution';
+    const DISTRIBUTION                    = 'distribution';
     const DROP_SHIPPING                   = 'drop_shipping';
     const DTH                             = 'dth';
 
@@ -188,7 +188,7 @@ class BusinessSubcategory
         self::DEVELOPER                       => 'Developer',
         self::DIETICIAN                       => 'Dietician/Diet Services',
         self::DISTANCE_LEARNING               => 'Distance Learning',
-        self::DISTRIBUTION_MANAGEMENT         => 'Distribution Management',
+        self::DISTRIBUTION                    => 'Distribution Management',
         self::DROP_SHIPPING                   => 'Dropshipping',
         self::DTH                             => 'DTH',
         self::ECOMMERCE_MARKETPLACE           => 'Horizontal Commerce/Marketplace',

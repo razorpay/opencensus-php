@@ -14,7 +14,7 @@ class TLDExtract
      */
     public function getEffectiveTLDPlusOne(string $url)
     {
-        if (empty($url) === true)
+        if (empty(trim($url)) === true)
         {
             return null;
         }

@@ -1119,6 +1119,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantConfigWithDefaultRefundSpeed()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testMerchantUpdateKeyAccess()
     {
         $attribute = ['business_website' => 'https://www.example.com'];
@@ -4974,15 +4983,15 @@ class MerchantTest extends TestCase
     /**
      * Switches product of merchant from PG to BB.
      */
-    public function testMerchantSwitchProduct()
+    public function testMerchantSwitchProduct($expValue = 'on', $category2 = 'school')
     {
-        $this->enableRazorXTreatmentForXOnboarding();
+        $this->enableRazorXTreatmentForXOnboarding($expValue);
 
         $user = (new User())->createUserForMerchant();
 
         $this->fixtures->edit('merchant',
                               '10000000000000',
-                              ['activated' => true, 'business_banking' => true, 'category2' => 'school']);
+                              ['activated' => true, 'business_banking' => true, 'category2' => $category2]);
 
         $this->fixtures->create('merchant_detail',
                                 [
@@ -5170,7 +5179,7 @@ class MerchantTest extends TestCase
      */
     public function testMerchantSwitchProductWhenL1Incomplete()
     {
-        $this->testMerchantSwitchProductWhenXOnboardingExperimentOff('on', null);
+        $this->testMerchantSwitchProduct('on', null);
     }
 
     /**
@@ -6180,6 +6189,17 @@ class MerchantTest extends TestCase
         $this->fixtures->create('balance',$balanceData2);
 
         $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetBalancesWhenNoBalanceExists()
+    {
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner');
 
         $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
 
