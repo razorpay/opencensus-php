@@ -13,6 +13,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_CURRENCY           => 'sometimes|string|size:3|custom',
         Entity::FOREX_RATE                 => 'sometimes|string|max:50',
         Entity::DCC_OFFERED                => 'sometimes|boolean',
+        Entity::DCC_MARK_UP_PERCENT        => 'sometimes|integer',
         Entity::PAYMENT_ID                 => 'required|string'
     ];
 

@@ -527,11 +527,12 @@ class Processor
             else
             {
                 $paymentMetaInput = [
-                    'gateway_amount'    => $requestedCurrencyData['amount'],
-                    'gateway_currency'  => $requestedCurrencyData['currency'],
-                    'forex_rate'        => $requestedCurrencyData['forex_rate'],
-                    'dcc_offered'       => true,
-                    'payment_id'        => $payment->getId()
+                    'gateway_amount'            => $requestedCurrencyData['amount'],
+                    'gateway_currency'          => $requestedCurrencyData['currency'],
+                    'forex_rate'                => $requestedCurrencyData['forex_rate'],
+                    'dcc_offered'               => true,
+                    'payment_id'                => $payment->getId(),
+                    'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
                 ];
 
                 $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
