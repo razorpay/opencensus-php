@@ -22,6 +22,7 @@ use RZP\Services\TokenService;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
+use RZP\Http\UserRolePermissionsMap;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 
 class Core extends Base\Core
@@ -592,6 +593,14 @@ class Core extends Base\Core
                 {
                     return $merchant;
                 }
+
+                $bankingRolePermissions = new UserRolePermissionsMap();
+
+                $rolePermissions = [
+                    'permissions' => $bankingRolePermissions->getRolePermissions($merchant[Entity::BANKING_ROLE])
+                ];
+
+                $merchant = $merchant + $rolePermissions;
 
                 /** @var Merchant\Balance\Entity $balance */
                 $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(

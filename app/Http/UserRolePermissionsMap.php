@@ -252,7 +252,6 @@ class UserRolePermissionsMap
                  Permission::VIEW_CONTACT,
                  Permission::VIEW_CONTACT_TYPE,
                  Permission::VIEW_FUND_ACCOUNT_VALIDATION,
-                 Permission::RETRY_BULK_FUND_ACCOUNT_VALIDATION,
                  Permission::VIEW_FUND_ACCOUNT,
                  Permission::VIEW_MERCHANT_KEY,
                  Permission::VIEW_MERCHANT_ANALYTICS,
@@ -276,7 +275,7 @@ class UserRolePermissionsMap
 
     public function isValidRolePermission(string $role, string $permission) : bool
     {
-        $rolePermissions = $this->rolePermissions[$role] ?? null;
+        $rolePermissions = $this->getRolePermissions($role);
 
         if (in_array($permission, $rolePermissions, true))
         {
@@ -294,5 +293,10 @@ class UserRolePermissionsMap
         }
 
         return true;
+    }
+
+    public function getRolePermissions(string $role)
+    {
+        return $this->rolePermissions[$role] ?? null;
     }
 }
