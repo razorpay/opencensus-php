@@ -3,8 +3,10 @@
 namespace RZP\Mail\PayoutLink;
 
 use App;
+use RZP\Models\Settings;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
+use RZP\Models\PayoutLink\Entity;
 use RZP\Models\Merchant\Logo as MerchantLogo;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
@@ -88,6 +90,18 @@ class Failed extends Mailable
         return $this;
     }
 
+    protected function getSettingsAccessor($merchant)
+    {
+        return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+    }
+
+    protected function getSettings(MerchantEntity $merchant)
+    {
+        $settingsAccessor = $this->getSettingsAccessor($merchant);
+
+        return $settingsAccessor->all();
+    }
+
     protected function addMailData()
     {
         $payoutLink = $this->getPayoutLink();
@@ -97,6 +111,8 @@ class Failed extends Mailable
         $displayName = $merchant->getDisplayNameElseName();
 
         $account = $payoutLink->fundAccount->account;
+
+        $settings = $this->getSettings($merchant);
 
         $data = [
             'billing_label'         => $displayName,
@@ -109,7 +125,10 @@ class Failed extends Mailable
             'description'           => $payoutLink->getDescription(),
             'contact_name'          => $payoutLink->getContactName(),
             'contact_email'         => $payoutLink->getContactEmail(),
-            'contact_phone'         => $payoutLink->getContactPhoneNumber()
+            'contact_phone'         => $payoutLink->getContactPhoneNumber(),
+            'support_contact'       => $settings[Entity::SUPPORT_CONTACT] ?? null,
+            'support_email'         => $settings[Entity::SUPPORT_EMAIL] ?? null,
+            'support_url'           => $settings[Entity::SUPPORT_URL] ?? null
         ];
 
         if ($payoutLink->fundAccount->getAccountType() === FundAccountEntity::BANK_ACCOUNT)
