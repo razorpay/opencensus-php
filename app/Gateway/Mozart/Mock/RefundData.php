@@ -110,6 +110,28 @@ class RefundData extends Base\Mock\Server
         return $response;
     }
 
+    public static function getsimpl($entities)
+    {
+        $response = [
+            'data' => [
+                'api_version' => '4.0',
+                '_raw'        => '{\"data\":{\"transaction_id\":\"16e94d67-7e97-4744-b90c-8a9f534e744f\",\"refunded_transaction_id\":\"f2badf4d-528b-4c90-aad9-05c7ab716307\"},\"Http_status\":200,\"success\":true}',
+                'data' => [
+                    'refunded_transaction_id' => 'f2badf4d-528b-4c90-aad9-05c7ab716307',
+                    'transaction_id'          => $entities['gateway']['pay_init']['data']['transaction']['id']
+                ],
+                'status'  => 'refund_successful',
+                'success' => true
+            ],
+            'error'             => null,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'next'              => [],
+            'success'           => true
+        ];
+
+        return $response;
+    }
+
     public static function bajajfinserv($entities)
     {
         $response = [
