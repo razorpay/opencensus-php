@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Verifiers;
 
+use RZP\lib\FuzzyMatcher;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Models\Merchant\Detail\POIStatus;
 
@@ -31,7 +32,7 @@ class POIVerifier implements Verifier
 
     public function verify()
     {
-        if($this->isSuccessResponse === true)
+        if ($this->isSuccessResponse === true)
         {
             return $this->getStatusForSuccess();
         }
@@ -87,9 +88,8 @@ class POIVerifier implements Verifier
         {
             return false;
         }
+        $poiFuzzyMatcher = new FuzzyMatcher(POIStatus::POI_VERIFICATION_THRESHOLD, FuzzyMatcher::SIMPLE_MATCH);
 
-        $nameMathPercent = get_similar_text_percent($this->panOwnerName, $this->nameFromNSDL);
-
-        return ($nameMathPercent >= POIStatus::POI_VERIFICATION_THRESHOLD);
+        return $poiFuzzyMatcher->isMatch($this->panOwnerName, $this->nameFromNSDL);
     }
 }

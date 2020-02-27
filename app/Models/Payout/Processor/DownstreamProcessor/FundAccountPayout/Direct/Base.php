@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Dire
 
 use Carbon\Carbon;
 
+use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -11,13 +12,16 @@ use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
 use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 class Base extends FundAccountPayout\Base
 {
-    const GATEWAY_BALANCE_LAST_FETCHED_AT_TIME_DIFF = 2; //in minutes
+    // while creating payouts we fetch balance from gateway at a frequency decided in SLA. For now have hardcoded this
+    // to 2 minutes . So if last fetched at was while ago (more than 2 minutes) only then we will fetch.
+    const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = 50; //in minutes
 
     public function process(Entity $payout, PublicEntity $ftaAccount)
     {
@@ -29,6 +33,8 @@ class Base extends FundAccountPayout\Base
 
         if ($queued === false)
         {
+            $this->setFeeAndTaxForPayout($payout);
+
             $this->createFundTransferAttempt($payout, $ftaAccount);
         }
     }
@@ -58,18 +64,21 @@ class Base extends FundAccountPayout\Base
 
         $diffTime = $nowTime->diffInMinutes(Carbon::createFromTimestamp($balanceLastFetchedAt, Timezone::IST));
 
-        if ($diffTime > self::GATEWAY_BALANCE_LAST_FETCHED_AT_TIME_DIFF)
+        if ($diffTime > self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING)
         {
-            (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
+            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
                                         Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
                                         Entity::MERCHANT_ID => $merchantBankingAccount->getMerchantId(),
                                         ]);
 
             //need reload since we are updating banking account entity because of above call
-            $merchantBankingAccount->reload();
+            if ($response['success'] === true)
+            {
+                $merchantBankingAccount->reload();
+            }
         }
 
-        $merchantBalance = $merchantBankingAccount->getTempBalance();
+        $merchantBalance = $merchantBankingAccount->getGatewayBalance();
 
         $hasBalance = ($merchantBalance >= $payoutAmount);
 
@@ -126,5 +135,39 @@ class Base extends FundAccountPayout\Base
                 strtoupper($channel) . ' does not support ' . $mode . ' payouts to ' . strtoupper($destinationType)
             );
         }
+    }
+
+    protected function setFeeAndTaxForPayout($payout)
+    {
+        list($fees, $tax, $pricingRuleId) = $this->calculateFeesAndTaxForPayouts($payout);
+
+        if (empty($pricingRuleId) === true)
+        {
+            throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
+        }
+
+        $payout->setFees($fees);
+
+        $payout->setTax($tax);
+
+        $payout->setPricingRuleId($pricingRuleId);
+    }
+
+    protected function calculateFeesAndTaxForPayouts(Entity $payout)
+    {
+        list($fees, $tax, $feesSplit) = (new Pricing\PayoutFee)->calculateMerchantFees($payout);
+
+        $feesSplitData = $feesSplit->toArray();
+
+        foreach ($feesSplitData as $feesSplit)
+        {
+            // Set pricingRuleId from the feesSplit (there are two entries and at least one has pricingRuleId)
+            if (empty($feesSplit[Entity::PRICING_RULE_ID]) === false)
+            {
+                $pricingRuleId = $feesSplit[Entity::PRICING_RULE_ID];
+            }
+        }
+
+        return [$fees, $tax, $pricingRuleId];
     }
 }

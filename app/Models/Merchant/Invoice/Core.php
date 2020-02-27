@@ -25,7 +25,6 @@ use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Mail\Report\RazorpayX\MerchantBankingInvoice;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\Merchant\Preferences as MerchantPreferences;
-use RZP\Jobs\MerchantInvoiceCorrection as MerchantInvoiceCorrectionJob;
 use RZP\Mail\Merchant\MerchantInvoiceExecutionReport as MerchantInvoiceExecutionReport;
 
 class Core extends Base\Core
@@ -82,15 +81,6 @@ class Core extends Base\Core
         }
 
         //
-        // When true, payment transactions will be considered from the month
-        // specified by `$invoiceDate` where created and captured in same month
-        // All other transaction will we considered on created date
-        //
-        $isCorrection = (isset($input['correction']) === true) ?
-                        (bool) $input['correction'] :
-                        false;
-
-        //
         // in case merchant id is given in the request then dont have to spawn the k8s job
         // can directly queue the mid and generate the invoice
         //
@@ -98,7 +88,7 @@ class Core extends Base\Core
         {
             $merchantIds = $input['merchant_ids'];
 
-            $this->processMerchantInvoice($this->mode, $year, $month, $merchantIds, $isCorrection);
+            $this->processMerchantInvoice($this->mode, $year, $month, $merchantIds);
         }
         else
         {
@@ -108,59 +98,6 @@ class Core extends Base\Core
 
             $this->app->k8s_client->createInvoiceJob($this->mode, $year, $month);
         }
-    }
-
-    public function queueCorrectionInvoiceInvoice(array $input)
-    {
-        $this->trace->info(TraceCode::MERCHANT_INVOICE_CORRECTION_REQUEST, $input);
-
-        (new Validator)->validateInput('correction_queue', $input);
-
-        $invoiceDate = Carbon::createFromDate(
-            $input['year'],
-            $input['month'],
-            1,
-            Timezone::IST);
-
-        $merchantIds = [];
-
-        if (isset($input['merchant_ids']) === true)
-        {
-            $merchantIds = $input['merchant_ids'];
-        }
-
-        $batch  = 10000;
-
-        $offset = 0;
-
-        $defaultDelay = 0;
-
-        do
-        {
-            $merchantIds = $this->repo
-                                ->merchant
-                                ->fetchActivatedMerchantsBeforeTimestamp(
-                                    $batch,
-                                    $offset,
-                                    $invoiceDate->endOfMonth()->timestamp,
-                                    $merchantIds);
-
-            $count = count($merchantIds);
-
-            $offset += $count;
-
-            foreach ($merchantIds as $merchantId)
-            {
-                MerchantInvoiceCorrectionJob::dispatch(
-                                                $merchantId,
-                                                $invoiceDate->month,
-                                                $invoiceDate->year,
-                                                $this->mode)
-                                            // Assign a delay between 0 and 900 so that tasks are distributed
-                                            // over 15 minute period
-                                            ->delay($defaultDelay++ % 901);
-            }
-        } while ($count === $batch);
     }
 
     public function createAdjustmentInvoiceEntity(Adjustment\Entity $adjustment, array $input): Entity
@@ -200,9 +137,17 @@ class Core extends Base\Core
             $merchant = $this->repo->merchant->findOrFail($row[Entity::MERCHANT_ID]);
 
             unset($row[Entity::MERCHANT_ID]);
-            // TODO: Accept balance_id in invoice_entities passed as input on route merchant_invoice_add_bulk
-            //Jira link : https://razorpay.atlassian.net/browse/RX-612
-            $this->create($row, $merchant, $merchant->primaryBalance);
+
+            $balance = $merchant->primaryBalance;
+
+            if (isset($row[Entity::BALANCE_ID]) === true)
+            {
+                $balanceId = array_pull($row, Entity::BALANCE_ID);
+
+                $balance = $this->repo->balance->findOrFailById($balanceId);
+            }
+
+            $this->create($row, $merchant, $balance);
         }
     }
 
@@ -246,7 +191,6 @@ class Core extends Base\Core
 
         return $count;
     }
-
 
     public function generateInvoiceReport($input)
     {
@@ -336,7 +280,7 @@ class Core extends Base\Core
         return sprintf(self::DASHBOARD_FILE_URL, $this->config['applications.dashboard.url'], $fileId);
     }
 
-    public function processMerchantInvoice($mode, $year, $month, $merchantIds = [], $isCorrection = false)
+    public function processMerchantInvoice($mode, $year, $month, $merchantIds = [])
     {
         //
         // merchant_ids_excluded is an array of merchant ids coming from input,
@@ -349,7 +293,6 @@ class Core extends Base\Core
             [
                 'month'                 => $month,
                 'year'                  => $year,
-                'is_correction'         => $isCorrection,
                 'merchant_ids'          => $merchantIds,
                 'merchant_ids_excluded' => $merchantIdsExcluded,
                 'mode'                  => $mode
@@ -386,8 +329,7 @@ class Core extends Base\Core
                                             $merchantId,
                                             $month,
                                             $year,
-                                            $mode,
-                                            $isCorrection)
+                                            $mode)
                                             // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
                                             ->delay($i++ % 901);
             }

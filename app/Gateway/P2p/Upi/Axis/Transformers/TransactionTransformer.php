@@ -22,6 +22,7 @@ class TransactionTransformer extends Transformer
         switch ($this->action)
         {
             case TransactionAction::SEND_MONEY:
+            case TransactionAction::PAY:
                 $output = [
                     Entity::TYPE            => Type::PAY,
                     Entity::FLOW            => Flow::DEBIT,
@@ -78,6 +79,7 @@ class TransactionTransformer extends Transformer
                 break;
 
             case UpiAction::CUSTOMER_DEBITED_VIA_COLLECT:
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT:
                 $output = [
                     Entity::TYPE            => Type::COLLECT,
                     Entity::FLOW            => Flow::DEBIT,
@@ -86,6 +88,7 @@ class TransactionTransformer extends Transformer
                 break;
 
             case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_PAY:
                 $output = [
                     Entity::TYPE            => Type::PAY,
                     Entity::FLOW            => Flow::DEBIT,

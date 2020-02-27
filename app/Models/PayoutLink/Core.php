@@ -4,6 +4,9 @@ namespace RZP\Models\PayoutLink;
 
 use View;
 use Mail;
+
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -12,8 +15,8 @@ use RZP\Models\Payout\Mode;
 use RZP\Constants\Environment;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\FundAccount\Type;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\PayoutLink\CustomerOtp;
+use RZP\Jobs\PayoutLinkNotification;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Vpa\Entity as VpaEntity;
@@ -25,6 +28,7 @@ use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PayoutLink\External\Payout as PayoutClient;
 use RZP\Models\PayoutLink\External\Contact as ContactClient;
+use RZP\Models\PayoutLink\Notifications\Type as NotificationType;
 use RZP\Models\PayoutLink\External\FundAccount as FundAccountClient;
 
 class Core extends Base\Core
@@ -32,15 +36,9 @@ class Core extends Base\Core
     use Base\Traits\ProcessAccountNumber;
 
     const LONG_URL_FORMAT     = '%s/v1/payout-links/%s/view';
-    const PARAMS              = 'params';
-    const TEMPLATE            = 'template';
-    const SOURCE              = 'source';
-    const RECEIVER            = 'receiver';
     const SMS_TEMPLATE        = 'sms.payout_link.otp';
 
     // Source param, when calling Raven Apis
-    const API_POUT_LNK_SRC    = 'api.pout_l';
-
     const OK                  = 'OK';
     const MESSAGE             = 'message';
     const SUCCESS             = 'success';
@@ -63,7 +61,7 @@ class Core extends Base\Core
 
         $this->raven = $this->app['raven'];
 
-        $this->tokenService = new TokenService();
+        $this->tokenService = $this->app['token_service'];
 
         $this->mutex = $this->app['api.mutex'];
     }
@@ -336,60 +334,112 @@ class Core extends Base\Core
                 {
              /*       $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus($nextPayoutLinkStatus),
                                              [$payoutLink]);*/
+
+                    $this->pushStatusUpdateNotification($payoutLink);
                 }
             },
             self::MUTEX_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
+    public function updateNotificationInformation(Entity $payoutLink, array $input): Entity
+    {
+        return $this->mutex->acquireAndRelease(
+            $payoutLink->getPublicId() . time(),
+            function () use ($payoutLink, $input)
+            {
+                $this->repo->reload($payoutLink);
+
+                (new Validator($payoutLink))->validateInput(Validator::RESEND_NOTIFICATION_RULE , $input);
+
+                $contactEmail = array_pull($input, Entity::CONTACT_EMAIL, $payoutLink->getContactEmail());
+
+                $contactPhone = array_pull($input, Entity::CONTACT_PHONE_NUMBER, $payoutLink->getContactPhoneNumber());
+
+                if (empty($contactEmail) === true)
+                {
+                    $contactEmail = $payoutLink->getContactEmail();
+                }
+
+                if (empty($contactPhone) === true)
+                {
+                    $contactPhone = $payoutLink->getContactPhoneNumber();
+                }
+
+                $sendSms = boolval(array_pull($input, Entity::SEND_SMS, $payoutLink->getSendSms()));
+
+                $sendEmail = boolval(array_pull($input, Entity::SEND_EMAIL, $payoutLink->getSendEmail()));
+
+                $updateValues = [
+                    Entity::CONTACT_PHONE_NUMBER => $contactPhone,
+                    Entity::CONTACT_EMAIL        => $contactEmail,
+                    Entity::SEND_SMS             => $sendSms,
+                    Entity::SEND_EMAIL           => $sendEmail,
+                ];
+
+                $payoutLink->update($updateValues);
+
+                $payoutLink->saveOrFail();
+
+                return $payoutLink;
+            });
+    }
+
     public function create(array $input): Entity
     {
-        $this->trace->info(
-            TraceCode::PAYOUT_LINK_CREATE_REQUEST,
-            $input);
-        (new Validator())->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
+        return $this->repo->transaction(
+            function () use ($input)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_LINK_CREATE_REQUEST,
+                    $input);
 
-        (new Purpose())->validatePurpose($this->merchant, $input[Entity::PURPOSE]);
+                (new Validator())->validateInput(Validator::COMPOSITE_CREATE_RULE, $input);
 
-        $this->processAccountNumber($input);
+                (new Purpose())->validatePurpose($this->merchant, $input[Entity::PURPOSE]);
 
-        $contactDetails = array_pull($input, 'contact');
+                $this->processAccountNumber($input);
 
-        $contact = (new ContactClient())->processContact($contactDetails, $this->merchant);
+                $contactDetails = array_pull($input, 'contact');
 
-        $input[Entity::CONTACT_NAME] = $contact->getName();
+                $contact = (new ContactClient())->processContact($contactDetails, $this->merchant);
 
-        $input[Entity::CONTACT_EMAIL] = $contact->getEmail();
+                $input[Entity::CONTACT_NAME] = $contact->getName();
 
-        $input[Entity::CONTACT_PHONE_NUMBER] = $contact->getContact();
+                $input[Entity::CONTACT_EMAIL] = $contact->getEmail();
 
-        $user = $this->app['basicauth']->getUser();
+                $input[Entity::CONTACT_PHONE_NUMBER] = $contact->getContact();
 
-        $payoutLink = (new Entity)->build($input);
+                $user = $this->app['basicauth']->getUser();
 
-        // Doing this because we need the Id for generating short URL
-        $payoutLink->generateId();
+                $payoutLink = (new Entity)->build($input);
 
-        $this->generateAndSetShortUrl($payoutLink);
+                // Doing this because we need the Id for generating short URL
+                $payoutLink->generateId();
 
-        $payoutLink->merchant()->associate($this->merchant);
+                $this->generateAndSetShortUrl($payoutLink);
 
-        $payoutLink->contact()->associate($contact);
+                $payoutLink->merchant()->associate($this->merchant);
 
-        $balance = $this->getBalance($input);
+                $payoutLink->contact()->associate($contact);
 
-        $payoutLink->balance()->associate($balance);
+                $balance = $this->getBalance($input);
 
-        $payoutLink->user()->associate($user);
+                $payoutLink->balance()->associate($balance);
 
-        $payoutLink->setStatus(Status::ISSUED);
+                $payoutLink->user()->associate($user);
 
-        $this->repo->saveOrFail($payoutLink);
+                $payoutLink->setStatus(Status::ISSUED);
 
-       /* $this->app['events']->fire(Status::getWebhookEventCorrespondingToStatus(Status::ISSUED),
-                                   [$payoutLink]);*/
+                $this->repo->saveOrFail($payoutLink);
 
-        return $payoutLink;
+                /* $this->app['events']->fire(Status::getWebhookEventCorrespondingToStatus(Status::ISSUED),
+                                            [$payoutLink]);*/
+                $this->sendLinkToCustomers($payoutLink);
+
+                return $payoutLink;
+            }
+        );
     }
 
     public function viewHostedPage(Entity $payoutLink)
@@ -453,18 +503,18 @@ class Core extends Base\Core
         $requestContext = $this->processContext($payoutLink->getPublicId(), $context);
 
         $payload = [
-            self::RECEIVER  => $receiver,
-            Entity::CONTEXT => $requestContext,
-            self::SOURCE    => self::API_POUT_LNK_SRC,
-            Entity::OTP     => $input[Entity::OTP]
+            Entity::RECEIVER => $receiver,
+            Entity::CONTEXT  => $requestContext,
+            Entity::SOURCE   => Entity::API_POUT_LNK_SRC,
+            Entity::OTP      => $input[Entity::OTP]
         ];
 
         $this->trace->info(
             TraceCode::PAYOUT_LINK_CUSTOMER_OTP_VERIFY,
             [
-                self::RECEIVER  => $receiver,
-                Entity::CONTEXT => $requestContext,
-                self::SOURCE    => self::API_POUT_LNK_SRC
+                Entity::RECEIVER => $receiver,
+                Entity::CONTEXT  => $requestContext,
+                Entity::SOURCE   => Entity::API_POUT_LNK_SRC
             ]
         );
 
@@ -486,6 +536,13 @@ class Core extends Base\Core
         return [
             'token' => $token
         ];
+    }
+
+    public function sendLinkToCustomers(Entity $payoutLink)
+    {
+        PayoutLinkNotification::dispatch($this->mode,
+                                         NotificationType::SEND_LINK,
+                                         $payoutLink->getPublicId());
     }
 
     /**
@@ -570,6 +627,7 @@ class Core extends Base\Core
     /**
      * @param Entity $payoutLink
      * @return string
+     * @throws BadRequestValidationFailureException
      */
     protected function getPayoutMode(Entity $payoutLink)
     {
@@ -620,31 +678,34 @@ class Core extends Base\Core
 
         $fundAccountDetails = $this->getMaskedFundAccountDetails($payoutLink->fundAccount);
 
+        $settings = $this->getSettings($payoutLink->merchant);
+
         // This is required to Add/Remove code on the HTML page that pushed GA events.
         // We do not want this to be added in non-prod envs
         $isProduction = $this->app->environment() === Environment::PRODUCTION;
 
         $data = [
-            'api_host'                => $this->config['url.api.production'],
-            'payout_link_id'          => $payoutLink->getPublicId(),
-            'payout_link_status'      => $payoutLink->getStatus(),
-            'amount'                  => $payoutLink->getAmount(),
-            'currency'                => $payoutLink->getCurrency(),
-            'user_name'               => $payoutLink->getContactName(),
-            'description'             => $payoutLink->getDescription(),
-            'user_email'              => $maskedEmail,
-            'user_phone'              => $maskedPhone,
-            'receipt'                 => $payoutLink->getReceipt(),
-            'merchant_logo_url'       => $this->merchant->getFullLogoUrlWithSize(),
-            'payout_link_description' => $payoutLink->getDescription(),
-            'primary_color'           => $this->merchant->getBrandColor(),
-            'merchant_name'           => $this->merchant->getDisplayNameElseName(),
-            'allow_upi'               => $this->allowUpi($payoutLink),
-            'banking_url'             => $this->config['applications.banking_service_url'],
-            'is_production'           => $isProduction,
-            'fund_account_details'    => json_encode($fundAccountDetails),
-            'purpose'                 => $payoutLink->getPurpose(),
-            'payout_utr'              => $payoutLink->getPayoutUtr()
+            'api_host'                          => $this->config['url.api.production'],
+            'payout_link_id'                    => $payoutLink->getPublicId(),
+            'payout_link_status'                => $payoutLink->getStatus(),
+            'amount'                            => $payoutLink->getAmount(),
+            'currency'                          => $payoutLink->getCurrency(),
+            'user_name'                         => $payoutLink->getContactName(),
+            'description'                       => $payoutLink->getDescription(),
+            'user_email'                        => $maskedEmail,
+            'user_phone'                        => $maskedPhone,
+            'receipt'                           => $payoutLink->getReceipt(),
+            'merchant_logo_url'                 => $this->merchant->getFullLogoUrlWithSize(),
+            'payout_link_description'           => $payoutLink->getDescription(),
+            'primary_color'                     => $this->merchant->getBrandColorElseDefault(),
+            'merchant_name'                     => $this->merchant->getDisplayNameElseName(),
+            'allow_upi'                         => $this->allowUpi($payoutLink),
+            'banking_url'                       => $this->config['applications.banking_service_url'],
+            'is_production'                     => $isProduction,
+            'fund_account_details'              => json_encode($fundAccountDetails),
+            'purpose'                           => $payoutLink->getPurpose(),
+            'payout_utr'                        => $payoutLink->getPayoutUtr(),
+            'payout_links_custom_message'       => $settings[Entity::CUSTOM_MESSAGE] ?? null
         ];
 
         return $data;
@@ -785,14 +846,14 @@ class Core extends Base\Core
     protected function getSmsPayload(Entity $payoutLink, string $otp): array
     {
         $payload = [
-            self::PARAMS   => [
+            Entity::PARAMS   => [
                 Entity::MERCHANT_NAME  => $this->merchant->getDisplayNameElseName(),
                 Entity::OTP            => $otp,
                 Entity::PAYOUT_PURPOSE => $payoutLink->getPurpose()
             ],
-            self::TEMPLATE => self::SMS_TEMPLATE,
-            self::SOURCE   => self::API_POUT_LNK_SRC,
-            self::RECEIVER => $payoutLink->getContactPhoneNumber()
+            Entity::TEMPLATE => self::SMS_TEMPLATE,
+            Entity::SOURCE   => Entity::API_POUT_LNK_SRC,
+            Entity::RECEIVER => $payoutLink->getContactPhoneNumber()
         ];
 
         return $payload;
@@ -805,9 +866,9 @@ class Core extends Base\Core
         $requestContext = $this->processContext($payoutLink->getPublicId(), $context);
 
         $payload = [
-            self::RECEIVER  => $receiver,
-            Entity::CONTEXT => $requestContext,
-            self::SOURCE    => self::API_POUT_LNK_SRC
+            Entity::RECEIVER => $receiver,
+            Entity::CONTEXT  => $requestContext,
+            Entity::SOURCE   => Entity::API_POUT_LNK_SRC
         ];
 
         $this->trace->info(
@@ -881,5 +942,33 @@ class Core extends Base\Core
     protected function getSettingsAccessor($merchant)
     {
         return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
+    }
+
+    protected function pushStatusUpdateNotification(Entity $payoutLink)
+    {
+        if ($payoutLink->getStatus() === Status::PROCESSED)
+        {
+            PayoutLinkNotification::dispatch($this->mode,
+                                             NotificationType::PAYOUT_LINK_PROCESSING_SUCCESSFUL,
+                                             $payoutLink->getPublicId());
+        }
+        else if ($payoutLink->getStatus() === Status::ATTEMPTED)
+        {
+            PayoutLinkNotification::dispatch($this->mode,
+                                             NotificationType::PAYOUT_LINK_PROCESSING_FAILED,
+                                             $payoutLink->getPublicId());
+        }
+    }
+
+    // this will get the count of PayoutLinks filtered with status and merchant_id
+    public function getPayoutLinksByMerchantAndStatus(string $merchantId, string $status)
+    {
+        return $this->repo->payout_link->getPayoutLinkByStatus($merchantId, $status);
+    }
+
+    // this will get the count of PayoutLinks filtered with merchant_id
+    public function getTotalLinksByMerchant(string $merchantId)
+    {
+        return $this->repo->payout_link->getPayoutLinkByMerchant($merchantId);
     }
 }

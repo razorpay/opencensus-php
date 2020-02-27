@@ -119,26 +119,15 @@ class RblPayoutTest extends TestCase
 
     public function testCreatingPendingPayoutsForRblWithSupportedModeChannelDestinationTypeCombo()
     {
+        $this->liveSetUp();
+        $this->setupWorkflowForLiveMode();
+        $this->disableWorkflowMocks();
+
         $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
 
         Carbon::setTestNow($oldDateTime);
 
-        $this->createWorkflowFeature();
-
-        $workflow = $this->createWorkflow([
-          'org_id'      => '100000razorpay',
-          'name'        => 'some workflow',
-          'permissions' => ['create_payout'],
-        ]);
-
-        $attributes = [
-          'merchant_id' => '10000000000000',
-          'min_amount'  => 0,
-          'max_amount'  => 1000000,
-          'workflow_id' => $workflow->getId(),
-        ];
-
-        $this->fixtures->create('workflow_payout_amount_rules', $attributes);
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
 
@@ -149,13 +138,9 @@ class RblPayoutTest extends TestCase
     {
         $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
 
-        Carbon::setTestNow($oldDateTime);
-
         $this->fixtures->edit('banking_account', 'xba00000000000', [
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ] );
-
-        Carbon::setTestNow();
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -166,13 +151,9 @@ class RblPayoutTest extends TestCase
     {
         $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
 
-        Carbon::setTestNow($oldDateTime);
-
         $this->fixtures->edit('banking_account', 'xba00000000000', [
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ] );
-
-        Carbon::setTestNow();
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(50000);
 
@@ -183,13 +164,9 @@ class RblPayoutTest extends TestCase
     {
         $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
 
-        Carbon::setTestNow($oldDateTime);
-
         $this->fixtures->edit('banking_account', 'xba00000000000', [
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ] );
-
-        Carbon::setTestNow();
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
 
@@ -213,13 +190,9 @@ class RblPayoutTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        Carbon::setTestNow($oldDateTime);
-
         $this->fixtures->edit('banking_account', 'xba00000000000', [
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ] );
-
-        Carbon::setTestNow();
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(50000);
 

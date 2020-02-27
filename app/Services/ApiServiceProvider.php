@@ -48,6 +48,7 @@ use RZP\Models\Plan\Subscription;
 use RZP\Models\Partner\Commission;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
+use RZP\Services\FreshdeskTicketClient;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\PaymentLink\PaymentPageItem;
@@ -352,6 +353,12 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMozart();
 
         $this->registerHyperVerge();
+
+        $this->registerFreshdeskTicketService();
+
+        $this->registerTokenService();
+
+        $this->registerTerminalsService();
     }
 
     /**
@@ -401,6 +408,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'mozart',
             'hubspot',
             'salesforce',
+            'freshdesk_client',
+            'token_service',
+            'terminals_service',
         ];
     }
 
@@ -888,6 +898,45 @@ class ApiServiceProvider extends BaseServiceProvider
             $implementation = $mock ? Mock\FTS\FundTransfer::class : FTS\FundTransfer::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerFreshdeskTicketService()
+    {
+        $this->app->singleton('freshdesk_client', function($app)
+        {
+            $ticketMock = $app['config']->get('applications.freshdesk.mock');
+
+            if ($ticketMock === true)
+            {
+                return new Mock\FreshdeskTicketClient($app);
+            }
+
+            return new FreshDeskTicketClient($app);
+        });
+    }
+
+    protected function registerTerminalsService()
+    {
+        $this->app->singleton('terminals_service', function ($app)
+        {
+            $terminalsServiceMock = $app['config']->get('applications.terminals_service.mock');
+
+            if ($terminalsServiceMock === true)
+            {
+                return new Mock\TerminalsService($app);
+            }
+
+            return new TerminalsService($app);
+        });
+
+    }
+
+    protected function registerTokenService()
+    {
+        $this->app->singleton('token_service', function($app)
+        {
+            return new TokenService($app);
         });
     }
 }

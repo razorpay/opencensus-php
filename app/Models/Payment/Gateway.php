@@ -164,7 +164,7 @@ class Gateway
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
-        self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC, self::ACQUIRER_YESB],
         self::FIRST_DATA   => [self::ACQUIRER_ICIC],
         self::AMEX         => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI   => [self::ACQUIRER_ICIC],
@@ -671,6 +671,7 @@ class Gateway
         Payment\Gateway::NETBANKING_HDFC,
         Payment\Gateway::PAYSECURE,
         Payment\Gateway::NETBANKING_KOTAK,
+        Payment\Gateway::EBS,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -906,7 +907,9 @@ class Gateway
         ],
         self::AXIS_MIGS             => [],
         self::AMEX                  => [],
-        self::CYBERSOURCE           => [],
+        self::CYBERSOURCE           => [
+            self::NOT_SUPPORTED => [Network::RUPAY]
+        ],
         self::PAYSECURE             => [],
         self::FIRST_DATA            => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
@@ -1014,6 +1017,10 @@ class Gateway
         ],
         self::PAYSECURE => [
             Network::RUPAY,
+        ],
+        self::MPI_BLADE => [
+            Network::MC,
+            Network::VISA
         ]
     ];
 
@@ -2351,6 +2358,15 @@ class Gateway
         return false;
     }
 
+    public static function shouldAlwaysRouteThroughCardPaymentService($gateway)
+    {
+        $gateways = [
+            self::PAYTM,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
     public static function isCardPaymentServiceGateway($gateway)
     {
         $gateways = [
@@ -2364,6 +2380,8 @@ class Gateway
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
             self::PAYSECURE,
+            self::PAYTM,
+            self::AMEX,
         ];
 
         return (in_array($gateway, $gateways, true));

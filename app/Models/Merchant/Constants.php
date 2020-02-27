@@ -35,6 +35,9 @@ final class Constants
     const TRANSLATE_WEBHOOK_GATEWAY               = 'translate_webhook_gateway';
 
     const DOCUMENT_TYPE                           = 'document_type';
+    const ENTITY                                  = 'entity';
+    const IDEMPOTENT_ID                           = 'idempotent_id';
+    const BATCH_ACTION                            = 'batch_action';
 
     // Used in partners flows
     const APPLICATION_ID                          = 'application_id';
@@ -45,6 +48,13 @@ final class Constants
 
     const REMOVE                                  = 'remove';
     const LIVE                                    = 'live';
+
+    public static $EntityBatchActionSettingParams = [
+        self::BATCH_ACTION,
+        self::IDEMPOTENT_ID,
+        self::ENTITY,
+        Entity::ID,
+    ];
 
     public static $internationalActionMapping = [
         Action::ENABLE_INTERNATIONAL  => 1,

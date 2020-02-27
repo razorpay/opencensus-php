@@ -18,6 +18,7 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Services\TokenService;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
@@ -81,6 +82,16 @@ class Core extends Base\Core
 
     public function changePassword(Entity $user, array $input)
     {
+        // TODO: Following validation does not seem be invoked in other flows
+        // e.g. reset by internal admin etc. Need to check in detail and plug
+        // this validation at right place. Also need to modify test assertions
+        // and add new if required.
+        $user->getValidator()->validatePasswordIsNotSameAsLastThree($input[Entity::PASSWORD]);
+
+        // Once validated updates the old password attributes.
+        $user->setAttribute(Entity::OLD_PASSWORD_2, $user->getAttribute(Entity::OLD_PASSWORD_1));
+        $user->setAttribute(Entity::OLD_PASSWORD_1, $user->getAttribute(Entity::PASSWORD));
+
         $user->fill($input);
 
         $user->setPasswordResetToken();
@@ -957,11 +968,12 @@ class Core extends Base\Core
     /**
      * Verifies otp for given input(action, token & otp).
      *
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
-     * @param  Entity          $user
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Entity $user
+     * @param bool $mock
      */
-    public function verifyOtp(array $input, Merchant\Entity $merchant, Entity $user)
+    public function verifyOtp(array $input, Merchant\Entity $merchant, Entity $user, bool $mock = false)
     {
         $this->trace->info(TraceCode::USERS_VERIFY_OTP_FOR_ACTION, compact('input'));
 
@@ -969,7 +981,7 @@ class Core extends Base\Core
 
         $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
 
-        $this->app->raven->verifyOtp($payload);
+        $this->app->raven->verifyOtp($payload, $mock);
     }
 
     /**
@@ -1351,5 +1363,32 @@ class Core extends Base\Core
         $customProperties = ['email' => $userEmail];
 
         $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, null, $customProperties);
+    }
+
+    /**
+     * Verify user through otp sent to email.
+     * Generates and stores a user verification token in redis.
+     * This token has to be passed in subsequent calls which need user authorization.
+     *
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Entity $user
+     * @return array
+     */
+    public function verifyUserThroughEmail(array $input, Merchant\Entity $merchant, Entity $user) : array
+    {
+        /** @var Validator $validator */
+        $validator = $user->getValidator();
+
+        $validator->validateInput('verifyUserThroughEmail', $input);
+
+        $this->verifyOtp($input + ['action' => 'user_auth'], $merchant, $user);
+
+        /** @var TokenService $tokenService */
+        $tokenService  = $this->app['token_service'];
+
+        $token = $tokenService->generate($user->getId());
+
+        return [Entity::OTP_AUTH_TOKEN => $token];
     }
 }

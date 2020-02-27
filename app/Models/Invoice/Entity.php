@@ -78,6 +78,7 @@ class Entity extends Base\PublicEntity
     const INTERNATIONAL             = 'international';
     const SUBSCRIPTIONS             = 'subscriptions';
     const REMINDER_STATUS           = 'reminder_status';
+    const BATCH_OFFSET              = 'batch_offset';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
@@ -240,6 +241,7 @@ class Entity extends Base\PublicEntity
         'updateLineItem',
         'removeLineItem',
         'removeManyLineItems',
+        'deleteInvoice',
 
         // Notifier's actions
         'notifyInvoiceIssued',
@@ -556,6 +558,11 @@ class Entity extends Base\PublicEntity
         self::PAID_AT,
         self::EXPIRED_AT,
         self::CANCELLED_AT,
+    ];
+
+    const DELETE_ALLOWED_STATUSES = [
+        Status::EXPIRED,
+        Status::CANCELLED,
     ];
 
     // -------------------------------------- Mutators ---------------

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Batch;
 
 use Mail;
+use Mockery;
 use Illuminate\Support\Facades\Queue;
 
 use RZP\Models\Batch\Header;
@@ -10,6 +11,7 @@ use RZP\Models\Batch\Entity;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Batch\AuthLink as BatchAuthFileMail;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class AuthLinkTest extends TestCase
@@ -104,6 +106,36 @@ class AuthLinkTest extends TestCase
         Mail::assertSent(BatchAuthFileMail::class);
     }
 
+    public function testCreateBatchOfNachAuthLinks()
+    {
+        (new Terminal)->createNachTerminal();
+
+        $this->mockHyperVerge(function ()
+        {
+            return [
+                'outputImage' => base64_encode('dummy'),
+                'uid'         => 'XXXXXXX'
+            ];
+        });
+
+        $entries = $this->getDefaultNachFileEntry();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+
+        $entity = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(1, $entity['success_count']);
+
+        $paperMandate = $this->getDbLastEntity('paper_mandate')->toArray();
+
+        $this->assertEquals(100000, $paperMandate['amount']);
+        $this->assertEquals('ref_1', $paperMandate['reference_1']);
+        $this->assertEquals('ref_2', $paperMandate['reference_2']);
+        $this->assertTrue(empty($paperMandate['generated_file_id']) === false);
+    }
+
     public function testValidateBatchWithInvalidHeaders()
     {
         Queue::fake();
@@ -182,6 +214,25 @@ class AuthLinkTest extends TestCase
         $expireBy = $invoice->getExpireBy();
 
         self::assertEquals(date('d/m/Y', $expireBy) , '20/10/2020');
+    }
+
+
+    public function testFetchAuthLinkForAuthLinkSupervisorRole()
+    {
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'auth_link_supervisor');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', '100AgentUserId');
+
+        $this->startTest();
+    }
+
+    public function testFetchAuthLinkForAuthLinkAgentRole()
+    {
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'auth_link_agent');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', '100AgentUserId');
+
+        $this->startTest();
     }
 
     protected function getDefaultFileEntries()
@@ -271,6 +322,34 @@ class AuthLinkTest extends TestCase
         ];
     }
 
+    protected function getDefaultNachFileEntry()
+    {
+        return [
+            [
+                Header::AUTH_LINK_CUSTOMER_NAME    => 'test',
+                Header::AUTH_LINK_CUSTOMER_EMAIL   => 'test@test.test',
+                Header::AUTH_LINK_CUSTOMER_PHONE   => '9999998888',
+                Header::AUTH_LINK_AMOUNT_IN_PAISE  => 0,
+                Header::AUTH_LINK_CURRENCY         => "INR",
+                Header::AUTH_LINK_METHOD           => 'nach',
+                Header::AUTH_LINK_TOKEN_EXPIRE_BY  => '20-10-2020',
+                Header::AUTH_LINK_MAX_AMOUNT       => "100000",
+                Header::AUTH_LINK_EXPIRE_BY        => '20-10-2020',
+                Header::AUTH_LINK_AUTH_TYPE        => 'physical',
+                Header::AUTH_LINK_BANK             => "HDFC",
+                Header::AUTH_LINK_NAME_ON_ACCOUNT  => "Test",
+                Header::AUTH_LINK_IFSC             => "HDFC0001233",
+                Header::AUTH_LINK_ACCOUNT_NUMBER   => "1233100023891",
+                Header::AUTH_LINK_ACCOUNT_TYPE     => "savings",
+                Header::AUTH_LINK_RECEIPT          => '#1',
+                Header::AUTH_LINK_DESCRIPTION      => 'test auth link',
+                Header::AUTH_LINK_NACH_REFERENCE1  => 'ref_1',
+                Header::AUTH_LINK_NACH_REFERENCE2  => 'ref_2',
+                Header::AUTH_LINK_NACH_CREATE_FORM => '1'
+            ],
+        ];
+    }
+
     protected function getWrongHeaderEntries()
     {
         return [
@@ -352,4 +431,18 @@ class AuthLinkTest extends TestCase
         ];
     }
 
+    protected function mockHyperVerge($callable = null)
+    {
+        $hyperVerge = Mockery::mock('RZP\Services\HyperVerge', [$this->app]);
+
+        $callable = $callable ?: function ()
+        {
+            return [];
+        };
+
+        $hyperVerge->shouldReceive('generateNACH', 'extractNACHWithOutputImage')
+                   ->andReturnUsing($callable);
+
+        $this->app->instance('hyperVerge', $hyperVerge);
+    }
 }

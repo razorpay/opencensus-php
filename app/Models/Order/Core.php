@@ -25,9 +25,13 @@ class Core extends Base\Core
      */
     public function create(array $input, Merchant\Entity $merchant, bool $partialPayment = false)
     {
+        $inputTrace = $input;
+
+        unset($inputTrace['bank_account']['account_number'], $inputTrace['bank_account']['name']);
+
         $this->trace->info(
             TraceCode::ORDER_CREATE_REQUEST,
-            $input
+            $inputTrace
         );
 
         $order = new Entity;
@@ -47,9 +51,11 @@ class Core extends Base\Core
             $order->allowPartialPayment();
         }
 
-        $order = $this->repo->transaction(function() use ($order, $input)
+        list($order, $ba) = $this->repo->transaction(function() use ($order, $input)
         {
-            $ba = $this->createAndAssociateBankAccount($order, $input);
+            //The variable pushToQueue is added since we want to delay razorx call and queue push till
+            //transaction completion.
+            $ba = $this->createAndAssociateBankAccount($order, $input, false);
 
             $order->getValidator()->validateMerchantSpecificData();
 
@@ -64,8 +70,13 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($order);
 
-            return $order;
+            return [$order, $ba];
         });
+
+        if (isset($input[Entity::BANK_ACCOUNT]) === true)
+        {
+            (new BankAccount\Beneficiary)->enqueueForBeneficiaryRegistration($ba);
+        }
 
         $this->trace->info(
             TraceCode::ORDER_CREATED,
@@ -90,7 +101,7 @@ class Core extends Base\Core
         return $newInput;
     }
 
-    protected function createAndAssociateBankAccount(Entity $order, array $input)
+    protected function createAndAssociateBankAccount(Entity $order, array $input, bool $pushToQueue = true)
     {
         if (isset($input[Entity::BANK_ACCOUNT]) === false)
         {
@@ -101,7 +112,8 @@ class Core extends Base\Core
             $input[Entity::BANK_ACCOUNT],
             $order->merchant,
             $order,
-            'addTpvBankAccount');
+            'addTpvBankAccount',
+            $pushToQueue);
     }
 
     protected function associateOffers(Entity $order, array $input)
@@ -134,7 +146,7 @@ class Core extends Base\Core
 
     protected function associateDefaultOffers(Entity $order)
     {
-        $defaultOffers = (new Offer\Core)->fetchDefaultOffers();
+        $defaultOffers = (new Offer\Core)->fetchDefaultOffersForMerchant($order->getMerchantId());
 
         foreach($defaultOffers as $offer)
         {
@@ -206,11 +218,6 @@ class Core extends Base\Core
                 Entity::BANK           => $order->getBank(),
                 Entity::ACCOUNT_NUMBER => $this->getMaskedAccountNumber($accountNumber),
             ];
-
-            if ($orderMethod !== null)
-            {
-                $data += [Entity::METHOD => $orderMethod];
-            }
         }
         else if ($order->getBank() !== null)
         {
@@ -223,11 +230,6 @@ class Core extends Base\Core
 
         if ($tokenRegistration !== null)
         {
-            if ($orderMethod !== null)
-            {
-                $data += [Entity::METHOD => $orderMethod];
-            }
-
             if ( ($tokenRegistration->getEntityType() === Entity::BANK_ACCOUNT) === true )
             {
                 $bankAccount = $tokenRegistration->bankAccount;
@@ -240,6 +242,11 @@ class Core extends Base\Core
             }
 
             $data[Entity::AUTH_TYPE] = $tokenRegistration->getAuthType();
+        }
+
+        if ($orderMethod !== null)
+        {
+            $data += [Entity::METHOD => $orderMethod];
         }
 
         return $data;

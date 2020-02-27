@@ -26,7 +26,7 @@ trait OtpResend
         {
             $payment = $this->retrieve($id);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_INITIATED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_INITIATED, $payment);
         
             $this->validatePaymentStatus($payment);
 
@@ -42,7 +42,7 @@ trait OtpResend
                 
                 $this->repo->saveOrFail($payment);
 
-                $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment);
+                $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment);
 
                 return $data;
             }
@@ -58,7 +58,7 @@ trait OtpResend
         }
         catch (\Throwable $ex)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment, $ex);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment, $ex);
          
             $this->app['segment']->trackPayment($payment, TraceCode::OTP_RESEND_EXCEPTION);
 
@@ -70,7 +70,8 @@ trait OtpResend
     {
         // Checking if the resend is called for headless otp
         if (($payment->isMethodCardOrEmi() === true) and
-            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP))
+            (($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP) or
+             ($payment->getAuthType() === Payment\AuthType::IVR)))
         {
             if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
             {
@@ -103,6 +104,30 @@ trait OtpResend
         }
     }
 
+    protected function setCardAndMerchantDetails($payment,array &$input)
+    {
+        $card = $payment->card;
+
+        //set card details
+        $this->setCardNumberAndCvv($input);
+
+        $input['card']['expiry_month']  = $card->getExpiryMonth();
+
+        $input['card']['expiry_year']   = $card->getExpiryYear();
+        $input['card']['network_code']  = $card->getNetworkCode();
+
+        unset($input['card']['cvv']);
+
+        //set merchant
+        $input['merchant'] = $payment->merchant;
+
+        //set Terminal
+        $input['terminal'] = $payment->terminal;
+
+        //set payment analytics
+        $input['payment_analytics'] = $this->repo->payment_analytics->findLatestByPayment($payment->getId());
+
+    }
     protected function prePaymentOtpResendProcessing($payment, $input, array & $gatewayInput)
     {
         $this->verifyPaymentMethodEnabled($payment);
@@ -113,7 +138,14 @@ trait OtpResend
         //
         // Call gateway input
         //
+
         $gatewayInput['payment'] = $payment->toArray();
+
+        //Otpresend for Ivr requires the card details
+        if ($payment->getAuthType() === Payment\AuthType::IVR)
+        {
+            $this->setCardAndMerchantDetails($payment,$gatewayInput);
+        }
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 

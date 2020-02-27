@@ -18,8 +18,7 @@ class Fetch extends BaseFetch
             Entity::YEAR           => 'sometimes|digits:4',
         ],
         AuthType::PROXY_AUTH => [
-            Entity::TYPE           => 'sometimes',
-            Entity::BALANCE_ID     => 'sometimes|unsigned_id',
+            Entity::TYPE => 'sometimes',
         ],
     ];
 
@@ -28,7 +27,6 @@ class Fetch extends BaseFetch
             Entity::YEAR,
             Entity::TYPE,
             Entity::MONTH,
-            Entity::BALANCE_ID,
         ],
         AuthType::ADMIN_AUTH => [
             Entity::ID,

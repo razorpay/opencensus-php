@@ -9,6 +9,7 @@ use RZP\Mail\Banking;
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Transaction;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
@@ -27,6 +28,15 @@ class Base extends FundAccountPayout\Base
             $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
 
             $this->createTransaction($payout);
+
+            //
+            // In case of payouts with status=(queued, payouts), we don't create the transaction yet.
+            // This event will be dispatched later when we are actually processing the payout.
+            //
+            if ($payout->isStatusBeforeCreate() === false)
+            {
+                (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            }
 
             //
             // Create a fund transfer entity where the fund transfers will be processed.

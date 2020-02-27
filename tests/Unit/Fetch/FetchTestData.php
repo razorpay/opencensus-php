@@ -498,6 +498,8 @@ return [
 
     E::UPI_TRANSFER => [],
 
+    E::UPI_METADATA => [],
+
     E::BALANCE_CONFIG => [
         Type::PROXY_AUTH => [
             [
@@ -513,4 +515,12 @@ return [
             ],
         ],
     ],
+
+    E::MERCHANT_FRESHDESK_TICKETS => [
+        Type::PROXY_AUTH => [
+            [
+                'type'        => str_random(),
+            ],
+        ],
+    ]
 ];

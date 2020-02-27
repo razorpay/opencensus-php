@@ -7,9 +7,12 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Settings;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Currency\Currency;
+use RZP\Exception\BadRequestException;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 /**
@@ -247,33 +250,51 @@ class Entity extends Base\PublicEntity
     /**
      * Only this method should be public
      * for updating balance.
-     * We need to check for balance going negative
+     * We need to check for balance going less than $negativeLimit
      * whenever we update balance
      *
      * @param \RZP\Models\Transaction\Entity $txn
      * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
      */
-    public function updateBalance($txn, $negativeBalanceEnabled = false)
+    public function updateBalance($txn, int $negativeLimit = 0)
     {
         $amount = $txn->getNetAmount();
 
+        $oldBalance = $this->getBalance();
+
         $this->addAmount($amount);
 
-        if ($negativeBalanceEnabled === false)
-        {
-            if ($this->getBalance() < 0)
-            {
-                $data = [
-                    'balance'     => $this->toArray(),
-                    'transaction' => $txn->toArray(),
-                    'amount'      => $amount
-                ];
+        $newBalance = $this->getBalance();
 
-                throw new Exception\LogicException(
-                    'Something very wrong is happening! Balance is going negative',
-                    null,
-                    $data);
-            }
+        // if the balance after is update is greater than the previous balance,
+        // even if it is still negative, we should update the balance.
+
+        if ($newBalance > $oldBalance)
+        {
+            return;
+        }
+
+        $data = [
+            'balance'     => $this->toArray(),
+            'amount'      => $amount,
+            'transaction' => $txn->getId(),
+        ];
+
+        if (($negativeLimit === 0) and
+            ($this->getBalance() < 0))
+        {
+            throw new Exception\LogicException(
+                'Something very wrong is happening! Balance is going negative',
+                null,
+                $data);
+        }
+        else if ($this->getBalance() < $negativeLimit)
+        {
+            $data['message'] = TraceCode::getMessage(TraceCode::NEGATIVE_BALANCE_BREACHED);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED, abs($amount),
+                $data);
         }
     }
 
@@ -305,16 +326,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
-    public function subtractRefundCredits($amount, $negativeBalanceEnabled = false)
+    public function subtractRefundCredits($amount, int $negativeLimit = 0)
     {
         $credits = $this->getRefundCredits();
 
         $credits -= $amount;
 
-        if ($negativeBalanceEnabled === false)
-        {
-            assertTrue($credits >= 0);
-        }
+        assertTrue($credits >= $negativeLimit);
 
         $this->setAttribute(self::REFUND_CREDITS, $credits);
     }

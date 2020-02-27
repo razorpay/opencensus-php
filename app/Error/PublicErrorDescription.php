@@ -37,8 +37,8 @@ class PublicErrorDescription
     const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                 = 'Terminal disable failed on gateway';
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                  = 'Terminal enable failed on gateway';
     const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Card is not enrolled for 3D Secure authentication';
-    const GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED                         = 'Card is not enrolled for 3D Secure authentication';
-    const GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED                            = 'Card is not enrolled for 3D Secure authentication';
+    const GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED                         = '3D Secure authentication attempted';
+    const GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED                            = '3D Secure authentication failed';
     const BAD_REQUEST_PAYMENT_CARDHOLDER_NOT_ENROLLED_IN_3DSECURE_AUTH          = 'Card is not enrolled for 3D Secure authentication';
     const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
@@ -226,6 +226,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS                      = 'Cannot issue refund since payment date is older than 6 months';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING                         = 'Your account does not have enough balance to carry out the payout operation.';
+    const BAD_REQUEST_PAYOUT_STATUS_UPDATE_ALLOWED_ONLY_IN_TEST_MODE            = 'Payout status update is allowed only in test mode';
     const BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED                         = 'Refund in an invalid state to be marked as processed';
     const BAD_REQUEST_REFUND_INVALID_STATE_UPDATE                               = 'Refund can not be updated to this state';
     const BAD_REQUEST_REFUND_NOT_SCROOGE                                        = 'Gateway refund cannot be called for non-scrooge gateway';
@@ -324,6 +325,8 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED                                = 'The merchant has already been suspended';
     const BAD_REQUEST_MERCHANT_NOT_SUSPENDED                                    = 'The merchant has not been suspended. This action can only be taken for suspended merchants';
     const BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED                             = 'The input action is not supported for the merchant';
+    const BAD_REQUEST_BATCH_ACTION_NOT_SUPPORTED                                = 'The input batch action is not supported for the merchant';
+    const BAD_REQUEST_BATCH_ACTION_ENTITY_NOT_SUPPORTED                         = 'The input batch action entity is not supported for the merchant';
     const BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS                           = 'Merchant details does not exists';
     const BAD_REQUEST_MERCHANT_DETAIL_CANNOT_BE_UPDATED                         = 'Merchant details cannot be updated';
     const BAD_REQUEST_MERCHANT_ALREADY_LIVE                                     = 'The merchant is already live';
@@ -730,6 +733,7 @@ class PublicErrorDescription
     const BAD_REQUEST_WORKFLOW_ENTITY_VALIDATOR_RULE_NOT_FOUND                  = 'Workflow entity validator not found';
     const BAD_REQUEST_INVALID_STATE                                             = 'Invalid state passed in query parameters';
     const BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT                               = 'Workflow does not have create_payout permission';
+    const BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND                             = 'Required permission not found';
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';
 
@@ -803,6 +807,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS                      = 'Another payout operation is in progress. Please try again later.';
     const BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED                            = 'The payout is already being processed.';
     const BAD_REQUEST_INVALID_PASSWORD                                          = 'Invalid password';
+    const BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD                         = 'Your new password cannot match any of your last three passwords';
     const BAD_REQUEST_INVALID_LOCALE                                            = 'Issue on bank side';
     const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
     const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                       = 'Could not read card magnetic stripe';
@@ -828,11 +833,18 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_OTP_AUTH_TOKEN                                   = 'Token passed is either invalid or expired';
     const BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED                           = 'OTP generation failed';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS                               = 'Invalid Payout Link status passed';
+    const BAD_REQUEST_REWRITING_EMAIL_NOT_PERMITTED                            = 'Cannot over-write existing email information in created Payout Link';
+    const BAD_REQUEST_REWRITING_PHONE_NUMBER_NOT_PERMITTED                     = 'Cannot over-write existing phone number information in created Payout Link';
+    const BAD_REQUEST_INVALID_PAYOUT_LINK_NOTIFICATION_TYPE                    = 'Invalid Payout Link Notification Type';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS_TRANSITION                    = 'The following state transition is not allowed for this payout link';
     const BAD_REQUEST_PAYOUT_LINK_CANNOT_BE_CANCELLED_IN_THIS_STATE            = 'Payout Link cannot be cancelled in this state';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST           = 'Cannot initiate Payout Link in this state';
     const BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS                = 'Request failed because another operation is in progress';
     const BAD_REQUEST_EITHER_CONTACT_ID_OR_INFORMATION_TO_BE_SENT              = 'Either Contact ID or Contact Information is required, not both';
+    const BAD_REQUEST_EMAIL_NOTIFICATION_WITH_EMPTY_EMAIL                      = 'send_email cannot be true when contact does not have an associated email';
+    const BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE                        = 'send_sms cannot be true when contact does not have an associated phone number ';
+    const BAD_REQUEST_INVALID_CONTACT_ID                                       = 'Contact Id provided is invalid';
+    const BAD_REQUEST_CONTACT_ID_EMAIL_AND_PHONE_NUMBER_MISSING                = 'Cannot create payout link as the contact_id provided does not have either email or phone number';
 
     // Merchant Config Inheritance
     const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';

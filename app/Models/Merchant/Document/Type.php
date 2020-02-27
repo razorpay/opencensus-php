@@ -9,6 +9,19 @@ class Type
     const FFMC_LICENSE                   = 'ffmc_license';
     const NBFC_REGISTRATION_CERTIFICATE  = 'nbfc_registration_certificate';
     const AMFI_CERTIFICATE               = 'amfi_certificate';
+
+    //sla refer to service level agreement
+    const SLA_SEBI_REGISTRATION_CERTIFICATE  = 'sla_sebi_registration_certificate';
+    const SLA_IRDAI_REGISTRATION_CERTIFICATE = 'sla_irdai_registration_certificate';
+    const SLA_FFMC_LICENSE                   = 'sla_ffmc_license';
+    const SLA_NBFC_REGISTRATION_CERTIFICATE  = 'sla_nbfc_registration_certificate';
+    const SLA_AMFI_CERTIFICATE               = 'sla_amfi_certificate';
+    const SLA_IATA_CERTIFICATE               = 'sla_iata_certificate';
+
+    //optional documents
+    const AFFILIATION_CERTIFICATE = 'affiliation_certificate';
+    const IATA_CERTIFICATE        = 'iata_certificate';
+
     const PPI_LICENSE                    = 'ppi_license';
     const DRIVER_LICENSE_FRONT           = 'driver_license_front';
     const DRIVER_LICENSE_BACK            = 'driver_license_back';
@@ -36,6 +49,43 @@ class Type
     const VOTERS_ID                      = 'voters_id';
     const DRIVERS_LICENSE                = 'drivers_license';
 
+    const VALID_DOCUMENTS = [
+        self::SEBI_REGISTRATION_CERTIFICATE,
+        self::IRDAI_REGISTRATION_CERTIFICATE,
+        self::FFMC_LICENSE,
+        self::NBFC_REGISTRATION_CERTIFICATE,
+        self::AMFI_CERTIFICATE,
+
+        self::SLA_SEBI_REGISTRATION_CERTIFICATE,
+        self::SLA_IRDAI_REGISTRATION_CERTIFICATE,
+        self::SLA_FFMC_LICENSE,
+        self::SLA_NBFC_REGISTRATION_CERTIFICATE,
+        self::SLA_AMFI_CERTIFICATE,
+        self::SLA_IATA_CERTIFICATE,
+
+        self::AFFILIATION_CERTIFICATE,
+        self::IATA_CERTIFICATE,
+
+        self::PPI_LICENSE,
+        self::DRIVER_LICENSE_BACK,
+        self::DRIVER_LICENSE_FRONT,
+        self::AADHAR_FRONT,
+        self::AADHAR_BACK,
+        self::PASSPORT_FRONT,
+        self::PASSPORT_BACK,
+        self::VOTER_ID_FRONT,
+        self::VOTER_ID_BACK,
+        self::CANCELLED_CHEQUE,
+        self::BUSINESS_PROOF_URL,
+        self::BUSINESS_OPERATION_PROOF_URL,
+        self::BUSINESS_PAN_URL,
+        self::ADDRESS_PROOF_URL,
+        self::PROMOTER_PROOF_URL,
+        self::PROMOTER_PAN_URL,
+        self::PROMOTER_ADDRESS_URL,
+        self::FORM_12A_URL,
+        self::FORM_80G_URL
+    ];
 
     /**
      * Following documents needs to perform for OCR
@@ -49,9 +99,7 @@ class Type
 
     public static function isValid($value)
     {
-        $key = __CLASS__ . '::' . strtoupper($value);
-
-        return ((defined($key) === true) and (constant($key) === $value));
+        return (in_array($value, self::VALID_DOCUMENTS) === true);
     }
 
     public static function isDocumentTypeToPerformOcr($documentType): bool

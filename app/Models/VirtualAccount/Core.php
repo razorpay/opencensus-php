@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
@@ -99,14 +100,22 @@ class Core extends Base\Core
      * Creates a virtual account with bank account type receiver
      * on business banking type balance of given merchant.
      *
-     * @param  Merchant $merchant
+     * @param Merchant $merchant
+     * @param Balance\Entity $balance
      * @return Entity
      */
-    public function createForBankingBalance(Merchant $merchant): Entity
+    public function createForBankingBalance(Merchant $merchant, Balance\Entity $balance): Entity
     {
         $merchant->getValidator()->validateBusinessBankingActivated();
 
+        $name = $merchant->getBillingLabel();
+
+        // In test mode, there can be cases where the merchant name and billing_label are not set
+        // In those case we still want to create the VA and bank_account entities
+        $name = (($this->isTestMode() === true) and (empty($name) === true)) ? Mode::TEST : $name;
+
         $input = [
+            Entity::NAME => $name,
             Entity::RECEIVERS => [
                 Entity::TYPES => [
                     Entity::BANK_ACCOUNT
@@ -114,7 +123,7 @@ class Core extends Base\Core
             ],
         ];
 
-        return $this->create($input, $merchant, null, null, $merchant->sharedBankingBalance);
+        return $this->create($input, $merchant, null, null, $balance);
     }
 
     public function createOrFetchBankingVirtualAccount(Merchant $merchant, Balance\Entity $balance): Entity
@@ -123,7 +132,7 @@ class Core extends Base\Core
 
         if ($virtualAccount === null)
         {
-            $virtualAccount = $this->createForBankingBalance($merchant);
+            $virtualAccount = $this->createForBankingBalance($merchant, $balance);
         }
 
         return $virtualAccount;

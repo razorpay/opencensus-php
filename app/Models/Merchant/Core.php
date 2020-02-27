@@ -264,6 +264,8 @@ class Core extends Base\Core
 
         $this->upsertLegalEntity($subMerchant, $legalEntityInput);
 
+        $this->addToDefaultUnclaimedGroup($subMerchant);
+
         return $subMerchant;
     }
 
@@ -293,9 +295,35 @@ class Core extends Base\Core
             $config      = (new PartnerConfig\Core)->fetch($application);
 
             $pricingPlan = optional($config)->getDefaultPlanId() ?:  $pricingPlan;
+
+            $pricingPlan = $this->assignSubmerchantPromotionalPricingPlanIfApplicable($subMerchant, $pricingPlan);
         }
 
         $subMerchant->setPricingPlan($pricingPlan);
+    }
+
+    /**
+     *  Running Promotional Pricing Plan for Submerchant between 27th Feb 2020 - 30th April 2020.
+     *  Handle using Razorx.
+     *
+     * @param Entity $subMerchant
+     * @param string $pricingPlan
+     *
+     * @return string
+     */
+    protected function assignSubmerchantPromotionalPricingPlanIfApplicable(Entity $subMerchant, $pricingPlan)
+    {
+        $variant = $this->app->razorx->getTreatment(
+            $subMerchant->getId(),
+            Merchant\RazorxTreatment::SUBMERCHANT_PROMOTIONAL_PRICING_PLAN,
+            $this->mode);
+
+        if (strtolower($variant) === 'on')
+        {
+            $pricingPlan = Pricing\DefaultPlan::SUBMERCHANT_PROMOTIONAL_PRICING_PLAN;
+        }
+
+        return $pricingPlan;
     }
 
     protected function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null)
@@ -3079,5 +3107,29 @@ class Core extends Base\Core
         }
 
         return new Base\PublicCollection;
+    }
+
+    public function getAllMerchantIds($input): Base\PublicCollection
+    {
+        return $this->repo->merchant->fetchAllMerchantIDs($input);
+    }
+    /**
+     * @return array
+     */
+    public function getBatchActionEntities(): array
+    {
+        $batchActionEntities = BatchActionEntity::BATCH_ACTION_ENTITIES;
+
+        return $batchActionEntities;
+    }
+
+    /**
+     * @return array
+     */
+    public function getBatchActions(): array
+    {
+        $batchActions = BatchAction::BATCH_ACTIONS;
+
+        return $batchActions;
     }
 }

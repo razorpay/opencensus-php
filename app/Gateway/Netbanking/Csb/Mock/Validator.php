@@ -16,7 +16,7 @@ class Validator extends Base\Validator
         RequestFields::RETURN_URL   => 'required|string|url',
         RequestFields::MODE         => 'required|string|in:P',
         RequestFields::CHECKSUM     => 'required|string',
-        RequestFields::ACCOUNT_NUM  => 'sometimes|string|size:18',
+        RequestFields::ACCOUNT_NUM  => 'sometimes|string|size:20',
         RequestFields::NARRATION    => 'sometimes|string|max:20',
     ];
 

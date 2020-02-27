@@ -33,7 +33,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFac
 class Core extends Base\Core
 {
     const GATEWAY   = 'gateway';
-    const Processor = 'processor';
+    const PROCESSOR = 'processor';
 
     const DEFAULT_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = 5000;
 
@@ -58,8 +58,13 @@ class Core extends Base\Core
         $bankAccount = $virtualAccount->bankAccount;
         $bankCode    = $bankAccount->getBankCode();
 
-        // Only Yesbank bank accounts are allowed as shared banking accounts, for now
-        if ($bankCode !== Bank::YESB)
+        //
+        // Only Yesbank bank accounts are allowed as shared banking accounts on live mode, for now
+        // For test mode we create the accounts using bt_dashboard terminal
+        // In case of test mode, the bank code will be `RAZR` and not `YESB`.
+        //
+        if (($this->isLiveMode() === true) and
+            ($bankCode !== Bank::YESB))
         {
             throw new LogicException(
                 'Only YesBank virtual accounts are supported', // for now 🤑
@@ -588,6 +593,7 @@ class Core extends Base\Core
 
         $gatewayProcessor = $this->getGatewayProcessorClass($channel);
 
+        /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account
                                      ->getBankingAccountByMerchantIdAndChannel($merchantId, $channel);
 
@@ -604,41 +610,43 @@ class Core extends Base\Core
 
         // every gateway processor must implement fetchGatewayBalance function. This function sends Mozart request
         // to fetch balance from gateway and return balance.
-        $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
-
-        $updateRequestParams = [
-            Entity::TEMP_BALANCE            => $balance,
-            Entity::BALANCE_LAST_FETCHED_AT => Carbon::now()->getTimestamp(),
-        ];
-
         try
         {
-            $bankingAccount->update($updateRequestParams);
+            $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
+
+            $bankingAccount->setGatewayBalance($balance);
+
+            $bankingAccount->setBalanceLastFetchedAt(Carbon::now()->getTimestamp());
 
             $this->repo->saveOrFail($bankingAccount);
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_SUCCEEDED,
+                [
+                    Entity::CHANNEL         => $channel,
+                    Entity::MERCHANT_ID     => $merchantId,
+                    Entity::ACCOUNT_NUMBER  => $bankingAccount->getAccountNumber(),
+                    Entity::GATEWAY_BALANCE => $bankingAccount->getGatewayBalance(),
+                ]
+            );
+
+            return ['success' => true];
         }
-        catch (\Exception $ex)
+        catch (\Throwable $exception)
         {
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
+            $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
                 [
-                    'channel' => $channel,
-                ]);
+                    Entity::CHANNEL         => $channel,
+                    Entity::MERCHANT_ID     => $merchantId,
+                    Entity::ACCOUNT_NUMBER  => $bankingAccount->getAccountNumber(),
+                    Entity::GATEWAY_BALANCE => $bankingAccount->getGatewayBalance(),
+                ]
+            );
+
+            return ['success' => false];
         }
 
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_SUCCEEDED,
-            [
-                Entity::CHANNEL        => $channel,
-                Entity::MERCHANT_ID    => $merchantId,
-                Entity::ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
-                Entity::TEMP_BALANCE   => $bankingAccount->getTempBalance(),
-            ]
-        );
-
-        return ['success' => true];
     }
 
     protected function getGatewayProcessorClass($channel)
@@ -646,7 +654,7 @@ class Core extends Base\Core
         $gatewayProcessor = __NAMESPACE__ . '\\' .
                             studly_case(self::GATEWAY) . '\\' .
                             studly_case($channel) . '\\' .
-                            studly_case(self::Processor);
+                            studly_case(self::PROCESSOR);
 
         if (class_exists($gatewayProcessor) === true)
         {

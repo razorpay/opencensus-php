@@ -175,6 +175,10 @@ return [
         'secret' => env('BANKING_ACCOUNT_RBL_WEBHOOK_SECRET'),
     ],
 
+    'ecom' => [
+        'secret' => env('ECOM_WEBHOOK_SECRET'),
+    ],
+
     'bharatqr' => [
         'secret' => env('BHARAT_QR_SECRET'),
     ],
@@ -217,6 +221,15 @@ return [
         'mock'      => env('EXCHANGE_MOCK', false),
         'url'       => env('EXCHANGE_URL'),
         'appId'     => env('EXCHANGE_APP_ID')
+    ],
+
+    'freshdesk' => [
+        'url'           => env('FRESHDESK_URL'),
+        'sandbox'       => env('FRESHDESK_SANDBOX', false),
+        'sandbox_url'   => env('FRESHDESK_SANDBOX_URL'),
+        'token'         => env('FRESHDESK_TOKEN'),
+        'sandbox_token' => env('FRESHDESK_SANDBOX_TOKEN'),
+        'mock'          => env('FRESHDESK_MOCK', false),
     ],
 
     'zoho' => [
@@ -335,6 +348,17 @@ return [
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
     ],
 
+    'offline_verification' => [
+        'url'           => env('APP_OFFLINE_VERIFICATION_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_OFFLINE_VERIFICATION_SECRET'),
+        'timeout'       => env('APP_OFFLINE_VERIFICATION_TIMEOUT', 60),
+    ],
+
+    'payment_links' => [
+        'secret'   => env('APP_PAYMENT_LINKS_SECRET'),
+    ],
+
     'myoperator' => [
         'mock'      => env('MYOPERATOR_MOCK'),
         'api_token' => env('MYOPERATOR_API_TOKEN'),
@@ -444,5 +468,18 @@ return [
         'password'      => env('SALESFORCE_PASSWORD'),
         'client_id'     => env('SALESFORCE_CLIENT_ID'),
         'client_secret' => env('SALESFORCE_CLIENT_SECRET'),
+    ],
+
+    'terminals_service' => [
+        'mock'          => env('TERMINALS_SERVICE_MOCK', false),
+        'live'          => [
+            'password'      => env('TERMINALS_SERVICE_LIVE_PASSWORD'),
+            'url'           => env('TERMINALS_SERVICE_LIVE_URL'),
+        ],
+        'test'          => [
+            'password'      => env('TERMINALS_SERVICE_TEST_PASSWORD'),
+            'url'           => env('TERMINALS_SERVICE_TEST_URL'),
+        ],
+
     ],
 ];

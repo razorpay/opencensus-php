@@ -28,6 +28,7 @@ trait ErrorCodes
         'INV_AMT'                          => ErrorCode::BAD_REQUEST_INVALID_TRANSACTION_AMOUNT,
         'REFUND_FAILED'                    => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
         'CREDIT_LMT_EXHAUSTED'             => ErrorCode::BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXHAUSTED,
+        'RZP_INVALID_REFUND_ID'            => ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT
     ];
 
     public $paylaterErrorCodeMap = [

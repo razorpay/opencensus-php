@@ -305,11 +305,11 @@ class Service extends Base\Service
             }
 
             // cant do this before as mode is set in above, and mode is required to ensure data goes to write place
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, $payment, null, $traceData);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, $payment, null, [], $traceData);
 
             $response = $this->getNewProcessor($merchant)->processRedirectToAuthorize($payment, $id);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, $traceData);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, [], $traceData);
 
             $this->cachePaysecureResponseDataIfApplicable($payment, $response);
 
@@ -326,7 +326,7 @@ class Service extends Base\Service
                 $traceData
             );
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, $e, $traceData);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, $e, [], $traceData);
 
             throw $e;
         }
@@ -1036,8 +1036,12 @@ class Service extends Base\Service
 
         $data = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
 
+        $traceInput = $input;
+
+        unset($traceInput['account_number'], $traceInput['payer_va'], $traceInput['phone_number']);
+
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
-            'input'         => $input,
+            'input'         => $traceInput,
             'data'          => $data,
             'gateway'       => $gateway,
             'reference_id'  => $referenceId,
@@ -1532,7 +1536,7 @@ class Service extends Base\Service
                              ->setRazorXDopplerProperty($this->razorXForDoppler)
                              ->timeoutPayment();
 
-                        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
+                        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
 
                         $count++;
 
@@ -1689,6 +1693,19 @@ class Service extends Base\Service
     public function verifyPayment($payment)
     {
         return (new Verify)->verifyPayment($payment);
+    }
+
+    /**
+     * Certain gateways require gateway data such as bank reference number for payment verification
+     * to function accurately
+     *
+     * @param $payment
+     * @param null $gatewayData
+     * @return null|string
+     */
+    public function verifyPaymentWithGatewayData($payment, $gatewayData = null)
+    {
+        return (new Verify)->verifyPayment($payment, null, $gatewayData);
     }
 
     public function sendReminderMerchantMailForAuthorizedPayments()
@@ -2207,9 +2224,21 @@ class Service extends Base\Service
 
         $payments = $cards = $cardsWithoutFingerprint = [];
 
-        if($migrateMissingFingerprintCards)
+        $startTime = $this->app['cache']->get(Processor\Processor::FINGERPRINT_MIGRATION_CACHE_KEY, 1546300800);
+
+        $timeWindow = $input['time_window'] ?? 86400;
+
+        if($migrateMissingFingerprintCards and $startTime < time())
         {
-            $cardsWithoutFingerprint = $this->repo->card->findCardsWithoutFingerprint($limit);
+            $cardsWithoutFingerprint = $this->repo->card->findCardsWithoutFingerprint($limit, $startTime, $timeWindow);
+
+            // Update start time in redis if no records are found for migration in the window
+            if (count($cardsWithoutFingerprint) === 0)
+            {
+                $startTime = $startTime + $timeWindow;
+
+                $this->app['cache']->forever(Processor\Processor::FINGERPRINT_MIGRATION_CACHE_KEY, $startTime);
+            }
         }
         else
         {
@@ -2225,6 +2254,8 @@ class Service extends Base\Service
             [
                 'payments_count' => count($payments),
                 'cards_count'    => count($cards) + count($cardsWithoutFingerprint),
+                'start_time'     => $startTime,
+                'end_time'       => $startTime + $timeWindow,
             ]);
 
         $result = [

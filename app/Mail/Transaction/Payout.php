@@ -2,7 +2,8 @@
 
 namespace RZP\Mail\Transaction;
 
-use RZP\Models\FundAccount;
+use RZP\Constants\Mode;
+use RZP\Mail\Base\Constants;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Webhook\Event;
 use RZP\Models\Payout\ViewDataSerializer;
@@ -30,14 +31,15 @@ class Payout extends Transaction
         $payoutId            = $this->source['id'];
         $formattedAmount     = amount_format_IN($this->txn['amount']);
         $maskedAccountNumber = mask_except_last4($this->balance['account_number']);
+        $modePrefix          = ($this->mode === Mode::TEST) ? Constants::TEST_MODE_PREFIX : '';
 
         switch ($this->event)
         {
             case Event::PAYOUT_PROCESSED:
-                return "Your A/C ending with {$maskedAccountNumber} has been debited by INR {$formattedAmount}";
+                return "{$modePrefix}Your A/C ending with {$maskedAccountNumber} has been debited by INR {$formattedAmount}";
 
             case Event::PAYOUT_REVERSED:
-                return "Payout {$payoutId} has been reversed";
+                return "{$modePrefix}Payout {$payoutId} has been reversed";
 
             default:
                 throw new LogicException("Not handled transaction mail event: {$this->event}");

@@ -37,14 +37,6 @@ class Validator extends Base\Validator
         'merchant_ids.*'            => 'sometimes|string|size:14',
         'merchant_ids_excluded'     => 'sometimes|array',
         'merchant_ids_excluded.*'   => 'sometimes|string|size:14',
-        'correction'                => 'sometimes|boolean',
-    ];
-
-    protected static $correctionQueueRules = [
-        Entity::MONTH       => 'required|integer|between:1,12',
-        Entity::YEAR        => 'required|integer|digits:4',
-        'merchant_ids'      => 'sometimes|array',
-        'merchant_ids.*'    => 'sometimes|string|size:14',
     ];
 
     protected static $bulkCreateRules = [
@@ -59,7 +51,6 @@ class Validator extends Base\Validator
     protected static $bankingInvoiceGenerateRules = [
         Entity::YEAR                => 'required|digits:4',
         Entity::MONTH               => 'required|digits_between:1,2',
-        Entity::ACCOUNT_NUMBER      => 'required|alpha_num|between:5,22',
         Entity::SEND_EMAIL          => 'sometimes|boolean',
         Entity::TO_EMAILS           => 'required_if:send_email,1|array',
         Entity::TO_EMAILS . '.*'    => 'filled|email',

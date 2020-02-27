@@ -70,6 +70,8 @@ class Factory
             }
         }
 
+        $processor = class_exists($processor) ? $processor : __NAMESPACE__ . '\\' . 'Base';
+
         return new $processor($batch);
     }
 }

@@ -29,7 +29,7 @@
     }
   ?>
   @if (isset($data['request']))
-    <form action="{{$data['request']['url']}}" method="post"
+    <form action="{{$data['request']['url']}}" method="post">
       @foreach ($data['request']['content'] as $key => $value)
         <input type="hidden" name="{{$key}}" value="{{$value}}">
       @endforeach
@@ -45,11 +45,11 @@
 
       function paymentCallback() {
         if (window.CheckoutBridge) {
-          CheckoutBridge.oncomplete(data);
+          CheckoutBridge.oncomplete(JSON.stringify(data));
         } else if (iosBridge) {
           iosBridge.postMessage({
             action: 'success',
-            body: JSON.parse(data)
+            body: data
           });
         } else {
           try { window.opener.onComplete(data) } catch(e){}

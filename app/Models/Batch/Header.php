@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -562,15 +563,19 @@ class Header
     const AUTH_LINK_ACCOUNT_TYPE        = 'account_type';
     const AUTH_LINK_RECEIPT             = 'receipt';
     const AUTH_LINK_DESCRIPTION         = 'description';
+    const AUTH_LINK_NACH_REFERENCE1     = 'nach_reference1';
+    const AUTH_LINK_NACH_REFERENCE2     = 'nach_reference2';
+    const AUTH_LINK_NACH_CREATE_FORM    = 'nach_create_form';
     //
     // Auth Link Output Headers
     //
-    const AUTH_LINK_ID                  = 'authorization_link_id';
-    const AUTH_LINK_SHORT_URL           = 'authorization_link';
-    const AUTH_LINK_STATUS              = 'link_status';
-    const AUTH_LINK_MAIL_SENT           = 'sent_mail';
-    const AUTH_LINK_SMS_SENT            = 'sent_sms';
-    const AUTH_LINK_CREATED_AT          = 'created_at';
+    const AUTH_LINK_ID                   = 'authorization_link_id';
+    const AUTH_LINK_SHORT_URL            = 'authorization_link';
+    const AUTH_LINK_NACH_PRI_FILLED_FORM = 'prefilled_form';
+    const AUTH_LINK_STATUS               = 'link_status';
+    const AUTH_LINK_MAIL_SENT            = 'sent_mail';
+    const AUTH_LINK_SMS_SENT             = 'sent_sms';
+    const AUTH_LINK_CREATED_AT           = 'created_at';
 
     //
     // Hitachi Bulk Terminal Creation Headers
@@ -792,6 +797,18 @@ class Header
     const IIN_MC_MASTERCARD_ACCEPTANCE_BRAND     = 'ACCEPTANCE_BRAND';
     const IIN_MC_MASTERCARD_COUNTRY              = 'COUNTRY';
     const IIN_MC_MASTERCARD_REGION               = 'REGION';
+
+    // entity update action batch
+    const ID = Detail\Entity::ID;
+    const BUSINESS_REGISTERED_ADDRESS = Detail\Entity::BUSINESS_REGISTERED_ADDRESS;
+    const BUSINESS_REGISTERED_STATE = Detail\Entity::BUSINESS_REGISTERED_STATE;
+
+
+    const ADJUSTMENT_REFERENCE_ID   = 'reference_id';
+    const ADJUSTMENT_MERCHANT_ID    = 'merchant_id';
+    const ADJUSTMENT_AMOUNT         = 'amount';
+    const ADJUSTMENT_BALANCE_TYPE   = 'balance_type';
+    const ADJUSTMENT_DESCRIPTION    = 'description';
 
     /**
      * Input and output file headers
@@ -1975,10 +1992,14 @@ class Header
                 self::AUTH_LINK_RECEIPT,
                 self::AUTH_LINK_DESCRIPTION,
                 self::AUTH_LINK_EXPIRE_BY,
+                self::AUTH_LINK_NACH_REFERENCE1,
+                self::AUTH_LINK_NACH_REFERENCE2,
+                self::AUTH_LINK_NACH_CREATE_FORM,
                 self::NOTES,
                 self::STATUS,
                 self::AUTH_LINK_ID,
                 self::AUTH_LINK_SHORT_URL,
+                self::AUTH_LINK_NACH_PRI_FILLED_FORM,
                 self::AUTH_LINK_STATUS,
                 self::AUTH_LINK_CREATED_AT,
                 self::ERROR_CODE,
@@ -2436,6 +2457,23 @@ class Header
             ]
         ],
 
+        Type::ENTITY_UPDATE_ACTION => [
+            self::INPUT => [
+                self::ID,
+                self::BUSINESS_NAME,
+                self::BUSINESS_REGISTERED_ADDRESS,
+                self::BUSINESS_REGISTERED_STATE,
+            ],
+            self::OUTPUT => [
+                self::ID,
+                self::BUSINESS_NAME,
+                self::BUSINESS_REGISTERED_ADDRESS,
+                self::BUSINESS_REGISTERED_STATE,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
         Type::ADMIN_BATCH => [
             self::INPUT => [
                 self::ADMIN_ID,
@@ -2465,7 +2503,23 @@ class Header
             self::INPUT => [
                 self::MDR_ADJUSTMENT_TRANSACTION_ID,
             ],
-        ]
+        ],
+        Type::ADJUSTMENT => [
+            self::INPUT => [
+                self::ADJUSTMENT_REFERENCE_ID,
+                self::ADJUSTMENT_MERCHANT_ID,
+                self::ADJUSTMENT_AMOUNT,
+                self::ADJUSTMENT_BALANCE_TYPE,
+                self::ADJUSTMENT_DESCRIPTION,
+            ],
+            self::OUTPUT => [
+                self::ADJUSTMENT_REFERENCE_ID,
+                self::ADJUSTMENT_MERCHANT_ID,
+                self::ADJUSTMENT_AMOUNT,
+                self::ADJUSTMENT_BALANCE_TYPE,
+                self::ADJUSTMENT_DESCRIPTION,
+            ],
+        ],
     ];
 
     /**
@@ -2507,6 +2561,22 @@ class Header
             ((in_array(self::FIRST_PAYMENT_MIN_AMOUNT, $actualHeaders, true) === true)))
         {
             $expectedHeaders[] = self::FIRST_PAYMENT_MIN_AMOUNT;
+        }
+
+        if ($type === Type::AUTH_LINK)
+        {
+            if (in_array(self::AUTH_LINK_NACH_REFERENCE1, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::AUTH_LINK_NACH_REFERENCE1;
+            }
+            if (in_array(self::AUTH_LINK_NACH_REFERENCE2, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::AUTH_LINK_NACH_REFERENCE2;
+            }
+            if (in_array(self::AUTH_LINK_NACH_CREATE_FORM, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::AUTH_LINK_NACH_CREATE_FORM;
+            }
         }
 
         if (($type === Type::PAYMENT_LINK) and

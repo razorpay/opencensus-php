@@ -7,6 +7,7 @@ use Barryvdh\Debugbar;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 
+use RZP\Diag;
 use RZP\Models\P2p;
 use RZP\Jobs\Context;
 use RZP\Http\RequestContext;
@@ -41,6 +42,8 @@ class FirstServiceProvider extends ServiceProvider
         $this->registerWorkerContext();
 
         $this->registerP2pContext();
+
+        $this->registerReqContext();
     }
 
     public function boot()
@@ -147,5 +150,10 @@ class FirstServiceProvider extends ServiceProvider
     protected function registerP2pContext()
     {
         $this->app->singleton('p2p.ctx', function($app) { return new P2p\Base\Libraries\Context($app); });
+    }
+
+    protected function registerReqContext()
+    {
+        $this->app->singleton('req.context', function() { return new Diag\ReqContext(); });
     }
 }

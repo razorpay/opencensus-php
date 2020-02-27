@@ -1268,6 +1268,63 @@ class Service extends Base\Service
             ]);
     }
 
+    public function retryBulkViaFta(array $input)
+    {
+        (new Validator)->validateInput('retry_bulk_via_fta', $input);
+
+        $this->trace->info(TraceCode::REFUND_RETRY_BULK_VIA_FTA_INITIATED, $input);
+
+        $retryFailures = [];
+
+        foreach ($input[RefundConstants::REFUND_IDS] as $key => $refundId)
+        {
+            try
+            {
+                $refund = $this->repo->refund->findOrFail($refundId);
+
+                $ftaData = [];
+
+                switch ($input[RefundConstants::TRANSFER_METHOD])
+                {
+                    case RefundConstants::SOURCE_VPA :
+
+                        $vpaId = $refund->payment->getVpa();
+
+                        if (empty($vpaId) === false)
+                        {
+                            $ftaData[RefundConstants::VPA][RefundConstants::VPA_ADDRESS] = $vpaId;
+                        }
+
+                        break;
+                }
+
+                if (empty($ftaData) === true)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA);
+                }
+
+                // Grouping 5 refunds for a second delay. Max. refunds allowed per request is 1000
+                // so max delay for last group of refunds will be 199 seconds. Doing this since
+                // Max delay supported by SQS is 900 seconds
+                $ftaData[RefundConstants::DISPATCH_DELAY_TIME] = floor($key / RefundConstants::DISPATCH_BATCH_SIZE);
+
+                $this->getNewProcessor($refund->merchant)->processRefundRetry($refund, $ftaData);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex, null, null, [RefundConstants::REFUND_ID => $refundId]);
+
+                $retryFailures[] = $refundId;
+            }
+        }
+
+        return [
+            'success_count' => count($input['refund_ids']) - count($retryFailures),
+            'failure_count' => count($retryFailures),
+            'failed_ids'    => $retryFailures,
+        ];
+    }
+
     public function directRetryBulk(array $input)
     {
         (new Validator)->validateInput('direct_retry_bulk', $input);

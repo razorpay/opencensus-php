@@ -192,7 +192,8 @@ return [
                 'brand_color' => null,
                 'transaction_report_email' => [
                     'test@razorpay.com'
-                ]
+                ],
+                'default_refund_speed' =>  'normal',
             ],
         ],
     ],
@@ -667,6 +668,23 @@ return [
                     'example.com',
                     'razorpay.com'
                 ],
+            ]
+        ]
+    ],
+
+    'testEditMerchantWebsite' => [
+        'request'  => [
+            'content' => [
+                'website' => 'http://abc.com',
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id'                  => '10000000000000',
+                'entity'              => 'merchant',
+                'website'             => 'http://abc.com',
             ]
         ]
     ],
@@ -1251,6 +1269,26 @@ return [
                     'nemo@razorpay.com',
                     'hello@razorpay.com'
                 ]
+            ]
+        ]
+    ],
+
+    'testEditMerchantConfigWithDefaultRefundSpeed' => [
+        'request' => [
+            'content' => [
+                'default_refund_speed' => 'optimum',
+            ],
+            'url' => '/account/config',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+                'default_refund_speed' =>'optimum',
             ]
         ]
     ],
@@ -4731,6 +4769,61 @@ return [
         ],
     ],
 
+    'testMerchantSwitchProductWhenXOnboardingExperimentOff' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenL1Incomplete' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenMerchantNotActivated' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenMerchantNotActivatedAndL1Incomplete' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testGetCheckoutPreferencesForCardlessEmi' => [
         'request' => [
             'url' => '/preferences',
@@ -5597,6 +5690,21 @@ return [
         ],
     ],
 
+    'testGetBalancesWhenNoBalanceExists' => [
+        'request'  => [
+            'url'    => '/balances',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 0,
+                'items' => [
+                ]
+            ],
+        ],
+    ],
+
     'testGetBalancesByType' => [
         'request' => [
             'url' => '/balances?type=primary',
@@ -5702,5 +5810,22 @@ return [
                 'failed'  => 0,
             ]
         ]
+    ],
+
+    'testGetCheckoutPreferencesWithOrderMethodForNonTPVEnabledMerchant' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'method' => 'upi'
+                ]
+            ],
+        ],
     ],
 ];
