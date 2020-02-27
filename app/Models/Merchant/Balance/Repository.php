@@ -18,6 +18,13 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|unsigned_id|size:14',
     ];
 
+    public function findOrFailById($id)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, '=', $id)
+                    ->firstOrFail();
+    }
+
     public function findOrFail($id, $columns = array('*'))
     {
         return $this->newQuery()

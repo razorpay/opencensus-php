@@ -1339,4 +1339,37 @@ return [
             ],
         ],
     ],
+
+    'testPhaseBasedBulkCreateDisputes' => [
+        'request' => [
+            'url' => '/disputes/bulk_create',
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testPhaseBasedBulkCreateMails' => [
+        'request' => [
+            'url' => '/disputes/bulk_create',
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testBulkDisputeCreateMailAttachment' => [
+        'request' => [
+            'url' => '/disputes/bulk_create',
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];

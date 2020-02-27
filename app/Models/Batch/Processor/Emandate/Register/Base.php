@@ -85,7 +85,7 @@ abstract class Base extends BaseProcessor
         {
             $this->updateGatewayPaymentEntityAndCapturePayment($payment, $gatewayPayment, $parsedData);
 
-            $this->updateTokenEntity($token, $parsedData);
+            $this->updateTokenEntity($token, $parsedData, $payment);
         });
 
         $this->paymentProcessor->eventTokenStatus($token, $oldRecurringStatus);
@@ -163,7 +163,24 @@ abstract class Base extends BaseProcessor
                     'payment_id' => $payment->getId(),
                 ]);
 
-            return;
+            if ((in_array($payment->getGateway(), Payment\Gateway::$verifyDisabled, true) === true) or
+                ($payment->isStatusCreatedOrFailed() === false))
+            {
+                return;
+            }
+
+            $response = $this->paymentProcessor->authorizeFailedPayment($payment);
+
+            if ($response['status'] !== Payment\Status::AUTHORIZED)
+            {
+                $this->trace->critical(TraceCode::PAYMENT_AUTHORIZE_FAILED_FAILURE,
+                    [
+                        'status' => $payment->getStatus(),
+                        'payment_id' => $payment->getId(),
+                    ]);
+
+                return;
+            }
         }
 
         $amount = $payment->getAmount();
@@ -204,7 +221,7 @@ abstract class Base extends BaseProcessor
         return (new Payment\Processor\Processor($payment->merchant))->refundAuthorizedPayment($payment);
     }
 
-    protected function updateTokenEntity(Token\Entity $token, array $content)
+    protected function updateTokenEntity(Token\Entity $token, array $content, Payment\Entity $payment)
     {
         // In some gateways like HDFC, there's no gateway token
         $gatewayToken = $content[self::GATEWAY_TOKEN] ?? null;
@@ -235,9 +252,13 @@ abstract class Base extends BaseProcessor
 
         (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
 
+        if ($token->getTerminalId() === null)
+        {
+            $token->terminal()->associate($payment->terminal);
+        }
+
         $this->repo->saveOrFail($token);
     }
-
 
     protected function forceAuthorizeIfApplicable(Payment\Entity $payment, array $data)
     {

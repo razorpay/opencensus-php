@@ -73,6 +73,24 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
     {
         $bankAccount = $this->input->get('bank_account');
 
+        $sdk = $this->input->get('sdk');
+
+        if (isset($sdk['error_code']) === true)
+        {
+            $response->setError($sdk['error_code'],
+                                $sdk['error_description'],
+                                $sdk['gateway_error_code']);
+
+            $response->setData([
+                'id'            => $bankAccount->get('id'),
+                'gateway_data'  => [
+                    'upi_pin_state' => 'unknown',
+                ],
+            ]);
+
+            return;
+        }
+
         $response->setData([
             'id'    => $bankAccount->get('id'),
         ]);

@@ -97,6 +97,14 @@ class BatchMicroService
             $relativeUri = '/'. self::BATCH_URLS['batch'] . '?' . http_build_query($data);
         }
 
+        if (isset($input['config']))
+        {
+            array_push($multipartData, [
+                'name'     => 'settings',
+                'contents' => json_encode($input['config']),
+            ]);
+        }
+
         $this->trace->info(TraceCode::BATCH_SERVICE_MULTIPART_PAYLOAD, ['multipartData' => $multipartData]);
 
         $response = $this->sendToBatchService($multipartData, $merchant, $relativeUri);
@@ -299,14 +307,6 @@ class BatchMicroService
                 'contents' => json_encode($storeHandler),
             ],
         ];
-
-        if (isset($input['config']))
-        {
-            array_push($multipartData, [
-                'name'     => 'settings',
-                'contents' => json_encode($input['config']),
-            ]);
-        }
 
         if (isset($input['name']))
         {
