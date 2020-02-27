@@ -226,6 +226,24 @@ class Constants
                 'experiments'  => ['rev_up_chennai_announcement'],
             ]
         ],
+        [
+            'title'       => 'Instant Settlement!',
+            'description' => 'Now get your settlements 24x7x365, even on holidays! Avoid cash-flow issues and to boost your working capital!',
+            'start_ts'    => 1582815120,
+            'end_ts'      => 1595865592,
+            'icon'        => 'settlements',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Go to Settlements',
+                    'url'   => '/settlements',
+                ],
+            ],
+            'filters'     => [
+                'features' => ['es_on_demand'],
+                'role'  => ['owner'],
+            ]
+        ],
     ];
 
     public static function getNotifications(): array
