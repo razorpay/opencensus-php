@@ -27,9 +27,7 @@ class Core extends Base\Core
     {
         $inputTrace = $input;
 
-        unset($inputTrace['bank_account']['account_number'], $inputTrace['bank_account']['name']);
-
-        unset($inputTrace['notes']['account_number'], $inputTrace['notes']['name'], $inputTrace['notes']['email']);
+        unset($inputTrace['bank_account']['account_number'], $inputTrace['bank_account']['name'], $inputTrace['notes']);
 
         $this->trace->info(
             TraceCode::ORDER_CREATE_REQUEST,
