@@ -780,9 +780,13 @@ class Entity extends Base\PublicEntity
 
         if ($this->payment->isDCC() === true)
         {
-            $forexRate = $this->payment->paymentMeta->getForexRate();
+            $paymentMeta = $this->payment->paymentMeta;
 
-            $gatewayAmount = (new Currency\Core)->getConvertedAmount($this->getAmount(), $forexRate);
+            $forexRate = $paymentMeta->getForexRate();
+
+            $markUpPercent = $paymentMeta->getDccMarkUpPercent();
+
+            $gatewayAmount = (new Currency\Core)->getConvertedAmount($this->getAmount(), $forexRate, $markUpPercent);
         }
 
         $this->setAttribute(self::GATEWAY_AMOUNT, $gatewayAmount);

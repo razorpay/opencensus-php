@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_CURRENCY       = 'gateway_currency';
     const FOREX_RATE             = 'forex_rate';
     const DCC_OFFERED            = 'dcc_offered';
+    const DCC_MARK_UP_PERCENT    = 'dcc_mark_up_percent';
 
     protected $generateIdOnCreate = true;
 
@@ -21,6 +22,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_CURRENCY,
         self::FOREX_RATE,
         self::DCC_OFFERED,
+        self::DCC_MARK_UP_PERCENT,
     ];
 
     protected $public = [
@@ -30,6 +32,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_CURRENCY,
         self::FOREX_RATE,
         self::DCC_OFFERED,
+        self::DCC_MARK_UP_PERCENT,
     ];
 
     protected $visible = [
@@ -39,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_CURRENCY,
         self::FOREX_RATE,
         self::DCC_OFFERED,
+        self::DCC_MARK_UP_PERCENT,
     ];
 
     protected $casts = [
@@ -86,6 +90,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DCC_OFFERED);
     }
 
+    public function getDccMarkUpPercent()
+    {
+        return $this->getAttribute(self::DCC_MARK_UP_PERCENT);
+    }
+
     // ----------------------- Setters ---------------------------------------
 
     public function setPaymentId($paymentId)
@@ -113,4 +122,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DCC_OFFERED, $dccOffered);
     }
 
+    public function setDccMarkUpPercent($dccMarkUpPercent)
+    {
+        $this->setAttribute(self::DCC_MARK_UP_PERCENT, $dccMarkUpPercent);
+    }
 }

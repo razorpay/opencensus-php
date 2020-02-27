@@ -14,6 +14,8 @@ class Core extends Base\Core
 
     const REQUEST_VS_TIME_KEY = 'req_vs_time_';
 
+    const DCC_MARK_UP_PERCENTAGE_KEY = 'dcc_mark_up_percent';
+
     const REQUEST_VS_TIME_TTL = 60 * 60 * 2; // 2 hours
 
     const HISTORICAL_EXCHANGE_RATE_TTL = 60 * 60 * 3; // 3 hours
@@ -36,6 +38,9 @@ class Core extends Base\Core
         $currency = strtoupper($currency);
 
         $rates = $this->exchange->latest($currency);
+
+        //Capturing markup percentage in redis as this constant can be changed later for A/B Testing.
+        $rates[self::DCC_MARK_UP_PERCENTAGE_KEY] = self::DCC_MARK_UP_PERCENTAGE;
 
         $key = $this->getRedisKey($currency, $time);
 
@@ -113,6 +118,11 @@ class Core extends Base\Core
         return $key;
     }
 
+    protected function getDCCMarkUpPercentage($rates)
+    {
+        return isset($rates[self::DCC_MARK_UP_PERCENTAGE_KEY]) ? $rates[self::DCC_MARK_UP_PERCENTAGE_KEY] : self::DCC_MARK_UP_PERCENTAGE;
+    }
+
     /**
      * Function to get all rzp supported_currency, min supported
      * amount, code, symbol and exponent
@@ -130,11 +140,11 @@ class Core extends Base\Core
         return floor(time() / (self::TIME_INTERVAL_MINS * 60)) * (self::TIME_INTERVAL_MINS * 60);
     }
 
-    public function getConvertedAmount($baseAmount, $rate)
+    public function getConvertedAmount($baseAmount, $rate, $markUpPercent)
     {
         $convertedAmount = $baseAmount * $rate;
 
-        return (int) ceil($convertedAmount + ((self::DCC_MARK_UP_PERCENTAGE * $convertedAmount) / 100));
+        return (int) ceil($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
     }
 
     /*
@@ -151,13 +161,15 @@ class Core extends Base\Core
 
         $rates = $this->getOrUpdateRates($baseCurrency, $roundedTime);
 
+        $markUpPercent = self::getDCCMarkUpPercentage($rates);
+
         $supportedCurrencies = $this->getSupportedCurrenciesDetails();
 
         foreach (array_keys($supportedCurrencies) as $currency)
         {
             if(isset($rates[$currency]))
             {
-                $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $rates[$currency]);
+                $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $rates[$currency], $markUpPercent);
             }
             else
             {
@@ -180,11 +192,15 @@ class Core extends Base\Core
 
             if((empty($rates) === false) and (isset($rates[$requestedCurrency])))
             {
+                $markUpPercent = self::getDCCMarkUpPercentage($rates);
+
                 $requestedCurrencyData['currency'] = $requestedCurrency;
 
                 $requestedCurrencyData['forex_rate'] = (string)$rates[$requestedCurrency];
 
-                $requestedCurrencyData['amount'] = (string)$this->getConvertedAmount($baseAmount,$rates[$requestedCurrency]);
+                $requestedCurrencyData['amount'] = (string)$this->getConvertedAmount($baseAmount,$rates[$requestedCurrency], $markUpPercent);
+
+                $requestedCurrencyData['dcc_mark_up_percent'] = $markUpPercent;
             }
         }
 
