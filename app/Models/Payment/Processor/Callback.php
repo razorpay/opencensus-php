@@ -61,7 +61,7 @@ trait Callback
 
         $payment = $this->retrieve($id);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CALLBACK_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CALLBACK_INITIATED, $payment);
 
         $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_REQUEST);
 
@@ -82,7 +82,7 @@ trait Callback
 
     public function s2sCallback($payment, array $gatewayInput)
     {
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_S2S_CALLBACK_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_S2S_CALLBACK_INITIATED, $payment);
 
         // Return if payment is auto captured
         if ($payment->getAutoCaptured())

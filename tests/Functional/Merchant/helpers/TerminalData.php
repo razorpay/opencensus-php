@@ -873,6 +873,31 @@ return [
         ],
     ],
 
+    'testCreatePaytmCardTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                  => 'paytm',
+                'card'                      => 1,
+                'gateway_terminal_id'      => '12344',
+                'gateway_access_code'      => '12344',
+                'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => '12345',
+                'type'                      => [
+                    'non_recurring'                 => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'type'  => ['non_recurring',
+                    'direct_settlement_with_refund'
+                ],
+            ]
+        ],
+    ],
+
     'testCreateDirectSettlemtTerminal' => [
         'request' => [
             'content' => [

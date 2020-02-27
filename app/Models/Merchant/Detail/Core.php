@@ -820,7 +820,7 @@ class Core extends Base\Core
         $product = $this->app['basicauth']->getRequestOriginProduct();
 
         $activationFlow = $merchant->merchantDetail->getActivationFlow();
-        
+
         $this->trace->info(TraceCode::KYC_SUBMITTED_EMAIL,
                            [
                                'merchant_id'         => $merchant->getPublicId(),
@@ -1299,37 +1299,21 @@ class Core extends Base\Core
     public function getValidationFields(Entity $merchantDetails): array
     {
         // @todo: Activation flow will define its own validation fields
-        $validationDocumentFields = [];
 
-        $validationFields = ValidationFields::DASHBOARD_FIELDS;
-
-        if ($merchantDetails->getBusinessType() === BusinessType::NGO)
-        {
-            $ngoValidationFields = ValidationFields::NGO_MERCHANT_FIELDS;
-
-            $validationFields = array_merge($validationFields, $ngoValidationFields);
-        }
-
-        // Business Types which have limited fields
-        $limitedFieldTypes = [BusinessType::INDIVIDUAL, BusinessType::NOT_YET_REGISTERED];
-
-        if (in_array($merchantDetails->getBusinessType(), $limitedFieldTypes, true) === true)
-        {
-            $validationFields         = ValidationFields::DASHBOARD_UNREGISTERED_LIMITED;
-            $validationDocumentFields = ValidationFields::UNREGISTERED_DOCUMENT_FIELDS;
-        }
+        [$validationFields, $validationDocumentFields, $validationOptionalFields] = ValidationFields::getValidationFields($merchantDetails);
 
         if (self::shouldSkipBankAccountRegistration() === true)
         {
-            $validationFields = array_diff($validationFields, ValidationFields::BANK_ACCOUNT_FIELDS);
+            $validationFields = array_diff($validationFields, RequiredFields::BANK_ACCOUNT_FIELDS);
         }
 
         $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)
         {
-            $validationFields         = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
+            $validationFields         = RequiredFields::MARKETPLACE_ACCOUNT_FIELDS;
             $validationDocumentFields = [];
+            $validationOptionalFields = [];
 
             $parentMerchant = $merchant->parent;
 
@@ -1340,13 +1324,13 @@ class Core extends Base\Core
             //
             if ($parentMerchant->linkedAccountsRequireKyc() === true)
             {
-                $kycValidationFields = ValidationFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
+                $kycValidationFields = RequiredFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
 
                 $validationFields = array_merge($validationFields, $kycValidationFields);
             }
         }
 
-        return [$validationFields, $validationDocumentFields];
+        return [$validationFields, $validationDocumentFields, $validationOptionalFields];
     }
 
     public function createResponse(Entity $merchantDetails): array
@@ -1357,7 +1341,7 @@ class Core extends Base\Core
 
         $requiredFields = [];
 
-        [$validationFields, $validationDocumentFields] = $this->getValidationFields($merchantDetails);
+        [$validationFields, $validationDocumentFields, $validationOptionalFields] = $this->getValidationFields($merchantDetails);
 
         //
         // refreshing the merchant relation here as createResponse is called at many places
@@ -1424,6 +1408,7 @@ class Core extends Base\Core
                 'status'              => 'disabled',
                 'disabled_reason'     => 'required_fields',
                 'required_fields'     => $requiredFields,
+                'optional_fields'     => $validationOptionalFields,
                 'activation_progress' => 100 - intval($remainingFields * 100 / $totalFields),
             ];
 

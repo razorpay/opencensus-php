@@ -231,8 +231,18 @@ class Selector extends Base\Core
                 }
 
                 // sending the event to data link layer
-                $this->app['diag']->trackPaymentEvent(
+                $this->app['diag']->trackPaymentEventV2(
                     EventCode::PAYMENT_TERMINALS_RECEIVED_FROM_SMART_ROUTING, $payment, null,
+                    [
+                        'metadata' => [
+                            'payment' => [
+                                'id'             => $payment->getPublicId(),
+                                'terminal_ids'   => $terminalIds
+                            ]
+                        ],
+                        'read_key'  => array('payment.id'),
+                        'write_key' => 'payment.id'
+                    ],
                     [
                         'terminal_ids' => $terminalIds,
                     ]

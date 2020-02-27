@@ -11,6 +11,7 @@ use RZP\Models\Payout;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -67,6 +68,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
@@ -99,6 +101,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
@@ -117,6 +120,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // Force setting non banking hour for non banking hour test.
         $nonBankingHour = Carbon::create(2020, 2, 18, 20, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($nonBankingHour);
@@ -125,11 +129,11 @@ class MerchantPayoutTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
+        $this->assertEquals(Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
 
         $payout = $this->getLastEntity('payout', true);
 
-        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
+        $this->assertEquals(Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
     }
 
     public function testCreateMerchantPayoutOnDemandHoliday()
@@ -143,6 +147,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // Force setting non banking hour for non banking hour test.
         $nonBankingHour = Carbon::create(2020, 2, 16, 12, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($nonBankingHour);
@@ -151,11 +156,11 @@ class MerchantPayoutTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
+        $this->assertEquals(Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
 
         $payout = $this->getLastEntity('payout', true);
 
-        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
+        $this->assertEquals(Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
     }
 
     public function testCreateMerchantPayoutOnDemandExceedAmountLimit()
@@ -167,6 +172,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
@@ -183,6 +189,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // Force setting non banking hour for non banking hour test.
         $nonBankingHour = Carbon::create(2020, 2, 18, 20, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($nonBankingHour);
@@ -279,6 +286,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
@@ -349,6 +357,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);

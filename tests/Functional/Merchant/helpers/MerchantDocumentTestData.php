@@ -33,7 +33,7 @@ return [
             'content' => [
                 'verification' => [
                     'required_fields' => [
-                        'address_proof_url',
+
                     ]
                 ],
             ]

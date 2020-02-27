@@ -60,6 +60,8 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected $composite = false;
+
     protected $fillable = [
         self::ACTIVE,
         self::IDEMPOTENCY_KEY,
@@ -224,7 +226,10 @@ class Entity extends Base\PublicEntity
      */
     public function setPublicSourceAttribute(array & $attributes)
     {
-        if (app('basicauth')->isStrictPrivateAuth() === true)
+        // Don't forget these attributes if a composite payout request is made through strictPrivateAuth as we need to
+        // show contact in the response of composite payout.
+        if ((app('basicauth')->isStrictPrivateAuth() === true) and
+            ($this->isComposite() === false))
         {
             array_forget($attributes, [self::SOURCE, self::CONTACT, self::CUSTOMER]);
 
@@ -304,6 +309,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BATCH_ID,$batchId);
     }
 
+    public function setComposite(bool $composite)
+    {
+        $this->composite = $composite;
+
+        return $this;
+    }
+
     // ------------- End Setters -------------
 
     // --------------- Helpers ---------------
@@ -311,6 +323,11 @@ class Entity extends Base\PublicEntity
     public function isActive(): bool
     {
         return ($this->getActive() === true);
+    }
+
+    public function isComposite()
+    {
+        return ($this->composite === true);
     }
 
     // ------------- End Helpers -------------
@@ -347,8 +364,8 @@ class Entity extends Base\PublicEntity
      * these literals in expand of public api requests, because we have exposed contact_id, contact
      * & customer_id, customer pairs, not source_id, source pair.
      *
-     * Knonw issue: If someone sends expand[]=contact, but if the related source is of type customer
-     * the api response will return custome_id & customer.
+     * Known issue: If someone sends expand[]=contact, but if the related source is of type customer
+     * the api response will return customer_id & customer.
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphTo
      */

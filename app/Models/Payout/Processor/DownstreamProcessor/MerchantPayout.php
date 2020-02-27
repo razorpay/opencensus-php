@@ -11,8 +11,8 @@ use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\FundTransfer;
 use RZP\Models\Payout\Entity;
+use RZP\Services\FTS\Constants;
 use RZP\Models\Settlement\Holidays;
-
 
 class MerchantPayout extends Base
 {
@@ -41,15 +41,17 @@ class MerchantPayout extends Base
                 }
                 else
                 {
-                    $this->trace->error(TraceCode::IMPS_AMOUNT_LIMIT_EXCEEDED, [
+                    $this->trace->error(TraceCode::ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED, [
                         'channel'   => $channel,
                         'message'   => 'Amount provided is greater than max allowed IMPS limit',
                     ]);
 
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
                                                             null,
-                                                            [$payout->getAmount()],
-                                                            'Please provide an amount less than 2 Lakhs to get a settlement at this point of time.');
+                                                            [
+                                                                'amount' => $payout->getAmount()
+                                                            ],
+                                                            'Please provide an amount less than 2 Lacs to get a settlement at this point of time.');
                 }
             }
         }
@@ -101,7 +103,7 @@ class MerchantPayout extends Base
         $this->trace->info(
             TraceCode::ES_ON_DEMAND_INITIATE_TIMESTAMP,
             [
-                'current_time'          => $currentTime
+                'current_time' => $currentTime
             ]);
 
         // Checks for holidays.
@@ -116,10 +118,10 @@ class MerchantPayout extends Base
         }
 
         // Banking hours start time.
-        $startTime = Carbon::today(Timezone::IST)->hour(8)->getTimestamp();
+        $startTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_CUTOFF_HOUR_MIN )->getTimestamp();
 
         // Banking hours end time.
-        $endTime = Carbon::today(Timezone::IST)->hour(18)->minute(15)->getTimestamp();
+        $endTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_CUTOFF_HOUR_MAX)->minute(Constants::NEFT_CUTOFF_MINUTE_MAX)->getTimestamp();
 
         // Checks for non Banking hours on working days.
         if (($currentTime < $startTime) or

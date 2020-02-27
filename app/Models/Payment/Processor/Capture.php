@@ -47,10 +47,11 @@ trait Capture
             ]
         );
 
-        $this->app['diag']->trackPaymentEvent(
+        $this->app['diag']->trackPaymentEventV2(
             EventCode::PAYMENT_CAPTURE_INITIATED,
             $payment,
             null,
+            [],
             [
                 'input'  => $input
             ]);
@@ -73,10 +74,20 @@ trait Capture
      */
     public function autoCapturePayment($payment)
     {
-        $this->app['diag']->trackPaymentEvent(
+        $this->app['diag']->trackPaymentEventV2(
             EventCode::PAYMENT_CAPTURE_INITIATED,
             $payment,
             null,
+            [
+                'metadata' => [
+                    'payment' => [
+                        'id' => $payment->getPublicId(),
+                        'auto_capture' => 1
+                    ]
+                ],
+                'read_key' => array('payment.id'),
+                'write_key' => 'payment.id'
+            ],
             [
                 'auto_capture' => 1
             ]);
@@ -344,13 +355,13 @@ trait Capture
 
             $this->captureOnGateway($data, $autoCaptured);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
 
             return $payment;
         }
         catch (\Throwable $e)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment, $e);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment, $e);
 
             (new Payment\Metric)->pushExceptionMetrics($e, Payment\Metric::PAYMENT_CAPTURE_FAILED);
 

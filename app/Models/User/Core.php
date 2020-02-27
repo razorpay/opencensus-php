@@ -82,6 +82,16 @@ class Core extends Base\Core
 
     public function changePassword(Entity $user, array $input)
     {
+        // TODO: Following validation does not seem be invoked in other flows
+        // e.g. reset by internal admin etc. Need to check in detail and plug
+        // this validation at right place. Also need to modify test assertions
+        // and add new if required.
+        $user->getValidator()->validatePasswordIsNotSameAsLastThree($input[Entity::PASSWORD]);
+
+        // Once validated updates the old password attributes.
+        $user->setAttribute(Entity::OLD_PASSWORD_2, $user->getAttribute(Entity::OLD_PASSWORD_1));
+        $user->setAttribute(Entity::OLD_PASSWORD_1, $user->getAttribute(Entity::PASSWORD));
+
         $user->fill($input);
 
         $user->setPasswordResetToken();

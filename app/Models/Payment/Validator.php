@@ -68,8 +68,8 @@ class Validator extends Base\Validator
         'upi.vpa'                       => 'sometimes_if:method,upi|filled|string',
         'upi.type'                      => 'sometimes_if:method,upi|filled|string',
         'upi.flow'                      => 'sometimes_if:method,upi|filled|string',
-        'upi.start_date'                => 'sometimes_if:method,upi|filled|epoch',
-        'upi.end_date'                  => 'sometimes_if:method,upi|filled|epoch',
+        'upi.start_time'                => 'sometimes_if:method,upi|filled|epoch',
+        'upi.end_time'                  => 'sometimes_if:method,upi|filled|epoch',
         'upi_provider'                  => 'sometimes_if:method,upi|filled|string|custom',
         'contact'                       => 'sometimes|nullable|contact_syntax',
         'billing_address'               => 'sometimes',
@@ -1129,21 +1129,21 @@ class Validator extends Base\Validator
         if ((isset($input['upi']['type']) === true) and
             ($input['upi']['type'] === 'otm'))
         {
-            if ((isset($input['upi']['start_date']) === false) or
-                (isset($input['upi']['end_date']) === false))
+            if ((isset($input['upi']['start_time']) === false) or
+                (isset($input['upi']['end_time']) === false))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'UPI OTM payments require start_date and end_date',
+                    'UPI OTM payments require start_time and end_time',
                     'upi',
                     ['input'=> $input]
                     );
             }
 
-            if ($input['upi']['start_date'] > $input['upi']['end_date'])
+            if ($input['upi']['start_time'] > $input['upi']['end_time'])
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Invalid start_date for UPI OTM Payment, start date cannot be greater than end date',
-                    'upi.start_date',
+                    'Invalid start_time for UPI OTM Payment, start time cannot be greater than end time',
+                    'upi.start_time',
                     ['input'=> $input]
                 );
             }
