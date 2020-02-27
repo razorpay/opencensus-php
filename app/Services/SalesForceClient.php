@@ -57,7 +57,7 @@ class SalesForceClient
             'content' => [],
             'options' => [],
             'headers' => [
-                RequestHeader::CONTENT_TYPE  => 'application/json',
+                RequestHeader::CONTENT_TYPE => 'application/json',
             ]
         ];
 
@@ -75,17 +75,17 @@ class SalesForceClient
         return $accessToken;
     }
 
-    public function fetchAccountDetails($input)
+    public function fetchAccountDetails($nextUrl = '')
     {
         $accessToken = $this->fetchAccessToken();
 
-        $url  = $this->generateUrlForAccountFetch();
+        $url = $this->generateUrlForAccountFetch($nextUrl);
 
         $request = [
             'url'     => $url,
             'method'  => 'GET',
             'content' => [],
-            'options' => [],
+            'options' => ['timeout' => 120],
             'headers' => [
                 RequestHeader::CONTENT_TYPE  => 'application/json',
                 RequestHeader::AUTHORIZATION => RequestHeader::BEARER . ' ' . $accessToken,
@@ -107,9 +107,14 @@ class SalesForceClient
         return null;
     }
 
-    protected function generateUrlForAccountFetch()
+    protected function generateUrlForAccountFetch(string $nextUrl)
     {
-        return $this->baseUrl . '/data/v34.0/query?q=select Account.Merchant_ID__c, Account.Owner.Email, Owner_Role__c, Managers_in_role_hierarchy__c from Account where ( First_Transaction_Date__c != null AND Owner_Role__c != null )';
+        if (empty($nextUrl) === false)
+        {
+            return $this->baseUrl . $nextUrl;
+        }
+
+        return $this->baseUrl . '/services/data/v34.0/query?q=select Account.Merchant_ID__c, Account.Owner.Email, Owner_Role__c, Managers_in_role_hierarchy__c from Account where ( First_Transaction_Date__c != null AND Owner_Role__c != null )';
     }
 
     protected function generateUrl()
@@ -122,7 +127,7 @@ class SalesForceClient
             'password'      => $this->password,
         ];
 
-        $url = $this->baseUrl . '/oauth2/token'. '?';
+        $url = $this->baseUrl . '/services/oauth2/token' . '?';
 
         $url = $url . http_build_query($queryParams);
 
@@ -164,21 +169,38 @@ class SalesForceClient
     {
         $payload = [
             'status_code' => $response->status_code,
-        ];
+            'success'     => $response->success,
 
+        ];
         $this->trace->info(TraceCode::SALESFORCE_INTEGRATION_API_RESPONSE, $payload);
     }
 
     /**
      * Filters request array and returns only traceable data
      *
-     * @param  array  $request
+     * @param array $request
      *
      * @return array
      */
     protected function getTraceableRequest(array $request): array
     {
+        $request = $this->removeQueryParamsFromUrl($request);
+
         return array_only($request, ['url', 'method', 'content']);
+    }
+
+    /**
+     * Removing Sensitive Information from Request URL
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    protected function removeQueryParamsFromUrl(array $input): array
+    {
+        $input['url'] = strtok($input['url'], '?');
+
+        return $input;
     }
 
     protected function getResponse(array $request)

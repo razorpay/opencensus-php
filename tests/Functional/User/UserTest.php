@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\Otp;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
+use RZP\Models\User\Entity;
 use RZP\Models\User\Constants;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
@@ -155,8 +156,9 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'email'     => $user['email'],
-            'password'  => 'hello123'
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -174,7 +176,8 @@ class UserTest extends TestCase
 
         $content = [
             'email'    => $user['email'],
-            'password' => 'hello1234'
+            'password' => 'hello1234',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -607,7 +610,8 @@ class UserTest extends TestCase
 
         $content = [
             'email'    => $user['email'],
-            'password' => 'hello123'
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -648,7 +652,8 @@ class UserTest extends TestCase
 
         $content = [
             'email'    => $user['email'],
-            'password' => 'hello123'
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -676,6 +681,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'otp'      => \RZP\Services\Raven::MOCK_VALID_OTP,
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -707,6 +713,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -734,6 +741,7 @@ class UserTest extends TestCase
         $content = [
             'email'    => $user['email'],
             'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -759,6 +767,7 @@ class UserTest extends TestCase
         $content = [
             'email'    => $user['email'],
             'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -789,6 +798,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -818,6 +828,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -842,6 +853,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -873,6 +885,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -898,6 +911,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -923,6 +937,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'contact_mobile'   => '8888888888',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -1327,20 +1342,101 @@ class UserTest extends TestCase
 
     public function testPasswordResetByToken()
     {
-        $user = $this->fixtures->create('user', [
-                    'email'                 => 'resetpass@razorpay.com',
-                    'password_reset_token'  => str_random(50),
-                    'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
-                ]);
+        $resetAttributes = [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+        ];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $user = $this->fixtures->create('user', $resetAttributes);
+
+        $this->doTestPasswordResetByToken($user);
+
+        // Repeats same request against to assert attribute OLD_PASSWORD_2 is captured.
+        $this->fixtures->edit('user', $user->getId(), $resetAttributes);
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->doTestPasswordResetByToken($user);
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertNotNull($user[Entity::OLD_PASSWORD_2]);
+    }
+
+    public function doTestPasswordResetByToken(Entity $user)
+    {
+        $testData = & $this->testData['testPasswordResetByToken'];
+
+        $oldPassword = $user->getPassword();
+        $oldPassword1 = $user[Entity::OLD_PASSWORD_1];
+
+        $password = str_random(10) . '1';
+
+        $testData['request']['content']['email']                    = $user->getEmail();
+        $testData['request']['content']['token']                    = $user->getPasswordResetToken();
+        $testData['request']['content']['password']                 = $password;
+        $testData['request']['content']['password_confirmation']    = $password;
+
+        $this->ba->appAuth();
+
+        $this->startTest($testData);
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertNotNull($user[Entity::OLD_PASSWORD_1]);
+        $this->assertEquals($oldPassword, $user[Entity::OLD_PASSWORD_1]);
+        $this->assertEquals($oldPassword1, $user[Entity::OLD_PASSWORD_2]);
+    }
+
+    public function testPasswordResetByTokenWithSamePassword()
+    {
+        $resetAttributes = [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+        ];
+
+        $user = $this->fixtures->create('user', $resetAttributes);
+
+        $this->doTestPasswordResetByToken($user);
+
+        // Repeats same request against to assert attribute OLD_PASSWORD_2 is captured.
+        $this->fixtures->edit('user', $user->getId(), $resetAttributes);
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $testData = & $this->testData['testPasswordResetByToken'];
+
+        $testData['request']['content']['email']      = $user->getEmail();
+        $testData['request']['content']['token']      = $user->getPasswordResetToken();
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            'Your new password cannot match any of your last three passwords');
+    }
+
+    public function doTestPasswordResetByTokenWithSamePassword(Entity $user)
+    {
+        $testData = & $this->testData['testPasswordResetByToken'];
+
+        $oldPassword = $user->getPassword();
+        $oldPassword1 = $user[Entity::OLD_PASSWORD_1];
 
         $testData['request']['content']['email']      = $user->getEmail();
         $testData['request']['content']['token']      = $user->getPasswordResetToken();
 
         $this->ba->appAuth();
 
-        $this->startTest();
+        $this->startTest($testData);
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertNotNull($user[Entity::OLD_PASSWORD_1]);
+        $this->assertEquals($oldPassword, $user[Entity::OLD_PASSWORD_1]);
+        $this->assertEquals($oldPassword1, $user[Entity::OLD_PASSWORD_2]);
     }
 
     public function testPasswordResetByExpiredToken()

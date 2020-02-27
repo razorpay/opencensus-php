@@ -10,11 +10,6 @@
         $brand_color = '#6A75ED';
         $brand_text_color = '#FFFFFF';
 
-        $disputedAmount = sprintf('%0.2f', ($totalAmount / 100));
-        $disputedAmount = floatval($disputedAmount);
-
-        $noteResult = 'failing which the corresponding amount might be debited from the current balance. ';
-
         $disputesTable = '';
 
         $headerColumnStyle = '<th class="content" style="word-break: break-word; -webkit-hyphens: auto;

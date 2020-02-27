@@ -1119,6 +1119,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantConfigWithDefaultRefundSpeed()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testMerchantUpdateKeyAccess()
     {
         $attribute = ['business_website' => 'https://www.example.com'];
@@ -6180,6 +6189,17 @@ class MerchantTest extends TestCase
         $this->fixtures->create('balance',$balanceData2);
 
         $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetBalancesWhenNoBalanceExists()
+    {
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner');
 
         $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
 

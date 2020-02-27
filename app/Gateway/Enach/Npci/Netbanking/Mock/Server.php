@@ -98,6 +98,7 @@ class Server extends Base\Mock\Server
                     ResponseXmlTags::VER_NPCI_REF_ID    => $gatewayPayment->getGatewayReferenceId() ?? Base\Entity::generateUniqueId(),
                     ResponseXmlTags::ACCEPTED           => 'true',
                     ResponseXmlTags::ACCEPT_REF_NO      => self::ACCEPT_REF_NO,
+                    ResponseXmlTags::MANDATE_ID         => 'YESB12390812477',
                     'ReasonCode'                        => '',
                     'ReasonDesc'                        => '',
                     'RejectBy'                          => '',
@@ -127,6 +128,7 @@ class Server extends Base\Mock\Server
                     'MndtReqId'      => $requestArray['MndtAuthReq']['Mndt']['MndtReqId'],
                     'NPCI_RefMsgId'  => $npciId,
                     'CreDtTm'        => $requestArray['MndtAuthReq']['GrpHdr']['CreDtTm'],
+                    'MndtId'         => 'YESB12390812477'
                 ],
                 'AccptncRslt'  => [
                     'Accptd'         => $this->crypto->encrypt($secureData['Accptd']),
@@ -158,6 +160,11 @@ class Server extends Base\Mock\Server
                     'RejectBy'       => 'BANK'
                 ]
             ];
+        }
+
+        if (isset($requestArray['MndtAuthReq']['GrpHdr']['ReqInitPty']['Info']['Spn_Bnk_Nm']) === false)
+        {
+            unset($requestArray['OrgnlMsgInf']['MndtId']);
         }
 
         $this->content($data, 'authorize_get_data');

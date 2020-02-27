@@ -221,6 +221,20 @@ class AdjustmentTest extends TestCase
         $this->assertEquals(-4000, $balance['balance']);
     }
 
+    public function testCreateAdjustmentFromBatchRoute()
+    {
+        $this->fixtures->create('balance', [
+                'id'            => '100def000def00',
+                'balance'       => 10000,
+                'type'          => 'primary',
+                'merchant_id'   => '100abc000abc00'
+            ]);
+
+        $this->ba->batchAuth();
+
+        $this->startTest();
+    }
+
     private function createFixtures(string $id = null)
     {
         $merchantId = $id ?? '100abc000abc00';

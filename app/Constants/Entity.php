@@ -89,6 +89,7 @@ class Entity
     const ENTITY_OFFER               = 'entity_offer';
     const FUND_ACCOUNT               = 'fund_account';
     const UPI_TRANSFER               = 'upi_transfer';
+    const UPI_METADATA               = 'upi_metadata';
     const ENTITY_ORIGIN              = 'entity_origin';
     const GATEWAY_TOKEN              = 'gateway_token';
     const BANK_TRANSFER              = 'bank_transfer';
@@ -143,6 +144,8 @@ class Entity
     const D2C_BUREAU_REPORT          = 'd2c_bureau_report';
     const BANKING_ACCOUNT_STATE      = 'banking_account_state';
     const PAYMENT_META               = 'payment_meta';
+
+    const UPI_MANDATE                = 'upi_mandate';
 
     // heimdall
     const ORG                   = 'org';
@@ -500,6 +503,7 @@ class Entity
         self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
         self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
         self::PAYMENT_META              => \RZP\Models\Payment\PaymentMeta::class,
+        self::UPI_METADATA              => \RZP\Models\Payment\UpiMetadata::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
