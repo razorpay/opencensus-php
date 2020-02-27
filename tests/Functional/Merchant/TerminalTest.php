@@ -592,7 +592,6 @@ class TerminalTest extends TestCase
         $tid = $terminal['id'];
 
         $data = [
-            'gateway' => 'hitachi',
             'type'    => [
                 'recurring_non_3ds' => '1',
                 'recurring_3ds'     => '1',
