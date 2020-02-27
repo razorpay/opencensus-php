@@ -82,6 +82,7 @@ class Entity extends Base\PublicEntity
     const SUPPORT_URL          = 'SUPPORT_URL';
     const SUPPORT_CONTACT      = 'SUPPORT_CONTACT';
     const SUPPORT_EMAIL        = 'SUPPORT_EMAIL';
+    const CUSTOM_MESSAGE       = 'payout_links_custom_message';
     const ACCOUNT_TYPE         = 'account_type';
     const VPA                  = 'vpa';
     const BANK_ACCOUNT         = 'bank_account';

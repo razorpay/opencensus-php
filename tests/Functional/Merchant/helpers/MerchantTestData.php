@@ -5690,6 +5690,21 @@ return [
         ],
     ],
 
+    'testGetBalancesWhenNoBalanceExists' => [
+        'request'  => [
+            'url'    => '/balances',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 0,
+                'items' => [
+                ]
+            ],
+        ],
+    ],
+
     'testGetBalancesByType' => [
         'request' => [
             'url' => '/balances?type=primary',

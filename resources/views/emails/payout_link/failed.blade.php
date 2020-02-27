@@ -345,10 +345,10 @@
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
                                                     <div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #7B8199; text-align: center; padding: 8px 0;">
                                                         <div class="test" style="width: 100%; box-sizing: border-box;">
+                                                            @isset($support_url)<div class="value" style="display: inline-block; width: 25%;">{{ $support_url }}</div>@endisset
+                                                            @isset($support_url)<div class="line" style="display: inline-block; width: 2%;">|</div>@endisset
                                                             @isset($support_contact)<div class="value" style="display: inline-block; width: 25%;">{{ $support_contact }}</div>@endisset
                                                             @isset($support_contact)<div class="line" style="display: inline-block; width: 2%;">|</div>@endisset
-                                                            @isset($support_phonenumber)<div class="value" style="display: inline-block; width: 25%;">{{ $support_phonenumber }}</div>@endisset
-                                                            @isset($support_phonenumber)<div class="line" style="display: inline-block; width: 2%;">|</div>@endisset
                                                             @isset($support_email)<div class="value" style="display: inline-block; width: 25%;">{{ $support_email }}</div>@endisset
                                                         </div>
                                                     </div>
