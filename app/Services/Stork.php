@@ -121,45 +121,26 @@ class Stork
 
         $res = null;
         $exception = null;
+        $attempts = 0;
+        $NUM_OF_ATTEMPTS = 2;
 
-        try
+        do
         {
-            $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload));
+            try
+            {
+                $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload));
+            }
+            catch (Throwable $e)
+            {
+                $attempts = $attempts + 1;
+                $exception = $e;
+                continue;
+            }
+
+            break;
         }
-        catch (Throwable $e)
-        {
-            $exception = $e;
+        while ($attempts < $NUM_OF_ATTEMPTS);
 
-            $res = $this->retryStorkRequest($exception, $path, $payload, $res);
-        }
-
-        return $res;
-    }
-
-    protected function retryStorkRequest($exception, string $path, array $payload, $res)
-    {
-        if (($exception !== null) and ($exception instanceof \Requests_Exception))
-        {
-           if (Str::contains($exception->getMessage(), "Operation timed out"))
-           {
-               try
-               {
-                   $res = $this->request->post($path, [], empty($payload) ? '{}' : json_encode($payload));
-               }
-               catch (Throwable $e)
-               {
-                   $exception = $e;
-               }
-
-               $this->throwStorkException($exception, $res, $path);
-
-               return $res;
-           }
-        }
-    }
-
-    protected function throwStorkException($exception, $res, $path)
-    {
         if (($exception !== null) or ($res->success !== true))
         {
             throw new ServerErrorException(
@@ -168,6 +149,8 @@ class Stork
                 ['req_path' => $path] + ($res ? ['resp_status_code' => $res->status_code, 'resp_body' => $res->body] : []),
                 $exception);
         }
+
+        return $res;
     }
 
     protected function formatListResponse(string $entity, array $res): array
