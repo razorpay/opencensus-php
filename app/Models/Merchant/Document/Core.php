@@ -144,7 +144,7 @@ class Core extends Base\Core
         {
             foreach ($documentMetaData as &$document)
             {
-                $signedUrl = $detailService->getSignedUrl($document[Entity::FILE_STORE_ID], $merchantId);
+                $signedUrl = $detailService->getSignedUrl($document[Entity::FILE_STORE_ID], $document[Entity::MERCHANT_ID]);
 
                 $document[Entity::SIGNED_URL] = $signedUrl;
             }
@@ -195,7 +195,8 @@ class Core extends Base\Core
         {
             $documentMetaData = [
                 Entity::ID            => $document->getId(),
-                Entity::FILE_STORE_ID => $document->getFileStoreId()
+                Entity::FILE_STORE_ID => $document->getFileStoreId(),
+                Entity::MERCHANT_ID   => $document->getMerchantId(),
             ];
 
             if (isset($documentsResponse[$document->getDocumentType()]) === false)
