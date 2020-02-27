@@ -517,13 +517,15 @@ class Processor
                         'dcc_currency'        => $dccCurrency,
                     ]);
             }
-            else if ($requestedCurrencyData['amount'] !== $dccAmount){
+            else if ($requestedCurrencyData['amount'] !== $dccAmount)
+            {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_AMOUNT, null,
                     [
                         'dcc_amount' => $dccAmount,
                     ]);
             }
-            else{
+            else
+            {
                 $paymentMetaInput = [
                     'gateway_amount'            => $requestedCurrencyData['amount'],
                     'gateway_currency'          => $requestedCurrencyData['currency'],
@@ -534,6 +536,8 @@ class Processor
                 ];
 
                 $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+                $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
             }
         }
     }
