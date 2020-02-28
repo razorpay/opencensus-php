@@ -166,6 +166,23 @@ return [
         ],
     ],
 
+    'testUpdatedStatusFromCreatedToPicked' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PICKED,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PICKED,
+            ],
+        ],
+    ],
+
     'testUpdatedStatusFromProcessingToProcessed' => [
         'request'  => [
             'url'     => '/banking_account',

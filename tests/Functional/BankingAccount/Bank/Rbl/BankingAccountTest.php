@@ -739,6 +739,28 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(Created::class);
     }
 
+    public function testUpdatedStatusFromCreatedToPicked()
+    {
+        Mail::fake();
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(RZP\Models\BankingAccount\Status::PICKED, $bankingAccount->getStatus());
+    }
+
     public function testUpdatedStatusFromCreatedToCancelled()
     {
         Mail::fake();
