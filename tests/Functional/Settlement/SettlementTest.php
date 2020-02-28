@@ -732,17 +732,13 @@ class SettlementTest extends TestCase
         $this->assertEquals($settledAt1->getTimestamp(), $fta0['initiate_at']);
         $this->assertEquals($settledAt2->getTimestamp(), $fta1['initiate_at']);
 
-        $setl = $this->getLastEntity('settlement', true);
-
-        $bta = $this->getLastEntity('fund_transfer_attempt', true);
-
         $content = $this->getEntities('settlement_destination', ['settlement_id' => $txn0['settlement_id']],true);
 
         $this->assertEquals($fta0['id'], 'fta_' . $content['destination_id']);
 
         $content = $this->getEntities('settlement_destination', ['settlement_id' => $txn1['settlement_id']],true);
 
-        $this->assertEquals($fta0['id'], 'fta_' . $content['destination_id']);
+        $this->assertEquals($fta1['id'], 'fta_' . $content['destination_id']);
     }
 
     /**

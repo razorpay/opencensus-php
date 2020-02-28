@@ -1176,6 +1176,17 @@ class AdminFetch
                 ],
             ],
 
+            Entity::SETTLEMENT_DESTINATION => [
+                'settlement_id' => [
+                    Fetch::LABEL => 'Settlement ID',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'destination_type' => [
+                    Fetch::LABEL => 'destination type',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::FUND_TRANSFER_ATTEMPT => [
                 'batch_fund_transfer_id' => [
                     Fetch::LABEL  => 'Batch Fund Transfer Id',
