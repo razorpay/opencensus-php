@@ -736,7 +736,13 @@ class SettlementTest extends TestCase
 
         $bta = $this->getLastEntity('fund_transfer_attempt', true);
 
-        $this->validationSettlementDestination($setl['id'], Entity::FUND_TRANSFER_ATTEMPT, $bta['id']);
+        $content = $this->getEntities('settlement_destination', ['settlement_id' => $txn0['settlement_id']],true);
+
+        $this->assertEquals($fta0['id'], 'fta_' . $content['destination_id']);
+
+        $content = $this->getEntities('settlement_destination', ['settlement_id' => $txn1['settlement_id']],true);
+
+        $this->assertEquals($fta0['id'], 'fta_' . $content['destination_id']);
     }
 
     /**
