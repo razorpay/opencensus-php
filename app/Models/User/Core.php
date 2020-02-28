@@ -594,13 +594,13 @@ class Core extends Base\Core
                     return $merchant;
                 }
 
-                $bankingRolePermissions = new UserRolePermissionsMap();
+                // Attach Permission
+                $userMerchantPermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);
 
-                $rolePermissions = [
-                    'permissions' => $bankingRolePermissions->getRolePermissions($merchant[Entity::BANKING_ROLE])
-                ];
-
-                $merchant = $merchant + $rolePermissions;
+                if ($userMerchantPermissions !== null)
+                {
+                    $merchant['permissions'] = $userMerchantPermissions;
+                }
 
                 /** @var Merchant\Balance\Entity $balance */
                 $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(

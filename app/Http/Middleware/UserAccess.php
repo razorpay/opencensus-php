@@ -35,11 +35,6 @@ class UserAccess
     protected $repo;
 
     /**
-     * @var UserRolePermissionsMap
-     */
-    private $userRolePermissionsMap;
-
-    /**
      * Trace instance used for tracing
      * @var Trace
      */
@@ -65,8 +60,6 @@ class UserAccess
         $this->razorx = $app->razorx;
 
         $this->userRoleScope = new UserRolesScope();
-
-        $this->userRolePermissionsMap = new UserRolePermissionsMap();
 
         $this->trace = $app['trace'];
     }
@@ -274,7 +267,7 @@ class UserAccess
         }
 
         // If role doesn't have route permission then deny otherwise allow
-        if ($this->userRolePermissionsMap->isInvalidRolePermission($userRole, $routePermission))
+        if (UserRolePermissionsMap::isInvalidRolePermission($userRole, $routePermission))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }

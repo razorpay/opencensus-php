@@ -7,14 +7,9 @@ use RZP\Models\Admin\Permission\Name as Permission;
 
 class UserRolePermissionsMap
 {
-    protected $rolePermissions = [];
+    private static $rolePermissions;
 
-    public function __construct()
-    {
-        $this->rolePermissions = $this->getRolePermissionMap();
-    }
-
-    private function getRolePermissionMap()
+    private static function init()
     {
          $rolePermissions = [
              BankingRole::OWNER => [
@@ -270,12 +265,22 @@ class UserRolePermissionsMap
         $rolePermissions[BankingRole::FINANCE_L2] = $rolePermissions[BankingRole::FINANCE_L1];
         $rolePermissions[BankingRole::FINANCE_L3] = $rolePermissions[BankingRole::FINANCE_L1];
 
-         return $rolePermissions;
+        self::$rolePermissions = $rolePermissions;
     }
 
-    public function isValidRolePermission(string $role, string $permission) : bool
+    private static function getRolePermissionMap()
     {
-        $rolePermissions = $this->getRolePermissions($role);
+        if (empty(self::$rolePermissions) === true)
+        {
+            self::init();
+        }
+
+        return self::$rolePermissions;
+    }
+
+    public static function isValidRolePermission(string $role, string $permission) : bool
+    {
+        $rolePermissions = self::getRolePermissions($role);
 
         if (in_array($permission, $rolePermissions, true))
         {
@@ -285,9 +290,9 @@ class UserRolePermissionsMap
         return false;
     }
 
-    public function isInvalidRolePermission(string $role, string $permission) : bool
+    public static function isInvalidRolePermission(string $role, string $permission) : bool
     {
-        if ($this->isValidRolePermission($role, $permission))
+        if (self::isValidRolePermission($role, $permission))
         {
             return false;
         }
@@ -295,8 +300,8 @@ class UserRolePermissionsMap
         return true;
     }
 
-    public function getRolePermissions(string $role)
+    public static function getRolePermissions(string $role)
     {
-        return $this->rolePermissions[$role] ?? null;
+        return self::getRolePermissionMap()[$role] ?? null;
     }
 }

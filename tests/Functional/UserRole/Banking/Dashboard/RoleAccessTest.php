@@ -16,10 +16,6 @@ class RoleAccessTest extends TestCase
     use BankingRoleTrait;
 
     /**
-     * @var UserRolePermissionsMap
-     */
-    private $userRolePermissionMap;
-    /**
      * @var array
      */
     private $routePermissions;
@@ -30,7 +26,6 @@ class RoleAccessTest extends TestCase
 
         parent::setUp();
 
-        $this->userRolePermissionMap = new UserRolePermissionsMap();
         $this->routePermissions = Route::$bankingRoutePermissions;
     }
 
@@ -111,7 +106,7 @@ class RoleAccessTest extends TestCase
 
             $this->assertEquals(
                 true,
-                $this->userRolePermissionMap->isValidRolePermission(BankingRole::OWNER, $routePermission),
+                UserRolePermissionsMap::isValidRolePermission(BankingRole::OWNER, $routePermission),
                 "Route $route permission missing for role $role");
         }
     }
