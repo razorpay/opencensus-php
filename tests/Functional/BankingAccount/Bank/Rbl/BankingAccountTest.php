@@ -389,13 +389,19 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccount()
     {
-        $attribute = ['activation_status' => 'processed'];
+        $attribute = ['activation_status' => 'activated'];
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
         $bankingAccount = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account',
+            $bankingAccount['id'],
+            [
+                'status' => 'picked',
+            ]);
 
         $dataToReplace = [
             'request'  => [

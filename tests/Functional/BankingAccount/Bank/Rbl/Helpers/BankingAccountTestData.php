@@ -505,14 +505,14 @@ return [
             'url'     => '/banking_account',
             'method'  => 'PATCH',
             'content' => [
-                BankingAccount\Entity::STATUS => BankingAccount\Status::ACTIVATED,
+                BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
             ],
         ],
         'response' => [
             'content' => [
                 'merchant_id' => '10000000000000',
                 'channel'     => 'rbl',
-                BankingAccount\Entity::STATUS => BankingAccount\Status::ACTIVATED,
+                BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
             ],
         ],
     ],
