@@ -389,7 +389,7 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccount()
     {
-        $attribute = ['activation_status' => 'activated'];
+        $attribute = ['activation_status' => 'processed'];
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
@@ -517,7 +517,7 @@ class BankingAccountTest extends TestCase
         $this->fixtures->edit('banking_account',
             $bankingAccount['id'],
             [
-                'status' => 'processing',
+                'status' => 'picked',
             ]);
 
         $dataToReplace = [
@@ -539,6 +539,12 @@ class BankingAccountTest extends TestCase
     public function testUpdateBankingAccountToInitiated()
     {
         $bankingAccount = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account',
+            $bankingAccount['id'],
+            [
+                'status' => 'picked',
+            ]);
 
         $dataToReplace = [
             'request'  => [
@@ -579,6 +585,12 @@ class BankingAccountTest extends TestCase
     public function testUpdateBankingAccountToInitiatedWithInternalComments()
     {
         $bankingAccount = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account',
+            $bankingAccount['id'],
+            [
+                'status' => 'picked',
+            ]);
 
         $dataToReplace = [
             'request'  => [
@@ -811,39 +823,15 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(Processed::class);
     }
 
-    public function testUpdatedStatusFromProcessingToUnserviceable()
-    {
-        Mail::fake();
-
-        $bankingAccount = $this->createBankingAccount();
-
-        $dataToReplace = [
-            'request'  => [
-                'url'     => '/banking_accounts/' . $bankingAccount['id'],
-                'method'  => 'PATCH',
-            ],
-        ];
-
-        $this->ba->adminAuth();
-
-        $this->fixtures->edit('banking_account',
-                              $bankingAccount['id'] ,
-                              [
-                                  'status' => 'processing',
-                              ]);
-
-        $this->startTest($dataToReplace);
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->assertEquals(RZP\Models\BankingAccount\Status::UNSERVICEABLE, $bankingAccount->getStatus());
-
-        Mail::assertQueued(Unserviceable::class);
-    }
-
     public function testUpdateOnDiffBankInternalStatus()
     {
         $bankingAccount = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account',
+            $bankingAccount['id'] ,
+            [
+                'status' => 'picked',
+            ]);
 
         $request  = [
             'url'     => '/banking_accounts/' . $bankingAccount['id'],
