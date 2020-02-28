@@ -1397,6 +1397,34 @@ return [
         ],
     ],
 
+    'testGetBankingUserWithPermissions'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'owner',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBankingUserWithPermissionsNull'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'random_role',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testVerifyUserThroughEmail' => [
         'request'  => [
             'url'     => '/users/verify/mode/email',

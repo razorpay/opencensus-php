@@ -1974,6 +1974,76 @@ class UserTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testGetBankingUserWithPermissions()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/users/' . $user->getId(),
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('permissions', $response['merchants'][1]);
+    }
+
+    public function testGetBankingUserWithPermissionsNull()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'random_role',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/users/' . $user->getId(),
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('permissions', $response['merchants'][1]);
+    }
+
     public function testVerifyUserThroughEmail()
     {
         $this->ba->proxyAuth();
