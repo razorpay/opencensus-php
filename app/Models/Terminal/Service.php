@@ -506,24 +506,26 @@ class Service extends Base\Service
 
         $merchant_terminal_fetched = $client->fetchMerchantTerminalById($terminal->getId(), $merchant->getId());
 
-        if (($terminal->getId() != $merchant_terminal_fetched[Terminal\Entity::TERMINAL_ID] ) or
-            ($merchant->getId() != $merchant_terminal_fetched[Merchant\Entity::MERCHANT_ID]))
+        $original = [
+            Terminal\Entity::TERMINAL_ID    => $terminal->getId(),
+            Merchant\Entity::MERCHANT_ID    => $merchant->getId(),
+        ];
+
+        $data = [
+            'original' => $original,
+            'fetched'  => $merchant_terminal_fetched,
+        ];
+
+        if ($merchant_terminal_fetched === [])
         {
-            $original = [
-                Terminal\Entity::TERMINAL_ID    => $terminal->getId(),
-                Merchant\Entity::MERCHANT_ID    => $merchant->getId(),
-            ];
 
-            $fetched = [
-                Terminal\Entity::TERMINAL_ID    => $merchant_terminal_fetched[Terminal\Entity::TERMINAL_ID],
-                Merchant\Entity::MERCHANT_ID    => $merchant_terminal_fetched[Merchant\Entity::MERCHANT_ID],
-            ];
+             throw new Exception\IntegrationException('merchant_terminal does not exist',
+                 ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,
+                 $data);
+        }
 
-            $data = [
-                'original' => $original,
-                'fetched'  => $fetched,
-            ];
-
+        if (array_diff_assoc($original, $merchant_terminal_fetched) !== [])
+        {
             throw new Exception\IntegrationException(
                 'Mismatch in values while fetching from merchant_terminal table',
                 ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR,

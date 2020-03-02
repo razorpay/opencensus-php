@@ -152,7 +152,6 @@ class TerminalMigrationTest extends TestCase
     "entity": "collection",
     "items": [
       {
-        "id": "12345678901234",
         "merchant_id": "%s",
         "terminal_id": "%s"
       }
@@ -967,6 +966,62 @@ class TerminalMigrationTest extends TestCase
         }, 2);
 
         $this->expectExceptionMessage('Mismatch');
+
+        $this->expectException(IntegrationException::class);
+
+        $beforeCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
+
+        $this->assignSubMerchant($tid, '10000000000000');
+
+        $afterCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
+
+        $this->assertEquals($beforeCount, $afterCount);
+    }
+
+    public function testAddSubmerchantTerminalsServiceUpSubmerchantNotCreatedOnTerminalsServiceMigrateVariant()
+    {
+        $this->razorxValue = 'migrate';
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $tid = $terminal['id'];
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid){
+            if ($method == \Requests::POST)
+            {
+                $this->assertEquals('v1/terminals/submerchant', $path);
+
+                $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+                $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+                return $this->getDefaultTerminalServiceMerchantTerminalCreatedResponse();
+            }
+
+            if ($method == \Requests::GET)
+            {
+                $this->assertEquals('v2/terminals/submerchant', $path);
+
+                $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
+
+                $this->assertEquals('10000000000000', $content[Terminal\Entity::MERCHANT_ID]);
+
+                $response = new \Requests_Response;
+
+                $response->body = '
+                data : []
+                ';
+
+                return $response;
+            }
+        }, 2);
+
+        $this->expectExceptionMessage('merchant_terminal does not exist');
 
         $this->expectException(IntegrationException::class);
 
