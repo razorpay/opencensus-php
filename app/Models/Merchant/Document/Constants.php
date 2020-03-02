@@ -12,5 +12,16 @@ class Constants
     const OCR_MATCHING_THRESHOLD  = 'ocr_matching_threshold';
     const OCR_MATCHING_PERCENTAGE = 'ocr_matching_percentage';
     const OCR_NAME                = 'ocr_name';
-    const OCR_MATCH_TYPE          = 'ocr_match_type';
+
+
+    const TYPE      = 'type';
+    const FILE      = 'file';
+    const FILE_NAME = 'file_name';
+    const FILE_ID   = 'file_id';
+    const SOURCE    = 'source';
+    const ENTITY    = 'entity';
+    const MERCHANT  = 'merchant';
+
+    const OCR_MATCH_TYPE = 'ocr_match_type';
+
 }

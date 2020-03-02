@@ -675,6 +675,133 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
+    public function createInstantRefundsDefaultPricingplan()
+    {
+        $pricingPlanId = Models\Pricing\Fee::DEFAULT_INSTANT_REFUNDS_PLAN_ID;
+
+        $rows = [
+            [
+                'id'                  => 'DfltPricingPR1',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'card',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 499,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'DfltPricingPR2',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'card',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 999,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'DfltPricingPR3',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'card',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1999,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => 4294967295,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'DfltPricingPR4',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'upi',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 499,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'DfltPricingPR5',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'upi',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 999,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'DfltPricingPR6',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'upi',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1999,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => 4294967295,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'DfltPricingPR7',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'netbanking',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 499,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'DfltPricingPR8',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'netbanking',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 999,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => 'DfltPricingPR9',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'IRDefltPricingPlan',
+                'feature'             => 'refund',
+                'payment_method'      => 'netbanking',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1999,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => 4294967295,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
+
     public function createEmiMerchantSubventionPlan()
     {
         $pricingPlanId = '1EmiSubPricing';

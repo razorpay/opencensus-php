@@ -305,11 +305,11 @@ class Service extends Base\Service
             }
 
             // cant do this before as mode is set in above, and mode is required to ensure data goes to write place
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, $payment, null, $traceData);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, $payment, null, [], $traceData);
 
             $response = $this->getNewProcessor($merchant)->processRedirectToAuthorize($payment, $id);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, $traceData);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, [], $traceData);
 
             $this->cachePaysecureResponseDataIfApplicable($payment, $response);
 
@@ -326,7 +326,7 @@ class Service extends Base\Service
                 $traceData
             );
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, $e, $traceData);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, $e, [], $traceData);
 
             throw $e;
         }
@@ -1536,7 +1536,7 @@ class Service extends Base\Service
                              ->setRazorXDopplerProperty($this->razorXForDoppler)
                              ->timeoutPayment();
 
-                        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
+                        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
 
                         $count++;
 
@@ -1693,6 +1693,19 @@ class Service extends Base\Service
     public function verifyPayment($payment)
     {
         return (new Verify)->verifyPayment($payment);
+    }
+
+    /**
+     * Certain gateways require gateway data such as bank reference number for payment verification
+     * to function accurately
+     *
+     * @param $payment
+     * @param null $gatewayData
+     * @return null|string
+     */
+    public function verifyPaymentWithGatewayData($payment, $gatewayData = null)
+    {
+        return (new Verify)->verifyPayment($payment, null, $gatewayData);
     }
 
     public function sendReminderMerchantMailForAuthorizedPayments()

@@ -221,7 +221,7 @@ class Service extends Base\Service
     {
         $batch = [];
 
-        $batch = $this->fetchBatchForAuth($batchId);
+        $batch = $this->fetchBatchById($batchId);
 
         if ($batch === [])
         {
@@ -237,7 +237,7 @@ class Service extends Base\Service
         return $this->core->cancelInvoicesOfBatch($batch);
     }
 
-    protected function fetchBatchForAuth(string $batchId): array
+    protected function fetchBatchById(string $batchId): array
     {
         $batch = [];
 

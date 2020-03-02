@@ -1124,6 +1124,14 @@ class Entity extends Base\PublicEntity
         return $balance;
     }
 
+    public function payoutLinks()
+    {
+        return $this->hasMany(
+            'RZP\Models\PayoutLink\Entity',
+            self::MERCHANT_ID,
+            self::ID);
+    }
+
     public function bankAccount()
     {
         return $this->hasOne(

@@ -54,6 +54,11 @@ abstract class Event
         return $this->properties;
     }
 
+    public function getMetaDetails()
+    {
+        return $this->getEventMetaDetails();
+    }
+
     protected function addEventDetails()
     {
         $properties = [];

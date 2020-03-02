@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -796,6 +797,11 @@ class Header
     const IIN_MC_MASTERCARD_ACCEPTANCE_BRAND     = 'ACCEPTANCE_BRAND';
     const IIN_MC_MASTERCARD_COUNTRY              = 'COUNTRY';
     const IIN_MC_MASTERCARD_REGION               = 'REGION';
+
+    // entity update action batch
+    const ID = Detail\Entity::ID;
+    const BUSINESS_REGISTERED_ADDRESS = Detail\Entity::BUSINESS_REGISTERED_ADDRESS;
+    const BUSINESS_REGISTERED_STATE = Detail\Entity::BUSINESS_REGISTERED_STATE;
 
 
     const ADJUSTMENT_REFERENCE_ID   = 'reference_id';
@@ -2451,6 +2457,23 @@ class Header
             ]
         ],
 
+        Type::ENTITY_UPDATE_ACTION => [
+            self::INPUT => [
+                self::ID,
+                self::BUSINESS_NAME,
+                self::BUSINESS_REGISTERED_ADDRESS,
+                self::BUSINESS_REGISTERED_STATE,
+            ],
+            self::OUTPUT => [
+                self::ID,
+                self::BUSINESS_NAME,
+                self::BUSINESS_REGISTERED_ADDRESS,
+                self::BUSINESS_REGISTERED_STATE,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
         Type::ADMIN_BATCH => [
             self::INPUT => [
                 self::ADMIN_ID,
@@ -2578,6 +2601,17 @@ class Header
             // header can contain empty columns when input file is CSV
             // this is due to trailing comma in the given input file
             $actualHeaders = array_filter($actualHeaders);
+        }
+
+
+        //
+        // In case of subMerchant batch adding support of optional header merchant_id
+        // With this data support team will be able to fix issue by their own and we can move this batch to new service .
+        //
+        if (($type === Type::SUB_MERCHANT) and
+            ((in_array(self::MERCHANT_ID, $actualHeaders, true) === true)))
+        {
+            $expectedHeaders[] = self::MERCHANT_ID;
         }
 
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);

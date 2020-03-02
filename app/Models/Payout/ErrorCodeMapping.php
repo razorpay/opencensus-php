@@ -153,12 +153,7 @@ class ErrorCodeMapping
         'PBANK_BENE_NOT_REGISTERED'             => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
         'TXN_TIMEOUT_FAILURE'                   => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
         'PBANK_GATEWAY_THROTTLED'               => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
-        'PBANK_BULK_INVALID_AMOUNT'             => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
-        'PBANK_BULK_INVALID_ACCOUNT_NUMBER'     => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
-        'PBANK_BULK_TIMEOUT'                    => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
-        'PBANK_BULK_BATCH_LIMIT_EXCEEDED'       => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
-        'PBANK_BULK_TECHNICAL_ERROR'            => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
-        'PBANK_BULK_LIMIT_DECREASED'            => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
+        'BATCH_LIMIT_EXHAUSTED'                 => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
     ];
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)

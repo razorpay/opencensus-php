@@ -88,9 +88,20 @@ class Gateway extends Base\Gateway
 
         if ($this->isBharatQrPayment() === true)
         {
-            $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
+            //
+            //Hacky fixture: When ORIGINAL_BANK_RRN_REQ is null, the entity NPCI_REFERENCE_ID method becomes
+            // inaccessible for the gateway.To fix the issue, we assign it to BANK_RRN so that paymentData can
+            //access NPCI_REFERENCE_ID using getNpciReferenceId() method.
+            //
+            $input[Fields::ORIGINAL_BANK_RRN_REQ] = $input[Fields::BANK_RRN];
 
-            return null;
+            $paymentData = $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
+
+            return [
+                'acquirer' => [
+                    Payment\Entity::REFERENCE16 => $paymentData->getNpciReferenceId(),
+                ],
+            ];
         }
 
         if ((isset($input['upi']['flow']) === true) and
@@ -454,15 +465,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $traceData = $data;
-
-        unset($traceData[Fields::PAYER_ACCOUNT], $traceData[Fields::PAYER_VA]);
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
                 'request'           => $request,
-                'decrypted_content' => $traceData,
+                'decrypted_content' => $data,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],
             ]);
