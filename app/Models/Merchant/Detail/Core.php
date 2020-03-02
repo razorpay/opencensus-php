@@ -31,13 +31,11 @@ use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
-use RZP\Models\Merchant\AutoKyc\ServiceFactory;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
-use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -676,8 +674,11 @@ class Core extends Base\Core
 
 
     /**
-     * Fills up dummy file IDs, required fields for merchant activation
-     * Use with caution
+     * Fills up dummy file IDs, required fields for merchant activation.
+     *
+     * This function is being used for creating and activating sub merchant .
+     *
+     * In this case kyc is handled by partner , so we upload dummy files .
      *
      * @param Merchant\Entity $merchant
      *
@@ -689,11 +690,17 @@ class Core extends Base\Core
 
         $requiredDocuments = $this->getRequireActivationDocuments($merchantDetails);
 
-        $params = [];
+        $merchantDetailsParams  = [];
+        $merchantDocumentParams = [];
 
         foreach ($requiredDocuments as $requiredDocument)
         {
-            $params[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
+            $merchantDetailsParams[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
+
+            $merchantDocumentParams[$requiredDocument] = [
+                Document\Constants::FILE_ID => DEConstants::DUMMY_ACTIVATION_FILE,
+                Document\Constants::SOURCE  => Document\Source::UFH,
+            ];
         }
 
         //
@@ -702,12 +709,12 @@ class Core extends Base\Core
         //
         if ($merchantDetails->isUnregisteredBusiness() === false)
         {
-            $merchantDetails->fill($params);
+            $merchantDetails->fill($merchantDetailsParams);
 
             $this->repo->saveOrFail($merchantDetails);
         }
 
-        (new Document\Core)->storeInMerchantDocument($merchant, $params);
+        (new Document\Core)->storeInMerchantDocument($merchant, $merchantDocumentParams);
     }
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])

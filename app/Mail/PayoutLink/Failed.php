@@ -110,7 +110,8 @@ class Failed extends Mailable
 
         $displayName = $merchant->getDisplayNameElseName();
 
-        $account = $payoutLink->fundAccount->account;
+        /** @var \RZP\Models\Vpa\Entity|\RZP\Models\BankAccount\Entity $account */
+        $account = optional($payoutLink->fundAccount)->account;
 
         $settings = $this->getSettings($merchant);
 
@@ -133,16 +134,17 @@ class Failed extends Mailable
 
         if ($payoutLink->fundAccount->getAccountType() === FundAccountEntity::BANK_ACCOUNT)
         {
-            array_push($data,[
+            $data = array_merge($data,[
                 'fund_account_number'   => $account->getAccountNumber(),
                 'fund_account_name'     => $account->getBeneficiaryName(),
                 'fund_account_ifsc'     => $account->getIfscCode(),
+                'fund_account_bank_name'=> $account->getBankName(),
             ]);
         }
         else if ($payoutLink->fundAccount->getAccountType() === FundAccountEntity::VPA)
         {
-            array_push($data,[
-                'fund_account_vpa'      => $account->getHandle(),
+            $data = array_merge($data,[
+                'fund_account_vpa'      => $account->getAddress(),
                 'fund_account_name'     => $account->getUsername(),
             ]);
         }
