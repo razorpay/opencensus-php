@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Request;
 use Throwable;
+use Requests_Hooks;
 use Requests_Session;
 use Requests_Response;
 use RZP\Error\ErrorCode;
@@ -15,7 +16,7 @@ class Stork
 {
 
     const REQUEST_TIMEOUT = 0.35;
-    
+
     const WEBHOOK = 'webhook';
 
     /**
@@ -112,7 +113,9 @@ class Stork
         // Doing this for internal services only
         $hooks->addCurlProperties($config['url'], $options);
 
-        $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
+        $requestHooks = new Requests_Hooks();
+
+        $requestHooks->register('curl.before_send', [$this, 'setCurlOptions']);
 
         $this->request = new Requests_Session(
             $config['url'],
