@@ -3898,6 +3898,7 @@ final class Route
             'order_create',
             'payment_fetch_by_id',
             'order_payments',
+            'read_options_by_ref_id',
         ],
 
         'kotak' => [

@@ -389,6 +389,17 @@ class Selector extends Base\Core
                 //'max_terminals'                   => $payment->getMaxRetryAttempt(),
             ];
 
+            $traceData = $data;
+
+            // remove sensitive data from logging
+            unset($traceData['payment']['email'], $traceData['payment']['contact'], $traceData['payment']['notes']);
+
+            // checking card key exist or not in array
+            if (isset($traceData['payment']['card']) === true)
+            {
+                unset($traceData['payment']['card']);
+            }
+
             $params = null;
 
             $this->app->smartRouting->sendNonBlockingPaymentDataAuthN($data, $params);
@@ -396,7 +407,7 @@ class Selector extends Base\Core
             $this->trace->info(
                 TraceCode::SMART_ROUTING_REQUEST_AUTHENTICATION,
                 [
-                    'data' => $data,
+                    'data' => $traceData,
                 ]);
         }
         catch (\Throwable $e)
@@ -711,10 +722,21 @@ class Selector extends Base\Core
                 'chance'              => $this->options->getChance(),
             ];
 
+            $tracePayment = $data['payment'];
+
+            // remove sensitive data from logging
+            unset($tracePayment['email'], $tracePayment['contact'], $tracePayment['notes']);
+
+            // checking card key exist or not in array
+            if (isset($tracePayment['card']) === true)
+            {
+                unset($tracePayment['card']);
+            }
+
             $this->trace->info(
                 TraceCode::SMART_ROUTING_REQUEST,
                 [
-                    'payment'             => $data['payment'],
+                    'payment'             => $tracePayment,
                     'merchant'            => $data['merchant'],
                     'filtered_terminals'  => $data['filtered_terminals'],
                     'gateway_downtime'    => $data['gateway_downtime'],

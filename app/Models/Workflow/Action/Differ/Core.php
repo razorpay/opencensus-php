@@ -8,14 +8,16 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\FileStore;
 use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Workflow\Action;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Models\Merchant\Document\FileHandler\Factory;
+use RZP\Models\Merchant\Document\Type as DocumentType;
 
 class Core extends Base\Core
 {
@@ -95,21 +97,31 @@ class Core extends Base\Core
         return $diff;
     }
 
-    // code for getting the expiring URLs for the files
-    // transforming those urls inline
+
+    /**
+     * Code for getting the expiring URLs for the files
+     * Transforming those urls inline
+     *
+     * @param $diff
+     * @param $merchantId
+     *
+     * @return mixed
+     */
     private function transformFileIdsToUrls($diff, $merchantId)
     {
-        $fileStoreCore = new FileStore\Core;
+        $detailService = new Detail\Service();
 
         foreach ($diff as $key => $value)
         {
-            if (Files::exists($key) === true)
+            if (DocumentType::isValid($key) === true)
             {
-                $diff[$key] = (function($value) use ($fileStoreCore, $merchantId) {
+                $diff[$key] = (function($value) use ($detailService, $merchantId) {
 
                     if (empty($value) === false)
                     {
-                        return $fileStoreCore->getSignedUrl($value, $merchantId);
+                        $source = (new Factory())->getDocumentSource($value, $merchantId);
+
+                        return $detailService->getSignedUrl($value, $merchantId, $source);
                     }
 
                     return "";
