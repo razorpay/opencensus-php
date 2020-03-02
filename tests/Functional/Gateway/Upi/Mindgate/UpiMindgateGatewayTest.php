@@ -12,6 +12,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Base\Secure;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\RuntimeException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -1515,5 +1516,104 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('async', $response['type']);
 
         $this->checkPaymentStatus($paymentId, 'created');
+    }
+
+    public function testPaymentForMultipleSecrets()
+    {
+        $metricDriver = $this->mockMetricDriver(Metric::DOGSTATSD_DRIVER);
+
+        $rzpSecret = config('gateway.upi_mindgate.gateway_encryption_key');
+
+        $vasSecret = 'b2950f37dd1df3926749b0e1c50f6063';
+
+        config([ 'gateway.upi_mindgate.gateway_encryption_key' => $vasSecret]);
+
+        $terminalId = '100UPIMindgate';
+
+        $this->fixtures->terminal->edit($terminalId, [
+            'gateway_secure_secret' =>  $vasSecret,
+        ]);
+
+        $terminal = $this->getDbEntityById('terminal', $terminalId);
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        config([ 'gateway.upi_mindgate.gateway_encryption_key' => $rzpSecret]);
+
+        $upiEntity = $this->getDbLastEntity('upi');
+
+        $payment = $this->getDbLastPayment();
+
+        $callbackMeta = [
+            'key'           => hex2bin($vasSecret),
+            'merchant_id'   => $terminal['gateway_merchant_id'],
+        ];
+
+        $content = $this->mockServer()->getAsyncCallbackContent(
+                       $upiEntity->toArray(),
+                       $payment->toArray(),
+                       $callbackMeta);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertTrue($response['success']);
+
+        $this->assertArraySubset([
+            'status'    => 'authorized',
+        ], $payment->refresh()->toArray());
+
+        $this->assertArraySubset([
+            'payment_id'        => $payment->getId(),
+            'action'            => 'authorize',
+            'type'              => 'collect',
+            'received'          => 1,
+            'npci_reference_id' => '910000123456',
+            // TODO: Should be PNB
+            'bank'              => 'ICIC'
+        ], $upiEntity->refresh()->toArray());
+    }
+
+    public function testPaymentForMultipleSecretsNoTerminalFound()
+    {
+        $this->mockMetricDriver(Metric::DOGSTATSD_DRIVER);
+
+        $rzpSecret = config('gateway.upi_mindgate.gateway_encryption_key');
+
+        $vasSecret = 'b2950f37dd1df3926749b0e1c50f6063';
+
+        config([ 'gateway.upi_mindgate.gateway_encryption_key' => $vasSecret]);
+
+        $terminalId = '100UPIMindgate';
+
+        $this->fixtures->terminal->edit($terminalId, [
+            'gateway_secure_secret' =>  $vasSecret,
+        ]);
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        config([ 'gateway.upi_mindgate.gateway_encryption_key' => $rzpSecret]);
+
+        $upiEntity = $this->getDbLastEntity('upi');
+
+        $payment = $this->getDbLastPayment();
+
+        // Attaching wrong pgMerchantId, to simulate the case.
+        $callbackMeta = [
+            'key'           => hex2bin($vasSecret),
+            'merchant_id'   => 'terminal_not_available',
+        ];
+
+        $content = $this->mockServer()->getAsyncCallbackContent(
+                       $upiEntity->toArray(),
+                       $payment->toArray(),
+                       $callbackMeta);
+
+        $this->makeRequestAndCatchException(
+            function () use ($content)
+            {
+                $this->makeS2SCallbackAndGetContent($content);
+            },
+            RuntimeException::class,
+            'No terminal found');
     }
 }
