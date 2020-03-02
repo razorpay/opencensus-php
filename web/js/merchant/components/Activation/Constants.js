@@ -154,7 +154,7 @@ export const ADDITIONAL_DOCS_LABEL_VALUE_MAP = {
     },
   },
   [`${FINANCIAL_SERVICES}-${NBFC}`]: {
-    [ADDITIONAL_DOCS.NBFC]: {
+    [ADDITIONAL_DOCS.NBFC_CERT]: {
       value: ADDITIONAL_DOCS.NBFC_CERT,
       label: 'NBFC Registration Certificate',
     },
