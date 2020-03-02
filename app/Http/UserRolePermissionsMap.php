@@ -304,6 +304,6 @@ class UserRolePermissionsMap
 
     public static function getRolePermissions(string $role)
     {
-        return self::getRolePermissionMap()[$role] ?? null;
+        return self::getRolePermissionMap()[$role] ?? [];
     }
 }

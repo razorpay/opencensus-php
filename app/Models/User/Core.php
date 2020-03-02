@@ -597,10 +597,7 @@ class Core extends Base\Core
                 // Attach Permission
                 $userMerchantPermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);
 
-                if ($userMerchantPermissions !== null)
-                {
-                    $merchant['permissions'] = $userMerchantPermissions;
-                }
+                $merchant[Constants::PERMISSIONS] = $userMerchantPermissions;
 
                 /** @var Merchant\Balance\Entity $balance */
                 $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
