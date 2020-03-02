@@ -108,14 +108,14 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::INTENT);
         }
 
-        if ($this->getGateway($input) === Payment\Gateway::HDFC_DEBIT_EMI)
+        if ($this->isS2SFlow($input) === true)
         {
             if ($input['payment']['contact'] == Payment\Entity::DUMMY_PHONE)
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
             }
 
-            parent::action($input, Action::AUTH_INIT);
+            parent::action($input, Action::AUTHENTICATE_INIT);
         }
 
         if (is_null($this->terminal) === false)
@@ -503,9 +503,9 @@ class Gateway extends Base\Gateway
 
             $input['gateway']['redirect'] = $gateway;
 
-            if ($input['payment']['gateway'] === Payment\Gateway::HDFC_DEBIT_EMI)
+            if ($this->isS2SFlow($input) === true)
             {
-                parent::action($input, Action::AUTH_VERIFY);
+                parent::action($input, Action::AUTHENTICATE_VERIFY);
 
                 $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                     $input['payment']['id'], Action::AUTHORIZE)->toArray();
@@ -554,7 +554,7 @@ class Gateway extends Base\Gateway
 
         $this->runCallbackValidationsIfApplicable($input, $response);
 
-        if ($input['payment']['gateway'] === Payment\Gateway::HDFC_DEBIT_EMI)
+        if ($this->isS2SFlow($input) === true)
         {
             parent::action($input, Action::PAY_INIT);
 
@@ -564,7 +564,8 @@ class Gateway extends Base\Gateway
             list($response, $attributes) = $this->sendMozartRequestAndGetResponse(
                 $input,
                 TraceCode::GATEWAY_AUTHORIZE_REQUEST,
-                TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
+                TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
+                false);
 
             $this->gatewayPayment = $this->updateGatewayPaymentEntityWithAction(
                 $gatewayPayment,
@@ -714,6 +715,16 @@ class Gateway extends Base\Gateway
         }
 
         if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$immediateVerifyGateways, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isS2SFlow($input)
+    {
+        if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$s2sGateways, true) === true)
         {
             return true;
         }
@@ -1128,11 +1139,11 @@ class Gateway extends Base\Gateway
     {
         $previousActionForStep = [
             Payment\Gateway::HDFC_DEBIT_EMI => [
-                Action::AUTH_INIT   => null,
-                Action::AUTH_VERIFY => Action::AUTH_INIT,
-                Action::PAY_INIT    => Action::AUTH_VERIFY,
-                Action::VERIFY      => Action::PAY_INIT,
-                Action::REFUND      => Action::PAY_INIT,
+                Action::AUTHENTICATE_INIT   => null,
+                Action::AUTHENTICATE_VERIFY => Action::AUTHENTICATE_INIT,
+                Action::PAY_INIT            => Action::AUTHENTICATE_VERIFY,
+                Action::VERIFY              => Action::PAY_INIT,
+                Action::REFUND              => Action::PAY_INIT,
             ],
             Payment\Gateway::BAJAJFINSERV => [
                 Action::PAY_INIT      => null,
@@ -1240,7 +1251,7 @@ class Gateway extends Base\Gateway
                 Action::VERIFY_REFUND   =>  Action::REFUND,
             ],
             Payment\Gateway::PAYLATER_ICICI  =>  [
-                Action::CHECKACCOUNT    =>  null,
+                Action::CHECKACCOUNT    => null,
                 Action::AUTH_INIT       => Action::CHECKACCOUNT,
                 Action::AUTH_VERIFY     => Action::CHECKACCOUNT,
                 Action::CHECK_BALANCE   => Action::CHECKACCOUNT,
@@ -1256,11 +1267,11 @@ class Gateway extends Base\Gateway
     {
         $previousActionForData = [
             Payment\Gateway::HDFC_DEBIT_EMI => [
-                Action::AUTH_INIT   => null,
-                Action::AUTH_VERIFY => Action::AUTHORIZE,
-                Action::PAY_INIT    => Action::AUTHORIZE,
-                Action::VERIFY      => Action::AUTHORIZE,
-                Action::REFUND      => Action::AUTHORIZE,
+                Action::AUTHENTICATE_INIT   => null,
+                Action::AUTHENTICATE_VERIFY => Action::AUTHORIZE,
+                Action::PAY_INIT            => Action::AUTHORIZE,
+                Action::VERIFY              => Action::AUTHORIZE,
+                Action::REFUND              => Action::AUTHORIZE,
             ],
             Payment\Gateway::BAJAJFINSERV => [
                 Action::PAY_INIT => null,

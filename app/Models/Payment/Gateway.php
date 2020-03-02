@@ -994,6 +994,15 @@ class Gateway
         self::BAJAJFINSERV,
     ];
 
+    public static $s2sGateways = [
+        self::HDFC_DEBIT_EMI,
+    ];
+
+    public static $otpPostFormSubmitGateways = [
+        self::HDFC_DEBIT_EMI,
+        self::BAJAJ,
+    ];
+
     public static $headless = [
        self::CYBERSOURCE => [
             Network::VISA,
