@@ -48,12 +48,11 @@ class Processor extends Base\Core
         $this->initializeVars();
     }
 
-    public function createInvoiceEntities(bool $isCorrection)
+    public function createInvoiceEntities()
     {
         $this->trace->info(
             TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_REQUEST,
             [
-                'correction'    => $isCorrection,
                 'merchant_id'   => $this->merchantId,
                 'month'         => $this->month,
                 'year'          => $this->year,
@@ -235,11 +234,10 @@ class Processor extends Base\Core
      * Populate the map of Type of Commission with its Amount and Tax values
      *
      * @param string $type
-     * @param bool   $isCorrection
      *
      * @return array
      */
-    public function calculateFeesForInvoiceByTypeForPrimary(string $type, bool $isCorrection = false)
+    public function calculateFeesForInvoiceByTypeForPrimary(string $type)
     {
         $transactionFeeAmount = [];
 
@@ -259,8 +257,7 @@ class Processor extends Base\Core
                                          $this->merchantId,
                                          $this->beginTimestamp,
                                          $this->endTimestamp,
-                                         $type,
-                                         $isCorrection);
+                                         $type);
         }
 
         $paymentAmounts = $this->formatFeesForInvoice($paymentFeeAmount);

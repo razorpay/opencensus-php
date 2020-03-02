@@ -414,6 +414,8 @@ trait Inquiry
 
         unset($traceVerifyData['content']);
 
+        unset($traceVerifyData['data']['member']);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $traceVerifyData);
@@ -456,7 +458,11 @@ trait Inquiry
         $content['member'] = $verify->input['card']['name'];
         $content['trackid'] = $verify->input['payment']['id'];
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY, $content);
+        $traceContent = $content;
+
+        unset($traceContent['member']);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY, $traceContent);
 
         return $content;
     }

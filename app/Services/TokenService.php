@@ -1,19 +1,20 @@
 <?php
 
-namespace RZP\Models\PayoutLink;
+namespace RZP\Services;
 
 use App;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
+use RZP\Foundation\Application;
 
 /**
  * Class Token
  *
  * Used to wrap "token for otp-auth" functionality. The token is generated after OTP verification. And stored in redis
  *
- * @package RZP\Models\PayoutLink
+ * @package RZP\Services
  */
 class TokenService
 {
@@ -21,11 +22,13 @@ class TokenService
 
     const REDIS_EXPIRY_PARAM       = 'ex';
 
+    const CONTEXT                  = 'context';
+
     protected $redis;
 
-    public function __construct()
+    public function __construct(Application $app)
     {
-        $this->redis = App::getFacadeRoot()['redis']->connection();
+        $this->redis = $app['redis'];
     }
 
     /**
@@ -63,7 +66,7 @@ class TokenService
                 ErrorCode::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
                 null,
                 [
-                    Entity::CONTEXT => $context
+                    self::CONTEXT => $context
                 ]
             );
         }
@@ -74,7 +77,7 @@ class TokenService
                 ErrorCode::BAD_REQUEST_INVALID_OTP_AUTH_TOKEN,
                 null,
                 [
-                    Entity::CONTEXT => $context
+                    self::CONTEXT => $context
                 ]
             );
         }

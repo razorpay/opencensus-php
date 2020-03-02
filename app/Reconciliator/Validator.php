@@ -94,6 +94,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::PHONEPE            => [".*/Settlement Report/"],
         RequestProcessor\Base::NETBANKING_KVB     => ["/Recon file [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
         RequestProcessor\Base::BAJAJFINSERV       => ["/Payment MIS RAZORPAY SOFTWARE PRIVATE LIMITED_ [0-9]{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) 20[0-9]{2}/"],
+        RequestProcessor\Base::YES_BANK           => ["/Yes Bank_ MPR [0-9]{2}-[0-9]{2}-20[0-9]{2}/"]
     ];
 
     const GATEWAY_BODY_REGEX = [

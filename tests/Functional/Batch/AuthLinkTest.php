@@ -216,6 +216,25 @@ class AuthLinkTest extends TestCase
         self::assertEquals(date('d/m/Y', $expireBy) , '20/10/2020');
     }
 
+
+    public function testFetchAuthLinkForAuthLinkSupervisorRole()
+    {
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'auth_link_supervisor');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', '100AgentUserId');
+
+        $this->startTest();
+    }
+
+    public function testFetchAuthLinkForAuthLinkAgentRole()
+    {
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'auth_link_agent');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', '100AgentUserId');
+
+        $this->startTest();
+    }
+
     protected function getDefaultFileEntries()
     {
         return [

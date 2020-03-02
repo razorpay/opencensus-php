@@ -313,6 +313,11 @@ class Handler extends ExceptionHandler
          */
         $stack = explode("\n", $exception->getTraceAsString());
 
+        if ($exception->getCode() === ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED)
+        {
+            $stack = $this->hideSensitiveInformationFromStack($stack);
+        }
+
         if ($level === 0)
         {
             // Only trace 30 stack function calls if it's a zero level exception
@@ -531,5 +536,46 @@ class Handler extends ExceptionHandler
     {
         return ((config('app.debug') === true) or
                 ($this->ba->isDebugApp() === true));
+    }
+
+    protected function hideSensitiveInformationFromStack(array $stackArr)
+    {
+        $hideParams = [
+            [
+                'regex'     => '/(.*getUserByEmailAndVerifyPassword\(\')(.*)(\'\)$)/i',
+                'replace'   => '******\', \'******',
+            ]
+        ];
+
+        $obscuredStack = [];
+
+        foreach ($stackArr as $stackLine)
+        {
+            foreach ($hideParams as $key => $patternArr)
+            {
+                try
+                {
+                    $regex = $patternArr['regex'];
+                    $replace = $patternArr['replace'];
+
+                    $found = preg_match($regex, $stackLine, $matches);
+
+                    if ($found === 1)
+                    {
+                        $obscuredStack[] = $matches[1] . $replace . $matches[3];
+                    }
+                    else
+                    {
+                        $obscuredStack[] = $stackLine;
+                    }
+                }
+                catch (\Throwable $e)
+                {
+                    return $stackArr;
+                }
+            }
+        }
+
+        return $obscuredStack;
     }
 }

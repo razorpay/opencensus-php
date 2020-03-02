@@ -221,14 +221,7 @@ class Service extends Base\Service
     {
         $batch = [];
 
-        if ($this->auth->isAdminAuth() === true)
-        {
-            $batch = (new Batch\Service())->fetchBatchById($batchId);
-        }
-        else
-        {
-            $batch = (new Batch\Service())->getBatchById($batchId, $this->merchant);
-        }
+        $batch = $this->fetchBatchById($batchId);
 
         if ($batch === [])
         {
@@ -242,6 +235,38 @@ class Service extends Base\Service
         }
 
         return $this->core->cancelInvoicesOfBatch($batch);
+    }
+
+    protected function fetchBatchById(string $batchId): array
+    {
+        $batch = [];
+
+        if ($this->auth->isAdminAuth() === true)
+        {
+            $batch = (new Batch\Service())->fetchBatchById($batchId);
+        }
+        else
+        {
+            $batch = (new Batch\Service())->getBatchById($batchId, $this->merchant);
+
+            if (($batch !== []) and
+                (
+                    (array_key_exists(Batch\ResponseEntity::BATCH_TYPE_ID, $batch) === false) or
+                    (array_key_exists(Batch\ResponseEntity::BATCH_TYPE_ID, $batch) === true) and
+                    ($batch[Batch\ResponseEntity::BATCH_TYPE_ID] !== Batch\Type::PAYMENT_LINK)
+                ))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE, // To be changed
+                    null,
+                    [
+                        'batch_id'      => $batchId,
+                    ]
+                );
+            }
+        }
+
+        return $batch;
     }
 
     public function delete(string $id): array

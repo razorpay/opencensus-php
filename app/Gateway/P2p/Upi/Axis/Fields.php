@@ -84,6 +84,7 @@ class Fields
 
     // ------------------- TRANSACTION ------------- //
     const MERCHANT_REQUEST_ID           = 'merchantRequestId';
+    const MERCHANT_VPA                  = 'merchantVpa';
     const PAYEE_VPA                     = 'payeeVpa';
     const PAYER_VPA                     = 'payerVpa';
     const PAYER_NAME                    = 'payerName';

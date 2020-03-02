@@ -221,7 +221,16 @@ class Service extends Base\Service
 
         $ownerEmail = $value['Owner']['Email'];
 
-        $adminEmails = explode(',', $value['Managers_In_Role_Hierarchy__c']);
+        if (empty($value['Managers_In_Role_Hierarchy__c']) === true)
+        {
+            $adminEmails = [];
+        }
+        else
+        {
+            $emails = rtrim($value['Managers_In_Role_Hierarchy__c'], ',');
+
+            $adminEmails = explode(',', $emails);
+        }
 
         array_push($adminEmails, $ownerEmail);
 
@@ -995,6 +1004,57 @@ class Service extends Base\Service
     }
 
     /**
+     * @param array $input
+     * @param array $currentSmeAdminIds
+     * @param array $currentClaimedMerchantsIds
+     */
+    public function merchantPocUpdateOperation(array $input, array &$currentSmeAdminIds, array &$currentClaimedMerchantsIds)
+    {
+        foreach ($input['records'] as $key => $value)
+        {
+            try
+            {
+                (new Validator())->validateInput('sf_poc_record', $value);
+
+                $recordAdminIds = $this->getAdminIdsFromEmails($value);
+
+                $merchantId = $value['Merchant_ID__c'];
+
+                $merchantIds = $this->fetchLinkedAccountDetails($merchantId);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::SF_POC_UPDATE_DATA_VALIDATION_ERROR, [
+                    'message' => 'Error in record data',
+                    'record'  => $value,
+                ]);
+
+                continue;
+            }
+
+            $tagNames = strtolower($value['Owner_Role__c']);
+
+            if (strpos($tagNames, 'sme') !== false)
+            {
+                $currentSmeAdminIds = array_merge($recordAdminIds, $currentSmeAdminIds);
+            }
+
+            $merchantIds[] = $merchantId;
+
+            SFMerchantPocUpdate::dispatch($this->mode, $value, $recordAdminIds);
+
+            $currentClaimedMerchantsIds = array_merge($merchantIds, $currentClaimedMerchantsIds);
+
+            $merchantIdsBatches = array_chunk($merchantIds, 1000, true);
+
+            foreach ($merchantIdsBatches as $batch)
+            {
+                EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT, $batch);
+            }
+        }
+    }
+
+    /**
      * @param $input
      *
      * @throws \Throwable
@@ -1018,49 +1078,33 @@ class Service extends Base\Service
 
         if (empty($input) === true)
         {
-            $input = $this->app->salesforce->fetchAccountDetails($input);
-        }
+            $input = $this->app->salesforce->fetchAccountDetails();
 
-        (new Validator)->validateInput('sf_poc_data', $input);
+            (new Validator)->validateInput('sf_poc_data', $input);
+
+            $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+
+            while ($input['done'] === false)
+            {
+                $input = $this->app->salesforce->fetchAccountDetails($input['nextRecordsUrl']);
+
+                (new Validator)->validateInput('sf_poc_data', $input);
+
+                $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+            }
+        }
+        else
+        {
+            (new Validator)->validateInput('sf_poc_data', $input);
+
+            $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+        }
 
         $historicalClaimedMerchantIds = $this->repo->merchant->fetchHistoricalClaimedMerchantIds($this->mode);
 
-        foreach ($input['records'] as $key => $value)
-        {
-            (new Validator())->validateInput('sf_poc_record', $value);
-
-            $recordAdminIds = $this->getAdminIdsFromEmails($value);
-
-            $tagNames = strtolower($value['Owner_Role__c']);
-
-            if (strpos($tagNames, 'sme') !== false)
-            {
-                $currentSmeAdminIds = array_merge($recordAdminIds, $currentSmeAdminIds);
-            }
-
-            $merchantId = $value['Merchant_ID__c'];
-
-            $merchantIds = $this->fetchLinkedAccountDetails($merchantId);
-
-            $merchantIds[] = $merchantId;
-
-            $currentClaimedMerchantsIds = array_merge($merchantIds, $currentClaimedMerchantsIds);
-
-            SFMerchantPocUpdate::dispatch($this->mode, $value, $recordAdminIds);
-
-            $currentClaimedMerchantsIds = array_unique( $currentClaimedMerchantsIds);
-
-            $merchantIdsBatches = array_chunk($merchantIds, 1000, true);
-
-            foreach ($merchantIdsBatches as $batch)
-            {
-                EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT, $batch);
-            }
-        }
-
         $this->removeHistoricalAdminsFromGroup($historicalSmeAdminsIds, $currentSmeAdminIds);
 
-        $deltaUnclaimedAccounts = array_diff($historicalClaimedMerchantIds, $currentClaimedMerchantsIds);
+        $deltaUnclaimedAccounts = array_diff($historicalClaimedMerchantIds, array_unique($currentClaimedMerchantsIds));
 
         if (sizeof($deltaUnclaimedAccounts) > 0)
         {
@@ -1077,9 +1121,11 @@ class Service extends Base\Service
     {
         RuntimeManager::setTimeLimit(10000);
 
-        $input['count']   = 5000;
+        $input['count'] = 5000;
+
         $input['afterId'] = $input['afterId'] ?? null;
-        $count            = 0;
+
+        $count = 0;
 
         while (true)
         {
@@ -1098,8 +1144,8 @@ class Service extends Base\Service
                                [
                                    'message' => 'Merchant POC update request for Unclaimed From Service before Job',
                                    'count'   => $count,
+                                   'startId' => $merchants->first()->getId(),
                                    'endId'   => $merchants->last()->getId(),
-
                                ]
             );
 

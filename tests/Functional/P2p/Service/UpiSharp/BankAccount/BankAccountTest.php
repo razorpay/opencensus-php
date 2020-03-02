@@ -91,6 +91,41 @@ class BankAccountTest extends TestCase
         $helper->setUpiPin($request['callback']);
     }
 
+    public function testSetUpiPinTimedout()
+    {
+        $bankAccountId = $this->fixtures->bank_account->getPublicId();
+
+        $helper = $this->getBankAccountHelper();
+
+        $request = $helper->initiateSetUpiPin($bankAccountId);
+
+        // Validating that the exception was eventually thrown
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'          => 'GATEWAY_ERROR',
+                'description'   => 'The gateway request to submit payment information timed out. ' .
+                                    'Please submit your details again',
+            ], $error);
+        }, 504);
+
+        $helper->setUpiPin($request['callback'], [
+            'sdk' => [
+                'error_code'                    => 'GATEWAY_ERROR_REQUEST_TIMEOUT',
+                'error_description'             => 'HTTP is not all powerful',
+                'gateway_error_code'            => 'Curl: Timedout',
+            ]
+        ]);
+
+        $bankAccount = $this->fixtures->bank_account->refresh();
+
+        $this->assertArraySubset([
+            'id'                => $bankAccount->getId(),
+            'sharpId'           => $bankAccount->getId(),
+            'upi_pin_state'     => 'unknown',
+        ], $bankAccount->getGatewayData());
+    }
+
     public function testInitiateFetchBalance()
     {
         $bankAccountId = $this->fixtures->bank_account->getPublicId();

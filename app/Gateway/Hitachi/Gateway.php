@@ -556,7 +556,8 @@ class Gateway extends Base\Gateway
     {
         return (
             ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY) and
-            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD) and
+            (($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD) or
+                ($input['payment'][Payment\Entity::METHOD] === Payment\Method::EMI)) and
             (empty($input['payment'][Payment\Entity::RECEIVER_TYPE]) === true)
         );
     }

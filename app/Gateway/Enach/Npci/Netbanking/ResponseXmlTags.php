@@ -18,6 +18,7 @@ class ResponseXmlTags
     const REJECT_DESCRIPTION                 = 'ReasonDesc';
     const REJECTION_BY                       = 'RejectBy';
     const DEBTOR_IFSC                        = 'IFSC';
+    const MANDATE_ID                         = 'MndtId';
 
     //headers
     const MANDATE_ACCEPT_RESPONSE  = 'MndtAccptResp';

@@ -34,17 +34,17 @@ class POAProcessorMock extends POAProcessor
 
         switch ($this->documentType)
         {
-            case Type::PASSPORT_FRONT:
+            case Type::PASSPORT:
 
                 $body = $this->getKycPayloadForPassportOcr();
 
                 break;
-            case Type::VOTER_ID_FRONT:
+            case Type::VOTERS_ID:
 
                 $body = $this->getKycPayloadForVoterIdOcr();
 
                 break;
-            case Type::AADHAR_FRONT:
+            case Type::AADHAAR:
 
                 $body = $this->getKycPayloadForAadharOcr();
 

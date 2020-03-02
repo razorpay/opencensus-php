@@ -35,10 +35,15 @@ class Core extends Base\Core
             Transaction\Type::PAYMENT,
             Transaction\Type::TRANSFER,
             Transaction\Type::REFUND,
+            Transaction\Type::ADJUSTMENT,
         ],
         Type::BANKING => [
-            Transaction\Type::PAYOUT
-        ]
+            Transaction\Type::PAYOUT,
+            Transaction\Type::ADJUSTMENT,
+        ],
+        Type::COMMISSION => [
+            Transaction\Type::ADJUSTMENT,
+        ],
     ];
 
     /**
@@ -582,9 +587,18 @@ class Core extends Base\Core
 
         if ($negativeBalanceEnabled === true)
         {
-            //TODO: remove hardcoding of balance type to primary, for future use cases
-            $negativeLimit = -1 * $this->getMaximumNegativeAllowedForBalanceType($txn->merchant,
-                    Type::PRIMARY, $txn->getType());
+            $txnSource = $txn->source;
+
+            $balanceType = Type::PRIMARY;
+
+            if ($txnSource !== null)
+            {
+                $balance = $txnSource->balance;
+
+                $balanceType = $balance !== null ? $balance->getType() : Type::PRIMARY;
+            }
+
+            $negativeLimit = -1 * $this->getMaximumNegativeAllowedForBalanceType($txn->merchant, $balanceType, $txn->getType());
         }
 
         return $negativeLimit;

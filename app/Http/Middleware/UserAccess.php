@@ -17,6 +17,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Exception\BadRequestException;
 use Illuminate\Foundation\Application;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 
 class UserAccess
@@ -46,6 +47,8 @@ class UserAccess
 
     const WILDCARD_PERMISSION = '*';
 
+    private $razorx;
+
     /**
      * UserAccess constructor.
      *
@@ -58,6 +61,8 @@ class UserAccess
         $this->ba = $app['basicauth'];
 
         $this->router = $app['router'];
+
+        $this->razorx = $app->razorx;
 
         $this->userRoleScope = new UserRolesScope();
 
@@ -180,27 +185,8 @@ class UserAccess
 
     private function validateUserAccess(string $route)
     {
-        $userAccessResponse = $this->validateRouteUserRolesPolicy($route);
-
-        // TODO: Dry run ACL for banking request, This is a part of release step.
-        if ($this->ba->isProductBanking())
-        {
-            try
-            {
-                $this->validateBankingUserRoutePolicy($route);
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException($e,
-                                            Trace::INFO,
-                                            TraceCode::BANKING_ACCOUNT_USER_PERMISSION_ERROR,
-                                            [
-                                                'route'            => $route,
-                                                'user_id'          => $this->ba->getUser()->getId(),
-                                                'old_acl_response' => $userAccessResponse,
-                                            ]);
-            }
-        }
+        $userAccessResponse = $this->ba->isProductBanking() ? $this->validateBankingUserAccess($route) :
+                                                              $this->validateRouteUserRolesPolicy($route);
 
         return $userAccessResponse;
     }
@@ -237,6 +223,35 @@ class UserAccess
         }
     }
 
+    private function validateBankingUserAccess(string $route)
+    {
+        try
+        {
+            $this->validateBankingUserRoutePolicy($route);
+        }
+        catch (\Throwable $e)
+        {
+            // TODO: This is added to identify impact on other clients if unauthorised requests are blocked
+            $variant = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
+                                                   RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED,
+                                                   $this->ba->getMode());
+
+            $this->trace->traceException($e,
+                Trace::INFO,
+                TraceCode::BANKING_ACCOUNT_USER_PERMISSION_ERROR,
+                [
+                    'experiment' => $variant,
+                    'user_role'  => $this->ba->getUserRole(),
+                ]);
+
+            if (strtolower($variant) === 'on')
+            {
+                return ApiResponse::unauthorized(
+                    ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+            }
+        }
+    }
+
     /**
      * Banking API request will be validated based on whitelisted permissions
      * Roles are assigned with set of permissions and route is also assigned with permission
@@ -248,7 +263,6 @@ class UserAccess
      */
     private function validateBankingUserRoutePolicy($route)
     {
-
         $userRole = $this->getUserRole();
 
         $routePermission = $this->getRoutePermission($route);

@@ -19,4 +19,12 @@ class Fields
     const TYPE                          = 'type';
     const UDF_PARAMETERS                = 'udfParameters';
     const AMOUNT                        = 'amount'; // payment.amount
+
+
+    // Callback types
+    const MERCHANT_CREDITED_VIA_PAY       = 'MERCHANT_CREDITED_VIA_PAY';
+    const MERCHANT_CREDITED_VIA_COLLECT   = 'MERCHANT_CREDITED_VIA_COLLECT';
+
+    // Udf Fields
+    const REF_ID           = 'ref_id';
 }
