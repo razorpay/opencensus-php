@@ -5,10 +5,9 @@ namespace RZP\Models\Merchant\Balance;
 use App;
 use Mail;
 use Carbon\Carbon;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
@@ -17,6 +16,7 @@ use RZP\Constants\MailTags;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Mail\Merchant\NegativeBalanceAlert as NegativeBalanceAlertMail;
 use RZP\Mail\Merchant\BalancePositiveAlert as BalancePositiveAlertMail;
@@ -579,29 +579,29 @@ class Core extends Base\Core
         Mail::queue($reserveBalanceActivateMail);
     }
 
-    public function getNegativeLimit(Transaction\Entity $txn)
+    /**
+     * Get the Maximum Negative Limit upto which the balance
+     *
+     * @param Transaction\Entity $txn
+     * @return int
+     */
+    public function getNegativeLimit(Transaction\Entity $txn) : int
     {
+        $negativeLimit = 0;
+
+        // If the Transaction Type is Payment, then we only allow Negative Balance for
+        // E-Mandate Registrations.
         if ($txn->getType() === Transaction\Type::PAYMENT)
         {
-            if ($txn->source === null)
+            if (($txn->source === null) or
+                ($txn->source->getMethod() !== Payment\Method::EMANDATE))
             {
-                return 0;
-            }
-            
-            $payment =  $txn->source;
-
-            $method = $payment->getMethod();
-
-            if ($method !== Payment\Method::EMANDATE)
-            {
-                return 0;
+                return $negativeLimit;
             }
         }
 
-        $negativeBalanceEnabled =  (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txn->getType(),
+        $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txn->getType(),
                                                                                             $txn->merchant->getId());
-
-        $negativeLimit = 0;
 
         if ($negativeBalanceEnabled === true)
         {
