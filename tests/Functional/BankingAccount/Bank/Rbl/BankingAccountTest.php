@@ -1092,9 +1092,9 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = $randomAdmin->getPublicId();
-        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = $bankingAccount1->getPublicId();
-        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = $bankingAccount2->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id']            = $randomAdmin->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][0] = $bankingAccount1->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1] = $bankingAccount2->getPublicId();
 
         $this->startTest();
 
@@ -1119,9 +1119,9 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = 'admin_wrongAdminId12';
-        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = $bankingAccount1->getPublicId();
-        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = $bankingAccount2->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id']            = 'admin_wrongAdminId12';
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][0] = $bankingAccount1->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1] = $bankingAccount2->getPublicId();
 
         $this->startTest();
     }
@@ -1134,9 +1134,9 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $this->testData[__FUNCTION__]['request']['content']['reviewer_id'] = $randomAdmin->getPublicId();
-        $this->testData[__FUNCTION__]['request']['content']['ids'][0]      = 'bacc_wrongCurAccId1';
-        $this->testData[__FUNCTION__]['request']['content']['ids'][1]      = 'bacc_wrongCurAccId2';
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id']                = $randomAdmin->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][0]     = 'bacc_wrongCurAccId1';
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1]     = 'bacc_wrongCurAccId2';
 
         $this->startTest();
     }

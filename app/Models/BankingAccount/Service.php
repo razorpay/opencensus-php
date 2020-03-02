@@ -180,7 +180,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('bulk_assign_reviewer', $input);
 
-        $bankingAccountIds  = $input[Entity::IDS];
+        $bankingAccountIds  = $input[Entity::BANKING_ACCOUNT_IDS];
 
         $reviewerId = $input[Entity::REVIEWER_ID];
 

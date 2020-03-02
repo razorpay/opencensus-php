@@ -681,9 +681,7 @@ class Core extends Base\Core
         {
             $reviewerIdCopy = $reviewerId;
 
-            AdminEntity::verifyIdAndStripSign($reviewerIdCopy);
-
-            $this->repo->admin->findOrFailPublic($reviewerIdCopy);
+            $this->repo->admin->findByPublicId($reviewerIdCopy);
         }
         catch (\Exception $e)
         {
@@ -700,9 +698,7 @@ class Core extends Base\Core
         {
             try
             {
-                Entity::verifyIdAndStripSign($bankingAccountId);
-
-                $bankingAccount = $this->repo->banking_account->findOrFailPublic($bankingAccountId);
+                $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
 
                 $this->addReviewerToBankingAccount($bankingAccount, $reviewerId);
 
@@ -732,9 +728,7 @@ class Core extends Base\Core
      */
     public function addReviewerToBankingAccount(Entity $bankingAccount, string $reviewerId)
     {
-        AdminEntity::verifyIdAndStripSign($reviewerId);
-
-        $reviewer = $this->repo->admin->findOrFailPublic($reviewerId);
+        $reviewer = $this->repo->admin->findByPublicId($reviewerId);
 
         $existingReviewer = $bankingAccount->reviewers()->first();
 

@@ -108,8 +108,12 @@ class Entity extends Base\PublicEntity
     const REVIEWERS               = 'reviewers';
 
     // Constants for reviewers() relation
-    const REVIEWER_ID   = 'reviewer_id';
-    const AUDITOR_ID    = 'auditor_id';
+    const REVIEWER_ID             = 'reviewer_id';
+    const AUDITOR_ID              = 'auditor_id';
+    const BANKING_ACCOUNT_IDS     = 'banking_account_ids';
+    const AUDITOR_TYPE            = 'auditor_type';
+    const ENTITY                  = 'entity';
+    const ENTITY_ID               = 'entity_id';
 
     const IDS           = 'ids';
 
@@ -450,7 +454,7 @@ class Entity extends Base\PublicEntity
 
     public function reviewers()
     {
-        return $this->morphToMany(Admin\Entity::class, 'entity', Table::AUDITOR_MAP, 'entity_id', 'auditor_id')->withPivot('auditor_type');
+        return $this->morphToMany(Admin\Entity::class, self::ENTITY, Table::AUDITOR_MAP, self::ENTITY_ID, Entity::AUDITOR_ID)->withPivot(Entity::AUDITOR_TYPE);
     }
 
     public function activationStates()
