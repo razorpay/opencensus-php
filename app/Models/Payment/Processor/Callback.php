@@ -437,7 +437,7 @@ trait Callback
         }
 
         if(($payment->isMethod(Payment\Method::EMI) === true) and
-            ($payment->getGateway() === Payment\Gateway::BAJAJ or $payment->getGateway() === Payment\Gateway::HDFC_DEBIT_EMI))
+            (in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true))
         {
             $input['emi'] = $this->repo->emi_plan->findOrFail($payment->getEmiPlanId());
 

@@ -37,7 +37,7 @@ class CreateEmiPlansTable extends Migration {
                   ->nullable();
 
             $table->string(Emi\Entity::TYPE)
-                  ->nullable();
+                  ->default('credit');
 
             $table->integer(Emi\Entity::RATE);
 

@@ -796,8 +796,7 @@ trait Authorize
             $card = $payment->card;
             $redirectUrl = null;
 
-            if (($payment->getGateway() !== Payment\Gateway::BAJAJ) and
-                ($payment->getGateway() !== Payment\Gateway::HDFC_DEBIT_EMI))
+            if (in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === false)
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
@@ -3947,10 +3946,7 @@ trait Authorize
 
         $payment->setBank($iinEntity->getIssuer());
 
-        // Here, set type only if it's debit. This is because all of the emi plans currently created does not have a type
-        // value set(debit, credit, etc). So, if we pass the value 'credit' here, the emi plan does not gets selected.
-        // To fix this, we'll need to backfill and whole emi plans with the type credit / debit.
-        $planType = ($iinEntity->getType() === 'debit' ? 'debit' : null);
+        $planType = $iinEntity->getType();
 
         // Set emi plan id
         $emiPlan = $this->getMerchantEmiPlans($iinEntity, $emiDuration, $payment->merchant, $planType);
@@ -5363,7 +5359,7 @@ trait Authorize
                     }
                 }
 
-                if ((($payment->getGateway() === Payment\Gateway::BAJAJ) OR ($payment->getGateway() === Payment\Gateway::HDFC_DEBIT_EMI)) and
+                if ((in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true) and
                     ($payment->isEmi() === true))
                 {
                     return true;
