@@ -150,7 +150,7 @@ class Table
     const ORG_FIELD_MAP         = 'org_field_map';
 
     // Mapping auditors to entities for a generic use case
-    const AUDITOR_MAP           = 'auditor_map';
+    const ADMIN_AUDIT_MAP       = 'admin_audit_map';
 
     // Workflows
     const WORKFLOW              = 'workflows';

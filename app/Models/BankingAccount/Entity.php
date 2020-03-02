@@ -109,7 +109,7 @@ class Entity extends Base\PublicEntity
 
     // Constants for reviewers() relation
     const REVIEWER_ID             = 'reviewer_id';
-    const AUDITOR_ID              = 'auditor_id';
+    const ADMIN_ID                = 'admin_id';
     const BANKING_ACCOUNT_IDS     = 'banking_account_ids';
     const AUDITOR_TYPE            = 'auditor_type';
     const ENTITY                  = 'entity';
@@ -201,7 +201,6 @@ class Entity extends Base\PublicEntity
         'bankingAccountDetails',
         self::REVIEWERS,
         self::PASSWORD,
-        self::AUDITOR_ID,
     ];
 
     protected $public = [
@@ -454,7 +453,7 @@ class Entity extends Base\PublicEntity
 
     public function reviewers()
     {
-        return $this->morphToMany(Admin\Entity::class, self::ENTITY, Table::AUDITOR_MAP, self::ENTITY_ID, Entity::AUDITOR_ID)->withPivot(Entity::AUDITOR_TYPE);
+        return $this->morphToMany(Admin\Entity::class, self::ENTITY, Table::ADMIN_AUDIT_MAP, self::ENTITY_ID, Entity::ADMIN_ID)->withPivot(Entity::AUDITOR_TYPE);
     }
 
     public function activationStates()

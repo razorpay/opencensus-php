@@ -674,14 +674,11 @@ class Core extends Base\Core
     public function bulkAssignReviewer(string $reviewerId, array $bankingAccountIds) : array
     {
         $success     = 0;
-
         $failedItems = [];
 
         try
         {
-            $reviewerIdCopy = $reviewerId;
-
-            $this->repo->admin->findByPublicId($reviewerIdCopy);
+            $this->repo->admin->findByPublicId($reviewerId);
         }
         catch (\Exception $e)
         {
@@ -737,12 +734,12 @@ class Core extends Base\Core
         // effectively assigning the banking account the new reviewer.
         if (empty($existingReviewer) === false)
         {
-            $reviewerId = $existingReviewer->pivot->auditor_id;
+            $reviewerId = $existingReviewer->pivot->admin_id;
 
             $bankingAccount->reviewers()->detach($reviewerId);
         }
 
-        $bankingAccount->reviewers()->attach($reviewer, ['auditor_type' => 'reviewer']);
+        $bankingAccount->reviewers()->attach($reviewer, [Entity::AUDITOR_TYPE => 'reviewer']);
 
         $this->repo->saveOrFail($bankingAccount);
     }

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateAuditorMapTable extends Migration
+class CreateAdminAuditMapTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,11 @@ class CreateAuditorMapTable extends Migration
      */
     public function up()
     {
-        Schema::create('auditor_map', function (Blueprint $table)
+        Schema::create('admin_audit_map', function (Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
-            $table->char('auditor_id', 14);
+            $table->char('admin_id', 14);
 
             $table->string('auditor_type', 255); // types of auditors like reviewer, approver etc.
 
@@ -25,7 +25,7 @@ class CreateAuditorMapTable extends Migration
 
             $table->string('entity_type', 255); // entities like banking_accounts
 
-            $table->unique(['auditor_id', 'auditor_type', 'entity_id']);
+            $table->unique(['admin_id', 'auditor_type', 'entity_id']);
         });
     }
 
@@ -36,6 +36,6 @@ class CreateAuditorMapTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('auditor_map');
+        Schema::dropIfExists('admin_audit_map');
     }
 }

@@ -158,7 +158,7 @@ class Validator extends Base\Validator
 
     protected static $bulkAssignReviewerRules = [
         Entity::REVIEWER_ID                     => 'required|public_id|size:20',
-        Entity::BANKING_ACCOUNT_IDS             => 'required|filled|array',
+        Entity::BANKING_ACCOUNT_IDS             => 'required|array',
         Entity::BANKING_ACCOUNT_IDS . '*'       => 'required|public_id|size:19',
     ];
 

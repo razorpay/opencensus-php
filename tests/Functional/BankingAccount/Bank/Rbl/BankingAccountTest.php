@@ -1098,8 +1098,8 @@ class BankingAccountTest extends TestCase
 
         $this->startTest();
 
-        $auditorId1 = $bankingAccount1->reviewers()->first()->pivot->auditor_id;
-        $auditorId2 = $bankingAccount2->reviewers()->first()->pivot->auditor_id;
+        $auditorId1 = $bankingAccount1->reviewers()->first()->pivot->admin_id;
+        $auditorId2 = $bankingAccount2->reviewers()->first()->pivot->admin_id;
 
         $this->assertEquals($randomAdmin->getId(), $auditorId1);
         $this->assertEquals($randomAdmin->getId(), $auditorId2);
@@ -1139,5 +1139,29 @@ class BankingAccountTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1]     = 'bacc_wrongCurAccId2';
 
         $this->startTest();
+    }
+
+    public function testBulkAssignReviewersToPartiallyInvalidBankingAccountList()
+    {
+        $bankingAccount1 = $this->fixtures->create('banking_account', [
+            'id'            => 'randomBaAccId1',
+            'account_type'  => 'current',
+        ]);
+
+        $randomAdmin = $this->fixtures->create('admin', [
+            'org_id' => '100000razorpay'
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['reviewer_id']            = $randomAdmin->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][0] = $bankingAccount1->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1] = 'bacc_wrongCurAccId2';
+
+        $this->startTest();
+
+        $auditorId1 = $bankingAccount1->reviewers()->first()->pivot->admin_id;
+
+        $this->assertEquals($randomAdmin->getId(), $auditorId1);
     }
 }

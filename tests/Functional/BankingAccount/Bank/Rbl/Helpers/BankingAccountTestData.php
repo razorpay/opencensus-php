@@ -839,7 +839,7 @@ return [
 
     'testBulkAssignReviewersToBankingAccounts' => [
         'request'  => [
-            'url'     => '/banking_accounts/bulk_assign_reviewer',
+            'url'     => '/banking_accounts/reviewers',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -854,7 +854,7 @@ return [
 
     'testBulkAssignInvalidReviewersToBankingAccounts' => [
         'request'  => [
-            'url'     => '/banking_accounts/bulk_assign_reviewer',
+            'url'     => '/banking_accounts/reviewers',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -869,7 +869,7 @@ return [
 
     'testBulkAssignReviewersToInvalidBankingAccounts' => [
         'request'  => [
-            'url'     => '/banking_accounts/bulk_assign_reviewer',
+            'url'     => '/banking_accounts/reviewers',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -882,6 +882,26 @@ return [
                         'error'     => 'The id provided does not exist'
                     ],
                     [
+                        'error'     => 'The id provided does not exist'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testBulkAssignReviewersToPartiallyInvalidBankingAccountList' => [
+        'request'  => [
+            'url'     => '/banking_accounts/reviewers',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success'       =>  1,
+                'failed'        =>  1,
+                'failedItems'   =>  [
+                    [
+                        'id'        => 'bacc_wrongCurAccId2',
                         'error'     => 'The id provided does not exist'
                     ],
                 ],
