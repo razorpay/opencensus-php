@@ -6,7 +6,6 @@ use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc;
