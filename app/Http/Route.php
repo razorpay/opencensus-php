@@ -3719,6 +3719,10 @@ final class Route
             '*'
         ],
 
+        'terminals_service' => [
+          'internal_merchant_fetch'  
+        ],
+
         'mock_gateways' => [
             'mock_hdfc_enroll',
             'mock_hdfc_auth_enrolled',
