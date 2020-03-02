@@ -39,7 +39,7 @@ pipeline:
   application_test_suite:
     group: A
     pull: false
-    image: razorpay/onggi:php-7.2
+    image: razorpay/onggi:php-7.2-apache-api
     commands:
       - "php vendor/phpunit/phpunit/phpunit --testsuite \"Application Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
     environment:
@@ -64,7 +64,7 @@ pipeline:
   features_test_suite:
     group: A
     pull: false
-    image: razorpay/onggi:php-7.2'
+    image: razorpay/onggi:php-7.2-apache-api
     commands:
       - "php vendor/phpunit/phpunit/phpunit --testsuite \"Features-1 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
     environment:
@@ -120,7 +120,7 @@ pipeline:
   feature_3_test_suite:
     group: A
     pull: false
-    image: razorpay/onggi:php-7.2
+    image: razorpay/onggi:php-7.2-apache-api
     commands:
       - "php vendor/phpunit/phpunit/phpunit --testsuite \"Features-3 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
     environment:
@@ -147,7 +147,7 @@ pipeline:
   feature_4_test_suite:
     group: A
     pull: false
-    image: razorpay/onggi:php-7.2
+    image: razorpay/onggi:php-7.2-apache-api
     commands:
       - "php vendor/phpunit/phpunit/phpunit --testsuite \"Features-4 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
     environment:
@@ -175,7 +175,7 @@ pipeline:
   feature_6_test_suite:
     group: A
     pull: false
-    image: razorpay/onggi:php-7.2
+    image: razorpay/onggi:php-7.2-apache-api
     commands:
       - "php vendor/phpunit/phpunit/phpunit --testsuite \"Feature-6 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
     environment:
@@ -208,7 +208,7 @@ pipeline:
   gateway_3_test_suite:
     group: A
     pull: false
-    image: razorpay/onggi:php-7.2
+    image: razorpay/onggi:php-7.2-apache-api
     commands:
       - "php vendor/phpunit/phpunit/phpunit --testsuite \"Gateway-3 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
     environment:
@@ -236,7 +236,7 @@ pipeline:
   payment_test_suite:
     group: A
     pull: false
-    image: razorpay/onggi:php-7.2
+    image: razorpay/onggi:php-7.2-apache-api
     commands:
       - "php vendor/phpunit/phpunit/phpunit --testsuite \"Payment Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
     environment:
@@ -264,7 +264,7 @@ pipeline:
   gateway_1_test_suite:
     group: A
     pull: false
-    image: razorpay/onggi:php-7.2
+    image: razorpay/onggi:php-7.2-apache-api
     commands:
       - "php vendor/phpunit/phpunit/phpunit --testsuite \"Gateway-1 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
 
@@ -293,7 +293,7 @@ pipeline:
   gateway_2_test_suite:
     group: A
     pull: false
-    image: razorpay/onggi:php-7.2
+    image: razorpay/onggi:php-7.2-apache-api
     commands:
       - "php vendor/phpunit/phpunit/phpunit --testsuite \"Gateway-2 Test Suite\" --printer=\"Codedungeon\\\\PHPUnitPrettyResultPrinter\\\\Printer\""
     environment:
@@ -361,7 +361,7 @@ pipeline:
   build-openresty:
     group: A
     pull: false
-    image: plugins/docker
+    image: lomkju/drone-plugins:build
     secrets: [docker_username, docker_password, git_token, git_username]
     build_args:
     - "GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}"
@@ -380,6 +380,7 @@ pipeline:
         - success
         
   trigger_regression_suite:
+    pull: false
     image: plugins/webhook
     urls: "https://deploy-api.razorpay.com/webhooks/webhook/x-regression"
     content_type: application/json
@@ -396,19 +397,7 @@ pipeline:
     secrets: [slack_webhook]
     channel: tech_builds
     icon_url: "https://avatars2.githubusercontent.com/u/2181346?s=200&v=4"
-    template: >
-      {{#success build.status}}
-        Build succeeded.
-      {{else}}
-        Build failed.
-      {{/success}}
-        Build No:{{build.number}}
-        Branch: {{build.branch}}
-        Commit: {{build.commit}}
-        Author: {{build.author}}
-        Started at: {{build.started}}
-        Time taken: {{since build.started}}
-        Link: {{build.link}}
+    template: "{{#success build.status}}\n  Build succeeded.\n{{else}}\n  Build failed.\n{{/success}}\n  Build No:{{build.number}}\n  Branch: {{build.branch}}\n  Commit: {{build.commit}}\n  Author: {{build.author}}\n  Started at: {{build.started}}\n  Time taken: {{since build.started}}\n  Link: {{build.link}}\n"
     username: drone
     when:
       event:
@@ -426,15 +415,7 @@ pipeline:
     secrets: [slack_webhook]
     channel: tech_backend
     icon_url: "https://avatars2.githubusercontent.com/u/2181346?s=200&v=4"
-    template: >
-        Master Build failed.
-        Build No:{{build.number}}
-        Branch: {{build.branch}}
-        Commit: {{build.commit}}
-        Author: {{build.author}}
-        Started at: {{build.started}}
-        Time taken: {{since build.started}}
-        Link: {{build.link}}
+    template: "Master Build failed. Build No:{{build.number}}\n Branch: {{build.branch}}\n Commit: {{build.commit}}\n Author: {{build.author}}\n Started at: {{build.started}}\n Time taken: {{since build.started}}\n Link: {{build.link}}\n"
     username: drone
     when:
       branch:
