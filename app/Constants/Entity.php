@@ -89,6 +89,7 @@ class Entity
     const ENTITY_OFFER               = 'entity_offer';
     const FUND_ACCOUNT               = 'fund_account';
     const UPI_TRANSFER               = 'upi_transfer';
+    const UPI_METADATA               = 'upi_metadata';
     const ENTITY_ORIGIN              = 'entity_origin';
     const GATEWAY_TOKEN              = 'gateway_token';
     const BANK_TRANSFER              = 'bank_transfer';
@@ -500,6 +501,7 @@ class Entity
         self::ADDON                     => \RZP\Models\Plan\Subscription\Addon::class,
         self::BANKING_ACCOUNT_DETAIL    => \RZP\Models\BankingAccount\Detail::class,
         self::OFFLINE_DEVICE            => \RZP\Models\Offline\Device::class,
+        self::UPI_METADATA              => \RZP\Models\Payment\UpiMetadata::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,

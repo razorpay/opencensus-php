@@ -165,7 +165,8 @@
         allowUpi : !!'{{ $allow_upi }}',
         fundAccountDetails : JSON.parse('{!! $fund_account_details !!}'),
         purpose  : '{{ $purpose }}',
-        payoutUtr : '{{ $payout_utr }}'
+        payoutUtr : '{{ $payout_utr }}',
+        payoutLinksCustomMessage : '{{ $payout_links_custom_message }}'
     };
 </script>
 <script src="{{ $banking_url }}/dist/payoutlinks.js"></script>

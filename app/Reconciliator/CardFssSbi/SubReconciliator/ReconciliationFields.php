@@ -22,6 +22,8 @@ class ReconciliationFields
 
     const CARD_NO               = 'CARD_NO';
 
+    const MDR                   = 'MDR';
+
     const TXN_REF               = 'TXN_REF';
 
     const APPROVE_CODE          = 'APPROVE_CODE';

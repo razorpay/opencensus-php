@@ -89,7 +89,7 @@ class TransactionRequestTransformer extends TransactionTransformer
 
             case TransactionAction::PAY:
                 $output = [
-                    Fields::MERCHANT_REQUEST_ID     => $this->getMerchantRequestId(),
+                    Fields::MERCHANT_REQUEST_ID     => $this->input[Entity::UPI][Upi::REF_ID],
                     Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
                     Fields::CUSTOMER_VPA            => $this->getPayerVpa(),
                     Fields::MERCHANT_VPA            => $this->getPayeeVpa(),

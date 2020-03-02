@@ -55,9 +55,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACTIVATION_CONFIRMATION_EMAIL                        =  'ACTIVATION_CONFIRMATION_EMAIL';
 
     // payout links
+    const PAYOUT_LINK_NOTIFICATION_JOB_RELEASED                 = 'PAYOUT_LINK_NOTIFICATION_JOB_RELEASED';
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
+    const PAYOUT_LINK_SENDING_LINK_SMS                          = 'PAYOUT_LINK_SENDING_LINK_SMS';
+    const PAYOUT_LINK_SENDING_LINK_EMAIL                        = 'PAYOUT_LINK_SENDING_LINK_EMAIL';
+    const PAYOUT_LINK_SUCCESS_SMS                               = 'PAYOUT_LINK_SUCCESS_SMS';
+    const PAYOUT_LINK_SUCCESS_EMAIL                             = 'PAYOUT_LINK_SUCCESS_EMAIL';
+    const PAYOUT_LINK_FAILED_SMS                                = 'PAYOUT_LINK_FAILED_SMS';
+    const PAYOUT_LINK_FAILED_EMAIL                              = 'PAYOUT_LINK_FAILED_EMAIL';
+    const PAYOUT_LINK_RAVEN_SMS_FAILED                          = 'PAYOUT_LINK_RAVEN_SMS_FAILED';
     const PAYOUT_SOURCE_UPDATER_JOB_RELEASED                    = 'PAYOUT_SOURCE_UPDATER_JOB_RELEASED';
-    const PAYOUT_SOURCE_UPDATER_JOB_DELETED                     = 'PAYOUT_SOURCE_UPDATER_JOB_DELETED';
     const PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS        = 'PAYOUT_SOURCE_UPDATER_MISMATCH_EXPECTED_STATUS';
     const PAYOUT_SOURCE_UPDATER_PROCESSING                      = 'PAYOUT_SOURCE_UPDATER_PROCESSING';
     const PAYOUT_SOURCE_UPDATER_QUEUE_PUSH                      = 'PAYOUT_SOURCE_UPDATER_QUEUE_PUSH';
@@ -911,6 +918,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECONCILE_SKIPPED                                 = 'FTA_RECONCILE_SKIPPED';
     const FTA_RECONCILE_JOB_FAILED                              = 'FTA_RECONCILE_JOB_FAILED';
     const PAYOUT_SOURCE_UPDATER_JOB_FAILED                      = 'PAYOUT_SOURCE_UPDATER_JOB_FAILED';
+    const PAYOUT_LINK_NOTIFICATION_JOB_FAILED                   = 'PAYOUT_LINK_NOTIFICATION_JOB_FAILED';
     const INITIATE_FUND_TRANSFER                                = 'INITIATE_FUND_TRANSFER';
     const DISPATCH_FOR_SETTLEMENT_INITIATE                      = 'DISPATCH_FOR_SETTLEMENT_INITIATE';
     const SETTLEMENT_CREATE_REDIS_VALUES                        = 'SETTLEMENT_CREATE_REDIS_VALUES';
@@ -2552,8 +2560,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
 
     // Trace code for ES ON Demand
-    const IMPS_AMOUNT_LIMIT_EXCEEDED                            = 'IMPS_AMOUNT_LIMIT_EXCEEDED';
     const ES_ON_DEMAND_INITIATE_TIMESTAMP                       = 'ES_ON_DEMAND_INITIATE_TIMESTAMP';
+    const ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED               = 'ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED';
     const ES_ON_DEMAND_INITIATED_ON_NON_WORKING_DAY             = 'ES_ON_DEMAND_INITIATED_ON_NON_WORKING_DAY';
     const ES_ON_DEMAND_INITIATED_ON_NON_BANKING_HOUR            = 'ES_ON_DEMAND_INITIATED_ON_NON_BANKING_HOUR';
 
@@ -2567,6 +2575,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GROUP_ADMIN_ATTACH_REQUEST                            = 'GROUP_ADMIN_ATTACH_REQUEST';
     const SF_POC_UPDATE_QUEUE_DELETE                            = 'SF_POC_UPDATE_QUEUE_DELETE';
     const SF_POC_UPDATE_ERROR                                   = 'SF_POC_UPDATE_ERROR';
+    const SF_POC_UPDATE_DATA_VALIDATION_ERROR                   = 'SF_POC_UPDATE_DATA_VALIDATION_ERROR';
     const SF_POC_ADMINS_REMOVAL_ERROR                           = 'SF_POC_ADMINS_REMOVAL_ERROR';
     const SF_POC_GROUP_REMOVAL_ERROR                            = 'SF_POC_GROUP_REMOVAL_ERROR';
     const REMOVAL_HISTORICAL_ADMINS_FROM_GROUP                  = 'REMOVAL_HISTORICAL_ADMINS_FROM_GROUP';

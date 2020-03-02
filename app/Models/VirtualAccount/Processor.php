@@ -287,7 +287,7 @@ abstract class Processor extends Base\Core
         if (($merchant->isLive() === false) and
             ($this->isLiveMode() === true))
         {
-           return true;
+            return true;
         }
 
         if ($this->virtualAccount->isDueToBeClosed() === true)

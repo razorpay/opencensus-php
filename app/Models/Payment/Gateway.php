@@ -907,7 +907,9 @@ class Gateway
         ],
         self::AXIS_MIGS             => [],
         self::AMEX                  => [],
-        self::CYBERSOURCE           => [],
+        self::CYBERSOURCE           => [
+            self::NOT_SUPPORTED => [Network::RUPAY]
+        ],
         self::PAYSECURE             => [],
         self::FIRST_DATA            => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]

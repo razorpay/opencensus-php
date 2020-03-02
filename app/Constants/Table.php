@@ -190,6 +190,9 @@ class Table
     const MOZART                = 'mozart';
     const WORLDLINE             = 'worldline';
 
+    // Upi Related
+    const UPI_METADATA          = 'upi_metadata';
+
     // Sessions table
     const SESSION               = 'sessions';
 

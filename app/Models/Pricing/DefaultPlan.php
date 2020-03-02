@@ -16,6 +16,8 @@ class DefaultPlan
     const PARTNER_COMMISSION_PLAN_ID                    = 'CKORH39BEuEzIS';
     const SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS     = 'C4uidYkQYsDdgX';
 
+    const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN          = 'EGBQtZbvBrGPHf';
+
     public static function getPricingSeedData()
     {
         $startupPlan                           = self::getStartupPlanSeedData();
