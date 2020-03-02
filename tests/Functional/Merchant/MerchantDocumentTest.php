@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -61,7 +62,7 @@ class MerchantDocumentTest Extends TestCase
         $this->startTest();
     }
 
-    public function testFileUpload()
+    public function testDocumentUpload()
     {
         $this->ba->proxyAuth('rzp_test_' . '1cXSLlUU8V9sXl');
 
@@ -75,8 +76,6 @@ class MerchantDocumentTest Extends TestCase
 
         $this->updateUploadDocumentData(__FUNCTION__);
 
-        $this->startTest();
-
         $request = $this->testData[__FUNCTION__]['request'];
 
         $response = $this->sendRequest($request);
@@ -85,11 +84,30 @@ class MerchantDocumentTest Extends TestCase
 
         $this->assertArrayNotHasKey('promoter_address_url',$content['verification']['required_fields']);
 
+    }
+
+    public function testDocumentUploadToAPI()
+    {
+        $this->testDocumentUpload();
+
         $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
 
         $fileStoreEntry = $this->getDbEntityById('file_store', $merchantDocumentEntry['file_store_id'], 'test');
 
         $this->assertTrue(substr($fileStoreEntry->getName(), -2) === "/a");
+
+        $this->assertEquals($merchantDocumentEntry['source'], Source::API);
+    }
+
+    public function testDocumentUploadToUFH()
+    {
+        $this->mockRazorX('testDocumentUpload', 'use_ufh_file_store', 'on');
+
+        $this->testDocumentUpload();
+
+        $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
+
+        $this->assertEquals($merchantDocumentEntry['source'], Source::UFH);
     }
 
     public function testFileUploadDocumentTypeInvalid()
@@ -178,8 +196,9 @@ class MerchantDocumentTest Extends TestCase
             $testData = &$this->testData[__FUNCTION__];
 
             $featureVariantMap = [
-                'non_registered_onboarding' => 'on',
-                'kyc_service_verification'  => 'on',
+                'non_registered_onboarding'    => 'on',
+                'kyc_service_verification'     => 'on',
+                'poa_kyc_service_verification' => 'on'
             ];
 
             $this->mockRazorXMultiFeature(__FUNCTION__, $featureVariantMap, 10000000000000);
@@ -215,7 +234,7 @@ class MerchantDocumentTest Extends TestCase
             Constants::AADHAAR_FRONT_COMPLETE
         ];
 
-        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on', 10000000000000);
 
         $documentType = Constants::VOTER_ID_FRONT;
 
@@ -254,7 +273,7 @@ class MerchantDocumentTest Extends TestCase
                 'business_type'     => 2,
             ]);
 
-        $this->mockRazorX($testDataKeyName, 'non_registered_onboarding', 'on');
+        $this->mockRazorX($testDataKeyName, 'non_registered_onboarding', 'on', 10000000000000);
 
         $this->updateUploadDocumentData($testDataKeyName);
 
@@ -287,7 +306,7 @@ class MerchantDocumentTest Extends TestCase
                 'business_type'     => 11,
             ]);
 
-        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on');
+        $this->mockRazorX(__FUNCTION__, 'non_registered_onboarding', 'on', 10000000000000);
 
         $this->updateUploadDocumentData(__FUNCTION__);
 
@@ -328,16 +347,18 @@ class MerchantDocumentTest Extends TestCase
     {
         $this->ba->proxyAuth('rzp_live_' . '1cXSLlUU8V9sXl');
 
-        $this->createMerchantDocuementAndFIleStoreEntity();
+        $this->createMerchantDocumentAndFileStoreEntity();
 
         $this->startTest();
     }
 
     public function testFetchMerchantDocumentsByAdmin()
     {
-        [$document, $fileStore] = $this->createMerchantDocuementAndFIleStoreEntity('test');
+        $this->createMerchantDocumentAndFileStoreEntity('test');
 
-        $merchant = $document->merchant;
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
 
         // allow admin to access merchant
         $admin = $this->ba->getAdmin();
@@ -349,14 +370,27 @@ class MerchantDocumentTest Extends TestCase
         $this->startTest();
     }
 
-    protected function createMerchantDocuementAndFIleStoreEntity(string $mode = 'live'): array
+    protected function createMerchantDocumentAndFileStoreEntity(string $mode = 'live'): array
     {
-        $document = $this->fixtures->on('live')->create('merchant_document', [
-            'merchant_id'   => '1cXSLlUU8V9sXl',
-            'document_type' => 'Address_proof_url',
-            'file_store_id' => 'DM6dXJfU4WzeAF',
-            'entity_type'   => 'merchant'
-        ]);
+        $document = $this->fixtures->on('live')->create(
+            'merchant_document',
+            [
+                'merchant_id'   => '1cXSLlUU8V9sXl',
+                'document_type' => 'Address_proof_url',
+                'file_store_id' => 'DM6dXJfU4WzeAF',
+                'entity_type'   => 'merchant'
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'merchant_document',
+            [
+                'merchant_id'   => '1cXSLlUU8V9sXl',
+                'document_type' => 'Aadhar_back',
+                'file_store_id' => 'DA6dXJfU4WzeAF',
+                'entity_type'   => 'merchant',
+                'source'        => Source::UFH,
+            ]
+        );
 
         $fileStore = $this->fixtures->on($mode)->create('file_store', [
             'id'          => 'DM6dXJfU4WzeAF',
@@ -370,11 +404,11 @@ class MerchantDocumentTest Extends TestCase
         return [$document, $fileStore];
     }
 
-    public function mockRazorX(string $functionName, string $featureName, string $variant)
+    public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
     {
         $testData = &$this->testData[$functionName];
 
-        $uniqueLocalId = RazorXClient::getLocalUniqueId('10000000000000', $featureName, Mode::TEST);
+        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
 
         $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
     }

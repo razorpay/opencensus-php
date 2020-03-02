@@ -12,6 +12,7 @@ class Constants
     const POI_STATUS                       = 'poi_status';
     const POA_STATUS                       = 'poa_status';
     const DOCUMENT_TYPE                    = 'document_type';
+    const DOCUMENT_SOURCE                  = 'document_source';
     const BANK_DETAILS_VERIFICATION_STATUS = 'bank_details_verification_status';
     const EXTERNAL_VERIFIER                = 'external_verifier';
 
@@ -66,6 +67,8 @@ class Constants
     const DOCUMENTS              = 'documents';
     const CONTEXT                = 'context';
     const METHOD                 = 'method';
+    const OCR_RESPONSE           = 'ocr_response';
+    const VERIFICATION_RESULT    = 'verification_result';
 
     const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
     const OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME = 'ocr_match_percentage_with_pan_name';
