@@ -6174,6 +6174,22 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    // Internal merchant_details route return merchant and merchant_details in response
+    public function testInternalGetMerchant()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '100ghi000ghi00', 'contact_email' => 'test@gmail.com']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/internal/merchants/100ghi000ghi00';
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('merchant_detail', $response);
+    }
+
     public function testGetBalances()
     {
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);

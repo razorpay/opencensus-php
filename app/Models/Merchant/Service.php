@@ -2416,6 +2416,16 @@ class Service extends Base\Service
     }
 
     /**
+     * returns merchant info along with merchant details
+     */
+    public function internalGetMerchant($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        return $merchant->toArrayPublic();
+    }
+
+    /**
      * Will provide if merchant is confirmed or not.
      *
      * @param  $merchant
