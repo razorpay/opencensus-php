@@ -13,7 +13,6 @@ use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
-use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
@@ -22,6 +21,7 @@ use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Document\FileHandler\Factory;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
@@ -234,7 +234,9 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function uploadActivationFile(Merchant\Entity $merchant, array $input, bool $validateLock = true)
+    public function uploadActivationFile(Merchant\Entity $merchant,
+                                         array $input,
+                                         bool $validateLock = true)
     {
         $core = new Core;
 
@@ -245,41 +247,11 @@ class Service extends Base\Service
             $merchantDetails->getValidator()->validateIsNotLocked();
         }
 
-        $response = $this->repo->transaction(function() use ( $merchant, $merchantDetails, $input, $core)
-        {
-            $previousFileStoreId = [];
+        $response = $this->repo->transaction(function() use ($merchant, $merchantDetails, $input, $core) {
 
-            //find the previous document uploaded with same document type and delete them from Merchant_documents table
-            foreach ($input as $key => $value)
-            {
-                $fileStoreId = $merchantDetails->getAttribute($key);
+            $this->handleMerchantDocument($input, $merchantDetails, $merchant);
 
-                if(isset($fileStoreId) === true)
-                {
-                    $previousFileStoreId[] = $fileStoreId;
-                }
-            }
-
-            (new DocumentCore)->deleteDocuments($previousFileStoreId);
-
-            $merchantDetails->edit($input);
-
-            $documentMapping = $this->storeActivationFile($merchantDetails, $input);
-
-            $merchantDetails->fill($documentMapping);
-
-            $response = $core->createResponse($merchantDetails);
-
-            $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
-
-            //
-            // for backward compatibility we are storing file in both merchant detail and merchant_document table
-            //
-            (new DocumentCore)->storeInMerchantDocument($merchant, $documentMapping);
-
-            $this->repo->saveOrFail($merchantDetails);
-
-            // Previous $response would become stale while simulataneous uploads. So prepare fresh response.
+            // Previous $response would become stale while simultaneous uploads. So prepare fresh response.
             $response = $core->createResponse($merchantDetails);
 
             return $response;
@@ -291,34 +263,128 @@ class Service extends Base\Service
         return $response;
     }
 
+
+    /**
+     * @param array           $input
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
+     */
+    public function handleMerchantDocument(array &$input, Merchant\Detail\Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        $this->deleteExistingDocuments($input, $merchantDetails);
+
+        $merchantDetails->edit($input);
+
+        $fileAttributes = $this->storeActivationFile($merchantDetails, $input);
+
+        //
+        // for backward compatibility we are storing file in both merchant detail and merchant_document table
+        //
+        (new DocumentCore)->storeInMerchantDocument($merchant, $fileAttributes);
+
+        $this->storeInMerchantDetails($merchantDetails, $fileAttributes);
+    }
+
+
+    /**
+     * @param Entity $merchantDetails
+     * @param array  $fileAttributes
+     */
+    function storeInMerchantDetails(Entity $merchantDetails, array $fileAttributes)
+    {
+        $core = new Core;
+
+        $input = array_map(function(array $fileAttribute) {
+
+            return $fileAttribute[Document\Constants::FILE_ID];
+
+        }, $fileAttributes);
+
+        $merchantDetails->fill($input);
+
+        $response = $core->createResponse($merchantDetails);
+
+        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
+        $this->repo->saveOrFail($merchantDetails);
+    }
+
+    /**
+     * Deletes document from merchant document table .
+     *
+     * In old api we are storing documents in merchant detail table and in this table document re-upload will replace existing values
+     * After moving documents to merchant document table we need to explicitly delete document from merchant document table
+     * as in merchant documents we insert a new row for each document
+     *
+     *
+     * @param $input
+     * @param $merchantDetails
+     */
+    public function deleteExistingDocuments($input, $merchantDetails): void
+    {
+        $previousFileStoreId = [];
+
+        //
+        //find the previous document uploaded with same document type and delete them from Merchant_documents table
+        //
+        foreach ($input as $key => $value)
+        {
+            $fileStoreId = $merchantDetails->getAttribute($key);
+
+            if (isset($fileStoreId) === true)
+            {
+                $previousFileStoreId[] = $fileStoreId;
+            }
+        }
+
+        (new DocumentCore)->deleteDocuments($previousFileStoreId);
+    }
+
+    /**
+     * @param Base\PublicEntity $publicEntity
+     * @param array             $input
+     *
+     * @param string|null       $documentSource
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function storeActivationFile(
         Base\PublicEntity $publicEntity,
-        array $input)
+        array $input,
+        string $documentSource = null)
     {
         $params = [];
 
         $merchant = $publicEntity->merchant;
 
-        foreach ($input as $key => $value)
+        foreach ($input as $type => $file)
         {
-            (new Validator)->validateFileType($value);
+            (new Validator)->validateFile($file);
 
-            // Adding a prefix hash for filename to avoid overwrites to the same fileName on S3.
-            $partial = substr(bin2hex(random_bytes(6)), 0, 5);
+            $fileName = $this->getFileName($file, $merchant->getId());
 
-            $fileIdentifier = pathinfo($value->getClientOriginalName(), PATHINFO_FILENAME);
+            $documentUploadInput = [
+                Document\Constants::TYPE      => $type,
+                Document\Constants::FILE      => $file,
+                Document\Constants::FILE_NAME => $fileName,
+                Document\Constants::ENTITY    => $publicEntity,
+                Document\Constants::MERCHANT  => $merchant,
+            ];
 
-            $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $fileIdentifier;
+            $documentSource = $documentSource ?? Factory::getApplicableSource($merchant->getId());
 
-            $file = $this->createFile(
-                $publicEntity,
-                $value->extension(),
-                $value,
-                $fileName,
-                $key,
-                $merchant);
+            Document\Source::validateSource($documentSource);
 
-            $params[$key] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
+            $fileHandler = Factory::getFileStoreHandler($documentSource);
+
+            $params[$type] = $fileHandler->uploadFile($documentUploadInput);
         }
 
         return $params;
@@ -378,42 +444,30 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
-    protected function createFile(Base\PublicEntity $merchantDetail,
-                                    string $extension,
-                                    $file,
-                                    string $fileName,
-                                    string $type,
-                                    Merchant\Entity $merchant,
-                                    string $store = FileStore\Store::S3)
-    {
-        $creator = new FileStore\Creator;
-
-        $file = $creator->extension($extension)
-                        ->localFile($file)
-                        ->name($fileName)
-                        ->store($store)
-                        ->type($type)
-                        ->entity($merchantDetail)
-                        ->merchant($merchant)
-                        ->save()
-                        ->get();
-
-        return $file;
-    }
-
     private function getFileFields(Merchant\Entity $merchant) : array
     {
         return ($merchant->isLinkedAccount() === true) ? Constants::UPLOAD_KEYS_ACCOUNT : Constants::UPLOAD_KEYS;
     }
 
-    public function getSignedUrl(string $fileStoreId, string $merchantId)
+    /**
+     * @param string $fileStoreId
+     * @param string $merchantId
+     *
+     * @param string $source
+     *
+     * @return string
+     * @throws Exception\LogicException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function getSignedUrl(string $fileStoreId, string $merchantId, string $source = null)
     {
-        $core = new FileStore\Core;
+        $source = $source ?? Factory::getApplicableSource($merchantId, $fileStoreId);
 
-        // [ id1 => url1, id2 => url2, ... ]
-        $signedUrls = $core->getSignedUrl($fileStoreId, $merchantId);
+        Document\Source::validateSource($source);
 
-        return $signedUrls;
+        $fileHandler = Document\FileHandler\Factory::getFileStoreHandler($source);
+
+        return $fileHandler->getSignedUrl($fileStoreId, $merchantId);
     }
 
     private function getFieldsToStepMap() : array
@@ -988,5 +1042,28 @@ class Service extends Base\Service
         $response = $core->addAdditionalWebsiteDetails($merchantDetails, $input);
 
         return $response;
+    }
+
+    /**
+     * Retuns file name to be used for storing files in file store
+     *
+     * @param        $file
+     * @param string $merchantId
+     *
+     * @return string
+     * @throws \Exception
+     */
+    protected function getFileName($file, string $merchantId): string
+    {
+        //
+        // Adding a prefix hash for filename to avoid overwrites to the same fileName on S3.
+        //
+        $partial = substr(bin2hex(random_bytes(6)), 0, 5);
+
+        $fileIdentifier = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+        $fileName = 'api/' . $merchantId . '/' . $partial . '/' . $fileIdentifier;
+
+        return $fileName;
     }
 }

@@ -66,7 +66,7 @@ class PaperMandateTest extends TestCase
 
         $paperMandate = $this->getDbLastEntity(Entity::PAPER_MANDATE);
 
-        $this->assertEquals('mandate', $paperMandate->getUploadedFileID());
+        $this->assertEquals('1cXSLlUU8V9sXl', $paperMandate->getUploadedFileID());
     }
 
     public function testAuthenticatePaperMandateWithoutCustomerSign()

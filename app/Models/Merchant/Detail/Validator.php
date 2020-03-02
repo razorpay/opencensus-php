@@ -766,7 +766,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateFileType($file)
+    public function validateFile($file)
     {
         $extension = strtolower($file->getClientOriginalExtension());
 
