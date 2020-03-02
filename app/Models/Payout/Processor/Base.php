@@ -203,11 +203,6 @@ class Base extends BaseCore
 
                 $payoutType = $this->getPayoutType();
 
-                //
-                // We're setting the queued flag to true since Queued Payouts is always enabled
-                // alongside Payout Workflows. Hence, we want to enabled the queued payout logic in
-                // DownstreamProcessor
-                //
                 $payout->setQueueFlag($queueFlag);
 
                 $downstreamProcessor = new DownstreamProcessor($payoutType,

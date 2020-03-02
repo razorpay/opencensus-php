@@ -645,7 +645,7 @@ class Core extends Base\Core
                     //setting default queue flag to be true since Queued Payouts is always enabled
                     // alongside Payout Workflows till now
                     $queueFlag = isset($input[Entity::QUEUE_IF_LOW_BALANCE]) ?
-                                 array_get($input, Entity::QUEUE_IF_LOW_BALANCE) : true;
+                                 $input[Entity::QUEUE_IF_LOW_BALANCE] : true;
 
                     $payout = $this->processPendingPayout($payout, $queueFlag);
                 }

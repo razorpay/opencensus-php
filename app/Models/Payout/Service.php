@@ -78,7 +78,7 @@ class Service extends Base\Service
 
         $payoutValidator->validatePayoutStatusForApproveOrReject();
 
-        $payoutValidator->validateInput('approvePayout', array_only($input, Entity::QUEUE_IF_LOW_BALANCE));
+        $payoutValidator->setStrictFalse()->validateInput('approvePayout', $input);
 
         $this->user->validateInput('verifyOtp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
 

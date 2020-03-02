@@ -131,7 +131,7 @@ class RblPayoutTest extends TestCase
         return $response;
     }
 
-    protected function mockMozartResponseForFetchingBalanceFromRblGateway($amount): void
+    protected function mockMozartResponseForFetchingBalanceFromRblGateway(int $amount): void
     {
         $mozartServiceMock = $this->getMockBuilder(Mozart::class)
                                   ->setConstructorArgs([$this->app])
@@ -304,9 +304,11 @@ class RblPayoutTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         $secondLevelRole = $this->getDbEntityById('role', Org::MAKER_ROLE, 'live');
-        $secondUser = $this->fixtures->on('live')
-            ->user->createUserForMerchant('10000000000000', [], Org::MAKER_ROLE, 'live');
+        $secondUser      = $this->fixtures->on('live')
+                                ->user->createUserForMerchant('10000000000000', [], Org::MAKER_ROLE, 'live');
+
         $this->app['config']->set('database.default', 'live');
+
         $secondUser->roles()->attach($secondLevelRole);
 
         // Make Request to Approve pending payout for second level
@@ -345,9 +347,11 @@ class RblPayoutTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         $secondLevelRole = $this->getDbEntityById('role', Org::MAKER_ROLE, 'live');
-        $secondUser = $this->fixtures->on('live')
-            ->user->createUserForMerchant('10000000000000', [], Org::MAKER_ROLE, 'live');
+        $secondUser      = $this->fixtures->on('live')
+                                ->user->createUserForMerchant('10000000000000', [], Org::MAKER_ROLE, 'live');
+
         $this->app['config']->set('database.default', 'live');
+
         $secondUser->roles()->attach($secondLevelRole);
 
         // Make Request to Approve pending payout for second level
@@ -361,7 +365,7 @@ class RblPayoutTest extends TestCase
     }
 
     // Case when payout amount is greater than balance in CA and queue_if_low_balance = true
-    public function testApprovePendingPayoutWithQueueFlagCase1()
+    public function testApprovePendingPayoutWithQueueFlagBalanceLess()
     {
         $response = $this->createPendingPayoutAndApprovePayoutUptoSecondLevel(50);
 
@@ -369,7 +373,7 @@ class RblPayoutTest extends TestCase
     }
 
     // Case when payout amount is less than balance in CA and queue_if_low_balance = true
-    public function testApprovePendingPayoutWithQueueFlagCase2()
+    public function testApprovePendingPayoutWithQueueFlagBalanceGreater()
     {
         $response = $this->createPendingPayoutAndApprovePayoutUptoSecondLevel(500);
 
@@ -378,7 +382,7 @@ class RblPayoutTest extends TestCase
 
     // Case when payout amount is greater than balance in CA and queue_if_low_balance = false. it will fail at fts
     // with current implementation of payout module for CA
-    public function testApprovePendingPayoutWithQueueFlagCase3()
+    public function testApprovePendingPayoutWithQueueFlagFalseAndBalanceLess()
     {
         $response = $this->createPendingPayoutAndApprovePayoutUptoSecondLevel(500, 0);
 
@@ -386,7 +390,7 @@ class RblPayoutTest extends TestCase
     }
 
     // Case when payout amount is less than balance in CA and queue_if_low_balance = false
-    public function testApprovePendingPayoutWithQueueFlagCase4()
+    public function testApprovePendingPayoutWithQueueFlagFalseAndBalanceGreater()
     {
         $response = $this->createPendingPayoutAndApprovePayoutUptoSecondLevel(500, 0);
 
@@ -394,7 +398,7 @@ class RblPayoutTest extends TestCase
     }
 
     // Case when both payout amount is greater than balance in CA and queue_if_low_balance = true
-    public function testBulkApprovePendingPayoutWithQueueFlagCase1()
+    public function testBulkApprovePendingPayoutWithQueueFlagAndBalanceLess()
     {
         list($payoutId1, $payoutId2) = $this->createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(50);
 
@@ -406,7 +410,7 @@ class RblPayoutTest extends TestCase
     }
 
     // Case when both payouts amount is less than balance in CA and queue_if_low_balance = true
-    public function testBulkApprovePendingPayoutWithQueueFlagCase2()
+    public function testBulkApprovePendingPayoutWithQueueFlagAndBalanceGreater()
     {
         list($payoutId1, $payoutId2) = $this->createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(500);
 
@@ -419,7 +423,7 @@ class RblPayoutTest extends TestCase
 
     // Case when both payout amount is greater than balance in CA and queue_if_low_balance = false
     // it will fail at fts with current implementation of payout module for CA
-    public function testBulkApprovePendingPayoutWithQueueFlagCase3()
+    public function testBulkApprovePendingPayoutWithQueueFlagFalseAndBalanceLess()
     {
         list($payoutId1, $payoutId2) = $this->createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(50, 0);
 
@@ -431,7 +435,7 @@ class RblPayoutTest extends TestCase
     }
 
     // Case when both payouts amount is less than balance in CA and queue_if_low_balance = false
-    public function testBulkApprovePendingPayoutWithQueueFlagCase4()
+    public function testBulkApprovePendingPayoutWithQueueFlagFalseAndBalanceGreater()
     {
         list($payoutId1, $payoutId2) = $this->createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(500, 0);
 
