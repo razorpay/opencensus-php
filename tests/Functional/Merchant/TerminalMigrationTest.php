@@ -147,16 +147,13 @@ class TerminalMigrationTest extends TestCase
 
         $format= '
        {
-  "data": {
-    "count": 1,
-    "entity": "collection",
-    "items": [
+  "data": 
+    [
       {
         "merchant_id": "%s",
         "terminal_id": "%s"
-      }
-    ]
-  }
+       }
+   ]
 }';
         $response->body = sprintf($format, $merchantId, $terminalId);
 
@@ -859,7 +856,9 @@ class TerminalMigrationTest extends TestCase
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid){
             if ($method == \Requests::POST)
             {
-                $this->assertEquals('v1/terminals/submerchant', $path);
+                $content = json_decode($content, true);
+
+                $this->assertEquals('v1/terminal/submerchant', $path);
 
                 $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
 
@@ -871,7 +870,7 @@ class TerminalMigrationTest extends TestCase
 
             if ($method == \Requests::GET)
             {
-                $this->assertEquals('v2/terminals/submerchant', $path);
+                $this->assertEquals('v2/terminal/submerchant', $path);
 
                 $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
 
@@ -942,7 +941,9 @@ class TerminalMigrationTest extends TestCase
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid){
             if ($method == \Requests::POST)
             {
-                $this->assertEquals('v1/terminals/submerchant', $path);
+                $content = json_decode($content, true);
+
+                $this->assertEquals('v1/terminal/submerchant', $path);
 
                 $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
 
@@ -953,7 +954,7 @@ class TerminalMigrationTest extends TestCase
 
             if ($method == \Requests::GET)
             {
-                $this->assertEquals('v2/terminals/submerchant', $path);
+                $this->assertEquals('v2/terminal/submerchant', $path);
 
                 $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
 
@@ -994,7 +995,9 @@ class TerminalMigrationTest extends TestCase
         $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid){
             if ($method == \Requests::POST)
             {
-                $this->assertEquals('v1/terminals/submerchant', $path);
+                $content = json_decode($content, true);
+
+                $this->assertEquals('v1/terminal/submerchant', $path);
 
                 $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
 
@@ -1005,7 +1008,7 @@ class TerminalMigrationTest extends TestCase
 
             if ($method == \Requests::GET)
             {
-                $this->assertEquals('v2/terminals/submerchant', $path);
+                $this->assertEquals('v2/terminal/submerchant', $path);
 
                 $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
 
@@ -1049,14 +1052,14 @@ class TerminalMigrationTest extends TestCase
 
             if ($method === \Requests::DELETE)
             {
-                $this->assertEquals('v1/terminals/submerchant', $path);
+                $this->assertEquals('v1/terminal/submerchant', $path);
 
                 return $this->getTerminalsServiceResponseForEntityDeleted();
             }
 
             if ($method === \Requests::GET)
             {
-                $this->assertEquals('v2/terminals/submerchant', $path);
+                $this->assertEquals('v2/terminal/submerchant', $path);
 
 
                 return $this->getTerminalsServiceResponseForEntityNotFound();
@@ -1115,13 +1118,13 @@ class TerminalMigrationTest extends TestCase
 
             if ($method === \Requests::DELETE) {
 
-                $this->assertEquals('v1/terminals/submerchant', $path);
+                $this->assertEquals('v1/terminal/submerchant', $path);
 
                 return $this->getTerminalsServiceResponseForEntityDeleted();
             }
 
             if ($method == \Requests::GET) {
-                $this->assertEquals('v2/terminals/submerchant', $path);
+                $this->assertEquals('v2/terminal/submerchant', $path);
 
                 $this->assertEquals($tid, $content[Terminal\Entity::TERMINAL_ID]);
 

@@ -55,15 +55,15 @@ class TerminalsService
             self::METHOD => Requests::DELETE,
         ],
         self::ADD_MERCHANT_TO_TERMINAL => [
-            self::PATH   => 'v1/terminals/submerchant',
+            self::PATH   => 'v1/terminal/submerchant',
             self::METHOD => Requests::POST,
         ],
         self::REMOVE_MERCHANT_FROM_TERMINAL => [
-            self::PATH   => 'v1/terminals/submerchant',
+            self::PATH   => 'v1/terminal/submerchant',
             self::METHOD => Requests::DELETE,
         ],
         self::FETCH_MERCHANT_TERMINAL_BY_ID => [
-            self::PATH   => 'v2/terminals/submerchant',
+            self::PATH   => 'v2/terminal/submerchant',
             self::METHOD => Requests::GET,
         ],
     ];
@@ -119,7 +119,7 @@ class TerminalsService
             Merchant\Entity::MERCHANT_ID => $merchant->getId(),
         ];
 
-        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD]);
+        $response = $this->sendRequest($params[self::PATH], json_encode($content), $params[self::METHOD]);
 
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
@@ -151,7 +151,7 @@ class TerminalsService
 
         $response = $this->sendRequest($path, $content, $params[self::METHOD]);
 
-        return $this->parseAndReturnResponse($response)[self::DATA]['items'][0] ?? [];
+        return $this->parseAndReturnResponse($response)[self::DATA][0] ?? [];
     }
 
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST): \Requests_Response
