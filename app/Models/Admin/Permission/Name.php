@@ -227,6 +227,7 @@ class Name
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
     const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
+    const GET_SELF_SERVE_REPORT               = 'get_self_serve_report';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
     const CREATE_GATEWAY_DOWNTIME             = 'create_gateway_downtime';
     const VIEW_GATEWAY_DOWNTIME               = 'view_gateway_downtime';
@@ -253,6 +254,8 @@ class Name
     const MANAGE_RENDERING_PREFERENCES  	  = 'manage_rendering_preferences';
     const UPDATE_DOWNTIME_CONFIG              = 'update_downtime_config';
     const LIST_DOWNTIME_CONFIG                = 'list_downtime_config';
+    const ADJUSTMENT_BATCH_UPLOAD             = 'adjustment_batch_upload';
+    const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
@@ -262,10 +265,79 @@ class Name
 
     // Perform write operations around stork integration e.g. webhook migrations etc
     const STORK_WRITE_OPERATION               = 'stork_write_operation';
+
     // Permissions for P2P Service
     const P2P_MANAGE_MERCHANT                 = 'p2p_manage_merchant';
 
     const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';
+    const OFFLINE_VERIFICATION_SERVICE_VIEW   = 'offline_verification_service_view';
+    const OFFLINE_VERIFICATION_SERVICE_EDIT   = 'offline_verification_service_edit';
+
+    const CREATE_PAYOUT_BULK                  = 'create_payout_bulk';
+    const APPROVE_PAYOUT_BULK                 = 'approve_payout_bulk';
+    const REJECT_PAYOUT_BULK                  = 'reject_payout_bulk';
+    const APPROVE_PAYOUT                      = 'approve_payout';
+    const REJECT_PAYOUT                       = 'reject_payout';
+    const VIEW_PAYOUT                         = 'view_payout';
+    const CANCEL_PAYOUT                       = 'cancel_payout';
+    const UPDATE_PAYOUT                       = 'update_payout';
+    const VIEW_PAYOUT_PURPOSE                 = 'view_payout_purpose';
+    const CREATE_PAYOUT_PURPOSE               = 'create_payout_purpose';
+    const VIEW_PAYOUT_REVERSAL                = 'view_payout_reversal';
+    const PROCESS_PAYOUT_QUEUED               = 'process_payout_queued';
+    const VIEW_PAYOUT_SUMMARY                 = 'view_payout_summary';
+    const VIEW_PAYOUT_WORKFLOW_SUMMARY        = 'view_payout_workflow_summary';
+    const VIEW_PAYOUT_LINKS                   = 'view_payout_links';
+    const CREATE_PAYOUT_LINKS                 = 'create_payout_links';
+    const CANCEL_PAYOUT_LINKS                 = 'cancel_payout_links';
+    const SUMMARY_PAYOUT_LINKS                = 'summary_payout_links';
+    const ONBOARDING_PAYOUT_LINKS             = 'onboarding_payout_links';
+    const SETTINGS_PAYOUT_LINKS               = 'settings_payout_links';
+    const DASHBOARD_PAYOUT_LINKS              = 'dashboard_payout_links';
+    const RESEND_PAYOUT_LINKS                 = 'resend_payout_links';
+    const MERCHANT_CONFIG_LOGO                = 'merchant_config_logo';
+    const VIEW_CONTACT                        = 'view_contact';
+    const CREATE_CONTACT                      = 'create_contact';
+    const CREATE_CONTACT_BULK                 = 'create_contact_bulk';
+    const UPDATE_CONTACT                      = 'update_contact';
+    const DELETE_CONTACT                      = 'delete_contact';
+    const VIEW_CONTACT_TYPE                   = 'view_contact_type';
+    const CREATE_CONTACT_TYPE                 = 'create_contact_type';
+    const FUND_ACCOUNT_VALIDATION             = 'fund_account_validation';
+    const RETRY_FUND_ACCOUNT_VALIDATION       = 'retry_fund_account_validation';
+    const VIEW_FUND_ACCOUNT_VALIDATION        = 'view_fund_account_validation';
+    const VALIDATE_FUND_ACCOUNT               = 'validate_fund_account';
+    const RETRY_BULK_FUND_ACCOUNT_VALIDATION  = 'retry_bulk_fund_account_validation';
+    const VIEW_FUND_ACCOUNT                   = 'view_fund_account';
+    const CREATE_FUND_ACCOUNT                 = 'create_fund_account';
+    const UPDATE_FUND_ACCOUNT                 = 'update_fund_account';
+    const CREATE_FUND_ACCOUNT_BULK            = 'create_fund_account_bulk';
+    const CREATE_MERCHANT_KEY                 = 'create_merchant_key';
+    const VIEW_MERCHANT_KEY                   = 'view_merchant_key';
+    const VIEW_MERCHANT_INVOICE               = 'view_merchant_invoice';
+    const UPDATE_USER_PROFILE                 = 'update_user_profile';
+    const VIEW_USER                           = 'view_user';
+    const VIEW_MERCHANT_USER                  = 'view_merchant_user';
+    const CREATE_WEBHOOK                      = 'create_webhook';
+    const UPDATE_WEBHOOK                      = 'update_webhook';
+    const VIEW_WEBHOOK                        = 'view_webhook';
+    const VIEW_WEBHOOK_EVENT                  = 'view_webhook_event';
+    const VIEW_REPORTING                      = 'view_reporting';
+    const CREATE_REPORTING                    = 'create_reporting';
+    const UPDATE_REPORTING                    = 'update_reporting';
+    const VIEW_TRANSACTION_STATEMENT          = 'view_transaction_statement';
+    const CREATE_INVITATION                   = 'create_invitation';
+    const VIEW_INVITATION                     = 'view_invitation';
+    const RESEND_INVITATION                   = 'resend_invitation';
+    const UPDATE_INVITATION                   = 'update_invitation';
+    const DELETE_INVITATION                   = 'delete_invitation';
+    const MERCHANT_PRODUCT_SWITCH             = 'merchant_product_switch';
+    const CREATE_BATCH                        = 'create_batch';
+    const CREATE_USER_OTP                     = 'create_user_otp';
+    const GENERATE_BANKING_ACCOUNT_STATEMENT  = 'generate_banking_account_statement';
+    const MERCHANT_INSTANT_ACTIVATION         = 'merchant_instant_activation';
+    const UPDATE_MERCHANT_FEATURE             = 'update_merchant_feature';
+
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

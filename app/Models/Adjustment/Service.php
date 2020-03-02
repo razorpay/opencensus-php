@@ -2,12 +2,12 @@
 
 namespace RZP\Models\Adjustment;
 
+use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
-use RZP\Models\Settlement;
-use RZP\Models\Transaction;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 
@@ -41,6 +41,80 @@ class Service extends Base\Service
         $this->logActionToSlack($merchant, SlackActions::ADD_ADJUSTMENT, $input);
 
         return $adj->toArrayPublic();
+    }
+
+    public function addAdjustmentBatch($input)
+    {
+        $this->trace->info(
+            TraceCode::BULK_ADJUSTMENT_CREATE_REQUEST,
+            [
+                'request' => $input
+            ]);
+
+        $result = new Base\PublicCollection;
+
+        foreach ($input as $adjustmentInput)
+        {
+            $idempotencyKey = $adjustmentInput[\RZP\Models\Batch\Constants::IDEMPOTENCY_KEY] ?? '';
+            unset($adjustmentInput[\RZP\Models\Batch\Constants::IDEMPOTENCY_KEY]);
+
+            $adjustmentInput[Entity::TYPE] = trim($adjustmentInput[Entity::TYPE]) ?: Balance\Type::PRIMARY;
+
+            try
+            {
+                $this->app['workflow']->skipWorkflows(function() use ($adjustmentInput)
+                {
+                    $this->addAdjustment($adjustmentInput);
+                });
+
+                try
+                {
+                    /** @var Balance\Entity $balance */
+                    $balance = $this->repo->balance->getMerchantBalanceByType($adjustmentInput[Entity::MERCHANT_ID],
+                                                                    $adjustmentInput[Entity::TYPE]);
+
+                    $balanceAmount = $balance->getBalance();
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->traceException($ex);
+
+                    $balanceAmount = 0;
+                }
+
+                $result->push([
+                    'idempotency_key'   => $idempotencyKey,
+                    'success'           => true,
+                    'balance'           => $balanceAmount,
+                ]);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    null,
+                    $adjustmentInput);
+
+                $result->push([
+                    'idempotency_key'   => $idempotencyKey,
+                    'success'           => false,
+                    'balance'           => 0,
+                    'error'             => [
+                        Error::DESCRIPTION       => $ex->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $ex->getCode(),
+                    ]
+                ]);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::BULK_ADJUSTMENT_CREATE_RESPONSE,
+            [
+                'response' => $result->toArrayWithItems(),
+            ]);
+
+        return $result->toArrayWithItems();
     }
 
     /**

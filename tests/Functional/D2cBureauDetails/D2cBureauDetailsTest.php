@@ -138,7 +138,7 @@ class D2cBureauDetailsTest extends TestCase
             'provider'              => 'experian',
 //            'score'                 => 752,
 //            'report'                => '{"active_accounts": "1", "closed_accounts": "1", "count_of_accounts": "2", "total_outstanding_balance": "152000", "secured_account_outstanding_balance": "152000", "un_secured_account_outstanding_balance": "0"}',
-            'ufh_file_id'           => 'rzp_file_mock_id_1000000_bureau_report',
+            'ufh_file_id'           => 'file_1cXSLlUU8V9sXl',
 //                'created_at'        => 1571374473
         ], $d2cBureauReport);
     }
@@ -162,5 +162,22 @@ class D2cBureauDetailsTest extends TestCase
         $this->assertArraySelectiveEquals([
             'interested'        => true,
         ], $d2cBureauReport);
+    }
+
+    public function testGetDownloadUrl()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
+
+        $this->testData['testSubmitOtp']['request']['url'] = strtr($this->testData['testSubmitOtp']['request']['url'], ['{id}' => $response['id'],]);
+
+        $response = $this->makeRequestAndGetContent($this->testData['testSubmitOtp']['request']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $response['id'],]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 }

@@ -16,6 +16,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\FundTransfer\Yesbank\Mode;
+use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
@@ -216,6 +217,15 @@ class Transfer extends Base
         $amount = $source->getAmount();
 
         //
+        // In case of refunds - we need to use base amount
+        // since there could be payments of international currencies and in FTA we are always using INR
+        //
+        if ($fta->getSourceType() === ConstantsEntity::REFUND)
+        {
+            $amount = $source->getBaseAmount();
+        }
+
+        //
         // For now, we would be hardcoding the terminal. Later, have to
         // figure out how to do terminal selection for this, since each
         // merchant might have a different terminal. Use-case being merchant
@@ -279,13 +289,24 @@ class Transfer extends Base
     {
         $source = $this->entity->source;
 
+        $sourceAmount = $source->getAmount();
+
+        //
+        // In case of refunds - we need to use base amount
+        // since there could be payments of international currencies and in FTA we are always using INR
+        //
+        if ($this->entity->getSourceType() === ConstantsEntity::REFUND)
+        {
+            $sourceAmount = $source->getBaseAmount();
+        }
+
         $this->trace->info(
             TraceCode::YESBANK_SOURCE_AMOUNT,
             [
-                'sourceAmount' => $source->getAmount()
+                'sourceAmount' => $sourceAmount
             ]);
 
-        $amount = ($source->getAmount() / 100);
+        $amount = ($sourceAmount / 100);
 
         $this->trace->info(
             TraceCode::YESBANK_CONVERTED_AMOUNT,

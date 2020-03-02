@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base AS GatewayBase;
 use RZP\Gateway\Ebs\RequestConstants as Req;
 use RZP\Gateway\Ebs\ResponseConstants as Resp;
 use Symfony\Component\DomCrawler\Crawler;
@@ -183,12 +184,19 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        $scroogeResponse = new GatewayBase\ScroogeResponse();
+
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-                                $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
+            $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
         $attributes = $this->sendRefundGatewayRequest($gatewayPayment, $input);
 
         $refundEntity = $this->createGatewayPaymentEntity($attributes, $input);
+
+        $gatewayDataArray = [
+            Payment\Gateway::GATEWAY_RESPONSE => json_encode($attributes),
+            Payment\Gateway::GATEWAY_KEYS     => $this->getGatewayData($attributes),
+        ];
 
         if ((isset($refundEntity[Entity::ERROR_CODE]) and
             ($refundEntity[Entity::ERROR_CODE] !== '0')))
@@ -202,11 +210,10 @@ class Gateway extends Base\Gateway
                 $desc = ResponseCode::$codes[$responseCode];
             }
 
-            throw new Exception\GatewayErrorException(
-                ResponseCode::getMappedCode($responseCode),
-                $responseCode,
-                $desc);
+            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_REFUND_FAILED, $gatewayDataArray);
         }
+
+        return $gatewayDataArray;
     }
 
     public function getPaymentIdFromServerCallback($input)
@@ -430,22 +437,28 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        $scroogeResponse = new GatewayBase\ScroogeResponse();
+
         $unprocessedRefunds = $this->getUnprocessedRefunds();
 
         $processedRefund = $this->getProcessedRefunds();
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                ->toArray();
         }
 
         if (in_array($input['refund']['id'], $processedRefund) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
-        throw new Exception\LogicException(
-            'Shouldn\'t reach here');
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                               ->toArray();
     }
 
     protected function getVerifyGatewayStatus($content)
@@ -707,6 +720,20 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                Entity::GATEWAY_PAYMENT_ID => $response[Entity::GATEWAY_PAYMENT_ID] ?? null,
+                Entity::TRANSACTION_ID     => $response[Entity::TRANSACTION_ID] ?? null,
+                Entity::ERROR_CODE         => $response[Entity::ERROR_CODE] ?? null,
+                Entity::ERROR_DESCRIPTION  => $response[Entity::ERROR_DESCRIPTION] ?? null,
+                Entity::IS_FLAGGED         => $response[Entity::IS_FLAGGED] ?? null,
+            ];
+        }
     }
 
     protected function getDefaultRequestContent()

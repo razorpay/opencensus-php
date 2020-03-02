@@ -3,18 +3,25 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Mail;
+use Event;
+
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Feature\Entity;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\KeyWritten;
+use Illuminate\Cache\Events\CacheMissed;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\FileUploadTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 use RZP\Mail\Merchant\EsEligible as EsEligibleMail;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
@@ -305,6 +312,8 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureToTestAddFeatureToTestSyncedToLive()
     {
+        config(['app.query_cache.mock' => true]);
+
         $this->addFeatures(Mode::TEST);
 
         $this->verifyFeaturePresence(Mode::TEST);
@@ -321,6 +330,8 @@ class FeaturesTest extends TestCase
      */
     public function testDeleteFeatureFromTestAndVerifyPresenceInLive()
     {
+        config(['app.query_cache.mock' => true]);
+
         $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
@@ -1405,4 +1416,218 @@ class FeaturesTest extends TestCase
 
         return $testData;
     }
+
+
+    public function testQueryCacheHitForFeature()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Event::fake();
+
+        $this->addFeatures(
+            MODE::TEST,
+            true,
+            ['noflashcheckout'],
+            Constants::MERCHANT,
+            self::DEFAULT_MERCHANT_ID
+        );
+
+        //
+        // Asserts that key is not present initially in cache
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_TheTestAuthKey', $tag);
+                }
+                else if (starts_with($tag, 'feature') === true)
+                {
+                    $this->assertEquals('feature_merchant_10000000000000', $tag);
+                }
+            }
+
+            return true;
+        });
+
+        //
+        // Asserts that key is inserted into cache
+        //
+        Event::assertDispatched(KeyWritten::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_TheTestAuthKey', $tag);
+
+                    $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+                }
+                else if (starts_with($tag, 'feature') === true)
+                {
+                    $this->assertEquals('feature_merchant_10000000000000', $tag);
+
+                }
+            }
+
+            return true;
+        });
+
+        //
+        // Asserts cache should not have been hit the first time
+        //
+        Event::assertNotDispatched(CacheHit::class);
+
+        $this->verifyFeatureAbsence(Mode::TEST);
+        //
+        // Asserts that key is found in cache on subsequent attempts
+        //
+        Event::assertDispatched(CacheHit::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_TheTestAuthKey', $tag);
+
+                    $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+                }
+                else if (starts_with($tag, 'feature_merchant_10000000000000') === true)
+                {
+                    $this->assertContains(
+                        implode(':', [
+                                       CacheConstants::QUERY_CACHE_PREFIX,
+                                       CacheConstants::DEFAULT_QUERY_CACHE_VERSION,
+                                       Entity::FEATURE
+                                   ]
+                        ),
+                        $e->key
+                    );
+                }
+            }
+
+            return true;
+        });
+    }
+
+    public function testQueryCacheFlushForFeature()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Event::fake(false);
+
+        //
+        // Rewrites value of key
+        //
+        $this->testAccountFeatures();
+
+        //
+        // Repeats the sequence of assertions, to test that new key is properly
+        // read from cache
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'feature_names') === true)
+                {
+                    $this->assertEquals('feature_names_merchant_10000000000000', $tag);
+                }
+
+                if (starts_with($tag, 'feature_merchant') === true)
+                {
+                    $this->assertEquals('feature_merchant_10000000000000', $tag);
+                }
+            }
+
+            return true;
+        });
+
+        Event::assertDispatched(KeyWritten::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'feature_names_merchant_10000000000000') === true)
+                {
+                    $this->assertContains(
+                        implode(':', [
+                                       CacheConstants::QUERY_CACHE_PREFIX,
+                                       CacheConstants::DEFAULT_QUERY_CACHE_VERSION,
+                                       Entity::FEATURE
+                                   ]
+                        ),
+                        $e->key
+                    );
+                }
+            }
+
+            return true;
+        });
+    }
+
+    public function testQueryCacheHitForRoute()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Event::fake(false);
+
+        //
+        // Cache miss on first access
+        //
+        $this->testDummyFeatureRouteWithoutAccess();
+
+        //
+        // Repeats the sequence of assertions, to test that new key is properly
+        // read from cache
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'feature_names') === true)
+                {
+                    $this->assertEquals('feature_names_merchant_10000000000000', $tag);
+                }
+            }
+
+            return true;
+        });
+
+        $this->testDummyFeatureRouteWithAccess();
+        //
+        // Asserts that key is found in cache on subsequent attempts
+        //
+        Event::assertDispatched(CacheHit::class, function ($e)
+        {
+            $hash = hash('sha256', implode('_', [Entity::FEATURE, Constants::MERCHANT, self::DEFAULT_MERCHANT_ID]));
+
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_TheTestAuthKey', $tag);
+
+                    $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+                }
+                else if (starts_with($tag, 'feature_names_merchant_10000000000000') === true)
+                {
+                    $this->assertEquals(
+                        implode(':', [
+                                CacheConstants::QUERY_CACHE_PREFIX,
+                                CacheConstants::DEFAULT_QUERY_CACHE_VERSION,
+                                Entity::FEATURE,
+                                $hash
+                            ]
+                        ),
+                        $e->key
+                    );
+                }
+            }
+
+            return true;
+        });
+    }
+
 }

@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 
 return [
-    'testCreatePaymentLinkWithPaymentPageItem' => [
+    'testCreatePaymentLinkWithSinglePaymentPageItem' => [
         'request'  => [
             'url'     => '/payment_links',
             'method'  => 'post',
@@ -27,10 +27,10 @@ return [
                             'currency'    => 'INR',
                         ],
                         'mandatory'         => TRUE,
-                        'image_url'         => NULL,
-                        'stock'             => NULL,
-                        'min_purchase'      => NULL,
-                        'max_purchase'      => NULL,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
                         'min_amount'        => NULL,
                         'max_amount'        => NULL,
                     ]
@@ -58,17 +58,152 @@ return [
                             'type' => 'payment_page',
                         ],
                         'mandatory' => TRUE,
-                        'image_url' => NULL,
-                        'stock' => NULL,
+                        'image_url' => 'dummy',
+                        'stock' => 10000,
                         'quantity_sold' => 0,
                         'total_amount_paid' => 0,
-                        'min_purchase' => NULL,
-                        'max_purchase' => NULL,
+                        'min_purchase' => 2,
+                        'max_purchase' => 10000,
                         'min_amount' => NULL,
                         'max_amount' => NULL,
                     ]
                 ],
             ],
+        ],
+    ],
+
+    'testCreatePaymentLinkWithMinPurchaseGreaterThanMaxPurchase' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => NULL,
+                        'min_purchase'      => 100,
+                        'max_purchase'      => 50,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'min purchase should not be greater than max purchase',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePaymentLinkWithMinAmountGreaterThanMaxAmount' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => NULL,
+                        'min_purchase'      => NULL,
+                        'max_purchase'      => NULL,
+                        'min_amount'        => 10000,
+                        'max_amount'        => 5000,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'min amount should not be greater than max amount',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePaymentLinkByPassingAmountWhenAmountPassed' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 1000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => NULL,
+                        'min_purchase'      => NULL,
+                        'max_purchase'      => NULL,
+                        'min_amount'        => 10000,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'amount not required when min amount or max amount is present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -167,6 +302,293 @@ return [
                     ]
                 ],
             ],
+        ],
+    ],
+
+    'testCreatePaymentLinkWithDifferentCurrency' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => NULL,
+                        'stock'             => NULL,
+                        'min_purchase'      => NULL,
+                        'max_purchase'      => NULL,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'donate',
+                            'description' => NULL,
+                            'amount'      => 500000,
+                            'currency'    => 'USD',
+                        ],
+                        'mandatory'         => FALSE,
+                        'image_url'         => NULL,
+                        'stock'             => 10000,
+                        'min_purchase'      => NULL,
+                        'max_purchase'      => NULL,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'payment page currency and payment page item currency should be same',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePaymentLinkWithoutItem' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => []
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The payment page items field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePaymentLinkWithMoreThanLimitedItem' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'amount'      => 100000,
+                        ],
+                    ],
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The total number of payment page items may not be greater than 25',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -340,6 +762,102 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'expire_by should be at least 15 minutes after current time.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdatePaymentLinkDeletingItem' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'payment_page_items'         => [
+                    [
+                        'id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID_2
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'          => 'pl_100000000000pl',
+                'payment_page_items'         => [
+                    [
+                        'id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID_2
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testUpdatePaymentLinkAddingItem' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'payment_page_items'         => [
+                    [
+                        'id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID_2
+                    ],
+                    [
+                        'id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID
+                    ],
+                    [
+                        'item' => [
+                            'name' =>  'unique_name',
+                            'description' => 'unique_name',
+                            'amount' => 1232145,
+                            'currency' => 'INR',
+                        ],
+                        'mandatory' => FALSE,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'          => 'pl_100000000000pl',
+                'payment_page_items'         => [
+                    [
+                        'id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID
+                    ],
+                    [
+                        'id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID_2
+                    ],
+                    [
+                        'item' => [
+                            'name' =>  'unique_name',
+                            'description' => 'unique_name',
+                            'amount' => 1232145,
+                            'currency' => 'INR',
+                        ],
+                        'mandatory' => FALSE,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testUpdatePaymentLinkRemoveAllItem' => [
+        'request' => [
+            'url'     => '/payment_links/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'payment_page_items'         => [
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'payment_page_items must be an array',
                 ],
             ],
             'status_code' => 400,
@@ -593,6 +1111,399 @@ return [
                     ]
                 ]
             ],
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkWithAmountLessThanMinAmount' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 1000,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'amount should not be lesser than to payment page item min amount',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkWithAmountGreaterThanMaxAmount' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 1000,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'amount should not be greater than to payment page item max amount',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkWithFixedAmount' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 1001,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'amount should be equal to payment page item amount',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkWithPurchaseGreaterThanMaxPurchase' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 1000,
+                        'quantity'             => 5,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'quantity should not be greater than to payment page item max purchase',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkWithPurchaseLesserThanMinPurchase' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_10000000000ppi',
+                        'amount'               => 1000,
+                        'quantity'             => 2,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'quantity should not be lesser than to payment page item min purchase',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkWithoutRequiredItem' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID_2,
+                        'amount'               => 10000,
+                        'quantity'             => 2,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'ppi_10000000000ppi is mandatory payment page item, should be ordered',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkWithDuplicateItem' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID,
+                        'amount'               => 1000,
+                        'quantity'             => 3,
+                    ],
+                    [
+                        'payment_page_item_id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID,
+                        'amount'               => 1000,
+                        'quantity'             => 3,
+                    ],
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'all payment page item id should be unique',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkWithRequiredItem' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID,
+                        'amount'               => 5000,
+                        'quantity'             => 2,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkWhenQuantitySoldOut' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID,
+                        'amount'               => 5000,
+                        'quantity'             => 2,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'no stock left',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOrderForPaymentLinkWhenPageIsInactive' => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/order',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID,
+                        'amount'               => 5000,
+                        'quantity'             => 2,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'order cannot be created for payment page which is not active',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPaymentLinkMakePaymentWithoutOrder' => [
+        'request' => [
+            'url'    => '/payments',
+            'method' => 'post',
+            'content' => [
+                'payment_link_id' => 'pl_' . PaymentLinkTest::TEST_PL_ID,
+                'amount'          => 5000,
+                'currency'          => 'INR',
+                'email'             => 'a@b.com',
+                'contact'           => '9918899029',
+                'description'       => 'random description',
+                'bank'              => 'IDIB',
+                'card'              => [
+                    'number'            => '4012001038443335',
+                    'name'              => 'Harshil',
+                    'expiry_month'      => '12',
+                    'expiry_year'       => '2024',
+                    'cvv'               => '566',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'order_id is required to create payment for payment page',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPaymentLinkMakePaymentWithDifferentOrder' => [
+        'request' => [
+            'url'    => '/payments',
+            'method' => 'post',
+            'content' => [
+                'payment_link_id' => 'pl_' . PaymentLinkTest::TEST_PL_ID,
+                'amount'          => 10000,
+                'currency'          => 'INR',
+                'email'             => 'a@b.com',
+                'contact'           => '9918899029',
+                'description'       => 'random description',
+                'bank'              => 'IDIB',
+                'card'              => [
+                    'number'            => '4012001038443335',
+                    'name'              => 'Harshil',
+                    'expiry_month'      => '12',
+                    'expiry_year'       => '2024',
+                    'cvv'               => '566',
+                ],
+                'order_id' => 'order_' . PaymentLinkTest::TEST_ORDER_ID,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'order does not belongs to the given payment page',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPaymentLinkMakePaymentWhenPageIsInactive' => [
+        'request' => [
+            'url'    => '/payments',
+            'method' => 'post',
+            'content' => [
+                'payment_link_id' => 'pl_' . PaymentLinkTest::TEST_PL_ID,
+                'amount'          => 15000,
+                'currency'          => 'INR',
+                'email'             => 'a@b.com',
+                'contact'           => '9918899029',
+                'description'       => 'random description',
+                'bank'              => 'IDIB',
+                'card'              => [
+                    'number'            => '4012001038443335',
+                    'name'              => 'Harshil',
+                    'expiry_month'      => '12',
+                    'expiry_year'       => '2024',
+                    'cvv'               => '566',
+                ],
+                'order_id' => 'order_' . PaymentLinkTest::TEST_ORDER_ID,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment cannot be made on this payment link',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,
         ],
     ],
 

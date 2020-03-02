@@ -19,6 +19,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
@@ -36,8 +37,8 @@ use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
 use RZP\Exception\BadRequestException;
 use RZP\Models\User\Core as UserCore;
+use RZP\Models\Merchant\Document\Source;
 use RZP\Models\User\Entity as UserEntity;
-use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -1119,6 +1120,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantConfigWithDefaultRefundSpeed()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testMerchantUpdateKeyAccess()
     {
         $attribute = ['business_website' => 'https://www.example.com'];
@@ -1591,9 +1601,34 @@ class MerchantTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
-        (new MerchantDetailTest())->updateUploadDocumentData(__FUNCTION__, $documentType);
+        $this->updateUploadDocumentData(__FUNCTION__, $documentType);
 
         $this->startTest();
+    }
+
+    public function updateUploadDocumentData(string $callee, string $documentType)
+    {
+        $testData = &$this->testData[$callee];
+
+        $testData['request']['files'][$documentType] = new UploadedFile(
+            __DIR__ . '/../Storage/a.png',
+            'a.png',
+            'image/png',
+            filesize(__DIR__ . '/../Storage/a.png'),
+            null,
+            true);
+    }
+
+    public function testUpdateBankAccountWithAddressProofUsingUFH()
+    {
+
+        $this->mockRazorX('testUpdateBankAccountWithAddressProof', 'use_ufh_file_store', 'on', 10000000000000);
+
+        $this->testUpdateBankAccountWithAddressProof();
+
+        $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
+
+        $this->assertEquals($merchantDocumentEntry['source'], Source::UFH);
     }
 
     public function testGetBankAccount()
@@ -3458,7 +3493,13 @@ class MerchantTest extends TestCase
         //
         // Asserts cache should not have been hit the first time
         //
-        Event::assertNotDispatched(CacheHit::class);
+        Event::assertNotDispatched(CacheHit::class, function($e) {
+            foreach ($e->tags as $tag) {
+                $this->assertNotEquals('merchant_10000000000000', $tag);
+                $this->assertNotEquals('key_TheTestAuthKey', $tag);
+            }
+            return false;
+        });
 
         $this->doAuthPayment($payment);
 
@@ -4968,15 +5009,15 @@ class MerchantTest extends TestCase
     /**
      * Switches product of merchant from PG to BB.
      */
-    public function testMerchantSwitchProduct()
+    public function testMerchantSwitchProduct($expValue = 'on', $category2 = 'school')
     {
-        $this->enableRazorXTreatmentForXOnboarding();
+        $this->enableRazorXTreatmentForXOnboarding($expValue);
 
         $user = (new User())->createUserForMerchant();
 
         $this->fixtures->edit('merchant',
                               '10000000000000',
-                              ['activated' => true, 'business_banking' => true, 'category2' => 'school']);
+                              ['activated' => true, 'business_banking' => true, 'category2' => $category2]);
 
         $this->fixtures->create('merchant_detail',
                                 [
@@ -5164,7 +5205,7 @@ class MerchantTest extends TestCase
      */
     public function testMerchantSwitchProductWhenL1Incomplete()
     {
-        $this->testMerchantSwitchProductWhenXOnboardingExperimentOff('on', null);
+        $this->testMerchantSwitchProduct('on', null);
     }
 
     /**
@@ -6180,6 +6221,17 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetBalancesWhenNoBalanceExists()
+    {
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
     public function testGetBalancesByType()
     {
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
@@ -6356,6 +6408,16 @@ class MerchantTest extends TestCase
         $this->fixtures->edit('pricing', '1AXp2Xd3t5aRLX', ['international' => true]);
     }
 
+    public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
+    {
+        $testData = &$this->testData[$functionName];
+
+        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
+
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
+
+    }
+
     public function testGetCheckoutPreferencesWithOrderMethodForNonTPVEnabledMerchant()
     {
         $this->ba->publicAuth();
@@ -6367,5 +6429,25 @@ class MerchantTest extends TestCase
         $testData['request']['content']['order_id'] = $order->getPublicId();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testEditMerchantWebsite()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id' => '1In3Yh5Mluj605',
+            'international'   => false]);
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '10000000000000']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->assertContains('abc.com', $merchant->getWhitelistedDomains());
     }
 }

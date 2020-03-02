@@ -21,4 +21,14 @@ class ReconciliationFields
     const MTS_TOTL_CSF_AMT      = 'MTS_TOTL_CSF_AMT';
 
     const CARD_NO               = 'CARD_NO';
+
+    const MDR                   = 'MDR';
+
+    const TXN_REF               = 'TXN_REF';
+
+    const APPROVE_CODE          = 'APPROVE_CODE';
+
+    const TRANSACTION_TYPE      = 'TRANSACTION_TYPE';
+
+    const PRCHS_MERCHANT_TXNNO  = 'PRCHS_ MERCHANT_TXNNO';
 }

@@ -498,6 +498,8 @@ return [
 
     E::UPI_TRANSFER => [],
 
+    E::UPI_METADATA => [],
+
     E::BALANCE_CONFIG => [
         Type::PROXY_AUTH => [
             [

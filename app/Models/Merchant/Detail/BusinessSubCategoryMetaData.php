@@ -381,9 +381,9 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 7500000,
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
-        Sub::DISTRIBUTION_MANAGEMENT       => [
+        Sub::DISTRIBUTION                  => [
             Merchant::CATEGORY                      => 4214,
-            self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DISTRIBUTION_MANAGEMENT],
+            self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::DISTRIBUTION],
             Merchant::CATEGORY2                     => Category::LOGISTICS,
             Entity::ACTIVATION_FLOW                 => ActivationFlow::WHITELIST,
             self::EMI_ACTIVATION                    => ActivationFlow::WHITELIST,
