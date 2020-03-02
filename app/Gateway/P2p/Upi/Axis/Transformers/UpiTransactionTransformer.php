@@ -25,6 +25,13 @@ class UpiTransactionTransformer extends Transformer
                 ];
                 break;
 
+            case TransactionAction::PAY:
+                $output = [
+                    Entity::ACTION  => Action::INITIATE_PAY,
+                    Entity::STATUS  => Status::COMPLETED,
+                ];
+                break;
+
             case TransactionAction::REQUEST_MONEY:
                 $output = [
                     Entity::ACTION  => Action::INITIATE_COLLECT,
@@ -75,6 +82,7 @@ class UpiTransactionTransformer extends Transformer
                 break;
 
             case UpiAction::CUSTOMER_DEBITED_VIA_COLLECT:
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT:
                 $output = [
                     Entity::ACTION  => Action::INCOMING_COLLECT,
                     Entity::STATUS  => Status::COMPLETED,
@@ -83,6 +91,7 @@ class UpiTransactionTransformer extends Transformer
                 break;
 
             case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_PAY:
                 $output = [
                     Entity::ACTION  => Action::INITIATE_PAY,
                     Entity::STATUS  => Status::COMPLETED,
@@ -196,6 +205,17 @@ class UpiTransactionTransformer extends Transformer
             Transaction\Entity::MODE             => $this->transformTransactionMode(),
             Transaction\Entity::AMOUNT           => $this->toPaisa($this->input[Fields::AMOUNT]),
         ];
+
+        /*
+        * Special case: For PAY api which is for a P2P Transaction we need to unset the
+        * transaction id for the callback, as we are relying on the (gatewayTransactionId+action)
+        * combination to fetch the transaction.
+        */
+        if ($this->input[Fields::TYPE] === UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_PAY)
+        {
+            unset($output[Entity::TRANSACTION_ID]);
+            unset($output[Transaction\Entity::TRANSACTION][Transaction\Entity::ID]);
+        }
 
         return array_merge($request, $output);
     }

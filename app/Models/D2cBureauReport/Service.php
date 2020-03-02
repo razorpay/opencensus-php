@@ -38,4 +38,18 @@ class Service extends Base\Service
 
         return $bureauReport->toArrayForDashboard();
     }
+
+    public function getDownloadUrl($id)
+    {
+        $this->trace->info(TraceCode::D2C_BUREAU_REPORT_DOWNLOAD_REQUEST, [
+            'id'    => $id,
+        ]);
+
+        /** @var Entity $bureauReport */
+        $bureauReport = $this->repo->d2c_bureau_report->findByPublicId($id);
+
+        $ufhFileId = $bureauReport->getUfhFileId();
+
+        return $this->app['ufh.service']->getSignedUrl($ufhFileId, [], $bureauReport->getMerchantId());
+    }
 }

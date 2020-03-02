@@ -5,8 +5,6 @@ namespace RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
 use RZP\Exception\ServerNotFoundException;
 use RZP\Models\Merchant\Request\Service as MerchantRequestService;
 
@@ -75,13 +73,13 @@ class Service extends Base\Service
 
     public function getBatchById(string $id, Merchant\Entity $merchant = null): array
     {
-        if (($this->merchant === null) and
-            ($merchant !== null))
+        if ((empty($this->merchant) === false) and
+            (empty($merchant) === true))
         {
-            $this->merchant = $merchant;
+            $merchant = $this->merchant;
         }
 
-        $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id, $this->merchant);
+        $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id, $merchant);
 
         if ($responseBatch !== null)
         {
@@ -94,7 +92,7 @@ class Service extends Base\Service
             return $responseBatch;
         }
 
-        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $merchant);
 
         $input = [Entity::TYPE => $batch->getAttribute(Entity::TYPE) ];
 
@@ -111,14 +109,6 @@ class Service extends Base\Service
      */
     public function fetchBatchById(string $id): array
     {
-        if ($this->auth->isAdminAuth() === false)
-        {
-            throw (new \Exception(
-                PublicErrorDescription::BAD_REQUEST_ERROR,
-                PublicErrorCode::BAD_REQUEST_ERROR
-            ));
-        }
-
         $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id);
 
         if ($responseBatch !== null)

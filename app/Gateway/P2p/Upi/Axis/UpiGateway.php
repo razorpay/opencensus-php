@@ -18,7 +18,6 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
     {
         $content = $this->input->get(Fields::CONTENT);
         $type    = $content[Fields::TYPE] ?? null;
-
         switch ($type)
         {
             case UpiAction::COLLECT_REQUEST_RECEIVED:
@@ -54,7 +53,8 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
             case UpiAction::CUSTOMER_CREDITED_VIA_COLLECT:
             case UpiAction::CUSTOMER_DEBITED_VIA_COLLECT:
             case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
-
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_PAY:
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT:
                 $transformer = new UpiTransactionTransformer($content, $type);
                 $upi = $transformer->transformCallback();
 
@@ -114,6 +114,8 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
             case UpiAction::CUSTOMER_CREDITED_VIA_COLLECT:
             case UpiAction::CUSTOMER_DEBITED_VIA_COLLECT:
             case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_PAY:
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT:
             case null:
 
                 $signature = $this->getpayloadSignature();

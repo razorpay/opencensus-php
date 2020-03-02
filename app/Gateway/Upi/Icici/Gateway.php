@@ -88,14 +88,33 @@ class Gateway extends Base\Gateway
 
         if ($this->isBharatQrPayment() === true)
         {
-            $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
+            //
+            //Hacky fixture: When ORIGINAL_BANK_RRN_REQ is null, the entity NPCI_REFERENCE_ID method becomes
+            // inaccessible for the gateway.To fix the issue, we assign it to BANK_RRN so that paymentData can
+            //access NPCI_REFERENCE_ID using getNpciReferenceId() method.
+            //
+            $input[Fields::ORIGINAL_BANK_RRN_REQ] = $input[Fields::BANK_RRN];
 
-            return null;
+            $paymentData = $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
+
+            return [
+                'acquirer' => [
+                    Payment\Entity::REFERENCE16 => $paymentData->getNpciReferenceId(),
+                ],
+            ];
         }
 
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
         {
+            if ($input['merchant']->isTPVRequired() === true)
+            {
+               throw new Exception\ServerErrorException(
+                   'Intent TPV not Supported',
+                ErrorCode::SERVER_ERROR_INTENT_TPV_NOT_SUPPORTED
+               );
+            }
+
             return $this->authorizeIntent($input);
         }
 

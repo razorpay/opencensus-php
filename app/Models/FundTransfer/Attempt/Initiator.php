@@ -488,6 +488,7 @@ class Initiator extends Base\Core
             return true;
         }
 
+        // Checks for holidays.
         if (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false)
         {
             $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED, [
@@ -498,8 +499,10 @@ class Initiator extends Base\Core
             return false;
         }
 
+        // Banking hours start time.
         $startTime = Carbon::today(Timezone::IST)->hour(8)->getTimestamp();
 
+        // Banking hours end time.
         $endTime = Carbon::today(Timezone::IST)->hour(18)->minute(15)->getTimestamp();
 
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
@@ -512,6 +515,7 @@ class Initiator extends Base\Core
                 'current_time'          => $currentTime
             ]);
 
+        // Checks for non Banking hours on working days.
         if (($currentTime < $startTime) or
             ($currentTime > $endTime))
         {

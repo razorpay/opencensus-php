@@ -14,8 +14,9 @@ class POAProcessorResponse extends BaseResponse
         $data = parent::getResponseData();
 
         $extractedData = [
-            Constants::NAME    => $this->getOcrName(),
-            Constants::SUCCESS => $this->isPOAVerifierResponseSuccess(),
+            Constants::NAME          => $this->getOcrName(),
+            Constants::SUCCESS       => $this->isPOAVerifierResponseSuccess(),
+            Constants::DOCUMENT_TYPE => $this->requestInput[Constants::DOCUMENT_TYPE] ?? "",
         ];
 
         return array_merge($data, $extractedData);

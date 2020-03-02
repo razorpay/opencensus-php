@@ -26,6 +26,6 @@ class PanProcessor extends BaseProcessor
 
         [$response, $responseMetaData] = $this->createAndSendRequest($request);
 
-        return new PanProcessorResponse($response, $responseMetaData);
+        return new PanProcessorResponse($response, $responseMetaData, $this->input);
     }
 }

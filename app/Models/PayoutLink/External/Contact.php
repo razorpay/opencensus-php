@@ -46,7 +46,7 @@ class Contact
             if ((empty($contact->getEmail()) === true) and
                 (empty($contact->getContact()) === true))
             {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_AT_LEAST_ONE_OF_EMAIL_OR_PHONE_REQUIRED,
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_CONTACT_ID_EMAIL_AND_PHONE_NUMBER_MISSING,
                                               null,
                                               [
                                                   'merchant_id' => $merchant->getPublicId(),
@@ -56,6 +56,17 @@ class Contact
         }
         else
         {
+
+            if (!is_null($contactId) and $contactId === "")
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_CONTACT_ID,
+                                              null,
+                                              [
+                                                  'merchant_id' => $merchant->getPublicId(),
+                                                  'contact_id'  => $contactId
+                                              ]);
+
+            }
             if ((empty($contactDetails[ContactEntity::EMAIL]) === true) and
                 (empty($contactDetails[ContactEntity::CONTACT]) === true))
             {

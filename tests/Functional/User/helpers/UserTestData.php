@@ -50,7 +50,7 @@ return [
         ],
     ],
 
-    'testGet' => [
+    'testGetUser' => [
         'request' => [
             'url'    => '/users/id',
             'method' => 'GET',
@@ -74,6 +74,75 @@ return [
                 'invitations'             => [
                 ],
                 'settings'                => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetUserWithProductPrimary' => [
+        'request' => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants' => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner',
+                        'product'      => 'primary',
+                    ],
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner',
+                        'product'      => 'primary',
+                    ],
+                ],
+                'invitations' => [
+                ],
+                'settings' => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetUserWithProductBanking' => [
+        'request' => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'      => 'true',
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants' => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => null,
+                        'banking_role' => 'admin',
+                        'product'      => 'banking',
+                    ],
+                ],
+                'invitations' => [
+                ],
+                'settings' => [
                 ],
             ],
         ],
@@ -1304,7 +1373,7 @@ return [
             'url'     => '/users/contact/update',
             'method'  => 'patch',
             'content' => [
-                'contact_mobile' => '8877',
+                'contact_mobile' => '8877666666',
             ],
             'server'  => [
                 'HTTP_X-Dashboard-User-id' => '',
@@ -1330,7 +1399,7 @@ return [
             'url'     => '/users/contact/update',
             'method'  => 'patch',
             'content' => [
-                'contact_mobile' => '8877',
+                'contact_mobile' => '8877666666',
             ],
             'server'  => [
                 'HTTP_X-Dashboard-User-id' => '',
@@ -1356,7 +1425,7 @@ return [
             'url'     => '/users/contact/update',
             'method'  => 'patch',
             'content' => [
-                'contact_mobile' => '8877',
+                'contact_mobile' => '8877666666',
                 'otp'            => '0007',
             ],
             'server'  => [
@@ -1368,6 +1437,7 @@ return [
             'status_code' => 200,
         ],
     ],
+
     'testGetForUsersWithBusinessBankingEnabled' => [
         'request'  => [
             'url'     => '/users/30000000000000',
@@ -1375,6 +1445,7 @@ return [
             'content' => [],
             'server'  => [
                 'HTTP_X_DASHBOARD_USER_ID' => '30000000000000',
+                'HTTP_X-Request-Origin'    => 'https://x.razorpay.com',
             ]
         ],
         'response' => [
@@ -1393,6 +1464,70 @@ return [
                 'settings'    => [
                 ],
             ],
+        ],
+    ],
+
+    'testVerifyUserThroughEmail' => [
+        'request'  => [
+            'url'     => '/users/verify/mode/email',
+            'method'  => 'post',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'RandomToken123',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditContactMobileByUserOnBankingWithoutAuthToken' => [
+        'request'   => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877666666',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+                'HTTP_X-Request-Origin'    => '',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The otp auth token field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testEditContactMobileByUserAndVerifyForBanking' => [
+        'request'  => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877666666',
+                'otp'            => '0007',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+                'HTTP_X-Request-Origin'    => 'http://x.razorpay.in',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
         ],
     ],
 ];
