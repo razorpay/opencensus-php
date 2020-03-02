@@ -241,6 +241,8 @@ class Processor
 
     protected $razorXFlagForDoppler;
 
+    protected $redis;
+
     public function __construct(Merchant\Entity $merchant)
     {
         $this->app  = App::getFacadeRoot();
@@ -273,6 +275,8 @@ class Processor
         $this->verifyRefundStatus = null;
 
         $this->secureCacheDriver = $this->getDriver();
+
+        $this->redis = $this->app['redis']->connection();
     }
 
     public function flushPaymentObjects()
@@ -366,16 +370,18 @@ class Processor
         // the scenario where same payment id gets generated in live and test mode is not handled currently.
         $cacheKey = 'EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
 
-        if (($this->cache->get($cacheKey) === null) or
-            ($this->cache->get($cacheKey) === false))
+        if ($this->redis->exists($cacheKey) === 0)
         {
-            $eventPayload = [
-                ApiEventSubscriber::MAIN => $this->payment,
-            ];
+            if ($this->redis->get($cacheKey) === null)
+            {
+                $eventPayload = [
+                    ApiEventSubscriber::MAIN => $this->payment,
+                ];
 
-            $this->app['events']->fire('api.payment.created', $eventPayload);
+                $this->app['events']->fire('api.payment.created', $eventPayload);
 
-            $this->cache->put($cacheKey, true, 3600);
+                $this->redis->set($cacheKey, true, 'ex', 3600);
+            }
         }
     }
 
