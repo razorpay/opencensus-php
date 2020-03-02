@@ -242,10 +242,14 @@ class SmartRouting
     {
         $responseBody = json_decode($response->body, true);
 
+        $traceResponse = $responseBody;
+
+        unset($traceResponse['mc_mpan'], $traceResponse['visa_mpan'], $traceResponse['rupay_mpan'], $traceResponse['network_mpan']);
+
         $this->trace->info(
             TraceCode::SMART_ROUTING_RESPONSE,
             [
-                'response' => $responseBody
+                'response' => $traceResponse
             ]);
 
         if ($response->status_code >= 400)
