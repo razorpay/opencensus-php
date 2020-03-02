@@ -7,9 +7,11 @@ use RZP\Models\Admin\Permission\Name as Permission;
 
 class UserRolePermissionsMap
 {
+    private static $userRolePermissionMap = null;
+
     private static $rolePermissions;
 
-    private static function init()
+    private function __construct()
     {
          $rolePermissions = [
              BankingRole::OWNER => [
@@ -270,7 +272,7 @@ class UserRolePermissionsMap
         self::$rolePermissions = $rolePermissions;
     }
 
-    private static function getRolePermissionMap()
+    private function getRolePermissionMap()
     {
         if (empty(self::$rolePermissions) === true)
         {
@@ -280,7 +282,7 @@ class UserRolePermissionsMap
         return self::$rolePermissions;
     }
 
-    public static function isValidRolePermission(string $role, string $permission) : bool
+    public function isValidRolePermission(string $role, string $permission) : bool
     {
         $rolePermissions = self::getRolePermissions($role);
 
@@ -292,9 +294,9 @@ class UserRolePermissionsMap
         return false;
     }
 
-    public static function isInvalidRolePermission(string $role, string $permission) : bool
+    public function isInvalidRolePermission(string $role, string $permission) : bool
     {
-        if (self::isValidRolePermission($role, $permission))
+        if ($this->isValidRolePermission($role, $permission))
         {
             return false;
         }
@@ -302,8 +304,18 @@ class UserRolePermissionsMap
         return true;
     }
 
-    public static function getRolePermissions(string $role)
+    public function getRolePermissions(string $role)
     {
-        return self::getRolePermissionMap()[$role] ?? null;
+        return $this->getRolePermissionMap()[$role] ?? null;
+    }
+
+    public static function getInstance()
+    {
+        if (self::$userRolePermissionMap === null)
+        {
+            self::$userRolePermissionMap = new UserRolePermissionsMap();
+        }
+
+        return self::$userRolePermissionMap;
     }
 }

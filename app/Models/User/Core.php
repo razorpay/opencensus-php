@@ -595,7 +595,8 @@ class Core extends Base\Core
                 }
 
                 // Attach Permission
-                $userMerchantPermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);
+                $userMerchantPermissions = UserRolePermissionsMap::getInstance()
+                                                ->getRolePermissions($merchant[Entity::BANKING_ROLE]);
 
                 if ($userMerchantPermissions !== null)
                 {
