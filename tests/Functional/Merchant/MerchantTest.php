@@ -6187,6 +6187,8 @@ class MerchantTest extends TestCase
 
         $response = $this->startTest();
 
+        $this->assertArrayHasKey('merchant', $response);
+
         $this->assertArrayHasKey('merchant_detail', $response);
     }
 

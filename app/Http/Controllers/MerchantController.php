@@ -1062,7 +1062,7 @@ class MerchantController extends Controller
     {      
         $response = $this->service()->internalGetMerchant($merchantId);
 
-        return $response;
+        return ApiResponse::json($response);
     }
 
     /**

@@ -2420,9 +2420,17 @@ class Service extends Base\Service
      */
     public function internalGetMerchant($merchantId)
     {
+        $data = [];
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        return $merchant->toArrayPublic();
+        $data['merchant'] = $merchant->toArrayPublic();
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $data['merchant_detail'] = $merchantDetail->toArrayPublic();
+
+        return $data;
     }
 
     /**

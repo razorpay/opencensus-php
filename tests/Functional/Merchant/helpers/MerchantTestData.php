@@ -5668,8 +5668,13 @@ return [
         ],
         'response'      =>  [
             'content'   => [
-                'id'        => '100ghi000ghi00',
-                'entity'    =>  'merchant',
+                'merchant' => [
+                    'id'        => '100ghi000ghi00',
+                    'entity'    =>  'merchant',
+                ],
+                'merchant_detail' => [
+                    'contact_email' => 'test@gmail.com'
+                ]
             ],
             'status_code'   =>  200
         ]
