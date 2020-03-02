@@ -259,6 +259,8 @@ class UserRolePermissionsMap
                  Permission::VIEW_WEBHOOK,
                  Permission::VIEW_REPORTING,
                  Permission::VIEW_TRANSACTION_STATEMENT,
+                 Permission::GET_SELF_SERVE_REPORT,
+                 Permission::MERCHANT_PRODUCT_SWITCH,
              ],
         ];
 
