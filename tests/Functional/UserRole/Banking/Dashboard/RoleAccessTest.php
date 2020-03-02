@@ -106,7 +106,7 @@ class RoleAccessTest extends TestCase
 
             $this->assertEquals(
                 true,
-                UserRolePermissionsMap::getInstance()->isValidRolePermission(BankingRole::OWNER, $routePermission),
+                UserRolePermissionsMap::isValidRolePermission(BankingRole::OWNER, $routePermission),
                 "Route $route permission missing for role $role");
         }
     }

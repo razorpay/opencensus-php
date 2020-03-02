@@ -267,7 +267,7 @@ class UserAccess
         }
 
         // If role doesn't have route permission then deny otherwise allow
-        if (UserRolePermissionsMap::getInstance()->isInvalidRolePermission($userRole, $routePermission))
+        if (UserRolePermissionsMap::isInvalidRolePermission($userRole, $routePermission))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
