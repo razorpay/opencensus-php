@@ -27,6 +27,7 @@ use RZP\Jobs\QueuedPayouts;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
@@ -34,6 +35,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
@@ -462,7 +464,15 @@ class Core extends Base\Core
 
                 $diffTime = $nowTime->diffInMinutes(Carbon::createFromTimestamp($balanceLastFetchedAt, Timezone::IST));
 
-                if ($diffTime > FundAccountPayout\Direct\Base::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING)
+                $lastFetchedAtRateLimit =  (int) (new AdminService)->getConfigKey(
+                    ['key' => ConfigKey::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING]);
+
+                if (empty($lastFetchedAtRateLimit) === true)
+                {
+                    $lastFetchedAtRateLimit = FundAccountPayout\Direct\Base::DEFAULT_GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING;
+                }
+
+                if ($diffTime > $lastFetchedAtRateLimit)
                 {
                     $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance(
                         [
