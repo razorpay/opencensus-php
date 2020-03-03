@@ -50,7 +50,7 @@ return [
         ],
     ],
 
-    'testGet' => [
+    'testGetUser' => [
         'request' => [
             'url'    => '/users/id',
             'method' => 'GET',
@@ -74,6 +74,75 @@ return [
                 'invitations'             => [
                 ],
                 'settings'                => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetUserWithProductPrimary' => [
+        'request' => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants' => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner',
+                        'product'      => 'primary',
+                    ],
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner',
+                        'product'      => 'primary',
+                    ],
+                ],
+                'invitations' => [
+                ],
+                'settings' => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetUserWithProductBanking' => [
+        'request' => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'      => 'true',
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants' => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => null,
+                        'banking_role' => 'admin',
+                        'product'      => 'banking',
+                    ],
+                ],
+                'invitations' => [
+                ],
+                'settings' => [
                 ],
             ],
         ],
@@ -1376,6 +1445,7 @@ return [
             'content' => [],
             'server'  => [
                 'HTTP_X_DASHBOARD_USER_ID' => '30000000000000',
+                'HTTP_X-Request-Origin'    => 'https://x.razorpay.com',
             ]
         ],
         'response' => [
