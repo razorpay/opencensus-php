@@ -364,14 +364,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
         ],
     ],
 
@@ -511,14 +511,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
         ],
     ],
 
@@ -565,14 +565,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
         ],
     ],
 
@@ -636,6 +636,17 @@ return [
         'request' => [
             'url' => '/merchants/10abcdefghsdfs/terminals/testatomrandom',
             'method' => 'DELETE'
+        ],
+        'response' => [
+              'content' => [
+            ]
+        ],
+    ],
+
+    'testDeleteTerminal2' => [
+        'request' => [
+            'url' => '/terminals/testatomrandom',
+            'method' => 'DELETE',
         ],
         'response' => [
               'content' => [
@@ -856,6 +867,31 @@ return [
         'response' => [
             'content' => [
                 'type'  => [
+                    'direct_settlement_with_refund'
+                ],
+            ]
+        ],
+    ],
+
+    'testCreatePaytmCardTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                  => 'paytm',
+                'card'                      => 1,
+                'gateway_terminal_id'      => '12344',
+                'gateway_access_code'      => '12344',
+                'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => '12345',
+                'type'                      => [
+                    'non_recurring'                 => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'type'  => ['non_recurring',
                     'direct_settlement_with_refund'
                 ],
             ]
@@ -1083,7 +1119,8 @@ return [
     'testToggleTerminal' => [
         'request' => [
             'content' => [
-                'toggle' => '0'
+                'toggle' => '0',
+                'remarks'  => 'Disabling terminal because of some reason',
             ],
         'method' => 'PUT'
         ],
@@ -1554,7 +1591,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1601,7 +1637,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1719,7 +1754,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -1964,7 +1998,6 @@ return [
                     'KARB'   => 'Karnataka Bank',
                     'KVBL'   => 'Karur Vysya Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
-                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
                     'SRCB'   => 'Saraswat Co-operative Bank',
@@ -2441,6 +2474,33 @@ return [
         ]
     ],
 
+    'testTerminalOnboardingCreateTerminalForNonActivatedMerchant' => [
+        'request' => [
+            'content' => [
+                'mpan' => [
+                  'mastercard'  => '1234567880123456',
+                  'visa'        => '1234567890123456',
+                  'rupay'       => '1234567890123457'
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The merchant has not been activated. This action can only be taken for activated merchants',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED
+        ],
+    ],
+
+
     'testTerminalOnboardingCreateTerminalWithSameFields' => [
         'request' => [
             'content' => [
@@ -2721,4 +2781,31 @@ return [
             ]
         ]
     ],
+
+    'testCreateCybersourceYesBTerminal'      => [
+        'request'   => [
+            'content'   => [
+                'gateway'                   => 'cybersource',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_terminal_id'       => 'randommerchantid',
+                'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_secure_secret2'    => 'secure_secret2',
+                'gateway_access_code'       => 'access_code',
+                'gateway_acquirer'          => 'yesb',
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'recurring_3ds'     => '0',
+                    'recurring_non_3ds' => '1',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_acquirer'          => 'yesb',
+                'enabled'                   =>  true
+            ]
+        ]
+    ]
 ];

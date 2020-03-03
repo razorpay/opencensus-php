@@ -72,20 +72,24 @@ class Webhook extends Mailable
             'url' => $this->webhook['url'],
         ];
 
-        $data['error_message'] = $this->options['errorMessage'];
-
-        if (empty($data['error_message']) === true)
-        {
-            $data['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
-        }
-
         $data['date'] = date('d-M-Y H:m:s T');
 
-        $eventData = json_decode($this->options['event'], true);
+        if ($this->options['type'] !== 'deactivate')
+        {
 
-        $data['event'] = $eventData['event'];
+            $data['error_message'] = $this->options['errorMessage'];
 
-        $this->setEntityData($data, $eventData);
+            if (empty($data['error_message']) === true)
+            {
+                $data['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
+            }
+
+            $eventData = json_decode($this->options['event'], true);
+
+            $data['event'] = $eventData['event'];
+
+            $this->setEntityData($data, $eventData);
+        }
 
         $data['mode'] = $this->options['mode'];
 

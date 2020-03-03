@@ -44,7 +44,7 @@ class PayoutController extends Controller
 
     public function postRejectFundAccountPayout(string $id)
     {
-        $response = $this->service()->rejectFundAccountPayout($id);
+        $response = $this->service()->rejectFundAccountPayout($id, $this->input);
 
         return ApiResponse::json($response);
     }
@@ -170,6 +170,15 @@ class PayoutController extends Controller
         $input = Request::all();
 
         $response = $this->service()->calculateEsOnDemandFees($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateTestPayoutStatus(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateTestPayoutStatus($id, $input);
 
         return ApiResponse::json($response);
     }

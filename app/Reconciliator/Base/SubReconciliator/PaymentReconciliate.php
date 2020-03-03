@@ -64,6 +64,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::PAYPAL,
         RequestProcessor\Base::BAJAJFINSERV,
         RequestProcessor\Base::GETSIMPL,
+        RequestProcessor\Base::EMANDATE_AXIS
     ];
 
     /**
@@ -337,11 +338,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         {
             $this->cardsPaymentServiceDispatch($rowDetails);
         }
-
-        if ($this->payment->isRoutedThroughNbPlus() === true)
-        {
-            $this->nbPlusPaymentServiceDispatch($rowDetails);
-        }
     }
 
     /**
@@ -373,16 +369,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'payment_id' => $this->payment->getId(),
             ]
         );
-    }
-
-    /**
-     * This method has to be implemented in child class
-     * as the parameters and the job may vary based on the gateway
-     * @param array $rowDetails
-     */
-    protected function nbPlusPaymentServiceDispatch(array $rowDetails)
-    {
-        return;
     }
 
     protected function validatePaymentDetails(array $row)
@@ -638,9 +624,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             case VerifyResult::SUCCESS:
 
-                $this->messenger->raiseReconAlert(
+                $this->trace->info(
+                    TraceCode::RECON_FAILED_VERIFY,
                     [
-                        'trace_code' => TraceCode::RECON_FAILED_VERIFY,
                         'message'    => 'Verify returned failed. Payment is still in failed state.',
                         'payment_id' => $this->payment->getId(),
                         'amount'     => $this->payment->getAmount(),

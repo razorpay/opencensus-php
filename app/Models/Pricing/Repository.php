@@ -216,6 +216,20 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function getInstantRefundsDefaultPricingPlanForMethod($feature, $method, $merchant, $product = Product::PRIMARY)
+    {
+        $orgId = $merchant->org->getId();
+
+        return $this->newQuery()
+                    ->product($product)
+                    ->planId(Fee::DEFAULT_INSTANT_REFUNDS_PLAN_ID)
+                    ->where(Pricing\Entity::FEATURE, '=', $feature)
+                    ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->get();
+    }
+
     public function getBankingSharedAccountDefaultPricingRules(string $feature, Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();
@@ -358,7 +372,8 @@ class Repository extends Base\Repository
         $method,
         $methodType,
         $network,
-        $international)
+        $international,
+        $amountRangeActive = 0)
     {
         $rule = $this->newQueryWithOrgIdParam()
                      ->where(Entity::PLAN_ID, '=',$planId)
@@ -368,8 +383,27 @@ class Repository extends Base\Repository
                      ->where(Entity::PAYMENT_METHOD_TYPE, '=', $methodType)
                      ->where(Entity::PAYMENT_NETWORK, '=', $network)
                      ->where(Entity::INTERNATIONAL, '=', $international)
+                     ->where(Entity::AMOUNT_RANGE_ACTIVE, '=', $amountRangeActive)
                      ->first();
 
         return $rule;
+    }
+
+    // In case of Current Account Payouts, fees is deducted at a later stage. There is a chance that a Pricing Rule
+    // might have been deleted sometime between payout creation and transaction creation (which happens much later).
+    // We use withTrashed to get pricingRules if they have been soft deleted so that feesBreakup remains consistent.
+    public function getPricingFromPricingId($pricingRuleId, $withTrashed = false)
+    {
+        $idColumn = $this->dbColumn(Entity::ID);
+
+        $query = $this->newQuery()
+                      ->where($idColumn, $pricingRuleId);
+
+        if ($withTrashed === true)
+        {
+            $query = $query->withTrashed();
+        }
+
+         return $query->first();
     }
 }

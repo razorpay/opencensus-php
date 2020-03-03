@@ -16,6 +16,7 @@ use RZP\Gateway\Enach\Citi\Fields;
 use RZP\Models\Gateway\File\Status;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\FundTransfer\Holidays;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Mail\Gateway\Nach\Base as NachMail;
@@ -41,11 +42,20 @@ class PaperNachCiti extends Base
 
     public function fetchEntities(): PublicCollection
     {
+        if (Holidays::isWorkingDay(Carbon::now(Timezone::IST)) === false)
+        {
+            return new PublicCollection();
+        }
+
         $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
+                        ->addHours(9)
                         ->getTimestamp();
 
+        $begin = $this->getLastWorkingDay($begin);
+
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-                        ->getTimestamp();
+                      ->addHours(9)
+                      ->getTimestamp();
 
         $tokens = $this->repo->token->fetchPendingNachRegistration(self::GATEWAY, $begin, $end);
 

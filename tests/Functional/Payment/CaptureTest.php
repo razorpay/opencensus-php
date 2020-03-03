@@ -1397,6 +1397,32 @@ class CaptureTest extends TestCase
     }
 
     //Negative Balance Tests
+    public function testCaptureWithNegativeBalance()
+    {
+        $this->fixtures->base->editEntity('balance', '10000000000000',
+            [
+                'balance'     => -110000,
+            ]
+        );
+
+        Mail::fake();
+
+        $this->payment = $this->defaultAuthPayment(['amount' => 100,'currency' => 'INR']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+
+        $balance = $this->getDbEntityById('balance', '10000000000000');
+        $this->assertEquals(-109902, $balance['balance']);
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
     public function testEmandateCaptureWithSufficientBalance()
     {
         Mail::fake();
@@ -1468,7 +1494,7 @@ class CaptureTest extends TestCase
 
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
-            $this->assertEquals(-1180 , $viewData['balance']);
+            $this->assertEquals('-11.8 INR' , $viewData['balance']);
 
             $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
 
@@ -1480,7 +1506,7 @@ class CaptureTest extends TestCase
     {
         Mail::fake();
 
-        $paymentId = $this->setUpEmandateFixtures(-480000, 0);
+        $paymentId = $this->setUpEmandateFixtures(-248820, 0);
 
         $this->startTest();
 
@@ -1495,13 +1521,13 @@ class CaptureTest extends TestCase
         $this->assertEquals(1180, $transaction['fee']);
         $this->assertEquals(1180, $transaction['mdr']);
         $this->assertEquals(180, $transaction['tax']);
-        $this->assertEquals(-481180, $transaction['balance']);
+        $this->assertEquals(-250000, $transaction['balance']);
 
         $this->assertEquals($balance['id'], $transaction['balance_id']);
 
         $this->assertEquals($transaction['fee_model'], 'prepaid');
 
-        $this->assertEquals(-481180, $balance['balance']);
+        $this->assertEquals(-250000, $balance['balance']);
         $this->assertEquals('primary', $balance['type']);
         $this->assertEquals(0, $balance['fee_credits']);
 
@@ -1513,7 +1539,7 @@ class CaptureTest extends TestCase
 
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
-            $this->assertEquals(96, $viewData['percentage']);
+            $this->assertEquals(50, $viewData['percentage']);
 
             $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
 
@@ -1666,7 +1692,7 @@ class CaptureTest extends TestCase
 
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
-            $this->assertEquals(-1180 , $viewData['balance']);
+            $this->assertEquals('-11.8 INR' , $viewData['balance']);
 
             $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
 

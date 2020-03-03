@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Role;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Base;
@@ -12,7 +13,7 @@ use RZP\Models\Admin\Permission;
 
 class Core extends Base\Core
 {
-    public function create(array $input)
+    public function create(array $input, Merchant\Entity $merchant = null)
     {
         $workflow = (new Entity)->generateId();
 
@@ -34,6 +35,8 @@ class Core extends Base\Core
         $org = $this->repo->org->findOrFailPublic($orgId);
 
         $workflow->org()->associate($org);
+
+        $workflow->merchant()->associate($merchant);
 
         $workflow->build($input);
 

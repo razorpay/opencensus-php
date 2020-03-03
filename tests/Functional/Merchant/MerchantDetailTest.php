@@ -4,11 +4,15 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use Mail;
+
 use RZP\Constants;
-use Illuminate\Http\UploadedFile;
-use RZP\Mail\Merchant\Rejection;
+use RZP\Constants\Mode;
+use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
+use RZP\Mail\Merchant\Rejection;
+use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\Document\Source;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\Detail\ActivationFlow;
@@ -306,6 +310,14 @@ class MerchantDetailTest extends OAuthTestCase
             $testData['response']['content']);
 
         $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->isActivated());
+
+        $this->assertFalse($merchant->isLive());
+
+        $this->assertTrue($merchant->getHoldFunds());
 
         Mail::assertQueued(Rejection::class, function ($mail)
         {
@@ -1077,10 +1089,26 @@ class MerchantDetailTest extends OAuthTestCase
         $document = $this->getDbEntity(Constants\Entity::MERCHANT_DOCUMENT, [MerchantDocuments::FILE_STORE_ID => $fileStoreId]);
 
         $this->assertNULL($document);
+    }
 
-        $document = $this->getDbEntity(Constants\Entity::MERCHANT_DOCUMENT, [MerchantDocuments::FILE_STORE_ID => $merchantDetail->getAttribute($documentType)]);
+    public function testFileUploadSyncDetailAndDocumentUploadedToUFH()
+    {
+        $this->mockRazorX('testFileUploadSyncInDetailAndDocumentTable', 'use_ufh_file_store', 'on');
 
-        $this->assertNotNull($document);
+        $this->testFileUploadSyncInDetailAndDocumentTable();
+
+        $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
+        
+        $this->assertEquals($merchantDocumentEntry['source'], Source::UFH);
+    }
+
+    public function testFileUploadSyncDetailAndDocumentUploadedToAPI()
+    {
+        $this->testFileUploadSyncInDetailAndDocumentTable();
+
+        $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
+
+        $this->assertEquals($merchantDocumentEntry['source'], Source::API);
     }
 
     public function updateUploadDocumentData(string $callee, string $documentType)
@@ -1336,6 +1364,68 @@ class MerchantDetailTest extends OAuthTestCase
         $admin->merchants()->attach($merchant);
 
         $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
+    {
+        $testData = &$this->testData[$functionName];
+
+        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
+
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
+    }
+
+    public function testGetMerchantDetailsRegisteredBusinessWithSelectiveRequiredFields()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            MerchantDetails::MERCHANT_ID => $merchant['id'],
+            MerchantDetails::BUSINESS_TYPE => '1',
+            MerchantDetails::BUSINESS_CATEGORY => BusinessCategory::FINANCIAL_SERVICES,
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::MUTUAL_FUND,
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+    public function testGetMerchantDetailsRegisteredBusinessWithOptionalFields()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            MerchantDetails::MERCHANT_ID => $merchant['id'],
+            MerchantDetails::BUSINESS_TYPE => '1',
+            MerchantDetails::BUSINESS_CATEGORY => BusinessCategory::TOURS_AND_TRAVEL,
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::AVIATION,
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantDetailsRegisteredBusinessNgo()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            MerchantDetails::MERCHANT_ID => $merchant['id'],
+            MerchantDetails::BUSINESS_TYPE => '7',
+            MerchantDetails::BUSINESS_CATEGORY => BusinessCategory::EDUCATION,
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::SCHOOLS,
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
 
         $this->startTest();
     }

@@ -9,16 +9,22 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs;
 use RZP\Exception;
+use RZP\Jobs\EsSync;
 use RZP\Models\Card;
-use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\AdminFetch;
 use RZP\Models\Payment\Method;
+use RZP\Jobs\SFMerchantPocUpdate;
+use RZP\Jobs\SFMerchantPocRemoval;
 use RZP\Services\Mozart as MozartBase;
 use RZP\Models\GeoIP\Service as GeoIP;
-use RZP\Models\{Base, Batch, Admin\Org};
+use RZP\Jobs\SFAllMerchantToUnclaimedGroup;
+use RZP\Models\{Base, Base\EsRepository, Batch, Admin\Org};
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
 
@@ -169,6 +175,73 @@ class Service extends Base\Service
         $activeDbConnection = array_keys(DB::getConnections());
 
         $this->trace->info(TraceCode::ACTIVE_DB_CONNECTIONS, $activeDbConnection);
+    }
+
+    /**
+     * Removing current obsolete  admins from SME and Unclaimed group to avoid inconsistency
+     * Fetching admins of SF_CLAIMED_SME_GROUP_ID
+     * Calculate the difference of previous vs current AdminIDs
+     * Removing admins from SF_CLAIMED_SME_GROUP_ID
+     * Removing admins from SF_UNCLAIMED_GROUP_ID
+     *
+     * @param array $historicalSmeAdminsIds
+     * @param array $currentSmeAdminIds
+     */
+    protected function removeHistoricalAdminsFromGroup(array $historicalSmeAdminsIds, array $currentSmeAdminIds)
+    {
+        $deltaAdminIds = array_diff($historicalSmeAdminsIds, array_unique($currentSmeAdminIds));
+
+        if (count($deltaAdminIds) > 0)
+        {
+            $smeGroup = $this->repo->group->findOrFailPublic(Group\Constant::SF_CLAIMED_SME_GROUP_ID);
+
+            $unclaimed = $this->repo->group->findOrFailPublic(Group\Constant::SF_UNCLAIMED_GROUP_ID);
+
+            $this->trace->info(TraceCode::REMOVAL_HISTORICAL_ADMINS_FROM_GROUP,
+                               [
+                                   'action'                 => 'removal_historical_admins_from_group',
+                                   'historicalSmeAdminsIds' => $deltaAdminIds
+                               ]
+            );
+
+            (new Admin\Core)->removeGroupsFromAdmins($smeGroup, $deltaAdminIds);
+
+            (new Admin\Core)->removeGroupsFromAdmins($unclaimed, $deltaAdminIds);
+        }
+    }
+
+    /**
+     * @param array $value
+     *
+     * @return array
+     */
+    protected function getAdminIdsFromEmails(array $value): array
+    {
+        $currentAdmins = [];
+
+        $ownerEmail = $value['Owner']['Email'];
+
+        if (empty($value['Managers_In_Role_Hierarchy__c']) === true)
+        {
+            $adminEmails = [];
+        }
+        else
+        {
+            $emails = rtrim($value['Managers_In_Role_Hierarchy__c'], ',');
+
+            $adminEmails = explode(',', $emails);
+        }
+
+        array_push($adminEmails, $ownerEmail);
+
+        foreach ($adminEmails as $email)
+        {
+            $adminId = $this->repo->admin->findByEmail($email)->getId();
+
+            array_push($currentAdmins, $adminId);
+        }
+
+        return $currentAdmins;
     }
 
     public function fetchMultipleEntities($entity, $input)
@@ -919,5 +992,169 @@ class Service extends Base\Service
         $result['issuer'] = Card\Issuer::getAllIssuers();
         $result['network_code'] = Card\Network::getAllNetworkCodes();
         return $result;
+    }
+
+    protected function fetchLinkedAccountDetails(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $associatedAccounts = $merchant->accounts->getIds();
+
+        return $associatedAccounts;
+    }
+
+    /**
+     * @param array $input
+     * @param array $currentSmeAdminIds
+     * @param array $currentClaimedMerchantsIds
+     */
+    public function merchantPocUpdateOperation(array $input, array &$currentSmeAdminIds, array &$currentClaimedMerchantsIds)
+    {
+        foreach ($input['records'] as $key => $value)
+        {
+            try
+            {
+                (new Validator())->validateInput('sf_poc_record', $value);
+
+                $recordAdminIds = $this->getAdminIdsFromEmails($value);
+
+                $merchantId = $value['Merchant_ID__c'];
+
+                $merchantIds = $this->fetchLinkedAccountDetails($merchantId);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::SF_POC_UPDATE_DATA_VALIDATION_ERROR, [
+                    'message' => 'Error in record data',
+                    'record'  => $value,
+                ]);
+
+                continue;
+            }
+
+            $tagNames = strtolower($value['Owner_Role__c']);
+
+            if (strpos($tagNames, 'sme') !== false)
+            {
+                $currentSmeAdminIds = array_merge($recordAdminIds, $currentSmeAdminIds);
+            }
+
+            $merchantIds[] = $merchantId;
+
+            SFMerchantPocUpdate::dispatch($this->mode, $value, $recordAdminIds);
+
+            $currentClaimedMerchantsIds = array_merge($merchantIds, $currentClaimedMerchantsIds);
+
+            $merchantIdsBatches = array_chunk($merchantIds, 1000, true);
+
+            foreach ($merchantIdsBatches as $batch)
+            {
+                EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT, $batch);
+            }
+        }
+    }
+
+    /**
+     * @param $input
+     *
+     * @throws \Throwable
+     */
+    public function updateMerchantPoc($input)
+    {
+        RuntimeManager::setMemoryLimit('2048M');
+
+        RuntimeManager::setTimeLimit(20000);
+
+        $currentClaimedMerchantsIds = [];
+
+        $currentSmeAdminIds = [];
+
+        $historicalSmeAdminsIds = \DB::connection($this->mode)->table('group_map')
+                                     ->select('entity_id')
+                                     ->where('group_id', Group\Constant::SF_CLAIMED_SME_GROUP_ID)
+                                     ->get()
+                                     ->pluck('entity_id')
+                                     ->toArray();
+
+        if (empty($input) === true)
+        {
+            $input = $this->app->salesforce->fetchAccountDetails();
+
+            (new Validator)->validateInput('sf_poc_data', $input);
+
+            $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+
+            while ($input['done'] === false)
+            {
+                $input = $this->app->salesforce->fetchAccountDetails($input['nextRecordsUrl']);
+
+                (new Validator)->validateInput('sf_poc_data', $input);
+
+                $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+            }
+        }
+        else
+        {
+            (new Validator)->validateInput('sf_poc_data', $input);
+
+            $this->merchantPocUpdateOperation($input, $currentSmeAdminIds, $currentClaimedMerchantsIds);
+        }
+
+        $historicalClaimedMerchantIds = $this->repo->merchant->fetchHistoricalClaimedMerchantIds($this->mode);
+
+        $this->removeHistoricalAdminsFromGroup($historicalSmeAdminsIds, $currentSmeAdminIds);
+
+        $deltaUnclaimedAccounts = array_diff($historicalClaimedMerchantIds, array_unique($currentClaimedMerchantsIds));
+
+        if (sizeof($deltaUnclaimedAccounts) > 0)
+        {
+            foreach ($deltaUnclaimedAccounts as $merchantId)
+            {
+                SFMerchantPocRemoval::dispatch($this->mode, $merchantId);
+            }
+        }
+
+        EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT, $deltaUnclaimedAccounts);
+    }
+
+    public function unclaimedMerchantPoc(array $input = [])
+    {
+        RuntimeManager::setTimeLimit(10000);
+
+        $input['count'] = 5000;
+
+        $input['afterId'] = $input['afterId'] ?? null;
+
+        $count = 0;
+
+        while (true)
+        {
+            $merchants = (new Merchant\Core)->getAllMerchantIds($input);
+
+            if ($merchants->isEmpty() === true)
+            {
+                break;
+            }
+
+            $count += $merchants->count();
+
+            $input['afterId'] = $merchants->last()->getId();
+
+            $this->trace->info(TraceCode::MERCHANT_POC_UPDATE_REQUEST,
+                               [
+                                   'message' => 'Merchant POC update request for Unclaimed From Service before Job',
+                                   'count'   => $count,
+                                   'startId' => $merchants->first()->getId(),
+                                   'endId'   => $merchants->last()->getId(),
+                               ]
+            );
+
+            SFAllMerchantToUnclaimedGroup::dispatch($this->mode,
+                                                    $merchants->pluck(Merchant\Entity::ID)->toArray());
+            EsSync::dispatch($this->mode, EsRepository::UPDATE, Entity::MERCHANT,
+                             $merchants->pluck(Merchant\Entity::ID)->toArray());
+        }
+
+        return [];
     }
 }

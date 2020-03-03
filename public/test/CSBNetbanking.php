@@ -2,7 +2,7 @@
 <html>
 <?php
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
-$key_id = $_GET['key'] ?? 'rzp_test_jFvhbdELIOd4B6';
+$key_id = $_GET['key'] ?? 'rzp_test_RedxfhsDcAtJP6';
 $secret = 'thisissupersecret';
 $public_url = $baseurl;
 $private_url = $key_id.':'.$secret.'@'.$baseurl;
@@ -89,7 +89,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </tr>
     <tr>
         <td>
-            <input type="hidden" value="rzp_test_jFvhbdELIOd4B6" name="key_id">
+            <input type="hidden" value="rzp_test_RedxfhsDcAtJP6" name="key_id">
         </td>
     </tr>
     <tr>
@@ -106,6 +106,10 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     <tr>
         <td><input type="hidden" name="email" size="25" value="test@razorpay.com"></td>
         <td><input type="hidden" name="contact" size="25" value="9876543210"></td>
+    </tr>
+    <tr>
+        <td colspan='40'>Razorpay Order Id:</td>
+        <td><input type="text" name="order_id" size="25" value=""></td>
     </tr>
     <tr>
         <td colspan="100" align="center">

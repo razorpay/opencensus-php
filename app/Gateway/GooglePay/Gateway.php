@@ -4,11 +4,10 @@ namespace RZP\Gateway\GooglePay;
 
 use RZP\Constants;
 use RZP\Exception;
-use RZP\Models\Card;
 use RZP\Gateway\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\GooglePay\RequestFields;
 
 class Gateway extends Base\Gateway
@@ -56,11 +55,27 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($data): array
     {
+        (new Validator)->validateInput('google_pay_card_authorization', $data);
+
         $response = $this->decryptData($data[RequestFields::TOKEN]);
 
-        $data[RequestFields::TOKEN] = $response['data']['decryptedMessage'];
+        if (isset($response['data']['decryptedMessage']) === true)
+        {
+            $data[RequestFields::TOKEN] = $response['data']['decryptedMessage'];
 
-        return $data;
+            return $data;
+        }
+
+        $this->trace->error(
+            TraceCode::GATEWAY_DECRYPTION_FAILED,
+            [
+                'gateway'       => 'google_pay',
+                'response'      => $response,
+            ]
+        );
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_DECRYPTION_FAILED);
     }
 
     public function verify(array $input)
@@ -80,7 +95,13 @@ class Gateway extends Base\Gateway
 
         $paymentId = $this->getUnsignedId($publicPaymentId);
 
-        $payment = (new Payment\Repository)->findOrFail($paymentId);
+        try {
+            $payment = (new Payment\Repository)->findOrFail($paymentId);
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
+        }
 
         if ($payment->getAuthenticationGateway() === Payment\Gateway::GOOGLE_PAY)
         {
@@ -89,11 +110,13 @@ class Gateway extends Base\Gateway
             switch($status)
             {
                 case Payment\Status::CAPTURED:
-                    $response['STATUS'] = 'SUCCESS';
+                    $response['STATUS'] = 'CAPTURED';
                     break;
                 case Payment\Status::AUTHORIZED:
+                    $response['STATUS'] = 'SUCCESS';
+                    break;
                 case Payment\Status::CREATED:
-                    $response['STATUS'] = 'IN PROCESS';
+                    $response['STATUS'] = 'CREATED';
                     break;
                 case Payment\Status::FAILED:
                     $response['STATUS'] = 'FAILED';
@@ -102,6 +125,10 @@ class Gateway extends Base\Gateway
                     $response['STATUS'] = 'REFUNDED';
                     break;
             }
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
         }
 
         $this->trace->info(
@@ -169,10 +196,13 @@ class Gateway extends Base\Gateway
 
         $payment = (new Payment\Repository())->findOrFail($id);
 
-        if (($payment->getStatus() === Payment\Status::AUTHORIZED) or
-            ($payment->getStatus() === Payment\Status::CAPTURED))
+        if ($payment->getStatus() === Payment\Status::AUTHORIZED)
         {
             return ['status' => 'SUCCESS'];
+        }
+        else if ($payment->getStatus() === Payment\Status::CAPTURED)
+        {
+            return ['status' => 'CAPTURED'];
         }
 
         return ['status' => 'FAILED'];
@@ -180,37 +210,35 @@ class Gateway extends Base\Gateway
 
     protected function getGooglePayBundle($payment)
     {
-        $gatewayParameters = json_encode([
+        $gatewayParameters = [
             'gateway'              => self::GATEWAY_NAME,
             'gatewayMerchantId'    => $payment[Payment\Entity::MERCHANT_ID],
             'gatewayTransactionId' => $payment[Payment\Entity::PUBLIC_ID],
-        ]);
+        ];
 
         $paymentDetail = [];
         $paymentDetail['type'] = self::PAYMENT_TYPE;
-        $paymentDetail['parameters'] = json_encode([
+        $paymentDetail['parameters'] = [
             'allowedCardNetworks' => self::SUPPORTED_CARD_NETWORKS,
-        ]);
-        $paymentDetail['tokenizationSpecification'] = json_encode([
+        ];
+        $paymentDetail['tokenizationSpecification'] = [
             'type'       => self::PAYMENT_TOKEN_TYPE,
             'parameters' => $gatewayParameters,
-        ]);
+        ];
 
-        $transactionInfo = json_encode([
+        $transactionInfo = [
             'currencyCode'     => $payment[Payment\Entity::CURRENCY],
             // GooglePay expects the amount/price in Rupees.
             'totalPrice'       => number_format(floatval($payment[Payment\Entity::AMOUNT] / 100), 2, '.', ''),
             'totalPriceStatus' => self::PRICE_STATUS,
-        ]);
+        ];
 
-        return json_encode(
-            [
+        return [
                 'apiVersion' => '1.0',
                 'allowedPaymentMethods' => [
-                    json_encode($paymentDetail)
+                    $paymentDetail
                 ],
                 'transactionInfo' => $transactionInfo,
-            ]
-        );
+            ];
     }
 }

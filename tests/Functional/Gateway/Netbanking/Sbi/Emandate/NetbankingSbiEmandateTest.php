@@ -352,6 +352,39 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertEquals('processed', $batch['status']);
     }
 
+    public function testRegisterReconForLateAuth()
+    {
+        $this->testEmandateInitialPaymentFailure();
+
+        $registerPayments[] = [
+            'payment' => $this->getDbLastEntity('payment'),
+            'status'  => 'SUCCESS',
+            'umrn'    => '111111111111111'
+        ];
+
+        $registerSuccessFile = $this->getRegisterSuccessExcel($registerPayments);
+
+        $batch = $this->uploadBatchFile($registerSuccessFile, 'register');
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $batch = $this->getEntityById('batch', $batch['id'], true);
+        $this->assertEquals('processed', $batch['status']);
+
+        $successPayment = $this->getDbEntityById('payment', $registerPayments[0]['payment']['id']);
+        $successToken = $successPayment->getGlobalOrLocalTokenEntity();
+        $successNetbanking =$this->getDbEntity('netbanking', ['payment_id' => $registerPayments[0]['payment']['id']]);
+
+        $this->assertEquals('captured', $successPayment['status']);
+        $this->assertEquals('confirmed', $successToken['recurring_status']);
+        $this->assertNotNull($successToken['gateway_token']);
+        $this->assertEquals('confirmed', $successNetbanking['si_status']);
+        $this->assertNotNull($successNetbanking['si_token']);
+        $this->assertTrue($successNetbanking['received']);
+        $this->assertTrue($successPayment->transaction->isReconciled());
+        $this->assertEquals($successPayment['terminal_id'], $successToken['terminal_id']);
+    }
+
     public function testEmandateDebit()
     {
         $registerPayments[] = [
@@ -414,7 +447,7 @@ class NetbankingSbiEmandateTest extends TestCase
 
         $debitPayments[] = [
             'payment'       => $this->createSecondReccuringPayment($token),
-            'status'        => 'Failure',
+            'status'        => 'REJECTED',
             'return_reason' => 'Mandate does not Exist / Expired',
         ];
 

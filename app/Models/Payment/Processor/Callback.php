@@ -61,7 +61,7 @@ trait Callback
 
         $payment = $this->retrieve($id);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CALLBACK_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CALLBACK_INITIATED, $payment);
 
         $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_REQUEST);
 
@@ -82,7 +82,7 @@ trait Callback
 
     public function s2sCallback($payment, array $gatewayInput)
     {
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_S2S_CALLBACK_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_S2S_CALLBACK_INITIATED, $payment);
 
         // Return if payment is auto captured
         if ($payment->getAutoCaptured())
@@ -134,6 +134,8 @@ trait Callback
                 $isS2sCallback = true;
 
                 $this->processPaymentCallback($payment, $gatewayInput, $isS2sCallback);
+
+                $this->postPaymentAuthorizeOfferProcessing($payment);
 
                 $this->autoCapturePaymentIfApplicable($payment);
             },
@@ -513,8 +515,10 @@ trait Callback
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
                 null,
                 [
-                    'payment_id' => $this->payment->getId(),
-                    'status' => $status
+                    'payment_id'  => $this->payment->getPublicId(),
+                    'order_id'    => $this->payment->getPublicOrderId(),
+                    'method'      => $this->payment->getMethod(),
+                    'status'      => $status
                 ]);
         }
 
@@ -549,6 +553,10 @@ trait Callback
     protected function updatePaymentOnExceptionAndThrow($e)
     {
         $internalErrorCode = $e->getError()->getInternalErrorCode();
+
+        $e->setData(['payment_id'  => $this->payment->getPublicId(),
+                     'order_id'    => $this->payment->getPublicOrderId(),
+                     'method'      => $this->payment->getMethod()]);
 
         if (Error\Error::hasAction($internalErrorCode) === false)
         {

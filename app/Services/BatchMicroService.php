@@ -97,6 +97,14 @@ class BatchMicroService
             $relativeUri = '/'. self::BATCH_URLS['batch'] . '?' . http_build_query($data);
         }
 
+        if (isset($input['config']))
+        {
+            array_push($multipartData, [
+                'name'     => 'settings',
+                'contents' => json_encode($input['config']),
+            ]);
+        }
+
         $this->trace->info(TraceCode::BATCH_SERVICE_MULTIPART_PAYLOAD, ['multipartData' => $multipartData]);
 
         $response = $this->sendToBatchService($multipartData, $merchant, $relativeUri);
@@ -300,14 +308,6 @@ class BatchMicroService
             ],
         ];
 
-        if (isset($input['config']))
-        {
-            array_push($multipartData, [
-                'name'     => 'settings',
-                'contents' => json_encode($input['config']),
-            ]);
-        }
-
         if (isset($input['name']))
         {
             array_push($multipartData, [
@@ -330,7 +330,10 @@ class BatchMicroService
                 return Batch\Status::PROCESSED;
 
             case 'FAILED':
-                return BATCH\Status::FAILURE;
+                return Batch\Status::FAILURE;
+
+            case 'CANCELLED':
+                return Batch\Status::CANCELLED;
 
             default:
                 return Batch\Status::PARTIALLY_PROCESSED;
@@ -428,23 +431,28 @@ class BatchMicroService
      */
     public function getBatchesFromBatchService(string $batchId = null, Merchant\Entity $merchant = null, array $inputQueryParams = null)
     {
-        $this->trace->info(TraceCode::GET_BATCHES_BATCH_SERVICE, ['batchId' => $batchId]);
+        $this->trace->info(
+            TraceCode::GET_BATCHES_BATCH_SERVICE,
+            [
+                'batchId'          => $batchId,
+                'inputQueryParams' => $inputQueryParams,
+            ]);
 
         $queryParams = [];
 
-        if (isset($inputQueryParams['type']))
+        if (isset($inputQueryParams['type']) and
+            empty($inputQueryParams['type']) === false)
         {
-            $queryParams = [
-                'batchTypeId' => $inputQueryParams['type'],
-            ];
+            $queryParams['batchTypeId'] = $inputQueryParams['type'];
         }
 
-        if (isset($inputQueryParams['types']))
+        if (isset($inputQueryParams['types']) and
+            empty($inputQueryParams['types']) === false)
         {
-            $queryParams = [
-                'batchTypeIds' => $inputQueryParams['types']
-            ];
+            $queryParams['batchTypeIds'] = $inputQueryParams['types'];
         }
+
+        $this->checkAndMergeBatchTypes($queryParams);
 
         $this->checkAndInsert('from', $inputQueryParams, $queryParams);
 
@@ -476,6 +484,16 @@ class BatchMicroService
         }
 
         return $response;
+    }
+
+    private function checkAndMergeBatchTypes(& $output)
+    {
+        if (isset($output['batchTypeId']) and
+           isset($output['batchTypeIds']))
+        {
+            array_push($output['batchTypeIds'], $output['batchTypeId']);
+            unset($output['batchTypeId']);
+        }
     }
 
     public function isMigratingBatchType(string $type): bool
@@ -633,5 +651,33 @@ class BatchMicroService
         }
 
         return true;
+    }
+
+    public function cancelBatchInBatchService(string $id)
+    {
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_CANCEL_BATCH,
+            [
+                'batch_id' => $id,
+            ]
+        );
+
+        $relativeUrl = self::BATCH_URLS['batch'] . '/' . Batch\Entity::verifyIdAndStripSign($id) . '/cancel';
+
+        try
+        {
+            $options['mode'] = $this->mode;
+
+            $this->getResponseFromBatchService($relativeUrl, Requests::POST, $options);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->error(
+                TraceCode::BATCH_SERVICE_CANCEL_BATCH_FAILED,
+                [
+                    'batch_id' => $id,
+                ]
+            );
+        }
     }
 }

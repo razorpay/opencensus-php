@@ -18,7 +18,6 @@ use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
-use RZP\Models\Merchant\Balance;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
@@ -26,6 +25,7 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Offer;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 
 trait Capture
 {
@@ -47,22 +47,18 @@ trait Capture
             ]
         );
 
-        $this->app['diag']->trackPaymentEvent(
+        $this->app['diag']->trackPaymentEventV2(
             EventCode::PAYMENT_CAPTURE_INITIATED,
             $payment,
             null,
+            [],
             [
                 'input'  => $input
             ]);
 
         $this->setPayment($payment);
 
-        // set the input currency if missing and payment currency is INR
-        if ((isset($input['currency']) === false) and
-            ($payment->getCurrency() === Currency\Currency::INR))
-        {
-            $input['currency'] = Currency\Currency::INR;
-        }
+        $input['currency'] = $payment->getCurrency();
 
         $payment->getValidator()->validateInput('capture', $input);
 
@@ -78,10 +74,20 @@ trait Capture
      */
     public function autoCapturePayment($payment)
     {
-        $this->app['diag']->trackPaymentEvent(
+        $this->app['diag']->trackPaymentEventV2(
             EventCode::PAYMENT_CAPTURE_INITIATED,
             $payment,
             null,
+            [
+                'metadata' => [
+                    'payment' => [
+                        'id' => $payment->getPublicId(),
+                        'auto_capture' => 1
+                    ]
+                ],
+                'read_key' => array('payment.id'),
+                'write_key' => 'payment.id'
+            ],
             [
                 'auto_capture' => 1
             ]);
@@ -349,13 +355,13 @@ trait Capture
 
             $this->captureOnGateway($data, $autoCaptured);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
 
             return $payment;
         }
         catch (\Throwable $e)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment, $e);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment, $e);
 
             (new Payment\Metric)->pushExceptionMetrics($e, Payment\Metric::PAYMENT_CAPTURE_FAILED);
 
@@ -668,7 +674,7 @@ trait Capture
                     'message'    => $e->getMessage(),
                 ]);
 
-            $this->updateMerchantBalance($payment, $transaction);
+            $this->updateMerchantBalance($payment, $txn);
         }
     }
 
@@ -1292,16 +1298,6 @@ trait Capture
 
     public function shouldProcessOrderTransfer(Payment\Entity $payment)
     {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                    Merchant\RazorxTreatment::TRANSFERS_VIA_ORDER,
-                                                    $this->mode
-        );
-
-        if (strtolower($variant) !== 'on')
-        {
-            return false;
-        }
-
         if ($payment->isCaptured() !== true or
             $payment->hasOrder() !== true)
         {

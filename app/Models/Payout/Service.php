@@ -7,6 +7,7 @@ use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\Card;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Pricing;
@@ -35,7 +36,7 @@ class Service extends Base\Service
     protected $fundAccountService;
 
     /**
-     * @var ContactCore
+     * @var Contact\Core
      */
     protected $contactCore;
 
@@ -61,7 +62,48 @@ class Service extends Base\Service
         // Only allowed for Rx payouts, mandates account number
         $this->processAccountNumber($input);
 
-        $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
+        $payout = $this->repo->transaction(
+            function () use ($input)
+            {
+                $isCompositePayout = false;
+
+                (new Validator)->setStrictFalse()
+                               ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
+
+                if (isset($input[Entity::FUND_ACCOUNT]) === true)
+                {
+                    $isCompositePayout = true;
+
+                    $input = $this->getPayoutInputForCompositeRequest($input);
+                }
+
+                /** @var Entity $payout */
+                $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
+
+                if ($isCompositePayout === true)
+                {
+                    $this->trace->info(
+                        TraceCode::COMPOSITE_PAYOUT_CREATED,
+                        [
+                            'payout_id'       => $payout->getId(),
+                            'fund_account_id' => $payout->fundAccount->getId(),
+                            'contact_id'      => $payout->fundAccount->source->getId(),
+                        ]);
+
+                    // Setting $composite field for payout entity to deny unsetting of fund_account field in a
+                    // strictPrivateAuth composite payout request
+                    $payout->setComposite(true);
+
+                    $payout = $payout->load('fundAccount.contact');
+
+                    // Setting $composite field for fund_account entity to deny unsetting of contact field in a
+                    // strictPrivateAuth composite payout request
+                    $payout->fundAccount->setComposite(true);
+                }
+
+                return $payout;
+            }
+        );
 
         return $payout->toArrayPublic();
     }
@@ -79,7 +121,7 @@ class Service extends Base\Service
 
         (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
 
-        $payout = (new Core)->approvePayout($payout);
+        $payout = (new Core)->approvePayout($payout, $input);
 
         return $payout->toArrayPublic();
     }
@@ -107,7 +149,7 @@ class Service extends Base\Service
         {
             try
             {
-                $payout = (new Core)->approvePayout($payout);
+                $payout = (new Core)->approvePayout($payout, $input);
             }
             catch (\Throwable $e)
             {
@@ -127,7 +169,7 @@ class Service extends Base\Service
         ];
     }
 
-    public function rejectFundAccountPayout(string $id): array
+    public function rejectFundAccountPayout(string $id, array $input): array
     {
         $this->trace->info(TraceCode::PAYOUT_REJECT_REQUEST, ['id' => $id]);
 
@@ -136,7 +178,7 @@ class Service extends Base\Service
 
         $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 
-        $payout = (new Core)->rejectPayout($payout);
+        $payout = (new Core)->rejectPayout($payout, $input);
 
         return $payout->toArrayPublic();
     }
@@ -160,7 +202,7 @@ class Service extends Base\Service
         {
             try
             {
-                $payout = (new Core)->rejectPayout($payout);
+                $payout = (new Core)->rejectPayout($payout, $input);
             }
             catch (\Throwable $e)
             {
@@ -185,15 +227,19 @@ class Service extends Base\Service
     /**
      * Business banking: Forwards request to `fundAccountPayout()` after verifying user's otp for the action.
      *
-     * @param  array $input
+     * @param array $input
      *
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function fundAccountPayoutWithOtp(array $input): array
     {
         $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
 
-        (new User\Core)->verifyOtp($input + ['action' => 'create_payout'], $this->merchant, $this->user);
+        (new User\Core)->verifyOtp($input + ['action' => 'create_payout'],
+                                   $this->merchant,
+                                   $this->user,
+                                   $this->mode === Constants\Mode::TEST);
 
         $payoutInput = array_except($input, ['otp', 'token']);
 
@@ -519,6 +565,32 @@ class Service extends Base\Service
         return $payoutBatch->toArrayWithItems();
     }
 
+    /**
+     * This route has been added to update payout status in test mode
+     * Since we don't actually hit the banks in test mode
+     * In live mode this is taken care of by FTS
+     *
+     * @param string $id
+     * @param array  $input
+     * @return array
+     */
+    public function updateTestPayoutStatus(string $id, array $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_STATUS_UPDATE_REQUEST,
+            [
+                'payout_id' => $id,
+                'input'     => $input
+            ]);
+
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payout = $this->core->updateTestPayoutStatus($payout, $input);
+
+        return $payout->toArrayPublic();
+    }
+
     protected function getQueuedPayoutsSummary()
     {
         $queuedPayoutsSummary = [];
@@ -661,5 +733,107 @@ class Service extends Base\Service
         $flag = ($variant === 'create_duplicate') ? true : false;
 
         return $flag;
+    }
+
+    /**
+     * Ideally, this function should not be calling service of other entities. But, this function is being
+     * written as a wrapper for the merchant. All the calls being made from this function to other services
+     * is to be considered as individual calls being made by the merchant.
+     * *
+     * @param array $input
+     *
+     * @return array
+     */
+    protected function getPayoutInputForCompositeRequest(array $input): array
+    {
+        $traceRequest = $this->unsetSensitiveCardDetails($input);
+
+        $this->trace->info(TraceCode::PAYOUT_COMPOSITE_CREATE_REQUEST, $traceRequest);
+
+        (new Validator)->validateInput(Validator::FUND_ACCOUNT_PAYOUT_COMPOSITE, $input);
+
+        $compositeInput = $this->repo->transaction(
+            function () use ($input)
+            {
+                $contactData = $this->createContactForCompositePayout($input);
+
+                $contactId = $contactData[Contact\Entity::ID];
+
+                $fundAccountData = $this->createFundAccountForCompositePayout($input, $contactId);
+
+                $fundAccountId = $fundAccountData[FundAccount\Entity::ID];
+
+                $payoutInput = $this->getInputForPayoutCreateFromComposite($input, $fundAccountId);
+
+                return $payoutInput;
+            });
+
+        return $compositeInput;
+    }
+
+    // @TODO: refactor this/move it to FundAccount entity.
+    protected function unsetSensitiveCardDetails(array $input): array
+    {
+        $fundAccountInput = $input[Entity::FUND_ACCOUNT] ?? [];
+
+        if ((isset($fundAccountInput[FundAccount\Entity::CARD]) === true) and
+            (is_array($fundAccountInput[FundAccount\Entity::CARD]) === true))
+        {
+            if (empty($fundAccountInput[FundAccount\Entity::CARD][Card\Entity::NUMBER]) === false)
+            {
+                $fundAccountInput[FundAccount\Entity::CARD][Card\Entity::IIN] =
+                    substr($fundAccountInput[FundAccount\Entity::CARD][Card\Entity::NUMBER], 0, 6);
+            }
+
+            unset($fundAccountInput[FundAccount\Entity::CARD][Card\Entity::CVV]);
+            unset($fundAccountInput[FundAccount\Entity::CARD][Card\Entity::NUMBER]);
+        }
+
+        return $input;
+    }
+
+    protected function getInputForContactCreateFromComposite(array $input): array
+    {
+        return $input[Entity::FUND_ACCOUNT ][Entity::CONTACT];
+    }
+
+    protected function getInputForFundAccountCreateFromComposite(array $input, string $contactId): array
+    {
+        $fundAccountInput = $input[Entity::FUND_ACCOUNT];
+
+        unset($fundAccountInput[Entity::CONTACT]);
+
+        $fundAccountInput[FundAccount\Entity::CONTACT_ID] = $contactId;
+
+        return $fundAccountInput;
+    }
+
+    protected function getInputForPayoutCreateFromComposite(array $input, string $fundAccountId): array
+    {
+        $payoutInput = $input;
+
+        unset($payoutInput[Entity::FUND_ACCOUNT]);
+
+        $payoutInput[Payout\Entity::FUND_ACCOUNT_ID] = $fundAccountId;
+
+        return $payoutInput;
+    }
+
+    protected function createContactForCompositePayout(array $input): array
+    {
+        $contactInput = $this->getInputForContactCreateFromComposite($input);
+
+        $contactResponse = (new Contact\Service)->create($contactInput);
+
+        return $contactResponse[Constants\Entity::CONTACT];
+    }
+
+    protected function createFundAccountForCompositePayout(array $input, string $contactId): array
+    {
+        $fundAccountInput = $this->getInputForFundAccountCreateFromComposite($input, $contactId);
+
+        $fundAccountResponse = (new FundAccount\Service)->create($fundAccountInput);
+
+        return $fundAccountResponse[Constants\Entity::FUND_ACCOUNT]->toArrayPublic();
     }
 }

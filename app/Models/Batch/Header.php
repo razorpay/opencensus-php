@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -136,6 +137,11 @@ class Header
     const MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID        = 'Merchant Id';
 
     //
+    // Mdr adjustment headers
+    //
+    const MDR_ADJUSTMENT_TRANSACTION_ID = 'transaction_id';
+
+    //
     // Virtual Account Bulk Creation Headers
     //
     const VA_CUSTOMER_ID         = 'customer_id';
@@ -227,6 +233,8 @@ class Header
     const CITI_NACH_REGISTER_STATUS                        = CitiNachRegisterHeadings::STATUS;
     const CITI_NACH_REGISTER_REMARKS                       = CitiNachRegisterHeadings::REMARKS;
     const CITI_NACH_REGISTER_UMRN                          = CitiNachRegisterHeadings::UMRN;
+    const CITI_NACH_REGISTER_LOT                           = CitiNachRegisterHeadings::LOT;
+    const CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE       = CitiNachRegisterHeadings::SOFT_COPY_RECEIVED_DATE;
     //
     // Citi Nach Debit Response File Headers
     //
@@ -303,22 +311,24 @@ class Header
     //
     // SBI Emandate Debit Response File Headers
     //
-    const SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER   = SbiEMDebitHeadings::SERIAL_NUMBER;
-    const SBI_EM_DEBIT_EMANDATE_TYPE            = SbiEMDebitHeadings::EMANDATE_TYPE;
-    const SBI_EM_DEBIT_UMRN                     = SbiEMDebitHeadings::UMRN;
-    const SBI_EM_DEBIT_SCHEME_NAME              = SbiEMDebitHeadings::SCHEME_NAME;
-    const SBI_EM_DEBIT_SUB_SCHEME_NAME          = SbiEMDebitHeadings::SUB_SCHEME_NAME;
-    const SBI_EM_DEBIT_MANDATE_HOLDER_NAME      = SbiEMDebitHeadings::MANDATE_HOLDER_NAME_RESP;
-    const SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER     = SbiEMDebitHeadings::DEBIT_ACC_NO;
-    const SBI_EM_DEBIT_DEBIT_BANK_IFSC          = SbiEMDebitHeadings::DEBIT_BANK_IFSC;
-    const SBI_EM_DEBIT_DEBIT_DATE               = SbiEMDebitHeadings::DEBIT_DATE_RESP;
-    const SBI_EM_DEBIT_AMOUNT                   = SbiEMDebitHeadings::AMOUNT;
-    const SBI_EM_DEBIT_JOURNAL_NUMBER           = SbiEMDebitHeadings::JOURNAL_NUMBER;
-    const SBI_EM_DEBIT_PROCESSING_DATE          = SbiEMDebitHeadings::PROCESSING_DATE;
-    const SBI_EM_DEBIT_CUSTOMER_REF_NO          = SbiEMDebitHeadings::CUSTOMER_REF_NO;
-    const SBI_EM_DEBIT_DEBIT_STATUS             = SbiEMDebitHeadings::DEBIT_STATUS;
-    const SBI_EM_DEBIT_CREDIT_STATUS            = SbiEMDebitHeadings::CREDIT_STATUS;
-    const SBI_EM_DEBIT_REASON                   = SbiEMDebitHeadings::REASON;
+    const SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER    = SbiEMDebitHeadings::SERIAL_NUMBER;
+    const SBI_EM_DEBIT_UMRN                      = SbiEMDebitHeadings::UMRN;
+    const SBI_EM_DEBIT_CUSTOMER_CODE             = SbiEMDebitHeadings::CUSTOMER_CODE;
+    const SBI_EM_DEBIT_CUSTOMER_NAME             = SbiEMDebitHeadings::CUSTOMER_NAME;
+    const SBI_EM_DEBIT_TRANSACTION_INPUT_CHANNEL = SbiEMDebitHeadings::TRANSACTION_INPUT_CHANNEL;
+    const SBI_EM_DEBIT_FILE_NAME                 = SbiEMDebitHeadings::FILE_NAME;
+    const SBI_EM_DEBIT_CUSTOMER_REF_NO           = SbiEMDebitHeadings::CUSTOMER_REF_NO;
+    const SBI_EM_DEBIT_MANDATE_HOLDER_NAME       = SbiEMDebitHeadings::MANDATE_HOLDER_NAME;
+    const SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER      = SbiEMDebitHeadings::MANDATE_HOLDER_ACCOUNT_NO;
+    const SBI_EM_DEBIT_DEBIT_BANK_IFSC           = SbiEMDebitHeadings::DEBIT_BANK_IFSC;
+    const SBI_EM_DEBIT_DEBIT_DATE                = SbiEMDebitHeadings::DEBIT_DATE_RESP;
+    const SBI_EM_DEBIT_AMOUNT                    = SbiEMDebitHeadings::AMOUNT;
+    const SBI_EM_DEBIT_JOURNAL_NUMBER            = SbiEMDebitHeadings::JOURNAL_NUMBER;
+    const SBI_EM_DEBIT_PROCESSING_DATE           = SbiEMDebitHeadings::PROCESSING_DATE;
+    const SBI_EM_DEBIT_DEBIT_STATUS              = SbiEMDebitHeadings::DEBIT_STATUS;
+    const SBI_EM_DEBIT_CREDIT_STATUS             = SbiEMDebitHeadings::CREDIT_STATUS;
+    const SBI_EM_DEBIT_REASON                    = SbiEMDebitHeadings::REASON;
+    const SBI_EM_DEBIT_CREDIT_DATE               = SbiEMDebitHeadings::CREDIT_DATE;
 
     //
     // AXIS Emandate Debit Response File Headers
@@ -553,15 +563,19 @@ class Header
     const AUTH_LINK_ACCOUNT_TYPE        = 'account_type';
     const AUTH_LINK_RECEIPT             = 'receipt';
     const AUTH_LINK_DESCRIPTION         = 'description';
+    const AUTH_LINK_NACH_REFERENCE1     = 'nach_reference1';
+    const AUTH_LINK_NACH_REFERENCE2     = 'nach_reference2';
+    const AUTH_LINK_NACH_CREATE_FORM    = 'nach_create_form';
     //
     // Auth Link Output Headers
     //
-    const AUTH_LINK_ID                  = 'authorization_link_id';
-    const AUTH_LINK_SHORT_URL           = 'authorization_link';
-    const AUTH_LINK_STATUS              = 'link_status';
-    const AUTH_LINK_MAIL_SENT           = 'sent_mail';
-    const AUTH_LINK_SMS_SENT            = 'sent_sms';
-    const AUTH_LINK_CREATED_AT          = 'created_at';
+    const AUTH_LINK_ID                   = 'authorization_link_id';
+    const AUTH_LINK_SHORT_URL            = 'authorization_link';
+    const AUTH_LINK_NACH_PRI_FILLED_FORM = 'prefilled_form';
+    const AUTH_LINK_STATUS               = 'link_status';
+    const AUTH_LINK_MAIL_SENT            = 'sent_mail';
+    const AUTH_LINK_SMS_SENT             = 'sent_sms';
+    const AUTH_LINK_CREATED_AT           = 'created_at';
 
     //
     // Hitachi Bulk Terminal Creation Headers
@@ -761,6 +775,10 @@ class Header
     const PRICING_RULE_PAYMENT_NETWORK     = 'payment_network';
     const PRICING_RULE_INTERNATIONAL       = 'international';
     const PRICING_RULE_PERCENT_RATE        = 'percent_rate';
+    const PRICING_RULE_AMOUNT_RANGE_ACTIVE = 'amount_range_active';
+    const PRICING_RULE_AMOUNT_RANGE_MIN    = 'amount_range_min';
+    const PRICING_RULE_AMOUNT_RANGE_MAX    = 'amount_range_max';
+    const PRICING_RULE_FIXED_RATE          = 'fixed_rate';
 
     // NPCI RUPAY IIN Batch
     const IIN_NPCI_RUPAY_ROW                     = 'row';
@@ -779,6 +797,18 @@ class Header
     const IIN_MC_MASTERCARD_ACCEPTANCE_BRAND     = 'ACCEPTANCE_BRAND';
     const IIN_MC_MASTERCARD_COUNTRY              = 'COUNTRY';
     const IIN_MC_MASTERCARD_REGION               = 'REGION';
+
+    // entity update action batch
+    const ID = Detail\Entity::ID;
+    const BUSINESS_REGISTERED_ADDRESS = Detail\Entity::BUSINESS_REGISTERED_ADDRESS;
+    const BUSINESS_REGISTERED_STATE = Detail\Entity::BUSINESS_REGISTERED_STATE;
+
+
+    const ADJUSTMENT_REFERENCE_ID   = 'reference_id';
+    const ADJUSTMENT_MERCHANT_ID    = 'merchant_id';
+    const ADJUSTMENT_AMOUNT         = 'amount';
+    const ADJUSTMENT_BALANCE_TYPE   = 'balance_type';
+    const ADJUSTMENT_DESCRIPTION    = 'description';
 
     /**
      * Input and output file headers
@@ -1498,10 +1528,12 @@ class Header
         'emandate_debit_sbi' => [
             self::INPUT => [
                 self::SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER,
-                self::SBI_EM_DEBIT_EMANDATE_TYPE,
                 self::SBI_EM_DEBIT_UMRN,
-                self::SBI_EM_DEBIT_SCHEME_NAME,
-                self::SBI_EM_DEBIT_SUB_SCHEME_NAME,
+                self::SBI_EM_DEBIT_CUSTOMER_CODE,
+                self::SBI_EM_DEBIT_CUSTOMER_NAME,
+                self::SBI_EM_DEBIT_TRANSACTION_INPUT_CHANNEL,
+                self::SBI_EM_DEBIT_FILE_NAME,
+                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_MANDATE_HOLDER_NAME,
                 self::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER,
                 self::SBI_EM_DEBIT_DEBIT_BANK_IFSC,
@@ -1509,17 +1541,20 @@ class Header
                 self::SBI_EM_DEBIT_AMOUNT,
                 self::SBI_EM_DEBIT_JOURNAL_NUMBER,
                 self::SBI_EM_DEBIT_PROCESSING_DATE,
-                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_DEBIT_STATUS,
                 self::SBI_EM_DEBIT_CREDIT_STATUS,
                 self::SBI_EM_DEBIT_REASON,
+                self::SBI_EM_DEBIT_CREDIT_DATE,
             ],
             self::OUTPUT => [
                 self::SBI_EM_DEBIT_RESPONSE_SERIAL_NUMBER,
-                self::SBI_EM_DEBIT_EMANDATE_TYPE,
                 self::SBI_EM_DEBIT_UMRN,
-                self::SBI_EM_DEBIT_SCHEME_NAME,
-                self::SBI_EM_DEBIT_SUB_SCHEME_NAME,
+                self::SBI_EM_DEBIT_UMRN,
+                self::SBI_EM_DEBIT_CUSTOMER_CODE,
+                self::SBI_EM_DEBIT_CUSTOMER_NAME,
+                self::SBI_EM_DEBIT_TRANSACTION_INPUT_CHANNEL,
+                self::SBI_EM_DEBIT_FILE_NAME,
+                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_MANDATE_HOLDER_NAME,
                 self::SBI_EM_DEBIT_DEBIT_ACCOUNT_NUMBER,
                 self::SBI_EM_DEBIT_DEBIT_BANK_IFSC,
@@ -1527,10 +1562,10 @@ class Header
                 self::SBI_EM_DEBIT_AMOUNT,
                 self::SBI_EM_DEBIT_JOURNAL_NUMBER,
                 self::SBI_EM_DEBIT_PROCESSING_DATE,
-                self::SBI_EM_DEBIT_CUSTOMER_REF_NO,
                 self::SBI_EM_DEBIT_DEBIT_STATUS,
                 self::SBI_EM_DEBIT_CREDIT_STATUS,
                 self::SBI_EM_DEBIT_REASON,
+                self::SBI_EM_DEBIT_CREDIT_DATE,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
@@ -1682,6 +1717,8 @@ class Header
                 self::CITI_NACH_REGISTER_BANK_NAME,
                 self::CITI_NACH_REGISTER_BANK_IFSC,
                 self::CITI_NACH_REGISTER_AMOUNT,
+                self::CITI_NACH_REGISTER_LOT,
+                self::CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE,
                 self::CITI_NACH_REGISTER_STATUS,
                 self::CITI_NACH_REGISTER_REMARKS,
                 self::CITI_NACH_REGISTER_UMRN,
@@ -1700,6 +1737,8 @@ class Header
                 self::CITI_NACH_REGISTER_BANK_NAME,
                 self::CITI_NACH_REGISTER_BANK_IFSC,
                 self::CITI_NACH_REGISTER_AMOUNT,
+                self::CITI_NACH_REGISTER_LOT,
+                self::CITI_NACH_REGISTER_SOFT_COPY_RECEIVED_DATE,
                 self::CITI_NACH_REGISTER_STATUS,
                 self::CITI_NACH_REGISTER_REMARKS,
                 self::CITI_NACH_REGISTER_UMRN,
@@ -1953,10 +1992,14 @@ class Header
                 self::AUTH_LINK_RECEIPT,
                 self::AUTH_LINK_DESCRIPTION,
                 self::AUTH_LINK_EXPIRE_BY,
+                self::AUTH_LINK_NACH_REFERENCE1,
+                self::AUTH_LINK_NACH_REFERENCE2,
+                self::AUTH_LINK_NACH_CREATE_FORM,
                 self::NOTES,
                 self::STATUS,
                 self::AUTH_LINK_ID,
                 self::AUTH_LINK_SHORT_URL,
+                self::AUTH_LINK_NACH_PRI_FILLED_FORM,
                 self::AUTH_LINK_STATUS,
                 self::AUTH_LINK_CREATED_AT,
                 self::ERROR_CODE,
@@ -2393,6 +2436,10 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_FIXED_RATE,
+                self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
+                self::PRICING_RULE_AMOUNT_RANGE_MIN,
+                self::PRICING_RULE_AMOUNT_RANGE_MAX,
             ],
             self::OUTPUT => [
                 self::PRICING_RULE_MERCHANT_ID,
@@ -2403,7 +2450,28 @@ class Header
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_PERCENT_RATE,
+                self::PRICING_RULE_FIXED_RATE,
+                self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
+                self::PRICING_RULE_AMOUNT_RANGE_MIN,
+                self::PRICING_RULE_AMOUNT_RANGE_MAX,
             ]
+        ],
+
+        Type::ENTITY_UPDATE_ACTION => [
+            self::INPUT => [
+                self::ID,
+                self::BUSINESS_NAME,
+                self::BUSINESS_REGISTERED_ADDRESS,
+                self::BUSINESS_REGISTERED_STATE,
+            ],
+            self::OUTPUT => [
+                self::ID,
+                self::BUSINESS_NAME,
+                self::BUSINESS_REGISTERED_ADDRESS,
+                self::BUSINESS_REGISTERED_STATE,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
         ],
 
         Type::ADMIN_BATCH => [
@@ -2429,6 +2497,28 @@ class Header
              * Not adding output key here
              * Reason is this batch is entirely migrated to batch micro service.
              */
+        ],
+
+        Type::MDR_ADJUSTMENT => [
+            self::INPUT => [
+                self::MDR_ADJUSTMENT_TRANSACTION_ID,
+            ],
+        ],
+        Type::ADJUSTMENT => [
+            self::INPUT => [
+                self::ADJUSTMENT_REFERENCE_ID,
+                self::ADJUSTMENT_MERCHANT_ID,
+                self::ADJUSTMENT_AMOUNT,
+                self::ADJUSTMENT_BALANCE_TYPE,
+                self::ADJUSTMENT_DESCRIPTION,
+            ],
+            self::OUTPUT => [
+                self::ADJUSTMENT_REFERENCE_ID,
+                self::ADJUSTMENT_MERCHANT_ID,
+                self::ADJUSTMENT_AMOUNT,
+                self::ADJUSTMENT_BALANCE_TYPE,
+                self::ADJUSTMENT_DESCRIPTION,
+            ],
         ],
     ];
 
@@ -2473,6 +2563,22 @@ class Header
             $expectedHeaders[] = self::FIRST_PAYMENT_MIN_AMOUNT;
         }
 
+        if ($type === Type::AUTH_LINK)
+        {
+            if (in_array(self::AUTH_LINK_NACH_REFERENCE1, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::AUTH_LINK_NACH_REFERENCE1;
+            }
+            if (in_array(self::AUTH_LINK_NACH_REFERENCE2, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::AUTH_LINK_NACH_REFERENCE2;
+            }
+            if (in_array(self::AUTH_LINK_NACH_CREATE_FORM, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::AUTH_LINK_NACH_CREATE_FORM;
+            }
+        }
+
         if (($type === Type::PAYMENT_LINK) and
             ((in_array(self::CURRENCY, $actualHeaders, true) === true)))
         {
@@ -2495,6 +2601,17 @@ class Header
             // header can contain empty columns when input file is CSV
             // this is due to trailing comma in the given input file
             $actualHeaders = array_filter($actualHeaders);
+        }
+
+
+        //
+        // In case of subMerchant batch adding support of optional header merchant_id
+        // With this data support team will be able to fix issue by their own and we can move this batch to new service .
+        //
+        if (($type === Type::SUB_MERCHANT) and
+            ((in_array(self::MERCHANT_ID, $actualHeaders, true) === true)))
+        {
+            $expectedHeaders[] = self::MERCHANT_ID;
         }
 
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);

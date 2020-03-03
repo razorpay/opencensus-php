@@ -2,17 +2,23 @@
 
 namespace RZP\Models\Invoice;
 
+use Mail;
+
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
+use RZP\Constants\Entity as E;
+use RZP\Mail\Invoice\PaymentLinkServiceBase;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
 
@@ -213,9 +219,54 @@ class Service extends Base\Service
 
     public function cancelInvoicesOfBatch(string $batchId)
     {
-        $batch = (new Batch\Service())->fetchBatchById($batchId);
+        $batch = [];
+
+        $batch = $this->fetchBatchById($batchId);
+
+        if ($batch === [])
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                null,
+                [
+                    'batch_id'      => $batchId,
+                ]
+            );
+        }
 
         return $this->core->cancelInvoicesOfBatch($batch);
+    }
+
+    protected function fetchBatchById(string $batchId): array
+    {
+        $batch = [];
+
+        if ($this->auth->isAdminAuth() === true)
+        {
+            $batch = (new Batch\Service())->fetchBatchById($batchId);
+        }
+        else
+        {
+            $batch = (new Batch\Service())->getBatchById($batchId, $this->merchant);
+
+            if (($batch !== []) and
+                (
+                    (array_key_exists(Batch\ResponseEntity::BATCH_TYPE_ID, $batch) === false) or
+                    (array_key_exists(Batch\ResponseEntity::BATCH_TYPE_ID, $batch) === true) and
+                    ($batch[Batch\ResponseEntity::BATCH_TYPE_ID] !== Batch\Type::PAYMENT_LINK)
+                ))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE, // To be changed
+                    null,
+                    [
+                        'batch_id'      => $batchId,
+                    ]
+                );
+            }
+        }
+
+        return $batch;
     }
 
     public function delete(string $id): array
@@ -354,6 +405,24 @@ class Service extends Base\Service
     public function expireInvoices(): array
     {
         return $this->core->expireInvoices();
+    }
+
+    public function deleteInvoices($input): array
+    {
+        $limit = $input['limit'] ?? 5000;
+
+        $merchantIds = $input['merchant_ids'] ?? [];
+
+        if (empty($merchantIds) === true)
+        {
+            return [];
+        }
+
+        $hours = $input['hours'] ?? 24;
+
+        $pastTime = Carbon::now()->subHours($hours)->getTimestamp();
+
+        return $this->core->deleteInvoices($pastTime, $merchantIds, $limit);
     }
 
     public function sendNotificationsInBulk(): array
@@ -512,6 +581,48 @@ class Service extends Base\Service
         Batch\Entity::getSignedIdMultiple($results);
 
         return $results;
+    }
+
+    public function sendEmailForPaymentLinkService(array $input): array
+    {
+        (new Validator)->validateInput('payment_link_service_send_email', $input);
+
+        $input[E::MERCHANT] = $this->serializeMerchantForHostedForPaymentLinkService($this->merchant);
+
+        $mailable = new PaymentLinkServiceBase($input);
+
+        try
+        {
+            Mail::send($mailable);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::PAYMENT_LINK_NOTIFY_BY_EMAIL_FAILURE,
+                [
+                    'input' => $input,
+                ]
+            );
+
+            throw $ex;
+        }
+
+        return [];
+    }
+
+    protected function serializeMerchantForHostedForPaymentLinkService(Merchant\Entity $merchant): array
+    {
+        return [
+            'id'                               => $merchant->getId(),
+            'name'                             => $merchant->getLabelForInvoice(),
+            'brand_color'                      => get_rgb_value($merchant->getBrandColorOrDefault()),
+            'brand_text_color'                 => get_brand_text_color($merchant->getBrandColorOrDefault()),
+            'business_registered_address_text' => $merchant->getBusinessRegisteredAddressAsText(', '),
+            'image'                            => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
+            'business_registered_address'      => optional($merchant->merchantDetail)->getBusinessRegisteredAddress(),
+        ];
     }
 
     /**

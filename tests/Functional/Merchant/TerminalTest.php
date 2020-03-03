@@ -13,6 +13,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use \RZP\Models\Terminal\Shared;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 
 class TerminalTest extends TestCase
@@ -181,8 +183,12 @@ class TerminalTest extends TestCase
             'used'        => true,
         ];
         // Create a numeric terminal with shared merchant
-        $this->fixtures->create(
+        $terminal = $this->fixtures->create(
             'terminal:bank_account_terminal', $attributes);
+
+        $errorDescription = PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS . $terminal['id'];
+
+        $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $errorDescription;
 
         // Now try creating the same numeric terminal against the merchant
         $url = '/merchants/'.$merchant->getKey().'/terminals';
@@ -239,7 +245,11 @@ class TerminalTest extends TestCase
 
     public function testReassignBharatQrTerminal()
     {
-        $this->fixtures->create('terminal:bharat_qr_terminal');
+        $terminal = $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $errorDescription = PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS . $terminal['id'];
+
+        $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $errorDescription;
 
         $this->startTest();
     }
@@ -251,7 +261,11 @@ class TerminalTest extends TestCase
 
     public function testReassignUpiBharatQrTerminal()
     {
-        $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+        $terminal = $this->fixtures->create('terminal:bharat_qr_terminal_upi');
+
+        $errorDescription = PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS . $terminal['id'];
+
+        $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $errorDescription;
 
         $this->startTest();
     }
@@ -432,6 +446,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaytmCardTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testDeleteTerminal()
     {
         $merchant = $this->fixtures
@@ -442,6 +465,32 @@ class TerminalTest extends TestCase
         $this->ba->getAdmin()->merchants()->attach($merchant);
 
         $content = $this->startTest();
+    }
+
+    public function testDeleteTerminal2()
+    {
+        $this->ba->adminAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => false,
+            'gateway'     => 'worldline',
+            'status'      => 'pending'
+        ]);
+
+        $terminalId = $terminal->getId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/' . $terminalId;
+
+        $terminal = $this->getEntityById('terminal', $terminalId, true);
+
+        $content = $this->startTest();
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_INVALID_ID);
+
+        $terminal = $this->getEntityById('terminal', $terminalId, true);
     }
 
     public function testRestoreTerminal()
@@ -543,7 +592,6 @@ class TerminalTest extends TestCase
         $tid = $terminal['id'];
 
         $data = [
-            'gateway' => 'hitachi',
             'type'    => [
                 'recurring_non_3ds' => '1',
                 'recurring_3ds'     => '1',
@@ -1146,7 +1194,14 @@ class TerminalTest extends TestCase
             return true;
         });
 
-        Event::assertNotDispatched(CacheHit::class);
+        Event::assertNotDispatched(CacheHit::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                $this->assertNotEquals($tag, 'terminal_10000000000000');
+            }
+            return false;
+        });
 
         $this->defaultAuthPayment();
 
@@ -1315,5 +1370,21 @@ class TerminalTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+    }
+
+    public function testCreateCybersourceYesBTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals('yesb', $terminal['gateway_acquirer']);
+
+        // Adding below assert to check if the org is being associated to terminal (via merchant) properly
+        $this->assertEquals('100000razorpay', $terminal['org_id']);
     }
 }

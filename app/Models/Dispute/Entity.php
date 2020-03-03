@@ -42,6 +42,12 @@ class Entity extends Base\PublicEntity
     const SKIP_EMAIL              = 'skip_email';
     const EMAIL                   = 'email';
 
+    // For international disputes
+    const BASE_AMOUNT             = 'base_amount';
+    const BASE_CURRENCY           = 'base_currency';
+    const GATEWAY_AMOUNT          = 'gateway_amount';
+    const GATEWAY_CURRENCY        = 'gateway_currency';
+
     /**
      *  Field for edit input, when accepted chargeback amount
      *  is lesser than disputed amount.
@@ -250,6 +256,15 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Setters Ends-------------------------------------
+
+    // ------------ Mutators Starts -------------------
+
+    protected function setPhaseAttribute($phase)
+    {
+        $this->attributes[self::PHASE] = strtolower($phase);
+    }
+
+    // ------------ Mutators Ends ---------------------
 
     // ----------------------- Getters -----------------------------------------
 

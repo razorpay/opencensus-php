@@ -25,6 +25,17 @@ class Validator extends Base\Validator
         'merchant_id'           => 'required|string'
     ];
 
+    protected static $toggleTransactionHoldRules = [
+        'transaction_ids'     =>  'required|array',
+        'transaction_ids.*'   =>  'required|alpha_num|size:14',
+        'reason'              =>  'required|string',
+    ];
+
+    protected static $toggleTransactionReleaseRules = [
+        'transaction_ids'     => 'required|array',
+        'transaction_ids.*'   => 'required|alpha_num|size:14',
+    ];
+
     protected function validateChannel($attribute, $value)
     {
         if (in_array($value, Channel::getChannels()) === false)

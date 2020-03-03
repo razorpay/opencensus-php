@@ -5,9 +5,8 @@ namespace RZP\Tests\Functional\Payout;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
-use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Pricing\Fee;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -42,16 +41,10 @@ class RblPayoutTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000, 'direct', 'rbl');
 
-        $merchantId = '10000000000000';
-
         $this->app['cache']->flush();
-
-        (new AdminService)->setConfigKeys([ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS => [$merchantId]]);
-        (new AdminService)->setConfigKeys([ConfigKey::CITI_CHANNEL_PAYOUT_MIDS => [$merchantId]]);
 
         $this->ba->privateAuth();
     }
-
 
     public function testCreatingPendingPayoutsForRblWithUnsupportedModeChannelDestinationTypeCombo()
     {
@@ -85,26 +78,15 @@ class RblPayoutTest extends TestCase
 
     public function testCreatingPendingPayoutsForRblWithSupportedModeChannelDestinationTypeCombo()
     {
+        $this->liveSetUp();
+        $this->setupWorkflowForLiveMode();
+        $this->disableWorkflowMocks();
+
         $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
 
         Carbon::setTestNow($oldDateTime);
 
-        $this->createWorkflowFeature();
-
-        $workflow = $this->createWorkflow([
-          'org_id'      => '100000razorpay',
-          'name'        => 'some workflow',
-          'permissions' => ['create_payout'],
-        ]);
-
-        $attributes = [
-          'merchant_id' => '10000000000000',
-          'min_amount'  => 0,
-          'max_amount'  => 1000000,
-          'workflow_id' => $workflow->getId(),
-        ];
-
-        $this->fixtures->create('workflow_payout_amount_rules', $attributes);
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
 

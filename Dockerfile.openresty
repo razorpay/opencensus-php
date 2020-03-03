@@ -1,0 +1,61 @@
+FROM razorpay/onggi:php-7.2-apache as php-builder
+
+ARG GIT_COMMIT_HASH
+ARG GIT_TOKEN
+ARG GIT_USERNAME
+
+COPY composer.json composer.lock /app/
+
+WORKDIR /app
+
+COPY  . /app/
+
+RUN set -eu && \
+    git config --global user.name ${GIT_USERNAME} && \
+    composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
+    composer global require hirak/prestissimo && \
+    composer install --no-dev --no-interaction && \
+    rm -rf /root/.composer && \
+    composer clear-cache && \
+    php artisan rzp:write_routes_meta
+
+
+FROM openresty/openresty:1.15.8.2-6-alpine-nosse42
+
+RUN echo "* Installing deps" && \
+    apk add --no-cache \
+    bash \
+    build-base \
+    ca-certificates \
+    coreutils \
+    curl \
+    dumb-init \
+    git \
+    libxml2-dev \
+    libxslt-dev \
+    libffi-dev \
+    linux-headers \
+    openssl \
+    openssl-dev \
+    py-pip \
+    python \
+    python-dev && \
+    echo "* Installing Alohomora==0.4.7" && \
+    pip install --upgrade pip && \
+    pip install --no-cache-dir "razorpay.alohomora==0.4.7" && \
+    rm -rf ~/.cache/pip/* &&\
+    echo "* Installing gosu" && \
+    curl --location --output /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$ARCH" && \
+    chmod +x /usr/local/bin/gosu && \
+    addgroup -S nginx && \
+    adduser -S nginx -G nginx
+
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/openresty.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/*.lua  /usr/local/openresty/nginx/lua/
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/api.openresty.conf.j2 /usr/local/openresty/nginx/sites/
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/routes_meta.lua /usr/local/openresty/nginx/lua/
+COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/entrypoint.openresty.sh /app/entrypoint.openresty.sh
+
+EXPOSE 8080
+
+ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/entrypoint.openresty.sh"]

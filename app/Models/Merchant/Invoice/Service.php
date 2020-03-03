@@ -38,11 +38,6 @@ class Service extends Base\Service
         return ['count' => $count];
     }
 
-    public function createCorrectionInvoice(array $input)
-    {
-        return (new Core)->queueCorrectionInvoiceInvoice($input);
-    }
-
     public function requestBankingInvoice(array $input)
     {
         (new Validator)->validateInput(Validator::BANKING_INVOICE_GENERATE, $input);
@@ -80,14 +75,17 @@ class Service extends Base\Service
 
         $input[Entity::TYPE] = Type::RX_TRANSACTIONS;
 
-        if (isset($input[Balance\Entity::ACCOUNT_NUMBER]) === true)
-        {
-            $this->processAccountNumber($input);
-        }
-
         $invoices = $this->repo->merchant_invoice->fetch($input, $this->merchant->getId());
 
-        return $invoices->toArrayPublic();
+        $invoices = $invoices->toArrayPublic();
+
+        $invoices = $this->getInvoicesGroupedByMonthAndYear($invoices);
+
+        return [
+            'entity' => 'collection',
+            'count'  => count($invoices),
+            'items'  => $invoices,
+        ];
     }
 
     public function verify(array $input)
@@ -103,5 +101,47 @@ class Service extends Base\Service
         $data = (new Core)->verify($year, $month);
 
         return $data;
+    }
+
+    protected function getInvoicesGroupedByMonthAndYear(array $invoices): array
+    {
+        $template = [];
+
+        $invoiceData = [];
+
+        foreach ($invoices['items'] as $invoice)
+        {
+            $month = $invoice[Entity::MONTH];
+            $year  = $invoice[Entity::YEAR];
+
+            $template[$year][$month] = [
+                Entity::AMOUNT => 0,
+                Entity::TAX    => 0,
+            ];
+        }
+
+        foreach ($invoices['items'] as $invoice)
+        {
+            $month = $invoice[Entity::MONTH];
+            $year  = $invoice[Entity::YEAR];
+
+            $template[$year][$month][Entity::AMOUNT] += $invoice[Entity::AMOUNT];
+            $template[$year][$month][Entity::TAX] += $invoice[Entity::TAX];
+        }
+
+        foreach ($template as $year => $monthlyData)
+        {
+            foreach ($monthlyData as $month => $data)
+            {
+                $invoiceData[] = [
+                    Entity::MONTH  => $month,
+                    Entity::YEAR   => $year,
+                    Entity::AMOUNT => $data[Entity::AMOUNT],
+                    Entity::TAX    => $data[Entity::TAX],
+                ];
+            }
+        }
+
+        return $invoiceData;
     }
 }

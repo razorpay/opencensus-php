@@ -112,7 +112,7 @@ class PartnerAccountTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request'] = $this->testData['testCreateAccountForThinRequest']['request'];
-        $testData['request']['content']['email'] = 'email.Ojha@test.com';
+        $testData['request']['content']['email'] = 'email.ojha@test.com';
 
         $this->startTest($testData);
     }
@@ -296,6 +296,7 @@ class PartnerAccountTest extends TestCase
         $this->assertEquals($legalEntity->getId(), $response['legal_entity_id']);
         $this->assertEquals(6, $legalEntity->getBusinessTypeValue());
         $this->assertEquals($legalEntity->getMcc(), 7011);
+        $this->assertEquals('FBLegalExternalId', $legalEntity->getExternalId());
         $this->assertEquals('tours_and_travel', $legalEntity->getBusinessCategory());
         $this->assertEquals('accommodation', $legalEntity->getBusinessSubcategory());
 
@@ -306,6 +307,63 @@ class PartnerAccountTest extends TestCase
 
         $this->assertEquals('greylist', $subMerchant->merchantDetail->getActivationFlow());
         $this->assertEquals('greylist', $subMerchant->merchantDetail->getInternationalActivationFlow());
+
+        $this->assertEquals('FBUniqueExternalId', $subMerchant->getExternalId());
+
+        $legalEntities = $this->getDbEntities('legal_entity');
+
+        $this->assertEquals(1, $legalEntities->count());
+    }
+
+    public function testFetchAllAccountWithKycNotHandled()
+    {
+        $this->setUpPartnerWithKycNotHandled();
+
+        $testData = $this->testData['testCreateAccountCompletelyFilledRequestWithKycNotHandled'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->fixtures->merchant->addFeatures([FName::ALLOW_SUBMERCHANT_WITHOUT_EMAIL]);
+
+        $testData = $this->testData['testCreateAccountForThinRequestWithKycNotHandled'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testFetchAccountByExternalId()
+    {
+        $this->setUpPartnerWithKycNotHandled();
+
+        $testData = $this->testData['testCreateAccountCompletelyFilledRequestWithKycNotHandled'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testFetchAccountByInvalidExternalId'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testCreateAccountWithKycNotHandledAndDuplicateExternalId()
+    {
+        $this->setUpPartnerWithKycNotHandled();
+
+        $testData = $this->testData['testCreateAccountCompletelyFilledRequestWithKycNotHandled'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->fixtures->merchant->addFeatures([FName::ALLOW_SUBMERCHANT_WITHOUT_EMAIL]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testCreateAccountForThinRequestWithKycNotHandled()
@@ -375,6 +433,10 @@ class PartnerAccountTest extends TestCase
         $response2 = $this->runRequestResponseFlow($testData);
 
         $this->assertEquals($subMerchant->getLegalEntityId(), $response2['legal_entity_id']);
+
+        $legalEntities = $this->getDbEntities('legal_entity');
+
+        $this->assertEquals(1, $legalEntities->count());
     }
 
     public function testFetchAccountWitKycNotHandledAfterActivation()

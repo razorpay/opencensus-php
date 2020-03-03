@@ -57,6 +57,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
  * @property Emi\Entity             $emiPlan
+ * @property Customer\Entity        $customer
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
@@ -209,7 +210,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
     const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 1296000;  // 15 Days -- TODO: Reduce later
     const BASE_CURRENCY                     = 'base_currency';
-    const PAYMENT_TIMEOUT_NACH              = 1296000;  // 15 Days
+    const PAYMENT_TIMEOUT_NACH              = 1728000;  // 20 Days
 
     // payment services
     const API                               = 0;
@@ -364,6 +365,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
+        self::TERMINAL_ID,
         self::INTERNATIONAL,
         self::METHOD,
         self::REFUNDS,
@@ -460,6 +462,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::GATEWAY_PROVIDER,
         self::ACQUIRER_DATA,
         self::ACCOUNT_ID,
+        self::TERMINAL_ID,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -1339,6 +1342,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $this->setAttribute(self::FEE_BEARER, $feeBearer);
 
+    }
+
+    public function setBatchId($batchId)
+    {
+        $this->setAttribute(self::BATCH_ID, $batchId);
     }
 
     // ----------------------- Setters Ends-----------------------------------------
@@ -2606,6 +2614,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                         'method'            => $this->getMethod(),
                     ]);
             }
+            // This is a temporary change will be removed once npci is good with the new changes.
+            if (($gateway === 'enach_npci_netbanking') and ($this->terminal->getGatewayMerchantId2() === 'true'))
+            {
+                return false;
+            }
 
             return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($gateway) === true);
         }
@@ -2650,6 +2663,34 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $reference;
+    }
+
+    /**
+     * Partners who can onboard terminals would want to see terminal_id associated in their payments entity
+     */
+    public function setPublicTerminalIdAttribute(array & $array)
+    {
+        $merchant = $this->merchant;
+
+        if ($merchant->isFeatureEnabledOnNonPurePlatformPartner(Feature\Constants::TERMINAL_ONBOARDING) === true)
+        {
+            $terminalId = $this->getTerminalId();
+
+            $signedTerminalId = isset($terminalId) ? (new Terminal\Entity())->getSignedId($terminalId) : null;
+
+            $array[self::TERMINAL_ID] = $signedTerminalId;
+
+            return;
+        }
+
+        // unset terminal_id from public, if above condition is not true
+        // not unsetting from $array as doing so will break anywhere someone do $payment['terminal'] in the code
+        $key = array_search(self::TERMINAL_ID, $this->public);
+
+        if ($key !== false)
+        {
+            unset($this->public[$key]);
+        }
     }
 
     /**
@@ -3554,6 +3595,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getPaymentResponseCacheKey(): string
     {
         return 'payment:response' . $this->getId() . '.cache';
+    }
+
+    public static function getTrackIdRequestKey(string $trackId): string
+    {
+        return 'track_id:request:'. $trackId . '.cache';
+    }
+
+    public static function getTrackIdResponseKey(string $trackId): string
+    {
+        return 'track_id:response:'. $trackId . '.cache';
     }
 
     public function getTransactionType()

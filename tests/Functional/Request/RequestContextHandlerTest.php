@@ -1,0 +1,40 @@
+<?php
+
+namespace RZP\Tests\Functional\Request;
+
+use Illuminate\Http\Request;
+use RZP\Http\Middleware\EventTrackIDHandler;
+use RZP\Http\RequestHeader;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+
+class  RequestContextHandlerTest extends TestCase
+{
+    use RequestResponseFlowTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/RequestContextHandlerTestData.php';
+
+        parent::setUp();
+    }
+
+    public function testContextTrackIdGenerated()
+    {
+
+        $this->ba->appAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        $trackId = $this->app['req.context']->getTrackId();
+
+        $this->assertNotNull($trackId);
+
+
+    }
+}

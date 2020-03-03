@@ -159,7 +159,7 @@ class Core extends Base\Core
     {
         if (($transfer->getToId() !== $merchant->getId()) or
             ($transfer->getToType() !== E::MERCHANT) or
-            ($transfer->getSourceType() !== E::PAYMENT) or
+            (($transfer->getSourceType() !== E::PAYMENT) and ($transfer->getSourceType() !== E::ORDER)) or
             ($transfer->getMerchantId() !== $merchant->parent->getId()))
         {
             throw new Exception\BadRequestException(
@@ -405,7 +405,14 @@ class Core extends Base\Core
 
         unset($input[Entity::LINKED_ACCOUNT_NOTES]);
 
-        $payment = $transfer->source;
+        if ($transfer->getSourceType() === E::ORDER)
+        {
+            $payment = $transfer->source->payments()->where('status', 'captured')->first();
+        }
+        else
+        {
+            $payment = $transfer->source;
+        }
 
         $merchant = $payment->merchant;
 

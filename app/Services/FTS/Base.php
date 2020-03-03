@@ -64,6 +64,10 @@ class Base
 
     const FUND_TRANSFER_ATTEMPTS_RAW_BANK_STATUS = '/attempts/verify';
 
+    const FUND_TRANSFER_ATTEMPTS_STATUS_FETCH = '/transfers/status';
+
+    const FTS_ALERT_URI = '/alert';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';

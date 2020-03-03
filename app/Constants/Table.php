@@ -118,6 +118,7 @@ class Table
     const FUND_ACCOUNT_VALIDATION    = 'fund_account_validations';
     const SUBSCRIPTION_REGISTRATION  = 'subscription_registrations';
     const MERCHANT_DOCUMENT          = 'merchant_documents';
+    const MERCHANT_FRESHDESK_TICKETS = 'merchant_freshdesk_tickets';
     const TERMINAL_ONBOARDING_DETAIL = 'terminal_onboarding_details';
     const REFERRALS                  = 'referrals';
     const MERCHANT_INHERITANCE_MAP   = 'merchant_inheritance_map';
@@ -138,7 +139,7 @@ class Table
     const ROLE                  = 'roles';
     const PERMISSION            = 'permissions';
     const PERMISSION_MAP        = 'permission_map';
-    const GROUP                 = 'groups';
+    const GROUP                 = 'org_groups';
     const ADMIN                 = 'admins';
     const GROUP_MAP             = 'group_map';
     const MERCHANT_MAP          = 'merchant_map';
@@ -189,6 +190,9 @@ class Table
     const MOZART                = 'mozart';
     const WORLDLINE             = 'worldline';
 
+    // Upi Related
+    const UPI_METADATA          = 'upi_metadata';
+
     // Sessions table
     const SESSION               = 'sessions';
 
@@ -222,6 +226,7 @@ class Table
     const BANKING_ACCOUNT                 = 'banking_accounts';
     const BANKING_ACCOUNT_DETAIL          = 'banking_account_details';
     const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
+    const BANKING_ACCOUNT_STATE           = 'banking_account_state';
 
     // P2P Service Tables
     const P2P_DEVICE            = 'p2p_devices';
@@ -250,6 +255,8 @@ class Table
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 
     const OPTIONS              = 'options';
+
+    const UPI_MANDATE          = 'upi_mandates';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,

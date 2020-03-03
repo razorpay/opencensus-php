@@ -20,6 +20,7 @@ use RZP\Models\Payment\Gateway;
 use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Mozart as Mozart;
+use RZP\Gateway\Upi\Base as BaseUpi;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Gateway\Netbanking\Base\Repository;
@@ -99,11 +100,52 @@ class GatewayController extends Controller
         }
     }
 
+    protected function preProcessServerCallback($gateway, $input, $gatewayDriver)
+    {
+        try
+        {
+            return $gateway->preProcessServerCallback($input);
+        }
+        catch (Exception\GatewayErrorException $exception)
+        {
+            // As of now, we will consider two checks for gateway identification
+            // and one check for method identification, this approach is only for UPI yet.
+            // Note: Any other method would require to extend the function getTerminalDataFromCallback
+            if(($exception->getCode() === ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED) and
+               ($exception->getSafeRetry() === true) and
+               ($gateway instanceof BaseUpi\Gateway))
+            {
+                $data = $gateway->getTerminalDetailsFromCallback($input);
+
+                $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData($gatewayDriver, $data);
+
+                if (empty($terminal) === true)
+                {
+                    throw new Exception\RuntimeException(
+                        'No terminal found',
+                        [
+                            'input'     => $input,
+                            'data'      => $data,
+                            'gateway'   => $gatewayDriver,
+                        ],
+                        $exception,
+                        ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
+                }
+
+                $gateway->setTerminal($terminal);
+
+                return $gateway->preProcessServerCallback($input);
+            }
+
+            throw $exception;
+        }
+    }
+
     protected function processServerCallbackWithGatewayResponse($input, $gatewayDriver)
     {
         $gateway = $this->app['gateway']->gateway($gatewayDriver);
 
-        $input = $gateway->preProcessServerCallback($input);
+        $input = $this->preProcessServerCallback($gateway, $input, $gatewayDriver);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
@@ -243,7 +285,6 @@ class GatewayController extends Controller
             case Gateway::WALLET_FREECHARGE:
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
-            case Gateway::UPI_AIRTEL:
             case Gateway::WALLET_PHONEPE:
             case Gateway::UPI_CITI:
             case 'axis_corporate':
@@ -274,6 +315,7 @@ class GatewayController extends Controller
                 break;
 
             case Gateway::UPI_ICICI:
+            case Gateway::UPI_AIRTEL:
                 $input = Request::getContent();
 
                 $data = $this->processServerCallback($input, $gateway);
@@ -542,11 +584,13 @@ class GatewayController extends Controller
 
         $this->app['config']->set('database.default', $mode);
 
-        $this->app['rzp.mode'] = $mode;
+        $this->app['basicauth']->setModeAndDbConnection($mode);
 
         $payment = $this->app['repo']->payment->findOrFail($paymentId);
 
         $merchant = $payment->merchant;
+
+        $this->app['basicauth']->setMerchant($merchant);
 
         $input = Mozart\GetSimpl\Helper::getPaymentInputParameters($input, $payment);
 

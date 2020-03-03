@@ -49,6 +49,7 @@ class Validator extends Base\Validator
         Entity::ADMINS                      => 'sometimes|array',
         Entity::COUPON_CODE                 => 'sometimes|string',
         Constants::PARTNER_INTENT           => 'sometimes|boolean',
+        Entity::EXTERNAL_ID                 => 'sometimes|string|max:255',
     ];
 
     protected static $editRules = [
@@ -82,7 +83,7 @@ class Validator extends Base\Validator
         Entity::WHITELISTED_IPS_LIVE . '.*'           => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
         Entity::WHITELISTED_IPS_TEST                  => 'sometimes|array|max:15',
         Entity::WHITELISTED_IPS_TEST . '.*'           => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
-        Entity::WHITELISTED_DOMAINS                   => 'sometimes|array|max:5',
+        Entity::WHITELISTED_DOMAINS                   => 'sometimes|array|max:7',
         Entity::WHITELISTED_DOMAINS . '.*'            => 'required_with:' . Entity::WHITELISTED_DOMAINS . '|string',
         Entity::DASHBOARD_WHITELISTED_IPS_LIVE        => 'sometimes|array|max:20',
         Entity::DASHBOARD_WHITELISTED_IPS_LIVE . '.*' => 'distinct|required_with:' .
@@ -124,6 +125,7 @@ class Validator extends Base\Validator
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         Entity::DISPLAY_NAME             => 'sometimes|nullable|string|min:3|max:255',
         Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
+        Entity::DEFAULT_REFUND_SPEED     => 'sometimes|filled|string|in:normal,optimum'
     ];
 
     protected static $actionRules = [
@@ -311,6 +313,13 @@ class Validator extends Base\Validator
     protected static $holidayNotifyRules = [
         'lists'   => 'required|string',
         'action'  => 'required|string',
+    ];
+
+    protected static $entityBatchActionRules = [
+        Constants::BATCH_ACTION  => 'required|string|custom',
+        Constants::ENTITY        => 'required|string|custom',
+        Constants::IDEMPOTENT_ID => 'required',
+        Entity::ID               => 'required|alpha_num|size:14',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -518,10 +527,13 @@ class Validator extends Base\Validator
         if ($merchants->count() > 0)
         {
             // throw exception if merchant by that email already exists
+            $description = PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS . $merchants->pluck(Entity::ID)->first();
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
                 Entity::EMAIL,
-                $merchants->pluck(Entity::ID)->toArray()
+                $merchants->pluck(Entity::ID)->toArray(),
+                $description
             );
         }
     }
@@ -812,6 +824,22 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS);
+        }
+    }
+
+    public function validateBatchAction($attribute, $BatchAction)
+    {
+        if (BatchAction::exists($BatchAction) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_ACTION_NOT_SUPPORTED);
+        }
+    }
+
+    public function validateEntity($attribute, $BatchActionEntity)
+    {
+        if (BatchActionEntity::exists($BatchActionEntity) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_ACTION_ENTITY_NOT_SUPPORTED);
         }
     }
 

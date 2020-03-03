@@ -9,6 +9,7 @@ use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -312,6 +313,11 @@ class Handler extends ExceptionHandler
          */
         $stack = explode("\n", $exception->getTraceAsString());
 
+        if ($exception->getCode() === ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED)
+        {
+            $stack = $this->hideSensitiveInformationFromStack($stack);
+        }
+
         if ($level === 0)
         {
             // Only trace 30 stack function calls if it's a zero level exception
@@ -385,22 +391,65 @@ class Handler extends ExceptionHandler
 
     protected function recoverableErrorResponse($debug, $exception = null)
     {
-        $this->ifTestingThenRethrowException($exception);
+        $this->setErrorMetadataIfApplicable($exception);
 
         $error = $exception->getError();
+
+        $data = $exception->getData();
+
+        $this->ifTestingThenRethrowException($exception);
 
         return ApiResponse::generateErrorResponse($error, $debug);
     }
 
     protected function recoverableNachNbErrorResponse($debug, $exception = null)
     {
-        $this->ifTestingThenRethrowException($exception);
+        $this->setErrorMetadataIfApplicable($exception);
 
         $error = $exception->getError();
 
         $data = $exception->getData();
 
+        $this->ifTestingThenRethrowException($exception);
+
         return ApiResponse::generateNachNbErrorResponse($error, $data, $debug);
+    }
+
+    protected function setErrorMetadataIfApplicable($exception)
+    {
+        $error = $exception->getError();
+
+        $data = $exception->getData();
+
+        $isMetadataFeatureEnabled = false;
+
+        if (($this->app['basicauth'] !== null) and
+            $this->app['basicauth']->getMerchant() !== null)
+        {
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+        }
+
+        $metadata = null;
+
+        if ($isMetadataFeatureEnabled === true)
+        {
+            if (isset($data['payment_id']) === true)
+            {
+                $metadata['payment_id'] = $data['payment_id'];
+            }
+            if (isset($data['order_id']) === true)
+            {
+                $metadata['order_id'] = $data['order_id'];
+            }
+            if (isset($data['method']) === true)
+            {
+                $error->setPaymentMethod($data['method']);
+            }
+
+            $error->setMetadata($metadata);
+        }
     }
 
 
@@ -487,5 +536,46 @@ class Handler extends ExceptionHandler
     {
         return ((config('app.debug') === true) or
                 ($this->ba->isDebugApp() === true));
+    }
+
+    protected function hideSensitiveInformationFromStack(array $stackArr)
+    {
+        $hideParams = [
+            [
+                'regex'     => '/(.*getUserByEmailAndVerifyPassword\(\')(.*)(\'\)$)/i',
+                'replace'   => '******\', \'******',
+            ]
+        ];
+
+        $obscuredStack = [];
+
+        foreach ($stackArr as $stackLine)
+        {
+            foreach ($hideParams as $key => $patternArr)
+            {
+                try
+                {
+                    $regex = $patternArr['regex'];
+                    $replace = $patternArr['replace'];
+
+                    $found = preg_match($regex, $stackLine, $matches);
+
+                    if ($found === 1)
+                    {
+                        $obscuredStack[] = $matches[1] . $replace . $matches[3];
+                    }
+                    else
+                    {
+                        $obscuredStack[] = $stackLine;
+                    }
+                }
+                catch (\Throwable $e)
+                {
+                    return $stackArr;
+                }
+            }
+        }
+
+        return $obscuredStack;
     }
 }

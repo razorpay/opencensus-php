@@ -4,7 +4,6 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
-use RZP\Constants\Entity as EntityConstants;
 
 final class Constants
 {
@@ -33,6 +32,8 @@ final class Constants
     const IGNORE_TIME_LIMIT     = 'ignore_time_limit';
 
     const MAX_UPI_AMOUNT        = 100000;
+
+    const MAX_IMPS_AMOUNT       = 20000000;
 
     const NEFT_END_HOUR = 18;
 

@@ -11,6 +11,7 @@ class Validator extends Base\Validator
         Entity::MCC                  => 'sometimes|integer',
         Entity::BUSINESS_CATEGORY    => 'sometimes|string|max:255',
         Entity::BUSINESS_SUBCATEGORY => 'sometimes|string|max:255',
+        Entity::EXTERNAL_ID          => 'sometimes|string|max:255',
     ];
 
     protected static $editRules = [
@@ -18,5 +19,6 @@ class Validator extends Base\Validator
         Entity::MCC                  => 'sometimes|integer',
         Entity::BUSINESS_CATEGORY    => 'sometimes|string|max:255',
         Entity::BUSINESS_SUBCATEGORY => 'sometimes|string|max:255',
+        Entity::EXTERNAL_ID          => 'sometimes|string|max:255',
     ];
 }

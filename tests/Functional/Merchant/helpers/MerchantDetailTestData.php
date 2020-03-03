@@ -335,26 +335,34 @@ return [
     'testMerchantDetailsPatch' => [
         'request'  => [
             'content' => [
-                'business_operation_address'    => 'Test address',
-                'business_operation_state'      => 'Karnataka',
-                'business_operation_city'       => 'Bengaluru',
-                'business_operation_pin'        => '560030',
-                'business_category'             => 'financial_services',
-                'business_subcategory'          => 'lending',
-                'international_activation_flow' => 'whitelist',
+                'business_operation_address'               => 'Test address',
+                'business_operation_state'                 => 'Karnataka',
+                'business_operation_city'                  => 'Bengaluru',
+                'business_operation_pin'                   => '560030',
+                'business_category'                        => 'financial_services',
+                'business_subcategory'                     => 'lending',
+                'international_activation_flow'            => 'whitelist',
+                'estd_year'                                => '2020',
+                'authorized_signatory_residential_address' => '12345rtyuk',
+                'authorized_signatory_dob'                 => '1992-12-12',
+                'platform'                                 => 'web',
             ],
             'url'     => '/merchants/details',
             'method'  => 'PATCH',
         ],
         'response' => [
             'content' => [
-                'business_operation_address'    => 'Test address',
-                'business_operation_state'      => 'Karnataka',
-                'business_operation_city'       => 'Bengaluru',
-                'business_operation_pin'        => '560030',
-                'business_category'             => 'financial_services',
-                'business_subcategory'          => 'lending',
-                'international_activation_flow' => 'whitelist',
+                'business_operation_address'               => 'Test address',
+                'business_operation_state'                 => 'Karnataka',
+                'business_operation_city'                  => 'Bengaluru',
+                'business_operation_pin'                   => '560030',
+                'business_category'                        => 'financial_services',
+                'business_subcategory'                     => 'lending',
+                'international_activation_flow'            => 'whitelist',
+                'estd_year'                                => '2020',
+                'authorized_signatory_residential_address' => '12345rtyuk',
+                'authorized_signatory_dob'                 => '1992-12-12',
+                'platform'                                 => 'web',
             ],
         ],
     ],
@@ -1389,6 +1397,7 @@ return [
                             ],
                     ]
                 ],
+                'is_inheritance_parent' =>  false,
             ],
         ],
     ],
@@ -1409,4 +1418,128 @@ return [
         ],
     ],
 
+    'testGetMerchantDetailsRegisteredBusinessWithSelectiveRequiredFields' => [
+        'request'  => [
+            'url'    => '/merchant/activation',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'verification' => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                    'required_fields' => [
+                        'bank_account_name',
+                        'bank_account_number',
+                        'bank_branch_ifsc',
+                        'business_registered_address',
+                        'business_registered_city',
+                        'business_registered_pin',
+                        'business_registered_state',
+                        'contact_mobile',
+                        'contact_name',
+                        'promoter_pan_name',
+                        'business_dba',
+                        'business_name',
+                        'address_proof_url',
+                        'business_pan_url',
+                        'business_proof_url',
+                        'promoter_address_url',
+                        'business_operation_address',
+                        'business_operation_city',
+                        'business_operation_pin',
+                        'business_operation_state',
+                        'amfi_certificate_or_sla',
+                    ],
+                    'optional_fields' => [
+                    ],
+                ],
+                'can_submit'   => false,
+            ],
+        ],
+    ],
+    'testGetMerchantDetailsRegisteredBusinessWithOptionalFields' => [
+        'request'  => [
+            'url'    => '/merchant/activation',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'verification' => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                    'required_fields' => [
+                        'bank_account_name',
+                        'bank_account_number',
+                        'bank_branch_ifsc',
+                        'business_registered_address',
+                        'business_registered_city',
+                        'business_registered_pin',
+                        'business_registered_state',
+                        'contact_mobile',
+                        'contact_name',
+                        'promoter_pan_name',
+                        'business_dba',
+                        'business_name',
+                        'address_proof_url',
+                        'business_pan_url',
+                        'business_proof_url',
+                        'promoter_address_url',
+                        'business_operation_address',
+                        'business_operation_city',
+                        'business_operation_pin',
+                        'business_operation_state',
+                    ],
+                    'optional_fields' => [
+                        'iata_certificate',
+                        'sla_iata_certificate'
+                    ],
+                ],
+                'can_submit'   => false,
+            ],
+        ],
+    ],
+
+    'testGetMerchantDetailsRegisteredBusinessNgo' => [
+        'request'  => [
+            'url'    => '/merchant/activation',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'verification' => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                    'required_fields' => [
+                        'bank_account_name',
+                        'bank_account_number',
+                        'bank_branch_ifsc',
+                        'business_registered_address',
+                        'business_registered_city',
+                        'business_registered_pin',
+                        'business_registered_state',
+                        'contact_mobile',
+                        'contact_name',
+                        'promoter_pan_name',
+                        'business_dba',
+                        'business_name',
+                        'address_proof_url',
+                        'business_pan_url',
+                        'business_proof_url',
+                        'promoter_address_url',
+                        'business_operation_address',
+                        'business_operation_city',
+                        'business_operation_pin',
+                        'business_operation_state',
+                        'form_12a_url',
+                        'form_80g_url',
+                    ],
+                    'optional_fields' => [
+                        'affiliation_certificate'
+                    ],
+                ],
+                'can_submit'   => false,
+            ],
+        ],
+    ],
 ];

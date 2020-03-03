@@ -1207,14 +1207,15 @@ return [
                     'status'              => 'disabled',
                     'disabled_reason'     => 'required_fields',
                     'required_fields'     => [
-                        'address_proof_url',
                         'bank_account_name',
                         'bank_account_number',
                         'bank_branch_ifsc',
-                        'business_pan_url',
-                        'business_proof_url',
                         'contact_mobile',
                         'contact_name',
+                        'promoter_pan_name',
+                        'address_proof_url',
+                        'business_pan_url',
+                        'business_proof_url',
                         'promoter_address_url',
                     ],
                     'activation_progress' => 57,
@@ -1271,14 +1272,15 @@ return [
                     'status'              => 'disabled',
                     'disabled_reason'     => 'required_fields',
                     'required_fields'     => [
-                        'address_proof_url',
                         'bank_account_name',
                         'bank_account_number',
                         'bank_branch_ifsc',
-                        'business_pan_url',
-                        'business_proof_url',
                         'contact_mobile',
                         'contact_name',
+                        'promoter_pan_name',
+                        'address_proof_url',
+                        'business_pan_url',
+                        'business_proof_url',
                         'promoter_address_url',
                     ],
                     'activation_progress' => 57,
@@ -1648,23 +1650,27 @@ return [
                     'status'              => 'disabled',
                     'disabled_reason'     => 'required_fields',
                     'required_fields'     => [
-                        'address_proof_url',
                         'bank_account_name',
                         'bank_account_number',
                         'bank_branch_ifsc',
-                        'business_operation_address',
-                        'business_operation_city',
-                        'business_operation_pin',
-                        'business_operation_state',
-                        'business_pan_url',
-                        'business_proof_url',
+
                         'business_registered_address',
                         'business_registered_city',
                         'business_registered_pin',
                         'business_registered_state',
                         'contact_mobile',
                         'contact_name',
+                        'promoter_pan_name',
+
+                        'address_proof_url',
+                        'business_pan_url',
+                        'business_proof_url',
                         'promoter_address_url',
+
+                        'business_operation_address',
+                        'business_operation_city',
+                        'business_operation_pin',
+                        'business_operation_state',
                     ],
                     'activation_progress' => 22,
                 ],
@@ -1707,23 +1713,29 @@ return [
                     'status'              => 'disabled',
                     'disabled_reason'     => 'required_fields',
                     'required_fields'     => [
-                        'address_proof_url',
+
                         'bank_account_name',
                         'bank_account_number',
                         'bank_branch_ifsc',
-                        'business_operation_address',
-                        'business_operation_city',
-                        'business_operation_pin',
-                        'business_operation_state',
-                        'business_pan_url',
-                        'business_proof_url',
+
                         'business_registered_address',
                         'business_registered_city',
                         'business_registered_pin',
                         'business_registered_state',
+
                         'contact_mobile',
                         'contact_name',
+                        'promoter_pan_name',
+
+                        'address_proof_url',
+                        'business_pan_url',
+                        'business_proof_url',
                         'promoter_address_url',
+
+                        'business_operation_address',
+                        'business_operation_city',
+                        'business_operation_pin',
+                        'business_operation_state',
                     ],
                     'activation_progress' => 22,
                 ],
@@ -2685,9 +2697,12 @@ return [
                 ],
                 'promoter_pan'         => [
                     'reasons' => [
-                        'update_director_pan' => [
+                        'update_director_pan'   => [
                             'description' => 'Please update PAN details of a director listed by MCA',
                         ],
+                        'update_proprietor_pan' => [
+                            'description' => 'Please update PAN of the Proprietor.'
+                        ]
                     ],
                 ],
                 'company_pan_name'     => [
@@ -2757,6 +2772,9 @@ return [
                         'unable_to_validate_ifsc'             => [
                             'description' => 'We\'re unable to validate the IFSC from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.',
                         ],
+                        'resubmit_cancelled_cheque'           => [
+                            'description' => 'The statements or cancelled cheque attached is not legible. Please resubmit a clear copy.',
+                        ],
                     ],
                 ],
                 'promoter_address_url' => [
@@ -2775,6 +2793,19 @@ return [
                         ],
                         'address_proof_outdated'                 => [
                             'description' => 'The validity of the address proof attached has elapsed. Please submit the updated document',
+                        ],
+                        'submit_driving_license'                 => [
+                            'description' => 'Please submit both photo ID and address page of the driving license- merged as one document.',
+                        ],
+                    ],
+                ],
+                'business_pan_url'     => [
+                    'reasons' => [
+                        'submit_company_pan'    => [
+                            'description' => 'Please submit a copy of the Company PAN Card',
+                        ],
+                        'submit_proprietor_pan' => [
+                            'description' => 'Please submit a copy of the Proprietor PAN Card.',
                         ],
                     ],
                 ],

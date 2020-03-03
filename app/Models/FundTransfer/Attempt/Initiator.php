@@ -35,6 +35,8 @@ class Initiator extends Base\Core
 
     const MUTEX_RESOURCE                    = 'FUND_TRANSFER_PROCESSING_%s_%s_%s_%s';
 
+    const FILE_BASED_MUTEX_TIMEOUT          = 60;
+
     const REQUEST_TIMEOUT                   = 30;
 
     const MUTEX_FTS_RESOURCE                = 'MUTEX_FTS_RESOURCE_%s_%s_%s';
@@ -77,7 +79,7 @@ class Initiator extends Base\Core
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, $input[Entity::PURPOSE], $input[Entity::SOURCE_TYPE]);
 
         // Default timeout to be used for file based channels.
-        $mutexTimeout = self::REQUEST_TIMEOUT;
+        $mutexTimeout = self::FILE_BASED_MUTEX_TIMEOUT;
 
         $apiChannels = Channel::getApiBasedChannels();
 
@@ -486,6 +488,7 @@ class Initiator extends Base\Core
             return true;
         }
 
+        // Checks for holidays.
         if (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false)
         {
             $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED, [
@@ -496,8 +499,10 @@ class Initiator extends Base\Core
             return false;
         }
 
+        // Banking hours start time.
         $startTime = Carbon::today(Timezone::IST)->hour(8)->getTimestamp();
 
+        // Banking hours end time.
         $endTime = Carbon::today(Timezone::IST)->hour(18)->minute(15)->getTimestamp();
 
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
@@ -510,6 +515,7 @@ class Initiator extends Base\Core
                 'current_time'          => $currentTime
             ]);
 
+        // Checks for non Banking hours on working days.
         if (($currentTime < $startTime) or
             ($currentTime > $endTime))
         {
@@ -747,6 +753,11 @@ class Initiator extends Base\Core
     {
         try
         {
+            if ($this->isTestMode() === true)
+            {
+                return true;
+            }
+
             FtsFundTransfer::dispatch($this->mode, $fta->getId());
 
             $this->trace->info(

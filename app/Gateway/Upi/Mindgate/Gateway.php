@@ -383,6 +383,8 @@ class Gateway extends Base\Gateway
 
     public function getUpiTransferData(array $input)
     {
+        $this->checkForUpiTransferPaymentFailure($input);
+
         $amount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
 
         $upiTransferData = [
@@ -397,12 +399,18 @@ class Gateway extends Base\Gateway
             UpiTransfer\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::CALLBACK_RESPONSE_PGMID],
             UpiTransfer\GatewayResponseParams::NPCI_REFERENCE_ID     => $input[ResponseFields::NPCI_UPI_TXN_ID],
             UpiTransfer\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
+            UpiTransfer\GatewayResponseParams::TRANSACTION_REFERENCE => $input[ResponseFields::PAYMENT_ID],
         ];
 
         return [
             'callback_data'     => $input,
             'upi_transfer_data' => $upiTransferData
         ];
+    }
+
+    protected function checkForUpiTransferPaymentFailure($input)
+    {
+        $this->checkCallbackResponseStatus($input);
     }
 
     /**
@@ -432,6 +440,21 @@ class Gateway extends Base\Gateway
                 $result[$key] = $values[$index];
             }
         }
+        catch (Exception\GatewayErrorException $e)
+        {
+            // Since Gateway Error Exception is only thrown from decrypt function
+            // We do not need to check for exception message as of now
+            // We also do not need to trace as the response, but we will still check for callback
+
+            // Note: Callback type is only passed from preProcessServerCallback and not from callback function
+            // The idea here is that preProcessServerCallback function can be safely retried
+            if ($type === Action::CALLBACK)
+            {
+                $e->markSafeRetryTrue();
+            }
+
+            throw $e;
+        }
         catch (\Exception $e)
         {
             $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
@@ -453,10 +476,15 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
+        $traceResult = $result;
+
+        unset($traceResult[ResponseFields::PAYER_VA], $traceResult[ResponseFields::PHONE_NUMBER], $traceResult[ResponseFields::ACCOUNT_NUMBER]);
+
+
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
             'body'              => $responseBody,
             'decrypted'         => $response,
-            'parsed'            => $result,
+            'parsed'            => $traceResult,
             'gateway'           => $this->gateway,
             'type'              => $type
         ]);
@@ -494,8 +522,12 @@ class Gateway extends Base\Gateway
             assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
         }
 
+        $traceContent = $content;
+
+        unset($traceContent[ResponseFields::PAYER_VA], $traceContent[ResponseFields::PHONE_NUMBER], $traceContent[ResponseFields::ACCOUNT_NUMBER]);
+
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'parsed'            => $content,
+            'parsed'            => $traceContent,
             'type'              => $gatewayPayment->getType()
         ]);
 
@@ -678,8 +710,23 @@ class Gateway extends Base\Gateway
      */
     public function decrypt(string $cipherText)
     {
-        return $this->getCipherInstance()
-                    ->decrypt($cipherText);
+        $response = $this->getCipherInstance()->decrypt($cipherText);
+
+        // In fact the library returns boolean false when decryption fails.
+        // But we are still taking empty string in context too.
+        //  1. For certain reasons decryption fails, we might still receive empty string
+        if (empty($response) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED,
+                null,
+                null,
+                [
+                    'cipherText' => $cipherText
+                ]);
+        }
+
+        return $response;
     }
 
     protected function getAuthorizeRequestArray($input)
@@ -1244,13 +1291,18 @@ class Gateway extends Base\Gateway
             'email'    => 'void@razorpay.com',
         ];
 
-        $terminal = [
-            'gateway_merchant_id' => $callbackData[ResponseFields::CALLBACK_RESPONSE_PGMID]
-        ];
+        $terminal = $this->getTerminalDetailsFromCallback($callbackData);
 
         return [
             'payment'  => $payment,
             'terminal' => $terminal
+        ];
+    }
+
+    public function getTerminalDetailsFromCallback($callbackData)
+    {
+        return [
+            'gateway_merchant_id' => $callbackData[ResponseFields::CALLBACK_RESPONSE_PGMID],
         ];
     }
 

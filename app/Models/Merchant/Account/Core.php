@@ -117,6 +117,15 @@ class Core extends Merchant\Core
         return $account;
     }
 
+    public function fetchAccountByExternalId(Merchant\Entity $partner, string $externalId)
+    {
+        $input[Entity::EXTERNAL_ID] = $externalId;
+
+        $accounts = $this->listAccounts($partner, $input);
+
+        return $accounts->firstOrFail();
+    }
+
     public function fetchAccount(string $accountId)
     {
         $relations = ['merchantDetail', 'features', 'emails', 'bankAccount'];
@@ -180,6 +189,8 @@ class Core extends Merchant\Core
      */
     public function listAccounts(Merchant\Entity $partner, array $input): PublicCollection
     {
+        $input[Merchant\Constants::COUNT] = $input[Merchant\Constants::COUNT] ?? Constants::DEFAULT_ACCOUNT_COUNT;
+
         $this->validatePartnerAccess($partner);
 
         (new Validator)->validateInput('list_accounts', $input);
@@ -285,13 +296,6 @@ class Core extends Merchant\Core
         $subMerchantInput = Helper::getSubMerchantInput($input);
 
         $subMerchant->fill($subMerchantInput);
-
-        if (empty($input[Constants::LEGAL_ENTITY_ID]) === false)
-        {
-            $legalEntity = $this->repo->legal_entity->findOrFailPublic($input[Constants::LEGAL_ENTITY_ID]);
-
-            $subMerchant->legalEntity()->associate($legalEntity);
-        }
 
         $this->repo->saveOrFail($subMerchant);
 

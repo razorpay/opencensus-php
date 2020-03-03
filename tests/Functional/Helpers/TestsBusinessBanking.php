@@ -144,24 +144,26 @@ trait TestsBusinessBanking
         $this->bankAccount    = $bankAccount;
     }
 
-    protected function createPayout()
+    protected function createPayout(array $extraPayoutParams = [])
     {
         $this->createContact();
 
         $this->createFundAccount();
 
-        $this->payout = $this->fixtures->create(
-            'payout',
-            [
-                'purpose'           => 'refund',
-                'fund_account_id'   => $this->fundAccount['id'],
-                'notes'             => [
-                    'abc' => 'xyz',
-                ],
-                'amount'            => 1000,
-                'currency'          => 'INR',
-                'balance_id'        => $this->bankingBalance->getId(),
-            ]);
+        $payoutParams = [
+            'purpose'           => 'refund',
+            'fund_account_id'   => $this->fundAccount['id'],
+            'notes'             => [
+                'abc' => 'xyz',
+            ],
+            'amount'            => 1000,
+            'currency'          => 'INR',
+            'balance_id'        => $this->bankingBalance->getId(),
+        ];
+
+        $payoutParams = array_merge($payoutParams, $extraPayoutParams);
+
+        $this->payout = $this->fixtures->create('payout', $payoutParams);
 
         $this->transaction = $this->getDbLastEntity('transaction');
     }
@@ -233,7 +235,11 @@ trait TestsBusinessBanking
         $this->fixtures->create('pricing', $pricingPlan);
     }
 
-    protected function mockRazorxTreatment()
+    protected function mockRazorxTreatment(string $channel = 'yesbank',
+                                           string $ftsEnabled = 'off',
+                                           string $webhookViaStork = 'off',
+                                           string $webhookArrayPublicPayload = 'on',
+                                           string $defaultBehaviour = 'off')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -244,13 +250,37 @@ trait TestsBusinessBanking
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
+                          ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use (
+                    $channel,
+                    $ftsEnabled,
+                    $webhookArrayPublicPayload,
+                    $defaultBehaviour
+                )
+                {
+                    if (ends_with($feature, 'mode_payout_filter'))
+                    {
+                        return strtolower($channel);
+                    }
+
+                    if (starts_with($feature, 'fts_'))
+                    {
+                        return strtolower($ftsEnabled);
+                    }
+
+                    if ($feature === 'payouts_webhook_filter')
+                    {
+                        return strtolower($webhookArrayPublicPayload);
+                    }
+
+                    return strtolower($defaultBehaviour);
+                }));
 
         $this->app->razorx->method('getCachedTreatment')
-                          ->willReturn('off');
+                          ->willReturn(strtolower($webhookViaStork));
     }
 
-    protected function createWorkflowFeature(array $attributes = [])
+    protected function createWorkflowFeature(array $attributes = [], $mode = 'test')
     {
         $defaultAttributes = [
             'name'        => 'payout_workflows',
@@ -260,6 +290,6 @@ trait TestsBusinessBanking
 
         $attributes = array_merge($defaultAttributes, $attributes);
 
-        return $this->fixtures->create('feature', $attributes);
+        return $this->fixtures->on($mode)->create('feature', $attributes);
     }
 }

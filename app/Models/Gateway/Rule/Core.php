@@ -261,22 +261,20 @@ class Core extends Base\Core
         switch ($method)
         {
             case Payment\Method::CARD:
-
-                if ($payment->isGooglePayCard() === true)
-                {
-                    break;
-                }
-
-                $card = $payment->card;
-
-                $params[Entity::METHOD_TYPE]    = $card->getType();
-                $params[Entity::NETWORK]        = $card->getNetworkCode();
-                $params[Entity::ISSUER]         = $card->getIssuer();
-                $params[Entity::CARD_CATEGORY]  = $card->getCategory();
-                $params[Entity::METHOD_SUBTYPE] = $card->getSubType();
                 $params[Entity::INTERNATIONAL]  = $payment->isInternational();
                 $params[Entity::RECURRING]      = $payment->isRecurring();
                 $params[Entity::RECURRING_TYPE] = $payment->getRecurringType();
+
+                if ($payment->isGooglePayCard() === false)
+                {
+                    $card = $payment->card;
+
+                    $params[Entity::METHOD_TYPE]    = $card->getType();
+                    $params[Entity::NETWORK]        = $card->getNetworkCode();
+                    $params[Entity::ISSUER]         = $card->getIssuer();
+                    $params[Entity::CARD_CATEGORY]  = $card->getCategory();
+                    $params[Entity::METHOD_SUBTYPE] = $card->getSubType();
+                }
 
                 break;
 

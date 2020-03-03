@@ -581,6 +581,34 @@ class Terminal extends Base
             ],
             'shared'                    => 1,
             'gateway_merchant_id'       => 'shared_utility_code',
+            'gateway_merchant_id2'      => 'true',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        //$this->create($attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedEnachNpciNetbankingOldTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::ENACH_NPCI_NETBANKING_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'enach_npci_netbanking',
+            'gateway_acquirer'          => 'yesb',
+            'card'                      => 0,
+            'emandate'                  => 1,
+            'type'                      => [
+                Type::RECURRING_3DS => '1',
+                Type::RECURRING_NON_3DS => '1',
+            ],
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'shared_utility_code',
+            'gateway_merchant_id2'      => 'false',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -747,6 +775,26 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createCardlessEmiZestMoneyTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CARDLESS_EMI_ZESTMONEY_TERMINAL;
+
+        $attributes = [
+            'id'                   => $termId,
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'cardless_emi',
+            'card'                 => 0,
+            'netbanking'           => 0,
+            'cardless_emi'         => 1,
+            'gateway_merchant_id'  => 'cardless_emi_merchant',
+            'gateway_merchant_id2' => 'cardless_emi_merchant2',
+            'gateway_acquirer'     => 'zestmoney',
+            'mode'                 => 1,
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createPaylaterEpaylaterTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::PAYLATER_EPAYLATER_TERMINAL;
@@ -780,6 +828,28 @@ class Terminal extends Base
             'shared'                    =>  0,
             'paylater'                  =>  1,
             'gateway_merchant_id'       =>  'RazorpayGetsimpl',
+            'gateway_terminal_password' =>  'terminal_password',
+            'mode'                      =>  '2',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createPaylaterIciciTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+        $termId = \RZP\Models\Terminal\Shared::PAYLATER_ICICI_TERMINAL;
+
+        $defaultValues = [
+            'id'                        =>  $termId,
+            'merchant_id'               =>  $sharedMerchantAccount,
+            'gateway'                   =>  'paylater',
+            'gateway_acquirer'          =>  'icic',
+            'shared'                    =>  0,
+            'paylater'                  =>  1,
+            'gateway_merchant_id'       =>  'DUMMY_MERCHANT_ID',
             'gateway_terminal_password' =>  'terminal_password',
             'mode'                      =>  '2',
         ];
@@ -3322,7 +3392,8 @@ class Terminal extends Base
             'merchant_id'               => $sharedMerchantAccount,
             'gateway'                   => Gateway::NACH_CITI,
             'nach'                      => 1,
-            'gateway_merchant_id'       => 'NACH00000000010000',
+            'gateway_merchant_id'       => 'NACH00000000013149',
+            'gateway_access_code'       => 'CITI000PIGW',
             'gateway_acquirer'          => 'RATN0TREASU',
             'recurring'                 => 1,
             'created_at'                => time(),

@@ -31,11 +31,11 @@ use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
-use RZP\Models\Merchant\AutoKyc\ServiceFactory;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
+use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
+use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
-use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -48,7 +48,9 @@ class Core extends Base\Core
     use NotifyTrait;
     use DispatchesJobs;
 
-    public function saveMerchantDetails(array $input, Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
+    public function saveMerchantDetails(array $input,
+                                        Merchant\Entity $merchant,
+                                        string $originProduct = Product::PRIMARY)
     {
         $this->trace->info(
             TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
@@ -63,26 +65,35 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchant, $originProduct)
-        {
-            $merchantDetails = $this->editMerchantDetailFields($merchant, $input);
+        $merchantDetails->edit($input);
 
-            $response = $this->createResponse($merchantDetails);
+        return $this->repo
+                    ->transactionOnLiveAndTest(
+                        function () use (
+                            $input,
+                            $merchantDetails,
+                            $merchant,
+                            $originProduct
+                        )
+                        {
+                            $merchantDetails = $this->editMerchantDetailFields($merchant, $input);
 
-            if ($this->canSubmit($input, $response) === true)
-            {
-                // blacklisted merchant should not be allowed to submit l2 form
-                $merchantDetails->getValidator()->validateFullActivationForm($merchant);
+                            $response = $this->createResponse($merchantDetails);
 
-                $response = $this->submitActivationForm($merchant, $originProduct);
-            }
-            else
-            {
-                $response = $this->updateActivationProgress($merchant);
-            }
+                            if ($this->canSubmit($input, $response) === true)
+                            {
+                                // blacklisted merchant should not be allowed to submit l2 form
+                                $merchantDetails->getValidator()->validateFullActivationForm($merchant);
 
-            return $response;
-        });
+                                $response = $this->submitActivationForm($merchant, $originProduct);
+                            }
+                            else
+                            {
+                                $response = $this->updateActivationProgress($merchant);
+                            }
+
+                            return $response;
+                        });
     }
 
     public function submitActivationForm(Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
@@ -188,14 +199,16 @@ class Core extends Base\Core
     }
 
     /**
-     * Updates merchant detail poa status to verified if any one of the document uploaded by merchant is verified
+     * Updates merchant detail poa status to verified if any one
+     * of the document uploaded by merchant is verified
      *
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      */
     public function updatePoaVerificationStatusIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === false)
+        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant,
+                                                                 $merchantDetails->isUnregisteredBusiness()) === false)
         {
             return;
         }
@@ -223,7 +236,7 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::MERCHANT_VERIFY_POA,
                     [
-                        'document_type'       => $document[Document\Entity::DOCUMENT_TYPE],
+                        'document_type' => $document[Document\Entity::DOCUMENT_TYPE],
                     ]);
 
                 $documentType =  $document[Document\Entity::DOCUMENT_TYPE];
@@ -233,8 +246,8 @@ class Core extends Base\Core
                 break;
             }
         }
-
-        $poaVerificationStatus = ($isOcrVerified === true) ? PoaVerificationStatus::VERIFIED : PoaVerificationStatus::FAILED;
+        $poaVerificationStatus =
+            ($isOcrVerified === true) ? PoaVerificationStatus::VERIFIED : PoaVerificationStatus::FAILED;
 
         $this->trace->count(DetailMetric::POA_VERIFICATION_STATUS_TOTAL,
                             [
@@ -268,7 +281,8 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness()) === true)
+        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant,
+                                                                 $merchantDetails->isUnregisteredBusiness()) === true)
         {
             $merchantDetails->setActivationFlow();
             $merchantDetails->setInternationalActivationFlow();
@@ -287,7 +301,10 @@ class Core extends Base\Core
             $eventAttributes['international_activation_flow'] = $merchantDetails->getInternationalActivationFlow();
         }
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_FLOW_SUCCESS, $this->merchant, null, $eventAttributes);
+        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_FLOW_SUCCESS,
+                                                 $this->merchant,
+                                                 null,
+                                                 $eventAttributes);
     }
 
     protected function autoUpdateActivationFlow(Merchant\Entity $merchant, $partner = null)
@@ -359,7 +376,7 @@ class Core extends Base\Core
 
         // for older merchants(non instant activation) where category or category 2 is not set , set details
         $populateCategoryAndCategory2 = ((empty($businessCategory) === false) and
-                                         (!(empty($category) === false AND empty($category2) === false)));
+                                         (!(empty($category) === false and empty($category2) === false)));
 
         if (($populateCategoryAndCategory2 === true) or
             ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true))
@@ -481,7 +498,8 @@ class Core extends Base\Core
             return null;
         }
 
-        $enabled = (new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant, $merchantDetails->isUnregisteredBusiness());
+        $enabled = (new Merchant\Core())->isUnRegisteredOnBoardingEnabled($merchant,
+                                                                          $merchantDetails->isUnregisteredBusiness());
 
         if ($enabled === false)
         {
@@ -607,6 +625,8 @@ class Core extends Base\Core
         if (isset($input[Merchant\Entity::WEBSITE]) === true)
         {
             $data[Entity::BUSINESS_WEBSITE] = $input[Merchant\Entity::WEBSITE];
+
+            (new Merchant\Core())->updateWhitelistedDomain($merchant, $input);
         }
 
         if (empty($data) === false)
@@ -654,8 +674,11 @@ class Core extends Base\Core
 
 
     /**
-     * Fills up dummy file IDs, required fields for merchant activation
-     * Use with caution
+     * Fills up dummy file IDs, required fields for merchant activation.
+     *
+     * This function is being used for creating and activating sub merchant .
+     *
+     * In this case kyc is handled by partner , so we upload dummy files .
      *
      * @param Merchant\Entity $merchant
      *
@@ -667,11 +690,17 @@ class Core extends Base\Core
 
         $requiredDocuments = $this->getRequireActivationDocuments($merchantDetails);
 
-        $params = [];
+        $merchantDetailsParams  = [];
+        $merchantDocumentParams = [];
 
         foreach ($requiredDocuments as $requiredDocument)
         {
-            $params[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
+            $merchantDetailsParams[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
+
+            $merchantDocumentParams[$requiredDocument] = [
+                Document\Constants::FILE_ID => DEConstants::DUMMY_ACTIVATION_FILE,
+                Document\Constants::SOURCE  => Document\Source::UFH,
+            ];
         }
 
         //
@@ -680,12 +709,12 @@ class Core extends Base\Core
         //
         if ($merchantDetails->isUnregisteredBusiness() === false)
         {
-            $merchantDetails->fill($params);
+            $merchantDetails->fill($merchantDetailsParams);
 
             $this->repo->saveOrFail($merchantDetails);
         }
 
-        (new Document\Core)->storeInMerchantDocument($merchant, $params);
+        (new Document\Core)->storeInMerchantDocument($merchant, $merchantDocumentParams);
     }
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
@@ -795,17 +824,44 @@ class Core extends Base\Core
 
     protected function merchantNotifyActivationSubmission(Entity $merchantDetails, Merchant\Entity $merchant)
     {
-        $org = $merchant->org->toArray();
+        $product = $this->app['basicauth']->getRequestOriginProduct();
 
-        $org['hostname'] = $merchant->org->getPrimaryHostName();
+        $activationFlow = $merchant->merchantDetail->getActivationFlow();
 
-        $data = $merchantDetails->toArray();
+        $this->trace->info(TraceCode::KYC_SUBMITTED_EMAIL,
+                           [
+                               'merchant_id'         => $merchant->getPublicId(),
+                               'product'             => $product,
+                               'activation_flow'     => $activationFlow,
+                               'has_banking_account' => $merchant->hasBankingAccounts()
+                           ]);
 
-        $data[Constants::IS_WHITELISTED_ACTIVATION] = $merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST;
+        if ($product === Product::BANKING)
+        {
+            if (($activationFlow === ActivationFlow::WHITELIST) and
+                ($merchant->hasBankingAccounts() === true))
+            {
+                Mail::queue(new L2SubmissionWhitelist($merchant->getId()));
+            }
+            else if ($activationFlow === ActivationFlow::GREYLIST)
+            {
+                Mail::queue(new L2SubmissionGreylist($merchant->getId()));
+            }
+        }
+        else
+        {
+            $org = $merchant->org->toArray();
 
-        $notifyMerchantMail = new NotifyMerchant($data, $org);
+            $org['hostname'] = $merchant->org->getPrimaryHostName();
 
-        Mail::queue($notifyMerchantMail);
+            $data = $merchantDetails->toArray();
+
+            $data[Constants::IS_WHITELISTED_ACTIVATION] = $merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST;
+
+            $notifyMerchantMail = new NotifyMerchant($data, $org);
+
+            Mail::queue($notifyMerchantMail);
+        }
     }
 
     protected function adminNotifyActivationSubmission(Entity $merchantDetails)
@@ -994,6 +1050,8 @@ class Core extends Base\Core
                     $newMerchantDetails,
                     $rejectionReasons);
 
+                $merchant->deactivate();
+
                 $this->sendRejectionEmail($merchant);
             }
 
@@ -1041,12 +1099,14 @@ class Core extends Base\Core
 
                 $this->app['events']->fire($event, $eventPayload);
             }
-
         });
 
         $customProperties['activation_status'] = $currentActivationStatus;
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS, $merchant, null, $customProperties);
+        $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS,
+                                                 $merchant,
+                                                 null,
+                                                 $customProperties);
 
         $this->trace->count(
             Metric::MERCHANT_ACTIVATION_STATE_TRANSITION,
@@ -1246,37 +1306,21 @@ class Core extends Base\Core
     public function getValidationFields(Entity $merchantDetails): array
     {
         // @todo: Activation flow will define its own validation fields
-        $validationDocumentFields = [];
 
-        $validationFields = ValidationFields::DASHBOARD_FIELDS;
-
-        if ($merchantDetails->getBusinessType() === BusinessType::NGO)
-        {
-            $ngoValidationFields = ValidationFields::NGO_MERCHANT_FIELDS;
-
-            $validationFields = array_merge($validationFields, $ngoValidationFields);
-        }
-
-        // Business Types which have limited fields
-        $limitedFieldTypes = [BusinessType::INDIVIDUAL, BusinessType::NOT_YET_REGISTERED];
-
-        if (in_array($merchantDetails->getBusinessType(), $limitedFieldTypes, true) === true)
-        {
-            $validationFields         = ValidationFields::DASHBOARD_UNREGISTERED_LIMITED;
-            $validationDocumentFields = ValidationFields::UNREGISTERED_DOCUMENT_FIELDS;
-        }
+        [$validationFields, $validationDocumentFields, $validationOptionalFields] = ValidationFields::getValidationFields($merchantDetails);
 
         if (self::shouldSkipBankAccountRegistration() === true)
         {
-            $validationFields = array_diff($validationFields, ValidationFields::BANK_ACCOUNT_FIELDS);
+            $validationFields = array_diff($validationFields, RequiredFields::BANK_ACCOUNT_FIELDS);
         }
 
         $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)
         {
-            $validationFields         = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
+            $validationFields         = RequiredFields::MARKETPLACE_ACCOUNT_FIELDS;
             $validationDocumentFields = [];
+            $validationOptionalFields = [];
 
             $parentMerchant = $merchant->parent;
 
@@ -1287,13 +1331,13 @@ class Core extends Base\Core
             //
             if ($parentMerchant->linkedAccountsRequireKyc() === true)
             {
-                $kycValidationFields = ValidationFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
+                $kycValidationFields = RequiredFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
 
                 $validationFields = array_merge($validationFields, $kycValidationFields);
             }
         }
 
-        return [$validationFields, $validationDocumentFields];
+        return [$validationFields, $validationDocumentFields, $validationOptionalFields];
     }
 
     public function createResponse(Entity $merchantDetails): array
@@ -1304,7 +1348,7 @@ class Core extends Base\Core
 
         $requiredFields = [];
 
-        [$validationFields, $validationDocumentFields] = $this->getValidationFields($merchantDetails);
+        [$validationFields, $validationDocumentFields, $validationOptionalFields] = $this->getValidationFields($merchantDetails);
 
         //
         // refreshing the merchant relation here as createResponse is called at many places
@@ -1371,6 +1415,7 @@ class Core extends Base\Core
                 'status'              => 'disabled',
                 'disabled_reason'     => 'required_fields',
                 'required_fields'     => $requiredFields,
+                'optional_fields'     => $validationOptionalFields,
                 'activation_progress' => 100 - intval($remainingFields * 100 / $totalFields),
             ];
 
@@ -1416,14 +1461,18 @@ class Core extends Base\Core
 
     private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array
     {
-        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
-            $merchant->getId(),
-            Product::BANKING,
-            Merchant\Balance\AccountType::SHARED);
+        $balance = $this->repo
+                        ->balance
+                        ->getMerchantBalanceByTypeAndAccountType(
+                            $merchant->getId(),
+                            Product::BANKING,
+                            Merchant\Balance\AccountType::SHARED);
 
         if (empty($balance) === false)
         {
-            $bankAccount = $this->repo->bank_account->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
+            $bankAccount = $this->repo
+                                ->bank_account
+                                ->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
 
             $response[Merchant\Entity::BANKING_BALANCE] = $balance->only([Merchant\Balance\Entity::BALANCE,
                                                                           Merchant\Balance\Entity::CURRENCY]);
@@ -1559,13 +1608,15 @@ class Core extends Base\Core
      *
      * @param string $previous_status
      * @param string $updated_status
-     * @param array  $extra
+     * @param array $extra
      *
      * @return array
      *
      */
 
-    protected function fetchActivationStatusTransitionMetricDimensions(string $updated_status,string $previous_status = null, array $extra = []): array
+    protected function fetchActivationStatusTransitionMetricDimensions(string $updated_status,
+                                                                       string $previous_status = null,
+                                                                       array $extra = []): array
     {
         return $extra + [
                 Metric::PREVIOUS_ACTIVATION_STATUS => $previous_status,
@@ -1712,7 +1763,9 @@ class Core extends Base\Core
      * @param $documentsResponse
      * @param $requiredFields
      */
-    protected function calculateRequiredDocumentFields($validationDocumentFields, $documentsResponse, &$requiredFields): void
+    protected function calculateRequiredDocumentFields($validationDocumentFields,
+                                                       $documentsResponse,
+                                                       &$requiredFields): void
     {
         foreach ($validationDocumentFields as $requiredDocumentField => $documentGroups)
         {
@@ -1911,5 +1964,21 @@ class Core extends Base\Core
                     break;
             }
         }
+    }
+
+    /**
+     * this function is called dynemically to update merchant details through batch action.
+     * This unction name is derived from action name.
+     *
+     * @param string $merchantId
+     * @param array  $input
+     */
+    public function updateEntity(string $merchantId, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        (new Validator())->validateInput('update_entity_batch_action', $input);
+
+        $this->editMerchantDetailFields($merchant, $input);
     }
 }

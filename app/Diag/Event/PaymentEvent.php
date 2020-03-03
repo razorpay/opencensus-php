@@ -59,6 +59,11 @@ class PaymentEvent extends Event
         unset($this->customProperties['card_number']);
         unset($this->customProperties['number']);
         unset($this->customProperties['notes']);
+
+        unset($this->metaDetails['metadata']['payment']['card']);
+        unset($this->metaDetails['metadata']['payment']['card_number']);
+        unset($this->metaDetails['metadata']['number']);
+        unset($this->metaDetails['metadata']['notes']);
     }
 
     private function addMerchantDetails(array &$properties)
@@ -127,5 +132,33 @@ class PaymentEvent extends Event
         {
             $properties['metadata'] = $metadata;
         }
+    }
+
+    protected function getEventMetaDetails()
+    {
+        if ($this->entity !== null)
+        {
+            if ((empty($this->metaDetails) === true))
+            {
+                $this->metaDetails = [
+                    'metadata' => [
+                        'payment' => [
+                            'id' => $this->entity->getPublicId()
+                        ]
+                    ],
+                    'read_key' => array('payment.id'),
+                    'write_key' => ''
+                ];
+            }
+
+            if (empty($this->entity->getMetadata()) === false)
+            {
+                $this->metaDetails['metadata']['payment']['metadata'] = $this->entity->getMetadata();
+
+                $this->metaDetails['write_key'] = 'payment.id';
+            }
+        }
+
+        return $this->metaDetails;
     }
 }

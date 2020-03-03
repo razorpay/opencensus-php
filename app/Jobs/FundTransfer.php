@@ -10,6 +10,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\FundTransfer as FTA;
 use Razorpay\Trace\Logger as Trace;
+use Jitendra\Lqext\TransactionAware;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankAccount\Beneficiary;
 use RZP\Models\FundTransfer\Attempt\Status;
@@ -20,6 +21,8 @@ use RZP\Models\NodalBeneficiary\Status as BeneficiaryStatus;
 
 class FundTransfer extends Job
 {
+    use TransactionAware;
+
     const MUTEX_LOCK_TTL        = 45;
 
     const MAX_ALLOWED_ATTEMPTS  = 10;
@@ -286,7 +289,6 @@ class FundTransfer extends Job
         $duration = $currentTime - $fta->getCreatedAt();
 
         if ((empty($sla) === false) and
-            ($fta->getSourceType() === Attempt\Type::PAYOUT) and
             (((int) $sla) <= $duration))
         {
             $this->trace->info(

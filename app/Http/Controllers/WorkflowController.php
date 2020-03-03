@@ -128,8 +128,22 @@ class WorkflowController extends Controller
 
     public function getWorkflowPayoutAmountRules()
     {
-        $data = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getWorkflowRules();
+        $data = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getWorkflowPayoutAmountRules($this->input);
 
         return ApiResponse::json($data);
+    }
+
+    public function getMerchantIdsForCreatePayoutWorkflowPermission()
+    {
+        $data = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->getMerchantIdsForCreatePayoutWorkflowPermission($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postWorkflowPayoutAmountRules()
+    {
+        $result = $this->service(E::WORKFLOW_PAYOUT_AMOUNT_RULES)->createWorkflowPayoutAmountRules($this->input);
+
+        return ApiResponse::json($result);
     }
 }

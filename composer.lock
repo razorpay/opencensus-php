@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8b87b1c7b3dcd80ced24861a550b6a1c",
+    "content-hash": "21e44cadb27b4085dda3465aae0be5cc",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -623,7 +623,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "DataDog",
+                    "name": "Datadog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -2039,6 +2039,7 @@
                 }
             ],
             "description": "Provides a simple API and specification that abstracts away the details of HTTP into a single PHP function.",
+            "abandoned": true,
             "time": "2015-05-20T03:37:09+00:00"
         },
         {
@@ -2089,6 +2090,7 @@
                 "Guzzle",
                 "stream"
             ],
+            "abandoned": true,
             "time": "2014-10-12T19:18:40+00:00"
         },
         {
@@ -4016,6 +4018,7 @@
                 "cron",
                 "schedule"
             ],
+            "abandoned": "dragonmantank/cron-expression",
             "time": "2017-01-23T04:29:33+00:00"
         },
         {
@@ -5985,16 +5988,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.4.10",
+            "version": "1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "01a17b0a0f5c528a19b7f2366b5da9b45515756f"
+                "reference": "28c33217a2850e50da1b1338b55cc2309f0f84fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/01a17b0a0f5c528a19b7f2366b5da9b45515756f",
-                "reference": "01a17b0a0f5c528a19b7f2366b5da9b45515756f",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/28c33217a2850e50da1b1338b55cc2309f0f84fe",
+                "reference": "28c33217a2850e50da1b1338b55cc2309f0f84fe",
                 "shasum": ""
             },
             "require": {
@@ -6028,7 +6031,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2020-01-02T08:49:15+00:00"
+            "time": "2020-02-03T10:04:33+00:00"
         },
         {
             "name": "razorpay/lqext",
@@ -8316,26 +8319,22 @@
         },
         {
             "name": "watson/rememberable",
-            "version": "2.0.4",
+            "version": "3.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dwightwatson/rememberable.git",
-                "reference": "8718614835370f67f58d86387a26bfc315fa9a8b"
+                "reference": "d225d1c6733a4b47ad037df275f144858a968325"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dwightwatson/rememberable/zipball/8718614835370f67f58d86387a26bfc315fa9a8b",
-                "reference": "8718614835370f67f58d86387a26bfc315fa9a8b",
+                "url": "https://api.github.com/repos/dwightwatson/rememberable/zipball/d225d1c6733a4b47ad037df275f144858a968325",
+                "reference": "d225d1c6733a4b47ad037df275f144858a968325",
                 "shasum": ""
             },
             "require": {
-                "illuminate/database": "~5.0",
-                "illuminate/support": "~5.0",
+                "illuminate/database": "^5.0|^6.0",
+                "illuminate/support": "^5.0|^6.0",
                 "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "mockery/mockery": "0.9.*",
-                "phpunit/phpunit": "4.2.*"
             },
             "type": "library",
             "autoload": {
@@ -8360,7 +8359,7 @@
                 "laravel",
                 "remember"
             ],
-            "time": "2017-12-21T01:09:18+00:00"
+            "time": "2019-10-04T00:29:10+00:00"
         },
         {
             "name": "webmozart/assert",

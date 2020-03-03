@@ -8,10 +8,17 @@ use RZP\Mail\Base\Constants;
 
 class Payout extends Base
 {
-    protected static $mailTag     = MailTags::BATCH_PAYOUT_FILE;
-    protected static $sender      = Constants::NOREPLY;
-    protected static $subjectLine = 'Processed payouts file for %s';
-    protected static $body        = 'Please find attached processed payouts file.';
+    protected static $mailTag       = MailTags::BATCH_PAYOUT_FILE;
+    protected static $sender        = Constants::NOREPLY;
+    protected static $subjectLine   = 'Processed payouts file for %s';
+    protected static $body          = 'Please find attached processed payouts file.';
+
+    /**
+     * Test Prefix is used only if useTestPrefix is set to true
+     *
+     * @var bool
+     */
+    protected $useTestPrefix = true;
 
     /**
      * {@inheritDoc}

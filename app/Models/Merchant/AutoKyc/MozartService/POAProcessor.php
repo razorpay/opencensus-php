@@ -30,6 +30,6 @@ class POAProcessor extends BaseProcessor
 
         [$response, $responseMetaData] = $this->createAndSendRequest($request);
 
-        return new POAProcessorResponse($response, $responseMetaData);
+        return new POAProcessorResponse($response, $responseMetaData, $this->input);
     }
 }

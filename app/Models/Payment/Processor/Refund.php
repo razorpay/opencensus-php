@@ -3,11 +3,13 @@
 namespace RZP\Models\Payment\Processor;
 
 use Mail;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
+use RZP\Services\FTS;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -15,8 +17,10 @@ use RZP\Models\Reversal;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\Card\Type;
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Jobs\ScroogeRefund;
@@ -30,10 +34,12 @@ use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
+use RZP\Models\Settlement\Holidays as SettlementHoliday;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
@@ -116,9 +122,14 @@ trait Refund
 
     protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
     {
+        //
+        // Pricing is defined only for merchants of RZP Org - please refer calculator/refund.php : getPricingRule()
+        // before removing org checks
+        //
         return ((isset($input[RefundEntity::SPEED]) === true) and
                 (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
-                ($this->isCapturedPaymentAndFeatureEnabled($payment) === false));
+                (($this->isCapturedPaymentAndFeatureEnabled($payment) === false) or
+                 ($payment->merchant->org->getId() !== Org\Entity::RAZORPAY_ORG_ID)));
     }
 
     protected function pushMetrics()
@@ -1737,6 +1748,8 @@ trait Refund
 
     public function callRefundRetryFunctionOnScrooge($refund, $input)
     {
+        $dispatchDelayTime = $input[RefundConstants::DISPATCH_DELAY_TIME] ?? 0;
+
         $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $input);
 
         $data['mode'] = $this->mode;
@@ -1748,7 +1761,7 @@ trait Refund
 
         try
         {
-            ScroogeRefundRetry::dispatch($data);
+            ScroogeRefundRetry::dispatch($data)->delay($dispatchDelayTime);
         }
         catch (\Throwable $e)
         {
@@ -1765,17 +1778,23 @@ trait Refund
     {
         $payment = $refund->payment;
 
-        $verifyResponse = $this->verifyRefund($refund);
+        $refundedOnGateway = $this->mutex->acquireAndRelease(
+            $payment->getId(),
+            function() use ($data, $payment, $refund)
+            {
+                $verifyResponse = $this->verifyRefund($refund);
 
-        // true  if refunded
-        // false if not refunded
-        $refundedOnGateway = $verifyResponse[Payment\Gateway::SUCCESS];
+                // true  if refunded
+                // false if not refunded
+                $refundedOnGateway = $verifyResponse[Payment\Gateway::SUCCESS];
 
-        if ($refundedOnGateway === false)
-        {
-            $refundedOnGateway = $this->mutex->acquireAndRelease(
-                $payment->getId(),
-                function() use ($data, $payment, $refund)
+                if ($refundedOnGateway === true)
+                {
+                    $refund->setStatusProcessed();
+
+                    $this->setRefundReference1($verifyResponse);
+                }
+                else if ($refund->isStatusFailed() === true)
                 {
                     //
                     // Setting retry to true, will use this action later to decide weather
@@ -1785,17 +1804,15 @@ trait Refund
                     //
                     $refundResponse = $this->callRefundFunction($refund, $payment, $data, true);
 
+                    $this->setRefundReference1($refundResponse);
+
+                    $refund->incrementAttempts();
+
                     return $refundResponse[Payment\Gateway::SUCCESS];
-                });
+                }
 
-            $refund->incrementAttempts();
-        }
-        else
-        {
-            $refund->setStatusProcessed();
-        }
-
-        $this->setRefundReference1($verifyResponse);
+                return $verifyResponse[Payment\Gateway::SUCCESS];
+            });
 
         $refund->setGatewayRefunded($refundedOnGateway);
 
@@ -1871,16 +1888,21 @@ trait Refund
             'refund_id'         => $refund->getId(),
         ];
 
+        $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant(Transaction\Type::REFUND,
+                                                            $merchant->getId());
+
         if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
-            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getAmount(),
-                                                            Transaction\Type::REFUND);
+            return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getNetAmount(),
+                                                            Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
 
         if ($merchant->getRefundSource() === RefundSource::BALANCE)
         {
-            return $this->checkMerchantBalance($merchant, $refund, $type, $traceData);
+            return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled);
         }
+
+        return false;
     }
 
     protected function getGatewayDataForRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
@@ -2414,7 +2436,8 @@ trait Refund
         if (($payment->isBankTransfer() === true) or
             ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
             ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
-            ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA]) === true))
+            ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA]) === true) or
+            ($this->isPaymentNachAndNachRefundGateway($payment) === true))
         {
             return true;
         }
@@ -2425,6 +2448,17 @@ trait Refund
     protected function isPaymentEmandateAndEmandateRefundGateway(Payment\Entity $payment): bool
     {
         if (($payment->isEmandate() === true) and
+            (in_array($payment->getGateway(), Payment\Gateway::BANK_TRANSFER_REFUND_GATEWAYS, true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isPaymentNachAndNachRefundGateway(Payment\Entity $payment): bool
+    {
+        if (($payment->isNach() === true) and
             (in_array($payment->getGateway(), Payment\Gateway::BANK_TRANSFER_REFUND_GATEWAYS, true) === true))
         {
             return true;
@@ -2688,11 +2722,10 @@ trait Refund
 
             $input = (new Order\Core)->getAccountForRefund($order);
         }
-        else if ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true)
+        else if (($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
+            ($this->isPaymentNachAndNachRefundGateway($payment) === true))
         {
-            $customer = $payment->customer;
-            $customerName = preg_replace('/[^a-zA-Z0-9 ]+/', '', $customer->getName());
-            $customerName = substr($customerName, 0, 35);
+            $customerName = $this->getFormattedCustomerNameFromPayment($payment);
 
             $token = $payment->getGlobalOrLocalTokenEntity();
 
@@ -2710,6 +2743,20 @@ trait Refund
         }
 
         return $input;
+    }
+
+    protected function getFormattedCustomerNameFromPayment(Payment\Entity $payment)
+    {
+        $customer = $payment->customer;
+
+        if ($customer === null)
+        {
+            return null;
+        }
+
+        $customerName = preg_replace('/[^a-zA-Z0-9 ]+/', '', $customer->getName());
+
+        return substr($customerName, 0, 35);
     }
 
     protected function getVpaInput(Payment\Entity $payment, array $data = [])
@@ -2740,6 +2787,19 @@ trait Refund
         if (isset($data[RefundEntity::MODE]) === true)
         {
             $input[FundTransferAttempt\Entity::MODE] = $data[RefundEntity::MODE];
+
+            // If mode is NEFT or RTGS we need to set initiate_at using RTGS timings
+            if (in_array(
+                $input[FundTransferAttempt\Entity::MODE],
+                [
+                    FundTransfer\Mode::NEFT,
+                    FundTransfer\Mode::RTGS
+                ],
+                true) and
+               $this->isValidTiming($input[FundTransferAttempt\Entity::MODE]) === false)
+            {
+                $input[FundTransferAttempt\Entity::INITIATE_AT] = $this->getFTAInitiateTime();
+            }
         }
 
         if ($payment->isBankTransfer() === true)
@@ -2754,6 +2814,57 @@ trait Refund
         }
 
         return $input;
+    }
+
+    protected function isValidTiming($mode)
+    {
+        $currentTimeInstance = Carbon::now(Timezone::IST);
+
+        $currentTime = $currentTimeInstance->getTimestamp();
+
+        $bankingStartTime = Carbon::createFromTime(FTS\Constants::RTGS_CUTOFF_HOUR_MIN, 15, 0, Timezone::IST)
+                                   ->getTimestamp();
+
+        $cutOffHour = ($mode === FundTransfer\Mode::NEFT) ?
+                            FTS\Constants::NEFT_CUTOFF_HOUR_MAX : FTS\Constants::RTGS_REVISED_CUTOFF_HOUR_MAX;
+
+        $cutOffMin  = ($mode === FundTransfer\Mode::NEFT) ?
+                            FTS\Constants::NEFT_CUTOFF_MINUTE_MAX : FTS\Constants::RTGS_REVISED_CUTOFF_MINUTE_MAX;
+
+        $bankingCloseTime = Carbon::createFromTime($cutOffHour, $cutOffMin, 0, Timezone::IST)
+                                   ->getTimestamp();
+
+        if (($currentTime >= $bankingStartTime) and
+            ($currentTime <= $bankingCloseTime) and
+            (SettlementHoliday::isWorkingDay($currentTimeInstance)))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getFTAInitiateTime(): int
+    {
+        $currentTimeInstance = Carbon::now(Timezone::IST);
+        $currentTime = $currentTimeInstance->getTimestamp();
+
+        $bankingStartTime = Carbon::createFromTime(FTS\Constants::RTGS_CUTOFF_HOUR_MIN, 15, 0, Timezone::IST)
+                                  ->getTimestamp();
+
+        if (($currentTime < $bankingStartTime) and
+            (SettlementHoliday::isWorkingDay($currentTimeInstance)))
+        {
+            return $bankingStartTime;
+        }
+
+        else
+        {
+            return (SettlementHoliday::getNextWorkingDay(Carbon::now(Timezone::IST))
+                                   ->addHours(FTS\Constants::RTGS_CUTOFF_HOUR_MIN)
+                                   ->addMinutes(15)
+                                   ->getTimestamp());
+        }
     }
 
     protected function createAndAssociateVpa(array $vpaInput)
@@ -2892,14 +3003,15 @@ trait Refund
     private function checkMerchantBalance(Merchant\Entity $merchant,
                                           RefundEntity $refund,
                                           string $type,
-                                          array $traceData)
+                                          array $traceData,
+                                          bool $negativeBalanceEnabled = false)
     {
         try
         {
-            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getAmount(),
-                                                        Transaction\Type::REFUND);
+            return (new Merchant\Balance\Core)->checkMerchantBalance($merchant, -1 * $refund->getNetAmount(),
+                                                        Transaction\Type::REFUND, $negativeBalanceEnabled);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             if ($type === 'refund')
             {

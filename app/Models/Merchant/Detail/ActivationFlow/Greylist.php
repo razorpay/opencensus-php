@@ -2,8 +2,13 @@
 
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
+use Mail;
+
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\Activate;
+use RZP\Mail\Merchant\RazorpayX\RequestKyc;
 
 /**
  * Class GreylistActivationFlow
@@ -27,7 +32,19 @@ class Greylist extends Base implements ActivationFlowInterface
     {
         $this->trace->info(TraceCode::MERCHANT_PROCESS_GREYLIST_ACTIVATION);
 
+        $this->handleFlowForRazorpayx($merchant);
+
         return;
+    }
+
+    public function sendKycRequestEmail(Entity $merchant)
+    {
+        $product = $this->app['basicauth']->getRequestOriginProduct();
+
+        if ($product === Product::BANKING)
+        {
+            Mail::queue(new RequestKyc($merchant->getEntityName(), $merchant->getEmail()));
+        }
     }
 
     /**
@@ -38,5 +55,16 @@ class Greylist extends Base implements ActivationFlowInterface
     public function validateFullActivationForm(Entity $merchant)
     {
         return;
+    }
+
+    protected function handleFlowForRazorpayx(Entity $merchant)
+    {
+        $this->sendKycRequestEmail($merchant);
+
+        //
+        // Calling this here for onboarding merchant onto test mode
+        // the code inside handles for not onboarding merchant on live mode
+        //
+        (new Activate)->activateBusinessBankingIfApplicable($merchant);
     }
 }

@@ -100,6 +100,20 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $mandateCreateObj, Action::AUTH_INIT);
     }
 
+    public function authVerify($input)
+    {
+        $authVerifyObj = new AuthVerifyData();
+
+        return $this->processMockResponse($input, $authVerifyObj, Action::AUTH_VERIFY);
+    }
+
+    public function checkBalance($input)
+    {
+        $checkBalanceObj = new CheckBalanceData();
+
+        return $this->processMockResponse($input, $checkBalanceObj, Action::CHECK_BALANCE);
+    }
+
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
@@ -196,7 +210,16 @@ class Server extends Base\Mock\Server
                         break;
 
                     case 'intentPayment':
-                        $content[UpiJuspay\Fields::TYPE]  = 'MERCHANT_CREDITED_VIA_PAY';
+                        $udfParameters = [
+                           'ref_id' => $payment['id'],
+                        ];
+                        $content[UpiJuspay\Fields::MERCHANT_REQUEST_ID] = 'SOME_OTHER_ID';
+                        $content[UpiJuspay\Fields::TYPE]                = 'MERCHANT_CREDITED_VIA_PAY';
+                        $content[UpiJuspay\Fields::UDF_PARAMETERS]      = json_encode($udfParameters);
+                        unset($content[UpiJuspay\Fields::EXPIRY]);
+                        break;
+                    case 'intentWithRefIdAbsent':
+                        $content[UpiJuspay\Fields::TYPE]                = 'MERCHANT_CREDITED_VIA_PAY';
                         unset($content[UpiJuspay\Fields::EXPIRY]);
                         break;
                 }
@@ -236,7 +259,7 @@ class Server extends Base\Mock\Server
 
         $response['hash'] = $hash;
 
-        return [json_encode($response)];
+        return json_encode($response);
     }
 
     public function getFailedAsyncCallbackContent(array $payment)
@@ -261,7 +284,7 @@ class Server extends Base\Mock\Server
 
         $response['hash'] = $hash;
 
-        return [json_encode($response)];
+        return json_encode($response);
     }
 
     protected function wallet_phonepe($input)
@@ -659,6 +682,10 @@ class Server extends Base\Mock\Server
 
     public function decrypt($input)
     {
+        $data = json_decode($input, true);
+
+        $signature = $data['signature'];
+
         $decryptedMessage = [
             'paymentMethod' => 'TOKENIZED_CARD',
             'version'       => '1.0',
@@ -675,17 +702,36 @@ class Server extends Base\Mock\Server
             'messageExpiration' => '1492343123',
         ];
 
-        $responseBody = [
-            'data' => [
-                '_raw'             => '',
-                'decryptedMessage' => $decryptedMessage,
-            ],
-            'error'             => [],
-            'external_trace_id' => '',
-            'mozart_id'         => 'blfq216r1gunssphbs01',
-            'next'              => null,
-            'success'           => true,
-        ];
+        $responseBody = [];
+
+        switch ($signature)
+        {
+            Case "MEQCID2npCOWMBWTr5hfCzT2cou0UcZou3drDTA8wC3eXi78AiAhJefYECEw6AnyWbpTbOhwXQ1fSEQMiOxXkOJtmrw5sg==":
+                $responseBody = [
+                    'data' => [
+                        '_raw'             => '',
+                        'decryptedMessage' => $decryptedMessage,
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => true,
+                ];
+                break;
+            Case "MEQCID2npCOWMBWTr5hfCzT2cou0UcZou3drDTA8wC3eXi78AiAhJefYECEw6AnyWbpTbOhwXQ1fSEQMiOxXkOJtmrw5sg==2":
+                $responseBody = [
+                    'data' => [
+                        '_raw'             => '',
+                    ],
+                    'error'             => [],
+                    'external_trace_id' => '',
+                    'mozart_id'         => 'blfq216r1gunssphbs01',
+                    'next'              => null,
+                    'success'           => false,
+                ];
+                break;
+        }
 
         $response = \Response::make($responseBody);
 

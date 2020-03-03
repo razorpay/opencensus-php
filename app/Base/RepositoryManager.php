@@ -23,6 +23,8 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Merchant\Repository                         $merchant
  * @property Models\Batch\Repository                            $batch
  * @property Models\BankAccount\Repository                      $bank_account
+ * @property Models\BankTransfer\Repository                     $bank_transfer
+ * @property Models\External\Repository                         $external
  * @property Models\Merchant\Account\Repository                 $account
  * @property Models\PaymentLink\Repository                      $payment_link
  * @property Models\PayoutLink\Repository                       $payout_link
@@ -65,6 +67,8 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Merchant\Invoice\Repository                 $merchant_invoice
  * @property Models\Address\Repository                          $address
  * @property Models\Options\Repository                          $options
+ * @property Models\Merchant\FreshdeskTicket\Repository         $merchant_freshdesk_tickets
+ * @property Models\VirtualAccount\Repository                   $virtual_account
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

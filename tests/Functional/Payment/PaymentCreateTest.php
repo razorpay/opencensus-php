@@ -1736,6 +1736,49 @@ class PaymentCreateTest extends TestCase
         $this->assertNull($paymentObj['gateway_captured'] );
     }
 
+    public function testForRupayPaymentOnCybersourceTerminalModeDual()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+
+        $this->fixtures->create('terminal',[
+            'id'          => 'CmRSEGymhC3lae',
+            'merchant_id' => '10000000000000',
+            'mode'        => '3',
+            'gateway'     => 'cybersource',
+        ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->edit('terminal', '1000SharpTrmnl', ['enabled' => false]);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'card');
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'RuPay',
+        ]);
+        $this->fixtures->terminal->edit(
+            \RZP\Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL,
+            [
+                'mode' => 3,
+            ]
+        );
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+        $payment['amount'] = 1000000;
+
+        $this->doAuthPayment($payment);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTrue($payment['gateway_captured']);
+        $this->assertEquals('CmRSEGymhC3lae', $payment['terminal_id']);
+        $this->assertEquals('cybersource', $payment['gateway']);
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
     public function testForMasterCardPaymentOnHitachiTerminalModePurchase()
     {
         $this->mockCardVault();
@@ -2236,6 +2279,79 @@ class PaymentCreateTest extends TestCase
         $this->assertTrue($this->redirectToAuthorize);
     }
 
+    public function testPaymentS2SJsonPrivateAuthUPIIntent()
+    {
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $this->ba->privateAuth();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+        }, 'upi_icici');
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $this->assertEquals('intent', $content['next'][0]['action']);
+
+        $this->assertEquals('poll', $content['next'][1]['action']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+    }
+
+    public function testPaymentS2SJsonPrivateAuthUPIVpa()
+    {
+        $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $this->ba->privateAuth();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+        }, 'upi_icici');
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $this->assertEquals('poll', $content['next'][0]['action']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+
+    }
+
     /*
      * /payments/create/json, netbanking payment
      */
@@ -2600,4 +2716,55 @@ class PaymentCreateTest extends TestCase
 
     }
     // end tests for fee_bearer attribute of pricing plans and merchant
+
+    public function testOrderStatusForUpiPaymentWithFlatCashbackOffer()
+    {
+        $offer = $this->fixtures->create("offer",['type' => 'instant', 'payment_method' => 'upi', 'flat_cashback'=>'100', 'min_amount'=>'200']);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true, 'notes' => ['somekey' => 'some value', 'Pay_Mode' => 'UPI'], 'amount' => '500', 'payment_capture' => '1'
+        ]);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['amount'] = 500;
+
+        $payment['order_id'] = 'order_'.$order->getId();
+
+        $this->doAuthPayment($payment);
+
+        $lastOrder =  $this->getLastEntity('order',true);
+
+        $this->assertEquals('paid', $lastOrder['status']);
+    }
+
+    public function testUpiBlock()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiBlockPaymentArray();
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $lastPayment = $this->getLastEntity('payment');
+
+        $this->assertSame('authorized', $lastPayment['status']);
+    }
+
+    public function testUpiBlockFail()
+    {
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The vpa field is not required and not shouldn\'t be sent.');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiBlockPaymentArray();
+
+        $payment['upi']['flow'] = 'intent';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+    }
 }

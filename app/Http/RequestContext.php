@@ -281,6 +281,16 @@ final class RequestContext
         return ($this->internalAppName === "dashboard_guest");
     }
 
+    public function isAuthFlowTypeKey(): bool
+    {
+        return $this->authFlowType === BasicAuth::KEY;
+    }
+
+    public function isAuthTypePrivate(): bool
+    {
+        return $this->auth === Type::PRIVATE_AUTH;
+    }
+
     /**
      * Protected Methods
      */

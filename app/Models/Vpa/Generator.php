@@ -26,6 +26,14 @@ class Generator extends Base\Core
 
     protected $mutex;
 
+    protected $root;
+
+    protected $merchantIdentifier;
+
+    protected $handle;
+
+    protected $isSharedTerminal;
+
     protected $options = [
         self::DESCRIPTOR => null,
     ];
@@ -46,17 +54,31 @@ class Generator extends Base\Core
         $this->options = array_merge($this->options, $input);
     }
 
+    protected function setConfigForVpa(Terminal\Entity $terminal)
+    {
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_GENERATE_VPA_TERMINAL,
+            [
+                'terminalId' => $terminal->getId(),
+            ]);
+
+        $this->root               = $terminal->getVirtualUpiRoot();
+        $this->merchantIdentifier = $terminal->getVirtualUpiMerchantPrefix();
+        $this->handle             = $terminal->getVirtualUpiHandle();
+        $this->isSharedTerminal   = $terminal->isShared();
+    }
+
     public function generate(VirtualAccount\Entity $virtualAccount): Entity
     {
         $vpa = $this->buildVpaEntity($virtualAccount);
 
-        $terminal = $this->getTerminalForVpa($vpa);
+        $this->setTerminalConfigsForVpa($vpa);
 
         $attempts = 0;
 
         while ($attempts <= self::MAX_VPA_GENERATION_ATTEMPTS)
         {
-            $vpa = $this->createAndSetVpaAddress($vpa, $terminal);
+            $vpa = $this->createAndSetVpaAddress($vpa);
 
             $savedVpa = $this->lockAndSaveVpa($vpa);
 
@@ -142,29 +164,29 @@ class Generator extends Base\Core
         return $vpa;
     }
 
-    protected function validateDescriptor(Terminal\Entity $terminal)
+    protected function validateDescriptor()
     {
         $descriptor = $this->options[self::DESCRIPTOR];
 
-        if (strlen($terminal->getVirtualUpiMerchantPrefix() . $descriptor) !== self::DYNAMIC_VPA_LENGTH)
+        if (strlen($this->merchantIdentifier . $descriptor) !== self::DYNAMIC_VPA_LENGTH)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
                 'descriptor',
                 [
-                    'merchant_prefix' => $terminal->getVirtualUpiMerchantPrefix(),
+                    'merchant_prefix' => $this->merchantIdentifier,
                     'descriptor'      => $descriptor,
                 ]);
         }
 
-        if ($terminal->isShared() === true)
+        if ($this->isSharedTerminal === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Descriptor cannot be used with your account.',
                 null,
                 [
-                    'options'       => $this->options,
-                    'merchant_id'   => $this->merchant->getId(),
+                    'options'     => $this->options,
+                    'merchant_id' => $this->merchant->getId(),
                 ]);
         }
     }
@@ -180,7 +202,7 @@ class Generator extends Base\Core
         return $vpa;
     }
 
-    protected function getTerminalForVpa(Entity $vpa): Terminal\Entity
+    protected function setTerminalConfigsForVpa(Entity $vpa): Terminal\Entity
     {
         $terminal = (new Provider())->getTerminalForMethod(Method::UPI, $vpa, null, $this->options);
 
@@ -196,47 +218,45 @@ class Generator extends Base\Core
                 ]);
         }
 
+        $this->setConfigForVpa($terminal);
+
         return $terminal;
     }
 
-    protected function createAndSetVpaAddress(Entity $vpa, Terminal\Entity $terminal): Entity
+    protected function createAndSetVpaAddress(Entity $vpa): Entity
     {
-        $vpaAddress = $this->generateVpa($terminal);
+        $vpaAddress = $this->generateVpa();
 
         $vpa->build([Entity::ADDRESS => $vpaAddress], "createVirtualVpa");
 
         return $vpa;
     }
 
-    protected function generateVpa(Terminal\Entity $terminal): string
+    protected function generateVpa(): string
     {
-        $root               = $terminal->getVirtualUpiRoot();
-        $merchantIdentifier = $terminal->getVirtualUpiMerchantPrefix();
-        $handle             = $terminal->getVirtualUpiHandle();
-        $prefix             = $root . $merchantIdentifier;
-
         if ($this->options[Generator::DESCRIPTOR] !== null)
         {
-            $this->validateDescriptor($terminal);
+            $this->validateDescriptor();
         }
 
-        $descriptor = $this->getDescriptor($merchantIdentifier);
+        $descriptor = $this->getDescriptor($this->merchantIdentifier);
 
-        $vpa = strtolower($prefix . $descriptor . Entity::AROBASE . $handle);
+        $prefix = $this->root . $this->merchantIdentifier;
+
+        $vpa = strtolower($prefix . $descriptor . Entity::AROBASE . $this->handle);
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_NUMBER_GENERATED,
             [
-                'root'               => $root,
-                'merchantIdentifier' => $merchantIdentifier,
-                'handle'             => $handle,
+                'root'               => $this->root,
+                'merchantIdentifier' => $this->merchantIdentifier,
+                'handle'             => $this->handle,
                 'descriptor'         => $descriptor,
                 'vpa'                => $vpa,
-                'terminalId'         => $terminal->getId(),
             ]
         );
 
-        if (strlen($vpa) > (self::DYNAMIC_VPA_LENGTH + strlen($prefix) + strlen($handle) + 1))
+        if (strlen($vpa) > (self::DYNAMIC_VPA_LENGTH + strlen($prefix) + strlen($this->handle) + 1))
         {
             throw new Exception\LogicException(
                 'Error in VPA generation.',
@@ -285,5 +305,18 @@ class Generator extends Base\Core
     protected function getCharSpace(): array
     {
         return str_split(self::VPA_NUM_CHAR_SPACE);
+    }
+
+    public function getConfigs(VirtualAccount\Entity $virtualAccount)
+    {
+        $vpa = $this->buildVpaEntity($virtualAccount);
+
+        $this->setTerminalConfigsForVpa($vpa);
+
+        return [
+            'prefix'              => $this->root . $this->merchantIdentifier,
+            'handle'              => $this->handle,
+            'isDescriptorEnabled' => ($this->isSharedTerminal === false),
+        ];
     }
 }

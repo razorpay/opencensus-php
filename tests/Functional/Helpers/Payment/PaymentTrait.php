@@ -6,6 +6,7 @@ use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
+use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Constants\Shield as ShieldConstants;
 use Symfony\Component\DomCrawler\Crawler;
@@ -802,7 +803,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function capturePayment($id, $amount, $currency = 'INR', $verifyAmount = 0)
+    protected function capturePayment($id, $amount, $currency = 'INR', $verifyAmount = 0, $status = 'captured')
     {
         $request = array(
             'method'  => 'POST',
@@ -829,7 +830,7 @@ trait PaymentTrait
             $this->assertEquals($content['amount'], $amount);
         }
 
-        $this->assertEquals($content['status'], 'captured');
+        $this->assertEquals($content['status'], $status);
 
         return $content;
     }
@@ -1011,6 +1012,11 @@ trait PaymentTrait
         if (isset($data['fta_data']) === true)
         {
             $input['fta_data'] = $data['fta_data'];
+        }
+
+        if (isset($data['mode_requested']) === true)
+        {
+            $input['mode_requested'] = $data['mode_requested'];
         }
 
         $this->ba->scroogeAuth();
@@ -1541,6 +1547,19 @@ trait PaymentTrait
 
         $payment['method'] = 'upi';
         $payment['vpa'] = 'vishnu@icici';
+
+        return $payment;
+    }
+
+    protected function getDefaultUpiBlockPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+
+        $payment['upi'] = [
+            'vpa'   => 'vishnu@icici'
+        ];
 
         return $payment;
     }
@@ -2529,5 +2548,18 @@ trait PaymentTrait
         $event = 'processed_to_file_init_event';
         $status = 'file_init';
         $this->scroogeUpdateRefundStatus($refund, $event, $status);
+    }
+
+    protected function enableRazorXTreatmentForRazorXRefund()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
     }
 }

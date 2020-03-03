@@ -108,6 +108,7 @@ class Gateway
     const CARDLESS_EMI       = 'cardless_emi';
     const PAYLATER           = 'paylater';
     const GETSIMPL           = 'getsimpl';
+    const PAYLATER_ICICI     = 'paylater_icici';
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -163,7 +164,7 @@ class Gateway
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
-        self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::CYBERSOURCE  => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC, self::ACQUIRER_YESB],
         self::FIRST_DATA   => [self::ACQUIRER_ICIC],
         self::AMEX         => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI   => [self::ACQUIRER_ICIC],
@@ -172,7 +173,7 @@ class Gateway
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
-        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL],
+        self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
@@ -365,7 +366,6 @@ class Gateway
         IFSC::SCBL,
         IFSC::TMBL,
         IFSC::USFB,
-        IFSC::UTBI,
         IFSC::UTIB,
         IFSC::YESB,
         Netbanking::PUNB_R,
@@ -389,7 +389,6 @@ class Gateway
         IFSC::MAHB,
         IFSC::SIBL,
         IFSC::USFB,
-        IFSC::UTBI,
         IFSC::YESB,
         Netbanking::PUNB_R,
         IFSC::SBIN,
@@ -672,6 +671,8 @@ class Gateway
         Payment\Gateway::NETBANKING_HDFC,
         Payment\Gateway::PAYSECURE,
         Payment\Gateway::NETBANKING_KOTAK,
+        Payment\Gateway::EBS,
+        Payment\Gateway::PAYTM,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -885,6 +886,7 @@ class Gateway
         self::NETBANKING_AXIS,
         self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_SBI,
+        self::NACH_CITI,
     ];
 
     /**
@@ -906,7 +908,9 @@ class Gateway
         ],
         self::AXIS_MIGS             => [],
         self::AMEX                  => [],
-        self::CYBERSOURCE           => [],
+        self::CYBERSOURCE           => [
+            self::NOT_SUPPORTED => [Network::RUPAY]
+        ],
         self::PAYSECURE             => [],
         self::FIRST_DATA            => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
@@ -1014,6 +1018,10 @@ class Gateway
         ],
         self::PAYSECURE => [
             Network::RUPAY,
+        ],
+        self::MPI_BLADE => [
+            Network::MC,
+            Network::VISA
         ]
     ];
 
@@ -1622,6 +1630,7 @@ class Gateway
         IFSC::CIUB => Gateway::NETBANKING_CUB,
         IFSC::SIBL => Gateway::NETBANKING_SIB,
         IFSC::YESB => Gateway::NETBANKING_YESB,
+        IFSC::KVBL => Gateway::NETBANKING_KVB,
     ];
 
 
@@ -2350,6 +2359,15 @@ class Gateway
         return false;
     }
 
+    public static function shouldAlwaysRouteThroughCardPaymentService($gateway)
+    {
+        $gateways = [
+            self::PAYTM,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
     public static function isCardPaymentServiceGateway($gateway)
     {
         $gateways = [
@@ -2363,6 +2381,8 @@ class Gateway
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
             self::PAYSECURE,
+            self::PAYTM,
+            self::AMEX,
         ];
 
         return (in_array($gateway, $gateways, true));

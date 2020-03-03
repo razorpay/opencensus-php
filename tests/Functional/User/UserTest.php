@@ -12,16 +12,17 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\Otp;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
+use RZP\Models\User\Entity;
 use RZP\Models\User\Constants;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
-use RZP\Mail\User\AccountVerification;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Mail\User\AccountVerification;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -105,7 +106,7 @@ class UserTest extends TestCase
                     ->method($methodName);
     }
 
-    public function testGet()
+    public function testGetUser()
     {
         $user = $this->fixtures->create('user');
 
@@ -118,6 +119,40 @@ class UserTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+    }
+
+    public function testGetUserWithProductPrimary()
+    {
+        $user = $this->createUserToMerchantMapping();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user->getId();
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        assertTrue(2, count($response['merchants']));
+    }
+
+    public function testGetUserWithProductBanking()
+    {
+        $user = $this->createUserToMerchantMapping();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user->getId();
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        assertTrue(1, count($response['merchants']));
     }
 
     public function testGetForPartnerHavingConfigs()
@@ -155,8 +190,9 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'email'     => $user['email'],
-            'password'  => 'hello123'
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -174,7 +210,8 @@ class UserTest extends TestCase
 
         $content = [
             'email'    => $user['email'],
-            'password' => 'hello1234'
+            'password' => 'hello1234',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -607,7 +644,8 @@ class UserTest extends TestCase
 
         $content = [
             'email'    => $user['email'],
-            'password' => 'hello123'
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -633,7 +671,7 @@ class UserTest extends TestCase
                 ]);
 
         $merchant = $this->fixtures->create('merchant', [
-            'second_factor_auth'    =>  true,
+            'second_factor_auth' => true,
         ]);
 
         $mappingData = [
@@ -648,7 +686,8 @@ class UserTest extends TestCase
 
         $content = [
             'email'    => $user['email'],
-            'password' => 'hello123'
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -676,6 +715,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'otp'      => \RZP\Services\Raven::MOCK_VALID_OTP,
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -707,6 +747,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -734,6 +775,7 @@ class UserTest extends TestCase
         $content = [
             'email'    => $user['email'],
             'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -759,6 +801,7 @@ class UserTest extends TestCase
         $content = [
             'email'    => $user['email'],
             'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -789,6 +832,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'otp'      => 'X' . \RZP\Services\Raven::MOCK_VALID_OTP,
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
         ];
 
         $testData['request']['content'] = $content;
@@ -818,6 +862,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -842,6 +887,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -873,6 +919,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -898,6 +945,7 @@ class UserTest extends TestCase
             'email'               => $user['email'],
             'password'            => 'hello123',
             'contact_mobile'      => '9012345678',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -923,6 +971,7 @@ class UserTest extends TestCase
             'email'    => $user['email'],
             'password' => 'hello123',
             'contact_mobile'   => '8888888888',
+
         ];
 
         $testData['request']['content'] = $content;
@@ -1155,7 +1204,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['url'] = '/users/' . $user['id'] . '/attach';
+        $testData['request']['url'] = '/users/' . $user['id'] . '/update';
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
 
@@ -1287,11 +1336,12 @@ class UserTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(AccountVerification::class, function ($mail)
+        Mail::assertQueued(AccountVerification::class,function ($mail)
         {
             $viewData = $mail->viewData;
 
             $this->assertArrayHasKey('org', $viewData);
+
             $this->assertArrayHasKey('token', $viewData);
 
             $this->assertEquals('emails.user.account_verification', $mail->view);
@@ -1326,20 +1376,101 @@ class UserTest extends TestCase
 
     public function testPasswordResetByToken()
     {
-        $user = $this->fixtures->create('user', [
-                    'email'                 => 'resetpass@razorpay.com',
-                    'password_reset_token'  => str_random(50),
-                    'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
-                ]);
+        $resetAttributes = [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+        ];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $user = $this->fixtures->create('user', $resetAttributes);
+
+        $this->doTestPasswordResetByToken($user);
+
+        // Repeats same request against to assert attribute OLD_PASSWORD_2 is captured.
+        $this->fixtures->edit('user', $user->getId(), $resetAttributes);
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->doTestPasswordResetByToken($user);
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertNotNull($user[Entity::OLD_PASSWORD_2]);
+    }
+
+    public function doTestPasswordResetByToken(Entity $user)
+    {
+        $testData = & $this->testData['testPasswordResetByToken'];
+
+        $oldPassword = $user->getPassword();
+        $oldPassword1 = $user[Entity::OLD_PASSWORD_1];
+
+        $password = str_random(10) . '1';
+
+        $testData['request']['content']['email']                    = $user->getEmail();
+        $testData['request']['content']['token']                    = $user->getPasswordResetToken();
+        $testData['request']['content']['password']                 = $password;
+        $testData['request']['content']['password_confirmation']    = $password;
+
+        $this->ba->appAuth();
+
+        $this->startTest($testData);
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertNotNull($user[Entity::OLD_PASSWORD_1]);
+        $this->assertEquals($oldPassword, $user[Entity::OLD_PASSWORD_1]);
+        $this->assertEquals($oldPassword1, $user[Entity::OLD_PASSWORD_2]);
+    }
+
+    public function testPasswordResetByTokenWithSamePassword()
+    {
+        $resetAttributes = [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+        ];
+
+        $user = $this->fixtures->create('user', $resetAttributes);
+
+        $this->doTestPasswordResetByToken($user);
+
+        // Repeats same request against to assert attribute OLD_PASSWORD_2 is captured.
+        $this->fixtures->edit('user', $user->getId(), $resetAttributes);
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $testData = & $this->testData['testPasswordResetByToken'];
+
+        $testData['request']['content']['email']      = $user->getEmail();
+        $testData['request']['content']['token']      = $user->getPasswordResetToken();
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            'Your new password cannot match any of your last three passwords');
+    }
+
+    public function doTestPasswordResetByTokenWithSamePassword(Entity $user)
+    {
+        $testData = & $this->testData['testPasswordResetByToken'];
+
+        $oldPassword = $user->getPassword();
+        $oldPassword1 = $user[Entity::OLD_PASSWORD_1];
 
         $testData['request']['content']['email']      = $user->getEmail();
         $testData['request']['content']['token']      = $user->getPasswordResetToken();
 
         $this->ba->appAuth();
 
-        $this->startTest();
+        $this->startTest($testData);
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertNotNull($user[Entity::OLD_PASSWORD_1]);
+        $this->assertEquals($oldPassword, $user[Entity::OLD_PASSWORD_1]);
+        $this->assertEquals($oldPassword1, $user[Entity::OLD_PASSWORD_2]);
     }
 
     public function testPasswordResetByExpiredToken()
@@ -1875,5 +2006,90 @@ class UserTest extends TestCase
         $this->startTest();
 
         Carbon::setTestNow();
+    }
+
+    public function testVerifyUserThroughEmail()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditContactMobileByUserOnBankingWithoutAuthToken()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->startTest();
+    }
+
+    protected function mockRedisSuccess($funcName, $userId)
+    {
+        $token = $this->app['token_service']->generate($userId);
+
+        $this->testData[$funcName]['request']['content']['otp_auth_token'] = $token;
+    }
+
+    public function testEditContactMobileByUserAndVerifyForBanking()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->mockRedisSuccess(__FUNCTION__ , $user->getId());
+
+        $response = $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertEquals($response['contact_mobile_verified'], true);
+
+        $this->assertEquals($response['contact_mobile_verified'], $userDb['contact_mobile_verified']);
+
+        $this->assertEquals($testData['request']['content']['contact_mobile'], $userDb['contact_mobile']);
+    }
+
+    protected function createUserToMerchantMapping($primary = true, $banking = true)
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        if ($primary === true) {
+            $mappingDataForPrimaryProduct = [
+                'user_id'       => $user->getId(),
+                'merchant_id'   => $merchant->getId(),
+                'role'          => 'owner',
+                'product'       => 'primary',
+            ];
+
+            $this->fixtures->create('user:user_merchant_mapping', $mappingDataForPrimaryProduct);
+        }
+
+        if ($banking === true) {
+            $mappingDataForBankingProduct = [
+                'user_id'       => $user->getId(),
+                'merchant_id'   => $merchant->getId(),
+                'role'          => 'admin',
+                'product'       => 'banking',
+            ];
+
+            $this->fixtures->create('user:user_merchant_mapping', $mappingDataForBankingProduct);
+        }
+
+        return $user;
     }
 }

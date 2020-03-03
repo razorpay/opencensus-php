@@ -12,6 +12,7 @@ class Constants
     const POI_STATUS                       = 'poi_status';
     const POA_STATUS                       = 'poa_status';
     const DOCUMENT_TYPE                    = 'document_type';
+    const DOCUMENT_SOURCE                  = 'document_source';
     const BANK_DETAILS_VERIFICATION_STATUS = 'bank_details_verification_status';
     const EXTERNAL_VERIFIER                = 'external_verifier';
 
@@ -36,10 +37,15 @@ class Constants
     const MERCHANT_ID                                   = 'merchant_id';
     const ACCOUNT_STATUS                                = 'account_status';
     const REGISTERED_NAME                               = 'registered_name';
-    const FUZZY_MATCH_PERCENTAGE_WITH_PAN               = 'fuzzy_match_percentage_with_pan';
+    const PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN = 'fuzzy_match_percentage_with_pan';
+    const PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        = 'penny_testing_fuzzy_match_type_for_pan';
+    const POA_FUZZY_MATCH_TYPE                          = 'poa_fuzzy_match_type';
+    const POI_FUZZY_MATCH_TYPE                          = 'poi_fuzzy_match_type';
+    const FUZZY_MATCH_TYPE_FOR_BANK_ACCOUNT             = 'fuzzy_match_type_for_bank_account;';
     const FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME = 'fuzzy_match_percentage_with_bank_account_name';
     const BANK_VERIFICATION_THRESHOLD_FOR_PAN           = 'bank_detail_verification_threshold_for_pan';
     const BANK_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT  = 'bank_detail_verification_threshold_for_bank_account';
+    const IS_VALID_NAME                                 = 'is_valid_name';
 
     // merchant verification
     const VERIFICATION    = 'verification';
@@ -61,6 +67,8 @@ class Constants
     const DOCUMENTS              = 'documents';
     const CONTEXT                = 'context';
     const METHOD                 = 'method';
+    const OCR_RESPONSE           = 'ocr_response';
+    const VERIFICATION_RESULT    = 'verification_result';
 
     const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
     const OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME = 'ocr_match_percentage_with_pan_name';
@@ -75,10 +83,10 @@ class Constants
 
     const KYC_API_TYPES = ['AUTH' => 'auth', 'OCR' => 'ocr'];
 
-    const RESPONSE_BODY          = 'response_body';
-    const RESPONSE_TIME          = 'response_time';
-    const API_STATUS_CODE        = 'api_status_code';
-    const DOCUMENT_FILE_ID       = 'document_file_id';
+    const RESPONSE_BODY    = 'response_body';
+    const RESPONSE_TIME    = 'response_time';
+    const API_STATUS_CODE  = 'api_status_code';
+    const DOCUMENT_FILE_ID = 'document_file_id';
 
     // kyc service error codes
     const  VALIDATION_ERROR = 'VALIDATION_ERROR';
@@ -101,7 +109,7 @@ class Constants
     const DRIVERS_LICENSE = 'DRIVERS_LICENSE';
 
     // flows used during activation
-    const ACTIVATION = 'activaiton';
+    const ACTIVATION               = 'activaiton';
     const INTERNATIONAL_ACTIVATION = 'international_activation';
 
     const ACTIVATION_FLOWS = [self::ACTIVATION, self::INTERNATIONAL_ACTIVATION];

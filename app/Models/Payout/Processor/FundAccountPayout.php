@@ -8,11 +8,10 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\Admin\Service as AdminService;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class FundAccountPayout extends Base
@@ -24,25 +23,6 @@ class FundAccountPayout extends Base
     public function createPayout(array $input): Payout\Entity
     {
         $payout = parent::createPayout($input);
-
-        //
-        // In case of payouts with status=(queued, payouts), we don't create the transaction yet.
-        // This event will be dispatched later when we are actually processing the payout.
-        //
-        if ($payout->isStatusBeforeCreate() === false)
-        {
-            //
-            // Ideally, this should be done as part of downstream processor,
-            // but we do it here since, we do not want to dispatch this even if
-            // payout creation flow fails for any reason after downstream processor runs.
-            //
-
-            if (($payout->isStatusBeforeCreate() === false) and
-                ($payout->balance->getAccountType() !== AccountType::DIRECT))
-            {
-                (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
-            }
-        }
 
         return $payout;
     }
@@ -147,39 +127,29 @@ class FundAccountPayout extends Base
         return $payout->balance->getChannel();
     }
 
+    /*
+     * One MID can't have more than one variant for same experiment, so there will be no clash.
+     */
     protected function getChannelForSharedAccountFundTransfer(Payout\Entity $payout)
     {
         $merchant = $payout->merchant;
 
-        if ($this->checkIfChannelShouldBeIcici($merchant) === true)
+        $mode = $payout->getMode();
+
+        $razorxFeature = strtoupper(sprintf("%s_MODE_PAYOUT_FILTER", $mode));
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            constant(RazorxTreatment::class . '::' . $razorxFeature),
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'control')
         {
-            return Channel::ICICI;
+            return Channel::YESBANK;
         }
 
-        if ($this->checkIfChannelShouldBeCiti($merchant) === true)
-        {
-            return Channel::CITI;
-        }
-
-        return $payout->balance->getChannel() ?? Channel::YESBANK;
-    }
-
-    protected function checkIfChannelShouldBeIcici(Merchant\Entity $merchant): bool
-    {
-        $mid = $merchant->getId();
-
-        $iciciMids = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_CHANNEL_PAYOUT_MIDS]);
-
-        return (in_array($mid, $iciciMids, true) === true);
-    }
-
-    protected function checkIfChannelShouldBeCiti(Merchant\Entity $merchant): bool
-    {
-        $mid = $merchant->getId();
-
-        $citiMids = (new AdminService)->getConfigKey(['key' => ConfigKey::CITI_CHANNEL_PAYOUT_MIDS]);
-
-        return (in_array($mid, $citiMids, true) === true);
+        return constant(Channel::class . '::' . strtoupper($variant));
     }
 
     protected function validateModeChannelAndDestinationType(Payout\Entity $payout)

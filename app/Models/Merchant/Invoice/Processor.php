@@ -10,9 +10,9 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Reversal\Entity as ReversalEntity;
-use RZP\Models\Transaction\Type as TransactionType;
-use RZP\Models\Transaction\Entity as TransactionEntity;
+use RZP\Models\FundAccount\Validation\Entity as FAVEntity;
 
 class Processor extends Base\Core
 {
@@ -48,12 +48,11 @@ class Processor extends Base\Core
         $this->initializeVars();
     }
 
-    public function createInvoiceEntities(bool $isCorrection)
+    public function createInvoiceEntities()
     {
         $this->trace->info(
             TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_REQUEST,
             [
-                'correction'    => $isCorrection,
                 'merchant_id'   => $this->merchantId,
                 'month'         => $this->month,
                 'year'          => $this->year,
@@ -187,25 +186,45 @@ class Processor extends Base\Core
 
         if ($type === Type::RX_TRANSACTIONS)
         {
-            $rxTransactionFeeAmount = $this->repo
-                                           ->transaction
-                                           ->fetchFeesAndTaxForRXTransactions(
+            $bankingPayoutsFeeAmount = $this->repo
+                                           ->payout
+                                           ->fetchFeesAndTaxOfPayoutsForGivenBalanceId(
                                                $this->merchantId,
                                                $balanceId,
                                                $this->beginTimestamp,
                                                $this->endTimestamp
                                            );
 
-            $rxReversalFeeAmount = $this->repo
-                                        ->reversal
-                                        ->fetchSumOfFeesAndTaxForReversalPayoutsByBalanceId($this->merchantId,
-                                                                                            $balanceId,
-                                                                                            $this->beginTimestamp,
-                                                                                            $this->endTimestamp);
+            $bankingFailedPayoutsFeeAmount = $this->repo
+                                                  ->payout
+                                                  ->fetchFeesAndTaxForFailedPayoutsForGivenBalanceId(
+                                                      $this->merchantId,
+                                                      $balanceId,
+                                                      $this->beginTimestamp,
+                                                      $this->endTimestamp
+                                                  );
 
-            $formattedFeesForTypeAndBalance = $this->formatFeesForRXInvoice($rxTransactionFeeAmount,
-                                                                            $rxReversalFeeAmount);
+            $bankingFAVsFeeAmount = $this->repo
+                                         ->fund_account_validation
+                                         ->fetchFeesAndTaxForFAVsForGivenBalanceId(
+                                             $this->merchantId,
+                                             $balanceId,
+                                             $this->beginTimestamp,
+                                             $this->endTimestamp
+                                         );
 
+            $bankingReversalsFeeAmount = $this->repo
+                                              ->reversal
+                                              ->fetchSumOfFeesAndTaxForReversalPayoutsForGivenBalanceId(
+                                                  $this->merchantId,
+                                                  $balanceId,
+                                                  $this->beginTimestamp,
+                                                  $this->endTimestamp);
+
+            $formattedFeesForTypeAndBalance = $this->formatFeesForBankingInvoice($bankingPayoutsFeeAmount,
+                                                                                 $bankingFailedPayoutsFeeAmount,
+                                                                                 $bankingFAVsFeeAmount,
+                                                                                 $bankingReversalsFeeAmount);
         }
 
         return $formattedFeesForTypeAndBalance;
@@ -215,11 +234,10 @@ class Processor extends Base\Core
      * Populate the map of Type of Commission with its Amount and Tax values
      *
      * @param string $type
-     * @param bool   $isCorrection
      *
      * @return array
      */
-    public function calculateFeesForInvoiceByTypeForPrimary(string $type, bool $isCorrection = false)
+    public function calculateFeesForInvoiceByTypeForPrimary(string $type)
     {
         $transactionFeeAmount = [];
 
@@ -239,8 +257,7 @@ class Processor extends Base\Core
                                          $this->merchantId,
                                          $this->beginTimestamp,
                                          $this->endTimestamp,
-                                         $type,
-                                         $isCorrection);
+                                         $type);
         }
 
         $paymentAmounts = $this->formatFeesForInvoice($paymentFeeAmount);
@@ -357,19 +374,26 @@ class Processor extends Base\Core
         ];
     }
 
+
     /**
      * Formats the invoice fee result in generalized format
      *
-     * @param array $transactionFeeDetails
-     * @param array $reversalFeeDetails
+     * @param PayoutEntity   $bankingPayoutsFeeDetails
+     * @param PayoutEntity   $bankingFailedPayoutsFeeDetails
+     * @param FAVEntity      $bankingFAVsFeeDetails
+     * @param ReversalEntity $bankingReversalsFeeDetails
      *
      * @return array
      */
-    protected function formatFeesForRXInvoice(TransactionEntity $transactionFeeDetails, ReversalEntity $reversalFeeDetails)
+    protected function formatFeesForBankingInvoice(PayoutEntity $bankingPayoutsFeeDetails,
+                                                   PayoutEntity $bankingFailedPayoutsFeeDetails,
+                                                   FAVEntity $bankingFAVsFeeDetails,
+                                                   ReversalEntity $bankingReversalsFeeDetails)
     {
-        // TODO: Check if this works fine if there are no transactions for the month for the given balance ID
-        if ((empty($transactionFeeDetails) === true) and
-            (empty($reversalFeeDetails) === true))
+        if ((empty($bankingPayoutsFeeDetails) === true) and
+            (empty($bankingFailedPayoutsFeeDetails) === true) and
+            (empty($bankingFAVsFeeDetails) === true) and
+            (empty($bankingReversalsFeeDetails) === true))
         {
             return [
                 Entity::TAX     => 0,
@@ -377,18 +401,28 @@ class Processor extends Base\Core
             ];
         }
 
-        $transactionFeeDetails = $transactionFeeDetails->getAttributes();
-        $reversalFeeDetails = $reversalFeeDetails->getAttributes();
+        $bankingPayoutsFeeAmount       = $bankingPayoutsFeeDetails->getAttributes();
+        $bankingFailedPayoutsFeeAmount = $bankingFailedPayoutsFeeDetails->getAttributes();
+        $bankingFAVsFeeAmount          = $bankingFAVsFeeDetails->getAttributes();
+        $bankingReversalsFeeAmount     = $bankingReversalsFeeDetails->getAttributes();
 
-        $transactionFees = $transactionFeeDetails['fee'];
-        $transactionTax = $transactionFeeDetails['tax'];
+        $bankingPayoutsFees = $bankingPayoutsFeeAmount['fee'];
+        $bankingPayoutsTax  = $bankingPayoutsFeeAmount['tax'];
 
-        $reversalFees = $reversalFeeDetails['fee'];
-        $reversalTax = $reversalFeeDetails['tax'];
+        $bankingFailedPayoutsFees = $bankingFailedPayoutsFeeAmount['fee'];
+        $bankingFailedPayoutsTax  = $bankingFailedPayoutsFeeAmount['tax'];
+
+        $bankingFAVsFees = $bankingFAVsFeeAmount['fee'];
+        $bankingFAVsTax  = $bankingFAVsFeeAmount['tax'];
+
+        $reversalFees = $bankingReversalsFeeAmount['fee'];
+        $reversalTax  = $bankingReversalsFeeAmount['tax'];
 
         return [
-            Entity::TAX     => $transactionTax - $reversalTax,
-            Entity::AMOUNT  => ($transactionFees - $transactionTax) - ($reversalFees - $reversalTax)
+            Entity::TAX     => $bankingPayoutsTax + $bankingFAVsTax - $bankingFailedPayoutsTax  - $reversalTax,
+            Entity::AMOUNT  => ($bankingPayoutsFees + $bankingFAVsFees - $bankingPayoutsTax - $bankingFAVsTax )
+                               - ($reversalFees - $reversalTax)
+                               - ($bankingFailedPayoutsFees - $bankingFailedPayoutsTax)
         ];
     }
 

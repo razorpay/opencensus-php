@@ -2,8 +2,10 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use RZP\Error\ErrorCode;
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Fetch extends BaseFetch
 {
@@ -16,7 +18,7 @@ class Fetch extends BaseFetch
             Entity::BALANCE_ID  => 'sometimes|unsigned_id',
         ],
         AuthType::PROXY_AUTH => [
-            Entity::RECEIVER_TYPE => 'sometimes|in:bank_account,qr_code',
+            Entity::RECEIVER_TYPE => 'sometimes|string|custom',
         ],
     ];
 
@@ -47,4 +49,18 @@ class Fetch extends BaseFetch
         Entity::MERCHANT_ID,
         Entity::BALANCE_ID,
     ];
+
+    public function validateReceiverType($attribute, $values)
+    {
+        $values = explode(',', $values);
+
+        if (Receiver::areTypesValid($values) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
+                'receiver_type',
+                $values
+            );
+        }
+    }
 }

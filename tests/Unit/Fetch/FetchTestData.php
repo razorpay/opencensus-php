@@ -419,6 +419,13 @@ return [
         ],
     ],
 
+    E::WORKFLOW_PAYOUT_AMOUNT_RULES => [
+        Type::ADMIN_AUTH => [
+            [
+            ],
+        ],
+    ],
+
     E::GEO_IP => [
         Type::PRIVILEGE_AUTH => [
             [
@@ -491,6 +498,8 @@ return [
 
     E::UPI_TRANSFER => [],
 
+    E::UPI_METADATA => [],
+
     E::BALANCE_CONFIG => [
         Type::PROXY_AUTH => [
             [
@@ -506,4 +515,12 @@ return [
             ],
         ],
     ],
+
+    E::MERCHANT_FRESHDESK_TICKETS => [
+        Type::PROXY_AUTH => [
+            [
+                'type'        => str_random(),
+            ],
+        ],
+    ]
 ];

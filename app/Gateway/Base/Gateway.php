@@ -1715,6 +1715,11 @@ class Gateway
             'Extraction of payment and merchant details from callback data is not supported');
     }
 
+    public function getTerminalDetailsFromCallback($callbackData)
+    {
+        throw new Exception\LogicException('Extraction of merchant details from callback data is not supported');
+    }
+
     protected function updateUrlInCacheAndPushMetric($input, $urlInRequest)
     {
         try

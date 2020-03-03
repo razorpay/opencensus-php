@@ -48,6 +48,8 @@ class Core extends Base\Core
         'ByWbZS28NK9CeG' => false,
         'BREsAWr9hzga0n' => false,
         'Ba2to8xoI5kO2x' => false,
+        'Cc057xzfWMnyBn' => false,
+        'DafY7CuC98D8mK' => false,
     ];
 
     /**
@@ -194,12 +196,12 @@ class Core extends Base\Core
      */
     public static function fetchPublicStatusFromScrooge(string $merchantId): bool
     {
-        $fetchPublicStatusFromScrooge = true;
+        $fetchPublicStatusFromScrooge = false;
 
         if ((self::isRefundsPublicStatusMerchant($merchantId) === true) and
-            (self::getRefundsPublicStatusMerchantsViaScrooge()[$merchantId] === false))
+            (self::getRefundsPublicStatusMerchantsViaScrooge()[$merchantId] === true))
         {
-            $fetchPublicStatusFromScrooge = false;
+            $fetchPublicStatusFromScrooge = true;
         }
 
         return $fetchPublicStatusFromScrooge;

@@ -236,105 +236,6 @@ class Service extends Base\Service
         return $payments->toArrayPublic();
     }
 
-    public function refundExcessPayments()
-    {
-        $virtualAccounts = $this->repo
-                                ->virtual_account
-                                ->fetchExcessPaidVirtualAccounts();
-
-        $this->trace->info(
-            TraceCode::VIRTUAL_ACCOUNT_EXCESS_REFUND,
-            $virtualAccounts->toArrayPublic()
-        );
-
-        $success = $failure = 0;
-
-        $failures = [];
-
-        foreach ($virtualAccounts as $virtualAccount)
-        {
-            list($paymentToRefund, $amountToRefund) = $this->fetchPaymentToRefund($virtualAccount);
-
-            try
-            {
-                $this->refundExcessPayment($paymentToRefund, $amountToRefund, $virtualAccount);
-
-                $success++;
-            }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException($ex);
-
-                $failure++;
-
-                $failures[] = [
-                    'payment_id'         => $paymentToRefund->getPublicId(),
-                    'virtual_account_id' => $virtualAccount->getPublicId(),
-                ];
-            }
-        }
-
-        $this->trace->info(
-            TraceCode::VIRTUAL_ACCOUNT_EXCESS_REFUND,
-            [
-                'success'  => $success,
-                'failure'  => $failure,
-                'failures' => $failures,
-            ]
-        );
-
-        return $virtualAccounts->toArrayPublic();
-    }
-
-    protected function fetchPaymentToRefund(Entity $virtualAccount)
-    {
-        $merchant = $virtualAccount->merchant;
-
-        $payments = $this->repo
-                         ->payment
-                         ->fetchByPublicVaIdAndMerchant(
-                            $virtualAccount->getPublicId(),
-                            $merchant
-                            );
-
-        $paymentToRefund = $payments->first();
-
-        $amountToRefund = $virtualAccount->getExcessAmount();
-
-        if ($paymentToRefund->getAmount() < $amountToRefund)
-        {
-            throw new Exception\LogicException(
-                'Last payment amount is less than VA excess',
-                null,
-                [
-                    'payment_amount'    => $paymentToRefund->getAmount(),
-                    'va_excess'         => $amountToRefund,
-                    'payment_id'        => $paymentToRefund->getId(),
-                    'va_id'             => $virtualAccount->getId(),
-                ]);
-        }
-
-        return [$paymentToRefund, $amountToRefund];
-    }
-
-    protected function refundExcessPayment(
-        Payment\Entity $payment,
-        int $amount,
-        Entity $virtualAccount)
-    {
-        $processor = $this->getNewProcessor($payment->merchant);
-
-        $processor->refundCapturedPayment(
-                        $payment,
-                        [
-                            'amount' => $amount,
-                        ]);
-
-        $virtualAccount->incrementAmountReversed($amount);
-
-        $this->repo->saveOrFail($virtualAccount);
-    }
-
     /*
      * If customer_id is there it will return customer based on that,
      * otherwise if any of customer name, email or contact is given
@@ -494,6 +395,8 @@ class Service extends Base\Service
     {
         (new Entity)->validateInput('create_offline_qr', $input);
 
+        $device = $this->getDeviceForQr($input);
+
         $order = $this->createOrder($input);
 
         // We don't any mutex here unlike create from order, since
@@ -515,7 +418,7 @@ class Service extends Base\Service
 
         $virtualAccount = $this->core->create($createVaArray, $this->merchant, null, $order);
 
-        $this->pushToDeviceIfApplicable($input, $virtualAccount);
+        $this->pushToDeviceIfApplicable($device, $input, $virtualAccount);
 
         // Doing this separately since we don't want to affect the VA entity code
         $orderId = $order->getPublicId();
@@ -527,7 +430,7 @@ class Service extends Base\Service
         return $va;
     }
 
-    protected function pushToDeviceIfApplicable(array $input, $virtualAccount)
+    protected function getDeviceForQr(array $input)
     {
         if (isset($input['notifications']['device_id']) === false)
         {
@@ -538,9 +441,35 @@ class Service extends Base\Service
                        ->offline_device
                        ->findByPublicIdAndMerchant($input['notifications']['device_id'], $this->merchant);
 
+        if ($device === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Device Id provided is invalid.');
+        }
+
+        // We are locking a device, if the device is already lock that means it is in use.
+        // We are relying on auto-release mechanism of the redis for this.
+        $lockedAcquired = $this->mutex->acquire($device->getId(), 120);
+
+        if ($lockedAcquired === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Device Id provided is already in use.');
+        }
+
+        return $device;
+    }
+
+    protected function pushToDeviceIfApplicable($device, $input, $virtualAccount)
+    {
+        if ($device === null)
+        {
+            return;
+        }
+
         $currency = $input['currency'];
 
-        $formattedAmount = Currency::getSymbol($currency) . ' ' . ($input['amount'] / Currency::getExponent($currency));
+        $formattedAmount = Currency::getSymbol($currency) . ' ' . ($input['amount'] / Currency::getDenomination($currency));
 
         $payload = [
             'id'                => $virtualAccount->getPublicId(),
@@ -564,5 +493,12 @@ class Service extends Base\Service
         ];
 
         return (new Order\Core)->create($orderInput, $this->merchant);
+    }
+
+    public function getConfigsForVirtualAccount()
+    {
+        $receivers[Entity::RECEIVER_TYPES] = [Receiver::BANK_ACCOUNT, Receiver::VPA];
+
+        return $this->core->getConfigsForVirtualAccount($receivers);
     }
 }

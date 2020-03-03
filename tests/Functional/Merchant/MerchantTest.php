@@ -19,21 +19,26 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
+use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Pricing;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Webhook;
 use RZP\Mail\User\MappedToAccount;
+use RZP\Mail\Merchant\EsEnabledNotify;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
 use RZP\Exception\BadRequestException;
+use RZP\Models\User\Core as UserCore;
+use RZP\Models\Merchant\Document\Source;
 use RZP\Models\User\Entity as UserEntity;
-use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -65,6 +70,19 @@ class MerchantTest extends TestCase
     use DbEntityFetchTrait;
     use CreatesInvoice;
     use PartnerTrait;
+
+    const CAPITAL_SUPPORT_EMAIL = 'capital.support@razorpay.com';
+
+    const USER_ROLES_UNAUTHORIZED_TO_ENABLE_ES_SCHEDULED = ['operations',
+                                                            'finance'];
+
+    const USER_ROLES_AUTHORIZED_TO_ENABLE_ES_SCHEDULED = ['owner',
+                                                            'admin'];
+
+    const USER_ROLES_UNAUTHORIZED_TO_RECEIVE_ES_SCHEDULED_MAILS = ['support',
+                                                                    'manager',
+                                                                    'agent',
+                                                                    'operations'];
 
     public function setUp()
     {
@@ -1102,6 +1120,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantConfigWithDefaultRefundSpeed()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testMerchantUpdateKeyAccess()
     {
         $attribute = ['business_website' => 'https://www.example.com'];
@@ -1492,6 +1519,13 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddBankAccountWithInvalidAccountNumber()
+    {
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
     public function testAddBankAccountWithMerchantIdInURL()
     {
         Mail::fake();
@@ -1567,9 +1601,34 @@ class MerchantTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
-        (new MerchantDetailTest())->updateUploadDocumentData(__FUNCTION__, $documentType);
+        $this->updateUploadDocumentData(__FUNCTION__, $documentType);
 
         $this->startTest();
+    }
+
+    public function updateUploadDocumentData(string $callee, string $documentType)
+    {
+        $testData = &$this->testData[$callee];
+
+        $testData['request']['files'][$documentType] = new UploadedFile(
+            __DIR__ . '/../Storage/a.png',
+            'a.png',
+            'image/png',
+            filesize(__DIR__ . '/../Storage/a.png'),
+            null,
+            true);
+    }
+
+    public function testUpdateBankAccountWithAddressProofUsingUFH()
+    {
+
+        $this->mockRazorX('testUpdateBankAccountWithAddressProof', 'use_ufh_file_store', 'on', 10000000000000);
+
+        $this->testUpdateBankAccountWithAddressProof();
+
+        $merchantDocumentEntry = $this->getLastEntity('merchant_document', true, 'test');
+
+        $this->assertEquals($merchantDocumentEntry['source'], Source::UFH);
     }
 
     public function testGetBankAccount()
@@ -2971,6 +3030,9 @@ class MerchantTest extends TestCase
 
     public function testEnableEsScheduledSuccess()
     {
+        // We expect a mail to be shot to merchant every time Es schedule enable succeeds
+        Mail::fake();
+
         $this->fixtures->create('pricing:standard_plan');
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
@@ -3038,10 +3100,259 @@ class MerchantTest extends TestCase
             (array) collect($scheduleTasks['items'])->firstWhere('method', '=', null));
 
         $this->assertNotEquals('100001schedule', $scheduleTasks['items'][2]['schedule_id']);
+
+        // In this case we expect only one mail is queued
+        Mail::assertQueued(EsEnabledNotify::class, 1);
+
+        Mail::assertQueued(EsEnabledNotify::class, function ($mail)
+        {
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_VIEW,$mail->view);
+
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_SUBJECT, $mail->subject);
+
+            $this->assertArrayKeysExist($mail->viewData,
+                                            [EsEnabledNotify::TO_EMAIL, EsEnabledNotify::TO_NAME, EsEnabledNotify::SUBJECT, EsEnabledNotify::VIEW, Pricing\Entity::PERCENT_RATE]);
+
+            return ($mail->hasFrom(self::CAPITAL_SUPPORT_EMAIL)) and
+                    ($mail->hasTo(self::CAPITAL_SUPPORT_EMAIL));
+        });
+    }
+
+
+    public function testEnableEsScheduledSuccessWithKAMMail()
+    {
+        // We expect 2 mails to be queued in case a Key Account (one with tag 'KA') enables es scheduled, additional mail is circulated internally to kam and capital product.
+        Mail::fake();
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'demo',
+            ]);
+
+        $scheduleTaskCard = [
+            'method'        => 'card',
+            'international' => 1,
+            'entity_type'   =>'merchant'
+        ];
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskCard);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
+        $this->ba->proxyAuthTest();
+
+        $merchantEntityInstance = $this->getDbEntityById('merchant', '10000000000000', true);
+
+        $merchantEntityInstance->tag('KA');
+
+        $this->startTest();
+
+        // First check if enough mails have been queued
+        Mail::assertQueued(EsEnabledNotify::class, 2);
+
+        Mail::assertQueued(EsEnabledNotify::class, function ($mail)
+        {
+            switch ($mail->view){
+                // Check mailer for merchant intimation
+                case EsEnabledNotify::MERCHANT_MAILER_VIEW:
+                    $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_SUBJECT, $mail->subject);
+
+                    $this->assertArrayKeysExist($mail->viewData,
+                        [EsEnabledNotify::TO_EMAIL, EsEnabledNotify::TO_NAME, EsEnabledNotify::SUBJECT, EsEnabledNotify::VIEW, Pricing\Entity::PERCENT_RATE]);
+
+                    return ($mail->hasFrom(self::CAPITAL_SUPPORT_EMAIL)) and
+                        ($mail->hasTo(self::CAPITAL_SUPPORT_EMAIL));
+
+                // Check mailer for Key Account intimation
+                case EsEnabledNotify::KAM_MAILER_VIEW:
+                    $this->assertEquals(EsEnabledNotify::KAM_MAILER_SUBJECT, $mail->subject);
+
+                    $this->assertArrayKeysExist($mail->viewData,
+                        [EsEnabledNotify::TO_EMAIL, EsEnabledNotify::TO_NAME, EsEnabledNotify::SUBJECT, EsEnabledNotify::VIEW, EsEnabledNotify::MERCHANT_DATA]);
+
+                    return ($mail->hasFrom(self::CAPITAL_SUPPORT_EMAIL)) and
+                        ($mail->hasTo(EsEnabledNotify::KAM_MAILING_LIST_EMAILS));
+
+                // If either not present than appropriate mailer is missing
+                default:
+                    return false;
+            }
+        });
+    }
+
+    public function testEnableEsScheduledMailExpectedRoleTypesOnly()
+    {
+        // Es auto should enabled and mail should be sent to one of each role type
+        Mail::fake();
+
+        $unexpectedUserRole = array_random(self::USER_ROLES_UNAUTHORIZED_TO_RECEIVE_ES_SCHEDULED_MAILS);
+
+        $userAlternateRole = 'admin';
+
+        // We choose the sending user randomly from users who can send
+        $userSendingRole = array_random(self::USER_ROLES_AUTHORIZED_TO_ENABLE_ES_SCHEDULED);
+
+        $financeEmailId = 'finance@xyz.com';
+
+        $alternateEmailId = 'thirdguy@xyz.com';
+
+        $unexpectedUserEmailId = 'unexpected@xyz.com';
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $merchant = $this->fixtures->merchant->create();
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->merchant->edit($merchantId, ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand'], $merchantId);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'demo',
+            ]);
+
+        $scheduleTaskCard = [
+            'method'        => 'card',
+            'international' => 1,
+            'entity_type'   =>'merchant'
+        ];
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskCard);
+
+        // We create and attach a user with finance role. This guy is expected to receive the mail.
+        $this->fixtures->create('user',['id' => 'MerchantUser99', 'email' => $financeEmailId, 'name' => 'FinanceMan']);
+
+        $financeUser = $this->getDbEntityById('user','MerchantUser99', true);
+
+        $this->ba->proxyAuth("rzp_test_{$merchantId}");
+
+        (new UserCore)->updateUserMerchantMapping($financeUser, ['merchant_id' => $merchantId, 'role' => 'finance', 'product' => 'primary', 'action' => 'update']);
+        $userSendingRole = 'admin';
+        // If random selects sender as Admin then update sending users role to admin and alternate users role to owner
+        if ($userSendingRole === 'admin')
+        {
+            $sendingUser = $this->getDbEntityById('user','MerchantUser01', true);
+
+            (new UserCore)->updateUserMerchantMapping($sendingUser, ['merchant_id' => $merchantId, 'role' => $userSendingRole, 'product' => 'primary', 'action' => 'update']);
+
+            $userAlternateRole = 'owner';
+        }
+
+        // Add the alternate guy from users who have access to enable es scheduled
+        $this->fixtures->create('user',['id' => 'MerchantUser98', 'email' => $alternateEmailId, 'name' => 'AlternateGuy']);
+
+        $alternateUser = $this->getDbEntityById('user','MerchantUser98', true);
+
+        (new UserCore)->updateUserMerchantMapping($alternateUser, ['merchant_id' => $merchantId, 'role' => $userAlternateRole, 'product' => 'primary', 'action' => 'update']);
+
+        // Add the last guy who is attached to the merchant but part of the groups who should not receive the mail
+        $this->fixtures->create('user',['id' => 'MerchantUser97', 'email' => $unexpectedUserEmailId, 'name' => 'UnexpectedGuy']);
+
+        $unexpectedUser = $this->getDbEntityById('user','MerchantUser97', true);
+
+        (new UserCore)->updateUserMerchantMapping($unexpectedUser, ['merchant_id' => $merchantId, 'role' => $unexpectedUserRole, 'product' => 'primary', 'action' => 'update']);
+
+        $this->startTest();
+
+        Mail::assertQueued(EsEnabledNotify::class, function ($mail) use ($financeEmailId, $alternateEmailId, $unexpectedUserEmailId)
+        {
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_VIEW, $mail->view);
+
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_SUBJECT, $mail->subject);
+
+            $this->assertArrayKeysExist($mail->viewData,
+                [EsEnabledNotify::TO_EMAIL, EsEnabledNotify::TO_NAME, EsEnabledNotify::SUBJECT, EsEnabledNotify::VIEW, Pricing\Entity::PERCENT_RATE]);
+
+            return ($mail->hasTo($alternateEmailId)) and
+                    ($mail->hasTo($financeEmailId) and
+                    !($mail->hasTo($unexpectedUserEmailId)));
+        });
+    }
+
+    public function testEnableEsScheduledUnauthorizedUserAccess()
+    {
+        // ES should neither be enabled nor any mail should be sent
+        Mail::fake();
+
+        $userRoleToBeSet = array_random(self::USER_ROLES_UNAUTHORIZED_TO_ENABLE_ES_SCHEDULED);
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $merchant = $this->fixtures->merchant->create();
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->merchant->edit($merchantId, ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand'], $merchantId);
+
+        $this->fixtures->create(
+            'schedule',
+            [
+                'id'       => '100001schedule',
+                'period'   => 'hourly',
+                'interval' => 1,
+                'anchor'   => null,
+                'delay'    => 0,
+                'hour'     => 0,
+                'name'     => 'demo',
+            ]);
+
+        $scheduleTaskCard = [
+            'method'        => 'card',
+            'international' => 1,
+            'entity_type'   =>'merchant'
+        ];
+
+        $this->fixtures->create(
+            'schedule_task',
+            $scheduleTaskCard);
+
+        $this->ba->proxyAuth("rzp_test_{$merchantId}");
+
+        $user = $this->getDbEntityById('user','MerchantUser01', true);
+
+        (new UserCore)->updateUserMerchantMapping($user, ['merchant_id' => $merchantId, 'role' => $userRoleToBeSet, 'product' => 'primary', 'action' => 'update']);
+
+        $this->startTest();
+
+        $features = $this->getEntities('feature', [], true);
+
+        $this->assertCount(1, $features['items']);
+
+        $this->assertEquals('es_on_demand', $features['items'][0]['name']);
+
+        Mail::assertNotQueued(EsEnabledNotify::class);
     }
 
     public function testEnableEsScheduledUnknownScheduleFailure()
     {
+        Mail::fake();
+
         $this->fixtures->create('pricing:standard_plan');
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
@@ -3051,14 +3362,17 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuthTest();
 
         $this->startTest();
+
+        Mail::assertNotQueued(EsEnabledNotify::class);
     }
 
     public function testEnableEsScheduledUneditableFeature()
     {
+        Mail::fake();
+
         $this->fixtures->create('pricing:standard_plan');
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
-
 
         $this->fixtures->create(
             'schedule',
@@ -3075,14 +3389,17 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuthTest();
 
         $this->startTest();
+
+        Mail::assertNotQueued(EsEnabledNotify::class);
     }
 
     public function testEnableEsScheduledEsautomaticPricingUnavailable()
     {
+        Mail::fake();
+
         $this->fixtures->create('pricing:standard_plan');
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1AXp2Xd3t5aRLX']);
-
 
         $this->fixtures->create(
             'schedule',
@@ -3101,6 +3418,8 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuthTest();
 
         $this->startTest();
+
+        Mail::assertNotQueued(EsEnabledNotify::class);
     }
 
     public function testPutEmiMethod()
@@ -3182,7 +3501,13 @@ class MerchantTest extends TestCase
         //
         // Asserts cache should not have been hit the first time
         //
-        Event::assertNotDispatched(CacheHit::class);
+        Event::assertNotDispatched(CacheHit::class, function($e) {
+            foreach ($e->tags as $tag) {
+                $this->assertNotEquals('merchant_10000000000000', $tag);
+                $this->assertNotEquals('key_TheTestAuthKey', $tag);
+            }
+            return false;
+        });
 
         $this->doAuthPayment($payment);
 
@@ -4692,16 +5017,35 @@ class MerchantTest extends TestCase
     /**
      * Switches product of merchant from PG to BB.
      */
-    public function testMerchantSwitchProduct()
+    public function testMerchantSwitchProduct($expValue = 'on', $category2 = 'school')
     {
+        $this->enableRazorXTreatmentForXOnboarding($expValue);
+
         $user = (new User())->createUserForMerchant();
 
-        $this->fixtures->edit('merchant', '10000000000000', ['activated' => true, 'business_banking' => true]);
+        $this->fixtures->edit('merchant',
+                              '10000000000000',
+                              ['activated' => true, 'business_banking' => true, 'category2' => $category2]);
 
-        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking', ['merchant_id' => '100000Razorpay']);
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'merchant_id' => '10000000000000',
+                                    'activation_status' => 'activated'
+                                ]);
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+                                ['merchant_id' => '100000Razorpay']);
 
         // To create a virtual account we need to enable bank transfer
         $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+                                                 [
+                                                     'merchant_id' => '10000000000000',
+                                                 ],
+                                                 'live');
+
+        $this->assertNull($liveBankingAccount);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
 
@@ -4710,6 +5054,216 @@ class MerchantTest extends TestCase
         $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->startTest();
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNotNull($liveBankingAccount);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $expectedBankingAccount = [
+            'channel'     => 'yesbank',
+            'merchant_id' => '10000000000000',
+            'status'      => 'activated',
+            'pincode'     => null
+        ];
+
+        $balanceId = $bankingAccount->getBalanceId();
+
+        $this->assertArraySelectiveEquals($expectedBankingAccount, $bankingAccount->toArray());
+        $this->assertArraySelectiveEquals($expectedBankingAccount, $liveBankingAccount->toArray());
+        $this->assertNotNull($balanceId);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $expectedBalance = [
+            'type'             => 'banking',
+            'account_type'     => 'shared',
+            'channel'          => null,
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBalance, $balance->toArray());
+
+        $merchants = DB::connection('test')->table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'product');
+
+        $this->assertEquals(count($merchants), 2);
+
+        $this->assertArrayHasKey('banking', $merchants);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(BankingAccount\AccountType::NODAL, $bankingAccount->getAccountType());
+
+        $testFeaturesArray = $this->getDbEntity('feature',
+                                                [
+                                                    'entity_id' => '10000000000000',
+                                                    'entity_type' => 'merchant'
+                                                ])->pluck('name')->toArray();
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+                                                [
+                                                    'entity_id' => '10000000000000',
+                                                    'entity_type' => 'merchant'
+                                                ],
+                                               'live')->pluck('name')->toArray();
+
+        $this->assertContains('payout', $testFeaturesArray);
+        $this->assertContains('payout', $liveFeaturesArray);
+    }
+
+    /**
+     * Switches product of merchant from PG to BB.
+     */
+    public function testMerchantSwitchProductWhenXOnboardingExperimentOff($expValue = 'off', $category2 = 'school')
+    {
+        $this->enableRazorXTreatmentForXOnboarding($expValue);
+
+        $user = (new User())->createUserForMerchant();
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => true, 'business_banking' => true, 'category2' => $category2]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'activation_status' => 'activated'
+            ]);
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->startTest();
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNotNull($liveBankingAccount);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertNull($bankingAccount);
+
+        $expectedBankingAccount = [
+            'channel'     => 'yesbank',
+            'merchant_id' => '10000000000000',
+            'status'      => 'activated',
+            'pincode'     => null
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankingAccount, $liveBankingAccount->toArray());
+
+        $merchants = DB::connection('test')->table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'product');
+
+        $this->assertEquals(count($merchants), 2);
+
+        $this->assertArrayHasKey('banking', $merchants);
+
+        $testFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ]);
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertNull($testFeaturesArray);
+        $this->assertContains('payout', $liveFeaturesArray);
+    }
+
+    /**
+     * Switches product of merchant from PG to BB.
+     */
+    public function testMerchantSwitchProductWhenL1Incomplete()
+    {
+        $this->testMerchantSwitchProduct('on', null);
+    }
+
+    /**
+     * Switches product of merchant from PG to BB.
+     */
+    public function testMerchantSwitchProductWhenMerchantNotActivated()
+    {
+        $this->enableRazorXTreatmentForXOnboarding();
+
+        $user = (new User())->createUserForMerchant();
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => false, 'business_banking' => true, 'category2' => 'school']);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'activation_status' => 'pending'
+            ]);
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->startTest();
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
 
         /** @var BankingAccount\Entity $bankingAccount */
         $bankingAccount = $this->getDbLastEntity('banking_account');
@@ -4749,6 +5303,109 @@ class MerchantTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(BankingAccount\AccountType::NODAL, $bankingAccount->getAccountType());
+
+        $testFeaturesArray = $this->getDbEntity('feature',
+                                                [
+                                                    'entity_id' => '10000000000000',
+                                                    'entity_type' => 'merchant'
+                                                ])->pluck('name')->toArray();
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+                                                [
+                                                    'entity_id' => '10000000000000',
+                                                    'entity_type' => 'merchant'
+                                                ],
+                                                'live');
+
+        $this->assertContains(Feature\Constants::PAYOUT, $testFeaturesArray);
+        $this->assertNull($liveFeaturesArray);
+    }
+
+    /**
+     * Switches product of merchant from PG to BB.
+     */
+    public function testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff($expVal = 'off', $category2 = 'school')
+    {
+        $this->enableRazorXTreatmentForXOnboarding($expVal);
+
+        $user = (new User())->createUserForMerchant();
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => false, 'business_banking' => true, 'category2' => $category2]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'activation_status' => 'pending'
+            ]);
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->startTest();
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertNull($bankingAccount);
+
+        $merchants = DB::connection('test')->table('merchant_users')
+            ->where('user_id', '=', $user['id'])
+            ->pluck('merchant_id', 'product');
+
+        $this->assertEquals(count($merchants), 2);
+
+        $this->assertArrayHasKey('banking', $merchants);
+
+        $testFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ]);
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live');
+
+        $this->assertNull($testFeaturesArray);
+        $this->assertNull($liveFeaturesArray);
+    }
+
+    /**
+     * Switches product of merchant from PG to BB.
+     */
+    public function testMerchantSwitchProductWhenMerchantNotActivatedAndL1Incomplete()
+    {
+        $this->testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff('on', null);
     }
 
     public function testBulkAssignPricing()
@@ -5463,6 +6120,19 @@ class MerchantTest extends TestCase
         $this->assertEquals($res['parent_merchant_id'], '10000000000000');
     }
 
+    public function testGetInheritanceParentIfNotPresent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $this->expectException(BadRequestException::class);
+
+        $this->startTest();
+    }
+
     public function testDeleteInheritanceParent()
     {
         $this->ba->adminAuth();
@@ -5491,6 +6161,25 @@ class MerchantTest extends TestCase
         $merchantInheritanceMap = $this->getLastEntity('merchant_inheritance_map', true);
 
         $this->assertNull($merchantInheritanceMap);
+    }
+
+    public function testDeleteInheritanceParentIfNotPresent()
+    {
+        $this->ba->adminAuth();
+
+        $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchants/' . $subMerchantId . '/inheritance_parent';
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND);
+
+        $this->expectExceptionMessage(
+            'No db records found.');
+
+        $this->startTest();
     }
 
     public function testGetBalances()
@@ -5534,6 +6223,17 @@ class MerchantTest extends TestCase
         $this->fixtures->create('balance',$balanceData2);
 
         $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetBalancesWhenNoBalanceExists()
+    {
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner');
 
         $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
 
@@ -5624,6 +6324,27 @@ class MerchantTest extends TestCase
         $this->app->instance('razorx', $razorxMock);
     }
 
+    protected function enableRazorXTreatmentForXOnboarding($value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode) use ($value)
+                              {
+                                  if ($feature === Merchant\RazorxTreatment::RAZORPAY_X_TEST_MODE_ONBOARDING)
+                                  {
+                                      return $value;
+                                  }
+                                  return 'off';
+                              }));
+    }
+
     public function testMerchantInternationalDisableAction()
     {
         $this->fixtures->edit('merchant', '10000000000000', ['international' => true]);
@@ -5693,5 +6414,48 @@ class MerchantTest extends TestCase
         $this->fixtures->pricing->createPromotionalPlan();
 
         $this->fixtures->edit('pricing', '1AXp2Xd3t5aRLX', ['international' => true]);
+    }
+
+    public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
+    {
+        $testData = &$this->testData[$functionName];
+
+        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
+
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
+
+    }
+
+    public function testGetCheckoutPreferencesWithOrderMethodForNonTPVEnabledMerchant()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->create('order', ['method' => 'upi']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testEditMerchantWebsite()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id' => '1In3Yh5Mluj605',
+            'international'   => false]);
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '10000000000000']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->assertContains('abc.com', $merchant->getWhitelistedDomains());
     }
 }

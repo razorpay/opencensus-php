@@ -7,11 +7,14 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use Jitendra\Lqext\TransactionAware;
 use RZP\Exception\RecordAlreadyExists;
 use RZP\Models\Settlement\SlackNotification;
 
 class FundTransfer extends Job
 {
+    use TransactionAware;
+
     const RETRY_PERIOD         = 30;
 
     const MAX_ALLOWED_ATTEMPTS = 10;

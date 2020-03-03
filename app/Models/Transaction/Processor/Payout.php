@@ -4,12 +4,15 @@ namespace RZP\Models\Transaction\Processor;
 
 use Carbon\Carbon;
 
+use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
 use RZP\Constants\Timezone;
-use RZP\Jobs\Settlement\Bucket;
+use RZP\Models\Pricing\Calculator;
 use RZP\Models\Payout as PayoutModel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Transaction\ReconciledType;
+use RZP\Models\Merchant\Balance\AccountType;
 
 /**
  * NOTE: Before making any changes here, check Payout\Core
@@ -41,7 +44,28 @@ class Payout extends Base
 
     public function setFeeDefaults()
     {
-        $this->setMerchantFeeDefaults();
+        if ($this->source->balance->getAccountType() === AccountType::DIRECT)
+        {
+            // In case of CA payouts, fees and tax has already been calculated at time of payout creation.
+            // Now we just update the transaction fees data from payout fees data.
+
+            $this->fees = $this->source->getFees();
+
+            $this->tax = $this->source->getTax();
+
+            $pricingRuleId = $this->source->getPricingRuleId();
+
+            $this->feesSplit = $this->getFeeSplitForDirectPayouts($this->fees, $this->tax, $pricingRuleId);
+        }
+        else
+        {
+            $this->setMerchantFeeDefaults();
+        }
+    }
+
+    public function setMerchantFeeDefaults()
+    {
+        list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\PayoutFee)->calculateMerchantFees($this->source);
     }
 
     public function calculateFees()
@@ -80,7 +104,16 @@ class Payout extends Base
         }
         else
         {
-            $payoutAmount = $amount + $this->fees;
+            // In case of CA payouts, transaction amount remains equal to the payout amount.
+            // Fees is deducted at a later stage.
+            if ($this->source->balance->getAccountType() === AccountType::DIRECT)
+            {
+                $payoutAmount = $amount;
+            }
+            else
+            {
+                $payoutAmount = $amount + $this->fees;
+            }
 
             $this->debit = $payoutAmount;
         }
@@ -136,7 +169,7 @@ class Payout extends Base
         return $this->source->shouldValidateAndUpdateBalances();
     }
 
-    public function updateBalances()
+    public function updateBalances(int $negativeLimit = 0)
     {
         $this->validateMerchantBalance();
 
@@ -168,5 +201,18 @@ class Payout extends Base
                     'debit_amount'  => $debitAmount,
                 ]);
         }
+    }
+
+    public function getFeeSplitForDirectPayouts($fees, $tax, $pricingRuleId)
+    {
+        $this->fees = $fees;
+
+        $this->tax = $tax;
+
+        $calculator = Calculator\Base::make($this->source, Product::BANKING);
+
+        $this->feesSplit = $calculator->getFeeBreakupFromData($fees, $tax, $pricingRuleId);
+
+        return $this->feesSplit;
     }
 }

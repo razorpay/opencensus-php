@@ -192,7 +192,8 @@ return [
                 'brand_color' => null,
                 'transaction_report_email' => [
                     'test@razorpay.com'
-                ]
+                ],
+                'default_refund_speed' =>  'normal',
             ],
         ],
     ],
@@ -667,6 +668,23 @@ return [
                     'example.com',
                     'razorpay.com'
                 ],
+            ]
+        ]
+    ],
+
+    'testEditMerchantWebsite' => [
+        'request'  => [
+            'content' => [
+                'website' => 'http://abc.com',
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'id'                  => '10000000000000',
+                'entity'              => 'merchant',
+                'website'             => 'http://abc.com',
             ]
         ]
     ],
@@ -1255,6 +1273,26 @@ return [
         ]
     ],
 
+    'testEditMerchantConfigWithDefaultRefundSpeed' => [
+        'request' => [
+            'content' => [
+                'default_refund_speed' => 'optimum',
+            ],
+            'url' => '/account/config',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000',
+                'default_refund_speed' =>'optimum',
+            ]
+        ]
+    ],
+
     'testAttemptPaymentOnNonLiveMerchant' => [
         'request' => [
             'content' => [
@@ -1503,6 +1541,42 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testAddBankAccountWithInvalidAccountNumber' => [
+        'request' => [
+            'content' => [
+                'ifsc_code'             => 'ICIC0001206',
+                'account_number'        => '31260200000646',
+                'beneficiary_name'      => 'Test R4zorpay:',
+                'beneficiary_address1'  => 'address 1',
+                'beneficiary_address2'  => 'address 2',
+                'beneficiary_address3'  => 'address 3',
+                'beneficiary_address4'  => 'address 4',
+                'beneficiary_email'     => 'random@email.com',
+                'beneficiary_mobile'    => '9988776655',
+                'beneficiary_city'      => 'Kolkata',
+                'beneficiary_state'     => 'WB',
+                'beneficiary_country'   => 'IN',
+                'beneficiary_pin'       => '123456',
+            ],
+            'url' => '/merchants/bank_account',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => ErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_BANK_ACCOUNT,
+            'description'         => 'The bank account entered is invalid',
+        ],
+    ],
+
 
     'testAddBankAccountWithMerchantDetail' => [
         'request' => [
@@ -3367,6 +3441,50 @@ return [
         ]
     ],
 
+    'testEnableEsScheduledSuccessWithKAMMail' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testEnableEsScheduledMailExpectedRoleTypesOnly' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
+    'testEnableEsScheduledUnauthorizedUserAccess' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The input action is not supported for the merchant user',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+        ]
+    ],
+
     'testEnableEsScheduledUnknownScheduleFailure' => [
         'request' => [
             'url' => '/es/scheduled',
@@ -4651,6 +4769,61 @@ return [
         ],
     ],
 
+    'testMerchantSwitchProductWhenXOnboardingExperimentOff' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenL1Incomplete' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenMerchantNotActivated' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenMerchantNotActivatedAndXOnboardingExperimentOff' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testMerchantSwitchProductWhenMerchantNotActivatedAndL1Incomplete' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testGetCheckoutPreferencesForCardlessEmi' => [
         'request' => [
             'url' => '/preferences',
@@ -5452,6 +5625,18 @@ return [
         ],
     ],
 
+    'testGetInheritanceParentIfNotPresent'     =>  [
+        'request'   => [
+            'method'    => 'GET',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 400,
+        ],
+    ],
+
     'testDeleteInheritanceParent'     =>  [
         'request'   => [
             'method'    => 'DELETE',
@@ -5461,6 +5646,18 @@ return [
             'content'   => [
             ],
             'status_code'           => 200,
+        ],
+    ],
+
+    'testDeleteInheritanceParentIfNotPresent'     =>  [
+        'request'   => [
+            'method'    => 'DELETE',
+            'url'       => '/merchants/{id}/inheritance_parent',
+        ],
+        'response'  => [
+            'content'   => [
+            ],
+            'status_code'           => 400,
         ],
     ],
 
@@ -5476,7 +5673,6 @@ return [
                 'items' => [
                     '0' => [
                         'id'                => '100def000def00',
-                        'merchant_id'       => '100ghi000ghi00',
                         'type'              => 'primary',
                         'currency'          => null,
                         'name'              => null,
@@ -5484,12 +5680,26 @@ return [
                     ],
                     '1' => [
                         'id'                => '100abc000abc00',
-                        'merchant_id'       => '100ghi000ghi00',
                         'type'              => 'banking',
                         'currency'          => 'INR',
                         'name'              => null,
                         'balance'           => 0,
                     ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetBalancesWhenNoBalanceExists' => [
+        'request'  => [
+            'url'    => '/balances',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 0,
+                'items' => [
                 ]
             ],
         ],
@@ -5508,7 +5718,6 @@ return [
                 'items'  => [
                     '0' => [
                         'id'                => '100def000def00',
-                        'merchant_id'       => '100ghi000ghi00',
                         'type'              => 'primary',
                         'currency'          => null,
                         'name'              => null,
@@ -5601,5 +5810,22 @@ return [
                 'failed'  => 0,
             ]
         ]
+    ],
+
+    'testGetCheckoutPreferencesWithOrderMethodForNonTPVEnabledMerchant' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'order' => [
+                    'method' => 'upi'
+                ]
+            ],
+        ],
     ],
 ];
