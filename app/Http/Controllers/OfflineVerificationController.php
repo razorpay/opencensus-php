@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Http\Request\Request as RzpRequest;
+use RZP\Http\Request\Requests as RzpRequest;
 
 class OfflineVerificationController extends Controller
 {
