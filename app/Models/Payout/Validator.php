@@ -8,15 +8,11 @@ use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
-use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer\Mode;
-use RZP\Exception\BadRequestException;
-use RZP\Models\Merchant\Balance\Channel;
+use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Payout\Mode as PayoutMode;
-use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\Settlement\Channel as BankChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
@@ -31,6 +27,10 @@ class Validator extends Base\Validator
     const MAX_BULK_PAYOUTS_LIMIT = 15;
 
     const CALCULATE_ES_ON_DEMAND_FEES = 'calculate_es_on_demand_fees';
+
+    const FUND_ACCOUNT_PAYOUT_COMPOSITE = 'fund_account_payout_composite';
+
+    const BEFORE_CREATE_FUND_ACCOUNT_PAYOUT = 'before_create_fund_account_payout';
 
     // The max payout amount allowed for merchant payouts is 80 L
     const MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT = 800000000;
@@ -63,6 +63,21 @@ class Validator extends Base\Validator
         Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
     ];
 
+    protected static $fundAccountPayoutCompositeRules = [
+        Entity::PURPOSE                              => 'required|filled|string|max:30|alpha_dash_space',
+        Entity::AMOUNT                               => 'required|integer|min:100|max:' . Entity::MAX_PAYOUT_LIMIT,
+        Entity::CURRENCY                             => 'required|size:3|in:INR',
+        Entity::NOTES                                => 'sometimes|notes',
+        Entity::BALANCE_ID                           => 'sometimes|filled|size:14',
+        Entity::MODE                                 => 'required|string|custom',
+        Entity::REFERENCE_ID                         => 'sometimes|nullable|string|max:40',
+        Entity::NARRATION                            => 'sometimes|nullable|string|max:30|alpha_space_num',
+        Entity::PAYOUT_LINK_ID                       => 'sometimes|filled|public_id',
+        Entity::QUEUE_IF_LOW_BALANCE                 => 'sometimes|filled|boolean',
+        Entity::FUND_ACCOUNT                         => 'required|filled|array|custom',
+        Entity::FUND_ACCOUNT . "." . Entity::CONTACT => 'required|filled|array',
+    ];
+
     /**
      * @see Batch\Validator Need to change for payout rules if any changes are done here
      * @var array
@@ -93,23 +108,28 @@ class Validator extends Base\Validator
         Entity::NARRATION       => 'sometimes|nullable|string|max:30|alpha_space_num',
     ];
 
+    protected static $beforeCreateFundAccountPayoutRules = [
+        Entity::FUND_ACCOUNT_ID => 'required_without:fund_account|public_id',
+        Entity::FUND_ACCOUNT    => 'required_without:fund_account_id|array',
+    ];
+
     // Both regular(type:default) and on demand(type:on_demand) payouts are validated through merchantPayoutRules.
     protected static $merchantPayoutRules = [
-        Entity::PURPOSE         => 'required|string|max:30|in:payout',
-        Entity::METHOD          => 'sometimes|string',
-        Entity::AMOUNT          => 'required|integer',
-        Entity::CURRENCY        => 'required|size:3',
-        Entity::TYPE            => 'required|string|max:30|in:default,on_demand',
-        Entity::BALANCE_ID      => 'sometimes|filled|size:14',
+        Entity::PURPOSE    => 'required|string|max:30|in:payout',
+        Entity::METHOD     => 'sometimes|string',
+        Entity::AMOUNT     => 'required|integer',
+        Entity::CURRENCY   => 'required|size:3',
+        Entity::TYPE       => 'required|string|max:30|in:default,on_demand',
+        Entity::BALANCE_ID => 'sometimes|filled|size:14',
     ];
 
     // On calling merchant/payout merchantRules gets used for validation of input.
     protected static $merchantRules = [
-        Entity::MERCHANT_ID    => 'required|string|size:14',
-        Entity::AMOUNT         => 'sometimes|integer|max:' . self::MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT,
-        Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
-        Entity::MODULO         => 'sometimes|integer|min:100',
-        Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
+        Entity::MERCHANT_ID   => 'required|string|size:14',
+        Entity::AMOUNT        => 'sometimes|integer|max:' . self::MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT,
+        Entity::MIN_AMOUNT    => 'sometimes|integer|min:100',
+        Entity::MODULO        => 'sometimes|integer|min:100',
+        Entity::BUFFER_AMOUNT => 'sometimes|integer|min:10000000'
     ];
 
     // On calling merchant/payout/demand merchantPayoutOnDemandRules gets used for validation of input.
@@ -143,7 +163,7 @@ class Validator extends Base\Validator
 
     protected static $bulkRejectRules = [
         Entity::PAYOUT_IDS          => 'required|array',
-        Entity::PAYOUT_IDS. '.*'    => 'required|public_id|size:19',
+        Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',
         ActionChecker::USER_COMMENT => 'sometimes|string|max:255',
     ];
 
@@ -364,8 +384,8 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT_NOT_ALLOWED,
                 null,
                 [
-                    'payout_id'     => $payout->getId(),
-                    'payment_id'    => $payout->getPaymentId(),
+                    'payout_id'  => $payout->getId(),
+                    'payment_id' => $payout->getPaymentId(),
                 ]);
         }
 
@@ -450,10 +470,10 @@ class Validator extends Base\Validator
                 'Payout is not of RX or not a proper fund_account type',
                 null,
                 [
-                    'payout_id'         => $payout->getId(),
-                    'balance_type'      => $payout->balance->getType(),
-                    'fund_account_id'   => $payout->getFundAccountId(),
-                    'customer_id'       => $payout->getCustomerId(),
+                    'payout_id'       => $payout->getId(),
+                    'balance_type'    => $payout->balance->getType(),
+                    'fund_account_id' => $payout->getFundAccountId(),
+                    'customer_id'     => $payout->getCustomerId(),
                 ]);
         }
     }
@@ -489,6 +509,16 @@ class Validator extends Base\Validator
                 'Current batch size ' . count($input) . ', max limit of Bulk Contact is ' . self::MAX_BULK_PAYOUTS_LIMIT,
                 null,
                 null
+            );
+        }
+    }
+
+    protected function validateFundAccount($attribute, $value)
+    {
+        if (isset($value[Entity::CONTACT_ID]) === true)
+        {
+            throw new ExtraFieldsException(
+                 Entity::FUND_ACCOUNT . '.' . Entity::CONTACT_ID
             );
         }
     }

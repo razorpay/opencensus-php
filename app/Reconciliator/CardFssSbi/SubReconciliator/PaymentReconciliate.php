@@ -6,13 +6,9 @@ use RZP\Reconciliator\Base\SubReconciliator;
 
 class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 {
-    const ONUS_INDICATOR = 'ONUS';
+    const ONUS_INDICATOR = 'onus';
 
     const COLUMN_PAYMENT_AMOUNT = ReconciliationFields::TRANSACTION_AMOUNT;
-
-    const BLACKLISTED_COLUMNS = [
-        ReconciliationFields::CARD_NO,
-    ];
 
     public function getPaymentId(array $row)
     {
@@ -28,7 +24,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     public function getReferenceNumber($row)
     {
-        $rrn = $row[ReconciliationFields::PURCHASE_RRN] ?? null;
+        $rrn = $row[ReconciliationFields::TXN_REF] ?? null;
 
         return trim(str_replace("'", '', $rrn ?? null));
     }
@@ -39,15 +35,10 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         $rrn = $this->getReferenceNumber($row);
 
-        if (empty($rrn) === true)
-        {
-            $this->reportMissingColumn($row, ReconciliationFields::PURCHASE_RRN);
-        }
-        else if (strtolower($onusIndicator) === self::ONUS_INDICATOR)
+        if ($onusIndicator === self::ONUS_INDICATOR)
         {
             // Only in case of ONUS transactions, we want to store RRN
             // In all the other cases, we want to store ARN only.
-            // Currently, only ONUS transactions go through this gateways.
             return $rrn;
         }
 
@@ -66,22 +57,35 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             $this->reportMissingColumn($row, ReconciliationFields::GST_AMT);
         }
 
-        $csfTax = (isset($row[ReconciliationFields::MTS_TOTL_CSF_AMT]) === true) ?
-            (abs($row[ReconciliationFields::MTS_TOTL_CSF_AMT])) : 0;
-
-        $gstTax = abs($row[ReconciliationFields::GST_AMT]);
-
-        $tax = $gstTax + $csfTax;
-
-        return SubReconciliator\Helper::getIntegerFormattedAmount($tax);
+        return SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::GST_AMT]);
     }
 
     protected function getGatewayFee($row)
     {
-        $msfAmount = SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::MTS_MSF_FIXFEE]);
+        if (isset($row[ReconciliationFields::MDR]) === false)
+        {
+            $this->reportMissingColumn($row, ReconciliationFields::MDR);
+        }
 
-        $tax = $this->getGatewayServiceTax($row);
+        $mdrAmount = SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::MDR]);
 
-        return $msfAmount + $tax;
+        return $mdrAmount;
+    }
+
+    protected function getAuthCode($row)
+    {
+        $authCode = $row[ReconciliationFields::APPROVE_CODE] ?? null;
+
+        if ($authCode === null)
+        {
+            $this->reportMissingColumn($row, ReconciliationFields::APPROVE_CODE);
+
+            return null;
+        }
+
+        // If the value is 088232 in sheet, the parsed value would be 88232. This prepends the required 0s
+        $authCode = sprintf("%06d", $authCode);
+
+        return $authCode;
     }
 }

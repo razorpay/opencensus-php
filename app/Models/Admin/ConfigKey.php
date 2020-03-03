@@ -43,7 +43,6 @@ class ConfigKey
     const FTA_CHANNELS                          = self::PREFIX . 'fta_channels';
     const FTS_PAYOUT_VPA                        = self::PREFIX . 'fts_payout_vpa';
     const FTS_PAYOUT_CARD                       = self::PREFIX . 'fts_payout_card';
-    const FTS_TRANSFER_SLA                      = self::PREFIX . 'fts_transfer_sla';
     const FTS_TEST_MERCHANT                     = self::PREFIX . 'fts_test_merchant';
     const FTS_ROUTE_PERCENTAGE                  = self::PREFIX . 'fts_request_percentage';
     const FTS_PAYOUT_BANK_ACCOUNT               = self::PREFIX . 'fts_payout_bank_account';
@@ -69,6 +68,8 @@ class ConfigKey
     const PAYSECURE_BLACKLISTED_MCCS            = self::PREFIX . 'paysecure_blacklisted_mccs';
 
     const LOW_BALANCE_RX_EMAIL                  = self::PREFIX . 'low_balance_rx_email';
+
+    const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = self::PREFIX . 'gateway_balance_last_fetched_at_rate_limiting';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -107,7 +108,8 @@ class ConfigKey
         self::FTS_PAYOUT_BANK_ACCOUNT,
         self::CARD_PAYMENT_SERVICE_ENABLED,
         self::NB_PLUS_SERVICE_ENABLED,
-        self::LOW_BALANCE_RX_EMAIL
+        self::LOW_BALANCE_RX_EMAIL,
+        self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,
     ];
 
     public static function isSensitive(string $key)

@@ -8,20 +8,23 @@ use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Payout\Core;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 class Base extends FundAccountPayout\Base
 {
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA. For now have hardcoded this
-    // to 2 minutes . So if last fetched at was while ago (more than 2 minutes) only then we will fetch.
-    const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = 50; //in minutes
+    // to 50 minutes . So if last fetched at was while ago (more than 50 minutes) only then we will fetch.
+    const DEFAULT_GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = 50; //in minutes
 
     public function process(Entity $payout, PublicEntity $ftaAccount)
     {
@@ -58,25 +61,7 @@ class Base extends FundAccountPayout\Base
 
         $merchantBankingAccount = $payout->bankingAccount;
 
-        $balanceLastFetchedAt = $merchantBankingAccount->getBalanceLastFetchedAt();
-
-        $nowTime = Carbon::now(Timezone::IST);
-
-        $diffTime = $nowTime->diffInMinutes(Carbon::createFromTimestamp($balanceLastFetchedAt, Timezone::IST));
-
-        if ($diffTime > self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING)
-        {
-            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
-                                        Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
-                                        Entity::MERCHANT_ID => $merchantBankingAccount->getMerchantId(),
-                                        ]);
-
-            //need reload since we are updating banking account entity because of above call
-            if ($response['success'] === true)
-            {
-                $merchantBankingAccount->reload();
-            }
-        }
+        (new Core)->fetchAndUpdateGatewayBalance($merchantBankingAccount);
 
         $merchantBalance = $merchantBankingAccount->getGatewayBalance();
 

@@ -8,6 +8,7 @@ use Queue;
 use Config;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Artisan;
 
 use RZP\Models\Admin;
 use RZP\Models\Payout;
@@ -19,7 +20,6 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
-use Illuminate\Support\Facades\Artisan;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;

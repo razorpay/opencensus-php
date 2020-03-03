@@ -618,10 +618,11 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_SUCCEEDED,
                 [
-                    Entity::CHANNEL         => $channel,
-                    Entity::MERCHANT_ID     => $merchantId,
-                    Entity::ACCOUNT_NUMBER  => $bankingAccount->getAccountNumber(),
-                    Entity::GATEWAY_BALANCE => $bankingAccount->getGatewayBalance(),
+                    Entity::CHANNEL                 => $channel,
+                    Entity::MERCHANT_ID             => $merchantId,
+                    Entity::ACCOUNT_NUMBER          => $bankingAccount->getAccountNumber(),
+                    Entity::GATEWAY_BALANCE         => $bankingAccount->getGatewayBalance(),
+                    Entity::BALANCE_LAST_FETCHED_AT => $bankingAccount->getBalanceLastFetchedAt(),
                 ]
             );
 
@@ -632,10 +633,11 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
                 [
-                    Entity::CHANNEL         => $channel,
-                    Entity::MERCHANT_ID     => $merchantId,
-                    Entity::ACCOUNT_NUMBER  => $bankingAccount->getAccountNumber(),
-                    Entity::GATEWAY_BALANCE => $bankingAccount->getGatewayBalance(),
+                    Entity::CHANNEL                 => $channel,
+                    Entity::MERCHANT_ID             => $merchantId,
+                    Entity::ACCOUNT_NUMBER          => $bankingAccount->getAccountNumber(),
+                    Entity::GATEWAY_BALANCE         => $bankingAccount->getGatewayBalance(),
+                    Entity::BALANCE_LAST_FETCHED_AT => $bankingAccount->getBalanceLastFetchedAt(),
                 ]
             );
 

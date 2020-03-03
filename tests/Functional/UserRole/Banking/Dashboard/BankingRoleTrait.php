@@ -1,9 +1,9 @@
 <?php
 
-
 namespace RZP\Tests\Functional\UserRole\Banking\Dashboard;
 
-
+use RZP\Models\Merchant;
+use RZP\Services\RazorXClient;
 use RZP\Models\User\BankingRole;
 
 trait BankingRoleTrait
@@ -31,6 +31,14 @@ trait BankingRoleTrait
                 'payout_links_fetch_by_id',
                 'payout_links_create',
                 'payout_links_cancel',
+                'merchant_edit_config_logo',
+                'payout_links_settings_post',
+                'payout_links_settings_get',
+                'payout_links_merchant_settings_get',
+                'payout_links_merchant_settings_post',
+                'payout_links_merchant_on_boarding_status',
+                'payout_links_merchant_summary',
+                'payout_links_resend_notification',
                 'contact_get',
                 'contact_list',
                 'contact_create',
@@ -102,6 +110,14 @@ trait BankingRoleTrait
                 'payout_links_fetch_by_id',
                 'payout_links_create',
                 'payout_links_cancel',
+                'payout_links_settings_post',
+                'payout_links_settings_get',
+                'payout_links_merchant_settings_get',
+                'payout_links_merchant_settings_post',
+                'payout_links_merchant_on_boarding_status',
+                'payout_links_merchant_summary',
+                'payout_links_resend_notification',
+                'merchant_edit_config_logo',
                 'contact_get',
                 'contact_list',
                 'contact_create',
@@ -166,6 +182,14 @@ trait BankingRoleTrait
                 'payout_links_fetch_by_id',
                 'payout_links_create',
                 'payout_links_cancel',
+                'payout_links_settings_post',
+                'payout_links_settings_get',
+                'payout_links_merchant_settings_get',
+                'payout_links_merchant_settings_post',
+                'payout_links_merchant_on_boarding_status',
+                'payout_links_merchant_summary',
+                'payout_links_resend_notification',
+                'merchant_edit_config_logo',
                 'contact_get',
                 'contact_list',
                 'contact_create',
@@ -207,11 +231,53 @@ trait BankingRoleTrait
                 'reporting_log_create',
                 'reporting_log_update',
             ],
+
+            BankingRole::OPERATIONS => [
+                'user_otp_create',
+                'user_edit_self',
+                'user_fetch',
+                'merchant_user_reset_password',
+                'reporting_log_get',
+                'payout_fetch_by_id',
+                'payout_links_fetch_multiple',
+                'payout_links_create',
+                'payout_links_cancel',
+                'payout_links_settings_post',
+                'payout_links_settings_get',
+                'payout_links_merchant_settings_get',
+                'payout_links_merchant_settings_post',
+                'payout_links_merchant_on_boarding_status',
+                'payout_links_merchant_summary',
+                'payout_links_resend_notification',
+                'merchant_edit_config_logo',
+            ],
         ];
     }
 
     protected function getUserRolePermissibleRouteMap(string $role)
     {
         return $this->getUserRoleRouteMap()[$role] ?? null;
+    }
+
+    protected function mockRazorXTreatmentAccessDenyUnauthorised($value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                        ->setConstructorArgs([$this->app])
+                        ->setMethods(['getTreatment'])
+                        ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                                    function ($mid, $feature, $mode) use ($value)
+                                    {
+                                        if ($feature === Merchant\RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED)
+                                        {
+                                            return $value;
+                                        }
+
+                                        return 'off';
+                                    }));
     }
 }

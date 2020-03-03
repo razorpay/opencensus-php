@@ -362,6 +362,33 @@ class Validator extends Base\Validator
         Entity::CONFIG                          => 'filled|array',
     ];
 
+    protected static $entityUpdateActionCreateRules = [
+        Entity::TYPE            => 'required|in:entity_update_action',
+        Entity::NAME            => 'filled|string|max:255',
+        Entity::FILE            => 'required|file|max:3072' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG          => 'required|array|custom',
+    ];
+
+    protected static $entityUpdateActionConfigRules = [
+        Constants::BATCH_ACTION => 'required|string|custom',
+        Constants::ENTITY       => 'required|string|custom',
+    ];
+
+    public function validateConfig($attribute, $value)
+    {
+        (new Validator())->validateInput('entityUpdateActionConfig', $value);
+    }
+
+    public function validateBatchAction($attribute, $batchAction)
+    {
+        (new Merchant\Validator())->validateBatchAction($attribute, $batchAction);
+    }
+
+    public function validateEntity($attribute, $BatchActionEntity)
+    {
+        (new Merchant\Validator())->validateEntity($attribute, $BatchActionEntity);
+    }
+
     protected function validateBatch($attribute, $value)
     {
         $this->validateInput('sendMailBatch', $value);
@@ -909,13 +936,15 @@ class Validator extends Base\Validator
             throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, null, 'non unique reference_id found' . implode(' ', $nonUniqueIds));
         }
 
-        array_map(function ($entry)
+        foreach ($entries as $key => $entry)
         {
-            $entry[Header::ADJUSTMENT_BALANCE_TYPE] = $entry[Header::ADJUSTMENT_BALANCE_TYPE] ?: Merchant\Balance\Type::PRIMARY;
+            $entry[Header::ADJUSTMENT_BALANCE_TYPE] = trim($entry[Header::ADJUSTMENT_BALANCE_TYPE]) ?:
+                                                                Merchant\Balance\Type::PRIMARY;
+
+            $entries[$key] = $entry;
 
             $this->checkValidBalanceTypeForAdjustment($entry[Header::ADJUSTMENT_BALANCE_TYPE], $entry[Header::ADJUSTMENT_REFERENCE_ID]);
-
-        }, $entries);
+        }
     }
 
     private function checkValidBalanceTypeForAdjustment(string $balanceType, string $referenceId)

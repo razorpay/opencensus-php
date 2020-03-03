@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class UfhService extends BaseUfhClient
 {
-    const MOCK_FILE_ID      = 'rzp_file_mock_id_1000000';
+    const MOCK_FILE_ID      = 'file_1cXSLlUU8V9sXl';
 
     /**
      * {@inheritDoc}
@@ -23,10 +23,20 @@ class UfhService extends BaseUfhClient
     {
         $ext = $file->getClientOriginalExtension();
 
-        $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
+        $pathName = $file->getPathname();
+
+        // this mock service is being used in test cases . We should not change the file location of input file
+        // But in some test cases we are doing that
+        //
+        if ($ext !== 'png')
+        {
+            $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
+            $pathName  = $movedFile->getPathname();
+        }
+
 
         $requestData = [
-            'file'          => fopen($movedFile->getPathname(), 'r'),
+            'file'          => fopen($pathName, 'r'),
             'name'          => $storageFileName,
             'type'          => $type,
             'entity_id'     => $entity->getPublicId(),
@@ -40,7 +50,7 @@ class UfhService extends BaseUfhClient
             array_except($requestData, ['file']));
 
         return [
-            self::FILE_ID           => self::MOCK_FILE_ID . "_$type",
+            self::FILE_ID           => self::MOCK_FILE_ID,
             self::RELATIVE_LOCATION => $storageFileName,
         ];
     }

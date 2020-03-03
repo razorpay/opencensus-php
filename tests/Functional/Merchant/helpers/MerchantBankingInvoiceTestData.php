@@ -253,7 +253,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'file_id' => 'rzp_file_mock_id_1000000_file'
+                'file_id' => 'file_1cXSLlUU8V9sXl'
             ],
         ],
     ],

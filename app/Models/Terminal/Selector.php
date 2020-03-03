@@ -231,8 +231,18 @@ class Selector extends Base\Core
                 }
 
                 // sending the event to data link layer
-                $this->app['diag']->trackPaymentEvent(
+                $this->app['diag']->trackPaymentEventV2(
                     EventCode::PAYMENT_TERMINALS_RECEIVED_FROM_SMART_ROUTING, $payment, null,
+                    [
+                        'metadata' => [
+                            'payment' => [
+                                'id'             => $payment->getPublicId(),
+                                'terminal_ids'   => $terminalIds
+                            ]
+                        ],
+                        'read_key'  => array('payment.id'),
+                        'write_key' => 'payment.id'
+                    ],
                     [
                         'terminal_ids' => $terminalIds,
                     ]
@@ -379,6 +389,17 @@ class Selector extends Base\Core
                 //'max_terminals'                   => $payment->getMaxRetryAttempt(),
             ];
 
+            $traceData = $data;
+
+            // remove sensitive data from logging
+            unset($traceData['payment']['email'], $traceData['payment']['contact'], $traceData['payment']['notes']);
+
+            // checking card key exist or not in array
+            if (isset($traceData['payment']['card']) === true)
+            {
+                unset($traceData['payment']['card']);
+            }
+
             $params = null;
 
             $this->app->smartRouting->sendNonBlockingPaymentDataAuthN($data, $params);
@@ -386,7 +407,7 @@ class Selector extends Base\Core
             $this->trace->info(
                 TraceCode::SMART_ROUTING_REQUEST_AUTHENTICATION,
                 [
-                    'data' => $data,
+                    'data' => $traceData,
                 ]);
         }
         catch (\Throwable $e)
@@ -701,10 +722,21 @@ class Selector extends Base\Core
                 'chance'              => $this->options->getChance(),
             ];
 
+            $tracePayment = $data['payment'];
+
+            // remove sensitive data from logging
+            unset($tracePayment['email'], $tracePayment['contact'], $tracePayment['notes']);
+
+            // checking card key exist or not in array
+            if (isset($tracePayment['card']) === true)
+            {
+                unset($tracePayment['card']);
+            }
+
             $this->trace->info(
                 TraceCode::SMART_ROUTING_REQUEST,
                 [
-                    'payment'             => $data['payment'],
+                    'payment'             => $tracePayment,
                     'merchant'            => $data['merchant'],
                     'filtered_terminals'  => $data['filtered_terminals'],
                     'gateway_downtime'    => $data['gateway_downtime'],

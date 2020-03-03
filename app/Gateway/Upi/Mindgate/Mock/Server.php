@@ -207,7 +207,7 @@ class Server extends Base\Mock\Server
         return strtoupper(bin2hex($ciphertext));
     }
 
-    public function getAsyncCallbackContent(array $upiEntity, array $payment)
+    public function getAsyncCallbackContent(array $upiEntity, array $payment, array $meta = [])
     {
         $this->action = Action::CALLBACK;
 
@@ -215,10 +215,10 @@ class Server extends Base\Mock\Server
 
         $this->content($content, 'callback');
 
-        $response = $this->makeResponse($content);
+        $response = $this->makeResponse($content, $meta['key'] ?? null);
 
         return [
-            'pgMerchantId' => 'HDFC000000000',
+            'pgMerchantId' => $meta['merchant_id'] ?? 'HDFC000000000',
             'meRes'        => $response->content()
         ];
     }

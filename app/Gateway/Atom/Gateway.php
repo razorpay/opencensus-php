@@ -475,7 +475,6 @@ class Gateway extends Base\Gateway
     {
         unset($request['content'][AuthRequestFields::PASSWORD]);
         unset($request['content'][RefundRequestFields::PASSWORD]);
-        unset($request['content'][AuthRequestFields::CUSTOMER_ACCOUNT]);
 
         parent::traceGatewayPaymentRequest($request, $input, $traceCode);
     }
