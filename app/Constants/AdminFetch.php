@@ -1908,7 +1908,7 @@ class AdminFetch
                 'reference_id'  => [],
                 'channel'       => [
                     Fetch::LABEL    => 'Channel',
-                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
                     Fetch::VALUES   => Channel::getChannels(),
                 ],
             ],
