@@ -15,7 +15,11 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Stork
 {
 
+    // Request timeout in milliseconds for all HTTP requests to stork.
     const REQUEST_TIMEOUT = 350;
+    // Request connect timeout in milliseconds for all HTTP requests to stork.
+    // Request timeout parameter applies after connection is established.
+    const REQUEST_CONNECT_TIMEOUT = 350;
 
     const WEBHOOK = 'webhook';
 
@@ -103,21 +107,18 @@ class Stork
         // Options and authentication for requests.
         $options = [
             'timeout'         => self::REQUEST_TIMEOUT,
-            'connect_timeout' => self::REQUEST_TIMEOUT, // Request to stork gets timed out after this, if connection was not established
-            'auth' => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
+            'connect_timeout' => self::REQUEST_CONNECT_TIMEOUT,
+            'auth'            => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
+            'hooks'           => new Requests_Hooks(),
         ];
 
+        // This will add extra hook onto options[hooks] for dns resolution to
+        // ipV4 only. Doing this for internal services only.
         $hooks = new Hooks($config['url']);
-
-        // This will add extra hook for dns resolution to ipV4 only.
-        // Doing this for internal services only
         $hooks->addCurlProperties($options);
 
-        $options['hooks'] = new Requests_Hooks();
-
-        $requestHooks = &$options['hooks'];
-
-        $requestHooks->register('curl.before_send', [$this, 'setCurlOptions']);
+        // Sets request timeout in milliseconds via curl options.
+        $options['hooks']->register('curl.before_send', [$this, 'setCurlOptions']);
 
         $this->request = new Requests_Session(
             $config['url'],
