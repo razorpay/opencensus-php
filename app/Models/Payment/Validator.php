@@ -18,16 +18,19 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
-use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
+use RZP\Models\Payment\Processor\UpiTrait;
 
 class Validator extends Base\Validator
 {
+
+    use UpiTrait;
+
     protected $trace;
 
     public function __construct($entity = null)
@@ -62,6 +65,11 @@ class Validator extends Base\Validator
         'emi_duration'                  => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'                   => 'sometimes|nullable|string|max:255|utf8',
         'email'                         => 'sometimes|nullable|email',
+        'upi.vpa'                       => 'sometimes_if:method,upi|filled|string',
+        'upi.type'                      => 'sometimes_if:method,upi|filled|string',
+        'upi.flow'                      => 'sometimes_if:method,upi|filled|string',
+        'upi.start_time'                => 'sometimes_if:method,upi|filled|epoch',
+        'upi.end_time'                  => 'sometimes_if:method,upi|filled|epoch',
         'upi_provider'                  => 'sometimes_if:method,upi|filled|string|custom',
         'contact'                       => 'sometimes|nullable|contact_syntax',
         'billing_address'               => 'sometimes',
@@ -253,6 +261,7 @@ class Validator extends Base\Validator
         'auth_type',
         'preferred_auth',
         'payment_provider',
+        'upi_block',
     ];
 
     protected static $minAmountCheckRules = [
@@ -656,8 +665,7 @@ class Validator extends Base\Validator
                     'Amount for UPI payment cannot be greater than ₹100000.00');
             }
 
-            if ((isset($input['_']['flow']) === true) and
-                ($input['_']['flow'] === 'intent'))
+            if ($this->isFlowIntent($input))
             {
                 return;
             }
@@ -679,16 +687,7 @@ class Validator extends Base\Validator
 
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
-        $currency = $input["currency"];
-
-        $baseAmount = $amount;
-
-        if ($currency != Currency::INR)
-        {
-            $baseAmount = (new CurrencyCore)->getBaseAmount($amount, $currency);
-        }
-
-        if (($baseAmount > $maxAmountAllowed) === true)
+        if ($amount > $maxAmountAllowed)
         {
             $this->trace->count(Metric::PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
                 'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? "",
@@ -1118,6 +1117,36 @@ class Validator extends Base\Validator
                 'Cannot force authorize on this gateway',
                 'gateway',
                 $gateway);
+        }
+    }
+
+    protected function validateUpiBlock($input)
+    {
+        if (isset($input['upi']['vpa']) === true)
+        {
+            $this->validateVpa('upi.vpa', $input['upi']['vpa']);
+        }
+        if ((isset($input['upi']['type']) === true) and
+            ($input['upi']['type'] === 'otm'))
+        {
+            if ((isset($input['upi']['start_time']) === false) or
+                (isset($input['upi']['end_time']) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'UPI OTM payments require start_time and end_time',
+                    'upi',
+                    ['input'=> $input]
+                    );
+            }
+
+            if ($input['upi']['start_time'] > $input['upi']['end_time'])
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid start_time for UPI OTM Payment, start time cannot be greater than end time',
+                    'upi.start_time',
+                    ['input'=> $input]
+                );
+            }
         }
     }
 }

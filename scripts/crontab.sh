@@ -149,6 +149,9 @@ add_cron "30 22 * * *"      "daily_recon_summary"            GET "$BASE_URL/dail
 # Merchant Es Sync
 add_cron "*/15 * * * *"      "merchant_es_sync_live"         POST "$BASE_URL/merchant/sync_es/bulk"                         ""                           $LIVE_AUTH
 
+# Merchant Salesforce Poc Update
+add_cron "0 1,13 * * *"      "merchant_salesforce_poc"       POST "$BASE_URL/admin/poc_update"                              ""                           $LIVE_AUTH
+
 # Daily: Dynamic netbanking URL update in status cake
 # add_cron "0 0 * * *"        "dynamic_netbanking_url_update"  POST "$BASE_URL/payment/netbanking/statuscake/urlsync"      "driver=statuscake"             $LIVE_AUTH
 

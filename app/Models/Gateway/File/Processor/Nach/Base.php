@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor;
 use RZP\Exception\GatewayFileException;
@@ -106,5 +107,17 @@ abstract class Base extends Processor\Base
         }
 
         return $mailData;
+    }
+
+    protected function getLastWorkingDay($timestamp)
+    {
+        $date = (new Carbon())->timestamp($timestamp);
+
+        while (Holidays::isWorkingDay($date) === false)
+        {
+            $date = $date->subDay();
+        }
+
+        return $date->timestamp;
     }
 }

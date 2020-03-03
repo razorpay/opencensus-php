@@ -4,9 +4,9 @@ namespace RZP\Services;
 
 use Cache;
 use Request;
-use Requests;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Http\Request\Requests;
 
 class RazorXClient
 {

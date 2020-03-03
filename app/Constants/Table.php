@@ -193,6 +193,9 @@ class Table
     const MOZART                = 'mozart';
     const WORLDLINE             = 'worldline';
 
+    // Upi Related
+    const UPI_METADATA          = 'upi_metadata';
+
     // Sessions table
     const SESSION               = 'sessions';
 
@@ -255,6 +258,8 @@ class Table
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 
     const OPTIONS              = 'options';
+
+    const UPI_MANDATE          = 'upi_mandates';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,

@@ -95,5 +95,58 @@ return [
                 'description'   => 'reserve_primary balance add',
             ],
         ]
-    ]
+    ],
+
+    'testCreateNegativeAdjustmentWithLowBalance' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  -5000,
+                'type'          =>  'primary',
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'INR',
+                'description'   =>  'loan payment reference id : some_id'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => -5000,
+                'currency'      => 'INR',
+                'description'   => 'loan payment reference id : some_id',
+            ],
+        ]
+    ],
+
+    'testCreateAdjustmentFromBatchRoute'    => [
+        'request' => [
+            'url' => '/adjustments/batch',
+            'method' => 'POST',
+            'content' => [
+                [
+                    'amount'            =>  -5000,
+                    'type'              =>  ' ',
+                    'merchant_id'       =>  '100abc000abc00',
+                    'currency'          =>  'INR',
+                    'description'       =>  'loan payment reference id : some_id',
+                    'idempotency_key'   =>  'batch_100abc000abc01'
+                ]
+
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_100abc000abc01',
+                        'balance'           => 5000,
+                    ],
+                ],
+            ],
+        ]
+    ],
 ];

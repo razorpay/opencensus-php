@@ -443,7 +443,7 @@ abstract class Base extends BaseCore
                 $refundTransactionId = $this->source->entity->getTransactionId();
 
                 (new Credits\Transaction\Core)
-                    ->createCreditReversalTransaction($amount, $this->txn, $refundTransactionId);
+                    ->createCreditReversalTransaction($amount, $this->txn, $refundTransactionId, $creditType);
             }
             else
             {
@@ -623,7 +623,9 @@ abstract class Base extends BaseCore
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
-        $this->txn->setBalance($this->merchantBalance->getBalance(), $negativeLimit);
+        $checkNegativeLimit = $oldBalance >= $newBalance;
+
+        $this->txn->setBalance($this->merchantBalance->getBalance(), $negativeLimit, $checkNegativeLimit);
 
         if (in_array($this->txn->getType(), Balance\Core::NEGATIVE_FLOWS[Balance\Type::PRIMARY]) === true)
         {

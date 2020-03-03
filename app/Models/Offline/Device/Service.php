@@ -45,6 +45,8 @@ class Service extends Base\Service
 
         $device->setActivated('activated');
 
+        // todo: Remove activation token
+
         $this->repo->saveOrFail($device);
 
         return $device->toArrayPublic();
