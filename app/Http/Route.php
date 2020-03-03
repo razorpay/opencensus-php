@@ -628,7 +628,7 @@ final class Route
         'invoice_issue_by_batch'                   => ['post',     'invoices/batch/{batchId}/issue',                 'InvoiceController@issueInvoicesOfBatch'                            ],
         'invoice_notify_by_batch'                  => ['put',      'invoices/batch/{batchId}/notify',                'InvoiceController@notifyInvoicesOfBatch'                           ],
         'invoice_cancel_by_batch'                  => ['post',     'invoices/batch/{batchId}/cancel',                'InvoiceController@cancelInvoicesOfBatch'                           ],
-        'invoice_cancel_by_batch_admin'            => ['post',     'invoices/batch/{batchId}/cancel',                'InvoiceController@cancelInvoicesOfBatch'                           ],
+        'invoice_cancel_by_batch_admin'            => ['post',     'invoices/batch/{batchId}/cancel/admin',          'InvoiceController@cancelInvoicesOfBatch'                           ],
         'invoice_get_stats_by_batch_ids'           => ['get',      'invoices/batches/issuable',                      'InvoiceController@getIssuableByBatchIds'                           ],
         'invoice_view_live_post'                   => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                   => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
@@ -3900,6 +3900,7 @@ final class Route
             'order_create',
             'payment_fetch_by_id',
             'order_payments',
+            'read_options_by_ref_id',
         ],
 
         'kotak' => [
