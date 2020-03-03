@@ -74,15 +74,17 @@ class BankingAccountStatement extends Job
     {
         if ($this->attempts() < self::MAX_RETRY_ATTEMPT)
         {
+            $this->release(self::MAX_RETRY_DELAY);
+
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, [
                 'channel'       => $this->params['channel'],
                 'accountNumber' => $this->params['account_number']
             ]);
-
-            $this->release(self::MAX_RETRY_DELAY);
         }
         else
         {
+            $this->delete();
+
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, [
                 'channel'           => $this->params['channel'],
                 'accountNumber'     => $this->params['account_number'],
@@ -93,9 +95,7 @@ class BankingAccountStatement extends Job
             $operation = 'banking account statement fetch job failed';
 
             //TODO: Need to decide on channel name for slack alert and run book
-            (new SlackNotification)->send($operation, $this->params, null, 1, 'channel_name_to_decide');
-
-            $this->delete();
+            (new SlackNotification)->send($operation, $this->params, null, 1, 'rbl_alerts');
         }
     }
 

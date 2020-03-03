@@ -180,7 +180,9 @@ return array(
         // critical amount loading amount in Virtual account alert
         'x_finops'             => 'CSR546JHW',
 
-        'payout_links_alerts'  => 'CT0D3HTBR'
+        'payout_links_alerts'  => 'CT0D3HTBR',
+
+        'rbl_alerts'           => 'CUT37PDUY',
 
     ],
 
