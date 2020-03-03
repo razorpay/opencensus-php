@@ -117,7 +117,7 @@ trait Refund
     public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)
     {
         return (($payment->isCaptured() === true) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true));
+                ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false));
     }
 
     protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
@@ -1436,7 +1436,7 @@ trait Refund
         $refund->setSpeedRequested(RefundSpeed::NORMAL);
         $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
-        if ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true)
+        if ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false)
         {
             $refund->setSpeedRequested($this->merchant->getDefaultRefundSpeed());
 
@@ -2538,6 +2538,11 @@ trait Refund
         Payment\Entity $payment,
         bool $ignoreFeatureFlag = false): bool
     {
+        // proceeding only if decisioned speed is OPTIMUM
+        if ($refund->getSpeedRequested() !== Payment\Refund\Speed::OPTIMUM)
+        {
+            return false;
+        }
         //
         // Check if any card FTA already exists, not allowing card fta if any previous card fta exists
         //
@@ -2565,7 +2570,7 @@ trait Refund
                     (IIN::isIinPrepaid($iin->getIin()) === false))
                 {
                     if (($ignoreFeatureFlag === false) and
-                        ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                        ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true))
                     {
                         return false;
                     }
@@ -2611,7 +2616,7 @@ trait Refund
             ($payment->isGatewayCaptured() === true))
         {
             if (($ignoreFeatureFlag === false) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true))
             {
                 return false;
             }
@@ -2655,7 +2660,7 @@ trait Refund
             ($payment->isGatewayCaptured() === true))
         {
             if (($ignoreFeatureFlag === false) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true))
             {
                 return false;
             }
