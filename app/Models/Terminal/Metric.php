@@ -1,0 +1,11 @@
+<?php
+
+
+namespace RZP\Models\Terminal;
+
+
+final class Metric
+{
+    const TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS         =   'TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS';
+    const TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE         =   'TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE';
+}

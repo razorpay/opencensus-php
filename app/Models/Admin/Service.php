@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Jobs\EsSync;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
@@ -140,6 +141,8 @@ class Service extends Base\Service
     public function fetchTerminalEntityByIdWithFlag($entity, $id, $subMerchantFlag = false)
     {
         $entity = $this->fetchEntityByNameAndId($entity, $id);
+
+        (new Terminal\Service)->compareTerminalFetchFromTerminalsService($entity);
 
         return $entity->toArrayAdmin($subMerchantFlag);
     }

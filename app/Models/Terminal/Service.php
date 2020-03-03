@@ -57,6 +57,8 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
+
+
         return $terminal->toArrayAdmin();
     }
 
@@ -566,6 +568,50 @@ class Service extends Base\Service
             {
                 throw $exception;
             }
+        }
+    }
+
+    /**
+     * This function fetches the terminal given in $terminal from terminals
+     * It does a comparison. It logs the success/failure of the fetch and pushes metrics
+     * BEWARE: it fails silently in case on any exception
+     * @param Entity $terminal
+     */
+    public function compareTerminalFetchFromTerminalsService(Entity $terminal)
+    {
+        $data = [
+            'route'                      =>  $this->app['request.ctx']->getRoute(),
+            'exception'                  => null,
+            Terminal\Entity::TERMINAL_ID => $terminal->getId(),
+        ];
+
+        try
+        {
+            $fetchedTerminal = $this->app['terminals_service']->fetchTerminalById($terminal->getId());
+
+            if ($this->isMigrateTerminalSuccess($terminal, [], $fetchedTerminal) === true)
+            {
+                $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, $data);
+            }
+            else
+            {
+                $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, $data);
+            }
+
+
+        }
+        catch (\Exception $exception)
+        {
+            $data['exception'] = $exception->getCode();
+
+            $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, $data);
+
+        }
+        catch (\Throwable $throwable)
+        {
+            $data['exception'] = ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR;
+
+            $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, $data);
         }
     }
 
