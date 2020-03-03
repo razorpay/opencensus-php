@@ -9,37 +9,11 @@ use RZP\Models\Merchant\RazorxTreatment;
 
 class Service extends Base\Service
 {
-    public function processWebhook(String $event, array $input)
+    public function processWebhook(string $event, array $input)
     {
-        $merchant = $this->merchant;
+        $merchant = $this->merchant->isLinkedAccount() ? $this->merchant->parent : $this->merchant;
 
-        $merchantId = $merchant->getId();
-
-        Merchant\Entity::verifyIdAndStripSign($merchantId);
-
-        /*
-        * If the merchant is a linked account, use the parent merchant.
-        */
-        if ($merchant->isLinkedAccount() === true)
-        {
-            $merchant = $merchant->parent;
-        }
-
-        $webhook = $this->repo->webhook->findByMerchant($merchant);
-
-        if ($webhook === null)
-        {
-            return;
-        }
-
-        $enabledForMerchant = $this->core()->isWebhookActiveAndEnabled($webhook, $event);
-
-        if ($enabledForMerchant === false)
-        {
-            return;
-        }
-
-        $this->core()->prepareAndDispatchWebhook($merchant, $event, $input, $webhook);
+        $this->core()->prepareAndDispatchWebhook($merchant, $event, $input);
     }
 
     /**
