@@ -92,6 +92,7 @@ class Validator extends Base\Validator
 
         ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
 
+        ConfigKey::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING     => 'filled|integer',
         ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 'filled|integer',
     ];
 

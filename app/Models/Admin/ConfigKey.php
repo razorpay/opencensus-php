@@ -70,6 +70,8 @@ class ConfigKey
 
     const LOW_BALANCE_RX_EMAIL                  = self::PREFIX . 'low_balance_rx_email';
 
+    const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = self::PREFIX . 'gateway_balance_last_fetched_at_rate_limiting';
+
     //Banking account current accounts balance update for merchants .limit on number of merchants for which to update in one run
     const BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = self::PREFIX . 'banking_account_gateway_balance_update_rate_limit';
 
@@ -111,7 +113,8 @@ class ConfigKey
         self::CARD_PAYMENT_SERVICE_ENABLED,
         self::NB_PLUS_SERVICE_ENABLED,
         self::LOW_BALANCE_RX_EMAIL,
-        self::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT
+        self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,
+        self::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
     ];
 
     public static function isSensitive(string $key)
