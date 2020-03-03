@@ -1352,18 +1352,6 @@ class RefundTest extends TestCase
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
 
-        $this->fixtures->refund->edit(
-            $rfnd['id'],
-            [
-                'speed_requested'  => 'normal',
-                'speed_decisioned' => 'normal',
-                'speed_processed'  => 'normal',
-                'status'           => 'processed'
-            ]
-        );
-
-        $rfnd = $this->getDbEntityById('refund', $rfnd['id']);
-
         $actual = $rfnd->toArrayPublic();
         $actual['acquirer_data'] = $rfnd->getAcquirerData()->toArray();
 
@@ -2093,6 +2081,8 @@ class RefundTest extends TestCase
             return $content;
         });
 
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
@@ -2214,6 +2204,8 @@ class RefundTest extends TestCase
 
             return $content;
         });
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
@@ -2340,6 +2332,8 @@ class RefundTest extends TestCase
 
             return $content;
         });
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
 
@@ -2643,6 +2637,8 @@ class RefundTest extends TestCase
 
         $paymentEntity = $this->getDbLastEntity('payment');
 
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
@@ -2695,6 +2691,8 @@ class RefundTest extends TestCase
         $upiPayment = $this->createUpiPayment();
 
         $paymentEntity = $this->getDbLastEntity('payment');
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
@@ -2858,6 +2856,8 @@ class RefundTest extends TestCase
             return $content;
         });
 
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
@@ -2945,6 +2945,8 @@ class RefundTest extends TestCase
 
             return $content;
         });
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
         $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
@@ -3061,6 +3063,8 @@ class RefundTest extends TestCase
             return $content;
         });
 
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
@@ -3170,6 +3174,8 @@ class RefundTest extends TestCase
             return $content;
         });
 
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
@@ -3246,6 +3252,8 @@ class RefundTest extends TestCase
         $netbankingPayment = $this->createNetbankingPayment('HDFC');
 
         $netbankingEntity = $this->getDbLastEntity('netbanking');
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
@@ -3338,6 +3346,8 @@ class RefundTest extends TestCase
 
             return $content;
         });
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
@@ -3444,6 +3454,8 @@ class RefundTest extends TestCase
 
             return $content;
         });
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
@@ -4075,6 +4087,8 @@ class RefundTest extends TestCase
 
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 

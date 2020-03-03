@@ -503,6 +503,8 @@ class MerchantInvoiceTest extends TestCase
             'captured_at' => Carbon::create(2017, 8, 1, 2, 0, 0, 0, Timezone::IST)->timestamp
         ]);
 
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
