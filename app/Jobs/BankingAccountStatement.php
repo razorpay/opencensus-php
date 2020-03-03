@@ -27,12 +27,6 @@ class BankingAccountStatement extends Job
     protected $params;
 
     /**
-     *  @var BAS\Core
-     */
-    protected $basCore;
-
-
-    /**
      * @param string $mode
      * @param array  $params
      *      1. channel (bank channel)
