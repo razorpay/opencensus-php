@@ -1046,4 +1046,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     {
         return $this->getMerchantId();
     }
+
+    public function getId()
+    {
+        return $this->getMerchantId();
+    }
 }
