@@ -732,14 +732,14 @@ class SettlementTest extends TestCase
         $this->assertEquals($settledAt1->getTimestamp(), $fta0['initiate_at']);
         $this->assertEquals($settledAt2->getTimestamp(), $fta1['initiate_at']);
 
-        $content = $this->getEntities('settlement_destination', ['settlement_id' => $txn0['settlement_id']],true);
+        $content = $this->getEntities('settlement_destination', ['settlement_id' => substr($txn0['settlement_id'],strpos($txn0['settlement_id'], '_')+1)],true);
 
-        $this->assertEquals($fta0['id'], 'fta_' . $content['destination_id']);
+        $this->assertEquals($fta0['id'], 'fta_' . $content['items'][0]['destination_id']);
 
-        $content = $this->getEntities('settlement_destination', ['settlement_id' => $txn1['settlement_id']],true);
+        $content = $this->getEntities('settlement_destination', ['settlement_id' => substr($txn1['settlement_id'],strpos($txn1['settlement_id'], '_')+1)],true);
 
-        $this->assertEquals($fta1['id'], 'fta_' . $content['destination_id']);
-    }
+        $this->assertEquals($fta1['id'], 'fta_' . $content['items'][0]['destination_id']);
+    }q
 
     /**
      * Tests the case when settlement entity gets created,
