@@ -678,31 +678,34 @@ class Core extends Base\Core
 
         $fundAccountDetails = $this->getMaskedFundAccountDetails($payoutLink->fundAccount);
 
+        $settings = $this->getSettings($payoutLink->merchant);
+
         // This is required to Add/Remove code on the HTML page that pushed GA events.
         // We do not want this to be added in non-prod envs
         $isProduction = $this->app->environment() === Environment::PRODUCTION;
 
         $data = [
-            'api_host'                => $this->config['url.api.production'],
-            'payout_link_id'          => $payoutLink->getPublicId(),
-            'payout_link_status'      => $payoutLink->getStatus(),
-            'amount'                  => $payoutLink->getAmount(),
-            'currency'                => $payoutLink->getCurrency(),
-            'user_name'               => $payoutLink->getContactName(),
-            'description'             => $payoutLink->getDescription(),
-            'user_email'              => $maskedEmail,
-            'user_phone'              => $maskedPhone,
-            'receipt'                 => $payoutLink->getReceipt(),
-            'merchant_logo_url'       => $this->merchant->getFullLogoUrlWithSize(),
-            'payout_link_description' => $payoutLink->getDescription(),
-            'primary_color'           => $this->merchant->getBrandColorElseDefault(),
-            'merchant_name'           => $this->merchant->getDisplayNameElseName(),
-            'allow_upi'               => $this->allowUpi($payoutLink),
-            'banking_url'             => $this->config['applications.banking_service_url'],
-            'is_production'           => $isProduction,
-            'fund_account_details'    => json_encode($fundAccountDetails),
-            'purpose'                 => $payoutLink->getPurpose(),
-            'payout_utr'              => $payoutLink->getPayoutUtr()
+            'api_host'                          => $this->config['url.api.production'],
+            'payout_link_id'                    => $payoutLink->getPublicId(),
+            'payout_link_status'                => $payoutLink->getStatus(),
+            'amount'                            => $payoutLink->getAmount(),
+            'currency'                          => $payoutLink->getCurrency(),
+            'user_name'                         => $payoutLink->getContactName(),
+            'description'                       => $payoutLink->getDescription(),
+            'user_email'                        => $maskedEmail,
+            'user_phone'                        => $maskedPhone,
+            'receipt'                           => $payoutLink->getReceipt(),
+            'merchant_logo_url'                 => $this->merchant->getFullLogoUrlWithSize(),
+            'payout_link_description'           => $payoutLink->getDescription(),
+            'primary_color'                     => $this->merchant->getBrandColorElseDefault(),
+            'merchant_name'                     => $this->merchant->getDisplayNameElseName(),
+            'allow_upi'                         => $this->allowUpi($payoutLink),
+            'banking_url'                       => $this->config['applications.banking_service_url'],
+            'is_production'                     => $isProduction,
+            'fund_account_details'              => json_encode($fundAccountDetails),
+            'purpose'                           => $payoutLink->getPurpose(),
+            'payout_utr'                        => $payoutLink->getPayoutUtr(),
+            'payout_links_custom_message'       => $settings[Entity::CUSTOM_MESSAGE] ?? null
         ];
 
         return $data;

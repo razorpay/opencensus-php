@@ -37,7 +37,8 @@ class Validator extends Base\Validator
         Mode::IMPS              => 'sometimes|boolean|filled',
         Entity::SUPPORT_URL     => 'sometimes|string|url',
         Entity::SUPPORT_EMAIL   => 'sometimes|string|email',
-        Entity::SUPPORT_CONTACT => 'sometimes|string|contact_syntax'
+        Entity::SUPPORT_CONTACT => 'sometimes|string|contact_syntax',
+        Entity::CUSTOM_MESSAGE  => 'sometimes|string|max:255'
     ];
 
     protected static $addFundAccountRules = [

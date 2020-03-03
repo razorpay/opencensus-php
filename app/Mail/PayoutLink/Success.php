@@ -6,6 +6,7 @@ use App;
 use RZP\Models\Settings;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
+use RZP\Models\PayoutLink\Entity;
 use RZP\Models\Merchant\Logo as MerchantLogo;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
@@ -93,11 +94,11 @@ class Success extends Mailable
         return Settings\Accessor::for($merchant, Settings\Module::PAYOUT_LINK);
     }
 
-    public function getSettings(MerchantEntity $merchant)
+    protected function getSettings(MerchantEntity $merchant)
     {
         $settingsAccessor = $this->getSettingsAccessor($merchant);
 
-        return $settingsAccessor->all()->toArray();
+        return $settingsAccessor->all();
     }
 
     protected function addMailData()
@@ -108,36 +109,43 @@ class Success extends Mailable
 
         $displayName = $merchant->getDisplayNameElseName();
 
+        /** @var \RZP\Models\Vpa\Entity|\RZP\Models\BankAccount\Entity $account */
         $account = optional($payoutLink->fundAccount)->account;
 
+        $settings = $this->getSettings($merchant);
+
         $data = [
-            'billing_label'         => $displayName,
-            'purpose'               => $payoutLink->getPurpose(),
-            'brand_logo'            => $merchant->getFullLogoUrlWithSize(MerchantLogo::MEDIUM_SIZE),
-            'brand_color'           => $merchant->getBrandColorElseDefault(),
-            'short_url'             => $payoutLink->getShortUrl(),
-            'amount'                => $payoutLink->getFormattedAmount(),
-            'contrast_color'        => $merchant->getContrastOfBrandColor(),
-            'description'           => $payoutLink->getDescription(),
-            'contact_name'          => $payoutLink->getContactName(),
-            'contact_email'         => $payoutLink->getContactEmail(),
-            'contact_phone'         => $payoutLink->getContactPhoneNumber(),
-            'utr'                   => $payoutLink->payout()->getUtr(),
-            'payout_link_success_date'      => $payoutLink->getUpdatedAt()
+            'billing_label'                 => $displayName,
+            'purpose'                       => $payoutLink->getPurpose(),
+            'brand_logo'                    => $merchant->getFullLogoUrlWithSize(MerchantLogo::MEDIUM_SIZE),
+            'brand_color'                   => $merchant->getBrandColorElseDefault(),
+            'short_url'                     => $payoutLink->getShortUrl(),
+            'amount'                        => $payoutLink->getFormattedAmount(),
+            'contrast_color'                => $merchant->getContrastOfBrandColor(),
+            'description'                   => $payoutLink->getDescription(),
+            'contact_name'                  => $payoutLink->getContactName(),
+            'contact_email'                 => $payoutLink->getContactEmail(),
+            'contact_phone'                 => $payoutLink->getContactPhoneNumber(),
+            'utr'                           => $payoutLink->payout()->getUtr(),
+            'payout_link_success_date'      => $payoutLink->getUpdatedAt(),
+            'support_contact'               => $settings[Entity::SUPPORT_CONTACT] ?? null,
+            'support_email'                 => $settings[Entity::SUPPORT_EMAIL] ?? null,
+            'support_url'                   => $settings[Entity::SUPPORT_URL] ?? null
         ];
 
         if ($payoutLink->fundAccount->getAccountType() === FundAccountEntity::BANK_ACCOUNT)
         {
-            array_push($data,[
+            $data = array_merge($data,[
                 'fund_account_number'   => $account->getAccountNumber(),
                 'fund_account_name'     => $account->getBeneficiaryName(),
                 'fund_account_ifsc'     => $account->getIfscCode(),
+                'fund_account_bank_name'=> $account->getBankName(),
             ]);
         }
         else if ($payoutLink->fundAccount->getAccountType() === FundAccountEntity::VPA)
         {
-            array_push($data,[
-                'fund_account_vpa'      => $account->getHandle(),
+            $data = array_merge($data,[
+                'fund_account_vpa'      => $account->getAddress(),
                 'fund_account_name'     => $account->getUsername(),
             ]);
         }

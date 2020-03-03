@@ -218,6 +218,8 @@
                                                             <div class="label" style="color: #515978; display: inline-block; width: 40%; vertical-align: middle;">Account details</div>
                                                             <div class="value left-align font-color-black-o-30" style="display: inline-block; width: 50%; text-align: left; color: #333333;">{{ $fund_account_number }}</div>
                                                             <div class="label" style="color: #515978; display: inline-block; width: 40%; vertical-align: middle;"></div>
+                                                            <div class="value left-align sub-title" style="display: inline-block; width: 50%; text-align: left; color: #666666; font-size: 12px;">{{ $fund_account_bank_name }}</div>
+                                                            <div class="label" style="color: #515978; display: inline-block; width: 40%; vertical-align: middle;"></div>
                                                             <div class="value left-align sub-title" style="display: inline-block; width: 50%; text-align: left; color: #666666; font-size: 12px;">{{ $fund_account_name }}</div>
                                                             <div class="label" style="color: #515978; display: inline-block; width: 40%; vertical-align: middle;"></div>
                                                             <div class="value left-align sub-title" style="display: inline-block; width: 50%; text-align: left; color: #666666; font-size: 12px;">{{ $fund_account_ifsc }}</div>
@@ -284,8 +286,8 @@
                                                                     <div class="header" style="box-sizing: border-box; padding-top: 16px; max-width: 100%;">
                                                                         <div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; padding-bottom: 16px;">
                                                                             <div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5;">
-                                                                                <div class="content-element font-color-otp" style="color: #646D8B; display: inline-block; vertical-align: middle;">Powered by</div>
-                                                                                <div class="content-element logo" style="display: inline-block; vertical-align: middle; margin-left: 10px; height: 18px; width: 85px;"><img src="https://cdn.razorpay.com/logo.png" style="height: 100%; width: 100%;"></div>
+                                                                                <div class="content-element font-color-otp" style="color: #646D8B; display: inline-block; vertical-align: middle;">Secured by</div>
+                                                                                <div class="content-element logo" style="display: inline-block; vertical-align: middle; margin-left: 10px; height: 18px; width: 85px;"><img src="https://cdn.razorpay.com/static/assets/razorpayx/logos/rx-dark-logo.png" style="height: 100%; width: 100%;"></div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -345,10 +347,10 @@
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
                                                     <div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #7B8199; text-align: center; padding: 8px 0;">
                                                         <div class="test" style="width: 100%; box-sizing: border-box;">
+                                                            @isset($support_url)<div class="value" style="display: inline-block; width: 25%;">{{ $support_url }}</div>@endisset
+                                                            @isset($support_url)<div class="line" style="display: inline-block; width: 2%;">|</div>@endisset
                                                             @isset($support_contact)<div class="value" style="display: inline-block; width: 25%;">{{ $support_contact }}</div>@endisset
                                                             @isset($support_contact)<div class="line" style="display: inline-block; width: 2%;">|</div>@endisset
-                                                            @isset($support_phonenumber)<div class="value" style="display: inline-block; width: 25%;">{{ $support_phonenumber }}</div>@endisset
-                                                            @isset($support_phonenumber)<div class="line" style="display: inline-block; width: 2%;">|</div>@endisset
                                                             @isset($support_email)<div class="value" style="display: inline-block; width: 25%;">{{ $support_email }}</div>@endisset
                                                         </div>
                                                     </div>

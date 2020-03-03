@@ -869,8 +869,6 @@ class AxisGatewayTest extends TestCase
 
     public function testPaymentRefundWithCardTransfer()
     {
-        $this->fixtures->merchant->addFeatures('card_transfer_refund');
-
         $payment = $this->doAuthAndCapturePayment();
 
         $card = $this->getDbLastEntity('card');
@@ -904,8 +902,6 @@ class AxisGatewayTest extends TestCase
 
     public function testPaymentRefundWithCardTransferFailed()
     {
-        $this->fixtures->merchant->addFeatures('card_transfer_refund');
-
         $payment = $this->doAuthAndCapturePayment();
 
         $card = $this->getDbLastEntity('card');
