@@ -420,7 +420,11 @@ class Core extends Base\Core
     {
         $reserveBalance = null;
 
-        $reserveType = 'reserve_' . $balanceType;
+        if (($balanceType === Type::PRIMARY) or
+            ($balanceType === Type::BANKING))
+        {
+            $reserveType = 'reserve_' . $balanceType;
+        }
 
         try
         {
@@ -590,7 +594,7 @@ class Core extends Base\Core
         $negativeLimit = 0;
 
         // If the Transaction Type is Payment, then we only allow Negative Balance for
-        // E-Mandate Registrations (Recurring type: Initital, not secong recurring).
+        // E-Mandate Registrations (Recurring type: Initital, not second recurring).
         if ($txn->getType() === Transaction\Type::PAYMENT)
         {
             if ($txn->source === null)
