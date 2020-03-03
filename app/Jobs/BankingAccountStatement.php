@@ -72,7 +72,7 @@ class BankingAccountStatement extends Job
 
     protected function checkRetry()
     {
-        if ($this->attempts() <= self::MAX_RETRY_ATTEMPT)
+        if ($this->attempts() < self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, [
                 'channel'       => $this->params['channel'],
