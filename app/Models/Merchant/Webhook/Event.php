@@ -451,6 +451,8 @@ class Event
         self::PAYOUT_INITIATED                  => Feature\Constants::PAYOUT,
         self::PAYMENT_DOWNTIME_STARTED          => Feature\Constants::EXPOSE_DOWNTIMES,
         self::PAYMENT_DOWNTIME_RESOLVED         => Feature\Constants::EXPOSE_DOWNTIMES,
+        self::REFUND_SPEED_CHANGED              => Feature\Constants::CARD_TRANSFER_REFUND,
+        self::REFUND_PROCESSED                  => Feature\Constants::CARD_TRANSFER_REFUND,
         self::REFUND_FAILED                     => Feature\Constants::SHOW_REFUND_PUBLIC_STATUS,
         self::TRANSFER_PROCESSED                => Feature\Constants::MARKETPLACE,
         self::TERMINAL_ACTIVATED                => Feature\Constants::TERMINAL_ONBOARDING,

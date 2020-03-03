@@ -637,17 +637,42 @@ class Service extends Base\Service
 
     protected function addPublicStatus(array &$refundsArray, $refunds, array $input = [])
     {
-        if (isset($input[Entity::PUBLIC_STATUS]))
+        // Public Status param will be added only for feature enabled merchants
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
         {
-            foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
+            if (isset($input[Entity::PUBLIC_STATUS]))
             {
-                $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $input[Entity::PUBLIC_STATUS];
+                foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
+                {
+                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $input[Entity::PUBLIC_STATUS];
 
-                $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::STATUS] = $input[Entity::PUBLIC_STATUS];
+                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::STATUS] = $input[Entity::PUBLIC_STATUS];
+                }
+            }
+            else
+            {
+                $refundStatus = $this->getPublicStatusForRefunds($refunds);
+
+                foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
+                {
+                    $refundId = $refundArray[Entity::ID];
+
+                    Entity::verifyIdAndStripSign($refundId);
+
+                    $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+
+                    $refundArray[Entity::STATUS] = $refundStatus[$refundId];
+                }
             }
         }
-        else
+    }
+
+    public function addModeAndPublicStatus(&$refundsArray, $refunds)
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
         {
+            $refundModes = $this->getModeForRefunds($refunds);
+
             $refundStatus = $this->getPublicStatusForRefunds($refunds);
 
             foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
@@ -656,30 +681,12 @@ class Service extends Base\Service
 
                 Entity::verifyIdAndStripSign($refundId);
 
+                $refundArray[Entity::MODE] = $refundModes[$refundId];
+
                 $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
 
                 $refundArray[Entity::STATUS] = $refundStatus[$refundId];
             }
-        }
-    }
-
-    public function addModeAndPublicStatus(&$refundsArray, $refunds)
-    {
-        $refundModes = $this->getModeForRefunds($refunds);
-
-        $refundStatus = $this->getPublicStatusForRefunds($refunds);
-
-        foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
-        {
-            $refundId = $refundArray[Entity::ID];
-
-            Entity::verifyIdAndStripSign($refundId);
-
-            $refundArray[Entity::MODE] = $refundModes[$refundId];
-
-            $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
-
-            $refundArray[Entity::STATUS] = $refundStatus[$refundId];
         }
     }
 
@@ -2616,27 +2623,30 @@ class Service extends Base\Service
 
     protected function addParamsForDashboard(array &$refundArray)
     {
-        try
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
         {
-            $refundId = $refundArray[Entity::ID];
+            try
+            {
+                $refundId = $refundArray[Entity::ID];
 
-            Entity::verifyIdAndStripSign($refundId);
+                Entity::verifyIdAndStripSign($refundId);
 
-            $refund = $this->repo->refund->find($refundId);
+                $refund = $this->repo->refund->find($refundId);
 
-            $this->addProcessedAtTime($refundArray, $refund);
+                $this->addProcessedAtTime($refundArray, $refund);
 
-            $this->addSpeedChangeTime($refundArray, $refund);
-        }
-        catch(\Throwable $exception)
-        {
-            $this->trace->traceException(
-                $exception,
-                Trace::WARNING,
-                TraceCode::REFUND_ADD_DASHBOARD_PARAMS_FAILED,
-                [
-                    'refund_id' => $refundId,
-                ]);
+                $this->addSpeedChangeTime($refundArray, $refund);
+            }
+            catch(\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::WARNING,
+                    TraceCode::REFUND_ADD_DASHBOARD_PARAMS_FAILED,
+                    [
+                        'refund_id' => $refundId,
+                    ]);
+            }
         }
     }
 
