@@ -15,7 +15,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Stork
 {
 
-    const REQUEST_TIMEOUT = 0.35;
+    const REQUEST_TIMEOUT = 350;
 
     const WEBHOOK = 'webhook';
 
@@ -107,13 +107,15 @@ class Stork
             'auth' => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
         ];
 
-        $hooks = new Hooks();
+        $hooks = new Hooks($config['url']);
 
         // This will add extra hook for dns resolution to ipV4 only.
         // Doing this for internal services only
-        $hooks->addCurlProperties($config['url'], $options);
+        $hooks->addCurlProperties($options);
 
-        $requestHooks = new Requests_Hooks();
+        $options['hooks'] = new Requests_Hooks();
+
+        $requestHooks = &$options['hooks'];
 
         $requestHooks->register('curl.before_send', [$this, 'setCurlOptions']);
 
