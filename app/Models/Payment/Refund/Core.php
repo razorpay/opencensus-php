@@ -68,7 +68,7 @@ class Core extends Base\Core
                     $data = [
                         Entity::STATUS        => Status::PROCESSED,
                         Entity::REFERENCE1    => $refund->getReference1(),
-                        Entity::MODE          => $ftaData['mode'] ?? 'FT_UNKNOWN',
+                        Entity::MODE          => $ftaData[Entity::MODE] ?? Constants::FT_UNKNOWN,
                         Constants::FTA_UPDATE => true,
                     ];
 
