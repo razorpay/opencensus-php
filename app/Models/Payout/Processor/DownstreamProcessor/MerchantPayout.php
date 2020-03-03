@@ -2,14 +2,59 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
+use Carbon\Carbon;
+use RZP\Exception;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\FundTransfer;
 use RZP\Models\Payout\Entity;
+use RZP\Services\FTS\Constants;
+use RZP\Models\Settlement\Holidays;
 
 class MerchantPayout extends Base
 {
     protected function setChannel(Entity $payout)
     {
+
         $channel = $payout->merchant->getChannel();
+
+        //
+        // For Early Settlments On demand, merchant can create payouts at any time of the day.
+        // If they create it during banking hours their default channel may suffice for NEFT transactions.
+        // However if a request comes during non banking hours or holidays, NEFT transaction will
+        // get scheduled to next working day.
+        // So, for on demand payouts we force the channel to YESBANK during out of banking hours
+        // to use IMPS with restriction on amount to be less than 2L.
+        // Once any channel(s) becomes available to serve
+        // 24x7 NEFT. Those channel will be used to force set the payout channel.
+        //
+        if ($payout->getPayoutType() === Entity::ON_DEMAND)
+        {
+            if ($this->isOutsideBankingHours($channel) === true)
+            {
+                if ($payout->getAmount() <= FundTransfer\Base\Initiator\NodalAccount::MAX_IMPS_AMOUNT *100)
+                {
+                    $channel = Settlement\Channel::YESBANK;
+                }
+                else
+                {
+                    $this->trace->error(TraceCode::ES_ON_DEMAND_IMPS_AMOUNT_LIMIT_EXCEEDED, [
+                        'channel'   => $channel,
+                        'message'   => 'Amount provided is greater than max allowed IMPS limit',
+                    ]);
+
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
+                                                            null,
+                                                            [
+                                                                'amount' => $payout->getAmount()
+                                                            ],
+                                                            'Please provide an amount less than 2 Lacs to get a settlement at this point of time.');
+                }
+            }
+        }
 
         $payout->setChannel($channel);
     }
@@ -48,5 +93,51 @@ class MerchantPayout extends Base
             // calculating fees over it and failing a transaction if merchant does not have enough balance.
             $payout->setAmount($txn->getAmount());
         }
+    }
+
+    protected function isOutsideBankingHours(string $channel): bool
+    {
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        // Trace the timestamp when es on demand is initiated irrespective of working/non-working hour.
+        $this->trace->info(
+            TraceCode::ES_ON_DEMAND_INITIATE_TIMESTAMP,
+            [
+                'current_time' => $currentTime
+            ]);
+
+        // Checks for holidays.
+        if (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false)
+        {
+            $this->trace->info(TraceCode::ES_ON_DEMAND_INITIATED_ON_NON_WORKING_DAY, [
+                'channel'   => $channel,
+                'message'   => 'Holiday today, will do IMPS!',
+            ]);
+
+            return true;
+        }
+
+        // Banking hours start time.
+        $startTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_CUTOFF_HOUR_MIN )->getTimestamp();
+
+        // Banking hours end time.
+        $endTime = Carbon::today(Timezone::IST)->hour(Constants::NEFT_CUTOFF_HOUR_MAX)->minute(Constants::NEFT_CUTOFF_MINUTE_MAX)->getTimestamp();
+
+        // Checks for non Banking hours on working days.
+        if (($currentTime < $startTime) or
+            ($currentTime > $endTime))
+        {
+            $this->trace->info(TraceCode::ES_ON_DEMAND_INITIATED_ON_NON_BANKING_HOUR, [
+                'channel'               => $channel,
+                'current_time'          => $currentTime,
+                'banking_start_time'    => $startTime,
+                'banking_ending_time'   => $endTime,
+                'message'               => 'Outside banking hours, will do IMPS!',
+            ]);
+
+            return true;
+        }
+
+        return false;
     }
 }

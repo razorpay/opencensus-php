@@ -315,6 +315,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::DEFAULT_REFUND_SPEED,
     ];
 
     const INTERNAL_CONFIG_LIST = [
@@ -1121,6 +1122,14 @@ class Entity extends Base\PublicEntity
         }
 
         return $balance;
+    }
+
+    public function payoutLinks()
+    {
+        return $this->hasMany(
+            'RZP\Models\PayoutLink\Entity',
+            self::MERCHANT_ID,
+            self::ID);
     }
 
     public function bankAccount()

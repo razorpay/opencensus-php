@@ -30,7 +30,8 @@ class DiagClient extends EventTrackerClient
             'properties'    => $properties,
         ];
 
-        if(($eventVersion === 'v2') === true)
+
+        if (($eventVersion === 'v2') === true)
         {
             $event['event_trackId']  = $this->app['req.context']->getTrackId();
             $event['metadata']       = $metaData;

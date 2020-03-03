@@ -13,6 +13,7 @@ class Response
     const DATA          = 'data';
     const ERROR         = 'error';
     const CODE          = 'code';
+    const GATEWAY_CODE  = 'gateway_code';
     const DESCRIPTION   = 'description';
 
     private $content;
@@ -46,7 +47,7 @@ class Response
 
     public function isSuccess(): bool
     {
-        return $this->content[self::SUCCESS];
+        return $this->error()->isEmpty();
     }
 
     public function setData(array $data)
@@ -59,17 +60,18 @@ class Response
         return $this->content[self::DATA];
     }
 
-    public function setError(string $code, string $description)
+    public function setError(string $code, string $description, string $gatewayCode = null)
     {
         $this->content[self::ERROR] = new ArrayBag([
             self::CODE          => $code,
             self::DESCRIPTION   => $description,
+            self::GATEWAY_CODE  => $gatewayCode,
         ]);
     }
 
     public function error(): ArrayBag
     {
-        return $this->error();
+        return $this->content[self::ERROR];
     }
 
     public function setRequest(Request $request)

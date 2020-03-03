@@ -194,6 +194,15 @@ class FundTransfer extends Base
             Constants::PREFERRED_CHANNEL => $channel,
         ];
 
+        //
+        // In case of refunds - we need to use base amount
+        // since there could be payments of international currencies and in FTA we are always using INR
+        //
+        if ($sourceType === Entity::REFUND)
+        {
+            $request[Constants::AMOUNT] = $this->source->getBaseAmount();
+        }
+
         if (($channel === Channel::RBL) and ($sourceType === Entity::PAYOUT))
         {
             $source = $this->fta->source;
@@ -205,17 +214,6 @@ class FundTransfer extends Base
                 ];
             }
         }
-
-        $transferBy  = $this->fta->getCreatedAt();
-
-        if ($sourceType === Entity::PAYOUT)
-        {
-            $transferBy  += $this->getTransferSLA($this->fta->getMode());
-        }
-
-        $request[Constants::TRANSFER] += [
-            Constants::TRANSFER_BY => $transferBy,
-        ];
 
         return $request;
     }
@@ -591,22 +589,6 @@ class FundTransfer extends Base
         }
 
         return Mode::NEFT;
-    }
-
-    /**
-     * @param string $mode
-     * @return int
-     */
-    protected function getTransferSLA(string $mode)
-    {
-        $sla = (int) $this->redis->HGET(ConfigKey::FTS_TRANSFER_SLA, strtolower($mode));
-
-        if ($sla < 0)
-        {
-            return 0;
-        }
-
-        return $sla;
     }
 
     public function bulkUpdateFtsAttempts(array $input)

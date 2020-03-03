@@ -378,8 +378,9 @@ class ActivationTest extends OAuthTestCase
             Config::set('applications.kyc.mock', true);
 
             $featureVariantMap = [
-                'non_registered_onboarding' => 'on',
-                'kyc_service_verification'  => 'on',
+                'non_registered_onboarding'    => 'on',
+                'kyc_service_verification'     => 'on',
+                'poi_kyc_service_verification' => 'on',
             ];
 
             $this->mockRazorXMultiFeature($test,$featureVariantMap);

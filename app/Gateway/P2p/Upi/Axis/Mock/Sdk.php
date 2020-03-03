@@ -328,6 +328,8 @@ class Sdk
 
             case UpiAction::CUSTOMER_DEBITED_VIA_COLLECT:
             case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_PAY:
+            case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT:
                 $callback = [
                     Fields::AMOUNT                      => $input[Fields::AMOUNT],
                     Fields::BANK_ACCOUNT_UNIQUE_ID      => str_random(16),

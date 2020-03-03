@@ -766,7 +766,7 @@ class Verify extends Base\Core
         }
     }
 
-    public function verifyPayment(Payment\Entity $payment, string $filter = null)
+    public function verifyPayment(Payment\Entity $payment, string $filter = null, array $gatewayData = null)
     {
         $result = Result::SUCCESS;
 
@@ -780,7 +780,7 @@ class Verify extends Base\Core
         //
         try
         {
-            $this->processor($merchant)->verify($payment);
+            $this->processor($merchant)->verify($payment, $gatewayData);
 
             $this->updateVerifyBucket($payment, $filter, self::NEXT);
         }

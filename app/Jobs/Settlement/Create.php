@@ -48,6 +48,8 @@ class Create extends Job
 
     protected $params;
 
+    protected $pendingMerchantsForSettlement;
+
     /**
      * if the job takes more time then it'll be terminated
      *
@@ -102,7 +104,7 @@ class Create extends Job
             $this->channelWiseCountKey   = sprintf(self::CHANNEL_WISE_COUNT, $this->mode);
 
             // reduce the total count once the processing is done
-            Cache::decrement($this->totalMerchantCountKey);
+            $this->pendingMerchantsForSettlement = Cache::decrement($this->totalMerchantCountKey);
 
             $this->trace->info(
                 TraceCode::SETTLEMENT_JOB_INIT_FOR_MERCHANT,
@@ -141,7 +143,7 @@ class Create extends Job
                 // in case of mutex error we are incrementing the counter here
                 // this is to keep the count stable in further process
                 //
-                Cache::increment($this->totalMerchantCountKey);
+                $this->pendingMerchantsForSettlement = Cache::increment($this->totalMerchantCountKey);
             }
 
             $data = [
@@ -208,7 +210,7 @@ class Create extends Job
 
         $batchSize = (new Initiator)->getLimitForChannel($channel);
 
-        $merchantCountKey = ((int) Cache::get($this->totalMerchantCountKey));
+        $merchantCountKey = (int) $this->pendingMerchantsForSettlement;
 
         // if there total merchant count is zero that means settlement creation process completed
         $isCompleted = ($merchantCountKey === 0);
