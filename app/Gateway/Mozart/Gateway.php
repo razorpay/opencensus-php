@@ -490,7 +490,36 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::PAY_VERIFY);
 
-        if ($this->fullyEncryptedFlow($input['payment']['gateway']) === false)
+        if ($this->isS2SFlow($input) === true)
+        {
+            parent::action($input, Action::AUTHENTICATE_VERIFY);
+
+            $gateway = $input['gateway'];
+
+            unset($input['gateway']);
+
+            $input['gateway']['redirect'] = $gateway;
+
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'], Action::AUTHORIZE)->toArray();
+
+            $gatewayPayment = $gatewayPayment['data'];
+            /*
+             * Merges the array like so:
+             * {
+             *  "redirect":{"otp": "111111"},
+             *  "BankReferenceNo": "bank_ref"
+             * }
+             */
+            $input['gateway'] = array_merge($input['gateway'], $gatewayPayment);
+
+            list($response, $attributes) = $this->sendMozartRequestAndGetResponse(
+                $input,
+                TraceCode::GATEWAY_PAYMENT_REQUEST,
+                TraceCode::GATEWAY_PAYMENT_RESPONSE,
+                false);
+        }
+        else if ($this->fullyEncryptedFlow($input['payment']['gateway']) === false)
         {
             $gateway = $input['gateway'];
 
@@ -503,24 +532,6 @@ class Gateway extends Base\Gateway
             unset($input['gateway']);
 
             $input['gateway']['redirect'] = $gateway;
-
-            if ($this->isS2SFlow($input) === true)
-            {
-                parent::action($input, Action::AUTHENTICATE_VERIFY);
-
-                $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                    $input['payment']['id'], Action::AUTHORIZE)->toArray();
-
-                $gatewayPayment = $gatewayPayment['data'];
-                /*
-                 * Merges the array like so:
-                 * {
-                 *  "redirect":{"otp": "111111"},
-                 *  "BankReferenceNo": "bank_ref"
-                 * }
-                 */
-                $input['gateway'] = array_merge($input['gateway'], $gatewayPayment);
-            }
 
             list($response, $attributes) = $this->sendMozartRequestAndGetResponse(
                 $input,
