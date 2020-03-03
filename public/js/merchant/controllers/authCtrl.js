@@ -67,12 +67,6 @@ app
       $scope.lockme = false; // only turns true for lockme route
       $scope.eventsMode = 'live';
 
-      /*
-        $scope.login = {
-          data: {email: $location.search().email || ''}
-        };
-      */
-
       $scope.organization = {};
       $scope.isOrgCheckDone = false;
       organization.fetchCurrentOrg().then(function(data) {
@@ -99,6 +93,9 @@ app
       } catch (e) {
         email = '';
       }
+
+      const isProd = $location.host() === 'dashboard.razorpay.com';
+
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
         currentSubStep: 0, // 0, 1, 2, 3, 4
@@ -189,13 +186,32 @@ app
           },
         },
         showMore: false,
-        // disable signup submission before captcha in prod
-        submissionDisabled: $location.host() === 'dashboard.razorpay.com',
+
+        // disable signup/login submission before captcha only in prod
+        submissionDisabled: isProd,
       };
+
+      // login state container
+      $scope.login = {
+        data: {
+          email: '',
+          password: '',
+        },
+        currentStep: 1, // 3 -> verification, 2 -> questions, 1 -> login, 0 -> forgotpwd
+        currentSubStep: 0, // 0 -> email+pwd, 1 -> provision for OTP screen
+        disableLogInSubmission: isProd,
+      };
+
       // wait for recaptcha response
       $scope.$watch('signup.data.captcha', function(newVal) {
         if (newVal && newVal.length !== 0) {
           $scope.signup.submissionDisabled = false;
+        }
+      });
+
+      $scope.$watch('login.data.captcha', function(newVal) {
+        if (newVal && newVal.length !== 0) {
+          $scope.login.disableLogInSubmission = false;
         }
       });
 
@@ -960,16 +976,6 @@ app
         return $scope.onShowSignup && $scope.onShowSignup();
       };
 
-      // login state container
-      $scope.login = {
-        data: {
-          email: '',
-          password: '',
-        },
-        currentStep: 1, // 3 -> verification, 2 -> questions, 1 -> login, 0 -> forgotpwd
-        currentSubStep: 0, // 0 -> email+pwd, 1 -> provision for OTP screen
-      };
-
       if (
         [
           'access.signin',
@@ -1106,6 +1112,7 @@ app
           }
         );
         $scope.login.currentStep = 0;
+        $scope.alerts.resetAlerts();
       };
 
       $scope.sendLoginCredentials = function($valid) {
@@ -1113,24 +1120,19 @@ app
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
         }
-        const data = {
-          email: $scope.login.data.user_email,
-          password: $scope.login.data.user_password,
-          captcha: $scope.login.data.captcha,
-        };
 
         if (
           window.location.hostname !== 'dashboard.razorpay.com' &&
           !$scope.login.data.captcha
         ) {
-          data.captcha = 'Faked';
+          $scope.login.data.captcha = 'Faked';
         }
 
         var payload = {
           method: 'post',
           url: '/user/signin',
           transformRequest: transformRequestAsFormPost,
-          data: data,
+          data: $scope.login.data,
         };
 
         var request = $http(payload);
@@ -1221,6 +1223,7 @@ app
           } else {
             hideSpinner();
             const firstError = data.errors[0];
+            window.grecaptcha.reset();
             if (typeof firstError === 'string') {
               // errors to be displayed directly
               if (firstError.includes('email not confirmed')) {

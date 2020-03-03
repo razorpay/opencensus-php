@@ -34,11 +34,11 @@
               <span ng-if="!lockme">Enter your {{isOrgRZP ? "Razorpay" : ""}} Credentials</span>
             </div>
 
-            <form class="auth-form" name="signinForm" xng-submit="goToLoginStep(0, 1)" ng-submit="sendLoginCredentials(loginForm.$valid)">
+            <form class="auth-form" name="loginForm" xng-submit="goToLoginStep(0, 1)" ng-submit="sendLoginCredentials(loginForm.$valid)">
               <label ng-if="!lockme" class="form-label auth-subheading" for="email">Email</label>
-              <input ng-if="!lockme" type="email" placeholder="yourname@company.com" name="user_email" id="email" ng-model="login.data.user_email" class="form-control auth-form-input" required>
+              <input ng-if="!lockme" type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
               <label class="form-label auth-subheading" for="password">Password</label>
-              <input type="password" placeholder="Password" name="user_password" ng-model="login.data.user_password" class="form-control auth-form-input" required>
+              <input type="password" placeholder="Password" name="password" ng-model="login.data.password" class="form-control auth-form-input" required>
               <div
                 class="google-captcha"
                 no-captcha
@@ -50,9 +50,14 @@
               <div ng-if="!lockme && isOrgCheckDone" class="highlight-clickable-text forgot-password-text" ng-click="goToForgotPwd()">
                 Forgot Password?
               </div>
-              <div ng-click="sendLoginCredentials(true)" override-tab ng-disable="loginInProgress" class="btn btn-primary form-control" type="button">
-                {{lockme ? "Unlock" : "Sign in"}}
-              </div>
+              <button
+                override-tab
+                ng-disabled="login.disableLogInSubmission || !loginForm.$valid"
+                class="btn btn-primary form-control"
+                type="submit"
+              >
+                {{lockme ? "Unlock" : "Log in"}}
+              </button>
               <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
             </form>
 
