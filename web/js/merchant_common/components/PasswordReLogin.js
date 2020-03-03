@@ -55,7 +55,10 @@ export default class PasswordReLogin extends Component {
 
     let captcha = this.state.gResponse;
 
-    if (window.location.hostname !== 'dashboard.razorpay.com') {
+    if (
+      window.location.hostname !== 'dashboard.razorpay.com' ||
+      window.location.hostname !== 'admin-dashboard.razorpay.com'
+    ) {
       captcha = 'Faked';
     }
 
