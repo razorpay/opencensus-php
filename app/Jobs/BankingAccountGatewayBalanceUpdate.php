@@ -67,16 +67,18 @@ class BankingAccountGatewayBalanceUpdate extends Job
     {
         if ($this->attempts() < self::MAX_RETRY_ATTEMPT)
         {
+            $this->release(self::MAX_RETRY_DELAY);
+
             $this->trace->info(TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_RELEASED,
                                [
                                    'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
                                    'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
                                ]);
-
-            $this->release(self::MAX_RETRY_DELAY);
         }
         else
         {
+            $this->delete();
+
             $this->trace->error(TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_DELETED,
                                 [
                                     'channel'      => $this->params[BankingAccount\Entity::CHANNEL],
@@ -87,10 +89,7 @@ class BankingAccountGatewayBalanceUpdate extends Job
 
             $operation = 'banking account gateway balance update job failed';
 
-            //TODO: Need to decide on channel name for slack alert and run book
-            (new SlackNotification)->send($operation, $this->params, null, 1, 'channel_name_to_decide');
-
-            $this->delete();
+            (new SlackNotification)->send($operation, $this->params, null, 1, 'rbl_alerts');
         }
     }
 }
