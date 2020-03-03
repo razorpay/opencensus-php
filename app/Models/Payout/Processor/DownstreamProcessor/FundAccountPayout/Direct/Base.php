@@ -65,6 +65,13 @@ class Base extends FundAccountPayout\Base
 
         $merchantBalance = $merchantBankingAccount->getGatewayBalance();
 
+        // Suppose merchant makes request soon after code is deployed and cron hasn't run yet, then gateway_balance will
+        // be null . In that case use balance from balance table
+        if ($merchantBalance === null)
+        {
+            $merchantBalance = $payout->balance->getBalance();
+        }
+
         $hasBalance = ($merchantBalance >= $payoutAmount);
 
         if ($hasBalance === false)
