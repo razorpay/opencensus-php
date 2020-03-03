@@ -91,6 +91,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::CHANNEL, '=', $channel)
+                    ->where(Entity::STATUS, '=', Status::ACTIVATED)
                     ->orderBy(Entity::BALANCE_LAST_FETCHED_AT, 'asc')
                     ->limit($limit)
                     ->pluck(Entity::MERCHANT_ID);

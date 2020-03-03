@@ -801,8 +801,8 @@ class Core extends Base\Core
 
         $validator->validateChannelForFetchingGatewayBalance($input);
 
-        $channel = array_get($input, Entity::CHANNEL);
-//TODO://add config key for rate limit
+        $channel = $input[Entity::CHANNEL];
+
         $limit = (int) (new AdminService)->getConfigKey(
                                 ['key' => ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);
 
