@@ -999,10 +999,6 @@ class Gateway
         self::HDFC_DEBIT_EMI,
     ];
 
-    public static $customerPhoneMandatoryGateways = [
-        self::HDFC_DEBIT_EMI,
-    ];
-
     public static $otpPostFormSubmitGateways = [
         self::HDFC_DEBIT_EMI,
         self::BAJAJ,

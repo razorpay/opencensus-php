@@ -746,7 +746,7 @@ class Gateway extends Base\Gateway
 
     protected function isContactMandatoryGateway($input)
     {
-        if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$customerPhoneMandatoryGateways, true) === true)
+        if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$contactMandatoryGateways, true) === true)
         {
             return true;
         }

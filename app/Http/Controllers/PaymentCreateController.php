@@ -578,8 +578,6 @@ class PaymentCreateController extends Controller
                     {
                         $data['cdn'] = $this->config->get('url.cdn.production');
 
-                        // Here, we use the same view as we use for cardless EMI form
-                        // for accepting OTP for EMI payments
                         return View::make('gateway.gatewayCardlessEmiForm')
                                    ->with('data', $data);
                     }
@@ -598,6 +596,8 @@ class PaymentCreateController extends Controller
                         (in_array('contact', $data['missing'], true) === true)) {
                         $data['cdn'] = $this->config->get('url.cdn.production');
 
+                        // Here, we use the same view as we use for cardless EMI form
+                        // for accepting OTP for EMI payments
                         return View::make('gateway.gatewayCardlessEmiForm')
                             ->with('data', $data);
                     }
