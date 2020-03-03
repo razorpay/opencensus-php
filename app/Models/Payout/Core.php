@@ -430,7 +430,7 @@ class Core extends Base\Core
         }
     }
 
-    public function fetchAndUpdateGatewayBalance(BankingAccount\Entity& $merchantBankingAccount)
+    public function fetchAndUpdateGatewayBalance(BankingAccount\Entity & $merchantBankingAccount)
     {
         $balanceLastFetchedAt = $merchantBankingAccount->getBalanceLastFetchedAt();
 
