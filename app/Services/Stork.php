@@ -138,7 +138,8 @@ class Stork
                 'Content-Type' => 'application/json',
             ],
             [],
-            $options);
+            $options
+        );
     }
 
     public function setCurlOptions($curl)
