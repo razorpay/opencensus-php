@@ -108,13 +108,14 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::INTENT);
         }
 
+        if (($this->isContactMandatoryGateway($input) === true) and
+            ($input['payment']['contact'] == Payment\Entity::DUMMY_PHONE))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
+        }
+
         if ($this->isS2SFlow($input) === true)
         {
-            if ($input['payment']['contact'] == Payment\Entity::DUMMY_PHONE)
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
-            }
-
             parent::action($input, Action::AUTHENTICATE_INIT);
         }
 
@@ -725,6 +726,16 @@ class Gateway extends Base\Gateway
     protected function isS2SFlow($input)
     {
         if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$s2sGateways, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isContactMandatoryGateway($input)
+    {
+        if (in_array($input['payment'][Payment\Entity::GATEWAY], Payment\Gateway::$customerPhoneMandatoryGateways, true) === true)
         {
             return true;
         }

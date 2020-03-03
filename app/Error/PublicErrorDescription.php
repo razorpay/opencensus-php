@@ -359,6 +359,7 @@ class PublicErrorDescription
     const INVALID_ARGUMENT_INVALID_INTERNATIONAL_ACTIVATION_FLOW                = 'Server error while performing operation';
     const BAD_REQUEST_NOT_SUPPORTED_FEATURE                                     = 'Server error while performing operation';
     const BAD_REQUEST_EMI_CUSTOMER_NOT_ELIGIBLE                                 = 'Customer is not eligible for EMI';
+    const BAD_REQUEST_PAYMENT_INVALID_MERCHANT_NAME                             = 'Invalid merchant name sent to the gateway';
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
 
