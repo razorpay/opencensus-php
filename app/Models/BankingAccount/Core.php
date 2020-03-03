@@ -680,7 +680,7 @@ class Core extends Base\Core
         {
             $this->repo->admin->findByPublicId($reviewerId);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $response = [
                 'success' => 0,
@@ -701,7 +701,7 @@ class Core extends Base\Core
 
                 $success++;
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $failedItems[] = [
                     Entity::ID          => $bankingAccountId,
