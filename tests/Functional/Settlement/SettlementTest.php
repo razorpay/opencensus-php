@@ -739,7 +739,7 @@ class SettlementTest extends TestCase
         $content = $this->getEntities('settlement_destination', ['settlement_id' => substr($txn1['settlement_id'],strpos($txn1['settlement_id'], '_')+1)],true);
 
         $this->assertEquals($fta1['id'], 'fta_' . $content['items'][0]['destination_id']);
-    }q
+    }
 
     /**
      * Tests the case when settlement entity gets created,
