@@ -8,6 +8,7 @@ use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Payout\Core;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
@@ -60,33 +61,7 @@ class Base extends FundAccountPayout\Base
 
         $merchantBankingAccount = $payout->bankingAccount;
 
-        $balanceLastFetchedAt = $merchantBankingAccount->getBalanceLastFetchedAt();
-
-        $nowTime = Carbon::now(Timezone::IST);
-
-        $diffTime = $nowTime->diffInMinutes(Carbon::createFromTimestamp($balanceLastFetchedAt, Timezone::IST));
-
-        $lastFetchedAtRateLimit =  (int) (new AdminService)->getConfigKey(
-                                     ['key' => ConfigKey::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING]);
-
-        if (empty($lastFetchedAtRateLimit) === true)
-        {
-            $lastFetchedAtRateLimit = self::DEFAULT_GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING;
-        }
-
-        if ($diffTime > $lastFetchedAtRateLimit)
-        {
-            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
-                                        Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
-                                        Entity::MERCHANT_ID => $merchantBankingAccount->getMerchantId(),
-                                        ]);
-
-            //need reload since we are updating banking account entity because of above call
-            if ($response['success'] === true)
-            {
-                $merchantBankingAccount->reload();
-            }
-        }
+        (new Core)->fetchAndUpdateGatewayBalance($merchantBankingAccount);
 
         $merchantBalance = $merchantBankingAccount->getGatewayBalance();
 
