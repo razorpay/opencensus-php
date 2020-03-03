@@ -2006,7 +2006,7 @@ class UserTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertArrayHasKey('permissions', $response['merchants'][1]);
+        $this->assertArrayHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
     }
 
     public function testGetBankingUserWithPermissionsNull()
@@ -2041,7 +2041,7 @@ class UserTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertArrayNotHasKey('permissions', $response['merchants'][1]);
+        $this->assertArrayNotHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
     }
 
     public function testVerifyUserThroughEmail()

@@ -85,6 +85,7 @@ class UserRolePermissionsMap
                  Permission::USER_PASSWORD_RESET,
                  Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
                  Permission::UPDATE_PAYOUT,
+                 Permission::VIEW_WORKFLOW,
              ],
 
              BankingRole::ADMIN => [
@@ -153,6 +154,7 @@ class UserRolePermissionsMap
                  Permission::CREATE_BATCH,
                  Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
                  Permission::UPDATE_PAYOUT,
+                 Permission::VIEW_WORKFLOW,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -216,6 +218,7 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_INSTANT_ACTIVATION,
                  Permission::CREATE_BATCH,
                  Permission::UPDATE_PAYOUT,
+                 Permission::VIEW_WORKFLOW,
              ],
 
              BankingRole::OPERATIONS => [
