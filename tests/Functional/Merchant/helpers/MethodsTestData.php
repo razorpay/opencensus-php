@@ -286,4 +286,16 @@ return [
             ],
         ],
     ],
+
+    'testMerchantPaybackInEmiOptions' => [
+        'request' => [
+            'url' => '/merchant/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'emi' => true
+            ],
+        ],
+    ],
 ];

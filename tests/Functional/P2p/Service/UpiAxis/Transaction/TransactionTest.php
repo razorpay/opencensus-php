@@ -447,7 +447,7 @@ class TransactionTest extends TestCase
         $helper->withSchemaValidated();
 
         $upi = [
-            'mcc'       => '1208',
+            'mcc'       => '0000',
             'ref_url'   => 'https::example.com',
             'ref_id'    => 'XrefId'
         ];
@@ -478,7 +478,7 @@ class TransactionTest extends TestCase
         $helper->withSchemaValidated();
 
         $upi = [
-            'mcc'       => '1208',
+            'mcc'       => '0000',
             'ref_url'   => 'https::example.com',
             'ref_id'    => 'XrefId'
         ];
@@ -800,5 +800,205 @@ class TransactionTest extends TestCase
             'payerVpa'  => 'test@mypsp',
             'payerName' => 'Some Merchant',
         ], $coproto['request']['content']);
+    }
+
+
+    public function testInitiatePayIntentToMerchant()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $upi = [
+            'mcc'       => '1208',
+            'ref_url'   => 'https::example.com',
+            'ref_id'    => 'fourteenchardg'
+        ];
+
+        $coproto = $helper->initiatePay([
+            'mode'  => 'intent',
+            'upi'   => $upi,
+        ]);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertSame(Mode::INTENT, $transaction->getMode());
+        $this->assertSame($upi['mcc'], $transaction->upi->getMcc());
+        $this->assertSame($upi['ref_url'], $transaction->upi->getRefUrl());
+        $this->assertSame($upi['ref_id'], $transaction->upi->getRefId());
+
+        $this->assertSame('PAY', $coproto['request']['action']);
+
+        $content = $coproto['request']['content'];
+
+        $customerHandle = explode('@', $content['customerVpa'])[1];
+        $merchantHandle = explode('@', $content['merchantVpa'])[1];
+        $this->assertSame($customerHandle, $merchantHandle);
+
+        $this->mockSdk()->setCallback('CUSTOMER_DEBITED_FOR_MERCHANT_VIA_PAY', [
+            Fields::AMOUNT                      => $transaction->getRupeesAmount(),
+            Fields::PAYER_VPA                   => $transaction->payer->getAddress(),
+            Fields::PAYEE_VPA                   => $transaction->payee->getAddress(),
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
+            Fields::REMARKS                     => $transaction->getDescription(),
+            Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+            Fields::MERCHANT_REQUEST_ID         => $transaction->upi->getRefId(),
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+
+        $this->assertTrue($response['success']);
+    }
+
+    public function testInitiatePayQrCodeMerchant()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $helper->withSchemaValidated();
+
+        $upi = [
+            'mcc'       => '1010',
+            'ref_url'   => 'https::example.com',
+            'ref_id'    => 'XrefId'
+        ];
+
+        $coproto = $helper->initiatePay([
+            'mode'  => 'qr_code',
+            'upi'   => $upi,
+        ]);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertSame(Mode::QR_CODE, $transaction->getMode());
+        $this->assertSame($upi['mcc'], $transaction->upi->getMcc());
+        $this->assertSame($upi['ref_url'], $transaction->upi->getRefUrl());
+        $this->assertSame($upi['ref_id'], $transaction->upi->getRefId());
+
+        $this->assertSame('PAY', $coproto['request']['action']);
+
+        $content = $coproto['request']['content'];
+
+        $customerHandle = explode('@', $content['customerVpa'])[1];
+        $merchantHandle = explode('@', $content['merchantVpa'])[1];
+        $this->assertSame($customerHandle, $merchantHandle);
+    }
+
+    public function testInitiatePayIntentToOtherMerchant()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $helper->withSchemaValidated();
+
+        $upi = [
+            'mcc'       => '1208',
+            'ref_url'   => 'https::example.com',
+            'ref_id'    => 'XrefId',
+
+        ];
+
+        $coproto = $helper->initiatePay([
+            'mode'  => 'intent',
+            'upi'   => $upi,
+            'payee' => [
+                'id' => null,
+                'username' => 'some',
+                'handle'   => 'mybank',
+                'type'     => 'vpa',
+                'beneficiary_name' => 'benef_name'
+            ]
+        ]);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertSame(Mode::INTENT, $transaction->getMode());
+        $this->assertSame($upi['mcc'], $transaction->upi->getMcc());
+        $this->assertSame($upi['ref_url'], $transaction->upi->getRefUrl());
+        $this->assertSame($upi['ref_id'], $transaction->upi->getRefId());
+
+        $this->assertSame('SEND_MONEY', $coproto['request']['action']);
+
+        $content = $coproto['request']['content'];
+
+        $content = $coproto['request']['content'];
+
+        $this->assertSame($upi['mcc'], $content['mcc']);
+        $this->assertSame($upi['ref_url'], $content['refUrl']);
+        $this->assertSame($upi['ref_id'], $content['transactionReference']);
+    }
+
+    public function testInitiatePayQrCodeOtherMerchant()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $helper->withSchemaValidated();
+
+        $upi = [
+            'mcc'       => '1010',
+            'ref_url'   => 'https::example.com',
+            'ref_id'    => 'XrefId'
+        ];
+
+        $coproto = $helper->initiatePay([
+            'mode'  => 'qr_code',
+            'upi'   => $upi,
+            'payee' => [
+                'id' => null,
+                'username' => 'some',
+                'handle'   => 'mybank',
+                'type'     => 'vpa',
+                'beneficiary_name' => 'benef_name'
+            ]
+        ]);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertSame(Mode::QR_CODE, $transaction->getMode());
+        $this->assertSame($upi['mcc'], $transaction->upi->getMcc());
+        $this->assertSame($upi['ref_url'], $transaction->upi->getRefUrl());
+        $this->assertSame($upi['ref_id'], $transaction->upi->getRefId());
+
+        $this->assertSame('SEND_MONEY', $coproto['request']['action']);
+
+        $content = $coproto['request']['content'];
+
+        $this->assertSame($upi['mcc'], $content['mcc']);
+        $this->assertSame($upi['ref_url'], $content['refUrl']);
+        $this->assertSame($upi['ref_id'], $content['transactionReference']);
+    }
+
+    public function testCollectAuthorizeCallbackForMerchant()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $transaction = $this->createCollectIncomingTransaction();
+
+        $this->mockSdk()->setCallback('CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT', [
+            Fields::AMOUNT               => $transaction->getRupeesAmount(),
+            Fields::PAYER_VPA            => $transaction->payer->getAddress(),
+            Fields::PAYEE_VPA            => $transaction->payee->getAddress(),
+            Fields::UPI_REQUEST_ID       => $transaction->upi->getNetworkTransactionId(),
+            Fields::REMARKS              => $transaction->getDescription(),
+            Fields::MERCHANT_REQUEST_ID  => $transaction->getId(),
+            Fields::MERCHANT_CUSTOMER_ID => $transaction->getCustomerId(),
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+
+        $this->assertTrue($response['success']);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertTrue($transaction->isCompleted());
+        $this->assertArraySubset([
+            Entity::STATUS          => Status::COMPLETED,
+            Entity::INTERNAL_STATUS => Status::COMPLETED,
+        ], $transaction->toArray());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::GATEWAY_ERROR_CODE        => '00',
+            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION => 'Your transaction is approved'
+        ], $transaction->upi->toArrayPublic());
+
+        $this->assertSame('CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT', $transaction->upi->getGatewayData()['type']);
     }
 }

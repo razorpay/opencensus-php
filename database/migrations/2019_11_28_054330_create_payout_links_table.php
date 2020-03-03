@@ -2,7 +2,6 @@
 
 use RZP\Models\Batch;
 use RZP\Constants\Table;
-use RZP\Models\PaymentLink;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\PayoutLink\Entity;
 use RZP\Models\User\Entity as User;
@@ -67,7 +66,13 @@ class CreatePayoutLinksTable extends Migration
 
             $table->bigInteger(Entity::AMOUNT);
 
-            $table->string(PaymentLink\Entity::CURRENCY, 3);
+            $table->string(Entity::CURRENCY, 3);
+
+            $table->boolean(Entity::SEND_SMS)
+                  ->default(false);
+
+            $table->boolean(Entity::SEND_EMAIL)
+                  ->default(false);
 
             $table->text(Entity::NOTES)
                   ->nullable();
@@ -105,6 +110,8 @@ class CreatePayoutLinksTable extends Migration
             $table->index(Entity::CANCELLED_AT);
 
             $table->index(Entity::RECEIPT);
+
+            $table->index(Entity::STATUS);
 
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 

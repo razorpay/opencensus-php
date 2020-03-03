@@ -3,40 +3,44 @@
 use Illuminate\Database\Seeder;
 
 use RZP\Constants\Table;
+use RZP\Models\Dispute\Reason\Network;
 
 class DisputeReasonSeeder extends Seeder
 {
+    // Here we enter values for `network`, `gateway_code`, `gateway_description`, `code` and `description` in this order.
+    // `network` must come from the list of possible networks, and
+    // `code` must be all lower and snake case.
     protected static $reasons = [
         [
-            'JCB',
+            Network::JCB,
             'UA05',
             'Fraud-Chip Counterfeit Transaction',
-            'COUNTERFEIT_TRANSACTION',
+            'counterfeit_transaction',
             'The cardholder did not participate in the transaction, a fraudster made counterfeit copy of the card.'
         ],
         [
-            'AMEX',
+            Network::AMEX,
             'M01',
             'Chargeback Authorization',
             'chargeback_authorization',
             'American Express received merchant authorization to process a chargeback for the charge.'
         ],
         [
-            'JCB',
+            Network::JCB,
             'C02',
             'Credit Not Processed',
             'credit_not_processed',
             'The cardholder claims he is due a credit from an establishment that has not been processed.'
         ],
         [
-            'VISA',
+            Network::VISA,
             '85',
             'Credit Not Processed',
             'credit_not_processed',
             'The cardholder claims he is due a credit from an establishment that has not been processed.'
         ],
         [
-            'AMEX',
+            Network::AMEX,
             'CD',
             'Credit or Debit Posted Incorrectly',
             'credit_or_debit_posted_incorrectly',
@@ -45,7 +49,7 @@ class DisputeReasonSeeder extends Seeder
                 in a card sale rather than a credit.'
         ],
         [
-            'JCB',
+            Network::JCB,
             'AA',
             'Does Not Recognize',
             'card_holder_not_recognised',

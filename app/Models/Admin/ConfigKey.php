@@ -43,7 +43,6 @@ class ConfigKey
     const FTA_CHANNELS                          = self::PREFIX . 'fta_channels';
     const FTS_PAYOUT_VPA                        = self::PREFIX . 'fts_payout_vpa';
     const FTS_PAYOUT_CARD                       = self::PREFIX . 'fts_payout_card';
-    const FTS_TRANSFER_SLA                      = self::PREFIX . 'fts_transfer_sla';
     const FTS_TEST_MERCHANT                     = self::PREFIX . 'fts_test_merchant';
     const FTS_ROUTE_PERCENTAGE                  = self::PREFIX . 'fts_request_percentage';
     const FTS_PAYOUT_BANK_ACCOUNT               = self::PREFIX . 'fts_payout_bank_account';

@@ -53,12 +53,16 @@ class Gateway extends Base\Gateway
 
         $content = $this->getCallbackContent($input);
 
+        $traceContent = $content;
+
+        unset($traceContent[ResponseFields::CUSTOMER_ACCOUNT_NUMBER]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'gateway'            => $this->gateway,
                 'gateway_response'   => $input['gateway'],
-                'decrypted_response' => $content,
+                'decrypted_response' => $traceContent,
                 'payment_id'         => $input['payment']['id']
             ]
         );

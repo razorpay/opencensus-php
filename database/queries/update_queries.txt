@@ -3113,3 +3113,5 @@ update upi set `npci_reference_id` = 'X36523463895', `merchant_reference` = 'DUP
     where payment_id = 'DyueZQe2vr2Nky' and action = 'authorize';
 update upi set `npci_reference_id` = 'X00711965802', `merchant_reference` = 'DUP56d9641311411eaa8b93d65a0e6bad'
     where payment_id = 'E1TxuNKXhYXVSl' and action = 'authorize';
+
+UPDATE credits SET used = 59258326 WHERE id = 'E23cZdMr4XEoRj' LIMIT 1;

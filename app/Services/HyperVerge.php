@@ -69,14 +69,26 @@ class HyperVerge
 
         $timeStarted = microtime(true);
 
-        $response = $this->client->request(
-            Requests::POST,
-            self::URLS[self::GENERATE_NACH],
-            [
-                'body' => json_encode($input, JSON_UNESCAPED_SLASHES),
-                'headers'   => $headers,
-            ]
-        );
+        try
+        {
+            $response = $this->client->request(
+                Requests::POST,
+                self::URLS[self::GENERATE_NACH],
+                [
+                    'body' => json_encode($input, JSON_UNESCAPED_SLASHES),
+                    'headers'   => $headers,
+                ]
+            );
+        }
+        catch (\Exception $e)
+        {
+            throw new ServerErrorException(
+                'HyperVerge error',
+                ErrorCode::SERVER_ERROR_UNABLE_TO_CREATE_NACH_FORM,
+                [$input, $paperMandate->toArrayPublic()],
+                $e
+            );
+        }
 
         $timeTaken = microtime(true) - $timeStarted;
 
