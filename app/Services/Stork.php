@@ -102,11 +102,11 @@ class Stork
             'auth' => [$config['auth'][$mode]['user'], $config['auth'][$mode]['pass']],
         ];
 
-        $hooks = new Hooks();
+        $hooks = new Hooks($config['url']);
 
         // This will add extra hook for dns resolution to ipV4 only.
         // Doing this for internal services only
-        $hooks->addCurlProperties($config['url'], $options);
+        $hooks->addCurlProperties($options);
 
         $this->request = new Requests_Session(
             $config['url'],
