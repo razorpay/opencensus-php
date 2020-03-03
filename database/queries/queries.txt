@@ -5622,6 +5622,10 @@ ALTER TABLE merchant_details
     ADD COLUMN authorized_signatory_dob date DEFAULT NULL,
     ADD COLUMN platform varchar(40) DEFAULT NULL;
 
+ALTER TABLE payout_links
+    ADD COLUMN send_sms BOOLEAN DEFAULT false,
+    ADD COLUMN send_email BOOLEAN DEFAULT false;
+
 ALTER TABLE users
     ADD COLUMN old_password1 varchar(100) DEFAULT NULL,
     ADD COLUMN old_password2 varchar(100) DEFAULT NULL;

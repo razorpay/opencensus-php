@@ -38,7 +38,9 @@ class MerchantDocumentTest Extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantDocument['merchant_id']);
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertContains('address_proof_url',$response['verification']['required_fields']);
     }
 
     public function testDeleteDocumentIdNotValid()

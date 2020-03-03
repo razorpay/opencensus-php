@@ -227,9 +227,10 @@ class Service extends Base\Service
     /**
      * Business banking: Forwards request to `fundAccountPayout()` after verifying user's otp for the action.
      *
-     * @param  array $input
+     * @param array $input
      *
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function fundAccountPayoutWithOtp(array $input): array
     {

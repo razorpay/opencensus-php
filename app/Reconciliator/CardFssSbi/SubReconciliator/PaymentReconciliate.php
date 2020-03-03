@@ -57,23 +57,19 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             $this->reportMissingColumn($row, ReconciliationFields::GST_AMT);
         }
 
-        $csfTax = (isset($row[ReconciliationFields::MTS_TOTL_CSF_AMT]) === true) ?
-            (abs($row[ReconciliationFields::MTS_TOTL_CSF_AMT])) : 0;
-
-        $gstTax = abs($row[ReconciliationFields::GST_AMT]);
-
-        $tax = $gstTax + $csfTax;
-
-        return SubReconciliator\Helper::getIntegerFormattedAmount($tax);
+        return SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::GST_AMT]);
     }
 
     protected function getGatewayFee($row)
     {
-        $msfAmount = SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::MTS_MSF_FIXFEE]);
+        if (isset($row[ReconciliationFields::MDR]) === false)
+        {
+            $this->reportMissingColumn($row, ReconciliationFields::MDR);
+        }
 
-        $tax = $this->getGatewayServiceTax($row);
+        $mdrAmount = SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::MDR]);
 
-        return $msfAmount + $tax;
+        return $mdrAmount;
     }
 
     protected function getAuthCode($row)

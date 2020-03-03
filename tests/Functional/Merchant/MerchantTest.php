@@ -6214,6 +6214,17 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetBalancesWhenNoBalanceExists()
+    {
+        $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
     public function testGetBalancesByType()
     {
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);

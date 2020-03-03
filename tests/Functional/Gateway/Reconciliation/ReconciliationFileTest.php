@@ -2823,25 +2823,17 @@ class ReconciliationFileTest extends TestCase
             [
                 'type' => 'payment',
                 'entity_id' => $gatewayPayment1['payment_id']
-            ]);
+            ])->toArray();
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
         $this->assertNotNull($transactionEntity['reconciled_type']);
         $this->assertNotNull($transactionEntity['settled_at']);
-        $this->assertNotNull($transactionEntity['gateway_fee']);
-        $this->assertNotNull($transactionEntity['gateway_service_tax']);
+        $this->assertEquals(2, $transactionEntity['gateway_fee']);
+        $this->assertEquals(1, $transactionEntity['gateway_service_tax']);
 
         // Test we update payment reference2 from recon for the first payment
         $paymentEntity = $this->getDbEntity('payment', ['id' => $gatewayPayment1['payment_id']])->first();
         $this->assertNotNull($paymentEntity['reference2']);
-
-        $gatewayFee = Helper::getIntegerFormattedAmount(abs($entries[0]['MTS_MSF_FIXFEE']));
-        $gst = Helper::getIntegerFormattedAmount(abs($entries[0]['VAT_AMT']));
-
-        // Test that the gateway fee and tax sum is as expected
-        $this->assertEquals( $gatewayFee + $gst, $transactionEntity->getGatewayFee());
-
-        $this->assertEquals($gst, $transactionEntity->getGatewayServiceTax());
 
         $transactionEntity = $this->getDbEntity('transaction', ['type' => 'refund', 'entity_id' => $refund1['id']]);
 
@@ -3255,7 +3247,8 @@ class ReconciliationFileTest extends TestCase
         // RRN
         $facade['TXN_REF']                  = '01231232131';
 
-        $facade['VAT_AMT']                  = '0.00';
+        $facade['VAT_AMT']                  = '0.01';
+        $facade['MDR']                      = '0.02';
         $facade['MTS_MSF_FIXFEE']           = '0.00';
         $facade['MTS_TOTL_CSF_AMT']         = '0.00';
 
