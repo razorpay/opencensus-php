@@ -29,6 +29,8 @@ class Core extends Base\Core
 
     const DASHBOARD_FILE_URL = '%sufh/file/%s';
 
+    const DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT = 2;
+
     /**
      * Temporary hack. Should not set balance at a class level.
      * This restricts us from processing transactions from
@@ -89,7 +91,7 @@ class Core extends Base\Core
 
                     $bankingAccount->balance->updateLastFetchedAt();
                 },
-                120,
+                600,
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
             );
         }
@@ -608,6 +610,11 @@ class Core extends Base\Core
     {
 
         $limit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT]);
+
+        if (empty($limit) === true)
+        {
+            $limit = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT;
+        }
 
         $accountNumbers = $this->repo->banking_account->fetchAccountNumberByChannel($channel, $limit);
 
