@@ -25,7 +25,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\Admin\Service as AdminService;
-use RZP\Jobs\BankingAccountGatewayBalanceUpdateJob;
+use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
@@ -840,8 +840,8 @@ class Core extends Base\Core
                 Entity::MERCHANT_ID => $merchantId,
             ]);
 
-        BankingAccountGatewayBalanceUpdateJob::dispatch($this->mode,
-                                                        [
+        BankingAccountGatewayBalanceUpdate::dispatch($this->mode,
+                                                     [
                                                             Entity::CHANNEL     => $channel,
                                                             Entity::MERCHANT_ID => $merchantId,
                                                         ]);

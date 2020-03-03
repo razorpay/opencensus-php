@@ -6,7 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\Settlement\SlackNotification;
 
-class BankingAccountGatewayBalanceUpdateJob extends Job
+class BankingAccountGatewayBalanceUpdate extends Job
 {
     //TODO: move constants in config
     const MAX_RETRY_ATTEMPT = 3;
@@ -65,7 +65,7 @@ class BankingAccountGatewayBalanceUpdateJob extends Job
 
     protected function checkRetry()
     {
-        if ($this->attempts() <= self::MAX_RETRY_ATTEMPT)
+        if ($this->attempts() < self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->info(TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_RELEASED,
                                [

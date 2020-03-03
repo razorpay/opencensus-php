@@ -11,7 +11,7 @@ use RZP\Services\Mock\Mozart;
 use RZP\Models\BankingAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Gateway\Rbl;
-use RZP\Jobs\BankingAccountGatewayBalanceUpdateJob;
+use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -235,7 +235,7 @@ class RblPayoutTest extends TestCase
 
         $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
 
-        Queue::assertPushed(BankingAccountGatewayBalanceUpdateJob::class, 1);
+        Queue::assertPushed(BankingAccountGatewayBalanceUpdate::class, 1);
     }
 
     public function testProcessGatewayBalanceUpdate()
