@@ -1914,7 +1914,12 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => array_keys(Payout\Status::$internalToPublicStatusMap),
                 ],
-                'reference_id'    => [],
+                'reference_id'  => [],
+                'channel'       => [
+                    Fetch::LABEL    => 'Channel',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                    Fetch::VALUES   => Channel::getChannels(),
+                ],
             ],
 
             Entity::PAYTM => [

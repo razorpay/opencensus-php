@@ -321,6 +321,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION                      = 'The merchant must be unarchived before being activated.';
     const BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED                               = 'The merchant cannot be archived';
     const BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED                                 = 'The merchant has already been archived.';
+    const MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT                              = 'Merchant email and input email are different';
     const BAD_REQUEST_MERCHANT_NOT_ARCHIVED                                     = 'The merchant has not been archived. This action can only be taken for archived merchants';
     const BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED                                = 'The merchant has already been suspended';
     const BAD_REQUEST_MERCHANT_NOT_SUSPENDED                                    = 'The merchant has not been suspended. This action can only be taken for suspended merchants';
@@ -362,6 +363,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_INVALID_MERCHANT_NAME                             = 'Invalid merchant name sent to the gateway';
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
+    const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                          = 'Server error';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';

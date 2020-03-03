@@ -837,6 +837,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED                                    = 'BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                        = 'BAD_REQUEST_MERCHANT_NOT_ACTIVATED';
     const BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED                                     = 'BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED';
+    const MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT                                  = 'MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT';
     const BAD_REQUEST_MERCHANT_NOT_ARCHIVED                                         = 'BAD_REQUEST_MERCHANT_NOT_ARCHIVED';
     const BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED                                   = 'BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED';
     const BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED                                    = 'BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED';
@@ -870,7 +871,9 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_INVALID                                              = 'BAD_REQUEST_MERCHANT_INVALID';
     const BAD_REQUEST_INVALID_SUBCATEGORY                                           = 'BAD_REQUEST_INVALID_SUBCATEGORY';
     const INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW                                  = 'INVALID_ARGUMENT_INVALID_ACTIVATION_FLOW';
+    const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                              = 'INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE';
     const UNHANDLED_KYC_PROCESSOR_TYPE                                              = 'UNHANDLED_KYC_PROCESSOR_TYPE';
+
     const GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION                            = 'GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION';
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                      = 'BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET';
     const BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET                                      = 'BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET';
@@ -1522,4 +1525,6 @@ class ErrorCode
     //FuzzyMatcher Error Codes
     const BAD_REQUEST_INVALID_MATCH_PERCENT                                         = 'BAD_REQUEST_INVALID_MATCH_PERCENT';
     const BAD_REQUEST_INVALID_MATCH_TYPE                                            = 'BAD_REQUEST_INVALID_MATCH_TYPE';
+
+    const BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS';
 }

@@ -12,7 +12,7 @@ COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
 
 COPY composer.json composer.lock /app/
 
-RUN set -eux && \
+RUN set -eu && \
     git config --global user.name ${GIT_USERNAME} && \
     composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
     composer global require hirak/prestissimo && \

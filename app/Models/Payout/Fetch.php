@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use RZP\Base\Fetch as BaseFetch;
+use RZP\Models\Settlement\Channel;
 use RZP\Http\BasicAuth\Type as AuthType;
 
 class Fetch extends BaseFetch
@@ -32,6 +33,7 @@ class Fetch extends BaseFetch
             EsRepository::QUERY       => 'sometimes|string|min:2|max:50',
             Entity::REVERSED_FROM     => 'sometimes|epoch',
             Entity::REVERSED_TO       => 'sometimes|epoch',
+            Entity::CHANNEL           => 'sometimes|string|custom',
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
         AuthType::PROXY_AUTH => [
@@ -82,6 +84,7 @@ class Fetch extends BaseFetch
             Entity::CUSTOMER_ID,
             Entity::DESTINATION,
             Entity::METHOD,
+            Entity::CHANNEL,
         ],
     ];
 
@@ -132,5 +135,10 @@ class Fetch extends BaseFetch
     protected function validatePayoutMode(string $attribute, string $value)
     {
         Mode::validateMode($value);
+    }
+
+    protected function validateChannel(string $attribute, string $value)
+    {
+        Channel::validate($value);
     }
 }
