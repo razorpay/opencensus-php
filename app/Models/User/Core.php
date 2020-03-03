@@ -1115,6 +1115,14 @@ class Core extends Base\Core
                 'account_number'      => mask_except_last4($input['account_number']),
             ];
         }
+        else if ($action === 'create_payout_link')
+        {
+            $payload += [
+                'amount'         => amount_format_IN($input['amount']),
+                'account_number' => mask_except_last4($input['account_number']),
+                'purpose'        => $input['purpose'],
+            ];
+        }
 
         return $payload;
     }
