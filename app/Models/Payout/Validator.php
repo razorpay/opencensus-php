@@ -38,6 +38,8 @@ class Validator extends Base\Validator
     // The max payout amount allowed for merchant payouts on demand is 2 Cr
     const MAX_LIMIT_MERCHANT_ON_DEMAND_PAYOUT_AMOUNT = 2000000000;
 
+    const APPROVE_PAYOUT_RULES = 'approve_payout';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
