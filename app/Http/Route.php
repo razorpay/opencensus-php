@@ -3554,6 +3554,7 @@ final class Route
         'banking_account_statement_generate'           => Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
         'merchant_instant_activation_post'             => Permission::MERCHANT_INSTANT_ACTIVATION,
         'merchant_features_update'                     => Permission::UPDATE_MERCHANT_FEATURE,
+        'bank_transfer_process_test'                   => Permission::UPDATE_TEST_MERCHANT_BALANCE,
         'banking_account_create'                       => '*',
         'merchant_activation_upload_file'              => '*',
         'user_verify_contact'                          => '*',
@@ -3572,9 +3573,7 @@ final class Route
         'batch_validate_file'                          => '*',
         'batch_download_file'                          => '*',
         'bank_account_fetch'                           => '*',
-        'bank_transfer_process_test'                   => '*',
         'pincode_get'                                  => '*',
-        'merchant_edit_config_logo'                    => '*',
         'user_update_contact'                          => '*',
         'user_verify_through_email'                    => '*',
 

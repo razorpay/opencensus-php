@@ -86,6 +86,7 @@ class UserRolePermissionsMap
                  Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
                  Permission::UPDATE_PAYOUT,
                  Permission::VIEW_WORKFLOW,
+                 Permission::UPDATE_TEST_MERCHANT_BALANCE,
              ],
 
              BankingRole::ADMIN => [
@@ -155,6 +156,7 @@ class UserRolePermissionsMap
                  Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
                  Permission::UPDATE_PAYOUT,
                  Permission::VIEW_WORKFLOW,
+                 Permission::UPDATE_TEST_MERCHANT_BALANCE,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -219,6 +221,7 @@ class UserRolePermissionsMap
                  Permission::CREATE_BATCH,
                  Permission::UPDATE_PAYOUT,
                  Permission::VIEW_WORKFLOW,
+                 Permission::UPDATE_TEST_MERCHANT_BALANCE,
              ],
 
              BankingRole::OPERATIONS => [
