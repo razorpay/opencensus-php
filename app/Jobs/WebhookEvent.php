@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use RZP\Jobs\Job;
 use RZP\Models\Event;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 
 /**
  * This is a fallback queued job and the handler just calls stork's processEvent().
@@ -48,6 +49,8 @@ class WebhookEvent extends Job
         {
             $event = new Event\Entity($this->eventAttrs);
             $event->merchant()->associate($this->merchant);
+
+            $this->trace->info(TraceCode::WEBHOOK_EVENT_JOB_RECEIVED, $event->toArrayPublic());
 
             (new Merchant\Webhook\Stork)->processEvent($event, $this->mode);
         }
