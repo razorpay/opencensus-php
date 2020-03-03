@@ -3576,6 +3576,7 @@ final class Route
         'pincode_get'                                  => '*',
         'user_update_contact'                          => '*',
         'user_verify_through_email'                    => '*',
+        'merchant_bank_account_change_status'          => '*',
 
         // This should go away after the fix
         // https://razorpay.atlassian.net/browse/RX-1701
