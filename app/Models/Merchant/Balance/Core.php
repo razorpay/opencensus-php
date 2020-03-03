@@ -590,11 +590,19 @@ class Core extends Base\Core
         $negativeLimit = 0;
 
         // If the Transaction Type is Payment, then we only allow Negative Balance for
-        // E-Mandate Registrations.
+        // E-Mandate Registrations (Recurring type: Initital, not secong recurring).
         if ($txn->getType() === Transaction\Type::PAYMENT)
         {
-            if (($txn->source === null) or
-                ($txn->source->getMethod() !== Payment\Method::EMANDATE))
+            if ($txn->source === null)
+            {
+                return $negativeLimit;
+            }
+
+            $payment = $txn->source;
+
+            if (($payment->getMethod() !== Payment\Method::EMANDATE) or
+                (($payment->getMethod() === Payment\Method::EMANDATE) and
+                    ($payment->isRecurringTypeInitial() === false)))
             {
                 return $negativeLimit;
             }
