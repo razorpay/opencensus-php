@@ -638,6 +638,16 @@ class Service extends Base\Service
 
     protected function isMigrateTerminalSuccess(Entity $terminal, $fetchTerminalResponse)
     {
+       $isFetchTerminalSuccess = $this->isFetchTerminalFromTerminalsServiceSuccess($terminal, $fetchTerminalResponse);
+
+       $areFetchedSubmerchantsSame = $this->areFetchedSubmerchantsSameForTerminal($terminal, $fetchTerminalResponse);
+
+       return (($isFetchTerminalSuccess === true) and
+               ($areFetchedSubmerchantsSame === true));
+    }
+
+    protected function isFetchTerminalFromTerminalsServiceSuccess(Entity $terminal, $fetchTerminalResponse): bool
+    {
         $originalTerminalArray = $terminal->toArrayWithPassword();
 
         $ignoreAttributes = [Entity::CREATED_AT, Entity::UPDATED_AT, Entity::MPAN, Entity::SYNC_STATUS];
@@ -676,8 +686,8 @@ class Service extends Base\Service
             if ($originalValue != $responseValue)
             {
                 $data = [
-                  Entity::TERMINAL_ID   => $terminal->getId(),
-                  'attribute'           => $attribute,
+                    Entity::TERMINAL_ID   => $terminal->getId(),
+                    'attribute'           => $attribute,
                 ];
 
                 $this->trace->debug(TraceCode::TERMINALS_SERVICE_MIGRATE_FIELD_MISMATCH, $data);
@@ -685,7 +695,11 @@ class Service extends Base\Service
                 return false;
             }
         }
+        return true;
+    }
 
+    protected function areFetchedSubmerchantsSameForTerminal(Entity $terminal, $fetchTerminalResponse): bool
+    {
         return true;
     }
 
