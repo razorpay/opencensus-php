@@ -6,6 +6,7 @@ use Auth;
 use Input;
 use Trace;
 use Config;
+use Session;
 use Request;
 
 use App\Http\ApiUrl;
@@ -46,9 +47,10 @@ class RawApiRequest
             // including the X-Dashboard and Razorpay-API Header
             'defaults' => [
                 'headers'   =>  ApiRequest::getHeaders() + $headers + [
-                    'X-Dashboard'   => 'true',
-                    'X-User-Agent'  => Request::header('User-Agent'),
-                    'X-IP-Address'  => Request::ip(),
+                        'X-Dashboard'                 => 'true',
+                        'X-User-Agent'                => Request::header('User-Agent'),
+                        'X-IP-Address'                => Request::ip(),
+                        'X-Dashboard-User-Session-Id' => Session::getId(),
                 ]
             ]
         ];

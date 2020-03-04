@@ -7,6 +7,7 @@ use Input;
 use Route;
 use Trace;
 use Config;
+use Session;
 use Request;
 use App\Http\Headers;
 use GuzzleHttp\Post\PostFile;
@@ -182,6 +183,8 @@ class ApiRequestAny
                     $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
 
                     $this->options['headers']['X-Dashboard-User-Email'] = $user->email;
+
+                    $this->options['headers']['X-Dashboard-User-Session-Id'] = Session::getId();
                 }
 
                 $accountId = Request::header(self::RAZORPAY_ACCOUNT_HEADER);
