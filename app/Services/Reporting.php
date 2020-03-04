@@ -804,7 +804,7 @@ class Reporting implements ExternalService
 
         $hasOfferTag              = in_array(Feature::OFFERS, $features, true);
         $hasGenericNotesTag       = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
-        $hasCardTransferRefundTag = in_array(Feature::CARD_TRANSFER_REFUND, $features, true);
+        $hasNotDisableInstantRefundsTag = !(in_array(Feature::DISABLE_INSTANT_REFUNDS, $features, true));
 
         $showTxnCommissionReport          = false;
         $showAggregateCommissionReport    = false;
@@ -946,7 +946,7 @@ class Reporting implements ExternalService
                 'name'      => 'Instant Refunds',
                 'type'      => 'refunds',
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $hasCardTransferRefundTag,
+                'condition' => $hasNotDisableInstantRefundsTag,
             ],
         ];
 

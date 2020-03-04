@@ -42,6 +42,16 @@ class Stork
     public $request;
 
     /**
+     * @var \Razorpay\Trace\Logger
+     */
+    protected $trace;
+
+    public function __construct()
+    {
+        $this->trace = app()->trace;
+    }
+
+    /**
      * This method is implements supporting listing requests for admin
      * dashboard via stork external service.
      * @param  string $entity - Name of entity e.g. webhooks, messages.
@@ -128,7 +138,8 @@ class Stork
                 'Content-Type' => 'application/json',
             ],
             [],
-            $options);
+            $options
+        );
     }
 
     public function setCurlOptions($curl)
@@ -146,10 +157,9 @@ class Stork
 
         $res = null;
         $exception = null;
-        $attempts = 0;
-        $NUM_OF_ATTEMPTS = 2;
+        $maxAttempts = 2;
 
-        do
+        while ($maxAttempts--)
         {
             try
             {
@@ -157,14 +167,15 @@ class Stork
             }
             catch (Throwable $e)
             {
-                $attempts = $attempts + 1;
+                $this->trace->traceException($e);
                 $exception = $e;
                 continue;
             }
 
+            // In case it succeeds in another attempt.
+            $exception = null;
             break;
         }
-        while ($attempts < $NUM_OF_ATTEMPTS);
 
         if (($exception !== null) or ($res->success !== true))
         {
