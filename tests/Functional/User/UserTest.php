@@ -2041,7 +2041,7 @@ class UserTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertArrayNotHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
+        $this->assertEquals([], $response['merchants'][1][Constants::PERMISSIONS]);
     }
 
     public function testVerifyUserThroughEmail()
