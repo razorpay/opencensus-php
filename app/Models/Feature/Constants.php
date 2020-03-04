@@ -83,6 +83,7 @@ class Constants
     const AXIS_EXPRESS_PAY                = 'axis_express_pay';
     const BANK_TRANSFER_REFUND            = 'bank_transfer_refund';
     const CARD_TRANSFER_REFUND            = 'card_transfer_refund';
+    const DISABLE_INSTANT_REFUNDS         = 'disable_instant_refunds';
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
     const DISABLE_AMOUNT_CHECK            = 'disable_amount_check';
@@ -424,6 +425,7 @@ class Constants
         self::PRE_AUTH_SHIELD_INTG            => true,
         self::BANK_TRANSFER_REFUND            => true,
         self::CARD_TRANSFER_REFUND            => true,
+        self::DISABLE_INSTANT_REFUNDS         => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
         self::DISABLE_AMOUNT_CHECK            => true,
