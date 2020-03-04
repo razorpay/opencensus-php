@@ -59,6 +59,17 @@ class Service extends Base\Service
      */
     public function webhookDeactivate(string $id)
     {
+        $disableWebhookUpdate = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
+            'live'
+        );
+
+        if (strtolower($disableWebhookUpdate) === 'on')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
+        }
         $this->core()->webhookDeactivate($id);
     }
 }
