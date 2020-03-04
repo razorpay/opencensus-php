@@ -5629,3 +5629,6 @@ ALTER TABLE payout_links
 ALTER TABLE users
     ADD COLUMN old_password1 varchar(100) DEFAULT NULL,
     ADD COLUMN old_password2 varchar(100) DEFAULT NULL;
+
+ALTER TABLE blade
+    MODIFY COLUMN amount BIGINT NOT NULL;
