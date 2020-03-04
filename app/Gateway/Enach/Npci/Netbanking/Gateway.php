@@ -219,7 +219,7 @@ class Gateway extends Base\Gateway
             RequestFields::AUTH_MODE   => $authType,
         ];
 
-        $request = $this->getStandardRequestArray($content, 'post', 'npciauth');
+        $request = $this->getStandardRequestArray($content, 'post', 'npciauth_old');
 
         if ($this->switch === 'false')
         {
@@ -248,6 +248,7 @@ class Gateway extends Base\Gateway
     protected function getSecureData($input)
     {
         $date = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], Timezone::IST)
+                        ->addDay()
                         ->format('Y-m-d+05:30');
 
         $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST)
