@@ -2628,6 +2628,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Error Response
     const ERROR_RESPONSE_MAPPING_READ_FAILED                    = 'ERROR_RESPONSE_MAPPING_READ_FAILED';
     const ERROR_RESPONSE_FILE_READING_FAILED                    = 'ERROR_RESPONSE_FILE_READING_FAILED';
+    const ERROR_RESPONSE_DATA                                   = 'ERROR_RESPONSE_DATA';
 
     // Razorpayx onboarding
     const MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE  = 'MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE';
