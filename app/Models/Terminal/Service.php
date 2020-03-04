@@ -700,7 +700,31 @@ class Service extends Base\Service
 
     protected function areFetchedSubmerchantsSameForTerminal(Entity $terminal, $fetchTerminalResponse): bool
     {
-        return true;
+
+        $terminalSubmerchantsIds = array_map(function ($submerchant) {
+            return $submerchant[Merchant\Entity::ID];
+        }, $terminal->merchants()->get([Terminal\Entity::ID])->toArray());
+
+        sort($terminalSubmerchantsIds);
+
+        $fetchedTerminalSubmerchantIds = $fetchTerminalResponse[Terminal\Entity::SUB_MERCHANTS] ?? [];
+
+        sort($fetchedTerminalSubmerchantIds);
+
+        $success =  $terminalSubmerchantsIds === $fetchedTerminalSubmerchantIds;
+
+        if ($success === false)
+        {
+            $data = [
+                'original'  => $terminalSubmerchantsIds,
+                'fetched'   => $fetchedTerminalSubmerchantIds,
+            ];
+
+            $this->trace->debug(TraceCode::TERMINALS_SERVICE_MERCHANT_TERMINAL_MISMATCH, $data);
+        }
+
+        return $success;
+
     }
 
     protected function processMigrateTerminalSuccess(Entity $terminal)
