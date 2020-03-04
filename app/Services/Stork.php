@@ -125,6 +125,7 @@ class Stork
         // This will add extra hook onto options[hooks] for dns resolution to
         // ipV4 only. Doing this for internal services only.
         $hooks = new Hooks($config['url']);
+
         $hooks->addCurlProperties($options);
 
         // Sets request timeout in milliseconds via curl options.
@@ -145,6 +146,8 @@ class Stork
     public function setCurlOptions($curl)
     {
         curl_setopt($curl, CURLOPT_TIMEOUT_MS, self::REQUEST_TIMEOUT);
+
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT_MS, self::REQUEST_CONNECT_TIMEOUT);
     }
 
     public function request(string $path, array $payload): Requests_Response
