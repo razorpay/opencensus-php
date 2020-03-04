@@ -94,10 +94,11 @@ class Entity extends Base\PublicEntity
 
     // This is only a virtual attribute, not stored in the refund entity in the DB -
     // only being used for pricing and passing to Scrooge
-    const MODE_REQUESTED         = 'mode_requested';
+    const MODE_REQUESTED   = 'mode_requested';
+    const MODE             = 'mode';
+    const SPEED            = 'speed';
+    const PROCESSED_SOURCE = 'processed_source';
 
-    const MODE                   = 'mode';
-    const SPEED                  = 'speed';
 
     const PUBLIC_STATUS = 'public_status';
 

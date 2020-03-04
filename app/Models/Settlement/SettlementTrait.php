@@ -18,6 +18,7 @@ use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Models\Settlement\Bucket\Constants;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\FundTransfer\Attempt\Purpose;
 use RZP\Models\Settlement\Merchant as SetlMerchant;
@@ -338,6 +339,15 @@ trait SettlementTrait
             $skipForKarvy = $this->skipForKarvy($txn);
 
             if ($skipForKarvy === true)
+            {
+                $transactionSkipCount++;
+
+                continue;
+            }
+
+            $skipForScripBox = $this->skipForScripBox($txn);
+
+            if ($skipForScripBox === true)
             {
                 $transactionSkipCount++;
 
@@ -1250,6 +1260,30 @@ trait SettlementTrait
                 ]);
 
             return true;
+
+        }
+
+        return false;
+    }
+
+    /**
+     * Scripbox wants the settlement only at 10AM and 1PM
+     *
+     * @param $txn
+     * @return bool
+     */
+    protected function skipForScripBox($txn): bool
+    {
+        $merchantId = $txn->getMerchantId();
+
+        if ($merchantId === Preferences::MID_SCRIP_BOX)
+        {
+            $hour = Carbon::now(Timezone::IST)->hour;
+
+            if (($hour < Constants::ELEVEN_AM) or ($hour > Constants::ONE_PM))
+            {
+                return true;
+            }
 
         }
 

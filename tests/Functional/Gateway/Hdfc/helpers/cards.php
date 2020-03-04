@@ -482,7 +482,7 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
-                    'reason' => 'Issuer-Authorization-risk_decline',
+                    'reason' => 'Bank-Authorization-risk_decline',
                 ],
             ],
             'status_code' => 400,
