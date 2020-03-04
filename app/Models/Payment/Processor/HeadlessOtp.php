@@ -53,6 +53,12 @@ trait HeadlessOtp
 
     protected function canRunHeadlessOtpFlow($payment, $gatewayInput)
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment(Environment::PRODUCTION) === true))
+        {
+            return false;
+        }
+
         if ($payment[Payment\Entity::CPS_ROUTE] === Payment\Entity::CARD_PAYMENT_SERVICE)
         {
             return false;

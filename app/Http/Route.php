@@ -955,6 +955,7 @@ final class Route
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_account_unlock'                      => ['put',      'users/account/{id}/{action}',                    'UserController@accountLockUnlock'                                  ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
+        'user_roles_mapping_bulk'                  => ['put',      'users/roles-mapping/bulk',                       'UserController@bulkUpdateUserMapping'                              ],
         // 2fa route for user
         'user_login_2fa_setup_mobile'              => ['post',     'users/login/2fa_setup/mobile',                   'UserController@setup2faMobileOnLogin'                              ],
         'user_login_2fa_setup_verify_mobile'       => ['post',     'users/login/2fa_setup/verify-mobile',            'UserController@setup2faVerifyMobileOnLogin'                        ],
@@ -2809,6 +2810,7 @@ final class Route
         'merchant_restrict',
         'user_update_contact_admin',
         'user_account_lock_unlock_admin',
+        'user_roles_mapping_bulk',
 
         // P2p Routes
         'p2p_admin_add_handle',
@@ -3452,6 +3454,7 @@ final class Route
         'fetch_batch_action_entities'               => Permission::ADMIN_BATCH_CREATE,
         'fetch_batch_actions'                       => Permission::ADMIN_BATCH_CREATE,
         'link_offline_device'                       => '*',
+        'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
     ];
 
     public static $bankingRoutePermissions = [
@@ -3554,6 +3557,7 @@ final class Route
         'banking_account_statement_generate'           => Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
         'merchant_instant_activation_post'             => Permission::MERCHANT_INSTANT_ACTIVATION,
         'merchant_features_update'                     => Permission::UPDATE_MERCHANT_FEATURE,
+        'bank_transfer_process_test'                   => Permission::UPDATE_TEST_MERCHANT_BALANCE,
         'banking_account_create'                       => '*',
         'merchant_activation_upload_file'              => '*',
         'user_verify_contact'                          => '*',
@@ -3572,11 +3576,10 @@ final class Route
         'batch_validate_file'                          => '*',
         'batch_download_file'                          => '*',
         'bank_account_fetch'                           => '*',
-        'bank_transfer_process_test'                   => '*',
         'pincode_get'                                  => '*',
-        'merchant_edit_config_logo'                    => '*',
         'user_update_contact'                          => '*',
         'user_verify_through_email'                    => '*',
+        'merchant_bank_account_change_status'          => '*',
 
         // This should go away after the fix
         // https://razorpay.atlassian.net/browse/RX-1701

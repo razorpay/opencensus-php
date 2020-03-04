@@ -80,6 +80,13 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkUpdateUserMapping()
+    {
+        $data = $this->service()->bulkUpdateUserMapping($this->input);
+
+        return ApiResponse::json($data);
+    }
+
     public function loginUser()
     {
         $input = Request::all();
