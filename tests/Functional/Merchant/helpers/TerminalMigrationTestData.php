@@ -173,6 +173,19 @@ return [
         ],
     ],
 
+    'testUpdateTerminalServiceSubmerchantMismatchResponseMigrateTerminalVariant' => [
+        'request' => [
+            'content' => [
+                'toggle' => '0',
+                'remarks'  => 'Disabling terminal because of some reason',
+            ],
+            'method' => 'PUT'
+        ],
+        'response'  => [
+
+        ],
+    ],
+
 
     'testUpdateTerminalControlVariant' => [
         'request' => [
