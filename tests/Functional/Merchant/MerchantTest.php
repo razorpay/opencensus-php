@@ -3213,7 +3213,13 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('pricing:standard_plan');
 
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+        $merchant = $this->fixtures->merchant->create();
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->merchant->edit($merchantId, ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand'], $merchantId);
 
         $this->fixtures->create(
             'schedule',
@@ -3237,23 +3243,21 @@ class MerchantTest extends TestCase
             'schedule_task',
             $scheduleTaskCard);
 
-        $this->fixtures->merchant->addFeatures(['es_on_demand']);
-
-        $this->ba->proxyAuthTest();
-
         // We create and attach a user with finance role. This guy is expected to receive the mail.
         $this->fixtures->create('user',['id' => 'MerchantUser99', 'email' => $financeEmailId, 'name' => 'FinanceMan']);
 
         $financeUser = $this->getDbEntityById('user','MerchantUser99', true);
 
-        (new UserCore)->updateUserMerchantMapping($financeUser, ['merchant_id' => '10000000000000', 'role' => 'finance', 'product' => 'primary', 'action' => 'attach']);
+        $this->ba->proxyAuth("rzp_test_{$merchantId}");
 
+        (new UserCore)->updateUserMerchantMapping($financeUser, ['merchant_id' => $merchantId, 'role' => 'finance', 'product' => 'primary', 'action' => 'update']);
+        $userSendingRole = 'admin';
         // If random selects sender as Admin then update sending users role to admin and alternate users role to owner
         if ($userSendingRole === 'admin')
         {
             $sendingUser = $this->getDbEntityById('user','MerchantUser01', true);
 
-            (new UserCore)->updateUserMerchantMapping($sendingUser, ['merchant_id' => '10000000000000', 'role' => $userSendingRole, 'product' => 'primary', 'action' => 'attach']);
+            (new UserCore)->updateUserMerchantMapping($sendingUser, ['merchant_id' => $merchantId, 'role' => $userSendingRole, 'product' => 'primary', 'action' => 'update']);
 
             $userAlternateRole = 'owner';
         }
@@ -3263,20 +3267,20 @@ class MerchantTest extends TestCase
 
         $alternateUser = $this->getDbEntityById('user','MerchantUser98', true);
 
-        (new UserCore)->updateUserMerchantMapping($alternateUser, ['merchant_id' => '10000000000000', 'role' => $userAlternateRole, 'product' => 'primary', 'action' => 'attach']);
+        (new UserCore)->updateUserMerchantMapping($alternateUser, ['merchant_id' => $merchantId, 'role' => $userAlternateRole, 'product' => 'primary', 'action' => 'update']);
 
         // Add the last guy who is attached to the merchant but part of the groups who should not receive the mail
         $this->fixtures->create('user',['id' => 'MerchantUser97', 'email' => $unexpectedUserEmailId, 'name' => 'UnexpectedGuy']);
 
-        $unexpectedUser = $this->getDbEntityById('user','MerchantUser98', true);
+        $unexpectedUser = $this->getDbEntityById('user','MerchantUser97', true);
 
-        (new UserCore)->updateUserMerchantMapping($unexpectedUser, ['merchant_id' => '10000000000000', 'role' => $unexpectedUserRole, 'product' => 'primary', 'action' => 'attach']);
+        (new UserCore)->updateUserMerchantMapping($unexpectedUser, ['merchant_id' => $merchantId, 'role' => $unexpectedUserRole, 'product' => 'primary', 'action' => 'update']);
 
         $this->startTest();
 
         Mail::assertQueued(EsEnabledNotify::class, function ($mail) use ($financeEmailId, $alternateEmailId, $unexpectedUserEmailId)
         {
-            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_VIEW,$mail->view);
+            $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_VIEW, $mail->view);
 
             $this->assertEquals(EsEnabledNotify::MERCHANT_MAILER_SUBJECT, $mail->subject);
 
@@ -3298,7 +3302,13 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('pricing:standard_plan');
 
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+        $merchant = $this->fixtures->merchant->create();
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->merchant->edit($merchantId, ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand'], $merchantId);
 
         $this->fixtures->create(
             'schedule',
@@ -3322,13 +3332,11 @@ class MerchantTest extends TestCase
             'schedule_task',
             $scheduleTaskCard);
 
-        $this->fixtures->merchant->addFeatures(['es_on_demand']);
-
-        $this->ba->proxyAuthTest();
+        $this->ba->proxyAuth("rzp_test_{$merchantId}");
 
         $user = $this->getDbEntityById('user','MerchantUser01', true);
 
-        (new UserCore)->updateUserMerchantMapping($user, ['merchant_id' => '10000000000000', 'role' => $userRoleToBeSet, 'product' => 'primary', 'action' => 'attach']);
+        (new UserCore)->updateUserMerchantMapping($user, ['merchant_id' => $merchantId, 'role' => $userRoleToBeSet, 'product' => 'primary', 'action' => 'update']);
 
         $this->startTest();
 

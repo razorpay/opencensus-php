@@ -762,6 +762,20 @@ return [
         ],
     ],
 
+    'testBulkUpdateUserRoleMapping' => [
+        'request' => [
+            'url'    => '/users/roles-mapping/bulk',
+            'method' => 'PUT',
+            'content' => [],
+            'server'     => [
+                'HTTP_X-Request-Origin'         => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testDetachMerchant' => [
         'request' => [
             'url'    => '/users/id/detach',
@@ -1392,6 +1406,34 @@ return [
                 'invitations' => [
                 ],
                 'settings'    => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBankingUserWithPermissions'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'owner',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBankingUserWithPermissionsNull'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'random_role',
+                        'role'         => null,
+                    ]
                 ],
             ],
         ],

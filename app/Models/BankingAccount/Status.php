@@ -51,8 +51,6 @@ class Status
     protected static $fromToStatusMap = [
         self::CREATED => [
             self::PICKED,
-            self::INITIATED,
-            self::UNSERVICEABLE,
             self::CANCELLED,
         ],
         self::PICKED => [
@@ -63,20 +61,22 @@ class Status
         self::INITIATED => [
             self::PROCESSING,
             self::PROCESSED,
-            self::UNSERVICEABLE,
             self::CANCELLED,
             self::REJECTED,
         ],
         self::PROCESSING => [
             self::PROCESSED,
-            self::UNSERVICEABLE,
             self::CANCELLED,
             self::REJECTED,
         ],
         self::PROCESSED => [
             self::ACTIVATED,
         ],
-        self::UNSERVICEABLE => [],
+        self::UNSERVICEABLE => [
+            self::PICKED,
+        ],
+
+        self::ACTIVATED => [],
         self::CANCELLED => [],
         self::REJECTED  => [],
     ];

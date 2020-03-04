@@ -1141,6 +1141,61 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testBulkUpdateUserRoleMapping()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [], 'owner');
+
+        $user1 = $this->fixtures->user->createUserForMerchant($merchant['id'], [], 'manager');
+
+        $user2 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+
+        $this->ba->adminAuth();
+
+        $data = [
+            [
+                'user_id'     => $user['id'],
+                'merchant_id' => $merchant['id'],
+                'product'     => 'primary',
+                'role'        => 'owner',
+                'action'      => 'detach',
+            ],
+            [
+                'user_id'     => $user1['id'],
+                'merchant_id' => $merchant['id'],
+                'product'     => 'primary',
+                'role'        => 'owner',
+                'action'      => 'update',
+            ],
+            [
+                'user_id'     => $user2['id'],
+                'merchant_id' => $merchant['id'],
+                'product'     => 'primary',
+                'role'        => 'finance',
+                'action'      => 'attach',
+            ],
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $data;
+
+        $this->runRequestResponseFlow($testData);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($merchant['id'], $user['id']);
+
+        $this->assertEquals(0, count($mapping));
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($merchant['id'], $user1['id']);
+
+        $this->assertEquals('owner', $mapping->first()->role);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($merchant['id'], $user2['id']);
+
+        $this->assertEquals('finance', $mapping->first()->role);
+    }
+
     public function testAttachMerchant()
     {
         $user = $this->fixtures->create('user');
@@ -1170,7 +1225,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['url'] = '/users/' . $user['id'] . '/attach';
+        $testData['request']['url'] = '/users/' . $user['id'] . '/update';
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
 
@@ -1972,6 +2027,76 @@ class UserTest extends TestCase
         $this->startTest();
 
         Carbon::setTestNow();
+    }
+
+    public function testGetBankingUserWithPermissions()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/users/' . $user->getId(),
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
+    }
+
+    public function testGetBankingUserWithPermissionsNull()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'random_role',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/users/' . $user->getId(),
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals([], $response['merchants'][1][Constants::PERMISSIONS]);
     }
 
     public function testVerifyUserThroughEmail()

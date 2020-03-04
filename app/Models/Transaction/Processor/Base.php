@@ -443,7 +443,7 @@ abstract class Base extends BaseCore
                 $refundTransactionId = $this->source->entity->getTransactionId();
 
                 (new Credits\Transaction\Core)
-                    ->createCreditReversalTransaction($amount, $this->txn, $refundTransactionId);
+                    ->createCreditReversalTransaction($amount, $this->txn, $refundTransactionId, $creditType);
             }
             else
             {
