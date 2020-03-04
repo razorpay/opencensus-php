@@ -27,6 +27,7 @@ class Constants
      */
     const DISPLAY_REFUND_PUBLIC_STATUS                     = 'display_refund_public_status';
     const REFUND_PUBLIC_STATUS_FEATURE_ENABLED             = 'refund_public_status_feature_enabled';
+    const CARD_TRANSFER_FEATURE_ENABLED_MERCHANT           = 'card_transfer_feature_enabled_merchant';
     const DISABLE_INSTANT_REFUNDS_FEATURE_ENABLED_MERCHANT = 'disable_instant_refunds_feature_enabled_merchant';
     /**
      * Transaction tracker related constants

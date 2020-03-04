@@ -25,6 +25,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 /**
  * Interface for api to talk to Reporting service
@@ -862,7 +863,19 @@ class Reporting implements ExternalService
 
         $hasOfferTag              = in_array(Feature::OFFERS, $features, true);
         $hasGenericNotesTag       = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
+        $hasCardTransferRefundTag = in_array(Feature::CARD_TRANSFER_REFUND, $features, true);
         $hasNotDisableInstantRefundsTag = !(in_array(Feature::DISABLE_INSTANT_REFUNDS, $features, true));
+
+        //
+        // Using razorx to ramp up instant refunds self serve
+        //
+        $variant = $this->app->razorx->getTreatment($merchant->getId(),
+            Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
+            $this->mode
+        );
+
+        $showInstantRefundsReport = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $hasNotDisableInstantRefundsTag :
+            $hasCardTransferRefundTag;
 
         $partnerFlags = $this->fetchPartnerReportsControls($merchant);
 
@@ -972,7 +985,7 @@ class Reporting implements ExternalService
                 'name'      => 'Instant Refunds',
                 'type'      => 'refunds',
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $hasNotDisableInstantRefundsTag,
+                'condition' => $showInstantRefundsReport,
             ],
         ];
 
