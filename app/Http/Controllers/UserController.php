@@ -158,6 +158,8 @@ class UserController extends Controller
             $input['email'] = mb_strtolower($input['email']);
         }
 
+        $this->trace->info(TraceCode::USER_LOGIN_KEYS, array_keys($input));
+
         list($error, $data) = (new User\Service)->login($input);
 
         return AppResponse::jsonResponse($error, $data);
