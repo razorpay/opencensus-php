@@ -262,7 +262,6 @@ class UserRolePermissionsMap
                  Permission::VIEW_MERCHANT_USER,
                  Permission::VIEW_WEBHOOK,
                  Permission::VIEW_WEBHOOK_EVENT,
-                 Permission::VIEW_WEBHOOK,
                  Permission::VIEW_REPORTING,
                  Permission::VIEW_TRANSACTION_STATEMENT,
                  Permission::GET_SELF_SERVE_REPORT,

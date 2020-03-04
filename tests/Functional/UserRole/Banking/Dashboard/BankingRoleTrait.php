@@ -89,6 +89,7 @@ trait BankingRoleTrait
                 'reporting_log_list',
                 'reporting_log_create',
                 'reporting_log_update',
+                'bank_transfer_process_test',
             ],
             BankingRole::ADMIN => [
                 'payout_bulk_create',
@@ -161,6 +162,7 @@ trait BankingRoleTrait
                 'reporting_log_list',
                 'reporting_log_create',
                 'reporting_log_update',
+                'bank_transfer_process_test',
             ],
             BankingRole::FINANCE_L1 => [
                 'payout_bulk_create',
@@ -230,6 +232,7 @@ trait BankingRoleTrait
                 'reporting_log_list',
                 'reporting_log_create',
                 'reporting_log_update',
+                'bank_transfer_process_test',
             ],
 
             BankingRole::OPERATIONS => [
@@ -251,6 +254,38 @@ trait BankingRoleTrait
                 'payout_links_resend_notification',
                 'merchant_edit_config_logo',
             ],
+
+            BankingRole::VIEW_ONLY => [
+                'payout_fetch_by_id',
+                'payout_purpose_get',
+                'payout_fetch_reversals',
+                'payouts_summary',
+                'payout_links_fetch_multiple',
+                'payout_links_fetch_by_id',
+                'payouts_workflow_summary',
+                'contact_get',
+                'contact_list',
+                'contact_types_get',
+                'fund_account_validate_fetch',
+                'fund_account_get',
+                'fund_account_list',
+                'merchant_fetch_keys',
+                'merchant_analytics',
+                'merchant_balance_fetch',
+                'merchant_invoice_fetch_multiple',
+                'user_fetch',
+                'merchant_fetch_users',
+                'webhook_fetch',
+                'webhook_fetch_multiple',
+                'webhook_fetch_events',
+                'reporting_log_get',
+                'reporting_log_list',
+                'transaction_statement_fetch',
+                'transaction_statement_fetch_multiple',
+                'reporting_config_get',
+                'reporting_config_list',
+                'merchant_product_switch',
+            ]
         ];
     }
 
