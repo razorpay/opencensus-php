@@ -157,6 +157,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_PAYOUT,
                  Permission::VIEW_WORKFLOW,
                  Permission::UPDATE_TEST_MERCHANT_BALANCE,
+                 Permission::UPDATE_MERCHANT_FEATURE,
              ],
 
              BankingRole::FINANCE_L1 => [

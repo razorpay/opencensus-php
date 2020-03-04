@@ -163,6 +163,7 @@ trait BankingRoleTrait
                 'reporting_log_create',
                 'reporting_log_update',
                 'bank_transfer_process_test',
+                'merchant_features_update',
             ],
             BankingRole::FINANCE_L1 => [
                 'payout_bulk_create',
