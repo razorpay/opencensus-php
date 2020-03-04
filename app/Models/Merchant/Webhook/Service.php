@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Webhook;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 
 class Service extends Base\Service
 {
