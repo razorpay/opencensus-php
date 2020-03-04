@@ -34,12 +34,13 @@ class TerminalsService
     const DATA              = 'data';
 
 
-    const CREATE_TERMINAL                   = 'create_terminal';
-    const FETCH_TERMINAL_BY_ID              = 'fetch_terminal_by_id';
-    const DELETE_TERMINAL_BY_ID             = 'delete_terminal_by_id';
-    const ADD_MERCHANT_TO_TERMINAL          = 'add_merchant_to_terminal';
-    const REMOVE_MERCHANT_FROM_TERMINAL     = 'remove_merchant_from_terminal';
-    const FETCH_MERCHANT_TERMINAL_BY_ID     = 'fetch_merchant_terminal_by_id';
+    const CREATE_TERMINAL                      = 'create_terminal';
+    const FETCH_TERMINAL_BY_ID                 = 'fetch_terminal_by_id';
+    const DELETE_TERMINAL_BY_ID                = 'delete_terminal_by_id';
+    const FETCH_TERMINALS_FOR_MERCHANT         = 'fetch_terminals_for_merchant';
+    const ADD_MERCHANT_TO_TERMINAL             = 'add_merchant_to_terminal';
+    const REMOVE_MERCHANT_FROM_TERMINAL        = 'remove_merchant_from_terminal';
+    const FETCH_MERCHANT_TERMINAL_BY_ID        = 'fetch_merchant_terminal_by_id';
 
     const PARAMS = [
         self::CREATE_TERMINAL       =>   [
@@ -53,6 +54,10 @@ class TerminalsService
         self::DELETE_TERMINAL_BY_ID => [
             self::PATH   => 'v1/terminals/%s',
             self::METHOD => Requests::DELETE,
+        ],
+        self::FETCH_TERMINALS_FOR_MERCHANT  => [
+            self::PATH   => 'v1/merchants/%s/terminals',
+            self::METHOD => Requests::GET,
         ],
         self::ADD_MERCHANT_TO_TERMINAL => [
             self::PATH   => 'v1/terminal/submerchant',
@@ -93,6 +98,17 @@ class TerminalsService
         $params = self::PARAMS[self::FETCH_TERMINAL_BY_ID];
 
         $path = sprintf($params[self::PATH], $terminalId);
+
+        $response = $this->sendRequest($path, '', $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    public function getTerminalsByMerchantId(string $merchantId)
+    {
+        $params = self::PARAMS[self::FETCH_TERMINAL_BY_ID];
+
+        $path = sprintf($params[self::PATH], $merchantId);
 
         $response = $this->sendRequest($path, '', $params[self::METHOD]);
 
