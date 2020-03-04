@@ -2,15 +2,13 @@
 
 namespace RZP\Tests\Functional\Refund;
 
-use RZP\Error\ErrorCode;
-use RZP\Services\Scrooge;
 use RZP\Models\Pricing\Fee;
-use RZP\Models\Payment\Refund;
+use RZP\Services\Scrooge;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
-use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Refund;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -90,59 +88,6 @@ class RefundStatusTest extends TestCase
         $this->assertProcessedInstantRefundResponses(__FUNCTION__, $refund);
     }
 
-    public function testNormalRefundWithInstantRefundsDisabledWithoutExperiment()
-    {
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->gateway = 'hdfc';
-
-        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($payment['id']);
-
-        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
-
-        $this->ba->privateAuth();
-
-        $this->assertNormalRefundResponses(__FUNCTION__, $refund);
-    }
-
-    public function testNormalRefundWithInstantRefundsDisabledWithExperiment()
-    {
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->fixtures->merchant->addFeatures('disable_instant_refunds');
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
-        $this->gateway = 'hdfc';
-
-        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
-        $refund = $this->refundPayment($payment['id']);
-
-        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
-
-        $this->ba->privateAuth();
-
-        $this->assertNormalRefundResponses(
-            __FUNCTION__,
-            $refund,
-            Refund\Speed::NORMAL,
-            Refund\Speed::NORMAL,
-            Refund\Status::PROCESSED,
-            Refund\Speed::NORMAL
-        );
-    }
-
     public function testFlipkartRefunds()
     {
         $merchantId = 'BbaYzzPW541Aut';
@@ -199,28 +144,6 @@ class RefundStatusTest extends TestCase
         $this->ba->privateAuth('rzp_test_' . $merchantId);
 
         $this->assertFlipkartRefundResponses(__FUNCTION__, $refund);
-
-        // razorx tests
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                                function ($mid, $feature, $mode)
-                                {
-                                    if ($feature === 'instant_refunds_self_serve')
-                                    {
-                                        return 'on';
-                                    }
-
-                                    return '';
-                                }));
-
-        $this->assertFlipkartRefundResponsesWithRazorXExperiment(__FUNCTION__, $refund);
     }
 
     public function testFlipkartRefundsWithFeatureShowRefundPublicStatus()
@@ -263,28 +186,6 @@ class RefundStatusTest extends TestCase
         $this->ba->privateAuth();
 
         $this->assertFlipkartRefundResponses(__FUNCTION__, $refund);
-
-        // razorx tests
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                                function ($mid, $feature, $mode)
-                                {
-                                    if ($feature === 'instant_refunds_self_serve')
-                                    {
-                                        return 'on';
-                                    }
-
-                                    return '';
-                                }));
-
-        $this->assertFlipkartRefundResponsesWithRazorXExperiment(__FUNCTION__, $refund);
     }
 
     public function testSnapdealRefunds()
@@ -343,28 +244,6 @@ class RefundStatusTest extends TestCase
         $this->ba->privateAuth('rzp_test_' . $merchantId);
 
         $this->assertSnapdealRefundResponses(__FUNCTION__, $refund);
-
-        // razorx tests
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                                function ($mid, $feature, $mode)
-                                {
-                                    if ($feature === 'instant_refunds_self_serve')
-                                    {
-                                        return 'on';
-                                    }
-
-                                    return '';
-                                }));
-
-        $this->assertSnapdealRefundResponsesWithRazorXExperiment(__FUNCTION__, $refund);
     }
 
     protected function updateRefundStatus($refund, $status)
@@ -475,89 +354,6 @@ class RefundStatusTest extends TestCase
                 'scrooge_speed'       => Refund\Speed::INSTANT
             ]
         ];
-
-        $this->iterateOverDataAndAssertRefundResponse($callee, $refund, $data);
-    }
-
-    protected function assertNormalRefundResponses($callee, $refund, $speedRequested = '', $speedProcessed = '', $status = '', $scroogeSpeed = '')
-    {
-        $data = [
-            [
-                'db_status'           => Refund\Status::CREATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'speed_requested'     => $speedRequested,
-                'speed_processed'     => $speedProcessed,
-                'status'              => $status,
-            ],
-            [
-                'db_status'           => Refund\Status::CREATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => null,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'speed_requested'     => $speedRequested,
-                'speed_processed'     => $speedProcessed,
-                'status'              => $status,
-                'scrooge_speed'       => $scroogeSpeed,
-            ],
-            [
-                'db_status'           => Refund\Status::INITIATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'speed_requested'     => $speedRequested,
-                'speed_processed'     => $speedProcessed,
-                'status'              => $status,
-            ],
-            [
-                'db_status'           => Refund\Status::INITIATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => null,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'speed_requested'     => $speedRequested,
-                'speed_processed'     => $speedProcessed,
-                'status'              => $status,
-                'scrooge_speed'       => $scroogeSpeed,
-            ],
-            [
-                'db_status'           => Refund\Status::FAILED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'speed_requested'     => $speedRequested,
-                'speed_processed'     => $speedProcessed,
-                'status'              => $status,
-            ],
-            [
-                'db_status'           => Refund\Status::FAILED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => null,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'speed_requested'     => $speedRequested,
-                'speed_processed'     => $speedProcessed,
-                'status'              => $status,
-                'scrooge_speed'       => $scroogeSpeed,
-            ],
-            [
-                'db_status'           => Refund\Status::PROCESSED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'speed_requested'     => $speedRequested,
-                'speed_processed'     => $speedProcessed,
-                'status'              => $status,
-            ]
-        ];
-
-        for ($i = 0; $i < count($data); $i++)
-        {
-            if ((isset($data[$i]['scrooge_speed']) === true) and
-                (empty($data[$i]['scrooge_speed']) === true))
-            {
-                unset($data[$i]['scrooge_speed']);
-            }
-        }
 
         $this->iterateOverDataAndAssertRefundResponse($callee, $refund, $data);
     }
@@ -875,135 +671,6 @@ class RefundStatusTest extends TestCase
         $this->iterateOverDataAndAssertRefundResponse($callee, $refund, $data);
     }
 
-    protected function assertFlipkartRefundResponsesWithRazorXExperiment($callee, $refund)
-    {
-        // status	    scrooge_status	public_status
-        // created		pending		    pending
-        // created		processed	    processed
-        // created		failed		    failed
-        // initiated	pending		    pending
-        // initiated	processed	    processed
-        // initiated 	failed		    failed
-        // processed	NA			    processed
-        // failed		pending		    pending
-        // failed		processed	    processed
-        // failed		failed		    failed
-        // reversed	    NA			    failed
-
-        $data = [
-            [
-                'db_status'           => Refund\Status::PROCESSED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::PROCESSED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL
-            ],
-            [
-                'db_status'           => Refund\Status::CREATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
-                'scrooge_status'      => Refund\Status::PENDING
-            ],
-            [
-                'db_status'           => Refund\Status::CREATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::PROCESSED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
-                'scrooge_status'      => Refund\Status::PROCESSED
-            ],
-            [
-                'db_status'           => Refund\Status::CREATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::FAILED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
-                'scrooge_status'      => Refund\Status::FAILED
-            ],
-            [
-                'db_status'           => Refund\Status::INITIATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
-                'scrooge_status'      => Refund\Status::PENDING
-            ],
-            [
-                'db_status'           => Refund\Status::INITIATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::PROCESSED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
-                'scrooge_status'      => Refund\Status::PROCESSED
-            ],
-            [
-                'db_status'           => Refund\Status::INITIATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::FAILED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
-                'scrooge_status'      => Refund\Status::FAILED
-            ],
-            [
-                'db_status'           => Refund\Status::FAILED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
-                'scrooge_status'      => Refund\Status::PENDING
-            ],
-            [
-                'db_status'           => Refund\Status::FAILED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::PROCESSED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
-                'scrooge_status'      => Refund\Status::PROCESSED
-            ],
-            [
-                'db_status'           => Refund\Status::FAILED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::FAILED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
-                'scrooge_status'      => Refund\Status::FAILED
-            ],
-            [
-                'db_status'           => Refund\Status::REVERSED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::FAILED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
-            ],
-        ];
-
-        $this->iterateOverDataAndAssertRefundResponse($callee, $refund, $data);
-    }
-
     protected function assertSnapdealRefundResponses($callee, $refund)
     {
         // status	    public_status
@@ -1047,105 +714,10 @@ class RefundStatusTest extends TestCase
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PROCESSED,
                 'speed_requested'     => '',
-                'speed_processed'     => ''
+                'speed_processed'     => '',
             ],
         ];
 
         $this->iterateOverDataAndAssertRefundResponse($callee, $refund, $data);
-    }
-
-    protected function assertSnapdealRefundResponsesWithRazorXExperiment($callee, $refund)
-    {
-        // status	    public_status
-        // created		pending
-        // initiated	pending
-        // processed	processed
-        // failed		pending
-
-        $data = [
-            [
-                'db_status'           => Refund\Status::CREATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL
-            ],
-            [
-                'db_status'           => Refund\Status::INITIATED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL
-            ],
-            [
-                'db_status'           => Refund\Status::FAILED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL
-            ],
-            [
-                'db_status'           => Refund\Status::PROCESSED,
-                'db_speed_requested'  => Refund\Speed::NORMAL,
-                'db_speed_processed'  => Refund\Speed::NORMAL,
-                'db_speed_decisioned' => Refund\Speed::NORMAL,
-                'status'              => Refund\Status::PROCESSED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL
-            ],
-        ];
-
-        $this->iterateOverDataAndAssertRefundResponse($callee, $refund, $data);
-    }
-
-    public function testDisableInstantRefundsFeature()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                                function ($mid, $feature, $mode)
-                                {
-                                    if ($feature === 'instant_refunds_self_serve')
-                                    {
-                                        return 'on';
-                                    }
-
-                                    return '';
-                                }));
-
-        $this->fixtures->merchant->addFeatures('disable_instant_refunds');
-
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->gateway = 'hdfc';
-
-        $data= [
-            'speed'=>'optimum'
-        ];
-
-        try
-        {
-            $this->refundPayment($payment['id'],$payment['amount'],$data);
-        }
-        catch ( \Exception $ex)
-        {
-            $this->assertEquals(ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED,$ex->getCode());
-            return ;
-        }
-
-        $this->fail();
     }
 }

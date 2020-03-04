@@ -869,7 +869,7 @@ class AxisGatewayTest extends TestCase
 
     public function testPaymentRefundWithCardTransfer()
     {
-        $this->enableInstantRefundsSelfServeExperiment();
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $payment = $this->doAuthAndCapturePayment();
 
@@ -904,68 +904,6 @@ class AxisGatewayTest extends TestCase
 
     public function testPaymentRefundWithCardTransferFailed()
     {
-        $this->enableInstantRefundsSelfServeExperiment();
-
-        $payment = $this->doAuthAndCapturePayment();
-
-        $card = $this->getDbLastEntity('card');
-
-        $this->fixtures->iin->edit($card['iin'], ['type' => 'debit']);
-
-        $this->fixtures->pricing->createInstantRefundsPricingPlan();
-
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
-
-        $refund = $this->refundPayment($payment['id']);
-
-        // Assert for fta not created for given refund
-        $fta = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->assertNull($fta);
-
-        $refund = $this->getLastEntity('refund', true);
-
-        // Refund will be in processed state
-        $this->assertEquals($refund['status'], 'processed');
-    }
-
-    public function testPaymentRefundWithCardTransferWithoutInstantRefundsSelfServeExperiment()
-    {
-        $this->fixtures->merchant->addFeatures('card_transfer_refund');
-
-        $payment = $this->doAuthAndCapturePayment();
-
-        $card = $this->getDbLastEntity('card');
-
-        $iin = $this->getDbEntityById('iin', $card['iin']);
-
-        $this->assertEquals($iin['type'], 'credit');
-
-        $this->assertEquals($iin['issuer'], 'HDFC');
-
-        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
-
-        $this->fixtures->pricing->createInstantRefundsPricingPlan();
-
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
-        $this->fixtures->merchant->editDefaultRefundSpeed('optimum');
-
-        $refund = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
-
-        // Assert for fta created for given refund
-        $fta = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->assertEquals($fta['source'], $refund['id']);
-
-        $refund = $this->getLastEntity('refund', true);
-
-        // Refund will be in created state
-        $this->assertEquals('initiated', $refund['status']);
-        $this->assertEquals('optimum', $refund['speed_requested']);
-    }
-
-    public function testPaymentRefundWithCardTransferFailedWithoutInstantRefundsSelfServeExperiment()
-    {
         $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $payment = $this->doAuthAndCapturePayment();
@@ -989,28 +927,6 @@ class AxisGatewayTest extends TestCase
 
         // Refund will be in processed state
         $this->assertEquals($refund['status'], 'processed');
-    }
-
-    public function enableInstantRefundsSelfServeExperiment()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                                function ($mid, $feature, $mode)
-                                {
-                                    if ($feature === 'instant_refunds_self_serve')
-                                    {
-                                        return 'on';
-                                    }
-
-                                    return '';
-                                }));
     }
 
     protected function createGatewayRules($rules)

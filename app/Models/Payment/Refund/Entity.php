@@ -5,7 +5,6 @@ namespace RZP\Models\Payment\Refund;
 use App;
 use ApiResponse;
 use Carbon\Carbon;
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
@@ -1104,7 +1103,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function getPublicStatusWithoutInstantRefundsSelfServeExperiment($response, array $data = [])
+    protected function getPublicStatus($response, array $data = [])
     {
         $refundPublicStatusFeatureEnabled = $data[Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED] ?? false;
         $cardTransferFeatureEnabled       = $data[Constants::CARD_TRANSFER_FEATURE_ENABLED_MERCHANT] ?? false;
@@ -1148,7 +1147,7 @@ class Entity extends Base\PublicEntity
         $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($this->isScrooge() === true);
 
         $callScroogeForStatus = (($refundPublicStatusFeatureEnabled === true) or
-            (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true));
+                                 (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true));
 
         if (($eligibleForScroogeCall === true) and
             (($callScroogeForStatus === true) or ($callScroogeForSpeed === true)))
@@ -1209,107 +1208,6 @@ class Entity extends Base\PublicEntity
         return $response;
     }
 
-    protected function getPublicStatusWithInstantRefundsSelfServeExperiment($response, array $data = [])
-    {
-        $refundPublicStatusFeatureEnabled = $data[Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED] ?? false;
-
-        $refundStatus = $this->getStatus();
-
-        $publicStatusMap = [
-            Status::PROCESSED => Status::PROCESSED,
-            Status::REVERSED  => Status::FAILED,
-        ];
-
-        $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
-
-        // Adding speed and other related params only for Card Transfer Feature enabled merchants
-        $callScroogeForSpeed = true;
-
-        // If speed_processed is already populated in the refund entity - we need not call scrooge
-        if (empty($this->getSpeedProcessed()) === false)
-        {
-            $response[self::SPEED_PROCESSED] = $this->getSpeedProcessed();
-
-            $callScroogeForSpeed = false;
-        }
-        // Populating default values in case scrooge does not return proper response
-        else if ($this->isRefundSpeedInstant() === true)
-        {
-            $response[self::SPEED_PROCESSED] = Speed::INSTANT;
-        }
-        else
-        {
-            $response[self::SPEED_PROCESSED] = Speed::NORMAL;
-        }
-
-        $response[self::SPEED_REQUESTED] = $this->getSpeedRequested();
-
-
-        $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($this->isScrooge() === true);
-
-        $callScroogeForStatus = (($refundPublicStatusFeatureEnabled === true) or
-            (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true));
-
-        if (($eligibleForScroogeCall === true) and
-            (($callScroogeForStatus === true) or ($callScroogeForSpeed === true)))
-        {
-            $app   = App::getFacadeRoot();
-            $trace = $app['trace'];
-
-            $queryParams = [
-                self::SPEED  => (int) $callScroogeForSpeed,
-                self::STATUS => (int) $callScroogeForStatus,
-            ];
-
-            try
-            {
-                $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID], $queryParams);
-
-                $scroogeResponseCode = $scroogeResponse[Constants::RESPONSE_CODE];
-
-                if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
-                {
-                    $scroogeResponseBody = $scroogeResponse[Constants::RESPONSE_BODY];
-
-                    $scroogeStatus =
-                        (empty($scroogeResponseBody[self::STATUS]) === false) ? $scroogeResponseBody[self::STATUS] : '';
-
-                    $scroogeSpeed =
-                        (empty($scroogeResponseBody[self::SPEED]) === false) ? $scroogeResponseBody[self::SPEED] : '';
-
-                    if (empty($scroogeStatus) === false)
-                    {
-                        $response[self::STATUS] = $scroogeStatus;
-                    }
-
-                    if (empty($scroogeSpeed) === false)
-                    {
-                        $response[self::SPEED_PROCESSED] = $scroogeSpeed;
-                    }
-                }
-            }
-            catch(\Throwable $e)
-            {
-                $trace->traceException(
-                    $e,
-                    Trace::WARNING,
-                    TraceCode::SCROOGE_GET_REFUND_STATUS_REQUEST_FAILED,
-                    [
-                        'refund_id' => $response[self::ID],
-                    ]);
-            }
-        }
-
-        if ((Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId()) === false) and
-            ($refundPublicStatusFeatureEnabled === false) and
-            ($response[self::SPEED_PROCESSED] === Speed::NORMAL))
-        {
-            $response[self::STATUS] = Status::PROCESSED;
-        }
-
-        return $response;
-    }
-
     /**
      * Overriding this function to get public refund status from scrooge
      *
@@ -1319,43 +1217,23 @@ class Entity extends Base\PublicEntity
     {
         $response = parent::toArrayPublic();
 
+        $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
+
         $refundPublicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
+        $cardTransferRefundFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND);
 
-        $data = [
-            Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED => $refundPublicStatusFeatureEnabled,
-        ];
-
-        $app = App::getFacadeRoot();
-
-        //
-        // Using razorx to ramp up instant refunds self serve
-        //
-        $variant = $app['razorx']->getTreatment($this->getMerchantId(),
-            Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
-            Mode::LIVE
-        );
-
-        if ($variant === Constants::RAZORX_VARIANT_ON)
+        if (($displayRefundPublicStatus === true) or
+            ($refundPublicStatusFeatureEnabled === true) or
+            ($cardTransferRefundFeatureEnabled === true))
         {
-            $scroogeResponse = $this->getPublicStatusWithInstantRefundsSelfServeExperiment($response, $data);
+            $data = [
+                Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED   => $refundPublicStatusFeatureEnabled,
+                Constants::CARD_TRANSFER_FEATURE_ENABLED_MERCHANT => $cardTransferRefundFeatureEnabled,
+            ];
+
+            $scroogeResponse = $this->getPublicStatus($response, $data);
 
             return $scroogeResponse;
-        }
-        else
-        {
-            $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
-            $cardTransferRefundFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND);
-
-            if (($displayRefundPublicStatus === true) or
-                ($refundPublicStatusFeatureEnabled === true) or
-                ($cardTransferRefundFeatureEnabled === true))
-            {
-                $data[Constants::CARD_TRANSFER_FEATURE_ENABLED_MERCHANT] = $cardTransferRefundFeatureEnabled;
-
-                $scroogeResponse = $this->getPublicStatusWithoutInstantRefundsSelfServeExperiment($response, $data);
-
-                return $scroogeResponse;
-            }
         }
 
         return $response;
