@@ -438,7 +438,7 @@ class Service extends Base\Service
 
             $fetchTerminalResponse = $client->fetchTerminalById($terminal->getId());
 
-            if ($this->isMigrateTerminalSuccess($terminal, $migrateTerminalResponse, $fetchTerminalResponse) === true)
+            if ($this->isMigrateTerminalSuccess($terminal, $fetchTerminalResponse) === true)
             {
                 $this->processMigrateTerminalSuccess($terminal);
 
@@ -589,7 +589,7 @@ class Service extends Base\Service
         {
             $fetchedTerminal = $this->app['terminals_service']->fetchTerminalById($terminal->getId());
 
-            if ($this->isMigrateTerminalSuccess($terminal, [], $fetchedTerminal) === true)
+            if ($this->isMigrateTerminalSuccess($terminal, $fetchedTerminal) === true)
             {
                 $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, $data);
             }
@@ -636,9 +636,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function isMigrateTerminalSuccess(Entity $terminal,
-                                                $migrateTerminalResponse,
-                                                $fetchTerminalResponse)
+    protected function isMigrateTerminalSuccess(Entity $terminal, $fetchTerminalResponse)
     {
         $originalTerminalArray = $terminal->toArrayWithPassword();
 
