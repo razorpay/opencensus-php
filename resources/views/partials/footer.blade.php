@@ -46,17 +46,32 @@
     var appEnvironment = window.location.hostname == "dashboard.razorpay.com" ? 'prod' : 'stage';
 
     if (window.analytics) {
-        analytics.init(
-          ['ga', 'lj'],
-          {
-            ga: 'UA-53341507-2',
-            lj:'{{$ljKey}}',
-          //  perf:'medash-{{$env}}'
-          },
-          isLocal,
-          appEnvironment,
-          disableEventEmitters
-        );
+        @if ($isConfirmed and $isPreSignupComplete)
+            analytics.init(
+              ['ga', 'lj'],
+              {
+                ga: 'UA-53341507-2',
+                lj:'{{$ljKey}}',
+              //  perf:'medash-{{$env}}'
+              },
+              isLocal,
+              appEnvironment,
+              disableEventEmitters
+            );
+        @else
+            analytics.init(
+              ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj', 'quora', 'reddit'],
+              {
+                ga: 'UA-53341507-2',
+                fb: '697927486977350',
+                lj:'{{$ljKey}}',
+              //  perf:'medash-{{$env}}'
+              },
+              isLocal,
+              appEnvironment,
+              disableEventEmitters
+            );
+        @endif
 
          // Init old key as well
         if(analytics.createQ){
