@@ -2,7 +2,7 @@
   <script src="https://cdn.razorpay.com/static/assets/holidays.js"></script>
   <script type="text/javascript">
 
-    const noop = ()=>{}
+    var noop = function(){};
     //Empty Interface for rzpQ
     window.rzpQ = {
       component: noop, //Track components
@@ -15,15 +15,21 @@
       interaction: noop,
       defineEventModifiers:noop,//Extends to set custom event properties
       //Any modifiers
-      onbr:()=>window.rzpQ,
-      merchantActions:()=>window.rzpQ,
+      onbr: function() {
+        return window.rzpQ;
+      },
+      merchantActions: function() {
+        return window.rzpQ;
+      },
       productOnboarding: function() {
         return window.rzpQ;
       },
       routeActions: function() {
         return window.rzpQ;
       },
-      reporting: () => window.rzpQ,
+      reporting: function() {
+        return window.rzpQ;
+      } 
     };
 
     //Above code doesn't perform any function, can avoid application breakage if the library is
