@@ -286,6 +286,12 @@ class Validator extends Base\Validator
      */
     protected function validateCaptcha(array $input)
     {
+        if ((isset($input[Entity::CAPTCHA_DISABLE])) and
+            ($input[Entity::CAPTCHA_DISABLE] === self::DISABLE_CAPTCHA_SECRET))
+        {
+            return;
+        }
+
         $app = App::getFacadeRoot();
 
         $emailData['email'] = $input[Entity::EMAIL];
