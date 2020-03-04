@@ -63,7 +63,7 @@ BAD_REQUEST_EXPIRED_VPA,Payment failed because VPA is marked as Expired,invalid_
 BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,Payment declined because it didn't pass all risk checks,risk_decline,Business,Customer,,Authentication,N
 BAD_REQUEST_PSP_DOESNT_EXIST,Invalid VPA. Please enter a valid Virtual Payment Address,invalid_psp,Technical,Merchant,,Payment_Request,N
 GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,Payment processing failed due to error at bank or wallet gateway,invalid_request,Technical,Merchant,,Payment_Request,D
-GATEWAY_ERROR_NO_ORIGINAL_DEBIT_CREDIT_REQUEST_FOUND,Payment processing failed due to error at bank or wallet gateway,,,Gateway,,Txnstatus_request,N
+GATEWAY_ERROR_NO_ORIGINAL_DEBIT_CREDIT_REQUEST_FOUND,Payment processing failed due to error at bank or wallet gateway,no_request_found,,Gateway,,Txnstatus_request,N
 BAD_REQUEST_PSP_ERROR,Payment failed at PSP,psp_error,Technical,PSP,,Payment_Request,D
 GATEWAY_ERROR_BENEFICIARY_TRANSACTION_NOT_PERMITTED,Transaction not permitted to cardholder on beneficiary side,invalid_beneficiary,Business,Issuing Bank,,Debit_response,N
 GATEWAY_ERROR_DO_NOT_HONOUR_REMITTER,Payment processing failed due to error at bank or wallet gateway,bank_decline,Business,Gateway,,Txnstatus_response,N
