@@ -55,7 +55,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'origin'        => $this->request->header('origin'),
             'client_ip'     => $this->getClientIp(),
             'server_ip'     => $this->request->server('SERVER_ADDR'),
-            'env'           => $this->env
+            'env'           => $this->env,
+            'user_agent'    => $this->request->header('User-Agent')
         ];
 
         return $serverData;

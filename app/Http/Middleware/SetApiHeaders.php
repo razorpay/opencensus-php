@@ -2,6 +2,7 @@
 
 use Auth;
 use Gate;
+use Session;
 use Closure;
 use App\Http\ApiUrl;
 use App\Http\Headers;
@@ -43,6 +44,8 @@ class SetApiHeaders {
         ApiRequest::addHeader('X-Org-Hostname', $domain);
 
         ApiRequest::addHeader('X-Request-Origin', $originDomain);
+
+        ApiRequest::addHeader('X-Dashboard-User-Session-Id', Session::getId());
 
         $csrfToken = $request->session()->token();
 
