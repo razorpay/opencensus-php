@@ -425,6 +425,10 @@ class Core extends Base\Core
         {
             $reserveType = 'reserve_' . $balanceType;
         }
+        else
+        {
+            return 0;
+        }
 
         try
         {
