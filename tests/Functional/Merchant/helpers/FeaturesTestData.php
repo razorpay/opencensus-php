@@ -786,7 +786,7 @@ return [
                     'axis_express_pay',
                     'pre_auth_shield_intg',
                     'bank_transfer_refund',
-                    'card_transfer_refund',
+                    'disable_instant_refunds',
                     'log_response',
                     'excess_order_amount',
                     'disable_amount_check',
