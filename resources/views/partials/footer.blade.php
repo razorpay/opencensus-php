@@ -29,7 +29,7 @@
       },
       reporting: function() {
         return window.rzpQ;
-      } 
+      }
     };
 
     //Above code doesn't perform any function, can avoid application breakage if the library is
@@ -47,10 +47,9 @@
 
     if (window.analytics) {
         analytics.init(
-          ['ga', 'fb', 'twitter', 'linkedin', 'bing','lj', 'quora', 'reddit'],
+          ['ga', 'lj'],
           {
             ga: 'UA-53341507-2',
-            fb: '697927486977350',
             lj:'{{$ljKey}}',
           //  perf:'medash-{{$env}}'
           },
