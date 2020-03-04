@@ -69,11 +69,7 @@ export default class User {
   get userRole() {
     if (this.current && Object.keys(this.merchants).length) {
       var currentMerchant = this.merchants[this.current];
-      // @TODO always use banking_role for X
-      if (
-        currentMerchant.product === 'banking' &&
-        currentMerchant.role === null
-      ) {
+      if (currentMerchant.product === 'banking') {
         return currentMerchant.banking_role;
       }
       return currentMerchant.role;
