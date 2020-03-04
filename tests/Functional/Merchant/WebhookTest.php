@@ -1266,6 +1266,8 @@ class WebhookTest extends TestCase
 
     public function testRefundSpeedChangedWebhookEventData()
     {
+        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
+
         $this->createWebhook(['events' => ['refund.speed_changed' => '1']]);
 
         $payment = $this->defaultAuthPayment();
@@ -1372,6 +1374,8 @@ class WebhookTest extends TestCase
 
     public function testRefundProcessedInstantWebhookEventData()
     {
+        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
+
         $this->createWebhook(['events' => ['refund.processed' => '1']]);
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
@@ -1422,6 +1426,8 @@ class WebhookTest extends TestCase
 
     public function testRefundProcessedNormalWebhookEventData()
     {
+        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
+
         $this->createWebhook(['events' => ['refund.processed' => '1']]);
 
         $payment = $this->defaultAuthPayment();

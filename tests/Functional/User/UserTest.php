@@ -106,7 +106,7 @@ class UserTest extends TestCase
                     ->method($methodName);
     }
 
-    public function testGetUser()
+    public function testGet()
     {
         $user = $this->fixtures->create('user');
 
@@ -119,40 +119,6 @@ class UserTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
-    }
-
-    public function testGetUserWithProductPrimary()
-    {
-        $user = $this->createUserToMerchantMapping();
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/users/' . $user->getId();
-
-        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
-
-        $this->ba->appAuth();
-
-        $response = $this->startTest();
-
-        assertTrue(2, count($response['merchants']));
-    }
-
-    public function testGetUserWithProductBanking()
-    {
-        $user = $this->createUserToMerchantMapping();
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/users/' . $user->getId();
-
-        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
-
-        $this->ba->appAuth();
-
-        $response = $this->startTest();
-
-        assertTrue(1, count($response['merchants']));
     }
 
     public function testGetForPartnerHavingConfigs()
@@ -2060,36 +2026,5 @@ class UserTest extends TestCase
         $this->assertEquals($response['contact_mobile_verified'], $userDb['contact_mobile_verified']);
 
         $this->assertEquals($testData['request']['content']['contact_mobile'], $userDb['contact_mobile']);
-    }
-
-    protected function createUserToMerchantMapping($primary = true, $banking = true)
-    {
-        $user = $this->fixtures->create('user');
-
-        $merchant = $this->fixtures->create('merchant');
-
-        if ($primary === true) {
-            $mappingDataForPrimaryProduct = [
-                'user_id'       => $user->getId(),
-                'merchant_id'   => $merchant->getId(),
-                'role'          => 'owner',
-                'product'       => 'primary',
-            ];
-
-            $this->fixtures->create('user:user_merchant_mapping', $mappingDataForPrimaryProduct);
-        }
-
-        if ($banking === true) {
-            $mappingDataForBankingProduct = [
-                'user_id'       => $user->getId(),
-                'merchant_id'   => $merchant->getId(),
-                'role'          => 'admin',
-                'product'       => 'banking',
-            ];
-
-            $this->fixtures->create('user:user_merchant_mapping', $mappingDataForBankingProduct);
-        }
-
-        return $user;
     }
 }

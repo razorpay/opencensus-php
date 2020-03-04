@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Refund;
 
 use RZP\Models\Pricing\Fee;
 use RZP\Services\Scrooge;
-use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
@@ -64,6 +63,8 @@ class RefundStatusTest extends TestCase
         $this->assertEquals($iin['issuer'], 'HDFC');
 
         $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
@@ -563,8 +564,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PROCESSED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL
+                'speed_requested'     => '',
+                'speed_processed'     => ''
             ],
             [
                 'db_status'           => Refund\Status::CREATED,
@@ -572,8 +573,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
                 'scrooge_status'      => Refund\Status::PENDING
             ],
             [
@@ -582,8 +583,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PROCESSED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
                 'scrooge_status'      => Refund\Status::PROCESSED
             ],
             [
@@ -592,8 +593,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::FAILED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
                 'scrooge_status'      => Refund\Status::FAILED
             ],
             [
@@ -602,8 +603,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
                 'scrooge_status'      => Refund\Status::PENDING
             ],
             [
@@ -612,8 +613,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PROCESSED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
                 'scrooge_status'      => Refund\Status::PROCESSED
             ],
             [
@@ -622,8 +623,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::FAILED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
                 'scrooge_status'      => Refund\Status::FAILED
             ],
             [
@@ -632,8 +633,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
                 'scrooge_status'      => Refund\Status::PENDING
             ],
             [
@@ -642,8 +643,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PROCESSED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
                 'scrooge_status'      => Refund\Status::PROCESSED
             ],
             [
@@ -652,8 +653,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::FAILED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
                 'scrooge_status'      => Refund\Status::FAILED
             ],
             [
@@ -662,8 +663,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::FAILED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL,
+                'speed_requested'     => '',
+                'speed_processed'     => '',
             ],
         ];
 
@@ -685,8 +686,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL
+                'speed_requested'     => '',
+                'speed_processed'     => ''
             ],
             [
                 'db_status'           => Refund\Status::INITIATED,
@@ -694,8 +695,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL
+                'speed_requested'     => '',
+                'speed_processed'     => ''
             ],
             [
                 'db_status'           => Refund\Status::FAILED,
@@ -703,8 +704,8 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PENDING,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL
+                'speed_requested'     => '',
+                'speed_processed'     => ''
             ],
             [
                 'db_status'           => Refund\Status::PROCESSED,
@@ -712,38 +713,11 @@ class RefundStatusTest extends TestCase
                 'db_speed_processed'  => Refund\Speed::NORMAL,
                 'db_speed_decisioned' => Refund\Speed::NORMAL,
                 'status'              => Refund\Status::PROCESSED,
-                'speed_requested'     => Refund\Speed::NORMAL,
-                'speed_processed'     => Refund\Speed::NORMAL
+                'speed_requested'     => '',
+                'speed_processed'     => '',
             ],
         ];
 
         $this->iterateOverDataAndAssertRefundResponse($callee, $refund, $data);
     }
-
-    public function testDisableInstantRefundsFeature()
-    {
-        $this->fixtures->merchant->addFeatures('disable_instant_refunds');
-
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->gateway = 'hdfc';
-
-        $data= [
-            'speed'=>'optimum'
-        ];
-
-        try
-        {
-            $this->refundPayment($payment['id'],$payment['amount'],$data);
-        }
-        catch ( \Exception $ex)
-        {
-            $this->assertEquals(ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED,$ex->getCode());
-            return ;
-        }
-
-        $this->fail();
-    }
-
 }
