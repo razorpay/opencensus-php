@@ -440,6 +440,21 @@ class Gateway extends Base\Gateway
                 $result[$key] = $values[$index];
             }
         }
+        catch (Exception\GatewayErrorException $e)
+        {
+            // Since Gateway Error Exception is only thrown from decrypt function
+            // We do not need to check for exception message as of now
+            // We also do not need to trace as the response, but we will still check for callback
+
+            // Note: Callback type is only passed from preProcessServerCallback and not from callback function
+            // The idea here is that preProcessServerCallback function can be safely retried
+            if ($type === Action::CALLBACK)
+            {
+                $e->markSafeRetryTrue();
+            }
+
+            throw $e;
+        }
         catch (\Exception $e)
         {
             $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
@@ -695,8 +710,23 @@ class Gateway extends Base\Gateway
      */
     public function decrypt(string $cipherText)
     {
-        return $this->getCipherInstance()
-                    ->decrypt($cipherText);
+        $response = $this->getCipherInstance()->decrypt($cipherText);
+
+        // In fact the library returns boolean false when decryption fails.
+        // But we are still taking empty string in context too.
+        //  1. For certain reasons decryption fails, we might still receive empty string
+        if (empty($response) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED,
+                null,
+                null,
+                [
+                    'cipherText' => $cipherText
+                ]);
+        }
+
+        return $response;
     }
 
     protected function getAuthorizeRequestArray($input)
@@ -1261,13 +1291,18 @@ class Gateway extends Base\Gateway
             'email'    => 'void@razorpay.com',
         ];
 
-        $terminal = [
-            'gateway_merchant_id' => $callbackData[ResponseFields::CALLBACK_RESPONSE_PGMID]
-        ];
+        $terminal = $this->getTerminalDetailsFromCallback($callbackData);
 
         return [
             'payment'  => $payment,
             'terminal' => $terminal
+        ];
+    }
+
+    public function getTerminalDetailsFromCallback($callbackData)
+    {
+        return [
+            'gateway_merchant_id' => $callbackData[ResponseFields::CALLBACK_RESPONSE_PGMID],
         ];
     }
 
