@@ -608,13 +608,18 @@ class Core extends Base\Core
     //
     public function dispatchAccountNumberForChannel(string $channel, array $input)
     {
-
         $limit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT]);
 
         if (empty($limit) === true)
         {
             $limit = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT;
         }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_CRON,
+            [
+                'channel'        => $channel,
+            ]);
 
         $accountNumbers = $this->repo->banking_account->fetchAccountNumberByChannel($channel, $limit);
 
