@@ -14,9 +14,6 @@
       setUser:noop, //Set a user one time
       interaction: noop,
       defineEventModifiers:noop,//Extends to set custom event properties
-    };
-
-    var rzpQ_Modifiers = {
       //Any modifiers
       onbr: function() {
         return window.rzpQ;
@@ -34,8 +31,6 @@
         return window.rzpQ;
       } 
     };
-
-    Object.assign(window.rzpQ, rzpQ_Modifiers);
 
     //Above code doesn't perform any function, can avoid application breakage if the library is
     //removed, not loaded or library code breaks anytime.
