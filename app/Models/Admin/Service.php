@@ -142,7 +142,7 @@ class Service extends Base\Service
     {
         $entity = $this->fetchEntityByNameAndId($entity, $id);
 
-        (new Terminal\Service)->compareTerminalFetchFromTerminalsService($entity);
+        (new Terminal\Service)->fetchFromTerminalsServiceAndCompare($entity);
 
         return $entity->toArrayAdmin($subMerchantFlag);
     }

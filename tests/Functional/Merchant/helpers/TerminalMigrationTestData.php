@@ -269,4 +269,15 @@ return [
             ]
         ],
     ],
+
+    'testAdminFetchTerminalByIdTerminalServiceValidResponse' => [
+        'request'    => [
+            'method'    => 'GET'
+        ],
+        'response'   => [
+            'content'   => [
+
+            ],
+        ],
+    ]
 ];

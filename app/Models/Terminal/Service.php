@@ -577,7 +577,7 @@ class Service extends Base\Service
      * BEWARE: it fails silently in case on any exception
      * @param Entity $terminal
      */
-    public function compareTerminalFetchFromTerminalsService(Entity $terminal)
+    public function fetchFromTerminalsServiceAndCompare(Entity $terminal)
     {
         $data = [
             'route'                      =>  $this->app['request.ctx']->getRoute(),

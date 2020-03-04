@@ -8,7 +8,9 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
+use RZP\Http\Request\Requests;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\DB;
 use RZP\Exception\IntegrationException;
@@ -19,6 +21,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class TerminalMigrationTest extends TestCase
 {
     use PaymentTrait;
+    use TestsMetrics;
 
     protected $razorxValue = RazorXClient::DEFAULT_CASE;
 
@@ -1172,5 +1175,49 @@ class TerminalMigrationTest extends TestCase
         $afterCount = $this->getMerchantTerminalCount('10000000000000', $terminal['id']);
 
         $this->assertEquals($beforeCount - 1, $afterCount);
+    }
+
+    // these are tests for asserting behavior for admin_fetch_terminal_by_id route
+    // in this route, we fetch terminal from API database
+    // we also fetch the same terminal from Terminals Service and compare for equality
+    // based on success/failure, we push metrics with dimensions.
+
+    public function testAdminFetchTerminalByIdTerminalServiceValidResponse()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+
+            $this->assertEquals("", $content);
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertStringEndsWith($terminal['id'], $path);
+
+            return $this->getDefaultTerminalServiceMerchantTerminalCreatedResponse();
+
+        }, 1);
+
+        $expected = [
+            'route'         => 'admin_fetch_terminal_by_id',
+            'exception'     => 0,
+            'terminal_id'   => $terminal['id'],
+        ];
+
+        $this->createMetricsMock()
+             ->expects($this->at(4))
+             ->method('count')
+             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
+
+        $url = '/admin/terminal/' . $terminal['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
     }
 }
