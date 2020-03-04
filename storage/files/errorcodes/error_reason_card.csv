@@ -2,7 +2,7 @@ internal_error_code,error_description,reason,failure_type,point_of_failure,next_
 GATEWAY_ERROR_CARD_NOT_ENROLLED,Card is not enrolled for 3D Secure authentication,Card_Not_Enrolled,,Customer,,Enrollment,
 BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED,The card is not enrolled for American Express SafeKey program. Please try another card.,Card_Not_Enrolled,,Customer,,Enrollment,
 GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED,The card does not support this type of purchase.,Network_Type_Not_Supported,Business,Customer,,Enrollment,I
-GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED,3D Secure authentication attempted,Attempted,,Customer,,Authentication,
+GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED,3D Secure authentication attempted,Failed,,Customer,,Authentication,
 BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,Customer authentication failed due to incorrect details,Incorrect_Details,Business,Customer,Retry with correct details/ another card,Authentication,D
 BAD_REQUEST_OTP_MAXIMUM_ATTEMPTS_REACHED,Customer has exceeded the max number of OTP attempts for card,Max_OTP_Attempts,Business,Customer,Retry with another card,Authentication,D
 BAD_REQUEST_PAYMENT_PIN_ATTEMPTS_EXCEEDED,Customer has exceeded the max number of pin attempts for card,Max_PIN_Attempts,Business,Customer,Retry with another card,Authentication,D
@@ -23,7 +23,7 @@ GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,Customer authentication failed due to
 BAD_REQUEST_AUTHENTICATION_FAILED,Customer authentication failed due to incorrect details,Failed,Technical,Customer,Retry with correct details/ another card,Authentication,I
 GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,Customer authentication failed due to incorrect details,Failed,Technical,Gateway,Retry with correct details/ another card,Authentication,D
 BAD_REQUEST_PAYMENT_CARD_DECLINED,Card Payment Declined,Card_Declined,Technical,Customer,Retry with another card,Authorization,D
-BAD_REQUEST_CARD_ISSUER_INVALID,"The card, or account the card is connected to, is invalid.",invalid_card,Business,Customer,Retry with another card,Authentication,D
+BAD_REQUEST_CARD_ISSUER_INVALID,"The card, or account the card is connected to, is invalid.",Card_Invalid,Business,Customer,Retry with another card,Authentication,D
 GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED,"The card, or account the card is connected to, is invalid.",BIN_Check_Failed,Business,Customer,Retry with another card,Authentication,D
 GATEWAY_ERROR_CARD_INVALID_NUMBER,The card number is incorrect.,Incorrect_Card_Number,Business,Customer,Retry with correct details/ another card,Authentication,D
 GATEWAY_ERROR_INVALID_CARD_TYPE,The card does not support this type of purchase.,Card_Type_Invalid,Business,Customer,Retry with correct details/ another card,Authentication,D
@@ -126,7 +126,7 @@ BAD_REQUEST_PAYMENT_INVALID_FORMAT,Payment Failed,Request_Invalid,Technical,Merc
 BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR,Invalid payment format,PARes_Invalid,Technical,Gateway,Non actionable,Authentication,N
 BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,Invalid account,Card_Invalid,Technical,Customer,Non actionable,Payment_Initiation,N
 GATEWAY_ERROR_NO_CREDIT_ACCOUNT,No Credit Account,Account_Invalid,Business,Customer,Non actionable,Payment_Initiation,N
-BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,No Credit Account,invalid_card,Business,Merchant,Non actionable,Payment_Initiation,N
+BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,No Credit Account,Card_Invalid,Business,Merchant,Non actionable,Payment_Initiation,N
 BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID,Unauthorized account used,Account_Invalid,Business,Customer,Non actionable,Payment_Initiation,N
 BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN,Transaction not permitted by card holder,Transaction_Not_Permitted,Technical,Customer,Retry with another card,Payment_Initiation,N
 BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED,Insufficient Balance - Razorpay limit exceeded,Limit_Exceeded,Business,Customer,Non actionable,Payment_Initiation,N

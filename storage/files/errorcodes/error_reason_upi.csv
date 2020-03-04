@@ -28,7 +28,7 @@ GATEWAY_ERROR_TOKEN_NOT_FOUND,Payment processing failed due to error at bank or 
 GATEWAY_ERROR_DENIED_BY_RISK,Payment processing failed due to error at bank or wallet gateway,risk_decline,Business,Issuing Bank,,Debit_response,N
 GATEWAY_ERROR_PAYMENT_REFUND_FAILED,Payment processing failed due to error at bank or wallet gateway,refund_failed,Technical,Gateway,,Refund,I
 GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY,Transaction processing declined on beneficiary side,invalid_beneficiary,Business,Gateway,,Payment_response,N
-server_error_AMOUNT_TAMPERED,The server encountered an error. The incident has been reported to admins.,amount_tampered,Technical,Customer/ Merchant/PSP,,Verification,N
+server_error_AMOUNT_TAMPERED,The server encountered an error. The incident has been reported to admins.,amount_tampered,Technical,Merchant,,Verification,N
 GATEWAY_ERROR_INVALID_TRANSACTION_INAPPROPRIATE_CODE_REMITTER,Payment processing failed due to error at bank or wallet gateway,invalid_transaction,,Issuing Bank,,Debit_response,N
 BAD_REQUEST_PAYMENT_UPI_RESTRICTED_VPA,Invalid VPA. Please enter a valid Virtual Payment Address,invalid_vpa,Business,Customer,,Authentication,N
 GATEWAY_ERROR_REMITTER_CBS_OFFLINE,"Banking system is offline, please try after sometime.",bank_server_unavailable,Technical,Issuing Bank,,Debit_request,I

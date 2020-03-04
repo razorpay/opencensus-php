@@ -1,9 +1,9 @@
 internal_error_code,error_description,reason,failure_type,point_of_failure,next_best_action,failure_stage,recoverable
-BAD_REQUEST_PAYMENT_TIMED_OUT,Payment was not completed on time.,payment_time_out,Technical,Customer,,Payment_response,
+BAD_REQUEST_PAYMENT_TIMED_OUT,Payment was not completed on time.,payment_timed_out,Technical,Customer,,Payment_response,
 BAD_REQUEST_PAYMENT_CANCELLED_BY_USER,Payment processing cancelled by user,user_cancelled,Business,Customer,,Payment_response,N
 BAD_REQUEST_PAYMENT_FAILED,Payment failed,payment_failed,Technical,Gateway,,Authorization,D
 BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,Payment processing via netbanking cancelled by user by clicking cancel on bank transfer page,user_cancelled,Business,Customer,,Payment_response,N
-GATEWAY_ERROR_REQUEST_TIMEOUT,The gateway request to submit payment information timed out. Please submit your details again,request_time_out,Technical,Gateway,,Payment_response,I
+GATEWAY_ERROR_REQUEST_TIMEOUT,The gateway request to submit payment information timed out. Please submit your details again,request_timed_out,Technical,Gateway,,Payment_response,I
 GATEWAY_ERROR_UNKNOWN_ERROR,Payment processing failed due to error at bank or wallet gateway,payment_failed,Technical,Gateway,,Bank_URL_Generation,I
 BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,Account Balance is insufficient,insufficient_funds,Business,Customer,,Authorization,N
 GATEWAY_ERROR_HEADLESS_PARSING_FAILED,Payment processing failed due to error at bank or wallet gateway,payment_failed,Technical,Gateway,,Bank_URL_Generation,I
