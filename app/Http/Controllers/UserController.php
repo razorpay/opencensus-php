@@ -80,6 +80,13 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkUpdateUserMapping()
+    {
+        $data = $this->service()->bulkUpdateUserMapping($this->input);
+
+        return ApiResponse::json($data);
+    }
+
     public function loginUser()
     {
         $input = Request::all();
@@ -236,6 +243,13 @@ class UserController extends Controller
         $input = Request::all();
 
         $data = $this->service()->accountLockUnlock($id, $action);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyUserThroughEmail()
+    {
+        $data = $this->service()->verifyUserThroughEmail($this->input);
 
         return ApiResponse::json($data);
     }

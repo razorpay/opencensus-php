@@ -269,9 +269,7 @@ class SubMerchantBatchTest extends TestCase
 
         Mail::fake();
 
-        $this->fixtures->merchant->markPartner();
-
-        $this->createPartnerApplicationAndGetClientByEnv('dev');
+        $this->markPartnerAndCreateApplication();
 
         $entries = $this->getDefaultFileEntries();
 
@@ -456,12 +454,11 @@ class SubMerchantBatchTest extends TestCase
                 'use_email_as_dummy' => 0,
                 'auto_activate'      => 1,
                 'auto_submit'        => 1,
-                'create_submerchant' => 0,
                 'autofill_details'   => 1,
             ]
         ];
 
-        $this->setUpForProcessing(__FUNCTION__);
+        $this->setUpForProcessingAndAddMerchantContext(__FUNCTION__);
 
         $data = &$this->testData[__FUNCTION__];
 
@@ -489,11 +486,27 @@ class SubMerchantBatchTest extends TestCase
 
     protected function setUpForProcessing($callee, $testData = 'defaultEntries'): array
     {
-        $this->fixtures->merchant->markPartner();
-
-        $this->createPartnerApplicationAndGetClientByEnv('dev');
+        $this->markPartnerAndCreateApplication();
 
         $entries = $this->testData[$testData];
+
+        $this->createAndPutExcelFileInRequest($entries, $callee);
+
+        return $entries;
+    }
+
+    protected function setUpForProcessingAndAddMerchantContext($callee, $testData = 'defaultEntries'): array
+    {
+        $this->markPartnerAndCreateApplication();
+
+        $entries = $this->testData[$testData];
+
+        foreach ($entries as &$entry)
+        {
+            $merchant = $this->getDbEntity('merchant', ['email' => $entry[Header::MERCHANT_EMAIL]]);
+
+            $entry[Header::MERCHANT_ID] = $merchant->getId();
+        }
 
         $this->createAndPutExcelFileInRequest($entries, $callee);
 
@@ -508,5 +521,12 @@ class SubMerchantBatchTest extends TestCase
         $this->assertEquals($success, $batch['success_count']);
         $this->assertEquals($failed, $batch['failure_count']);
         $this->assertEquals('processed', $batch['status']);
+    }
+
+    protected function markPartnerAndCreateApplication(): void
+    {
+        $this->fixtures->merchant->markPartner();
+
+        $this->createPartnerApplicationAndGetClientByEnv('dev');
     }
 }

@@ -2614,6 +2614,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                         'method'            => $this->getMethod(),
                     ]);
             }
+            // This is a temporary change will be removed once npci is good with the new changes.
+            if (($gateway === 'enach_npci_netbanking') and ($this->terminal->getGatewayMerchantId2() === 'true'))
+            {
+                return false;
+            }
 
             return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($gateway) === true);
         }
@@ -2666,12 +2671,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setPublicTerminalIdAttribute(array & $array)
     {
         $merchant = $this->merchant;
-        
+
         if ($merchant->isFeatureEnabledOnNonPurePlatformPartner(Feature\Constants::TERMINAL_ONBOARDING) === true)
         {
             $terminalId = $this->getTerminalId();
 
-            $signedTerminalId = isset($terminalId) ? (new Terminal\Entity())->getSignedId($terminalId) : null; 
+            $signedTerminalId = isset($terminalId) ? (new Terminal\Entity())->getSignedId($terminalId) : null;
 
             $array[self::TERMINAL_ID] = $signedTerminalId;
 

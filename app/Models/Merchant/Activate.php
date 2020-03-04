@@ -630,12 +630,18 @@ class Activate extends Base\Core
 
     protected function onBoardMerchantOnRazorpayxInTestMode(Entity $merchant)
     {
-        /** @var Merchant\Validator $merchantValidator */
-        $merchantValidator = $merchant->getValidator();
+        $isMerchantActive = $merchant->isActivated();
 
         try
         {
-            $merchantValidator->validateInstantActivationMandatoryAttributes();
+            // Perform these checks only if the merchant is not active
+            if ($isMerchantActive === false)
+            {
+                /** @var Merchant\Validator $merchantValidator */
+                $merchantValidator = $merchant->getValidator();
+
+                $merchantValidator->validateInstantActivationMandatoryAttributes();
+            }
         }
         catch (\Throwable $e)
         {

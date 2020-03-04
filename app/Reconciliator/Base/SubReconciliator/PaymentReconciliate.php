@@ -310,11 +310,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     public function resetRowProcessingAttributes()
     {
-        $this->payment            = null;
-        $this->reconciled         = false;
-        $this->paymentIin         = null;
-        $this->gatewayPayment     = null;
-        $this->paymentTransaction = null;
+        $this->payment                         = null;
+        $this->reconciled                      = false;
+        $this->paymentIin                      = null;
+        $this->gatewayPayment                  = null;
+        $this->paymentTransaction              = null;
+        $this->isPaymentIdRevalidatedOnGateway = false;
 
         parent::resetRowProcessingAttributes();
     }
@@ -337,11 +338,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         if ($this->payment->isRoutedThroughCardPayments() === true)
         {
             $this->cardsPaymentServiceDispatch($rowDetails);
-        }
-
-        if ($this->payment->isRoutedThroughNbPlus() === true)
-        {
-            $this->nbPlusPaymentServiceDispatch($rowDetails);
         }
     }
 
@@ -374,16 +370,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'payment_id' => $this->payment->getId(),
             ]
         );
-    }
-
-    /**
-     * This method has to be implemented in child class
-     * as the parameters and the job may vary based on the gateway
-     * @param array $rowDetails
-     */
-    protected function nbPlusPaymentServiceDispatch(array $rowDetails)
-    {
-        return;
     }
 
     protected function validatePaymentDetails(array $row)

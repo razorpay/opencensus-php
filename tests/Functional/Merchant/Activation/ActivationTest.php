@@ -378,8 +378,9 @@ class ActivationTest extends OAuthTestCase
             Config::set('applications.kyc.mock', true);
 
             $featureVariantMap = [
-                'non_registered_onboarding' => 'on',
-                'kyc_service_verification'  => 'on',
+                'non_registered_onboarding'    => 'on',
+                'kyc_service_verification'     => 'on',
+                'poi_kyc_service_verification' => 'on',
             ];
 
             $this->mockRazorXMultiFeature($test,$featureVariantMap);
@@ -1618,7 +1619,7 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
                                                   ['business_type'           => 2,
-                                                   'promoter_pan_name'       => 'mr vijay laxmi subramaniam',
+                                                   'promoter_pan_name'       => 'mr subramaniam laxmi vijay',
                                                    'bank_account_name'       => 'mr subramaniam laxmi vijay',
                                                    'poa_verification_status' => 'verified',
                                                    'poi_verification_status' => 'verified',
@@ -1679,28 +1680,6 @@ class ActivationTest extends OAuthTestCase
 
         $attribute = [
             ValidationEntity::REGISTERED_NAME => "random name",
-            ValidationEntity::ACCOUNT_STATUS  => "active",
-            ValidationEntity::NOTES           => [
-                ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],
-            ],
-        ];
-
-        $this->validateBankDetailFailureCase($attribute, $merchantDetail);
-    }
-
-    public function testFailureBankDetailsVerificationForBankNameMismatchCase()
-    {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'             => 2,
-                                                   'promoter_pan_name'         => 'pankaj kumar',
-                                                   'bank_account_name'         => 'puneet jain',
-                                                   'poa_verification_status'   => 'verified',
-                                                   'submitted'                 => 1,
-                                                   'kyc_clarification_reasons' => $this->getClarificationReason(),
-                                                   'submitted_at'              => now()->getTimestamp()]);
-
-        $attribute = [
-            ValidationEntity::REGISTERED_NAME => "pankaj kumar",
             ValidationEntity::ACCOUNT_STATUS  => "active",
             ValidationEntity::NOTES           => [
                 ValidationEntity::MERCHANT_ID => $merchantDetail['merchant_id'],

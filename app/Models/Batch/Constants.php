@@ -15,4 +15,8 @@ class Constants
     const BANK_DETAILS                   = 'bank_details';
     const CATEGORY_DETAILS               = 'category_details';
     const DEFAULT                        = 'default';
+    const BATCH_ACTION                   = 'batch_action';
+    const ENTITY                         = 'entity';
+
+    const IDEMPOTENCY_KEY                = 'idempotency_key';
 }

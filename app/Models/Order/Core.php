@@ -25,9 +25,13 @@ class Core extends Base\Core
      */
     public function create(array $input, Merchant\Entity $merchant, bool $partialPayment = false)
     {
+        $inputTrace = $input;
+
+        unset($inputTrace['bank_account']['account_number'], $inputTrace['bank_account']['name'], $inputTrace['notes']);
+
         $this->trace->info(
             TraceCode::ORDER_CREATE_REQUEST,
-            $input
+            $inputTrace
         );
 
         $order = new Entity;
@@ -142,7 +146,7 @@ class Core extends Base\Core
 
     protected function associateDefaultOffers(Entity $order)
     {
-        $defaultOffers = (new Offer\Core)->fetchDefaultOffers();
+        $defaultOffers = (new Offer\Core)->fetchDefaultOffersForMerchant($order->getMerchantId());
 
         foreach($defaultOffers as $offer)
         {

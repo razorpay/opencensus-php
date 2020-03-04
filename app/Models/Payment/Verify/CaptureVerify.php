@@ -12,7 +12,7 @@ use RZP\Trace\TraceCode;
 
 class CaptureVerify extends Verify
 {
-    public function verifyPayment(Payment\Entity $payment, string $filter = null)
+    public function verifyPayment(Payment\Entity $payment, string $filter = null, array $gatewayData = null)
     {
         $result = Result::SUCCESS;
 

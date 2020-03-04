@@ -56,6 +56,12 @@ class Validator extends Base\Validator
         'card_transfer.card_id'             => 'required_with:card_transfer|filled|unsigned_id',
     ];
 
+    protected static $retryBulkViaFtaRules = [
+        'refund_ids'      => 'required|sequential_array|max:1000',
+        'refund_ids.*'    => 'filled|unsigned_id',
+        'transfer_method' => 'required|in:source_vpa',
+    ];
+
     protected static $createValidators = [
         'paymentStatus',
         'paymentRefundStatus',
@@ -74,8 +80,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $markProcessedBulkRules = [
-        'refund_ids'    => 'required|sequential_array|max:1000',
-        'refund_ids.*'  => 'required|public_id',
+        'refund_ids'       => 'required|sequential_array|max:1000',
+        'refund_ids.*'     => 'required|public_id',
+        'processed_source' => 'required|string',
     ];
 
     protected static $customerRefundDetailsRules = [

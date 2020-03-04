@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Adjustment;
 
 use Mail;
+
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -172,6 +174,60 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($balanceId, $transaction['balance_id']);
 
         Mail::assertNotQueued(ReserveBalanceActivateMail::class);
+    }
+
+    public function testCreateNegativeAdjustmentWithLowBalance()
+    {
+        $this->fixtures->create(
+            'balance',
+            [
+                'id'            => '100def000def00',
+                'balance'       => 1000,
+                'type'          => 'primary',
+                'merchant_id'   => '100abc000abc00'
+            ]
+        );
+
+        $this->fixtures->create('balance_config',
+            [
+                'id'                            => '100yz000yz00yz',
+                'balance_id'                    => '100def000def00',
+                'type'                          => 'primary',
+                'negative_transaction_flows'   => ['adjustment'],
+                'negative_limit_auto'           => 5000,
+                'negative_limit_manual'         => 5000
+            ]
+        );
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getTreatment'])
+                            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                            ->willReturn('on');
+
+        $this->startTest();
+
+        $balance = $this->getDbEntity('balance', ['id' => '100def000def00']);
+
+        $this->assertEquals(-4000, $balance['balance']);
+    }
+
+    public function testCreateAdjustmentFromBatchRoute()
+    {
+        $this->fixtures->create('balance', [
+                'id'            => '100def000def00',
+                'balance'       => 10000,
+                'type'          => 'primary',
+                'merchant_id'   => '100abc000abc00'
+            ]);
+
+        $this->ba->batchAuth();
+
+        $this->startTest();
     }
 
     private function createFixtures(string $id = null)

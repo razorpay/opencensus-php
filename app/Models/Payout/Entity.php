@@ -144,7 +144,13 @@ class Entity extends Base\PublicEntity
 
     const MAX_PAYOUT_LIMIT = 10000000000;
 
+    // Used for composite API request input
+    const CONTACT = 'contact';
+    const PAYOUT  = 'payout';
+
     protected $queueFlag = false;
+
+    protected $composite = false;
 
     /**
      * In case of direct banking, we get the transactions directly from the bank. We don't create transactions
@@ -391,6 +397,8 @@ class Entity extends Base\PublicEntity
         'destination',
     ];
 
+    // ============================= RELATIONS =============================
+
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
@@ -474,6 +482,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(Batch\Entity::class);
     }
+
+    // ============================= END RELATIONS =============================
+
+    // ============================= GETTERS =============================
 
     public function getPurpose()
     {
@@ -804,6 +816,27 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IDEMPOTENCY_KEY);
     }
 
+    public function isComposite()
+    {
+        return ($this->composite === true);
+    }
+
+    public function getPricingFeatures()
+    {
+        return [];
+    }
+
+    public function getSourceFtsFundAccountId()
+    {
+        $bankingAccount = $this->balance->bankingAccount;
+
+        return optional($bankingAccount)->getFtsFundAccountId();
+    }
+
+    // ============================= END GETTERS =============================
+
+    // ============================= SETTERS =============================
+
     public function setQueueFlag($flag)
     {
         $this->queueFlag = $flag;
@@ -868,35 +901,6 @@ class Entity extends Base\PublicEntity
          $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
          SourceUpdater::dispatchToQueue($mode, $this, $currentStatus, $status);
-    }
-
-    protected function setStatusAttribute($status)
-    {
-        $previousStatus = $this->getStatus();
-
-        $this->attributes[self::STATUS] = $status;
-
-        if (in_array($status, Status::$timestampedStatuses, true) === true)
-        {
-            $timestampKey = $status . '_at';
-
-            //
-            // In case of queued, the payout moves from queued -> created.
-            // created_at is set when payout entity is created.
-            // But we want to know when payout moves to `created` state.
-            // We keep a track of this using `initiated_at`.
-            //
-            if ($status === Status::CREATED)
-            {
-                $timestampKey = self::INITIATED_AT;
-            }
-
-            $currentTime = Carbon::now()->getTimestamp();
-
-            $this->setAttribute($timestampKey, $currentTime);
-        }
-
-        Metric::pushStatusChangeMetrics($this, $previousStatus);
     }
 
     public function setInitiatedAt()
@@ -992,6 +996,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SETTLED_ON, $date);
     }
 
+    public function setComposite(bool $composite)
+    {
+        $this->composite = $composite;
+
+        return $this;
+    }
+
     public function setType($onDemand)
     {
         $this->setAttribute(self::TYPE, $onDemand);
@@ -1012,6 +1023,53 @@ class Entity extends Base\PublicEntity
         $this->increment(self::ATTEMPTS);
     }
 
+    public function setBatchId(string $batchId)
+    {
+        $this->setAttribute(self::BATCH_ID,$batchId);
+    }
+
+    public function setAmount($amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    // ============================= END SETTERS =============================
+
+    // ============================= MUTATORS =============================
+
+    protected function setStatusAttribute($status)
+    {
+        $previousStatus = $this->getStatus();
+
+        $this->attributes[self::STATUS] = $status;
+
+        if (in_array($status, Status::$timestampedStatuses, true) === true)
+        {
+            $timestampKey = $status . '_at';
+
+            //
+            // In case of queued, the payout moves from queued -> created.
+            // created_at is set when payout entity is created.
+            // But we want to know when payout moves to `created` state.
+            // We keep a track of this using `initiated_at`.
+            //
+            if ($status === Status::CREATED)
+            {
+                $timestampKey = self::INITIATED_AT;
+            }
+
+            $currentTime = Carbon::now()->getTimestamp();
+
+            $this->setAttribute($timestampKey, $currentTime);
+        }
+
+        Metric::pushStatusChangeMetrics($this, $previousStatus);
+    }
+
+    // ============================= END MUTATORS =============================
+
+    // ============================= ACCESSORS =============================
+
     protected function getSettledOnAttribute()
     {
         $timestamp = $this->attributes[self::SETTLED_ON];
@@ -1028,6 +1086,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->getStatus();
     }
+
+    // ============================= END ACCESSORS =============================
+
+    // ============================= PUBLIC SETTERS =============================
 
     public function setPublicPendingOnUserAttribute(array & $attributes)
     {
@@ -1157,11 +1219,6 @@ class Entity extends Base\PublicEntity
         $attributes[self::BATCH_ID] = Batch\Entity::getSignedIdOrNull($batchId);
     }
 
-    public function setBatchId(string $batchId)
-    {
-        $this->setAttribute(self::BATCH_ID,$batchId);
-    }
-
     public function setPublicFundAccountAttribute(array & $attributes)
     {
         //
@@ -1172,7 +1229,10 @@ class Entity extends Base\PublicEntity
         // It's possible that the fund_account is loaded in some flow. This check
         // ensures that it's always removed before sending out the response.
         //
-        if (app('basicauth')->isStrictPrivateAuth() === true)
+        // Don't forget fund_account if a composite payout request is made through strictPrivateAuth as we need to
+        // show fund_account in the response of composite payout.
+        if ((app('basicauth')->isStrictPrivateAuth() === true) and
+            ($this->isComposite() === false))
         {
             array_forget($attributes, self::FUND_ACCOUNT);
 
@@ -1373,22 +1433,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getPricingFeatures()
-    {
-        return [];
-    }
+    // ============================= END PUBLIC SETTERS =============================
 
-    public function setAmount($amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
-    }
-
-    public function getSourceFtsFundAccountId()
-    {
-        $bankingAccount = $this->balance->bankingAccount;
-
-        return optional($bankingAccount)->getFtsFundAccountId();
-    }
+    // ============================= MODIFIERS =============================
 
     protected function modifyNarration(& $input)
     {
@@ -1415,6 +1462,8 @@ class Entity extends Base\PublicEntity
 
         $input[self::NARRATION] = $narration;
     }
+
+    // ============================= END MODIFIERS =============================
 
     public function shouldNotifyTxnViaSms(): bool
     {

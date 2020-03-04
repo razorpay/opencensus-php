@@ -24,7 +24,11 @@ trait Transfer
 
         $payment = $this->createPaymentEntity($paymentData);
 
-        $this->trace->info(TraceCode::PAYMENT_CREATED, ['payment_id' => $payment->getId(), 'input' => $input]);
+        $inputTrace = $input;
+
+        unset($inputTrace['fta_data']['bank_account']['account_number'], $inputTrace['fta_data']['bank_account']['beneficiary_name']);
+
+        $this->trace->info(TraceCode::PAYMENT_CREATED, ['payment_id' => $payment->getId(), 'input' => $inputTrace]);
 
         $this->setPaymentAttributes($payment);
 

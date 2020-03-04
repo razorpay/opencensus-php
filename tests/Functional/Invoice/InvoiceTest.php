@@ -3005,7 +3005,145 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testAutoCaptureInvoiceOnLateAuthorizedPayment()
+    {
+        $payment = $this->createInvoiceAndFailedPayment();
+
+        $this->doPartialSuccessfulPaymentAndVerify();
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $order   = $this->getLastEntity('order', true);
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $payment = $this->getEntityById("payment", $payment["id"], true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertEquals('paid', $invoice['status']);
+    }
+
     // -------------------- Protected methods --------------------
+
+    protected function doPartialSuccessfulPaymentAndVerify()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $order   = $this->getLastEntity('order', true);
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $payment['order_id'] = $order["id"];
+
+        $payment['amount']   = 600;
+
+        $payment['card']['number'] = '5081597022059105';
+
+        unset($payment['card']['cvv']);
+
+        unset($payment['card']['expiry_month']);
+
+        unset($payment['card']['expiry_year']);
+
+        $expectedPaymentResponse = [
+            'status'     => 'captured',
+            'order_id'   => $order["id"],
+            'invoice_id' => $invoice["id"],
+        ];
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            return $content;
+        });
+
+        $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals('partially_paid', $invoice['status']);
+
+        $this->assertEquals(600, $invoice['amount_paid']);
+
+        $this->assertEquals(999400, $invoice['amount_due']);
+    }
+
+    protected function createInvoiceAndFailedPayment()
+    {
+        $this->app['config']->set('gateway.mock_hdfc', true);
+
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'id'              => '100000000order',
+                'payment_capture' => "1",
+                'partial_payment' => true,
+            ]);
+
+        $dueBy = Carbon::now(Timezone::IST)->addDays(10)->timestamp;
+
+        $this->fixtures->create(
+            'invoice',
+            [
+                'due_by' => $dueBy,
+                'amount' => 1000000,
+                'partial_payment' => true,
+            ]);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerVerifyContentFunction();
+
+        $this->doAuthPaymentAndCatchException($order);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->fixtures->edit("payment",$payment["id"],["status" => "failed"]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        return $payment;
+    }
+
+    protected function mockServerVerifyContentFunction()
+    {
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                throw new Exception\GatewayErrorException('GATEWAY_ERROR_UNKNOWN_ERROR');
+            }
+
+            if ($action === 'inquiry')
+            {
+                $content['RESPCODE'] = '0';
+                $content['RESPMSG'] = 'Transaction succeeded';
+                $content['STATUS'] = 'TXN_SUCCESS';
+            }
+
+            return $content;
+        });
+    }
+
+    protected function doAuthPaymentAndCatchException($order)
+    {
+        $this->makeRequestAndCatchException(function() use ($order)
+        {
+            $payment             = $this->getDefaultPaymentArray();
+            $payment['amount']   = 999400;
+            $payment['order_id'] = $order->getPublicId();
+
+            $content = $this->doAuthPayment($payment);
+
+            return $content;
+        });
+    }
 
     protected function assertInvoiceCreateResponse(array $response)
     {

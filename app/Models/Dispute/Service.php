@@ -23,19 +23,19 @@ class Service extends Base\Service
     use FileHandlerTrait;
 
     // Bulk disputes file related constants
-    const bulkCreateAction          = 'bulk_create';
-    const bulkEditAction            = 'bulk_edit';
-    const RZPDisputeID              = 'rzp_dispute_id';
-    const bulkDisputeCreateFileName = 'bulk_disputes_create_status';
-    const bulkDisputeEditFileName   = 'bulk_disputes_edit_status';
+    const BULK_CREATE_ACTION              = 'bulk_create';
+    const BULK_EDIT_ACTION                = 'bulk_edit';
+    const RZP_DISPUTE_ID                  = 'rzp_dispute_id';
+    const BULK_DISPUTE_CREATE_FILE_NAME   = 'bulk_disputes_create_status';
+    const BULK_DISPUTE_EDIT_FILE_NAME     = 'bulk_disputes_edit_status';
 
-    const bulkDisputeCreateDateFormat = 'd/m/Y H:i:s';
+    const BULK_DISPUTE_CREATE_DATE_FORMAT = 'd/m/Y H:i:s';
 
     // This is a limit on number of entries in bulk create/update file.
     // This can be removed once we handle files in Async batches
     const MAX_DISPUTE_ENTRIES = 5000;
 
-    const bulkCreateDisputesColumns = [
+    const BULK_CREATE_DISPUTE_COLUMNS = [
         Entity::PAYMENT_ID,
         Entity::GATEWAY_DISPUTE_ID,
         Entity::GATEWAY_DISPUTE_STATUS,
@@ -46,10 +46,9 @@ class Service extends Base\Service
         Entity::EXPIRES_ON,
         Entity::AMOUNT,
         Entity::SKIP_EMAIL,
-        Entity::CONTACT,
     ];
 
-    const bulkEditDisputesColumns = [
+    const BULK_EDIT_DISPUTES_COLUMNS = [
         Entity::ID,
         Entity::GATEWAY_DISPUTE_STATUS,
         Entity::STATUS,
@@ -57,14 +56,18 @@ class Service extends Base\Service
         Entity::COMMENTS,
     ];
 
-    const bulkCreateDisputesMailData = [
+    const BULK_CREATE_DISPUTES_MAIL_DATA = [
         Entity::ID,
         Entity::PAYMENT_ID,
         Entity::AMOUNT,
         Entity::GATEWAY_DISPUTE_ID,
         Entity::PHASE,
         Entity::RESPOND_BY,
-        Entity::CONTACT,
+    ];
+
+    const BULK_CREATE_DISPUTES_MAIL_REASON_DATA = [
+        Reason\Entity::GATEWAY_CODE,
+        Reason\Entity::GATEWAY_DESCRIPTION,
     ];
 
     public function create(array $input, string $paymentId, Payment\Entity $payment = null): array
@@ -114,14 +117,14 @@ class Service extends Base\Service
                 'input'      => $input,
             ]);
 
-        $data = $this->validateAndGetFileData($input, self::bulkCreateAction);
+        $data = $this->validateAndGetFileData($input, self::BULK_CREATE_ACTION);
 
         $orderKeys = $data[0];
 
         $outputFileData = $merchantData = $disputeData = [];
 
         $outputKeys   = $orderKeys;
-        $outputKeys[] = self::RZPDisputeID;
+        $outputKeys[] = self::RZP_DISPUTE_ID;
         $outputKeys[] = Constants::ERRORS;
 
         $outputFileData[] = $outputKeys;
@@ -140,22 +143,26 @@ class Service extends Base\Service
 
                 $merchant = $payment->merchant;
 
-                $createInput = $this->prepareInputForCreate($input);
+                $disputeReason = $this->getDisputeReasonEntity(
+                    $input[Reason\Entity::NETWORK],
+                    $input[Reason\Entity::NETWORK_CODE],
+                    $input[Reason\Entity::REASON_CODE]
+                );
+
+                $disputeReasonId = $disputeReason['id'];
+
+                $createInput = $this->prepareInputForCreate($disputeReasonId, $input);
 
                 $disputeEntity = $this->create($createInput, $paymentId, $payment);
 
                 // Prepares Mail body data
                 if ($input[Entity::SKIP_EMAIL] === false)
                 {
-                    $contact = empty($input[Entity::CONTACT]) ? 'N/A' : $input[Entity::CONTACT];
-
-                    $disputeEntity[Entity::CONTACT] = $contact;
-
                     $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::NAME]  = $merchant->getName();
                     $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::EMAIL] = $merchant->getEmail();
-                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]][Constants::DISPUTES][] = $disputeEntity[Entity::ID];
+                    $merchantData[$disputeEntity[Entity::MERCHANT_ID]][Constants::DISPUTES][$disputeEntity[Entity::PHASE]][] = $disputeEntity[Entity::ID];
 
-                    $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity);
+                    $disputeData[$disputeEntity[Entity::ID]] = $this->getDisputeDataForMail($disputeEntity, $disputeReason);
                 }
 
                 $row[] = $disputeEntity[Entity::ID];
@@ -172,7 +179,7 @@ class Service extends Base\Service
 
         $this->core()->sendAggregatedEmails($merchantData, $disputeData);
 
-        $url = (new File\Service)->generateFile($outputFileData, self::bulkDisputeCreateFileName);
+        $url = (new File\Service)->generateFile($outputFileData, self::BULK_DISPUTE_CREATE_FILE_NAME);
 
         return [
             'link' => $url,
@@ -193,7 +200,7 @@ class Service extends Base\Service
                 'input'      => $input,
             ]);
 
-        $data = $this->validateAndGetFileData($input, self::bulkEditAction);
+        $data = $this->validateAndGetFileData($input, self::BULK_EDIT_ACTION);
 
         $orderKeys = $data[0];
 
@@ -234,7 +241,7 @@ class Service extends Base\Service
             $outputFileData[] = $row;
         }
 
-        $url = (new File\Service)->generateFile($outputFileData, self::bulkDisputeEditFileName);
+        $url = (new File\Service)->generateFile($outputFileData, self::BULK_DISPUTE_EDIT_FILE_NAME);
 
         return [
             'link' => $url,
@@ -321,12 +328,12 @@ class Service extends Base\Service
 
         switch ($action)
         {
-            case self::bulkCreateAction :
-                $headers = self::bulkCreateDisputesColumns;
+            case self::BULK_CREATE_ACTION :
+                $headers = self::BULK_CREATE_DISPUTE_COLUMNS;
                 break;
 
-            case self::bulkEditAction :
-                $headers = self::bulkEditDisputesColumns;
+            case self::BULK_EDIT_ACTION :
+                $headers = self::BULK_EDIT_DISPUTES_COLUMNS;
                 break;
         }
 
@@ -341,28 +348,38 @@ class Service extends Base\Service
     }
 
     /**
-     * @param array $input
+     * @param string $network
+     * @param string $networkCode
+     * @param string $reasonCode
      * @return array
      * @throws Exception\RecoverableException
      */
-    public function prepareInputForCreate(array $input) : array
+    public function getDisputeReasonEntity(string $network, string $networkCode, string $reasonCode) : array
     {
         // Fetching Reason ID from dispute_reasons table
-        $reasonId = (new Reason\Service())->getReasonIdFromAttributes(
-            $input[Reason\Entity::NETWORK], $input[Reason\Entity::NETWORK_CODE], $input[Reason\Entity::REASON_CODE]);
+        $reasons = (new Reason\Service())->getReasonFromAttributes($network, $networkCode, $reasonCode);
 
-        if (count($reasonId) !== 1)
+        if (count($reasons) !== 1)
         {
             throw new Exception\RecoverableException(
                 'There are no entries/more than 1 entries in DB for the given combination of network_code and reason_code'
             );
         }
 
-        // skipping email for each creation
-        $input[Entity::SKIP_EMAIL] = true;
-        $input[Entity::REASON_ID] = $reasonId[0];
+        return $reasons[0];
+    }
 
-        unset($input[Entity::CONTACT]);
+    /**
+     * @param string $disputeReasonId
+     * @param array $input
+     * @return array
+     */
+    public function prepareInputForCreate(string $disputeReasonId, array $input) : array
+    {
+        // skipping individual dispute email for each creation
+        $input[Entity::SKIP_EMAIL] = true;
+        $input[Entity::REASON_ID] = $disputeReasonId;
+
         unset($input[Entity::PAYMENT_ID]);
         unset($input[Reason\Entity::NETWORK]);
         unset($input[Reason\Entity::NETWORK_CODE]);
@@ -447,13 +464,18 @@ class Service extends Base\Service
      * @param array $dispute
      * @return array
      */
-    public function getDisputeDataForMail(array $dispute) : array
+    public function getDisputeDataForMail(array $dispute, array $reason) : array
     {
         $disputeData = [];
 
-        foreach (self::bulkCreateDisputesMailData as $key)
+        foreach (self::BULK_CREATE_DISPUTES_MAIL_DATA as $key)
         {
             $disputeData[$key] = $dispute[$key];
+        }
+
+        foreach (self::BULK_CREATE_DISPUTES_MAIL_REASON_DATA as $key)
+        {
+            $disputeData[$key] = $reason[$key];
         }
 
         return $disputeData;
@@ -532,6 +554,25 @@ class Service extends Base\Service
         return $res;
     }
 
+    public function formatValuePhase($res)
+    {
+        if (empty($res) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'phase cant be empty'
+            );
+        }
+
+        if (Phase::exists($res) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid phase \'' . $res . '\''
+            );
+        }
+
+        return $res;
+    }
+
     public function formatValueRaisedOn($res)
     {
         if (empty($res) === true)
@@ -544,7 +585,7 @@ class Service extends Base\Service
 
         try
         {
-            $res = Carbon::createFromFormat(self::bulkDisputeCreateDateFormat, $res, Timezone::IST)->getTimestamp();
+            $res = Carbon::createFromFormat(self::BULK_DISPUTE_CREATE_DATE_FORMAT, $res, Timezone::IST)->getTimestamp();
         }
         catch (\Exception $ex)
         {
@@ -578,7 +619,7 @@ class Service extends Base\Service
 
         try
         {
-            $res = Carbon::createFromFormat(self::bulkDisputeCreateDateFormat, $res, Timezone::IST)->getTimestamp();
+            $res = Carbon::createFromFormat(self::BULK_DISPUTE_CREATE_DATE_FORMAT, $res, Timezone::IST)->getTimestamp();
         }
         catch (\Exception $ex)
         {

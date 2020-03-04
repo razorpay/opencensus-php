@@ -117,7 +117,7 @@ class BusinessCategory
             Sub::FREIGHT,
             Sub::COURIER,
             Sub::WAREHOUSING,
-            Sub::DISTRIBUTION_MANAGEMENT,
+            Sub::DISTRIBUTION,
             Sub::END_TO_END_LOGISTICS,
         ],
 

@@ -254,6 +254,8 @@ class Name
     const MANAGE_RENDERING_PREFERENCES  	  = 'manage_rendering_preferences';
     const UPDATE_DOWNTIME_CONFIG              = 'update_downtime_config';
     const LIST_DOWNTIME_CONFIG                = 'list_downtime_config';
+    const ADJUSTMENT_BATCH_UPLOAD             = 'adjustment_batch_upload';
+    const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
@@ -263,10 +265,13 @@ class Name
 
     // Perform write operations around stork integration e.g. webhook migrations etc
     const STORK_WRITE_OPERATION               = 'stork_write_operation';
+
     // Permissions for P2P Service
     const P2P_MANAGE_MERCHANT                 = 'p2p_manage_merchant';
 
     const EDIT_MERCHANT_WEBSITE_DETAIL        = 'edit_merchant_website_detail';
+    const OFFLINE_VERIFICATION_SERVICE_VIEW   = 'offline_verification_service_view';
+    const OFFLINE_VERIFICATION_SERVICE_EDIT   = 'offline_verification_service_edit';
 
     const CREATE_PAYOUT_BULK                  = 'create_payout_bulk';
     const APPROVE_PAYOUT_BULK                 = 'approve_payout_bulk';
@@ -275,6 +280,7 @@ class Name
     const REJECT_PAYOUT                       = 'reject_payout';
     const VIEW_PAYOUT                         = 'view_payout';
     const CANCEL_PAYOUT                       = 'cancel_payout';
+    const UPDATE_PAYOUT                       = 'update_payout';
     const VIEW_PAYOUT_PURPOSE                 = 'view_payout_purpose';
     const CREATE_PAYOUT_PURPOSE               = 'create_payout_purpose';
     const VIEW_PAYOUT_REVERSAL                = 'view_payout_reversal';
@@ -284,6 +290,12 @@ class Name
     const VIEW_PAYOUT_LINKS                   = 'view_payout_links';
     const CREATE_PAYOUT_LINKS                 = 'create_payout_links';
     const CANCEL_PAYOUT_LINKS                 = 'cancel_payout_links';
+    const SUMMARY_PAYOUT_LINKS                = 'summary_payout_links';
+    const ONBOARDING_PAYOUT_LINKS             = 'onboarding_payout_links';
+    const SETTINGS_PAYOUT_LINKS               = 'settings_payout_links';
+    const DASHBOARD_PAYOUT_LINKS              = 'dashboard_payout_links';
+    const RESEND_PAYOUT_LINKS                 = 'resend_payout_links';
+    const MERCHANT_CONFIG_LOGO                = 'merchant_config_logo';
     const VIEW_CONTACT                        = 'view_contact';
     const CREATE_CONTACT                      = 'create_contact';
     const CREATE_CONTACT_BULK                 = 'create_contact_bulk';
@@ -325,7 +337,7 @@ class Name
     const GENERATE_BANKING_ACCOUNT_STATEMENT  = 'generate_banking_account_statement';
     const MERCHANT_INSTANT_ACTIVATION         = 'merchant_instant_activation';
     const UPDATE_MERCHANT_FEATURE             = 'update_merchant_feature';
-
+    const UPDATE_TEST_MERCHANT_BALANCE        = 'update_test_merchant_balance';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

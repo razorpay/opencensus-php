@@ -28,13 +28,13 @@ class Repository extends Base\Repository
      * @param string $code
      * @return mixed
      */
-    public function getReasonIdFromAttributes(string $network, string $gatewayCode, string $code)
+    public function getReasonFromAttributes(string $network, string $gatewayCode, string $code)
     {
         return $this->newQuery()
-                    ->select(Entity::ID)
+                    ->select('*')
                     ->where(Entity::NETWORK, $network)
                     ->where(Entity::GATEWAY_CODE, $gatewayCode)
                     ->where(Entity::CODE, $code)
-                    ->pluck(Entity::ID);
+                    ->get();
     }
 }

@@ -56,11 +56,15 @@ class Constants
     const RESPONSE_BODY          = 'body';
     const RESPONSE_DATA          = 'data';
 
-    const ISSUER        = 'issuer';
-    const METHOD        = 'method';
-    const CARD_TYPE     = 'card_type';
-    const NETWORK_CODE  = 'network_code';
-    const AMOUNT        = 'amount';
+    const ISSUER          = 'issuer';
+    const METHOD          = 'method';
+    const CARD_TYPE       = 'card_type';
+    const NETWORK_CODE    = 'network_code';
+    const AMOUNT          = 'amount';
+    const TRANSFER_METHOD = 'transfer_method';
+    const SOURCE_VPA      = 'source_vpa';
+    const VPA             = 'vpa';
+    const VPA_ADDRESS     = 'address';
 
     /**
      * razorx experiments related constants
@@ -69,6 +73,8 @@ class Constants
 
     // Used to ack scrooge that update status request came from fta status update
     const FTA_UPDATE = 'fta_update';
+
+    const FT_UNKNOWN = 'FT_UNKNOWN';
 
     /**
      * Scrooge File Based Refunds request related constants
@@ -90,4 +96,7 @@ class Constants
     // Fetch Entities Related Constants
     const EXTRA_DATA = 'extra_data';
     const SCROOGE_MERCHANT_ID = 'merchant_id';
+
+    const DISPATCH_DELAY_TIME = 'dispatch_delay_time';
+    const DISPATCH_BATCH_SIZE = 5;
 }
