@@ -534,6 +534,12 @@ class Error extends Support\Fluent
             );
 
             $error = array_merge($error, $reasonArr);
+
+            $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
+                [
+                'error_response' => $error
+                ]
+            );
         }
 
         $error = $this->checkAndAddDataToErrorResp($error);

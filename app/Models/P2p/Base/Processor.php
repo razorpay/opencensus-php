@@ -3,13 +3,14 @@
 namespace RZP\Models\P2p\Base;
 
 use Crypt;
+use phpDocumentor\Reflection\Types\This;
 use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Device;
-use Illuminate\Support\Arr;
 use RZP\Exception\LogicException;
 use RZP\Gateway\P2p\Base\Response;
+use RZP\Exception\P2p\ProcessorException;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
-use RZP\Models\P2p\Base\Libraries\Context;
+use RZP\Exception\P2p\GatewayErrorException;
 use RZP\Models\P2p\Base\Traits\ApplicationTrait;
 
 /**
@@ -44,6 +45,11 @@ class Processor
      * @var Response
      */
     protected $gatewayResponse = null;
+
+    /**
+     * @var ProcessorException
+     */
+    private $exception = null;
 
     public function __construct()
     {
@@ -96,6 +102,41 @@ class Processor
         $className = str_replace('\Processor', '\Action', static::class);
 
         return new $className;
+    }
+
+    /******************************* Exception Functions *****************************/
+
+    /**
+     * Method set the processor exception in object,
+     *  1. Can not be overridden,
+     *  2. Can not be accessed from any where other than Processor
+     * @param ProcessorException $exception
+     */
+    final protected function setException(ProcessorException $exception)
+    {
+        $this->exception = $exception;
+    }
+
+    final protected function hasException(): bool
+    {
+        return ($this->exception instanceof ProcessorException);
+    }
+
+    final protected function getActualException()
+    {
+        return $this->exception->getActual();
+    }
+
+    protected function getTracableException()
+    {
+        if ($this->hasException() === true)
+        {
+            return [
+                'class'     => get_class($this->getActualException()),
+                'code'      => $this->getActualException()->getCode(),
+                'message'   => $this->getActualException()->getMessage(),
+            ];
+        }
     }
 
     /******************************* COMMON ACTIONS *****************************/
@@ -189,17 +230,25 @@ class Processor
             $response = $this->handleGatewaySuccess();
         }
 
+        // Even if there is exception and no response we would want to trace that
         $this->trace()->info(TraceCode::P2P_RESPONSE, [
             'action'    => $this->action,
             'entity'    => $this->getEntity(),
             'gateway'   => $this->getGateway(),
+            'exception' => $this->getTracableException(),
             'response'  => $this->redactForAction($response),
         ]);
+
+        // The exception can only be set from handleGatewayFailure or specific failure/success handler
+        if ($this->hasException() === true)
+        {
+            throw $this->getActualException();
+        }
 
         return $response;
     }
 
-    public function handleGatewaySuccess()
+    public function handleGatewaySuccess(): array
     {
         $action = $this->action . 'Success';
 
@@ -224,8 +273,23 @@ class Processor
         ]);
     }
 
-    public function handleGatewayFailure()
+    public function handleGatewayFailure(): array
     {
+        $error = $this->gatewayResponse->error();
+
+        $exception = new GatewayErrorException($error->get(Response::CODE),
+                                               $error->get(Response::GATEWAY_CODE,
+                                               $error->get(Response::DESCRIPTION)));
+
+        $this->setException(new ProcessorException($exception));
+
+        $action = $this->action . 'Failure';
+
+        if (method_exists($this, $action))
+        {
+            return $this->{$action}($this->gatewayResponse->data()->toArray());
+        }
+
         return [];
     }
 

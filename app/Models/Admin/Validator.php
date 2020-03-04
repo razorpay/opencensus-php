@@ -47,7 +47,7 @@ class Validator extends Base\Validator
         'Owner'                         => 'required',
         'Owner.Email'                   => 'required|email',
         'Owner_Role__c'                 => 'required|string',
-        'Managers_In_Role_Hierarchy__c' => 'required|string|custom',
+        'Managers_In_Role_Hierarchy__c' => 'sometimes|string|custom|nullable',
     ];
 
     protected static $setConfigKeysRules = [
@@ -94,7 +94,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $setRedisKeysRules = [
-        ConfigKey::FTS_TRANSFER_SLA                 => 'filled|array',
         ConfigKey::HEARTBEAT_ROUTES                 => 'filled|array',
         ConfigKey::DOWNTIME_THROTTLE                => 'filled|array',
         ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => 'filled|array',
@@ -151,7 +150,7 @@ class Validator extends Base\Validator
      */
     public function validateManagersInRoleHierarchyC(string $attribute, string $value)
     {
-        $value=rtrim($value,',');
+        $value = rtrim($value, ',');
 
         $emails = explode(',', $value);
 

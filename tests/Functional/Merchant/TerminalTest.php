@@ -446,6 +446,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaytmCardTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testDeleteTerminal()
     {
         $merchant = $this->fixtures
@@ -467,13 +476,13 @@ class TerminalTest extends TestCase
             'gateway'     => 'worldline',
             'status'      => 'pending'
         ]);
-        
+
         $terminalId = $terminal->getId();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/terminals/' . $terminalId;
 
         $terminal = $this->getEntityById('terminal', $terminalId, true);
-            
+
         $content = $this->startTest();
 
         $this->expectException(Exception\BadRequestException::class);
@@ -583,7 +592,6 @@ class TerminalTest extends TestCase
         $tid = $terminal['id'];
 
         $data = [
-            'gateway' => 'hitachi',
             'type'    => [
                 'recurring_non_3ds' => '1',
                 'recurring_3ds'     => '1',

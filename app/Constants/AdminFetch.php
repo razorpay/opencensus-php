@@ -1112,6 +1112,10 @@ class AdminFetch
                 ]
             ],
 
+            Entity::D2C_BUREAU_REPORT => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::EMI_PLAN => [
                 'bank' => [
                     Fetch::LABEL  => 'Bank',
@@ -1169,6 +1173,17 @@ class AdminFetch
                         'completed',
                         'failed',
                     ],
+                ],
+            ],
+
+            Entity::SETTLEMENT_DESTINATION => [
+                'settlement_id' => [
+                    Fetch::LABEL => 'Settlement ID',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'destination_type' => [
+                    Fetch::LABEL => 'destination type',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
 
@@ -1901,7 +1916,12 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => array_keys(Payout\Status::$internalToPublicStatusMap),
                 ],
-                'reference_id'    => [],
+                'reference_id'  => [],
+                'channel'       => [
+                    Fetch::LABEL    => 'Channel',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => Channel::getChannels(),
+                ],
             ],
 
             Entity::PAYTM => [

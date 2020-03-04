@@ -3,13 +3,11 @@
 namespace RZP\Services;
 
 use App;
-use Requests;
-use Requests_Hooks;
 
 use RZP\Constants\Shield as ShieldConstants;
 use RZP\Error\ErrorCode;
 use RZP\Exception\IntegrationException;
-use RZP\Http\Request\Request;
+use RZP\Http\Request\Requests;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\Network;
@@ -359,7 +357,7 @@ class ShieldClient implements ExternalService
 
         try
         {
-            $response = Request::request(
+            $response = Requests::request(
                 $url,
                 $headers,
                 $content,

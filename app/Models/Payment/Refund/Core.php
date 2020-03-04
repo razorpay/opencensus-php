@@ -68,7 +68,7 @@ class Core extends Base\Core
                     $data = [
                         Entity::STATUS        => Status::PROCESSED,
                         Entity::REFERENCE1    => $refund->getReference1(),
-                        Entity::MODE          => $ftaData['mode'] ?? '',
+                        Entity::MODE          => $ftaData[Entity::MODE] ?? Constants::FT_UNKNOWN,
                         Constants::FTA_UPDATE => true,
                     ];
 
@@ -196,12 +196,12 @@ class Core extends Base\Core
      */
     public static function fetchPublicStatusFromScrooge(string $merchantId): bool
     {
-        $fetchPublicStatusFromScrooge = true;
+        $fetchPublicStatusFromScrooge = false;
 
         if ((self::isRefundsPublicStatusMerchant($merchantId) === true) and
-            (self::getRefundsPublicStatusMerchantsViaScrooge()[$merchantId] === false))
+            (self::getRefundsPublicStatusMerchantsViaScrooge()[$merchantId] === true))
         {
-            $fetchPublicStatusFromScrooge = false;
+            $fetchPublicStatusFromScrooge = true;
         }
 
         return $fetchPublicStatusFromScrooge;

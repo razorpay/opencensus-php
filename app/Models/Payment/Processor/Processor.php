@@ -156,6 +156,11 @@ class Processor
     const CARD_PAYMENTS_PREFIX                  = 'card_payments_gateway_routing';
     const NB_PLUS_PAYMENTS_PREFIX               = 'nb_plus_payments_gateway_routing';
     const CARD_PAYMENTS_AUTHORIZE_ALL_TERMINALS = 'card_payments_authorize_all_terminals';
+
+    /**
+     * Card payment service feature flag
+     */
+    const CARD_PAYMENT_SERVICE_VARIANT_PREFIX          = 'cardps';
     /**
      * 3D Secure international feature flag
      */
@@ -292,7 +297,16 @@ class Processor
 
             $this->preProcessForUpiIfApplicable($input);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED);
+            $meta = [
+                'metadata' => [
+                    'trackId' => $this->app['req.context']->getTrackId()
+
+                ],
+                'read_key' => array('trackId'),
+                'write_key' => '',
+            ];
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED, null, null, $meta);
 
             $payment = $this->buildPaymentEntity($input);
 
@@ -326,7 +340,7 @@ class Processor
 
             $this->logRequestTime($payment, $startTime);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
 
             return $paymentData;
         }
@@ -343,7 +357,7 @@ class Processor
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
 
             throw $e;
         }
@@ -392,10 +406,10 @@ class Processor
         $metaDetails = [
             'metadata'  => $properties,
             'read_key'  => array(),
-            'write_key' => 'request.id',
+            'write_key' => 'trackId',
         ];
 
-        $metaDetails['metadata']['request']['id'] = $this->app['request']->getId();
+        $metaDetails['metadata']['trackId'] = $this->app['req.context']->getTrackId();
 
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $metaDetails, $properties);
     }
@@ -1232,7 +1246,21 @@ class Processor
     {
         if ($this->isCardPaymentServiceConfigEnabled() === true)
         {
+            if (Payment\Gateway::shouldAlwaysRouteThroughCardPaymentService($payment->getGateway()))
+            {
+                $this->setPaymentService($payment, self::CARD_PAYMENT_SERVICE_VARIANT_PREFIX);
+                return;
+            }
+
             $variant = $this->getRazorxVariant($payment, self::CARD_PAYMENTS_PREFIX);
+
+            // To route all ivr payments through payments-card
+            if (($variant !== 'cardps') and
+                (isset($gatewayInput['auth_type']) === true) and
+                ($gatewayInput['auth_type'] === 'ivr'))
+            {
+                $variant = 'cardps';
+            }
 
             $this->setPaymentService($payment, $variant);
         }
@@ -1290,6 +1318,7 @@ class Processor
 
     protected function setPaymentService(Payment\Entity $payment, $variant)
     {
+        //TODO Use Constants Here
         $variant = strtolower($variant);
 
         switch($variant)
@@ -2000,7 +2029,7 @@ class Processor
 
         $this->app['events']->fire('api.payment.failed', $eventPayload);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
     }
 
     protected function setPaymentError(Exception\BaseException $e, $traceCode)
@@ -2820,8 +2849,9 @@ class Processor
                 $input[Payment\Entity::CARD][Card\Entity::IIN] = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
             }
 
-            unset($input[Payment\Entity::CARD][Card\Entity::CVV]);
+            unset($input[Payment\Entity::CARD][Card\Entity::NAME]);
             unset($input[Payment\Entity::CARD][Card\Entity::NUMBER]);
+            unset($input[Payment\Entity::CARD][Card\Entity::CVV]);
         }
     }
 
@@ -3168,31 +3198,12 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice);
 
-        //
-        // There could be a case where the current time is greater
-        // than the expire_by of the invoice. But, if we haven't
-        // yet marked the invoice as expired, we still go ahead
-        // and capture the payment.
-        //
-
-        //
-        // Ideally this should check for `validateInvoicePayable` as a partially paid
-        // PL would qualify for this.
-        //
-        // TODO: Change/fix this and test complete flow including the exception
-        // cases with the feature BLOCK_PL_PAY_POST_EXPIRY set.
-        //
-        if ($invoice->isIssued() === false)
+        try
         {
-            $this->trace->debug(
-                TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
-                [
-                    'payment_id'        => $payment->getId(),
-                    'status'            => $payment->getStatus(),
-                    'invoice_id'        => $invoice->getId(),
-                    'invoice_status'    => $invoice->getStatus(),
-                ]);
-
+            $invoice->getValidator()->validateInvoicePayableForPayment($payment);
+        }
+        catch (Exception\BadRequestValidationFailureException $e)
+        {
             return false;
         }
 
@@ -3409,7 +3420,7 @@ class Processor
     {
         $payment = $this->retrieve($id);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED, $payment);
 
         $diff = time() - $payment->getCreatedAt();
 

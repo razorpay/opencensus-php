@@ -98,7 +98,7 @@ class BatchTest extends TestCase
             ['reference_id' => 'ref_21',
             'merchant_id'   => '100000razorpay',
             'amount'        => -1200,
-            'balance_type'  => 'primary',
+            'balance_type'  => '  ', // defaults to primary
             'description'   => 'loan payment'],
         ], __FUNCTION__);
 

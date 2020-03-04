@@ -16,7 +16,8 @@ use RZP\Trace\TraceCode;
 class BankingRole
 {
     // Static Roles
-    const VIEW_ONLY = Role::VIEW_ONLY;
+    const VIEW_ONLY  = Role::VIEW_ONLY;
+    const OPERATIONS = Role::OPERATIONS;
 
     //
     // Dynamic Roles:

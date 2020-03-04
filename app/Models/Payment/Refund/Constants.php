@@ -74,6 +74,8 @@ class Constants
     // Used to ack scrooge that update status request came from fta status update
     const FTA_UPDATE = 'fta_update';
 
+    const FT_UNKNOWN = 'FT_UNKNOWN';
+
     /**
      * Scrooge File Based Refunds request related constants
      */
