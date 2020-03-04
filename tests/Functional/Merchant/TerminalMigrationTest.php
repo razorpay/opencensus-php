@@ -1205,7 +1205,7 @@ class TerminalMigrationTest extends TestCase
 
         $expected = [
             'route'         => 'admin_fetch_terminal_by_id',
-            'exception'     => 0,
+            'message'       => 0,
             'terminal_id'   => $terminal['id'],
         ];
 
@@ -1220,4 +1220,50 @@ class TerminalMigrationTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testAdminFetchTerminalByIdTerminalServiceInvalidResponse()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ]);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+
+            $this->assertEquals("", $content);
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertStringEndsWith($terminal['id'], $path);
+
+            $data = $this->getTerminalToArrayPassword($terminal['id']);
+
+            $data['gateway_terminal_password'] = strrev($data['gateway_terminal_password']);
+
+            return $this->getDefaultTerminalServiceResponse($data);
+
+        }, 1);
+
+        $expected = [
+            'route'         => 'admin_fetch_terminal_by_id',
+            'message'       => 'field mismatch',
+            'terminal_id'   => $terminal['id'],
+        ];
+
+        $this->createMetricsMock()
+            ->expects($this->at(1))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, 1, $expected);
+
+
+
+        $url = '/admin/terminal/' . $terminal['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
 }

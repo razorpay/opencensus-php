@@ -581,7 +581,7 @@ class Service extends Base\Service
     {
         $data = [
             'route'                      =>  $this->app['request.ctx']->getRoute(),
-            'exception'                  => null,
+            'message'                    => null,
             Terminal\Entity::TERMINAL_ID => $terminal->getId(),
         ];
 
@@ -595,21 +595,22 @@ class Service extends Base\Service
             }
             else
             {
+                $data['message'] = 'field mismatch';
+
                 $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, $data);
             }
-
 
         }
         catch (\Exception $exception)
         {
-            $data['exception'] = $exception->getCode();
+            $data['message'] = $exception->getMessage();
 
             $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, $data);
 
         }
         catch (\Throwable $throwable)
         {
-            $data['exception'] = ErrorCode::SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR;
+            $data['message'] = $throwable->getMessage();
 
             $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, $data);
         }
