@@ -6,9 +6,11 @@ use Requests;
 use GuzzleHttp\Client;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
 use RZP\Models\PaperMandate;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\PaperMandate\PaperMandateUpload;
 
 class HyperVerge
 {
@@ -32,10 +34,79 @@ class HyperVerge
     const EXTRACT_NACH  = 'extractNach';
 
     const RESULT = 'result';
+    const DETAILS = 'details';
 
     const URLS = [
         self::GENERATE_NACH => 'populateNACH',
         self::EXTRACT_NACH  => 'readNACH',
+    ];
+
+    const UMRN                        = 'UMRN';
+    const NACH_DATE                   = 'nachDate';
+    const SPONSOR_CODE                = 'sponsorCode';
+    const UTILITY_CODE                = 'utilityCode';
+    const BANK_NAME                   = 'bankName';
+    const ACCOUNT_TYPE                = 'accountType';
+    const ACCOUNT_NUMBER              = 'accountNumber';
+    const IFSCCode                    = 'IFSCCode';
+    const MICR                        = 'MICR';
+    const COMPANY_NAME                = 'companyName';
+    const FREQUENCY                   = 'frequency';
+    const AMOUNT_IN_NUMBER            = 'amountInNumber';
+    const AMOUNT_IN_WORDS             = 'amountInWords';
+    const DEBIT_TYPE                  = 'debitType';
+    const START_DATE                  = 'startDate';
+    const END_DATE                    = 'endDate';
+    const UNTIL_CANCELLED             = 'untilCanceled';
+    const NACH_TYPE                   = 'NACHType';
+    const PHONE_NUMBER                = 'phoneNumber';
+    const EMAIL_ID                    = 'emailId';
+    const REFERENCE_1                 = 'reference1';
+    const REFERENCE_2                 = 'reference2';
+    const PRIMARY_ACCOUNT_HOLDER      = 'primaryAccountHolder';
+    const SECONDARY_ACCOUNT_HOLDER    = 'secondaryAccountHolder';
+    const TERTIARY_ACCOUNT_HOLDER     = 'tertiaryAccountHolder';
+    const SIGNATURE_PRESENT_PRIMARY   = 'signaturePresentPrimary';
+    const SIGNATURE_PRESENT_SECONDARY = 'signaturePresentSecondary';
+    const SIGNATURE_PRESENT_TERTIARY  = 'signaturePresentTertiary';
+    const ENHANCED_IMAGE              = 'base64AlignedJPEG';
+    const VALUE                       = 'value';
+    const FORM_CHECKSUM               = 'uid';
+    const SB                          = 'SB';
+    const CA                          = 'CA';
+
+    // error codes
+    const MISSING_OR_INVALID_CREDENTIALS = 'Missing/Invalid credentials';
+    const INTERNAL_SERVER_ERROR          = 'Internal server error';
+    const IMAGE_MISSING                  = 'Image input is missing';
+    const IMAGE_FORMAT_INVALID           = 'Image not one of the supported types (jpg/tiff/png)';
+    const MARKERS_NOT_DETECTED           = 'Reclick image - Unable to detect the markers';
+    const FORM_NOT_DETECTED              = 'No NACH detected';
+    const MARKERS_NOT_FOUND_BOTTOM_LEFT  = 'Markers not found : Bottom Left';
+    const MARKERS_NOT_FOUND_BOTTOM_RIGHT = 'Markers not found : Bottom Right';
+    const MARKERS_NOT_FOUND_TOP_RIGHT    = 'Markers not found : Top Right';
+    const MARKERS_NOT_FOUND_TOP_LEFT     = 'Markers not found : Top Left';
+
+    protected $errorCodes = [
+        self::MISSING_OR_INVALID_CREDENTIALS,
+        self::INTERNAL_SERVER_ERROR,
+        self::IMAGE_MISSING,
+        self::IMAGE_FORMAT_INVALID,
+        self::MARKERS_NOT_DETECTED,
+        self::FORM_NOT_DETECTED,
+        self::MARKERS_NOT_FOUND_BOTTOM_LEFT,
+        self::MARKERS_NOT_FOUND_BOTTOM_RIGHT,
+        self::MARKERS_NOT_FOUND_TOP_LEFT,
+        self::MARKERS_NOT_FOUND_TOP_RIGHT,
+    ];
+
+    protected $errorCodes4XX = [
+        self::FORM_NOT_DETECTED,
+        self::MARKERS_NOT_DETECTED,
+        self::MARKERS_NOT_FOUND_BOTTOM_LEFT,
+        self::MARKERS_NOT_FOUND_BOTTOM_RIGHT,
+        self::MARKERS_NOT_FOUND_TOP_LEFT,
+        self::MARKERS_NOT_FOUND_TOP_RIGHT,
     ];
 
     public function __construct($app)
@@ -140,13 +211,15 @@ class HyperVerge
         }
         catch (\Exception $e)
         {
-            if (($e->getCode() >= 400) and ($e->getCode() < 500))
+            $errorMessage = $this->getErrorMessage($e);
+
+            if ($this->is4xxException($e, $errorMessage) === true)
             {
                 throw (new BadRequestException(
                     ErrorCode::BAD_REQUEST_UNABLE_TO_READ_NACH_FORM,
                     null,
                     [$input, $paperMandate->toArrayPublic(), $e],
-                    'unable to read NACH form'
+                    $errorMessage
                 ));
             }
             else
@@ -154,7 +227,7 @@ class HyperVerge
                 throw new ServerErrorException(
                     'HyperVerge error',
                     ErrorCode::SERVER_ERROR_NACH_EXTRACTION_FAILED,
-                    [$input, $paperMandate->toArrayPublic()],
+                    [$input, $paperMandate->toArrayPublic(), $errorMessage],
                     $e
                 );
             }
@@ -171,7 +244,30 @@ class HyperVerge
 
         $data = json_decode($response->getBody()->getContents(), true);
 
-        return $data[self::RESULT];
+        return $this->mapExtractedData($data[self::RESULT][self::DETAILS]);
+    }
+
+    private function is4xxException(\Exception $e, $errorMessage): bool
+    {
+        $errorCode = $e->getCode();
+
+        if (($errorCode < 400) or
+            ($errorCode >= 500) or
+            (in_array($errorMessage, $this->errorCodes4XX) === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function getErrorMessage(\Exception $e)
+    {
+        $responseBody = $e->getResponse()->getBody()->getContents();
+
+        $response = json_decode($responseBody, true);
+
+        return $response['error'];
     }
 
     private function getHeaders(PaperMandate\Entity $paperMandate)
@@ -181,5 +277,87 @@ class HyperVerge
             'appKey'        => $this->appKey,
             'appId'         => $this->appId,
         ];
+    }
+
+    private function mapExtractedData(array $data): array
+    {
+        $extractedRawData = $data;
+
+        unset($extractedRawData[self::ENHANCED_IMAGE]);
+
+        $extractedRawData = json_encode($extractedRawData);
+
+        return [
+            PaperMandateUpload\Entity::EMAIL_ID                    => $data[self::EMAIL_ID][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::AMOUNT_IN_WORDS             => $data[self::AMOUNT_IN_WORDS][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::UTILITY_CODE                => $data[self::UTILITY_CODE][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::REFERENCE_1                 => $data[self::REFERENCE_1][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::BANK_NAME                   => $data[self::BANK_NAME][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::DEBIT_TYPE                  => $this->getFormattedDebitType($data[self::DEBIT_TYPE][self::VALUE] ?? ''),
+            PaperMandateUpload\Entity::MICR                        => $data[self::MICR][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::FREQUENCY                   => $this->getFormattedFrequency($data[self::FREQUENCY][self::VALUE] ?? ''),
+            PaperMandateUpload\Entity::SIGNATURE_PRESENT_TERTIARY  => $data[self::SIGNATURE_PRESENT_TERTIARY][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::UNTIL_CANCELLED             => $data[self::UNTIL_CANCELLED][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::SIGNATURE_PRESENT_SECONDARY => $data[self::SIGNATURE_PRESENT_SECONDARY][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::NACH_TYPE                   => $data[self::NACH_TYPE][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::ACCOUNT_NUMBER              => $data[self::ACCOUNT_NUMBER][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::NACH_DATE                   => $data[self::NACH_DATE][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::PHONE_NUMBER                => $data[self::PHONE_NUMBER][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::TERTIARY_ACCOUNT_HOLDER     => $data[self::TERTIARY_ACCOUNT_HOLDER][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::UMRN                        => $data[self::UMRN][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::COMPANY_NAME                => $data[self::COMPANY_NAME][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::IFSC_CODE                   => $data[self::IFSCCode][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::REFERENCE_2                 => $data[self::REFERENCE_2][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::ACCOUNT_TYPE                => $this->getFormattedAccountType($data[self::ACCOUNT_TYPE][self::VALUE] ?? ''),
+            PaperMandateUpload\Entity::AMOUNT_IN_NUMBER            => $data[self::AMOUNT_IN_NUMBER][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::END_DATE                    => $data[self::END_DATE][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::SPONSOR_CODE                => $data[self::SPONSOR_CODE][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::SIGNATURE_PRESENT_PRIMARY   => $data[self::SIGNATURE_PRESENT_PRIMARY][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::SECONDARY_ACCOUNT_HOLDER    => $data[self::SECONDARY_ACCOUNT_HOLDER][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::START_DATE                  => $data[self::START_DATE][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::PRIMARY_ACCOUNT_HOLDER      => $data[self::PRIMARY_ACCOUNT_HOLDER][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::FORM_CHECKSUM               => $data[self::FORM_CHECKSUM][self::VALUE] ?? '',
+            PaperMandateUpload\Entity::ENHANCED_IMAGE              => $data[self::ENHANCED_IMAGE] ?? '',
+            PaperMandateUpload\Entity::EXTRACTED_RAW_DATA          => $extractedRawData,
+        ];
+    }
+
+    private function getFormattedAccountType($accountType): string
+    {
+        switch ($accountType)
+        {
+            case self::SB:
+                return BankAccount\AccountType::SAVINGS;
+            case self::CA:
+                return BankAccount\AccountType::CURRENT;
+            default:
+                return '';
+        }
+    }
+
+    private function getFormattedFrequency($frequency): string
+    {
+        switch ($frequency)
+        {
+            case 'whenPresented':
+                return PaperMandate\Frequency::AS_AND_WHEN_PRESENTED;
+            case 'yearly':
+                return PaperMandate\Frequency::YEARLY;
+            default:
+                return '';
+        }
+    }
+
+    protected function getFormattedDebitType(string $debitType): string
+    {
+        switch ($debitType)
+        {
+            case 'fixedAmount':
+                return PaperMandate\DebitType::FIXED_AMOUNT;
+            case 'maximumAmount':
+                return PaperMandate\DebitType::MAXIMUM_AMOUNT;
+            default:
+                return '';
+        }
     }
 }
