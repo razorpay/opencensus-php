@@ -22,6 +22,7 @@ class Validator extends Base\Validator
     protected static $deregisterSuccessRules;
     protected static $updateWithActionRules;
     protected static $restoreDeviceRules;
+    protected static $reassignCustomerRules;
 
     public function rules()
     {
@@ -190,6 +191,16 @@ class Validator extends Base\Validator
             Vpa\Entity::DEFAULT     => 'sometimes|string|regex:/vpa_(\.*){14}/',
             'deleted'               => 'sometimes|array',
             'deleted.*'             => 'sometimes|string|regex:/vpa_(\.*){14}/',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeReassignCustomerRules()
+    {
+        $rules = $this->makeRules([
+            Entity::CUSTOMER_ID     => 'required|string|regex:/cust_(\.*){14}/',
+            'forced'                => 'sometimes|boolean|in:0,1',
         ]);
 
         return $rules;
