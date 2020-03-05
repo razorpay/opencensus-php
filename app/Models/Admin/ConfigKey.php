@@ -69,6 +69,8 @@ class ConfigKey
 
     const LOW_BALANCE_RX_EMAIL                  = self::PREFIX . 'low_balance_rx_email';
 
+    const RBL_STATEMENT_FETCH_ATTEMPT_LIMIT     = self::PREFIX . 'rbl_statement_fetch_attempt_limit';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -106,7 +108,8 @@ class ConfigKey
         self::FTS_PAYOUT_BANK_ACCOUNT,
         self::CARD_PAYMENT_SERVICE_ENABLED,
         self::NB_PLUS_SERVICE_ENABLED,
-        self::LOW_BALANCE_RX_EMAIL
+        self::LOW_BALANCE_RX_EMAIL,
+        self::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT
     ];
 
     public static function isSensitive(string $key)
