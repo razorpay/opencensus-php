@@ -1692,7 +1692,9 @@ class Core extends Base\Core
                                 Detail\Constants::BANK_DETAILS_VERIFICATION_STATUS => BankDetailsVerificationStatus::INITIATED
                             ]);
 
-        (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+        $fundAccountValidation = (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+
+        $merchantDetails->setFundAccountValidationId($fundAccountValidation->getId());
     }
 
     public function isAdditionalFieldRequired($field)

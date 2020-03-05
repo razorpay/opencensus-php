@@ -5635,3 +5635,6 @@ ALTER TABLE users
 
 ALTER TABLE blade
     MODIFY COLUMN amount BIGINT NOT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN fund_account_validation_id char(14) DEFAULT NULL;
