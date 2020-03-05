@@ -33,6 +33,7 @@ class ShieldClient implements ExternalService
     const REQUEST_TIMEOUT_OTHERS            = 2;
     const X_RAZORPAY_TASKID_HEADER          = 'X-Razorpay-TaskId';
     const X_REQUEST_ID                      = 'X-Request-ID';
+    const X_RZP_TESTCASE_ID                 = 'X-RZP-TESTCASE-ID';
 
     const TRACE_REQUEST_FEATURE    = 'shield_dns_trace';
 
@@ -351,6 +352,16 @@ class ShieldClient implements ExternalService
                     $content = json_encode($data, JSON_UNESCAPED_SLASHES);
                 }
                 break;
+        }
+
+        if ($this->app->environment('production') === false)
+        {
+            $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
+
+            if (empty($testCaseId) === false)
+            {
+                $headers[self::X_RZP_TESTCASE_ID] = $testCaseId;
+            }
         }
 
         $url = $this->baseUrl . $path;
