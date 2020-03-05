@@ -696,8 +696,10 @@ class ErrorCode
     const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_APPROVED                            = 'BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_APPROVED';
     const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_EXPIRED                                 = 'BAD_REQUEST_PAYLATER_CREDIT_LIMIT_EXPIRED';
 
-    // EMI errors
-    const BAD_REQUEST_EMI_CUSTOMER_NOT_ELIGIBLE                                     = 'BAD_REQUEST_EMI_CUSTOMER_NOT_ELIGIBLE';
+    // Debit card EMI errors
+    const BAD_REQUEST_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE                               = 'BAD_REQUEST_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE';
+    // HDFC wants us to show a specific error message here to customers. Hence adding gateway specific internal error code.
+    const BAD_REQUEST_DEBIT_EMI_HDFC_MAXIMUM_AMOUNT_LIMIT                           = 'BAD_REQUEST_DEBIT_EMI_HDFC_MAXIMUM_AMOUNT_LIMIT';
 
     const BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT                                 = 'BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT';
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                        = 'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD';
