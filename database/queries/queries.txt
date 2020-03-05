@@ -5616,9 +5616,6 @@ ALTER TABLE disputes
     ADD COLUMN gateway_amount BIGINT UNSIGNED DEFAULT NULL AFTER base_currency,
     ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL AFTER gateway_amount;
 
-ALTER TABLE `legal_entity`
-    modify `mcc` char(4) DEFAULT NULL ;
-
 ALTER TABLE merchant_details
     ADD COLUMN estd_year smallint(4) DEFAULT NULL,
     ADD COLUMN authorized_signatory_residential_address varchar(255) DEFAULT NULL,

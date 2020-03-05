@@ -771,7 +771,7 @@ class Entity extends Base\PublicEntity
     }
 
     public function isFeatureEnabledOnNonPurePlatformPartner(string $featureName): bool
-    {
+    {        
         $nonPurePlatformPartner = $this->getNonPurePlatformPartner();
 
         return isset($nonPurePlatformPartner) ? $nonPurePlatformPartner->isFeatureEnabled($featureName) : false;
@@ -1430,7 +1430,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CATEGORY);
     }
 
-    public function setCategory($category)
+    public function setCategory(int $category)
     {
         $this->setAttribute(self::CATEGORY, $category);
     }

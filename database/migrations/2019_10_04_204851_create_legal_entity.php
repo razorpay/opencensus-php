@@ -17,7 +17,8 @@ class CreateLegalEntity extends Migration
             $table->char(LegalEntity::ID, LegalEntity::ID_LENGTH)
                   ->primary();
 
-            $table->char(LegalEntity::MCC,4)
+            $table->integer(LegalEntity::MCC)
+                  ->unsigned()
                   ->nullable();
 
             $table->integer(LegalEntity::BUSINESS_TYPE)

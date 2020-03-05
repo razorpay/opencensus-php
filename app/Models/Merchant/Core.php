@@ -2581,7 +2581,7 @@ class Core extends Base\Core
             // Mcc can have values other then predefined values
             // for those cases we should return default values
             //
-            if (BusinessSubCategoryMetaData::isMccPresentInPredefinedList($merchant->getCategory()) === false)
+            if (BusinessSubCategoryMetaData::isMccPresentInPredefinedList((int) $merchant->getCategory()) === false)
             {
                 $this->trace->count(Metric::UNREGISTERED_BUSINESS_DEFAULT_LIMIT_USED_TOTAL);
 
