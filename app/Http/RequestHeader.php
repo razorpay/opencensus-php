@@ -61,12 +61,6 @@ class RequestHeader
     const AUTHORIZATION                 = 'AUTHORIZATION';
     const BEARER                        = 'Bearer';
 
-    /**
-     * Request header for Typeform auth
-     */
-
-    const TYPEFORM_SIGNATURE            =  'typeform-signature';
-
     // For testing purpose
     const X_RZP_TESTCASE_ID             = 'X-RZP-TESTCASE-ID';
 

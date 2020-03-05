@@ -1474,26 +1474,25 @@ final class Route
         'create_virtual_account_from_order'       => ['post',       'virtual_accounts/offline_qr',                              'VirtualAccountController@createOfflineQr'                 ],
 
         // Route for Success Rate Global Configurations
-        'update_sr_level_global_config'  => ['put', 'cutoffs/{id}', 'SuccessRateController@proxy'],
-        'get_all_sr_level_global_config' => ['get', 'cutoffs', 'SuccessRateController@proxy'],
+        'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
+        'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
 
         // Offline
-        'fetch_offline_device_multiple'  => ['get', 'offlines/devices', 'OfflineController@fetchMultiple'],
-        'register_offline_device'        => ['post', 'offlines/devices/register', 'OfflineController@registerDevice'],
-        'link_offline_device'            => ['post', 'offlines/devices/link', 'OfflineController@linkDevice'],
+        'fetch_offline_device_multiple'           => ['get',       'offlines/devices',                                          'OfflineController@fetchMultiple'                              ],
+        'register_offline_device'                 => ['post',      'offlines/devices/register',                                 'OfflineController@registerDevice'                             ],
+        'link_offline_device'                     => ['post',      'offlines/devices/link',                                     'OfflineController@linkDevice'                                 ],
 
-        'activate_test_offline_device'      => ['post', 't/offlines/devices/activate/initiate', 'OfflineController@initiateDeviceActivationTest'],
-        'activate_live_offline_device'      => ['post', 'l/offlines/devices/activate/initiate', 'OfflineController@initiateDeviceActivationLive'],
-        'offline_qr_poll_test_order_status' => ['get', 't/offlines/devices/{did}/virtual_accounts/{id}/order/status', 'OfflineController@fetchVaOrderStatusTest'],
-        'offline_qr_poll_live_order_status' => ['get', 'l/offlines/devices/{did}/virtual_accounts/{id}/order/status', 'OfflineController@fetchVaOrderStatusLive'],
+        'activate_test_offline_device'            => ['post',      't/offlines/devices/activate/initiate',                         'OfflineController@initiateDeviceActivationTest'            ],
+        'activate_live_offline_device'            => ['post',      'l/offlines/devices/activate/initiate',                         'OfflineController@initiateDeviceActivationLive'            ],
+        'offline_qr_poll_test_order_status'       => ['get',       't/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusTest'                  ],
+        'offline_qr_poll_live_order_status'       => ['get',       'l/offlines/devices/{did}/virtual_accounts/{id}/order/status',  'OfflineController@fetchVaOrderStatusLive'                  ],
 
-        'fd_reserve_balance_ticket'        => ['post', 'fd/reserve_balance/tickets', 'FreshdeskTicketController@postReserveBalanceTicketDetails'],
-        'fd_reserve_balance_ticket_status' => ['get', 'fd/reserve_balance/tickets/status', 'FreshdeskTicketController@getReserveBalanceTicketStatus'],
+        'fd_reserve_balance_ticket'                 => ['post',      'fd/reserve_balance/tickets',                                    'FreshdeskTicketController@postReserveBalanceTicketDetails'   ],
+        'fd_reserve_balance_ticket_status'          => ['get',       'fd/reserve_balance/tickets/status',                            'FreshdeskTicketController@getReserveBalanceTicketStatus'      ],
 
-        'entity_bulk_update'          => ['post', 'entities/bulk-update', 'MerchantController@merchantsBulkUpdate'],
-        'fetch_batch_actions'         => ['get', 'batch_actions', 'MerchantController@getBatchActions'],
-        'fetch_batch_action_entities' => ['get', 'batch_action_entities', 'MerchantController@getBatchActionEntities'],
-        'consume_typeform_webhook'    => ['post', 'typeform/webhook_consumption', 'TypeformController@webhookConsumption'],
+        'entity_bulk_update'                      => ['post',      'entities/bulk-update',                                         'MerchantController@merchantsBulkUpdate'                    ],
+        'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
+        'fetch_batch_action_entities'             => ['get',       'batch_action_entities',                                  'MerchantController@getBatchActionEntities'                 ],
     ];
 
     public static $public = [
@@ -3454,7 +3453,6 @@ final class Route
 
         'fetch_batch_action_entities'               => Permission::ADMIN_BATCH_CREATE,
         'fetch_batch_actions'                       => Permission::ADMIN_BATCH_CREATE,
-        'consume_typeform_webhook'                  => '*',
         'link_offline_device'                       => '*',
         'user_roles_mapping_bulk'                   => Permission::MAKE_API_CALL,
     ];
@@ -3670,7 +3668,6 @@ final class Route
         'activate_live_offline_device',
         'offline_qr_poll_test_order_status',
         'offline_qr_poll_live_order_status',
-        'consume_typeform_webhook',
     ];
 
     /**
@@ -4326,10 +4323,6 @@ final class Route
         'admin_fetch_entity_by_id',
     ];
 
-    const TYPEFORM_SECURITY = [
-        'consume_typeform_webhook',
-    ];
-
     /**
      * @var Router
      */
@@ -4623,12 +4616,6 @@ final class Route
         if (in_array($name, self::FAILURE_EVENTS_INTERCEPTOR_ROUTES, true) === true)
         {
             $route->middleware('failure_interceptor');
-        }
-
-        if (in_array($name, self::TYPEFORM_SECURITY, true) === true)
-        {
-
-            $route->middleware('typeform_auth');
         }
     }
 
