@@ -76,6 +76,8 @@ class ConfigKey
 
     const BLOCK_YESBANK_PAYOUTS = self::PREFIX . 'block_yesbank_payouts';
 
+    const BLOCK_X_REGISTRATION                  = self::PREFIX. 'block_x_registration';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -116,6 +118,7 @@ class ConfigKey
         self::LOW_BALANCE_RX_EMAIL,
         self::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT,
         self::BLOCK_YESBANK_PAYOUTS,
+        self::BLOCK_X_REGISTRATION,
     ];
 
     public static function isSensitive(string $key)

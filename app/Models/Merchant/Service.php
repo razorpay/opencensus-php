@@ -42,6 +42,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Admin as MainAdmin;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
@@ -3494,6 +3495,29 @@ class Service extends Base\Service
 
     public function switchProductMerchant($product = null)
     {
+        // TODO: remove this once Yesbank issue is resolved
+        $merchant = $this->auth->getMerchant();
+
+        if (($merchant->isBusinessBankingEnabled() === false) and
+            (($product === Product::BANKING) or
+             ($this->auth->getRequestOriginProduct() === Product::BANKING)))
+        {
+            $config = (new MainAdmin\Service)->getConfigKey(['key' => MainAdmin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
+
+            if (boolval($config) === true)
+            {
+                $this->trace->info(
+                    TraceCode::BLOCKING_RX_PRODUCT_SWITCH_TEMPORARILY,
+                    [
+                        'product'           => $product,
+                        'business_banking'  => false,
+                        'config'            => $config
+                    ]);
+
+                return;
+            }
+        }
+
         $this->repo->transactionOnLiveAndTest(function() use ($product)
         {
             // Add Banking Role for the current merchant User.

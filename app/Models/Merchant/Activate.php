@@ -3,10 +3,12 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+use RZP\Error\ErrorCode;
 use Throwable;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -561,6 +563,8 @@ class Activate extends Base\Core
 
         if ($onboardMerchant === true)
         {
+            $this->blockRxActivationIfApplicable($merchant);
+
             // Create Banking Balance
             $balance = (new Balance\Core)->createOrFetchSharedBankingBalance($merchant, $mode);
 
@@ -580,6 +584,22 @@ class Activate extends Base\Core
                 ]);
 
             $this->addPayoutFeatureIfApplicable($merchant, $mode);
+        }
+    }
+
+    protected function blockRxActivationIfApplicable($merchant)
+    {
+        $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
+
+        if (boolval($config) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_BLOCKING_RX_ACTIVATIONS,
+                [
+                    'onboard_merchant'  => true,
+                    'merchant_id'       => $merchant->getId(),
+                    'config'            => $config,
+                ]);
         }
     }
 

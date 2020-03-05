@@ -43,6 +43,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY                             = 'Payouts are temporarily blocked. Please contact support.';
+    const BAD_REQUEST_BLOCKING_RX_ACTIVATIONS                                   = 'RazorpayX activations are currently blocked';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_PAYMENT_NOT_FOUND                                         = 'The requested payment was not found on the server';
