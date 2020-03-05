@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import FileUploadInputButton from 'common/ui/FileUpload/InputButton';
 import { titleCase } from 'common/utils/rzp-utils';
-import ProceedModal from 'merchant/containers/PaymentLinks/BatchUpload/ProceedModal';
+import ProceedModal from './ProceedModal';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import ShowWhen from 'merchant/components/ShowWhen';
 

@@ -3,11 +3,11 @@ import { connect } from 'react-redux';
 import DataTable from 'common/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
 import HeaderAction from 'common/ui/HeaderAction';
-import BatchListFilter from 'merchant/components/Batch/ListFilter';
 import { batchId, totalCount, status, createdAt } from 'common/ui/item/pair';
 import { batchDownload } from 'merchant/reducers/batches';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
+import BatchListFilter from './BatchListFilter';
 
 const batchName = {
   title: 'Name',

@@ -6,12 +6,12 @@ import { getURLQueryParams } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import PaymentsList from 'merchant/views/Transactions/Payments/List';
-import PaymentsBatchList from 'merchant/views/Transactions/Payments/BatchList';
 import RefundsList from 'merchant/views/Transactions/Refunds/List';
-import BatchUpload from 'merchant/views/Transactions/Refunds/BatchUpload';
-import BatchUploads from 'merchant/views/Transactions/Refunds/BatchList';
 import OrdersList from 'merchant/views/Transactions/Orders/List';
 import DisputesList from 'merchant/views/Transactions/Disputes/List';
+import BatchPaymentsList from 'merchant/views/Transactions/BatchPayments/List';
+import BatchRefundsList from 'merchant/views/Transactions/BatchRefunds/List';
+import BatchRefundsUpload from 'merchant/views/Transactions/BatchRefunds/BatchUpload';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import { fetchSettlementAmount } from 'merchant/reducers/home';
@@ -192,8 +192,8 @@ export default class TransactionsContainer extends Component {
 
         <content>
           <Switch>
-            <Route path="/refunds/batchupload" component={BatchUpload} />
-            <Route path="/refunds/batchuploads" component={BatchUploads} />
+            <Route path="/refunds/batchupload" component={BatchRefundsUpload} />
+            <Route path="/refunds/batchuploads" component={BatchRefundsList} />
             <Route path="/refunds" component={RefundsList} />
             <ShowWhenRoute
               path="/orders"
@@ -202,11 +202,11 @@ export default class TransactionsContainer extends Component {
             />
             <Route
               path="/payments/batchuploads/:mode"
-              component={PaymentsBatchList}
+              component={BatchPaymentsList}
             />
             <Route
               path="/payments/batchuploads"
-              component={PaymentsBatchList}
+              component={BatchPaymentsList}
             />
             <Route path="/payments" component={PaymentsList} />
             <Route path="/disputes" component={DisputesList} />

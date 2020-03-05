@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import BatchUpload from 'merchant/components/Batch/Upload';
+import BatchUpload from './components/BatchUpload';
 
 import { uploadRefundBatch as uploadBatch } from 'merchant/reducers/batches';
 import { showNotification } from 'merchant_common/reducers/notifications';
