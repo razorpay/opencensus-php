@@ -84,7 +84,7 @@ class EbsGatewayTest extends TestCase
 
     public function testPaymentForBankWithFormRedirect()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray('UTIB');
+        $payment = $this->getDefaultNetbankingPaymentArray('UBIN');
         $payment = $this->doAuthPayment($payment);
 
         $txn = $this->getLastEntity('transaction', true);
