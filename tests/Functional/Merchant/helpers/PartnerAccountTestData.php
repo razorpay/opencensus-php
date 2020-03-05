@@ -50,7 +50,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               => '7011',
                     'brand'             => [
                         'icon'  => 'https://rtll.com/file/icon.jpg',
                         'logo'  => 'https://rtll.com/file/logo.jpg',
@@ -175,7 +175,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                     'dashboard_display' => 'Ratnalal',
                     'website'           => 'https://medium.com',
                     'billing_label'     => 'Ratnalal',
@@ -277,7 +277,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 7011,
+                    'mcc'               => '7011',
                     'billing_label'     => 'Ratnalal',
                 ],
             ],
@@ -309,7 +309,7 @@ return [
                     ],
                     'name'           => 'Ratnalal Jewellers',
                     'description'    => null,
-                    'mcc'            => 7011,
+                    'mcc'            =>'7011',
                     'business_model' => null,
                     'brand' => [
                         'icon'  => null,
@@ -398,7 +398,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 7011,
+                    'mcc'               => '7011',
                     'billing_label'     => 'Ratnalal',
                 ],
                 'settlement' => [
@@ -463,7 +463,7 @@ return [
                     'name'              => 'New Ratnalal Jewellers',
                     'description'       => 'New This is a test business',
                     'business_model'    => 'B2C',
-                    'mcc'               => 8931,
+                    'mcc'               => '8931',
                     'brand'             => [
                         'icon'  => 'https://newrtll.com/file/icon.jpg',
                         'logo'  => 'https://newrtll.com/file/logo.jpg',
@@ -557,7 +557,7 @@ return [
                     'name'              => 'New Ratnalal Jewellers',
                     'description'       => 'New This is a test business',
                     'business_model'    => 'B2C',
-                    'mcc'               => 8931,
+                    'mcc'               =>'8931',
                     'brand'             => [
                         'icon'  => 'https://newrtll.com/file/icon.jpg',
                         'logo'  => 'https://newrtll.com/file/logo.jpg',
@@ -682,7 +682,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                     'brand'             => [
                         'icon'  => 'https://rtll.com/file/icon.jpg',
                         'logo'  => 'https://rtll.com/file/logo.jpg',
@@ -793,7 +793,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
@@ -985,7 +985,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               => '7011',
                     'brand'             => [
                         'icon'  => 'https://rtll.com/file/icon.jpg',
                         'logo'  => 'https://rtll.com/file/logo.jpg',
@@ -1144,7 +1144,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                     'dashboard_display' => 'Ratnalal',
                     'website'           => 'https://medium.com',
                     'billing_label'     => 'Ratnalal',
@@ -1330,7 +1330,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 8398,
+                    'mcc'               => '8398',
                     'billing_label'     => 'Ratnalal',
                     'identification'    => [
                         [
@@ -1405,7 +1405,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 8398,
+                    'mcc'               => '8398',
                     'billing_label'     => 'Ratnalal',
                     'identification'    => [
                         [
@@ -1512,7 +1512,7 @@ return [
                     ],
                     'name'           => 'Ratnalal Jewellers',
                     'description'    => null,
-                    'mcc'            => 8398,
+                    'mcc'            =>'8398',
                     'business_model' => null,
                     'brand' => [
                         'icon'  => null,
@@ -1622,7 +1622,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                     'dashboard_display' => 'Ratnalal',
                     'website'           => 'https://medium.com',
                     'billing_label'     => 'Ratnalal',
@@ -1730,7 +1730,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 7011,
+                    'mcc'               => '7011',
                     'billing_label'     => 'Ratnalal',
                     'identification'    => [
                         [
@@ -1797,7 +1797,7 @@ return [
                     ],
                     'name'           => 'Ratnalal Jewellers',
                     'description'    => null,
-                    'mcc'            => 7011,
+                    'mcc'            =>'7011',
                     'business_model' => null,
                     'brand' => [
                         'icon'  => null,
@@ -1883,7 +1883,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                     'dashboard_display' => 'Ratnalal',
                     'website'           => 'https://medium.com',
                     'billing_label'     => 'Ratnalal',
