@@ -1056,8 +1056,8 @@ angular
 
         // Check if url has http/https, otherwise prefix http
         autoPrefixUrls: function(url) {
-          const regex = /^https?:\/\//i;
-          let tempUrl;
+          var regex = /^https?:\/\//i;
+          var tempUrl;
 
           if (!url || url.length === 0) {
             return url;
