@@ -1352,6 +1352,18 @@ class RefundTest extends TestCase
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
 
+        $this->fixtures->refund->edit(
+            $rfnd['id'],
+            [
+                'speed_requested'  => 'normal',
+                'speed_decisioned' => 'normal',
+                'speed_processed'  => 'normal',
+                'status'           => 'processed'
+            ]
+        );
+
+        $rfnd = $this->getDbEntityById('refund', $rfnd['id']);
+
         $actual = $rfnd->toArrayPublic();
         $actual['acquirer_data'] = $rfnd->getAcquirerData()->toArray();
 
@@ -2334,6 +2346,7 @@ class RefundTest extends TestCase
         });
 
         $this->fixtures->merchant->addFeatures('card_transfer_refund');
+        $this->fixtures->merchant->addFeatures('disable_instant_refunds');
 
         $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
 
