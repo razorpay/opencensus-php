@@ -482,4 +482,9 @@ return [
         ],
 
     ],
+
+    'typeform' => [
+        'typeform_webhook_secret'  => env('TYPEFORM_WEBHOOK_SECRET'),
+        'typeform_encryption_algo' => env('TYPEFORM_ENCRYPTION_ALGO'),
+    ]
 ];

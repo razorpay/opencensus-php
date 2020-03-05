@@ -337,6 +337,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_USER_ACTION_NOT_SUPPORTED                    = 'MERCHANT_USER_ACTION_NOT_SUPPORTED';
 
+    const USER_ROLE_MAPPING                                     = 'USER_ROLE_MAPPING';
+    const USER_ROLE_MAPPING_ADD                                 = 'USER_ROLE_MAPPING_ADD';
+    const USER_ROLE_MAPPING_UPDATE                              = 'USER_ROLE_MAPPING_UPDATE';
+
     const AUTO_CAPTURE_REFUND_DELAY                             = 'AUTO_CAPTURE_REFUND_DELAY';
 
     const MPESA_GATEWAY_PARAM_ARRAY                             = 'MPESA_GATEWAY_PARAM_ARRAY';
@@ -1160,6 +1164,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PENNY_TESTING_ATTEMPT                        = 'MERCHANT_PENNY_TESTING_ATTEMPT';
     const MERCHANT_PENNY_TESTING_EVENT_PAYLOAD                  = 'MERCHANT_PENNY_TESTING_EVENT_PAYLOAD';
     const MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING       = 'MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING';
+    const MERCHANT_HOLD_FUNDS_POST_TRANSCACTION                 = 'MERCHANT_HOLD_FUNDS_POST_TRANSCACTION';
+    const MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION                  = 'MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION';
     const PAYOUT_RETRY_REQUEST                                  = 'PAYOUT_RETRY_REQUEST';
     const PAYOUT_QUEUE_DISPATCH_INIT                            = 'PAYOUT_QUEUE_DISPATCH_INIT';
     const PAYOUT_QUEUE_DISPATCH_COMPLETE                        = 'PAYOUT_QUEUE_DISPATCH_COMPLETE';
@@ -1903,6 +1909,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_FETCH_SUBMERCHANTS                            = 'PARTNER_FETCH_SUBMERCHANTS';
     const PARTNER_CONFIG_CREATED                                = 'PARTNER_CONFIG_CREATED';
     const PARTNER_CONFIG_EDITED                                 = 'PARTNER_CONFIG_EDITED';
+    const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN                  = 'SUBMERCHANT_PROMOTIONAL_PRICING_PLAN';
 
     const FEE_CREDITS_THRESHOLD_ALERT                           = 'FEE_CREDITS_THRESHOLD_ALERT';
 
@@ -2635,6 +2642,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Error Response
     const ERROR_RESPONSE_MAPPING_READ_FAILED                    = 'ERROR_RESPONSE_MAPPING_READ_FAILED';
     const ERROR_RESPONSE_FILE_READING_FAILED                    = 'ERROR_RESPONSE_FILE_READING_FAILED';
+    const ERROR_RESPONSE_DATA                                   = 'ERROR_RESPONSE_DATA';
 
     // Razorpayx onboarding
     const MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE  = 'MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE';

@@ -125,6 +125,14 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE => 'required|numeric|digits_between:8,11',
     ];
 
+    protected static $bulkUserMappingRules = [
+        Entity::USER_ID               => 'required|alpha_num|size:14',
+        Entity::MERCHANT_ID           => 'required|alpha_num|size:14',
+        Merchant\Entity::PRODUCT      => 'required|in:primary,banking',
+        Entity::ROLE                  => 'required|string|custom',
+        Entity::ACTION                => 'required|custom',
+    ];
+
     protected static $actionValidators = [
         'product_role'
     ];

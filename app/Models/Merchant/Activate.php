@@ -106,6 +106,9 @@ class Activate extends Base\Core
 
         $merchantCore->createBalanceConfig($merchantBalance, 'live');
 
+        //to be removed once hold funds issue is resolved
+        $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
+
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
         {
             $this->repo->saveOrFail($merchant);
@@ -121,7 +124,6 @@ class Activate extends Base\Core
 
             $this->activateBusinessBankingIfApplicable($merchant);
         });
-
         //
         // Activate Promotions/Coupons for Merchant if applicable.
         // Balance need to be created before applying promotion/coupon as credits are associated with it.
@@ -131,6 +133,8 @@ class Activate extends Base\Core
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED);
 
         $this->sendMerchantActivatedEvents($merchant);
+
+        $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_POST_TRANSCACTION,$merchant->toArrayPublic());
 
         return $merchantDetail;
     }
@@ -233,6 +237,8 @@ class Activate extends Base\Core
 
         $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
+        $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
+
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
         {
             $this->repo->saveOrFail($merchant);
@@ -258,6 +264,8 @@ class Activate extends Base\Core
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED);
 
         $this->sendMerchantActivatedEvents($merchant);
+
+        $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_POST_TRANSCACTION,$merchant->toArrayPublic());
 
         return $merchantDetail;
     }
