@@ -106,7 +106,7 @@ class TerminalsService
 
     public function getTerminalsByMerchantId(string $merchantId)
     {
-        $params = self::PARAMS[self::FETCH_TERMINAL_BY_ID];
+        $params = self::PARAMS[self::FETCH_TERMINALS_FOR_MERCHANT];
 
         $path = sprintf($params[self::PATH], $merchantId);
 

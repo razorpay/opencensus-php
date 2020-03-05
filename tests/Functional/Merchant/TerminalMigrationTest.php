@@ -1278,7 +1278,7 @@ class TerminalMigrationTest extends TestCase
 
             $data = $this->getTerminalToArrayPassword($terminal['id']);
 
-            $data['gateway_terminal_password'] = strrev($data['gateway_terminal_password']);
+            $data['merchant_id'] = strrev($data['merchant_id']);
 
             return $this->getDefaultTerminalServiceResponse($data);
 

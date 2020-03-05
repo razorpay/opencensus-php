@@ -46,6 +46,8 @@ class Service extends Base\Service
 
         $terminals = $this->repo->terminal->getByMerchantId($mid);
 
+        $this->runGetTerminalsForMerchantComparison($terminals, $merchant);
+
         return $terminals->toArrayAdmin($subMerchantFlag);
     }
 
@@ -605,6 +607,36 @@ class Service extends Base\Service
         }
     }
 
+    public function runGetTerminalsForMerchantComparison($terminals, Merchant\Entity $merchant)
+    {
+        try
+        {
+            $fetchedTerminals = $this->app['terminals_service']->getTerminalsByMerchantId($merchant->getId());
+
+        }
+        catch (\Exception $exception)
+        {
+
+        }
+
+        $this->compareFetchedTerminals($terminals, $fetchedTerminals);
+    }
+
+    protected function compareFetchedTerminals($terminals, $fetchedTerminals)
+    {
+        if ($this->compareFetchedTerminalIds($terminals, $fetchedTerminals) === false)
+        {
+            return;
+        }
+
+        foreach ($fetchedTerminals as $fetchedTerminal)
+        {
+            $terminal = $terminals->find($fetchedTerminal[Terminal\Entity::ID]);
+
+            $this->compareFetchedTerminal($terminal, $fetchedTerminal);
+        }
+    }
+
     protected function createTerminalMigrateJob(Terminal\Entity $terminal)
     {
         $data = [
@@ -633,7 +665,7 @@ class Service extends Base\Service
             Terminal\Entity::TERMINAL_ID => $terminal->getId(),
         ];
 
-        if ($this->isMigrateTerminalSuccess($terminal, $fetchedTerminal) === true)
+        if ($this->isMigrateTerminalSuccess($terminal, $fetchedTerminal, true) === true)
         {
             $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS);
         }
@@ -652,15 +684,14 @@ class Service extends Base\Service
             'message'                    => null,
         ];
 
-
         $data = array_merge($data, $default);
-        s($data);
+
         $this->app['trace']->count($metric, $data);
     }
 
-    protected function isMigrateTerminalSuccess(Entity $terminal, $fetchTerminalResponse)
+    protected function isMigrateTerminalSuccess(Entity $terminal, $fetchTerminalResponse, bool $ignoreSecrets = false)
     {
-       $isFetchTerminalSuccess = $this->isFetchTerminalFromTerminalsServiceSuccess($terminal, $fetchTerminalResponse);
+       $isFetchTerminalSuccess = $this->isFetchTerminalFromTerminalsServiceSuccess($terminal, $fetchTerminalResponse, $ignoreSecrets);
 
        $areFetchedSubmerchantsSame = $this->areFetchedSubmerchantsSameForTerminal($terminal, $fetchTerminalResponse);
 
@@ -668,9 +699,16 @@ class Service extends Base\Service
                ($areFetchedSubmerchantsSame === true));
     }
 
-    protected function isFetchTerminalFromTerminalsServiceSuccess(Entity $terminal, $fetchTerminalResponse): bool
+    protected function isFetchTerminalFromTerminalsServiceSuccess(Entity $terminal, $fetchTerminalResponse, $ignoreSecrets = False): bool
     {
-        $originalTerminalArray = $terminal->toArrayWithPassword();
+        if ($ignoreSecrets === true)
+        {
+            $originalTerminalArray = $terminal->toArray();
+        }
+        else
+        {
+            $originalTerminalArray = $terminal->toArrayWithPassword();
+        }
 
         $ignoreAttributes = [Entity::CREATED_AT, Entity::UPDATED_AT, Entity::MPAN, Entity::SYNC_STATUS];
 
@@ -747,6 +785,38 @@ class Service extends Base\Service
 
         return $success;
 
+    }
+
+    protected function compareFetchedTerminalIds($terminals, $fetchedTerminals) : bool
+    {
+        $fetchedTerminalIds = array_map(function ($terminal) {
+            return $terminal[Terminal\Entity::ID];
+        }, $fetchedTerminals);
+
+        $terminalIds = array_map(function ($terminal) {
+            return $terminal->getId();
+        }, $terminals->all());
+
+        array_sort($fetchedTerminalIds);
+
+        array_sort($terminalIds);
+
+        if ($fetchedTerminalIds !== $terminalIds)
+        {
+
+            $data = [
+                'terminal_ids'              => $terminalIds,
+                'fetched_terminal_ids'      => $fetchedTerminalIds,
+            ];
+
+            $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_BY_MERCHANT_ID_TERMINAL_ID_MISMATCH);
+
+            $this->trace->debug(TraceCode::TERMINALS_SERVICE_FETCH_BY_MERCHANT_ID_MISMATCH, $data);
+
+            return false;
+        }
+
+        return true;
     }
 
     protected function processMigrateTerminalSuccess(Entity $terminal)
