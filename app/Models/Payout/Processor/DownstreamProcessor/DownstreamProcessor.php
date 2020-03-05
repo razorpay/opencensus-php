@@ -67,7 +67,7 @@ class DownstreamProcessor
                 $channel = $this->getChannelForFundTransfer($accountType);
             }
 
-            $this->blockYesbankPayoutsIfRequired($channel);
+            self::blockYesbankPayoutsIfRequired($channel, $this->payout);
 
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
@@ -75,7 +75,7 @@ class DownstreamProcessor
         return new $subProcessor;
     }
 
-    protected function blockYesbankPayoutsIfRequired($channel)
+    public static function blockYesbankPayoutsIfRequired($channel, $payout)
     {
         if ($channel === Channel::YESBANK)
         {
@@ -91,7 +91,8 @@ class DownstreamProcessor
                 null,
                 [
                     'channel'       => 'yesbank',
-                    'merchant_id'   => $this->payout->getMerchantId(),
+                    'merchant_id'   => $payout->getMerchantId(),
+                    'payout_id'     => $payout->getId(),
                 ]);
         }
     }

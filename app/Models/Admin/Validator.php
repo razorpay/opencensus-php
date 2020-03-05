@@ -95,6 +95,7 @@ class Validator extends Base\Validator
         ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT  => 'filled|integer',
         ConfigKey::BLOCK_YESBANK_PAYOUTS              => 'filled|boolean',
         ConfigKey::BLOCK_X_REGISTRATION               => 'filled|boolean',
+        ConfigKey::BLOCK_YESBANK_RX_FAV               => 'filled|boolean',
     ];
 
     protected static $setRedisKeysRules = [

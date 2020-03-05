@@ -74,9 +74,11 @@ class ConfigKey
     // last transaction mentioned to fetch more data.
     const RBL_STATEMENT_FETCH_ATTEMPT_LIMIT     = self::PREFIX . 'rbl_statement_fetch_attempt_limit';
 
-    const BLOCK_YESBANK_PAYOUTS = self::PREFIX . 'block_yesbank_payouts';
+    const BLOCK_YESBANK_PAYOUTS                 = self::PREFIX . 'block_yesbank_payouts';
 
     const BLOCK_X_REGISTRATION                  = self::PREFIX. 'block_x_registration';
+
+    const BLOCK_YESBANK_RX_FAV                  = self::PREFIX . 'block_yesbank_rx_fav';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -119,6 +121,7 @@ class ConfigKey
         self::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT,
         self::BLOCK_YESBANK_PAYOUTS,
         self::BLOCK_X_REGISTRATION,
+        self::BLOCK_YESBANK_RX_FAV,
     ];
 
     public static function isSensitive(string $key)

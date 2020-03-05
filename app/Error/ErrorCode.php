@@ -321,6 +321,7 @@ class ErrorCode
 
     const BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY                                 = 'BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY';
     const BAD_REQUEST_BLOCKING_RX_ACTIVATIONS                                       = 'BAD_REQUEST_BLOCKING_RX_ACTIVATIONS';
+    const BAD_REQUEST_FAV_NOT_ALLOWED_CURRENTLY                                     = 'BAD_REQUEST_FAV_NOT_ALLOWED_CURRENTLY';
 
     const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'BAD_REQUEST_UPI_MPIN_NOT_SET';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                           = 'BAD_REQUEST_UPI_INVALID_ATM_PIN';
