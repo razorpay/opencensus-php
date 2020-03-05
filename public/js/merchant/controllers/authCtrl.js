@@ -202,6 +202,12 @@ app
         disableLogInSubmission: isProd,
       };
 
+      $scope.secondFA = {
+        data: {
+          otp: '',
+        },
+      };
+
       // wait for recaptcha response
       $scope.$watch('signup.data.captcha', function(newVal) {
         if (newVal && newVal.length !== 0) {
@@ -1144,86 +1150,7 @@ app
         $scope.alerts.resetAlerts();
         request.success(function(data) {
           if (data.success) {
-            // check questions have been answered or not
-            user
-              .identity(true)
-              .then(function(userDetails) {
-                var signinSuccessCb = authCallbacks.getSigninCallback();
-
-                setExperimentsFlags(userDetails.experiments); // set razorX experiment flags
-
-                if (signinSuccessCb) {
-                  signinSuccessCb(userDetails);
-                }
-
-                if (user.isVerified() && user.isPreSignupDone()) {
-                  // parse query parameters to object
-                  // ?next=foo&q=bar → { next: 'foo', q: 'bar' }
-                  var queryParams = location.search
-                    .slice(1)
-                    .split(/=|&/)
-                    .reduce(function(map, param, index, array) {
-                      if (index % 2) {
-                        map[array[index - 1]] = param;
-                      }
-                      return map;
-                    }, {});
-
-                  if (queryParams.next) {
-                    var parser = document.createElement('a');
-                    parser.href = decodeURIComponent(queryParams.next);
-
-                    var hostname = parser.hostname || location.hostname;
-
-                    if (/razorpay\.(com|dev|in)$/.test(hostname)) {
-                      location.href = parser.href;
-                      if (parser.origin === location.origin && parser.hash) {
-                        parser.search = '';
-                        history.pushState(null, null, parser.href);
-                        location.reload();
-                      }
-                      return false;
-                    }
-                  }
-
-                  if (!signinSuccessCb) {
-                    $scope.goToDashboard();
-                  }
-                } else {
-                  $scope.isLoggedIn = true;
-                  hideSpinner();
-                  if (userDetails) {
-                    $scope.login.data.email = userDetails.email;
-                    $scope.signup.settings.partner_intent =
-                      userDetails.partner_intent;
-                    Object.assign(
-                      $scope.signup.merchantData,
-                      userDetails.pre_signup
-                    );
-                  }
-                  if (!user.isPreSignupDone()) {
-                    $scope.email_not_verified = false;
-                    goToRelevantQuestion();
-                    $scope.login.currentStep = 2;
-                    $scope.signup.settings.partner_intent =
-                      userDetails.partner_intent;
-
-                    $state.transitionTo(
-                      'access.pre_signup',
-                      {},
-                      {
-                        notify: false,
-                      }
-                    );
-                  } else if (!user.isVerified()) {
-                    goToVerification();
-                  }
-                }
-              })
-              .catch(function(errors) {
-                hideSpinner();
-                $scope.alerts.addAlert('danger', errors[0]);
-              });
+            $scope.successFullSignin();
           } else {
             hideSpinner();
             var firstError = data.errors[0];
@@ -1247,6 +1174,202 @@ app
             ) {
               $scope.handleErrorsWithInternalCode(firstError);
             }
+          }
+        });
+      };
+
+      $scope.successFullSignin = function() {
+        // check questions have been answered or not
+        user
+          .identity(true)
+          .then(function(userDetails) {
+            var signinSuccessCb = authCallbacks.getSigninCallback();
+
+            setExperimentsFlags(userDetails.experiments); // set razorX experiment flags
+
+            if (signinSuccessCb) {
+              signinSuccessCb(userDetails);
+            }
+
+            if (user.isVerified() && user.isPreSignupDone()) {
+              // parse query parameters to object
+              // ?next=foo&q=bar → { next: 'foo', q: 'bar' }
+              var queryParams = location.search
+                .slice(1)
+                .split(/=|&/)
+                .reduce(function(map, param, index, array) {
+                  if (index % 2) {
+                    map[array[index - 1]] = param;
+                  }
+                  return map;
+                }, {});
+
+              if (queryParams.next) {
+                var parser = document.createElement('a');
+                parser.href = decodeURIComponent(queryParams.next);
+
+                var hostname = parser.hostname || location.hostname;
+
+                if (/razorpay\.(com|dev|in)$/.test(hostname)) {
+                  location.href = parser.href;
+                  if (parser.origin === location.origin && parser.hash) {
+                    parser.search = '';
+                    history.pushState(null, null, parser.href);
+                    location.reload();
+                  }
+                  return false;
+                }
+              }
+
+              if (!signinSuccessCb) {
+                $scope.goToDashboard();
+              }
+            } else {
+              $scope.isLoggedIn = true;
+              hideSpinner();
+              if (userDetails) {
+                $scope.login.data.email = userDetails.email;
+                $scope.signup.settings.partner_intent =
+                  userDetails.partner_intent;
+                Object.assign(
+                  $scope.signup.merchantData,
+                  userDetails.pre_signup
+                );
+              }
+              if (!user.isPreSignupDone()) {
+                $scope.email_not_verified = false;
+                goToRelevantQuestion();
+                $scope.login.currentStep = 2;
+                $scope.signup.settings.partner_intent =
+                  userDetails.partner_intent;
+
+                $state.transitionTo(
+                  'access.pre_signup',
+                  {},
+                  {
+                    notify: false,
+                  }
+                );
+              } else if (!user.isVerified()) {
+                goToVerification();
+              }
+            }
+          })
+          .catch(function(errors) {
+            hideSpinner();
+            $scope.alerts.addAlert('danger', errors[0]);
+          });
+      };
+
+      $scope.updateMobileFromLogin = function($valid) {
+        if (!$valid) {
+          $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
+          return true;
+        }
+
+        const data = {
+          contact_mobile: $scope.login.data.contact_mobile,
+        };
+
+        const payload = {
+          method: 'PATCH',
+          url: '/user/2fa/contact',
+          data: data,
+        };
+
+        var request = $http(payload);
+        $scope.alerts.resetAlerts();
+        showSpinner();
+
+        request.success(function(data) {
+          hideSpinner();
+
+          if (data.success) {
+            $scope.goToLoginStep(4);
+          } else {
+            $scope.alerts.addAlert(data.errors[0]);
+          }
+        });
+      };
+
+      $scope.verifyMobile = function($valid) {
+        if (!$valid) {
+          $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
+          return true;
+        }
+
+        const data = {
+          email: $scope.login.data.email,
+          password: $scope.login.data.password,
+          otp: $scope.login.data.otp,
+        };
+
+        const payload = {
+          method: 'POST',
+          url: '/user/2fa_setup/verify-mobile',
+          data: data,
+        };
+
+        var request = $http(payload);
+        showSpinner();
+        $scope.alerts.resetAlerts();
+
+        request.success(function(data) {
+          if (data.success) {
+            $scope.successFullSignin();
+          } else {
+            hideSpinner();
+            $scope.alerts.addAlert('danger', data.errors[0]);
+          }
+        });
+      };
+
+      $scope.verify2FaOtp = function($valid) {
+        const data = {
+          otp: $scope.secondFA.data.otp,
+        };
+
+        const payload = {
+          url: '/user/2fa/otp-verify',
+          method: 'POST',
+          data,
+        };
+
+        const request = $http(payload);
+        showSpinner();
+        $scope.alerts.resetAlerts();
+        request.success(function(data) {
+          if (data.success) {
+            $scope.successFullSignin();
+          } else {
+            hideSpinner();
+            const firstError = data.errors[0];
+            if (
+              typeof firstError === 'object' &&
+              !!firstError.internal_error_code
+            ) {
+              $scope.handleErrorsWithInternalCode(firstError);
+            } else {
+              $scope.alerts.addAlert('danger', data.errors[0]);
+            }
+          }
+        });
+      };
+
+      $scope.resendOtp = function() {
+        const payload = {
+          method: 'post',
+          url: '/user/2fa/otp-resend',
+        };
+
+        var request = $http(payload);
+        $scope.login.resendingOtp = true;
+        $scope.alerts.resetAlerts();
+        request.success(function(data) {
+          if (data.success) {
+            $scope.login.resendingOtp = false;
+          } else {
+            $scope.alerts.addAlert(data.errors[0]);
           }
         });
       };
@@ -1596,6 +1719,11 @@ app
             break;
           }
 
+          case 'BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED': {
+            $scope.goToLoginStep(5);
+            break;
+          }
+
           case 'BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP': {
             $scope.login.data.otp = '';
             $scope.alerts.addAlert('danger', error.description, true);
@@ -1603,7 +1731,8 @@ app
           }
 
           case 'BAD_REQUEST_LOCKED_USER_LOGIN': {
-            $scope.goToLoginStep(5);
+            $scope.goToLoginStep(7);
+            break;
           }
         }
       };

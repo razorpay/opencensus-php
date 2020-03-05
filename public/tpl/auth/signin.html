@@ -1,5 +1,5 @@
 <div class="auth-overflow-container">
-  <div class="login-translate-container" ng-style="{'transform': 'translateX(' + ((-240)*login.currentStep) + 'px)', 'width': '1440px'}">
+  <div class="login-translate-container" ng-style="{'transform': 'translateX(' + ((-240)*login.currentStep) + 'px)', 'width': '2160'}">
     <div class="auth-step">
       <div class="auth-heading">
           Forgot Password
@@ -83,9 +83,24 @@
       <div ng-include="'tpl/auth/enter-2fa.html'"></div>
     </div>
 
+    <!-- Setup mobile for 2fa -->
+    <div class="auth-step">
+      <div ng-include="'tpl/auth/setup-mobile.html'"></div>
+    </div>
+
+    <!-- Verify mobile -->
+    <div class="auth-step">
+      <div ng-include="'tpl/auth/verify-mobile-2fa.html'"></div>
+    </div>
+
     <!-- account is blocked -->
     <div class="auth-step">
       <div ng-include="'tpl/auth/account_block.html'" ></div>
+    </div>
+
+    <!-- contact admin -->
+    <div class="auth-step">
+      <div ng-include="'tpl/auth/contact_admin.html'" ></div>
     </div>
   </div>
 </div>

@@ -33,6 +33,8 @@ class Service extends Base\Service
 {
     const OAUTH_SESSION_TOKEN = 'oauth_session_token';
 
+    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP = 'BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP';
+
     const MERCHANT_ID         = 'merchant_id';
 
     const USER_ID             = 'user_id';
@@ -106,13 +108,61 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function postSetup2faVerifyMobile(array $input)
+    public function postSetup2faVerifyOtp(array $input)
     {
-        $res = null;
+        $userId = Session::get('user_id', "");
 
-        list($error, $genericUser) = $this->loginOnApiBy2faSetupSuccessful($input);
+        if (empty($userId) === false)
+        {
+            $options['headers']['X-Dashboard-User-Id'] = $userId;
+
+            $options['headers']['X-Dashboard-User-Session-Id'] = Session::getId();
+        }
+        else
+        {
+            return [["User Not authenticated, please login"], []];
+        }
+
+        list($error, $genericUser) = $this->verify2faOtp($input, $options);
 
         return $this->handleLoginResponse($error, $genericUser);
+    }
+
+    public function verify2faOtp(array $input, array $options = [])
+    {
+        return $this->loginOnApiOnRoute($input,'users/2fa/verify', 'POST', $options);
+    }
+
+    public function requestApiWithBasicSession(array $input, $route, $httpVerb)
+    {
+        $userId = Session::get('user_id', "");
+
+        if (empty($userId) === false)
+        {
+            $options['headers']['X-Dashboard-User-Id'] = $userId;
+
+            $options['headers']['X-Dashboard-User-Session-Id'] = Session::getId();
+        }
+        else
+        {
+            return [["User Not authenticated, please login"], []];
+        }
+
+        $request = new \App\Admin\ApiRequestAny($options);
+
+        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
+
+        return [$error, $data];
+    }
+
+    public function postUpdate2faContact(array $input)
+    {
+        return $this->requestApiWithBasicSession($input, 'users/2fa_setup/contact_mobile', 'PATCH');
+    }
+
+    public function postResendOtp(array $input)
+    {
+        return $this->requestApiWithBasicSession($input, 'users/2fa/otp_resend', 'POST');
     }
 
     /**
@@ -136,6 +186,23 @@ class Service extends Base\Service
             if ((array_key_exists('internal_error_code', $error) === true) and
                 (empty($error['internal_error_code']) === false))
             {
+                $userId = $error['_internal']['user_details']['user_id'] ??  "";
+
+                if (empty($userId) === false)
+                {
+                    Session::set('user_id', $userId);
+                }
+                else
+                {
+                    return [['User Login Failed, Please check your login credentials.'], null];
+                }
+
+                // very very nasty dirty hack to not to write lot of code.
+                if ($error['internal_error_code'] === self::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP)
+                {
+                    $error = $error['description'];
+                }
+
                 return [[$error], null];
             }
 
@@ -596,9 +663,9 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function loginOnApiOnRoute(array $input, string $route, string $httpVerb)
+    public function loginOnApiOnRoute(array $input, string $route, string $httpVerb, array $options=[])
     {
-        $request = new \App\Admin\ApiRequestAny();
+        $request = new \App\Admin\ApiRequestAny($options);
 
         list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
 
@@ -630,7 +697,7 @@ class Service extends Base\Service
     // api returns user object. And dashboard needs to start the session.
     public function loginOnApiBy2faSetupSuccessful(array $input)
     {
-        return $this->loginOnApiOnRoute($input,'users/2fa_setup/verify-mobile', 'POST');
+        return $this->loginOnApiOnRoute($input,'users/login/2fa_setup/verify-mobile', 'POST');
     }
 
     public function getUserFromApi($userId)
@@ -903,7 +970,6 @@ class Service extends Base\Service
         {
             $data['experiments'][$result] = $val;
         }
-
 
         return $data;
     }

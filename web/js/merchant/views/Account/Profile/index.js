@@ -23,6 +23,7 @@ import SettlementDetails from 'merchant/views/Account/Profile/components/Settlem
 import { updateDisplayName } from 'merchant/reducers/profile';
 import { updateSession } from 'merchant/reducers/session';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 
 @connect(
   state => {
@@ -221,6 +222,13 @@ export default class Profile extends Component {
     });
   };
 
+  openChangeContactMobile = () => {
+    this.props.openModal({
+      size: 'small',
+      component: <UpdateSelfContactMobile onSuccess={this.props.closeModal} />,
+    });
+  };
+
   openChangeBankDetailsModal = () => {
     const { bankAccount } = this.props.profile;
 
@@ -312,6 +320,7 @@ export default class Profile extends Component {
                 changeDisplayName={
                   !!this.isAdminOrOwner() && this.openChangeDisplayName
                 }
+                changeContactMobile={this.openChangeContactMobile}
                 isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
                 onWebsiteAdd={this.onWebsiteAdd}
               />
@@ -350,7 +359,9 @@ export default class Profile extends Component {
             />
           ) : null}
 
-          {!this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
+          {!user.isMerchantRestricted && !this.state.hasMerchant ? (
+            <UpgradeMerchantForm />
+          ) : null}
           {<SettlementDetails />}
         </div>
       </div>

@@ -1,34 +1,23 @@
 <div>
   <div class="auth-heading">
-    2-Step Verification
+    Verify Mobile Number
   </div>
   <div class="auth-text m-t-sm">
-    An SMS with 6-digit OTP has been sent to your phone number. OTP will expire in 5 mins.
+    A text message with 6-digit verification code has been sent to {{login.data.contact_mobile}}.
   </div>
 
-  <form class="auth-form" name="secondFAForm" ng-submit="verify2FaOtp()">
+  <form class="auth-form" name="loginForm" ng-submit="verifyMobile(loginForm.$valid)">
     <label class="form-label auth-subheading" for="otp">Enter the OTP</label>
-
-    <input
-      type="text"
-      name="otp"
-      placeholder="Six digit OTP"
-      id="otp"
-      ng-model="secondFA.data.otp"
-      class="form-control auth-form-input"
-      maxlength="6"
-      required
-    >
-
+    <div ng-include="'tpl/auth/components/otp-input.html'" ></div>
 
     <div class="auth-text">
       Didn't receive an SMS?&nbsp;
-      <span class="highlight-clickable-text" ng-click="resendOtp()">
+      <span class="highlight-clickable-text" ng-click="resendVerifyMobileOtp()">
         {{login.resendingOtp ? 'Sending...' : 'Resend'}}
       </span>
     </div>
 
-    <button ng-disabled="login.resendingOtp" class="btn btn-primary form-control m-t" type="submit" >
+    <button ng-disable="otpSendingInProgress" class="btn btn-primary form-control m-t" type="submit" >
       Confirm
     </button>
     <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>

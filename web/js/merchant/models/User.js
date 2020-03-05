@@ -154,6 +154,14 @@ export default class User {
     return isHoodAllowed;
   }
 
+  get isContactMobileChangeAllowed() {
+    // in case of restricted merchants
+    // only owner and admin are alllowed to changed self contact_mobile
+    return (
+      !this.isMerchantRestricted || ['owner', 'admin'].indexOf(this.role) > -1
+    );
+  }
+
   get isActivated() {
     return !!parseInt(this.activated);
   }

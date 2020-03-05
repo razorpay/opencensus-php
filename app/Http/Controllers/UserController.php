@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use Auth;
 use Input;
 use App\User;
+use Cookie;
+use Session;
 use App\Admin;
 use App\Merchant;
 use App\Http\ApiUrl;
@@ -12,10 +14,6 @@ use App\Http\AppResponse;
 
 class UserController extends Controller
 {
-    // Users who signed up before this date
-    // are not exposed to the pre signup flow
-
-    const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
     protected $guard = 'users';
 
@@ -49,6 +47,7 @@ class UserController extends Controller
             'preSignupData'         => [],
             'isPreSignupComplete'   => false,
             'org'                   => json_encode($org),
+            'session_id'            => Session::getId(),
         ];
 
         if (empty($userError) and empty($orgError))
@@ -61,6 +60,7 @@ class UserController extends Controller
                 'user'                  => json_encode($details),
                 'org'                   => json_encode($org),
                 'api_host'              => ApiUrl::getApiBaseUrl(),
+                'session_id'            => Session::getId(),
             ];
         }
 
@@ -170,17 +170,32 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function postSetup2faVerifyMobile()
+    public function postSetup2faVerifyOtp()
     {
         $input = Input::all();
 
-        // Lowercasing emails for consistency
-        if (isset($input['email']))
-        {
-            $input['email'] = mb_strtolower($input['email']);
-        }
+        list($error, $data) = (new User\Service)->postSetup2faVerifyOtp($input);
 
-        list($error, $data) = (new User\Service)->login($input);
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
+     * @return \Illuminate\Http\Response
+    */
+    public function postUpdate2faContact()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->postUpdate2faContact($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postResendOtp()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->postResendOtp($input);
 
         return AppResponse::jsonResponse($error, $data);
     }

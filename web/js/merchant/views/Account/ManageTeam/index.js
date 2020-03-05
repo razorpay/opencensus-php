@@ -67,6 +67,7 @@ export default class ManageTeamContainer extends React.Component {
     return (
       <div class="content-wrapper content-sm" id="settings-content">
         <ShowWhen
+          myRole="owner"
           additionalCondition={user => user.getExpStatus('second_factor_auth')}
         >
           <Toggle2FA />

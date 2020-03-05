@@ -5,12 +5,14 @@ import AsyncButton from 'react-async-button';
 import ModalHeader from 'common/ui/ModalHeader';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { OtpInput } from 'merchant/components/OtpInput';
 import { Field, reduxForm } from 'redux-form';
 import InputField from 'common/ui/Forms/InputField';
 import { required, phone, mobile } from 'common/utils/validators';
 
-@connect(null, { showNotification })
+@connect(
+  null,
+  { showNotification }
+)
 class VerifyOtp extends Component {
   state = {};
   onConfirm = () => {
@@ -185,7 +187,7 @@ class PasswordVerification extends Component {
     return (
       <div class="2fa-modal">
         <ModalHeader
-          title={(enable ? 'Enable' : 'Disable') + '2-step verification'}
+          title={(enable ? 'Enable' : 'Disable') + ' 2-step verification'}
           onCloseClick={closeModal}
         />
         <div class="modal-body">
@@ -198,7 +200,7 @@ class PasswordVerification extends Component {
                 type="password"
                 name="password"
                 component={InputField}
-                class="form-control"
+                class="form-control m-t"
                 placeholder="Password"
                 validate={[required()]}
                 autoFocus
@@ -219,4 +221,4 @@ class PasswordVerification extends Component {
   }
 }
 
-export { VerifyOtp, PasswordVerification, AskMobileNumber };
+export { PasswordVerification };

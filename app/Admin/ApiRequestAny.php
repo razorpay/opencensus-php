@@ -414,19 +414,20 @@ class ApiRequestAny
             $json = $e->getResponse()->json();
             $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
 
-            //in case of 2fa api calls we need the data passed by the api
-            // and dashboard will consume that data. For eg.
+            //in case of 2fa api calls we need the _internal passed by the api
+            // and dashboard will consume that _internal. For eg.
             // even if username and password is correct we can have failures, if otp was not passed.
             // dashboard needs to explicitly handle these issues.
-            if ((empty($json['error']['data']) === false) and
-                (empty($json['error']['data'][self::INTERNAL_ERROR_CODE]) === false) and
-                (in_array($json['error']['data'][self::INTERNAL_ERROR_CODE], self::INTERNAL_ERROR_CODES) === true))
+            if ((empty($json['error']['_internal']) === false) and
+                (empty($json['error']['_internal'][self::INTERNAL_ERROR_CODE]) === false) and
+                (in_array($json['error']['_internal'][self::INTERNAL_ERROR_CODE], self::INTERNAL_ERROR_CODES) === true))
             {
                 $errors = [
-                    self::INTERNAL_ERROR_CODE => $json['error'][self::INTERNAL_ERROR_CODE],
+                    self::INTERNAL_ERROR_CODE => $json['error']['_internal'][self::INTERNAL_ERROR_CODE],
                     'description'             => $json['error']['description'],
-                    'status_code'             => $json['error']['http_status_code'],
+                    'status_code'             => $e->getResponse()->getStatusCode(),
                     'code'                    => $json['error']['code'],
+                    '_internal'               => $json['error']['_internal'] ?? [],
                 ];
             }
         }

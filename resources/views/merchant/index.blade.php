@@ -48,6 +48,7 @@
     window.pl_extra_fields = {!! $pl_extra_fields !!};
     window.pl_customized_form_fields = {!! $pl_customized_form_fields !!};
     window.is_pl_customer_name_field_enabled = {!! $is_pl_customer_name_field_enabled !!};
+    window.session_id = "{!! $session_id !!}"
   </script>
 
   <!-- Raven Code -->
@@ -57,7 +58,11 @@
   <script src="https://www.google.com/recaptcha/api.js?render=explicit"></script>
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else
+  <script type="text/javascript">
+      window.session_id = "{!! $session_id !!}"
+  </script>
   <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
+
 @endif
 
 

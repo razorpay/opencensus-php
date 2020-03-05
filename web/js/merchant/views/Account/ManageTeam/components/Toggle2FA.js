@@ -20,15 +20,19 @@ import {
   AskMobileNumber,
   PasswordVerification,
 } from 'merchant/views/Account/ManageTeam/components/TwoFaModals';
+import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 
-@connect(state => ({ user: state.session.user }), {
-  openModal,
-  closeModal,
-  toggle2FaEnforcement,
-  updateSelfContact,
-  updateSession,
-  showNotification,
-})
+@connect(
+  state => ({ user: state.session.user }),
+  {
+    openModal,
+    closeModal,
+    toggle2FaEnforcement,
+    updateSelfContact,
+    updateSession,
+    showNotification,
+  }
+)
 export default class Toggle2FA extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -57,6 +61,7 @@ export default class Toggle2FA extends Component {
         closeModal={this.abort}
         onSubmit={this.onPasswordSubmit}
         dataSentWithPassword={{ second_factor_auth: flag }}
+        enable={flag}
       />
     );
   };
@@ -74,8 +79,7 @@ export default class Toggle2FA extends Component {
           type: 'success',
           message,
         });
-
-        this.onSuccess();
+        this.success();
       })
       .catch(({ errors }) => {
         const error = (errors || [])[0];
@@ -91,47 +95,13 @@ export default class Toggle2FA extends Component {
       });
   };
 
-  otpVerification = (contactMobile, flag) => {
-    this.showModal(
-      <VerifyOtp
-        closeModal={this.abort}
-        onSubmit={data => {
-          return this.props.updateSelfContact(data).then(response => {
-            if (response.success) {
-              this.verifyPassword(flag);
-            }
-          });
-        }}
-        onResend={this.props.updateSelfContact}
-        onChangeMobileNumber={this.verifyMobile}
-        contactMobile={contactMobile}
-      />
-    );
-  };
-
   verifyMobile = flag => {
     this.showModal(
-      <AskMobileNumber
-        closeModal={this.abort}
-        onSubmit={data => {
-          return (
-            this.props
-              .updateSelfContact(data)
-              // there will be no then since it will fail from api, since we've not sent OTP
-              .catch(({ errors }) => {
-                const error = (errors || [])[0];
-
-                if (error === 'OTP is required') {
-                  this.otpVerification(data.contact_mobile, flag);
-                } else {
-                  this.props.showNotification({
-                    type: 'error',
-                    message: error,
-                  });
-                }
-              })
-          );
+      <UpdateSelfContactMobile
+        onSuccess={() => {
+          this.verifyPassword(flag);
         }}
+        onClose={this.abort}
       />
     );
   };
@@ -187,20 +157,24 @@ export default class Toggle2FA extends Component {
     return new Promise(resolve => {
       this.actionCompleted = resolve;
       if (flag) {
-        const { user: { second_factor_auth_setup } } = this.props.user;
+        const {
+          user: { second_factor_auth_setup },
+        } = this.props.user;
 
         const action =
           //Check if user has mobile number verified for setup to continue, if yes skip mobile number verification & move to password verification
           second_factor_auth_setup ? this.verifyPassword : this.verifyMobile;
         this.confirmEnable({ action, flag });
       } else {
-        this.confirmDisable({ action: verifyPassword, flag });
+        this.confirmDisable({ action: this.verifyPassword, flag });
       }
     });
   };
 
   render() {
-    const { user: { second_factor_auth_enforced } } = this.props.user;
+    const {
+      user: { second_factor_auth_enforced },
+    } = this.props.user;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
