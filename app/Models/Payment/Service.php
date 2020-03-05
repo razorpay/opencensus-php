@@ -1171,6 +1171,7 @@ class Service extends Base\Service
 
         $data = $merchant->getPaymentFlows($iinEntity);
 
+<<<<<<< HEAD
         if ((isset($input['currency'])) and
             (isset($input['amount'])) and
             (empty($iinEntity) === false))
@@ -1192,6 +1193,9 @@ class Service extends Base\Service
                 $data = array_merge($data, $dccInfo);
             }
         }
+=======
+        $this->updateDccDataIfApplicable($input, $iinEntity, $merchant, $data);
+>>>>>>> [dcc] code refactor and suggestions
 
         if (isset($input['order_id']) === true)
         {
@@ -1208,6 +1212,37 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    public function updateDccDataIfApplicable()
+    {
+        // get dcc options for customer if dcc is enalbed for merchant
+        if ($merchant->isDCCEnabled() === false)
+        {
+            return;
+        }
+
+        if ($iinEntity === null)
+        {
+            return;
+        }
+
+        if ((isset($input['currency']) === true) and
+            (isset($input['amount']) === true))
+        {
+            $amount = $input['amount'];
+            $currency = $input['currency'];
+
+            if (($iinEntity->isInternational() === true) and
+                ($currency === Currency::INR))
+            {
+                $dccInfo = $this->getDCCInfo($amount, $currency);
+
+                $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? $currency;
+
+                $data = array_merge($data, $dccInfo);
+            }
+        }
     }
 
     public function getPaymentFlowsPrivate(array $input)
