@@ -250,7 +250,7 @@ return [
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
 //                    'BARB' => 'Bank of Baroda',
-                    'YESB' => 'Yes Bank',
+                    'HDFC' => 'HDFC Bank',
                 ],
                 'wallet' => [],
             ],
