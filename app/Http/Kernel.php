@@ -85,6 +85,7 @@ class Kernel extends HttpKernel
         'p2p'                 => Middleware\P2p::class,
         'idempotent'          => Middleware\IdempotentHandler::class,
         'failure_interceptor' => Middleware\FailureEventsInterceptor::class,
+        'typeform_auth'       => Middleware\TypeformAuth::class,
         'request_context'     => Middleware\RequestContextHandler::class,
     ];
 }
