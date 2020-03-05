@@ -177,6 +177,7 @@ export default class TokenDetailsContainer extends Component {
                     <EntityDetailRow label="Failure Reason">
                       <ErrorMessage
                         id={entity.id}
+                        isNACHMethod={this.isNACHMethod}
                         recurringDetails={entity.recurring_details}
                       />
                     </EntityDetailRow>
@@ -268,20 +269,24 @@ class ErrorMessage extends React.PureComponent {
     return resubmitNACHFile(this.props.id)
       .then(() => {
         trackClickResubmitNachForm();
+
+        this.props.showNotification({
+          type: 'success',
+          message: 'NACH file re-submitted successfully',
+        });
       })
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
-          message: errors,
+          message: errors[0],
         });
       });
   };
 
   render() {
-    const { recurringDetails: { failure_reason } } = this.props,
-      isNACHError = failure_reason && failure_reason.includes('nach');
+    const { recurringDetails: { failure_reason }, isNACHMethod } = this.props;
 
-    if (isNACHError) {
+    if (isNACHMethod) {
       return (
         <React.Fragment>
           <Alert type="error" message={failure_reason} showDismiss={false} />
