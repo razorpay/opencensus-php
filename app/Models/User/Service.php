@@ -20,6 +20,7 @@ use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Account;
 use Illuminate\Hashing\BcryptHasher;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -376,6 +377,30 @@ class Service extends Base\Service
         (new User\Validator)->validateInput('teamManagement', $teamData);
 
         return $this->updateUserMerchantMapping($userId, $input);
+    }
+
+    public function bulkUpdateUserMapping(array $input)
+    {
+        foreach ($input as $row)
+        {
+            (new User\Validator)->validateInput('bulk_user_mapping', $row);
+        }
+
+        foreach ($input as $row)
+        {
+            $this->trace->info(TraceCode::USER_ROLE_MAPPING, $row);
+
+            $teamInput = [
+                Entity::MERCHANT_ID => $row[Entity::MERCHANT_ID],
+                Entity::PRODUCT     => $row[Entity::PRODUCT],
+                Entity::ROLE        => $row[Entity::ROLE],
+                Entity::ACTION      => $row[Entity::ACTION],
+            ];
+
+            $this->updateUserMerchantMapping($row[Entity::USER_ID], $teamInput);
+        }
+
+        return [];
     }
 
     /**

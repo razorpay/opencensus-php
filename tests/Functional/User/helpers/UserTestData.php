@@ -50,7 +50,7 @@ return [
         ],
     ],
 
-    'testGetUser' => [
+    'testGet' => [
         'request' => [
             'url'    => '/users/id',
             'method' => 'GET',
@@ -74,75 +74,6 @@ return [
                 'invitations'             => [
                 ],
                 'settings'                => [
-                ],
-            ],
-        ],
-    ],
-
-    'testGetUserWithProductPrimary' => [
-        'request' => [
-            'url'    => '/users/id',
-            'method' => 'GET',
-            'server' => [
-                'HTTP_X-Dashboard' => 'true',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'contact_mobile'          => null,
-                'contact_mobile_verified' => false,
-                'confirmed'               => true,
-                'merchants' => [
-                    [
-                        'activated'    => false,
-                        'archived_at'  => null,
-                        'suspended_at' => null,
-                        'role'         => 'owner',
-                        'product'      => 'primary',
-                    ],
-                    [
-                        'activated'    => false,
-                        'archived_at'  => null,
-                        'suspended_at' => null,
-                        'role'         => 'owner',
-                        'product'      => 'primary',
-                    ],
-                ],
-                'invitations' => [
-                ],
-                'settings' => [
-                ],
-            ],
-        ],
-    ],
-
-    'testGetUserWithProductBanking' => [
-        'request' => [
-            'url'    => '/users/id',
-            'method' => 'GET',
-            'server' => [
-                'HTTP_X-Dashboard'      => 'true',
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'contact_mobile'          => null,
-                'contact_mobile_verified' => false,
-                'confirmed'               => true,
-                'merchants' => [
-                    [
-                        'activated'    => false,
-                        'archived_at'  => null,
-                        'suspended_at' => null,
-                        'role'         => null,
-                        'banking_role' => 'admin',
-                        'product'      => 'banking',
-                    ],
-                ],
-                'invitations' => [
-                ],
-                'settings' => [
                 ],
             ],
         ],
@@ -831,6 +762,20 @@ return [
         ],
     ],
 
+    'testBulkUpdateUserRoleMapping' => [
+        'request' => [
+            'url'    => '/users/roles-mapping/bulk',
+            'method' => 'PUT',
+            'content' => [],
+            'server'     => [
+                'HTTP_X-Request-Origin'         => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testDetachMerchant' => [
         'request' => [
             'url'    => '/users/id/detach',
@@ -1445,7 +1390,6 @@ return [
             'content' => [],
             'server'  => [
                 'HTTP_X_DASHBOARD_USER_ID' => '30000000000000',
-                'HTTP_X-Request-Origin'    => 'https://x.razorpay.com',
             ]
         ],
         'response' => [
@@ -1462,6 +1406,34 @@ return [
                 'invitations' => [
                 ],
                 'settings'    => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBankingUserWithPermissions'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'owner',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBankingUserWithPermissionsNull'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'random_role',
+                        'role'         => null,
+                    ]
                 ],
             ],
         ],

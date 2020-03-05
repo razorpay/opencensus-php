@@ -23,6 +23,7 @@ use RZP\Services\TokenService;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
+use RZP\Http\UserRolePermissionsMap;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 
 class Core extends Base\Core
@@ -610,6 +611,11 @@ class Core extends Base\Core
                     return $merchant;
                 }
 
+                // Attach Permission
+                $userMerchantPermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);
+
+                $merchant[Constants::PERMISSIONS] = $userMerchantPermissions;
+
                 /** @var Merchant\Balance\Entity $balance */
                 $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
                     $merchant['id'],
@@ -1113,6 +1119,14 @@ class Core extends Base\Core
                 'payout_total_amount' => amount_format_IN($input['payout_total_amount']),
                 'payout_count'        => $input['payout_count'],
                 'account_number'      => mask_except_last4($input['account_number']),
+            ];
+        }
+        else if ($action === 'create_payout_link')
+        {
+            $payload += [
+                'amount'         => amount_format_IN($input['amount']),
+                'account_number' => mask_except_last4($input['account_number']),
+                'purpose'        => $input['purpose'],
             ];
         }
 

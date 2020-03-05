@@ -2849,8 +2849,9 @@ class Processor
                 $input[Payment\Entity::CARD][Card\Entity::IIN] = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
             }
 
-            unset($input[Payment\Entity::CARD][Card\Entity::CVV]);
+            unset($input[Payment\Entity::CARD][Card\Entity::NAME]);
             unset($input[Payment\Entity::CARD][Card\Entity::NUMBER]);
+            unset($input[Payment\Entity::CARD][Card\Entity::CVV]);
         }
     }
 
@@ -3197,31 +3198,12 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice);
 
-        //
-        // There could be a case where the current time is greater
-        // than the expire_by of the invoice. But, if we haven't
-        // yet marked the invoice as expired, we still go ahead
-        // and capture the payment.
-        //
-
-        //
-        // Ideally this should check for `validateInvoicePayable` as a partially paid
-        // PL would qualify for this.
-        //
-        // TODO: Change/fix this and test complete flow including the exception
-        // cases with the feature BLOCK_PL_PAY_POST_EXPIRY set.
-        //
-        if ($invoice->isIssued() === false)
+        try
         {
-            $this->trace->debug(
-                TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
-                [
-                    'payment_id'        => $payment->getId(),
-                    'status'            => $payment->getStatus(),
-                    'invoice_id'        => $invoice->getId(),
-                    'invoice_status'    => $invoice->getStatus(),
-                ]);
-
+            $invoice->getValidator()->validateInvoicePayableForPayment($payment);
+        }
+        catch (Exception\BadRequestValidationFailureException $e)
+        {
             return false;
         }
 
