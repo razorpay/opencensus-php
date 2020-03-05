@@ -94,7 +94,7 @@ app
         email = '';
       }
 
-      const isProd = $location.host() === 'dashboard.razorpay.com';
+      var isProd = $location.host() === 'dashboard.razorpay.com';
 
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
@@ -669,9 +669,13 @@ app
       /**
        * Fire pixels for company-website AB test
        */
-      function trackCompanyAB(isSignupCompleted = false) {
+      function trackCompanyAB(isSignupCompleted) {
+        if (typeof isSignupCompleted === 'undefined') {
+          isSignupCompleted = false;
+        }
+
         if (!window.ga || !$scope.signup.merchantData.business_type) return;
-        const regOrUnreg =
+        var regOrUnreg =
             $scope.signup.merchantData.business_type == 11
               ? 'Unregistered'
               : 'Registered',
@@ -704,7 +708,7 @@ app
         if (!experiments) {
           return;
         }
-        const hideCompanyAB = experiments['hide_company_name'];
+        var hideCompanyAB = experiments['hide_company_name'];
         if (hideCompanyAB && hideCompanyAB.result) {
           $scope.showCompanyName = hideCompanyAB.result === 'on' ? false : true;
         }
@@ -1222,7 +1226,7 @@ app
               });
           } else {
             hideSpinner();
-            const firstError = data.errors[0];
+            var firstError = data.errors[0];
             window.grecaptcha.reset();
             if (typeof firstError === 'string') {
               // errors to be displayed directly
