@@ -577,42 +577,31 @@ class Service extends Base\Service
      * BEWARE: it fails silently in case on any exception
      * @param Entity $terminal
      */
-    public function fetchFromTerminalsServiceAndCompare(Entity $terminal)
+    public function runTerminalComparison(Entity $terminal)
     {
-        $data = [
-            'route'                      =>  $this->app['request.ctx']->getRoute(),
-            'message'                    => null,
-            Terminal\Entity::TERMINAL_ID => $terminal->getId(),
-        ];
+
+        $data[Entity::TERMINAL_ID] = $terminal->getId();
 
         try
         {
             $fetchedTerminal = $this->app['terminals_service']->fetchTerminalById($terminal->getId());
 
-            if ($this->isMigrateTerminalSuccess($terminal, $fetchedTerminal) === true)
-            {
-                $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, $data);
-            }
-            else
-            {
-                $data['message'] = 'field mismatch';
-
-                $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, $data);
-            }
+            $this->compareFetchedTerminal($terminal, $fetchedTerminal);
 
         }
         catch (\Exception $exception)
         {
             $data['message'] = $exception->getMessage();
 
-            $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, $data);
+
+            $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_FAILURE, $data);
 
         }
         catch (\Throwable $throwable)
         {
             $data['message'] = $throwable->getMessage();
 
-            $this->app['trace']->count(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, $data);
+            $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_FAILURE, $data);
         }
     }
 
@@ -634,6 +623,39 @@ class Service extends Base\Service
 
             $this->trace->error(TraceCode::TERMINALS_SERVICE_CREATE_MIGRATE_JOB_FAILURE, $data);
         }
+    }
+
+    protected function compareFetchedTerminal(Entity $terminal, $fetchedTerminal)
+    {
+        $data = [
+            'route'                      =>  $this->app['request.ctx']->getRoute(),
+            'message'                    => null,
+            Terminal\Entity::TERMINAL_ID => $terminal->getId(),
+        ];
+
+        if ($this->isMigrateTerminalSuccess($terminal, $fetchedTerminal) === true)
+        {
+            $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS);
+        }
+        else
+        {
+            $data['message'] = 'field mismatch';
+
+            $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, $data);
+        }
+    }
+
+    protected function pushTerminalsServiceMetrics(string $metric, array $data = [])
+    {
+        $default = [
+            'route'                      => $this->app['request.ctx']->getRoute(),
+            'message'                    => null,
+        ];
+
+
+        $data = array_merge($data, $default);
+        s($data);
+        $this->app['trace']->count($metric, $data);
     }
 
     protected function isMigrateTerminalSuccess(Entity $terminal, $fetchTerminalResponse)

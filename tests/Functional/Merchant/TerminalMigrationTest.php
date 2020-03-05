@@ -1246,18 +1246,13 @@ class TerminalMigrationTest extends TestCase
 
         }, 1);
 
-        $expected = [
-            'route'         => 'admin_fetch_terminal_by_id',
-            'message'       => 0,
-            'terminal_id'   => $terminal['id'],
-        ];
+        $mock = $this->createMetricsMock();
 
-        $this->createMetricsMock()
-             ->expects($this->at(4))
-             ->method('count')
-             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
+        $mock->expects($this->at(4))
+            ->method('count')
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS);
 
-        $url = '/admin/terminal/' . $terminal['id'];
+        $url = '/admin/terminal/' . $terminal['id'] . '/';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -1289,17 +1284,11 @@ class TerminalMigrationTest extends TestCase
 
         }, 1);
 
-        $expected = [
-            'route'         => 'admin_fetch_terminal_by_id',
-            'message'       => 'field mismatch',
-            'terminal_id'   => $terminal['id'],
-        ];
+        $mock = $this->createMetricsMock();
 
-        $this->createMetricsMock()
-            ->expects($this->at(1))
+        $mock->expects($this->at(1))
             ->method('count')
-            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, 1, $expected);
-
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE);
 
 
         $url = '/admin/terminal/' . $terminal['id'];
