@@ -6,7 +6,6 @@ use App;
 
 use RZP\Exception;
 use RZP\Constants;
-use Carbon\Carbon;
 use RZP\Models\Base;
 use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
@@ -366,6 +365,8 @@ class Core extends Base\Core
     public function updateStatusAfterFtaInitiated(Entity $payout, Attempt\Entity $fta)
     {
         $payout->batchFundTransfer()->associate($fta->batchFundTransfer);
+
+        Status::validateStatusUpdate(Status::INITIATED, $payout->getStatus());
 
         $payout->setStatus(Status::INITIATED);
 
@@ -1292,7 +1293,7 @@ class Core extends Base\Core
                 // reloading the payout here to ensure if any other process
                 // gets a mutex on payout resource, it gets a fresh copy
                 // of payout to work.
-                $payout->reload();
+                $this->repo->reload($payout);
 
                 if ($payout->isStatusReversed() === true)
                 {

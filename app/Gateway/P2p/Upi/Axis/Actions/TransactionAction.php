@@ -19,6 +19,8 @@ class TransactionAction extends Action
 
     const QUERY_STATUS                              = 'QUERY_STATUS';
 
+    const PAY                                       = 'PAY';
+
     const MAP = [
         self::SEND_MONEY => [
             self::VALIDATOR => [
@@ -232,5 +234,47 @@ class TransactionAction extends Action
                 S2sDirect::METHOD => 'post'
             ],
         ],
+
+        self::PAY => [
+            self::VALIDATOR  => [
+                Fields::MERCHANT_REQUEST_ID  => 'required',
+                Fields::MERCHANT_CUSTOMER_ID => 'required',
+                Fields::CUSTOMER_VPA         => 'required',
+                Fields::MERCHANT_VPA         => 'required',
+                Fields::AMOUNT               => 'required',
+                Fields::ACCOUNT_REFERENCE_ID => 'required',
+                Fields::REMARKS              => 'sometimes',
+                Fields::UPI_REQUEST_ID       => 'required',
+                Fields::TIMESTAMP            => 'required',
+            ],
+            self::SIGNATURE => [
+                Fields::ACCOUNT_REFERENCE_ID,
+                Fields::AMOUNT,
+                Fields::CUSTOMER_VPA,
+                Fields::MERCHANT_CUSTOMER_ID,
+                Fields::MERCHANT_REQUEST_ID,
+                Fields::MERCHANT_VPA,
+                Fields::REMARKS,
+                Fields::TIMESTAMP,
+                Fields::UDF_PARAMETERS,
+                Fields::UPI_REQUEST_ID
+            ],
+            self::RESPONSE => [
+                self::SIGNATURE => [
+                    Fields::AMOUNT,
+                    Fields::BANK_ACCOUNT_UNIQUE_ID,
+                    Fields::BANK_CODE,
+                    Fields::CUSTOMER_MOBILE_NUMBER,
+                    Fields::CUSTOMER_VPA,
+                    Fields::GATEWAY_REFERENCE_ID,
+                    Fields::GATEWAY_RESPONSE_CODE,
+                    Fields::GATEWAY_RESPONSE_MESSAGE,
+                    Fields::GATEWAY_TRANSACTION_ID,
+                    Fields::MASKED_ACCOUNT_NUMBER,
+                    Fields::TRANSACTION_TIME_STAMP,
+                    Fields::UDF_PARAMETERS,
+                ]
+            ]
+        ]
     ];
 }

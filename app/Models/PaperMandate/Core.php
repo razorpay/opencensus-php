@@ -55,8 +55,6 @@ class Core extends Base\Core
 
         $paperMandate->merchant()->associate($this->merchant);
 
-        $paperMandate->getValidator()->validateCustomer($customer);
-
         $paperMandate->customer()->associate($customer);
 
         $this->setDefaultValuesForPaperMandate($paperMandate);
@@ -72,8 +70,6 @@ class Core extends Base\Core
         $paperMandate->bankAccount()->associate($bankAccount);
 
         $this->repo->saveOrFail($paperMandate);
-
-        $this->generateMandateForm($paperMandate, $input);
 
         $this->repo->loadRelations($paperMandate);
 
@@ -416,14 +412,8 @@ class Core extends Base\Core
         return $notMatching;
     }
 
-    protected function generateMandateForm(Entity $paperMandate, array $input)
+    public function generateMandateForm(Entity $paperMandate)
     {
-        if ((isset($input[Entity::GENERATE_FORM]) === true) and
-            ($input[Entity::GENERATE_FORM] === false))
-        {
-            return;
-        }
-
         $data = (new HyperVerge)->generatePaperMandateForm($paperMandate);
 
         $generatedFileId = (new FileUploader($paperMandate))->saveCreatedMandateAndFileId($data[Entity::GENERATED_IMAGE]);

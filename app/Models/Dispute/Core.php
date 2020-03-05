@@ -649,20 +649,26 @@ class Core extends Base\Core
             {
                 $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::NAME]  = $data[MerchantEntity::NAME];
                 $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::EMAIL] = $data[MerchantEntity::EMAIL];
-                $bulkMailData[Constants::DISPUTES] = [];
 
-                $totalAmount = 0;
-
-                foreach ($data[Constants::DISPUTES] as $disputeId)
+                foreach ($data[Constants::DISPUTES] as $disputePhase => $disputeIds)
                 {
-                    $bulkMailData[Constants::DISPUTES][] = $disputeData[$disputeId];
+                    $bulkMailData[Entity::PHASE] = $disputePhase;
 
-                    $totalAmount += $disputeData[$disputeId][Entity::AMOUNT];
+                    $bulkMailData[Constants::DISPUTES] = [];
+
+                    $totalAmount = 0;
+
+                    foreach ($disputeIds as $disputeId)
+                    {
+                        $bulkMailData[Constants::DISPUTES][] = $disputeData[$disputeId];
+
+                        $totalAmount += $disputeData[$disputeId][Entity::AMOUNT];
+                    }
+
+                    $bulkMailData['totalAmount'] = $totalAmount;
+
+                    Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
                 }
-
-                $bulkMailData['totalAmount'] = $totalAmount;
-
-                Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
             }
         }
         catch (\Throwable $ex)

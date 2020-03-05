@@ -5625,3 +5625,14 @@ ALTER TABLE merchant_details
 ALTER TABLE terminals
     ADD COLUMN `sync_status` tinyint(4) NOT NULL DEFAULT '0',
     ADD INDEX `terminals_sync_status_index` (`sync_status`);
+
+ALTER TABLE payout_links
+    ADD COLUMN send_sms BOOLEAN DEFAULT false,
+    ADD COLUMN send_email BOOLEAN DEFAULT false;
+
+ALTER TABLE users
+    ADD COLUMN old_password1 varchar(100) DEFAULT NULL,
+    ADD COLUMN old_password2 varchar(100) DEFAULT NULL;
+
+ALTER TABLE blade
+    MODIFY COLUMN amount BIGINT NOT NULL;

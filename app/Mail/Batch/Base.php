@@ -3,12 +3,12 @@
 namespace RZP\Mail\Batch;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 
+use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
-use RZP\Models\Batch as BatchModel;
 
 class Base extends Mailable
 {
@@ -65,6 +65,21 @@ class Base extends Mailable
      */
     protected $batchSettings;
 
+    /**
+     * This is used to prefix email subjects in test mode
+     *
+     * @var string
+     */
+    protected $modePrefix;
+
+    /**
+     * Test Prefix is used only if useTestPrefix is set to true in the child class
+     * Setting it to false here for default behavior
+     *
+     * @var bool
+     */
+    protected $useTestPrefix = false;
+
     public function __construct(
         array $batch,
         array $merchant,
@@ -77,6 +92,8 @@ class Base extends Mailable
         $this->merchant            = $merchant;
         $this->outputFileLocalPath = $outputFileLocalPath;
         $this->batchSettings       = $batchSettings;
+        $applyTestPrefix           = (($this->mode === Mode::TEST) and ($this->useTestPrefix === true));
+        $this->modePrefix          = ($applyTestPrefix === true) ? Constants::TEST_MODE_PREFIX : '';
     }
 
     protected function addSender()
@@ -102,7 +119,7 @@ class Base extends Mailable
     {
         $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        $this->subject(sprintf(static::$subjectLine, $today));
+        $this->subject(sprintf($this->modePrefix . static::$subjectLine, $today));
 
         return $this;
     }

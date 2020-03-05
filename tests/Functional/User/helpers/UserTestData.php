@@ -762,6 +762,20 @@ return [
         ],
     ],
 
+    'testBulkUpdateUserRoleMapping' => [
+        'request' => [
+            'url'    => '/users/roles-mapping/bulk',
+            'method' => 'PUT',
+            'content' => [],
+            'server'     => [
+                'HTTP_X-Request-Origin'         => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testDetachMerchant' => [
         'request' => [
             'url'    => '/users/id/detach',
@@ -1304,7 +1318,7 @@ return [
             'url'     => '/users/contact/update',
             'method'  => 'patch',
             'content' => [
-                'contact_mobile' => '8877',
+                'contact_mobile' => '8877666666',
             ],
             'server'  => [
                 'HTTP_X-Dashboard-User-id' => '',
@@ -1330,7 +1344,7 @@ return [
             'url'     => '/users/contact/update',
             'method'  => 'patch',
             'content' => [
-                'contact_mobile' => '8877',
+                'contact_mobile' => '8877666666',
             ],
             'server'  => [
                 'HTTP_X-Dashboard-User-id' => '',
@@ -1356,7 +1370,7 @@ return [
             'url'     => '/users/contact/update',
             'method'  => 'patch',
             'content' => [
-                'contact_mobile' => '8877',
+                'contact_mobile' => '8877666666',
                 'otp'            => '0007',
             ],
             'server'  => [
@@ -1368,6 +1382,7 @@ return [
             'status_code' => 200,
         ],
     ],
+
     'testGetForUsersWithBusinessBankingEnabled' => [
         'request'  => [
             'url'     => '/users/30000000000000',
@@ -1393,6 +1408,98 @@ return [
                 'settings'    => [
                 ],
             ],
+        ],
+    ],
+
+    'testGetBankingUserWithPermissions'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'owner',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBankingUserWithPermissionsNull'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'random_role',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testVerifyUserThroughEmail' => [
+        'request'  => [
+            'url'     => '/users/verify/mode/email',
+            'method'  => 'post',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'RandomToken123',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditContactMobileByUserOnBankingWithoutAuthToken' => [
+        'request'   => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877666666',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+                'HTTP_X-Request-Origin'    => '',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The otp auth token field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testEditContactMobileByUserAndVerifyForBanking' => [
+        'request'  => [
+            'url'     => '/users/contact/update',
+            'method'  => 'patch',
+            'content' => [
+                'contact_mobile' => '8877666666',
+                'otp'            => '0007',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+                'HTTP_X-Request-Origin'    => 'http://x.razorpay.in',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
         ],
     ],
 ];

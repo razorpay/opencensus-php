@@ -974,6 +974,11 @@ class Gateway extends Base\Gateway
             $content['SecurityID'] = $this->getTestAccessCode();
         }
 
+        if ($input['terminal']['procurer'] === 'merchant')
+        {
+            $content['AdditionalInfo1'] = substr($input['payment']['description'], 0, 30);
+        }
+
         return $content;
     }
 

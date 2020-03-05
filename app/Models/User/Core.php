@@ -10,6 +10,7 @@ use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -18,9 +19,11 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Services\TokenService;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
+use RZP\Http\UserRolePermissionsMap;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 
 class Core extends Base\Core
@@ -81,6 +84,16 @@ class Core extends Base\Core
 
     public function changePassword(Entity $user, array $input)
     {
+        // TODO: Following validation does not seem be invoked in other flows
+        // e.g. reset by internal admin etc. Need to check in detail and plug
+        // this validation at right place. Also need to modify test assertions
+        // and add new if required.
+        $user->getValidator()->validatePasswordIsNotSameAsLastThree($input[Entity::PASSWORD]);
+
+        // Once validated updates the old password attributes.
+        $user->setAttribute(Entity::OLD_PASSWORD_2, $user->getAttribute(Entity::OLD_PASSWORD_1));
+        $user->setAttribute(Entity::OLD_PASSWORD_1, $user->getAttribute(Entity::PASSWORD));
+
         $user->fill($input);
 
         $user->setPasswordResetToken();
@@ -143,6 +156,22 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    protected function restrictUserToOneRolePerMerchantAndProduct(Entity $user): bool
+    {
+        $oneRoleExp = $this->app->razorx->getTreatment(
+            $user->getId(),
+            Merchant\RazorxTreatment::RESTRICT_USER_TO_ONE_ROLE_PER_MERCHANT_AND_PRODUCT,
+            $this->mode
+        );
+
+        if (strtolower($oneRoleExp) !== 'off')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -582,6 +611,11 @@ class Core extends Base\Core
                     return $merchant;
                 }
 
+                // Attach Permission
+                $userMerchantPermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);
+
+                $merchant[Constants::PERMISSIONS] = $userMerchantPermissions;
+
                 /** @var Merchant\Balance\Entity $balance */
                 $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
                     $merchant['id'],
@@ -646,9 +680,11 @@ class Core extends Base\Core
 
         $role = $input[Entity::ROLE];
 
+        $product = $input[Entity::PRODUCT] ?? $this->app['basicauth']->getRequestOriginProduct();
+
         $mappingParams = [
              'role'       => $role,
-             'product'    => $input[Merchant\Entity::PRODUCT],
+             'product'    => $product,
              'created_at' => $currentTimestamp,
              'updated_at' => $currentTimestamp
         ];
@@ -657,17 +693,23 @@ class Core extends Base\Core
 
         $this->repo->merchant->findOrFailPublic($merchantId);
 
+        // On PG, X a user can have only 1 role. If we user with any role is already present throw an exception
         $mapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
                                                                  $user->getId(),
-                                                                 $role,
-                                                                 $input[Merchant\Entity::PRODUCT]);
+                                                                 null,
+                                                                 $product);
 
-        if (empty($mapping) === false)
+        // Adding an experiment to restrict this behaviour in production if required
+        // Ideally this should never happen, but we do have some users which have multiple roles per merchant, product
+        // Since this is an unexpected use case, still adding an experiment to be safe
+        // TODO: remove this experiment once the validation has been completed
+        if ((empty($mapping) === false) and
+            ($this->restrictUserToOneRolePerMerchantAndProduct($user) === true))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS);
         }
 
-        $this->repo->attach($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
+        $this->repo->attach($user, $product . Entity::MERCHANTS, [$merchantId => $mappingParams]);
 
         if (BankingRole::isWorkflowRole($role) === true)
         {
@@ -696,9 +738,11 @@ class Core extends Base\Core
     {
         $merchantId = $input[Entity::MERCHANT_ID];
 
+        $product = $input[Entity::PRODUCT] ?? $this->app['basicauth']->getRequestOriginProduct();
+
         $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $this->repo->detach($user, Entity::MERCHANTS, $merchantId);
+        $this->repo->detach($user, $product . Entity::MERCHANTS, $merchantId);
 
         // TODO: detach roles() for RX banking workflows
 
@@ -722,13 +766,13 @@ class Core extends Base\Core
 
         $product = $input[Entity::PRODUCT] ?? $this->app['basicauth']->getRequestOriginProduct();
 
+        $merchantId = $input[Entity::MERCHANT_ID];
+
         $mappingParams = [
             'role'       => $role,
             'updated_at' => $currentTimestamp,
             'created_at' => $currentTimestamp,
         ];
-
-        $merchantId = $input[Entity::MERCHANT_ID];
 
         $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 
@@ -1077,6 +1121,14 @@ class Core extends Base\Core
                 'account_number'      => mask_except_last4($input['account_number']),
             ];
         }
+        else if ($action === 'create_payout_link')
+        {
+            $payload += [
+                'amount'         => amount_format_IN($input['amount']),
+                'account_number' => mask_except_last4($input['account_number']),
+                'purpose'        => $input['purpose'],
+            ];
+        }
 
         return $payload;
     }
@@ -1352,5 +1404,32 @@ class Core extends Base\Core
         $customProperties = ['email' => $userEmail];
 
         $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, null, $customProperties);
+    }
+
+    /**
+     * Verify user through otp sent to email.
+     * Generates and stores a user verification token in redis.
+     * This token has to be passed in subsequent calls which need user authorization.
+     *
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Entity $user
+     * @return array
+     */
+    public function verifyUserThroughEmail(array $input, Merchant\Entity $merchant, Entity $user) : array
+    {
+        /** @var Validator $validator */
+        $validator = $user->getValidator();
+
+        $validator->validateInput('verifyUserThroughEmail', $input);
+
+        $this->verifyOtp($input + ['action' => 'user_auth'], $merchant, $user);
+
+        /** @var TokenService $tokenService */
+        $tokenService  = $this->app['token_service'];
+
+        $token = $tokenService->generate($user->getId());
+
+        return [Entity::OTP_AUTH_TOKEN => $token];
     }
 }

@@ -66,6 +66,41 @@ class UpiTransferTest extends TestCase
         $this->assertEquals($upiTransfer['expected'], true);
     }
 
+    public function testProcessUpiTransferPaymentIgnoreCase()
+    {
+        $this->processUpiTransferIgnoreCase();
+
+        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+        $payment     = $this->getLastEntity('payment', true);
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(10000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_MINDGATE, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($this->vpa['address'], $upiTransfer['payee_vpa'], '', 0.0, 10, false, true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($upiTransfer['expected'], true);
+    }
+
+    public function testProcessFailedUpiTransferPayment()
+    {
+        $this->processUpiTransfer(__FUNCTION__, false);
+
+        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+        $payment     = $this->getLastEntity('payment', true);
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertNull($payment);
+        $this->assertNull($upiTransfer);
+        $this->assertNull($upi);
+    }
+
     public function testProcessUpiTransferRefund()
     {
         $this->processUpiTransfer();
@@ -178,7 +213,7 @@ class UpiTransferTest extends TestCase
         return $vpa;
     }
 
-    protected function processUpiTransfer($function = __FUNCTION__)
+    protected function processUpiTransfer($function = __FUNCTION__, $valid = true)
     {
         $this->ba->privateAuth();
 
@@ -190,7 +225,24 @@ class UpiTransferTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertTrue($response['valid']);
+        $this->assertEquals($response['valid'], $valid);
+
+        return $response;
+    }
+
+    protected function processUpiTransferIgnoreCase($function = __FUNCTION__, $valid = true)
+    {
+        $this->ba->privateAuth();
+
+        $request = $this->testData[$function];
+
+        $data = $request['content'];
+
+        $request['content']['meRes'] = $this->mockServer(Gateway::UPI_MINDGATE)->encrypt($data['meRes']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['valid'], $valid);
 
         return $response;
     }

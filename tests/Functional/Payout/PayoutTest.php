@@ -8,6 +8,7 @@ use Queue;
 use Config;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Artisan;
 
 use RZP\Models\Admin;
 use RZP\Models\Payout;
@@ -18,7 +19,6 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Banking\LowBalanceAlert;
 use RZP\Exception\BadRequestException;
-use Illuminate\Support\Facades\Artisan;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -164,7 +164,7 @@ class PayoutTest extends TestCase
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-                    'IMPS is not enabled on Beneficiary Account');
+            'IMPS is not enabled on Beneficiary Account');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
     }
@@ -186,7 +186,7 @@ class PayoutTest extends TestCase
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-                    'Payout failed. Contact support for help');
+            'Payout failed. Contact support for help');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
     }
@@ -228,7 +228,7 @@ class PayoutTest extends TestCase
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-                    'Payout failed. Contact support for help');
+            'Payout failed. Contact support for help');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
     }
@@ -239,8 +239,8 @@ class PayoutTest extends TestCase
 
         // Setting current time as 15th Aug Independence day holiday
         $holidayDateTime = Carbon::createFromDate(2019, 8, 15., Timezone::IST)
-                                ->hour(18)
-                                ->minute(14);
+            ->hour(18)
+            ->minute(14);
 
         Carbon::setTestNow($holidayDateTime);
 
@@ -701,9 +701,8 @@ class PayoutTest extends TestCase
 
         // Create Checker Role User for 2nd level of approval
         $secondLevelRole = $this->getDbEntityById('role', Org::MAKER_ROLE, 'live');
-        $secondUser = $this->fixtures->on('live')->user->createUserForMerchant('10000000000000',
-                                                                                      [],
-                                                                                      Org::MAKER_ROLE);
+        $secondUser = $this->fixtures->on('live')
+                                     ->user->createUserForMerchant('10000000000000', [], Org::MAKER_ROLE);
 
         $this->app['config']->set('database.default', 'live');
 
@@ -1569,9 +1568,9 @@ class PayoutTest extends TestCase
         $this->testPayoutStatusUpdate();
 
         $this->fixtures->edit('contact', '1000010contact',
-        [
-            'id' => '1000011contact',
-        ]);
+            [
+                'id' => '1000011contact',
+            ]);
 
         $this->testPayoutStatusUpdate();
     }
@@ -1583,10 +1582,10 @@ class PayoutTest extends TestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->fixtures->edit('payout',
-                              $payout->getId(),
-                              [
-                                  'status' => Payout\Status::QUEUED,
-                              ]);
+            $payout->getId(),
+            [
+                'status' => Payout\Status::QUEUED,
+            ]);
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout->getPublicId() . '/status';

@@ -14,7 +14,7 @@ class RegistrationStatus
     const FAILURE = 'false';
 
     const STATUS_TO_RECURRING_STATUS_MAP = [
-        self::SUCCESS => Token\RecurringStatus::INITIATED,
+        self::SUCCESS => Token\RecurringStatus::CONFIRMED,
         self::FAILURE => Token\RecurringStatus::REJECTED
     ];
 

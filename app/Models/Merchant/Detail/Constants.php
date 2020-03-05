@@ -12,6 +12,7 @@ class Constants
     const POI_STATUS                       = 'poi_status';
     const POA_STATUS                       = 'poa_status';
     const DOCUMENT_TYPE                    = 'document_type';
+    const DOCUMENT_SOURCE                  = 'document_source';
     const BANK_DETAILS_VERIFICATION_STATUS = 'bank_details_verification_status';
     const EXTERNAL_VERIFIER                = 'external_verifier';
 
@@ -40,10 +41,7 @@ class Constants
     const PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        = 'penny_testing_fuzzy_match_type_for_pan';
     const POA_FUZZY_MATCH_TYPE                          = 'poa_fuzzy_match_type';
     const POI_FUZZY_MATCH_TYPE                          = 'poi_fuzzy_match_type';
-    const FUZZY_MATCH_TYPE_FOR_BANK_ACCOUNT             = 'fuzzy_match_type_for_bank_account;';
-    const FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME = 'fuzzy_match_percentage_with_bank_account_name';
     const BANK_VERIFICATION_THRESHOLD_FOR_PAN           = 'bank_detail_verification_threshold_for_pan';
-    const BANK_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT  = 'bank_detail_verification_threshold_for_bank_account';
     const IS_VALID_NAME                                 = 'is_valid_name';
 
     // merchant verification
@@ -66,6 +64,8 @@ class Constants
     const DOCUMENTS              = 'documents';
     const CONTEXT                = 'context';
     const METHOD                 = 'method';
+    const OCR_RESPONSE           = 'ocr_response';
+    const VERIFICATION_RESULT    = 'verification_result';
 
     const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
     const OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME = 'ocr_match_percentage_with_pan_name';

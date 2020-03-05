@@ -5,6 +5,7 @@ namespace RZP\Mail\Transaction;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Mail\Base\Constants;
 use RZP\Models\BankTransfer\Entity;
 
 class BankTransfer extends Transaction
@@ -20,7 +21,7 @@ class BankTransfer extends Transaction
 
     protected function getSubject(): string
     {
-        $modePrefix = ($this->mode === Mode::TEST) ? '[Test Mode] ' : '';
+        $modePrefix = ($this->mode === Mode::TEST) ? Constants::TEST_MODE_PREFIX : '';
 
         return sprintf(
             "{$modePrefix}Your A/C ending with %s has been credited with INR %s",

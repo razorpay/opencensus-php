@@ -216,6 +216,20 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function getInstantRefundsDefaultPricingPlanForMethod($feature, $method, $merchant, $product = Product::PRIMARY)
+    {
+        $orgId = $merchant->org->getId();
+
+        return $this->newQuery()
+                    ->product($product)
+                    ->planId(Fee::DEFAULT_INSTANT_REFUNDS_PLAN_ID)
+                    ->where(Pricing\Entity::FEATURE, '=', $feature)
+                    ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->get();
+    }
+
     public function getBankingSharedAccountDefaultPricingRules(string $feature, Merchant\Entity $merchant)
     {
         $orgId = $merchant->getOrgId();

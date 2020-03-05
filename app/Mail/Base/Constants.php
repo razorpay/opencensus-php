@@ -45,6 +45,8 @@ class Constants
 
     const PARTNER_ON_BOARDING_REPLY = 'partner_on_boarding_reply';
 
+    const TEST_MODE_PREFIX          = '[Test Mode] ';
+
     const MAIL_ADDRESSES = [
         self::SUPPORT                   => 'support@razorpay.com',
         self::X_SUPPORT                 => 'x.support@razorpay.com',

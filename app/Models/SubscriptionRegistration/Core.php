@@ -74,6 +74,10 @@ class Core extends Base\Core
 
         $tokenRegistration = $invoice->entity;
 
+        $this->generateFormIfApplicable($tokenRegistration, $input);
+
+        $invoice->refresh();
+
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
 
         return $invoice;
@@ -97,9 +101,30 @@ class Core extends Base\Core
 
         $tokenRegistration = $invoice->entity;
 
+        $this->generateFormIfApplicable($tokenRegistration, $tokenRegistrationInput);
+
+        $order->refresh();
+
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
 
         return $invoice;
+    }
+
+    protected function generateFormIfApplicable(Entity &$tokenRegistration, array $input = [])
+    {
+        if ($tokenRegistration->getAuthType() !== Payment\AuthType::PHYSICAL)
+        {
+            return;
+        }
+
+        $createForm = $input[E::SUBSCRIPTION_REGISTRATION][Entity::NACH][Entity::CREATE_FORM] ?? true;
+
+        $paperMandate = $tokenRegistration->paperMandate;
+
+        if (($paperMandate !== null) and ($createForm === true))
+        {
+            (new PaperMandate\Core)->generateMandateForm($paperMandate);
+        }
     }
 
     private function populateAuthLinkParamsFromOrder(array & $input, Order\Entity $order)
@@ -134,6 +159,10 @@ class Core extends Base\Core
         $input[Invoice\Entity::AMOUNT] = $order->getAmount();
 
         $input[Invoice\Entity::CUSTOMER_ID] = $customer->getPublicId();
+
+        $input[Invoice\Entity::EMAIL_NOTIFY] = false;
+
+        $input[Invoice\Entity::SMS_NOTIFY] = false;
     }
 
     public function createSubscriptionRegistration(array & $input, Merchant\Entity $merchant, Customer\Entity $customer)
@@ -214,11 +243,6 @@ class Core extends Base\Core
         }
 
         $nachArray = array_pull($subrInput, Entity::NACH, []);
-
-        if (array_key_exists(Entity::CREATE_FORM, $nachArray) === true)
-        {
-            $paperMandateInput[PaperMandate\Entity::GENERATE_FORM] = $nachArray[Entity::CREATE_FORM];
-        }
 
         if (array_key_exists(Entity::FORM_REFERENCE1, $nachArray) === true)
         {

@@ -177,7 +177,6 @@ class Repository extends Base\Repository
      * calculates the sum of `fee` and `tax` for the instant speed refunds
      *  - captured for a merchant in a given time frame
      *  - based on filter type passed REFUND_LTE_1K, REFUND_GT_1K_LTE_10K, REFUND_GT_10K
-     *  - When correction flag is true the adds condition where created in given time frame
      *
      * @param string $merchantId
      * @param int $start
@@ -1678,7 +1677,7 @@ class Repository extends Base\Repository
      * @return Base\PublicCollection
      */
     public function fetchUnsettledTransactionsForProcessing(
-        string $mid, string $channel, Balance\Entity $balance, array $params = []): Base\PublicCollection
+        string $mid, Balance\Entity $balance, array $params = []): Base\PublicCollection
     {
         $txnFetchStartTime = microtime(true);
 
@@ -1687,19 +1686,18 @@ class Repository extends Base\Repository
         $transactionMerchantId  = $this->dbColumn(Entity::MERCHANT_ID);
         $transactionType        = $this->dbColumn(Entity::TYPE);
         $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
-        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
         $transactionSettled     = $this->dbColumn(Entity::SETTLED);
         $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
         $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
 
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
+	    // The filter on channel is dropped since we have a new index which works without it. WEF Feb 2020.
         $query = $this->newQuery()
                       ->select($selectedColumns)
                       ->where($transactionMerchantId, $mid)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
-                      ->where($transactionChannel, $channel)
                       ->where($transactionType, '!=', Type::SETTLEMENT)
                       ->whereNotNull($transactionSettledAt);
 

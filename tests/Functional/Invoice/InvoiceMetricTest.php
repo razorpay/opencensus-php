@@ -106,7 +106,7 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->exactly(8))
+        $mock->expects($this->exactly(10))
              ->method('count')
              ->withConsecutive(
                 [
@@ -142,6 +142,24 @@ class InvoiceMetricTest extends TestCase
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
+                    ],
+                ],
+                [
+                    'cache_misses_total',
+                    1,
+                    [
+                        'version' => 'v1',
+                        'entity'  => 'feature',
+                        'type'    => 'query_cache',
+                    ],
+                ],
+                [
+                    'cache_writes_total',
+                    1,
+                    [
+                        'version' => 'v1',
+                        'entity'  => 'feature',
                         'type'    => 'query_cache',
                     ],
                 ],
