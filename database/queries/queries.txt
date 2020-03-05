@@ -5638,3 +5638,6 @@ ALTER TABLE blade
 
 ALTER TABLE merchant_details
     ADD COLUMN fund_account_validation_id char(14) DEFAULT NULL;
+
+ALTER TABLE upi
+    CHANGE `email` `gateway_data` VARCHAR(255);
