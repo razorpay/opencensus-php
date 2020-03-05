@@ -116,11 +116,6 @@ class Core extends Base\Core
 
         $this->updateActivationSource($merchant, $originProduct);
 
-        //
-        // does penny testing for un-registered business type
-        //
-        $this->attemptPennyTesting($merchantDetails, $merchant);
-
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
 
         $activationStatusData = [
@@ -135,11 +130,18 @@ class Core extends Base\Core
 
         $response['auto_activated'] = $autoActivated;
 
-        $this->fireActivationTrigger($merchantDetails, $merchant);
-
         $eventAttributes = $merchant->toArrayEvent();
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
+
+        //
+        // does penny testing for un-registered business type
+        //
+        $this->attemptPennyTesting($merchantDetails, $merchant); // async
+
+        $this->fireActivationTrigger($merchantDetails, $merchant);
+
+        $this->repo->saveOrFail($merchantDetails);
 
         return $response;
     }
