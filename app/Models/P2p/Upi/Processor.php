@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Upi;
 
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Device;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Transaction;
 use RZP\Models\P2p\Transaction\UpiTransaction;
@@ -59,6 +60,10 @@ class Processor extends Base\Processor
 
             case Transaction\Entity::CONCERNS:
                 $this->resolveContextFromConcerns($context[Base\Entity::ACTION]);
+                break;
+
+            case Device\Entity::REGISTER_TOKEN:
+                $this->resolveContextFromRegisterToken($context[Base\Entity::ACTION]);
                 break;
 
             default:
@@ -122,6 +127,22 @@ class Processor extends Base\Processor
 
         $this->context()->setMerchant($device->merchant);
         $this->context()->setDevice($device);
+    }
+
+    public function resolveContextFromRegisterToken(string $action)
+    {
+        $context =$this->input->get(Base\Entity::CONTEXT);
+
+        switch ($context[Base\Entity::ACTION])
+        {
+            case Device\Action::VERIFICATION_SUCCESS:
+                $token = $this->input->get(Device\Entity::REGISTER_TOKEN)['token'];
+
+                $registerToken = (new Device\RegisterToken\Core)->find($token);
+
+                $this->context()->setMerchant($registerToken->merchant);
+                $this->context()->setHandleAndMode($registerToken->handle);
+        }
     }
 
     public function resolveDeviceFromVpa(array $input)
