@@ -4,9 +4,12 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
 use App;
 
+use RZP\Models\Admin;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\AccountType;
 
@@ -64,10 +67,33 @@ class DownstreamProcessor
                 $channel = $this->getChannelForFundTransfer($accountType);
             }
 
+            $this->blockYesbankPayoutsIfRequired($channel);
+
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
 
         return new $subProcessor;
+    }
+
+    protected function blockYesbankPayoutsIfRequired($channel)
+    {
+        if ($channel === Channel::YESBANK)
+        {
+            $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::BLOCK_YESBANK_PAYOUTS]) ?? false;
+
+            if (boolval($config) === false)
+            {
+                return;
+            }
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY,
+                null,
+                [
+                    'channel'       => 'yesbank',
+                    'merchant_id'   => $this->payout->getMerchantId(),
+                ]);
+        }
     }
 
     public function getAccountTypeForFundTransfer()

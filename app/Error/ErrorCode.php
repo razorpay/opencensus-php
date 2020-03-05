@@ -319,6 +319,7 @@ class ErrorCode
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                      = 'GATEWAY_ERROR_TERMINAL_ENABLE_FAILED';
     const GATEWAY_ERROR_AUTHENTICATION_FAILED                                       = 'GATEWAY_ERROR_AUTHENTICATION_FAILED';
 
+    const BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY                                 = 'BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY';
 
     const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'BAD_REQUEST_UPI_MPIN_NOT_SET';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                           = 'BAD_REQUEST_UPI_INVALID_ATM_PIN';
