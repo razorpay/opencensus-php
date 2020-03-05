@@ -26,6 +26,7 @@ import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 import Support from 'merchant/containers/Support';
 import OffersHome from '../views/Offers';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import YesBankAnnouncement from 'merchant/components/Announcements/YesBankAnnouncement';
 
 import {
   setBaseLocation,
@@ -49,6 +50,16 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
     </tabbed-container>
   );
 };
+
+const HIDDEN_YES_BANK_ANNOUNCEMENT_ROUTES = [
+  '/virtualaccounts',
+  '/recurring_payments',
+  '/tokens',
+  '/registration_links',
+  '/subscriptions/batchuploads',
+  '/subscriptions',
+  '/plans',
+];
 
 @withRouter
 @connect(
@@ -134,6 +145,10 @@ export default class Content extends Component {
 
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
+        {!HIDDEN_YES_BANK_ANNOUNCEMENT_ROUTES.includes(
+          this.baseLocation.pathname
+        ) && <YesBankAnnouncement />}
+
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
 

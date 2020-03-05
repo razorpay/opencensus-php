@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 
@@ -26,6 +27,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import VirtualAccountsListFilter from 'merchant/components/VirtualAccounts/ListFilter';
+import YesBankSmartCollect from 'merchant/components/Announcements/YesBankSmartCollect';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
@@ -152,68 +154,73 @@ export default class VirtualAccountsListContainer extends ListContainer {
 
   render() {
     const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
+    const { items } = this.props;
 
     if (showOnboarding) {
       return <OnBoarding />;
     }
 
     return (
-      <tabbed-container>
-        {isQuickGuideOpen && <QuickGuide />}
+      <React.Fragment>
+        <YesBankSmartCollect items={items} />
 
-        <header id="#va-header">
-          <NavLink to="/virtualaccounts">Virtual Accounts</NavLink>
+        <tabbed-container>
+          {isQuickGuideOpen && <QuickGuide />}
 
-          <HeaderAction>
-            <div class="btn-toolbar">
-              <TakeATourButton feature={RZPFeatures.VA} />
+          <header id="#va-header">
+            <NavLink to="/virtualaccounts">Virtual Accounts</NavLink>
 
-              <DocsLink url="https://razorpay.com/docs/smart-collect/" />
+            <HeaderAction>
+              <div class="btn-toolbar">
+                <TakeATourButton feature={RZPFeatures.VA} />
 
-              <ShowWhen
-                additionalCondition={user =>
-                  user.isAllowedEdit('virtual_accounts')
-                }
-              >
-                <NavLink class="btn btn-primary" to="/virtualaccounts/new">
-                  <i class="i i-plus" />
-                  <span>Create Virtual Account</span>
-                </NavLink>
-              </ShowWhen>
+                <DocsLink url="https://razorpay.com/docs/smart-collect/" />
+
+                <ShowWhen
+                  additionalCondition={user =>
+                    user.isAllowedEdit('virtual_accounts')
+                  }
+                >
+                  <NavLink class="btn btn-primary" to="/virtualaccounts/new">
+                    <i class="i i-plus" />
+                    <span>Create Virtual Account</span>
+                  </NavLink>
+                </ShowWhen>
+              </div>
+            </HeaderAction>
+          </header>
+
+          <TestModeBanner />
+
+          <content>
+            <div class="content-wrapper">
+              <VirtualAccountsListFilter
+                form="virtualAccountsListFilter"
+                count={this.state.count}
+                onSubmit={this.search}
+                onSearchAnalytics={this.onSearchAnalytics}
+                onClearAnalytics={this.onClearAnalytics}
+              />
+
+              <DataTable
+                title="Virtual Accounts"
+                columns={[
+                  virtualAccountId,
+                  accountDescription,
+                  amountPaid,
+                  status,
+                  createdAt,
+                ]}
+                count={this.state.count}
+                skip={this.state.skip}
+                paginate={this.paginate}
+                EmptyComponent={EmptyComponent}
+                {...this.props}
+              />
             </div>
-          </HeaderAction>
-        </header>
-
-        <TestModeBanner />
-
-        <content>
-          <div class="content-wrapper">
-            <VirtualAccountsListFilter
-              form="virtualAccountsListFilter"
-              count={this.state.count}
-              onSubmit={this.search}
-              onSearchAnalytics={this.onSearchAnalytics}
-              onClearAnalytics={this.onClearAnalytics}
-            />
-
-            <DataTable
-              title="Virtual Accounts"
-              columns={[
-                virtualAccountId,
-                accountDescription,
-                amountPaid,
-                status,
-                createdAt,
-              ]}
-              count={this.state.count}
-              skip={this.state.skip}
-              paginate={this.paginate}
-              EmptyComponent={EmptyComponent}
-              {...this.props}
-            />
-          </div>
-        </content>
-      </tabbed-container>
+          </content>
+        </tabbed-container>
+      </React.Fragment>
     );
   }
 }
