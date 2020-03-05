@@ -1051,7 +1051,7 @@ return [
                     'fund_accounts'    => [
                         [
                             'bank_account' => [
-                                'name'           => 'Ratnalal Account Name',
+                                'name'           => 'Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name',
                                 'account_number' => '1200012391',
                                 'ifsc'           => 'ICIC0000031',
                                 'notes'          => [
@@ -1210,7 +1210,7 @@ return [
                     'fund_accounts'    => [
                         [
                             'bank_account' => [
-                                'name'           => 'Ratnalal Account Name',
+                                'name'           => 'Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name',
                                 'account_number' => '1200012391',
                                 'ifsc'           => 'ICIC0000031',
                                 'notes'          => [
@@ -1916,7 +1916,7 @@ return [
                     'fund_accounts'    => [
                         [
                             'bank_account' => [
-                                'name'           => 'Ratnalal Account Name',
+                                'name'           => 'Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name',
                                 'account_number' => '1200012391',
                                 'ifsc'           => 'ICIC0000031',
                             ],

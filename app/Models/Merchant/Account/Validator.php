@@ -149,7 +149,7 @@ class Validator extends Merchant\Validator
     protected static $bankAccountRules = [
         Constants::NOTES          => 'sometimes|notes',
         Constants::IFSC           => 'required|string|size:11',
-        Constants::NAME           => 'required|string|max:50',
+        Constants::NAME           => 'required|string|max:120',
         Constants::ACCOUNT_NUMBER => 'required|string|max:16',
     ];
 
