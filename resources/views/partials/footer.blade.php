@@ -27,6 +27,9 @@
       routeActions: function() {
         return window.rzpQ;
       },
+      paymentLinks: function() {
+        return window.rzpQ;
+      },
       reporting: function() {
         return window.rzpQ;
       }
@@ -117,6 +120,16 @@
           reporting: [
             { propertyName: 'event_type', value: 'reporting-events' },
             { propertyName: 'event_group', value: 'reporting_events' },
+          ],
+          'paymentLinks':[
+              {
+                  propertyName:'event_type',
+                  value:'paymentlinks'
+              },
+              {
+                  propertyName:'event_group',
+                  value:'paymentlink-dashboard'
+              },
           ],
         });
 
