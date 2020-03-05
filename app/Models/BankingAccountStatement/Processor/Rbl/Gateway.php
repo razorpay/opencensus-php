@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccountStatement\Type;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccountStatement\Entity;
 use RZP\Models\BankingAccountStatement\Category;
 use RZP\Models\BankingAccountStatement\Processor\Source;
