@@ -69,6 +69,9 @@ class ConfigKey
 
     const LOW_BALANCE_RX_EMAIL                  = self::PREFIX . 'low_balance_rx_email';
 
+    // RBL_STATEMENT_FETCH_ATTEMPT_LIMIT is defining the number of attempt count for account statement fetch
+    // per request. RBL has internal pagination with flag for statement fetch and we need to refetch with
+    // last transaction mentioned to fetch more data.
     const RBL_STATEMENT_FETCH_ATTEMPT_LIMIT     = self::PREFIX . 'rbl_statement_fetch_attempt_limit';
 
     const PUBLIC_KEYS = [
