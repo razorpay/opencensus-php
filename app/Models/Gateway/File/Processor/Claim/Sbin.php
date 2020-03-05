@@ -4,8 +4,8 @@ namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Base\PublicCollection;
-use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 use Carbon\Carbon;
@@ -29,6 +29,11 @@ class Sbin extends Base
     const FILE_TYPE = FileStore\Type::SBI_NETBANKING_CLAIM;
 
     const FILE_NAME = 'SBI_CLAIM';
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('2048M');
+    }
 
     protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
     {
