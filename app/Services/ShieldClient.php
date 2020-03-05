@@ -354,6 +354,8 @@ class ShieldClient implements ExternalService
                 break;
         }
 
+        $url = $this->baseUrl . $path;
+
         if ($this->app->environment('production') === false)
         {
             $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
@@ -361,10 +363,9 @@ class ShieldClient implements ExternalService
             if (empty($testCaseId) === false)
             {
                 $headers[self::X_RZP_TESTCASE_ID] = $testCaseId;
+                $url = $this->config['mock_url'] . $path;
             }
         }
-
-        $url = $this->baseUrl . $path;
 
         try
         {
