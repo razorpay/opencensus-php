@@ -64,6 +64,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 
 trait Authorize
@@ -5681,6 +5682,8 @@ trait Authorize
         }
 
         $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getSupportedBanks();
+
+        $merchantBanks = Netbanking::removeDefaultDisableBanks($merchantBanks);
 
         $paymentBank = $payment->getBank();
 

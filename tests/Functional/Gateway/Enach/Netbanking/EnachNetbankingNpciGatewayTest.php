@@ -47,6 +47,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->gateway = 'enach_npci_netbanking';
 
         //$this->setupMockDns();
+
+        $this->markTestSkipped('bye bye yesbank');
     }
 
     public function testPayment()

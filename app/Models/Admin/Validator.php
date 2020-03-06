@@ -91,6 +91,11 @@ class Validator extends Base\Validator
         ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',
 
         ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
+
+        ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT  => 'filled|integer',
+        ConfigKey::BLOCK_YESBANK_PAYOUTS              => 'filled|boolean',
+        ConfigKey::BLOCK_X_REGISTRATION               => 'filled|boolean',
+        ConfigKey::BLOCK_YESBANK_RX_FAV               => 'filled|boolean',
     ];
 
     protected static $setRedisKeysRules = [

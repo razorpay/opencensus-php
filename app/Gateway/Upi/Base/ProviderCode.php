@@ -137,10 +137,10 @@ class ProviderCode
     const VIJAYABANK         = 'vijayabank';
     const VIJB               = 'vijb';
     const VJB                = 'vjb';
-    const YBL                = 'ybl';
-    const YESBANK            = 'yesbank';
-    const YESBANKLTD         = 'yesbankltd';
-    const YESB               = 'yesb';
+    // const YBL                = 'ybl';
+    // const YESBANK            = 'yesbank';
+    // const YESBANKLTD         = 'yesbankltd';
+    // const YESB               = 'yesb';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -269,11 +269,11 @@ class ProviderCode
         self::VIJAYABANK         => IFSC::VIJB,
         self::VIJB               => IFSC::VIJB,
         self::VJB                => IFSC::VIJB,
-        self::YBL                => IFSC::YESB,
-        self::YESBANK            => IFSC::YESB,
-        self::YESBANKLTD         => IFSC::YESB,
+        // self::YBL                => IFSC::YESB,
+        // self::YESBANK            => IFSC::YESB,
+        // self::YESBANKLTD         => IFSC::YESB,
         self::RAZORPAY           => 'RZPY',
-        self::YESB               => IFSC::YESB,
+        // self::YESB               => IFSC::YESB,
     ];
 
     /**
@@ -288,7 +288,7 @@ class ProviderCode
         self::UPI           => 'bhim',
         self::ICICI         => 'whatsapp',
         self::PAYTM         => 'paytm',
-        self::YBL           => 'phonepe',
+        //self::YBL           => 'phonepe',
     ];
 
     public static function getBankCode($provider)

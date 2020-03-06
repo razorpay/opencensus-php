@@ -240,7 +240,6 @@ class PennyTesting extends Base\Core
                            [
                                Constants::ACCOUNT_STATUS                                => $accountStatus,
                                Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN],
-                               Constants::FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME => $nameValidationData[Constants::FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME],
                            ]);
 
         return (($accountStatus === FundAccountValidationAccountStatus::ACTIVE) and
@@ -271,10 +270,7 @@ class PennyTesting extends Base\Core
             Constants::REGISTERED_NAME                               => $input[Constants::REGISTERED_NAME] ?? '',
             Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN],
             Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN],
-            Constants::FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME => $nameValidationData[Constants::FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME],
-            Constants::FUZZY_MATCH_TYPE_FOR_BANK_ACCOUNT             => $nameValidationData[Constants::FUZZY_MATCH_TYPE_FOR_BANK_ACCOUNT],
             Constants::BANK_VERIFICATION_THRESHOLD_FOR_PAN           => BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN,
-            Constants::BANK_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT  => BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT,
         ];
 
         $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
@@ -311,23 +307,13 @@ class PennyTesting extends Base\Core
     {
         $panFuzzyMatcher = new FuzzyMatcher(BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN, FuzzyMatcher::JUMBLED_MATCH);
 
-        $bankAccFuzzyMatcher = new FuzzyMatcher(BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT, FuzzyMatcher::JUMBLED_MATCH);
-
-        $isValidPanName = $panFuzzyMatcher->isMatch($merchantDetails->getPromoterPanName(),
+        $isValidName = $panFuzzyMatcher->isMatch($merchantDetails->getPromoterPanName(),
                                                     $input[Constants::REGISTERED_NAME],
                                                     $panPercentMatch);
 
-        $isValidBankAccName = $bankAccFuzzyMatcher->isMatch($merchantDetails->getPromoterPanName(),
-                                                            $merchantDetails->getBankAccountName(),
-                                                            $bankAccPercentMatch);
-
-        $isValidName = (($isValidPanName === true) and ($isValidBankAccName === true));
-
         $validationData = [
-            Constants::FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME => $bankAccPercentMatch,
             Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN => $panPercentMatch,
             Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        => $panFuzzyMatcher->getMatchType(),
-            Constants::FUZZY_MATCH_TYPE_FOR_BANK_ACCOUNT             => $bankAccFuzzyMatcher->getMatchType(),
             Constants::IS_VALID_NAME                                 => $isValidName,
         ];
 

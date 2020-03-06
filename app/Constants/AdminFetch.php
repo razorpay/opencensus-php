@@ -1176,6 +1176,17 @@ class AdminFetch
                 ],
             ],
 
+            Entity::SETTLEMENT_DESTINATION => [
+                'settlement_id' => [
+                    Fetch::LABEL => 'Settlement ID',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'destination_type' => [
+                    Fetch::LABEL => 'destination type',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::FUND_TRANSFER_ATTEMPT => [
                 'batch_fund_transfer_id' => [
                     Fetch::LABEL  => 'Batch Fund Transfer Id',
@@ -1873,6 +1884,24 @@ class AdminFetch
                 ],
             ],
 
+            Entity::PAPER_MANDATE_UPLOAD => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'status' => [
+                    Fetch::LABEL  => 'status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'pending',
+                        'failed',
+                        'accepted',
+                        'rejected',
+                    ],
+                ],
+                'paper_mandate_id' => [
+                    Fetch::LABEL => 'paper_mandate_id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::PAYOUT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'balance_id' => Fetch::FIELD_BALANCE_ID,
@@ -1908,7 +1937,7 @@ class AdminFetch
                 'reference_id'  => [],
                 'channel'       => [
                     Fetch::LABEL    => 'Channel',
-                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
                     Fetch::VALUES   => Channel::getChannels(),
                 ],
             ],
