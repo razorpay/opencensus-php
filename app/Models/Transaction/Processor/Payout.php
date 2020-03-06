@@ -185,6 +185,7 @@ class Payout extends Base
             $debitAmount += $this->txn->getFee();
         }
 
+        // TODO: Use locked balance here to throw the exception
         $hasBalance = ($this->merchantBalance->getBalance() >= $debitAmount);
 
         if ($hasBalance === false)

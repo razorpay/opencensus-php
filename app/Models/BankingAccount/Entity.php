@@ -490,7 +490,8 @@ class Entity extends Base\PublicEntity
             [
                 Balance\Entity::ID,
                 Balance\Entity::BALANCE,
-                Balance\Entity::CURRENCY
+                Balance\Entity::CURRENCY,
+                Balance\Entity::LOCKED_BALANCE,
             ]);
     }
 

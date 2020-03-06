@@ -571,6 +571,40 @@ class Service extends Base\Service
         return $balance->toArrayPublic();
     }
 
+    public function updateLockedBalance(string $balanceId, array $input)
+    {
+        /** @var Balance\Entity $balance */
+        $balance = $this->repo->balance->findOrFail($balanceId);
+
+        $balance->getValidator()->validateInput($input, Balance\Validator::LOCKED_BALANCE);
+
+        $lockedBalance = $input[Merchant\Balance\Entity::LOCKED_BALANCE];
+
+        $this->trace->info(
+            TraceCode::LOCKED_BALANCE_UPDATE_REQUEST,
+            [
+                'input'         => $input,
+                'type'          => $balance->getType(),
+                'balance_id'    => $balanceId,
+            ]);
+
+        if ($balance->isTypeBanking() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING,
+                null,
+                [
+                    'input'         => $input,
+                    'type'          => $balance->getType(),
+                    'balance_id'    => $balanceId,
+                ]);
+        }
+
+        $balance->setLockedBalance($lockedBalance);
+
+        $this->repo->saveOrFail($balance);
+    }
+
     public function editAmountCredits($merchantId, $input)
     {
         (new Validator)->validateInput('edit_credits', $input);

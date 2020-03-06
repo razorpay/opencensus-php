@@ -948,6 +948,7 @@ class ErrorCode
     const BAD_REQUEST_KYC_ID_MISSING                                                = 'BAD_REQUEST_KYC_ID_MISSING';
     const BAD_REQUEST_INVALID_RESPONSE_BODY                                         = 'BAD_REQUEST_INVALID_RESPONSE_BODY';
 
+    const SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING                           = 'SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING';
     const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
     const SERVER_ERROR_NO_TERMINAL_FOUND                                            = 'SERVER_ERROR_NO_TERMINAL_FOUND';
     const SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND                                       = 'SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND';
@@ -1142,6 +1143,8 @@ class ErrorCode
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
     const BAD_REQUEST_INVALID_PASSWORD                                              = 'BAD_REQUEST_INVALID_PASSWORD';
     const BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD                             = 'BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD';
+
+    const BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING                             = 'BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING';
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                        = 'BAD_REQUEST_USER_2FA_ALREADY_SETUP';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                             = 'BAD_REQUEST_LOCKED_USER_LOGIN';

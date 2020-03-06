@@ -1463,10 +1463,12 @@ final class Route
         'merchant_mtu_update'                      => ['post',      'merchant_mtu_update',                                     'MerchantController@merchantsMtuUpdate'                    ],
 
         //balance configs apis
-        'fetch_merchant_balance_configs'           => ['get',      'balance_configs',                                           'BalanceConfigController@getMerchantBalanceConfigs'                    ],
-        'get_merchant_balance_config'              => ['get',      'balance_configs/{id}',                                      'BalanceConfigController@getBalanceConfigById'                      ],
-        'add_merchant_balance_config'              => ['post',     'balance_configs/{merchant_id}',                             'BalanceConfigController@addBalanceConfig'                        ],
-        'edit_merchant_balance_config'             => ['patch',    'balance_configs/{id}',                                      'BalanceConfigController@editBalanceConfig'                        ],
+        'fetch_merchant_balance_configs'           => ['get',      'balance_configs',                                           'BalanceConfigController@getMerchantBalanceConfigs'       ],
+        'get_merchant_balance_config'              => ['get',      'balance_configs/{id}',                                      'BalanceConfigController@getBalanceConfigById'            ],
+        'add_merchant_balance_config'              => ['post',     'balance_configs/{merchant_id}',                             'BalanceConfigController@addBalanceConfig'                ],
+        'edit_merchant_balance_config'             => ['patch',    'balance_configs/{id}',                                      'BalanceConfigController@editBalanceConfig'               ],
+
+        'merchant_locked_balance_update'           => ['patch',    'balance/{id}/locked-balance',                               'MerchantController@updateLockedBalance'                  ],
 
         //route to add additional website through admin dashboard
         'add_additional_website'                  => ['put',       'merchant/{id}/websites',                                    'MerchantController@putAdditionalWebsite'                   ],
@@ -1669,7 +1671,6 @@ final class Route
         'order_fetch_by_id',
         'order_edit',
         'order_payments',
-        'balance_fetch',
         'feature_dummy',
         'razorx_dummy',
         'webhook_create',
@@ -2874,6 +2875,8 @@ final class Route
 
         'fetch_batch_actions',
         'fetch_batch_action_entities',
+
+        'merchant_locked_balance_update',
         ];
 
     public static $routePermission = [
@@ -3451,10 +3454,12 @@ final class Route
         'unclaimed_merchant_poc_update'                     => '*',
         'merchant_poc_update'                               => '*',
 
-        'fetch_merchant_balance_configs'            => '*',
-        'get_merchant_balance_config'               => '*',
-        'add_merchant_balance_config'               => '*',
-        'edit_merchant_balance_config'              => '*',
+        'fetch_merchant_balance_configs'                    => '*',
+        'get_merchant_balance_config'                       => '*',
+        'add_merchant_balance_config'                       => '*',
+        'edit_merchant_balance_config'                      => '*',
+
+        'merchant_locked_balance_update'                    => Permission::EDIT_MERCHANT_HOLD_FUNDS,
 
         //Todo update permission later
         //'update_sr_level_global_config'             => Permission::UPDATE_DOWNTIME_CONFIG,

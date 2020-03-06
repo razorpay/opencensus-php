@@ -5641,3 +5641,6 @@ ALTER TABLE merchant_details
 
 ALTER TABLE upi
     CHANGE `email` `gateway_data` VARCHAR(255);
+
+ALTER TABLE balance
+    ADD COLUMN locked_balance BIGINT UNSIGNED DEFAULT 0;
