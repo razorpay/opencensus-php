@@ -127,6 +127,41 @@ class Entity extends Base\PublicEntity
         self::LAST_FETCHED_AT
     ];
 
+    protected $publicSetters = [
+        self::BALANCE,
+        self::LAST_FETCHED_AT,
+    ];
+
+    protected function setPublicBalanceAttribute(array & $attributes)
+    {
+        $accountType = $attributes[self::ACCOUNT_TYPE];
+
+        $channel = $attributes[self::CHANNEL];
+
+        if ($accountType === AccountType::DIRECT and $channel === Channel::RBL)
+        {
+            /** @var Entity $balance */
+            $balance =  (new Repository)->findOrFailById($attributes[self::ID]);
+
+            $attributes[self::BALANCE] = $balance->bankingAccount->getGatewayBalance();
+        }
+    }
+
+    protected function setPublicLastFetchedAtAttribute(array & $attributes)
+    {
+        $accountType = $attributes[self::ACCOUNT_TYPE];
+
+        $channel = $attributes[self::CHANNEL];
+
+        if ($accountType === AccountType::DIRECT and $channel === Channel::RBL)
+        {
+            /** @var Entity $balance */
+            $balance =  (new Repository)->findOrFailById($attributes[self::ID]);
+
+            $attributes[self::LAST_FETCHED_AT] = $balance->bankingAccount->getBalanceLastFetchedAt();
+        }
+    }
+
     protected function addAmount($amount)
     {
         $this->checkNumeric($amount);
