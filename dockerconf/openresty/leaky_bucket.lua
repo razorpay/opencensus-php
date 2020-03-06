@@ -39,6 +39,7 @@ else
       retry_after = now + lrd
 end
 -- Finally set the values and TTL for the redis hash.
+redis.replicate_commands()
 redis.call('hmset', key, last_updated_key, last_updated, bucket_size_key, bucket_size)
 redis.call('expire', key, lft)
 -- Returns-
