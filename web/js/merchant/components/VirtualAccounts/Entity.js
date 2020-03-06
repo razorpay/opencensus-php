@@ -137,7 +137,7 @@ export default class extends React.Component {
               <div class="panel-body">
                 {/* If only VPA is enabled */}
                 {!hasBankAccount &&
-                  user.isVACreationBankAccountDisabled(
+                  user.isVACreationBankAccountDisabled && (
                     <>
                       <Banner>
                         Bank Transfers (NEFT, RTGS, IMPS) are temporarily
