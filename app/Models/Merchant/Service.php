@@ -3525,9 +3525,19 @@ class Service extends Base\Service
 
             $merchant = $this->auth->getMerchant();
 
+            $currentlyEnabled = $merchant->isBusinessBankingEnabled();
+
             $this->enableBusinessBankingIfApplicable($merchant);
 
             $this->repo->saveOrFail($merchant);
+
+            $config = (new MainAdmin\Service)->getConfigKey(['key' => MainAdmin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
+
+            if ((boolval($config) === true) and
+                ($currentlyEnabled === true))
+            {
+                return;
+            }
 
             (new Activate)->activateBusinessBankingIfApplicable($merchant);
         });
