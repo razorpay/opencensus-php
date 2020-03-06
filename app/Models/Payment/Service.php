@@ -1148,19 +1148,6 @@ class Service extends Base\Service
                                                                 ->isInstantRefundSupported($payment);
     }
 
-    private function getDCCInfo($baseAmount, $baseCurrency)
-    {
-        $dccInfo = [];
-
-        $currencyRequestId = UniqueIdEntity::generateUniqueId();
-
-        $dccInfo['all_currencies'] = (new Currency\Core)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId);
-
-        $dccInfo['currency_request_id'] = $currencyRequestId;
-
-        return $dccInfo;
-    }
-
     public function getPaymentFlows(array $input)
     {
         $merchant = $this->merchant;
@@ -1171,31 +1158,7 @@ class Service extends Base\Service
 
         $data = $merchant->getPaymentFlows($iinEntity);
 
-<<<<<<< HEAD
-        if ((isset($input['currency'])) and
-            (isset($input['amount'])) and
-            (empty($iinEntity) === false))
-        {
-            $data[IIN\Constants::IS_INTERNATIONAL] = $iinEntity->isInternational();
-
-            $cardHomeCountryCode = IIN\Country::COUNTRY_ISO_NUMERIC_CODE[$iinEntity->getCountry()];
-
-            $cardHomeCurrency = Currency\Currency::getCurrency($cardHomeCountryCode) ?? $input['currency'];
-
-            $data['card_currency'] = $cardHomeCurrency;
-
-            if (($merchant->isDCCEnabled() === true) and
-                ($iinEntity->isDCCSupported() === true) and
-                ($input['currency'] === Currency\Currency::INR))
-            {
-                $dccInfo = $this->getDCCInfo($input['amount'], $input['currency']);
-
-                $data = array_merge($data, $dccInfo);
-            }
-        }
-=======
-        $this->updateDccDataIfApplicable($input, $iinEntity, $merchant, $data);
->>>>>>> [dcc] code refactor and suggestions
+        $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
 
         if (isset($input['order_id']) === true)
         {
@@ -1214,7 +1177,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function updateDccDataIfApplicable()
+    public function updateDccDataIfApplicable($input, $iinEntity, $merchant, & $data)
     {
         // get dcc options for customer if dcc is enalbed for merchant
         if ($merchant->isDCCEnabled() === false)
@@ -1233,8 +1196,8 @@ class Service extends Base\Service
             $amount = $input['amount'];
             $currency = $input['currency'];
 
-            if (($iinEntity->isInternational() === true) and
-                ($currency === Currency::INR))
+            if (($this->isDccEnabledIIN($iinEntity) === true) and
+                ($currency === Currency\Currency::INR))
             {
                 $dccInfo = $this->getDCCInfo($amount, $currency);
 
@@ -1243,6 +1206,30 @@ class Service extends Base\Service
                 $data = array_merge($data, $dccInfo);
             }
         }
+    }
+
+    public function isDccEnabledIIN($iinEntity): bool
+    {
+        if (($iinEntity->isInternational() === true) and
+            (Card\Network::isDCCSupportedNetwork($iinEntity->getNetworkCode())) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getDCCInfo($baseAmount, $baseCurrency)
+    {
+        $dccInfo = [];
+
+        $currencyRequestId = UniqueIdEntity::generateUniqueId();
+
+        $dccInfo['all_currencies'] = (new Currency\Core)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId);
+
+        $dccInfo['currency_request_id'] = $currencyRequestId;
+
+        return $dccInfo;
     }
 
     public function getPaymentFlowsPrivate(array $input)

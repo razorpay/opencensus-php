@@ -1519,8 +1519,7 @@ class ErrorCode
     const BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND                         = 'BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND';
 
     //DCC Error Codes
-    const BAD_REQUEST_PAYMENT_DCC_REQUEST_DATA                                      = 'BAD_REQUEST_PAYMENT_DCC_REQUEST_DATA';
-    const BAD_REQUEST_PAYMENT_DCC_AMOUNT                                            = 'BAD_REQUEST_PAYMENT_DCC_AMOUNT';
+    const BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID                                = 'BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID';
 
     //FuzzyMatcher Error Codes
     const BAD_REQUEST_INVALID_MATCH_PERCENT                                         = 'BAD_REQUEST_INVALID_MATCH_PERCENT';

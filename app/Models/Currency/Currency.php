@@ -938,6 +938,6 @@ class Currency
 
     public static function getCurrency(string $countryCode)
     {
-        return array_search($countryCode, self::ISO_NUMERIC_CODES);
+        return array_search($countryCode, self::ISO_NUMERIC_CODES, true);
     }
 }

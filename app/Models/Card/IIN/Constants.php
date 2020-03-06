@@ -6,5 +6,4 @@ class Constants
 {
     const OTP               = 'otp';
     const PIN               = 'pin';
-    const IS_INTERNATIONAL  = 'is_international';
 }

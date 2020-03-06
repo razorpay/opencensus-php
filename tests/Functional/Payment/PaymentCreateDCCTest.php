@@ -39,7 +39,6 @@ class PaymentCreateDCCTest extends TestCase
         $cardCurrency = $responseContent['card_currency'];
         $currencyRequestId = $responseContent['currency_request_id'];
 
-        $this->assertEquals(true, $responseContent['is_international']);
         $this->assertEquals("USD", $cardCurrency);
         $this->assertNotNull($responseContent['all_currencies']);
         $this->assertNotNull($currencyRequestId);
@@ -47,7 +46,6 @@ class PaymentCreateDCCTest extends TestCase
         $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
-        $payment['dcc_amount'] = $usdAmount;
         $payment['currency_request_id'] = $currencyRequestId;
 
         $this->doAuthAndCapturePayment($payment, $usdAmount, $cardCurrency);
@@ -78,7 +76,6 @@ class PaymentCreateDCCTest extends TestCase
         $response = $this->sendRequest($flowsData);
         $responseContent = json_decode($response->getContent(), true);
 
-        $this->assertEquals(false, $responseContent['is_international']);
         $this->assertArrayNotHasKey('currency_request_id', $responseContent);
         $this->assertArrayNotHasKey('all_currencies', $responseContent);
 
@@ -88,28 +85,6 @@ class PaymentCreateDCCTest extends TestCase
 
         $this->assertEquals($payment['convert_currency'], true);
         $this->assertEquals($payment['base_amount'], 50000);
-    }
-
-    public function testPaymentCreateWithDccInvalidAmount()
-    {
-        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
-        $responseContent = json_decode($response->getContent(), true);
-
-        $currencyRequestId = $responseContent['currency_request_id'];
-        $cardCurrency = $responseContent['card_currency'];
-        $invalidDccAmount = 1;
-
-        $payment = $this->payment;
-        $payment['dcc_currency'] = $cardCurrency;
-        $payment['dcc_amount'] = $invalidDccAmount;
-        $payment['currency_request_id'] = $currencyRequestId;
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow( $testData, function () use ($payment)
-        {
-            $this->doAuthPayment($payment);
-        });
     }
 
     public function testPaymentCreateWithDccInvalidCurrencyRequestId()
@@ -122,7 +97,6 @@ class PaymentCreateDCCTest extends TestCase
 
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
-        $payment['dcc_amount'] = $usdAmount;
         $payment['currency_request_id'] = "currencyRequestId";
 
         $testData = $this->testData[__FUNCTION__];
@@ -152,7 +126,6 @@ class PaymentCreateDCCTest extends TestCase
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData($iin));
         $responseContent = json_decode($response->getContent(), true);
 
-        $this->assertEquals(false, $responseContent['is_international']);
         $this->assertEquals('INR', $responseContent['card_currency']);
         $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
         $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
@@ -166,7 +139,6 @@ class PaymentCreateDCCTest extends TestCase
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData($iin));
         $responseContent = json_decode($response->getContent(), true);
 
-        $this->assertEquals(true, $responseContent['is_international']);
         $this->assertEquals('USD', $responseContent['card_currency']);
         $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
         $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);

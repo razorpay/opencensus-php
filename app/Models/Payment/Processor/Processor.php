@@ -511,12 +511,9 @@ class Processor
         }
 
         if (isset($input['dcc_currency']) === true and
-            isset($input['dcc_amount']) and
             isset($input['currency_request_id']))
         {
             $dccCurrency = $input['dcc_currency'];
-
-            $dccAmount = $input['dcc_amount'];
 
             $dccCurrencyRequestId = $input['currency_request_id'];
 
@@ -525,34 +522,26 @@ class Processor
 
             if (empty($requestedCurrencyData) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_REQUEST_DATA, null,
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, null,
                     [
                         'currency_request_id' => $dccCurrencyRequestId,
                         'dcc_currency'        => $dccCurrency,
                     ]);
             }
-            else if ($requestedCurrencyData['amount'] !== $dccAmount)
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_AMOUNT, null,
-                    [
-                        'dcc_amount' => $dccAmount,
-                    ]);
-            }
-            else
-            {
-                $paymentMetaInput = [
-                    'gateway_amount'            => $requestedCurrencyData['amount'],
-                    'gateway_currency'          => $requestedCurrencyData['currency'],
-                    'forex_rate'                => $requestedCurrencyData['forex_rate'],
-                    'dcc_offered'               => true,
-                    'payment_id'                => $payment->getId(),
-                    'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
-                ];
 
-                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+            $paymentMetaInput = [
+                'gateway_amount'            => $requestedCurrencyData['amount'],
+                'gateway_currency'          => $requestedCurrencyData['currency'],
+                'forex_rate'                => $requestedCurrencyData['forex_rate'],
+                'dcc_offered'               => true,
+                'payment_id'                => $payment->getId(),
+                'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
+            ];
 
-                $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
-            }
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+            $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
+
         }
     }
 

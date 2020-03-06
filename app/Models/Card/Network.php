@@ -310,6 +310,6 @@ class Network
 
     public static function isDCCSupportedNetwork($networkCode)
     {
-        return in_array($networkCode, self::$dccSupportedNetworks);
+        return in_array($networkCode, self::$dccSupportedNetworks, true);
     }
 }

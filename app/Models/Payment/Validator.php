@@ -116,7 +116,6 @@ class Validator extends Base\Validator
         'application'                   => 'sometimes|filled|string|in:google_pay',
         'device'                        => 'sometimes',
         'dcc_currency'                  => 'sometimes|string|max:3',
-        'dcc_amount'                    => 'sometimes|integer',
         'currency_request_id'           => 'sometimes|string'
     ];
 
@@ -195,14 +194,14 @@ class Validator extends Base\Validator
         'iin'                       => 'required|numeric|digits:6',
         '_'                         => 'sometimes|array',
         'order_id'                  => 'sometimes|filled',
-        'currency'                  => 'sometimes|string',
+        'currency'                  => 'sometimes|string|size:3',
         'amount'                    => 'sometimes|integer'
     ];
 
     protected static $postFlowsRules = [
         'card_number'        => 'sometimes|numeric|luhn|digits_between:12,19',
         'iin'                => 'sometimes|numeric|digits:6',
-        'currency'           => 'sometimes|string',
+        'currency'           => 'sometimes|string|size:3',
         'amount'             => 'sometimes|integer'
     ];
 
