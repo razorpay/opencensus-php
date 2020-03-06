@@ -263,7 +263,7 @@ class Service extends Base\Service
 
     protected function areBankTransfersBlockedForYesBank(): bool
     {
-        return $this->isBlockedByConfig(ConfigKey::BLOCK_YESBANK);
+        return true;
     }
 
     protected function isBlockedByConfig(string $key): bool

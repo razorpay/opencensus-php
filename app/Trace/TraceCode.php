@@ -419,6 +419,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_SOURCE_PROCESSING_DATA                            = 'FTA_SOURCE_PROCESSING_DATA';
     const SETTLEMENT_API_RESPONSE                               = 'NODAL_SETTLEMENT_API_RESPONSE';
     const SETTLEMENT_API_REQUEST                                = 'NODAL_SETTLEMENT_API_REQUEST';
+    const SETTLEMENT_NOT_SKIPPING_BANK_ACCOUNT_RECENT_CREATION  = 'SETTLEMENT_NOT_SKIPPING_BANK_ACCOUNT_RECENT_CREATION';
 
     const KOTAK_NODAL_BALANCE_REQUEST                           = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                          = 'KOTAK_NODAL_BALANCE_RESPONSE';
