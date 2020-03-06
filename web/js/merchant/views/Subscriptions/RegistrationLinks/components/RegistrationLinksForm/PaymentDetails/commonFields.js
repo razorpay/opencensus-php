@@ -41,7 +41,7 @@ export const BankDetails = ({
 export const AccountDetails = ({
   required,
   disabled,
-  children,
+  accountType,
   beneficiaryName,
   bankAccountNumber,
 }) => (
@@ -65,6 +65,22 @@ export const AccountDetails = ({
       description="Bank Account Number"
     />
 
-    {children}
+    <Input.Select
+      name="accountType"
+      options={['--Select Account Type--', ...OPTIONS]}
+      placeholder="Account Type"
+      value={accountType}
+    />
   </Input.Group>
 );
+
+const OPTIONS = [
+  {
+    label: 'Savings',
+    name: 'savings',
+  },
+  {
+    label: 'Current',
+    name: 'current',
+  },
+];

@@ -42,6 +42,7 @@ export default props => {
           emandateBanks={emandateBanks}
           skipBankDetails={skipBankDetails}
           bankName={bankName}
+          accountType={accountType}
           bankAccountIFSC={bankAccountIFSC}
           beneficiaryName={beneficiaryName}
           bankAccountNumber={bankAccountNumber}

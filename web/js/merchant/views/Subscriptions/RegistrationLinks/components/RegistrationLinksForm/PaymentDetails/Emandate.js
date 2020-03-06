@@ -7,6 +7,7 @@ export default ({
   skipBankDetails,
   bankAccountIFSC,
   bankName,
+  accountType,
   beneficiaryName,
   bankAccountNumber,
   trackSkipBankDetails,
@@ -31,6 +32,7 @@ export default ({
     <AccountDetails
       required={!skipBankDetails}
       disabled={skipBankDetails}
+      accountType={accountType}
       beneficiaryName={beneficiaryName}
       bankAccountNumber={bankAccountNumber}
     />

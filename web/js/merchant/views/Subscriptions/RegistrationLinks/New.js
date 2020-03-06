@@ -61,6 +61,12 @@ const NACHMandatoryFields = [
   'bankAccountNumber',
 ];
 
+const PAYMENT_METHODS = {
+  NACH: 'nach',
+  EMANDATE: 'emandate',
+  CARD: 'card',
+};
+
 const CardMandatoryFields = [{ name: 'amount', validator: checkIfAmount }];
 
 let DEFAULT_MAX_AMOUNT = 99999;
@@ -159,6 +165,10 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
     if (target.type === 'checkbox') {
       value = target.checked;
+    }
+
+    if (target.name === 'mandateMethod' && value === PAYMENT_METHODS.EMANDATE) {
+      this.setFormFields('accountType', 'savings');
     }
 
     this.setFormFields(target.name, value);
@@ -283,7 +293,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       ifsc_code: data.bankAccountIFSC,
       account_number: data.bankAccountNumber,
       beneficiary_name: data.beneficiaryName,
-      account_type: data.accountType || 'savings', // hardcoded after aadhaar was disabled temporarily
+      account_type: data.accountType,
     };
 
     if (this.isEmandatePayment && !data.skipBankDetails) {
