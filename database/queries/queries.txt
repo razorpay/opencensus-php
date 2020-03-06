@@ -5616,6 +5616,9 @@ ALTER TABLE disputes
     ADD COLUMN gateway_amount BIGINT UNSIGNED DEFAULT NULL AFTER base_currency,
     ADD COLUMN gateway_currency CHAR(3) DEFAULT NULL AFTER gateway_amount;
 
+ALTER TABLE `legal_entity`
+    modify `mcc` char(4) DEFAULT NULL ;
+
 ALTER TABLE merchant_details
     ADD COLUMN estd_year smallint(4) DEFAULT NULL,
     ADD COLUMN authorized_signatory_residential_address varchar(255) DEFAULT NULL,
@@ -5635,6 +5638,9 @@ ALTER TABLE blade
 
 ALTER TABLE merchant_details
     ADD COLUMN fund_account_validation_id char(14) DEFAULT NULL;
+
+ALTER TABLE upi
+    CHANGE `email` `gateway_data` VARCHAR(255);
 
 // Since all the existing emi plans are credit, we need to add this.
 // If not, the duplicate emi plan checks will fail, since the ones existing in db has value null

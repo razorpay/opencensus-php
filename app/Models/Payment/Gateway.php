@@ -1918,14 +1918,17 @@ class Gateway
 
     public static function getAllEMandateBanks(): array
     {
-        $banks = [];
+        return self::EMANDATE_NB_DIRECT_BANKS;
 
-        foreach (self::getEmandateAuthTypeToBankMap() as $emandateBanks)
-        {
-            $banks = array_merge($banks, $emandateBanks);
-        }
+        // Dead code for disabling the Yes bank sponsored banks
+        // $banks = [];
 
-        return array_values(array_unique($banks));
+        // foreach (self::getEmandateAuthTypeToBankMap() as $emandateBanks)
+        // {
+        //     $banks = array_merge($banks, $emandateBanks);
+        // }
+
+        // return array_values(array_unique($banks));
     }
 
     public static function getBharatQrCardNetworks(): array
@@ -2341,10 +2344,10 @@ class Gateway
         $netbankingBanks = array_values($netbankingBanks);
 
         return [
-            AuthType::NETBANKING  => $netbankingBanks,
-            AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
-            AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
-            AuthType::DEBITCARD   => self::ENACH_NPCI_NB_AUTH_CARD_BANKS,
+            AuthType::NETBANKING  => self::EMANDATE_NB_DIRECT_BANKS,
+            // AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
+            // AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
+            // AuthType::DEBITCARD   => self::ENACH_NPCI_NB_AUTH_CARD_BANKS,
         ];
     }
 

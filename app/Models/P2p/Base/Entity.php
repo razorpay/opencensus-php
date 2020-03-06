@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const CONTEXT       = 'context';
 
     /********** Input Keys **********/
+    const DEVICE        = 'device';
     const VPAS          = 'vpas';
 
     /**

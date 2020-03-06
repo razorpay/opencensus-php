@@ -154,6 +154,13 @@ class OfflineVerificationController extends Controller
             'body' => $body,
         ]);
 
+        $routeName = $this->app['request.ctx']->getRoute();
+
+        if ($routeName === 'offline_verification_webhook')
+        {
+            return ApiResponse::json($body, $code);
+        }
+
         if ($body['success'] === false)
         {
             throw new Exception\BadRequestException($body['error']['public_error']['code'], null, null,

@@ -973,7 +973,7 @@ return [
             ],
         ],
     ],
-    'testCreateMerchantPayoutOnDemandNonBankingHours' => [
+    'testCreateMerchantPayoutOnDemandNonBankingHoursWithLessThan2Lakhs' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/merchant/payout/demand',
@@ -1036,12 +1036,12 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-    'testCreateMerchantPayoutOnDemandExceedAmountLimitNonBankingHours'=> [
+    'testCreateMerchantPayoutOnDemandNonBankingHours'=> [
         'request' => [
             'method'  => 'POST',
             'url'     => '/merchant/payout/demand',
             'content' => [
-                'amount'   => 20000100,
+                'amount'   => 2000,
                 'currency' => 'INR'
             ],
         ],
@@ -1049,7 +1049,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Please provide an amount less than 2 Lacs to get a settlement at this point of time.',
+                    'description' => 'Settlements cannot be created at this point of time.',
                 ],
             ],
             'status_code' => 400,

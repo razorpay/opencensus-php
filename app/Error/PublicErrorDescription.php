@@ -42,6 +42,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARDHOLDER_NOT_ENROLLED_IN_3DSECURE_AUTH          = 'Card is not enrolled for 3D Secure authentication';
     const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
+    const BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY                             = 'Payouts are temporarily blocked. Please contact support.';
+    const BAD_REQUEST_BLOCKING_RX_ACTIVATIONS                                   = 'RazorpayX activations are currently blocked';
+    const BAD_REQUEST_FAV_NOT_ALLOWED_CURRENTLY                                 = 'Fund Account Validations are temporarily blocked. Please contact support.';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_PAYMENT_NOT_FOUND                                         = 'The requested payment was not found on the server';
@@ -652,7 +655,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';
-    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                   = 'Login failed because of incorrect OTP';
+    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                   = 'Verification failed because of incorrect OTP.';
     const BAD_REQUEST_2FA_SETUP_INCORRECT_OTP                                   = 'Second factor authentication setup failed because of incorrect OTP';
     const BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA                          = 'User is restricted by its associated merchant to perform the action';
     const BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED                               = 'Second factor authentication is enabled for user. OTP field is required';
