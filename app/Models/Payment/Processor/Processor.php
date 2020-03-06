@@ -2821,6 +2821,13 @@ class Processor
             return;
         }
 
+        $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test'];
+
+        if (in_array(Route::currentRouteName(), $rblVaRoutes, true) === true)
+        {
+            return;
+        }
+
         // TODO: Following is not testable in cases. Ref: BankTransferBatchTest
         if (($this->app['basicauth']->isAppAuth() === false) and
             (Route::currentRouteName() !== 'bank_transfer_process_test'))

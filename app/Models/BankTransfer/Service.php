@@ -53,12 +53,17 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function process(array $input): array
+    public function process(array $input, string $provider = null): array
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
             $input
         );
+
+        if (empty($provider) === false)
+        {
+            $this->provider = $provider;
+        }
 
         $this->validateProvider();
 
