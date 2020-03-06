@@ -1526,4 +1526,6 @@ class ErrorCode
     const BAD_REQUEST_INVALID_MATCH_TYPE                                            = 'BAD_REQUEST_INVALID_MATCH_TYPE';
 
     const BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS';
+
+    const BAD_REQUEST_YESBANK_PAYMENT_DISABLED                                      = 'BAD_REQUEST_YESBANK_PAYMENT_DISABLED';
 }

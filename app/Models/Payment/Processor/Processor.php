@@ -45,6 +45,7 @@ use RZP\Models\Payment\Refund\Speed;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Services\NbPlus as NbPlusPaymentService;
@@ -297,6 +298,8 @@ class Processor
 
             $this->preProcessForUpiIfApplicable($input);
 
+            $this->validateYesBankPayments($input);
+
             $meta = [
                 'metadata' => [
                     'trackId' => $this->app['req.context']->getTrackId()
@@ -361,6 +364,86 @@ class Processor
 
             throw $e;
         }
+    }
+
+    protected function validateYesBankPayments($input)
+    {
+        // If there is no method in input, do nothing
+        if (isset($input['method']) === false)
+        {
+            return;
+        }
+
+        $data = [];
+
+        switch ($input['method'])
+        {
+            case Payment\Method::CARD:
+
+                // No card number for card payment
+                if (isset($input[Payment\Entity::CARD][Card\Entity::NUMBER]) === false)
+                {
+                    return;
+                }
+
+                $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
+
+                $iin = $this->repo->iin->find($iinId);
+
+                // IIN not available
+                if (empty($iin) === true)
+                {
+                    return;
+                }
+
+                if (($iin->getIssuer() !== Card\Issuer::YESB) or
+                    ($iin->isEnabled() === true))
+                {
+                    return;
+                }
+
+                $data['iin'] = $iinId;
+
+                break;
+
+            case Payment\Method::UPI:
+
+                $vpa = '';
+
+                if (isset($input[Payment\Method::UPI][Payment\Entity::VPA]) === true)
+                {
+                    $vpa = $input[Payment\Method::UPI][Payment\Entity::VPA];
+                }
+                else if (isset($input[Payment\Entity::VPA]) === true)
+                {
+                    $vpa =  $input[Payment\Entity::VPA];
+                }
+
+                // VPA Could be anything, validators are not run yet.
+                // If not string, validator will catch this
+                if ((is_string($vpa) === false))
+                {
+                    return;
+                }
+
+                // If it's not Yesbank vpa, return
+                if (ProviderCode::isYesBankSpecificVpa($vpa) === false)
+                {
+                    return;
+                }
+
+                $data['vpa'] = $vpa;
+
+                break;
+
+            default:
+                return;
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
+            null,
+            $data);
     }
 
     protected function eventPaymentCreated()
