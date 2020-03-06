@@ -238,7 +238,7 @@ return [
             'url'       => '/payment/validate/vpa',
             'method'    => 'post',
             'content'   => [
-                'vpa' => 'razorpay@ybl',
+                'vpa' => 'razorpay@yesbank',
             ]
         ],
         'response'  => [
