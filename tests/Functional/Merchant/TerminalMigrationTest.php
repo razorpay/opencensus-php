@@ -6,10 +6,13 @@ namespace RZP\Tests\Functional\Merchant;
 use Mockery;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Base\Metric;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Http\Request\Requests;
+use RZP\Services\NbPlus\Request;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\Helpers\MocksMetricTrait;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +25,7 @@ class TerminalMigrationTest extends TestCase
 {
     use PaymentTrait;
     use TestsMetrics;
+    use MocksMetricTrait;
 
     protected $razorxValue = RazorXClient::DEFAULT_CASE;
 
@@ -1242,15 +1246,26 @@ class TerminalMigrationTest extends TestCase
 
             $this->assertStringEndsWith($terminal['id'], $path);
 
-            return $this->getDefaultTerminalServiceMerchantTerminalCreatedResponse();
+            $response = new \Requests_Response;
+
+            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArray();
+
+            return $this->getDefaultTerminalServiceResponse($data);
 
         }, 1);
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->at(4))
-            ->method('count')
-            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS);
+        $expected = [
+            'route'         => 'admin_fetch_terminal_by_id',
+            'message'       => null,
+            'terminal_id'   => $terminal['id'],
+
+        ];
+
+        $mock->expects($this->at(1))
+              ->method('count')
+              ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
         $url = '/admin/terminal/' . $terminal['id'] . '/';
 
@@ -1276,7 +1291,7 @@ class TerminalMigrationTest extends TestCase
 
             $this->assertStringEndsWith($terminal['id'], $path);
 
-            $data = $this->getTerminalToArrayPassword($terminal['id']);
+            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArray();
 
             $data['merchant_id'] = strrev($data['merchant_id']);
 
@@ -1284,12 +1299,18 @@ class TerminalMigrationTest extends TestCase
 
         }, 1);
 
+        $expected = [
+            'route'         => 'admin_fetch_terminal_by_id',
+            'message'       => null,
+            'terminal_id'   => $terminal['id'],
+
+        ];
+
         $mock = $this->createMetricsMock();
 
         $mock->expects($this->at(1))
             ->method('count')
-            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE);
-
+            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_FAILURE, 1, $expected);
 
         $url = '/admin/terminal/' . $terminal['id'];
 
