@@ -974,6 +974,7 @@ class Service extends Base\Service
             'rx_test_mode',
             'batch_cancel',
             'rev_up_chennai_announcement',
+            'disable_va_creation_bank_account',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
