@@ -990,7 +990,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $enachNpciNetbankingEditTerminalRules = [
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [

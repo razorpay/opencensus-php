@@ -119,6 +119,7 @@ class Gateway
     const ACQUIRER_YESB         = 'yesb';
     const ACQUIRER_BARB         = 'barb';
     const ACQUIRER_SBIN         = 'sbin';
+    const ACQUIRER_CITI         = 'citi';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -368,7 +369,7 @@ class Gateway
         IFSC::TMBL,
         IFSC::USFB,
         IFSC::UTIB,
-        IFSC::YESB,
+        //IFSC::YESB,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
         IFSC::SBIN,
@@ -390,7 +391,7 @@ class Gateway
         IFSC::MAHB,
         IFSC::SIBL,
         IFSC::USFB,
-        IFSC::YESB,
+        //IFSC::YESB,
         Netbanking::PUNB_R,
         IFSC::SBIN,
     ];
@@ -1883,17 +1884,14 @@ class Gateway
 
     public static function getAllEMandateBanks(): array
     {
-        return self::EMANDATE_NB_DIRECT_BANKS;
+        $banks = [];
 
-        // Dead code for disabling the Yes bank sponsored banks
-        // $banks = [];
+        foreach (self::getEmandateAuthTypeToBankMap() as $emandateBanks)
+        {
+             $banks = array_merge($banks, $emandateBanks);
+        }
 
-        // foreach (self::getEmandateAuthTypeToBankMap() as $emandateBanks)
-        // {
-        //     $banks = array_merge($banks, $emandateBanks);
-        // }
-
-        // return array_values(array_unique($banks));
+        return array_values(array_unique($banks));
     }
 
     public static function getBharatQrCardNetworks(): array
@@ -2303,10 +2301,10 @@ class Gateway
         $netbankingBanks = array_values($netbankingBanks);
 
         return [
-            AuthType::NETBANKING  => self::EMANDATE_NB_DIRECT_BANKS,
+            AuthType::NETBANKING  => $netbankingBanks,
             // AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
             // AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
-            // AuthType::DEBITCARD   => self::ENACH_NPCI_NB_AUTH_CARD_BANKS,
+            AuthType::DEBITCARD   => self::ENACH_NPCI_NB_AUTH_CARD_BANKS,
         ];
     }
 
