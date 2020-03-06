@@ -507,6 +507,16 @@ app
       }
 
       $scope.goToDashboard = function() {
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .success('login.login', {
+              source: 'sign_in',
+              sessionId: window.session_id,
+              mode: $scope.eventsMode,
+            })
+        );
         location.hash = '/app';
         location.reload();
       };
@@ -1113,6 +1123,16 @@ app
         );
       };
       $scope.goToForgotPwd = function() {
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .initiated('login.forgot_password', {
+              source: 'sign_in',
+              sessionId: window.session_id,
+              mode: $scope.eventsMode,
+            })
+        );
         var toRoute = 'access.forgotpwd';
         $state.transitionTo(
           toRoute,
@@ -1150,8 +1170,33 @@ app
         $scope.alerts.resetAlerts();
         request.success(function(data) {
           if (data.success) {
+            if (payload.data.otp && payload.data.otp.length) {
+              window.rzpQ.push(
+                window.rzpQ
+                  .now()
+                  .onbr()
+                  .success('login.2fa_otp', {
+                    source: 'sign_in',
+                    sessionId: window.session_id,
+                    mode: $scope.eventsMode,
+                  })
+              );
+            }
             $scope.successFullSignin();
           } else {
+            if (payload.data.otp && payload.data.otp.length) {
+              window.rzpQ.push(
+                window.rzpQ
+                  .now()
+                  .onbr()
+                  .failed('login.2fa_otp', {
+                    source: 'sign_in',
+                    sessionId: window.session_id,
+                    mode: $scope.eventsMode,
+                    error: data.errors[0],
+                  })
+              );
+            }
             hideSpinner();
             var firstError = data.errors[0];
             window.grecaptcha.reset();
@@ -1277,6 +1322,17 @@ app
           data: data,
         };
 
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .initiated('login.2fa_change_mobile_number', {
+              source: 'sign_in',
+              sessionId: window.session_id,
+              mode: $scope.eventsMode,
+            })
+        );
+
         var request = $http(payload);
         $scope.alerts.resetAlerts();
         showSpinner();
@@ -1317,9 +1373,30 @@ app
         request.success(function(data) {
           if (data.success) {
             $scope.successFullSignin();
+            window.rzpQ.push(
+              window.rzpQ
+                .now()
+                .onbr()
+                .success('login.2fa_otp', {
+                  source: 'sign_in',
+                  sessionId: window.session_id,
+                  mode: $scope.eventsMode,
+                })
+            );
           } else {
             hideSpinner();
             $scope.alerts.addAlert('danger', data.errors[0]);
+            window.rzpQ.push(
+              window.rzpQ
+                .now()
+                .onbr()
+                .failed('login.2fa_otp', {
+                  source: 'sign_in',
+                  sessionId: window.session_id,
+                  mode: $scope.eventsMode,
+                  error: data.errors[0],
+                })
+            );
           }
         });
       };
@@ -1340,8 +1417,29 @@ app
         $scope.alerts.resetAlerts();
         request.success(function(data) {
           if (data.success) {
+            window.rzpQ.push(
+              window.rzpQ
+                .now()
+                .onbr()
+                .success('login.2fa_otp', {
+                  source: 'sign_in',
+                  sessionId: window.session_id,
+                  mode: $scope.eventsMode,
+                })
+            );
             $scope.successFullSignin();
           } else {
+            window.rzpQ.push(
+              window.rzpQ
+                .now()
+                .onbr()
+                .failed('login.2fa_otp', {
+                  source: 'sign_in',
+                  sessionId: window.session_id,
+                  mode: $scope.eventsMode,
+                  error: data.errors[0],
+                })
+            );
             hideSpinner();
             const firstError = data.errors[0];
             if (
@@ -1362,14 +1460,46 @@ app
           url: '/user/2fa/otp-resend',
         };
 
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .initiated('login.2fa_resend_otp', {
+              source: 'sign_in',
+              sessionId: window.session_id,
+              mode: $scope.eventsMode,
+            })
+        );
+
         var request = $http(payload);
         $scope.login.resendingOtp = true;
         $scope.alerts.resetAlerts();
         request.success(function(data) {
           if (data.success) {
             $scope.login.resendingOtp = false;
+            window.rzpQ.push(
+              window.rzpQ
+                .now()
+                .onbr()
+                .success('login.2fa_resend_otp', {
+                  source: 'sign_in',
+                  sessionId: window.session_id,
+                  mode: $scope.eventsMode,
+                })
+            );
           } else {
             $scope.alerts.addAlert(data.errors[0]);
+            window.rzpQ.push(
+              window.rzpQ
+                .now()
+                .onbr()
+                .initiated('login.2fa_resend_otp', {
+                  source: 'sign_in',
+                  sessionId: window.session_id,
+                  mode: $scope.eventsMode,
+                  error: data.errors[0],
+                })
+            );
           }
         });
       };

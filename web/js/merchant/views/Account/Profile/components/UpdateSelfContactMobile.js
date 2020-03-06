@@ -122,15 +122,12 @@ export default class UpdateSelfContactMobile extends Component {
   }
 }
 
-@connect(
-  null,
-  {
-    updateSelfContact,
-    showNotification,
-    openModal,
-    closeModal,
-  }
-)
+@connect(null, {
+  updateSelfContact,
+  showNotification,
+  openModal,
+  closeModal,
+})
 class VerifyOtp extends Component {
   state = {};
 

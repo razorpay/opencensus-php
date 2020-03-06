@@ -9,10 +9,7 @@ import { Field, reduxForm } from 'redux-form';
 import InputField from 'common/ui/Forms/InputField';
 import { required, phone, mobile } from 'common/utils/validators';
 
-@connect(
-  null,
-  { showNotification }
-)
+@connect(null, { showNotification })
 class VerifyOtp extends Component {
   state = {};
   onConfirm = () => {

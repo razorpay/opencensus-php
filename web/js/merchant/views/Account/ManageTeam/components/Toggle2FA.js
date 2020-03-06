@@ -1,9 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-
+import RTracking from 'react-tracking';
 import { classList } from 'common/utils/rzp-utils';
-
 import User from 'merchant/models/User';
 
 import {
@@ -22,18 +21,15 @@ import {
 } from 'merchant/views/Account/ManageTeam/components/TwoFaModals';
 import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 
-@connect(
-  state => ({ user: state.session.user }),
-  {
-    openModal,
-    closeModal,
-    toggle2FaEnforcement,
-    updateSelfContact,
-    updateSession,
-    showNotification,
-  }
-)
-export default class Toggle2FA extends Component {
+@connect(state => ({ user: state.session.user }), {
+  openModal,
+  closeModal,
+  toggle2FaEnforcement,
+  updateSelfContact,
+  updateSession,
+  showNotification,
+})
+class Toggle2FA extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -157,9 +153,7 @@ export default class Toggle2FA extends Component {
     return new Promise(resolve => {
       this.actionCompleted = resolve;
       if (flag) {
-        const {
-          user: { second_factor_auth_setup },
-        } = this.props.user;
+        const { user: { second_factor_auth_setup } } = this.props.user;
 
         const action =
           //Check if user has mobile number verified for setup to continue, if yes skip mobile number verification & move to password verification
@@ -172,9 +166,7 @@ export default class Toggle2FA extends Component {
   };
 
   render() {
-    const {
-      user: { second_factor_auth_enforced },
-    } = this.props.user;
+    const { user: { second_factor_auth_enforced } } = this.props.user;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
@@ -187,6 +179,29 @@ export default class Toggle2FA extends Component {
               onChange={(flag, cb) =>
                 this.toggle2FA(flag).then(completed => {
                   this.update2FAState(flag);
+                  if (completed) {
+                    if (second_factor_auth_enforced) {
+                      this.props.tracking.trackEvent(
+                        window.rzpQ
+                          .now()
+                          .onbr()
+                          .success('dash.2fa_disable', {
+                            source: 'Toggle2FA',
+                            sessionId: window.session_id,
+                          })
+                      );
+                    } else {
+                      this.props.tracking.trackEvent(
+                        window.rzpQ
+                          .now()
+                          .onbr()
+                          .success('dash.2fa_enable', {
+                            source: 'Toggle2FA',
+                            sessionId: window.session_id,
+                          })
+                      );
+                    }
+                  }
                   cb(completed);
                 })
               }
@@ -221,3 +236,7 @@ export default class Toggle2FA extends Component {
     );
   }
 }
+
+export default RTracking((state, props, args) => {
+  return window.rzpQ.component('Toggle2FA');
+})(Toggle2FA);
