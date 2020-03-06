@@ -4042,6 +4042,7 @@ final class Route
             'mdr_adjustment',
             'entity_bulk_update',
             'adj_add_batch',
+            'reporting_log_create',
         ],
 
         'stork' => [
