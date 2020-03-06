@@ -327,6 +327,7 @@ final class Route
         'fts_dashboard_source_account_delete'      => ['post',     'fts/dashboard/source_account/delete',            'FTSController@deleteSourceAccount'                                 ],
         'fts_dashboard_bulk_status_get'            => ['post',     'fts/dashboard/fund_transfer_status/bulk_get',    'FTSController@getBulkStatus'                                       ],
         'fts_dashboard_alert'                      => ['post',     'fts/dashboard/alert',                            'FTSController@sendAlert'                                           ],
+        'fts_get_source_account'                   => ['get',      'source_accounts',                                'FTSController@getSourceAccountForMerchant'                         ],
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
         'set_channel_action'                       => ['put',      'set_channel/{channel}/{action}',                 'FundTransferAttemptController@setChannelState',                    ],
@@ -2335,7 +2336,8 @@ final class Route
         'payout_links_merchant_settings_get',
         'payout_links_merchant_on_boarding_status',
         'payout_links_resend_notification',
-        'payout_links_merchant_summary'
+        'payout_links_merchant_summary',
+        'fts_get_source_account',
     ];
 
     //
@@ -3592,12 +3594,14 @@ final class Route
         'user_update_contact'                          => '*',
         'user_verify_through_email'                    => '*',
         'merchant_bank_account_change_status'          => '*',
+        'fts_get_source_account'                       => '*',
 
         // This should go away after the fix
         // https://razorpay.atlassian.net/browse/RX-1701
         'merchant_partner_configs_fetch'               => '*',
         'setl_holidays'                                => '*',
         'merchant_activation_update_website_status'    => '*',
+
     ];
 
     public static $direct = [
