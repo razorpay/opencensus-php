@@ -26,6 +26,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\BankAccount;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
@@ -47,6 +48,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Services\NbPlus as NbPlusPaymentService;
 
@@ -366,6 +368,9 @@ class Processor
         }
     }
 
+    /**
+     * Block all Yesbank payments with the same stipulated error message
+     */
     protected function validateYesBankPayments($input)
     {
         // If there is no method in input, do nothing
@@ -379,6 +384,7 @@ class Processor
         switch ($input['method'])
         {
             case Payment\Method::CARD:
+            case Payment\Method::EMI:
 
                 // No card number for card payment
                 if (isset($input[Payment\Entity::CARD][Card\Entity::NUMBER]) === false)
@@ -403,6 +409,16 @@ class Processor
                 }
 
                 $data['iin'] = $iinId;
+
+                break;
+
+            case Payment\Method::NETBANKING:
+                if ((isset($input[Payment\Entity::BANK]) === false) or
+                    (($input[Payment\Entity::BANK] !== IFSC::YESB) and
+                     ($input[Payment\Entity::BANK] !== Netbanking::YESB_C)))
+                {
+                    return;
+                }
 
                 break;
 
