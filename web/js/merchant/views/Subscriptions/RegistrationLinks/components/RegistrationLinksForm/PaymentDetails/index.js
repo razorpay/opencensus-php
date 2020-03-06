@@ -38,11 +38,6 @@ export default props => {
       'Registeration links will not be authorised for Yes Bank Accounts and Cards';
   }
 
-  if (currentSelectedMethod.emandate) {
-    bannerText =
-      'New mandate registrations and debit requests via NPCI platform (eNACH) are temporarily unavailable.';
-  }
-
   return (
     <React.Fragment>
       <PaymentMethod

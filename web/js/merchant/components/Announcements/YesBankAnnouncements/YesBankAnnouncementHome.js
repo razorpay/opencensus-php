@@ -37,10 +37,10 @@ export default class YesBankAnnouncementHome extends Component {
         title = 'Yes Bank Moratorium';
         description = (
           <React.Fragment>
-            Some features in smart collect & emandate will be affected. However,
-            our payment gateway services are completely unaffected. We are
-            working to ensure that any disrupted services are up & running. We
-            will get back to you with updates soon.
+            Razorpay’s e-mandate services are up and operational. Our team is
+            working on resuming service for Smart Collect. We will get back to
+            you with updates shortly. Be assured, our payment gateway services
+            are functioning normally.
             <span class="big-dot-separator" />
             <a
               href="https://lp.razorpay.com/unregistered-businesses-faqs-0"
