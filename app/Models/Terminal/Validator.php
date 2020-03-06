@@ -1024,6 +1024,13 @@ class Validator extends Base\Validator
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
     ];
 
+    protected static $btRblTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_rbl',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:7',
+        Entity::TYPE                        => 'required|array',
+        Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+    ];
+
     protected static $btDashboardTerminalRules = [
         Entity::GATEWAY                     => 'required|in:bt_dashboard',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:6',

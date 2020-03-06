@@ -22,6 +22,7 @@ class Provider
     // Bank Account Providers
     const YESBANK   = 'yesbank';
     const KOTAK     = 'kotak';
+    const RBL       = 'rbl';
 
     /*
      * Dashboard acts as a mock bank account
