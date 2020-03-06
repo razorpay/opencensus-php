@@ -306,19 +306,41 @@ class Entity extends Base\PublicEntity
         $newBalanceWithLockedBalance = $this->getBalanceWithLockedBalance();
 
         if (($negativeLimit === 0) and
-            ($newBalanceWithLockedBalance < 0))
+            ($newBalance < 0))
         {
             throw new Exception\LogicException(
                 'Something very wrong is happening! Balance is going negative',
                 null,
                 $data);
         }
+        else if (($negativeLimit === 0) and
+                 ($newBalanceWithLockedBalance < 0))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_LOCKED,
+                Entity::BALANCE,
+                [
+                    'balance_id'                    => $this->getId(),
+                    'amount'                        => $this->getBalance(),
+                    'locked_balance'                => $this->getLockedBalance(),
+                    'balance_with_locked_balance'   => $newBalanceWithLockedBalance,
+                    'negative_limit'                => $negativeLimit,
+                ]);
+        }
         else if ($newBalanceWithLockedBalance < $negativeLimit)
         {
             $data['message'] = TraceCode::getMessage(TraceCode::NEGATIVE_BALANCE_BREACHED);
 
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED, abs($amount),
-                $data);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED,
+                Entity::BALANCE,
+                [
+                    'balance_id'                    => $this->getId(),
+                    'amount'                        => $this->getBalance(),
+                    'locked_balance'                => $this->getLockedBalance(),
+                    'balance_with_locked_balance'   => $newBalanceWithLockedBalance,
+                    'negative_limit'                => $negativeLimit,
+                ]);
         }
     }
 
