@@ -403,6 +403,6 @@ class Entity extends Base\PublicEntity
 
     public function getIinCurrency()
     {
-        return Currency::getCurrency(Country::COUNTRY_ISO_NUMERIC_CODE[$this->getCountry()]);
+        return Currency::getCurrency($this->getCountry());
     }
 }

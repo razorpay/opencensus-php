@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Currency;
 
+use RZP\Models\Card\IIN\Country;
+
 class Currency
 {
     const AED = 'AED';
@@ -288,6 +290,102 @@ class Currency
         self::UZS => '860',
         self::YER => '886',
         self::ZAR => '710',
+    ];
+
+    const CURRENCY_COUNTRY_CODES = [
+        self::AED => Country::AE,
+        self::ALL => Country::AL,
+        self::AMD => Country::AM,
+        self::ARS => Country::AR,
+        self::AUD => Country::AU,
+        self::AWG => Country::AW,
+        self::BBD => Country::BB,
+        self::BDT => Country::BD,
+        self::BMD => Country::BM,
+        self::BND => Country::BN,
+        self::BOB => Country::BO,
+        self::BSD => Country::BS,
+        self::BWP => Country::BW,
+        self::BZD => Country::BZ,
+        self::CAD => Country::CA,
+        self::CHF => Country::CH,
+        self::CNY => Country::CN,
+        self::COP => Country::CO,
+        self::CRC => Country::CR,
+        self::CUP => Country::CU,
+        self::CZK => Country::CZ,
+        self::DKK => Country::DK,
+        self::DOP => Country::DO,
+        self::DZD => Country::DZ,
+        self::EGP => Country::EG,
+        self::ETB => Country::ET,
+        //self::EUR => '978',
+        self::FJD => Country::FJ,
+        self::GBP => Country::GB,
+        //self::GHS => '936',
+        self::GIP => Country::GI,
+        self::GMD => Country::GM,
+        self::GTQ => Country::GT,
+        self::GYD => Country::GY,
+        self::HKD => Country::HK,
+        self::HNL => Country::HN,
+        self::HRK => Country::HR,
+        self::HTG => Country::HT,
+        self::HUF => Country::HU,
+        self::IDR => Country::ID,
+        self::ILS => Country::IL,
+        self::INR => Country::IN,
+        self::JMD => Country::JM,
+        self::KES => Country::KE,
+        self::KGS => Country::KG,
+        self::KHR => Country::KH,
+        self::KYD => Country::KY,
+        self::KZT => Country::KZ,
+        self::LAK => Country::LA,
+        self::LBP => Country::LB,
+        self::LKR => Country::LK,
+        self::LRD => Country::LR,
+        self::LSL => Country::LS,
+        self::MAD => Country::MA,
+        self::MDL => Country::MD,
+        self::MKD => Country::MK,
+        self::MMK => Country::MM,
+        self::MNT => Country::MN,
+        self::MOP => Country::MO,
+        self::MUR => Country::MU,
+        self::MVR => Country::MV,
+        self::MWK => Country::MW,
+        self::MXN => Country::MX,
+        self::MYR => Country::MY,
+        self::NAD => Country::NA,
+        self::NGN => Country::NG,
+        self::NIO => Country::NI,
+        self::NOK => Country::NO,
+        self::NPR => Country::NP,
+        self::NZD => Country::NZ,
+        self::PEN => Country::PE,
+        self::PGK => Country::PG,
+        self::PHP => Country::PH,
+        self::PKR => Country::PK,
+        self::QAR => Country::QA,
+        self::RUB => Country::RU,
+        self::SAR => Country::SA,
+        self::SCR => Country::SC,
+        self::SEK => Country::SE,
+        self::SGD => Country::SG,
+        self::SLL => Country::SL,
+        self::SOS => Country::SO,
+        self::SSP => Country::SS,
+        self::SVC => Country::SV,
+        self::SZL => Country::SZ,
+        self::THB => Country::TH,
+        self::TTD => Country::TT,
+        self::TZS => Country::TZ,
+        self::USD => Country::US,
+        self::UYU => Country::UY,
+        self::UZS => Country::UZ,
+        self::YER => Country::YE,
+        self::ZAR => Country::ZA,
     ];
 
     // Factor by which currency's more acceptable denomination is greater
@@ -938,6 +1036,8 @@ class Currency
 
     public static function getCurrency(string $countryCode)
     {
-        return array_search($countryCode, self::ISO_NUMERIC_CODES, true);
+        $currency = array_search($countryCode, self::CURRENCY_COUNTRY_CODES, true);
+
+        return $currency === false ? null : $currency;
     }
 }
