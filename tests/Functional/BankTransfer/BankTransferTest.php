@@ -214,6 +214,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferWithInActiveAccount()
     {
+        $this->markTestSkipped('Skipped due to yesbank disablement');
+
         $bankAccount = $this->createVirtualAccount('live', 'BankAccountMer');
 
         $this->fixtures->on('live')->merchant->edit('BankAccountMer', ['live' => false]);
@@ -542,6 +544,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferImpsWithNbin()
     {
+        $this->markTestSkipped('Skipped due to yesbank disablement');
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $ifsc = Provider::IFSC[Provider::YESBANK];
