@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
+import Banner from 'common/ui/Banner';
 import { TypeAhead } from 'react-power-select';
 
 import Input, { Label, Description } from 'common/new-ui/Input';
@@ -84,8 +85,12 @@ export default class CreateVirtualAccount extends Component {
     notes: {},
     close_by: null,
     _internals: {
-      hasBankAccount: true,
-      hasVPA: this.props.user.isVPAFeatureEnabled ? true : false,
+      hasBankAccount: !this.props.user.isVACreationBankAccountDisabled,
+      hasVPA:
+        this.props.user.isVPAFeatureEnabled ||
+        this.props.user.isVACreationBankAccountDisabled
+          ? true
+          : false,
     },
   };
 
@@ -283,8 +288,7 @@ export default class CreateVirtualAccount extends Component {
         va_config.hasOwnProperty('vpa') &&
         va_config.vpa.isDescriptorEnabled
       ) {
-        let vpaHandle =
-          va_config.vpa.prefix && va_config.vpa.prefix.split('.')[1];
+        let vpaHandle = va_config.vpa.prefix.split('.')[1];
 
         descriptorLimit_VPA = DESCRIPTOR_LENGTH_VPA - vpaHandle.length;
       }
@@ -300,6 +304,22 @@ export default class CreateVirtualAccount extends Component {
         >
           <main>
             <div class="form-title">Create Virtual Account</div>
+
+            {user.isVACreationBankAccountDisabled && (
+              <Banner>
+                Bank transfer is temporarily unavailable. Use UPI transfer
+                option to create Virtual UPI ID to accept payments.{' '}
+                <a
+                  class="highlight"
+                  target="_blank"
+                  href="https://lp.razorpay.com/unregistered-businesses-faqs-0"
+                >
+                  Know more
+                  <i class="i i-external-link" style={{ marginLeft: '5px' }} />
+                </a>
+              </Banner>
+            )}
+
             <div class="form-group">
               <Input.Group class="Input--vTop" label="Accept Payment Via">
                 <div>
@@ -307,7 +327,10 @@ export default class CreateVirtualAccount extends Component {
                     _name="hasBankAccount"
                     fieldLabel="Bank Transfer ( NEFT, RTGS, IMPS )"
                     defaultValue={_internals.hasBankAccount}
-                    disabled={!user.isVPAFeatureEnabled}
+                    disabled={
+                      !user.isVPAFeatureEnabled ||
+                      user.isVACreationBankAccountDisabled
+                    }
                     onChange={e =>
                       this.setState({
                         _internals: {
@@ -375,6 +398,7 @@ export default class CreateVirtualAccount extends Component {
                         _name="hasVPA"
                         fieldLabel="UPI Transfer"
                         defaultValue={_internals.hasVPA}
+                        disabled={user.isVACreationBankAccountDisabled}
                         onChange={e =>
                           this.setState({
                             _internals: {

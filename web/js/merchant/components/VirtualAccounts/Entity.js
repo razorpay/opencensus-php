@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import Amount from 'common/ui/Amount';
+import Banner from 'common/ui/Banner';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
@@ -9,6 +10,7 @@ import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import AccountDetails, {
   getVirtualAccountDetails,
   getVirtualAccountDetailsToCopy,
+  isYESBankAccountVA,
 } from 'merchant/components/VirtualAccounts/AccountDetails';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Table from 'common/ui/Table/Index';
@@ -27,7 +29,7 @@ import { updateVirtualAccountDetails } from 'merchant/reducers/virtualaccounts';
 })
 export default class extends React.Component {
   openEnableTransferModeModal = () => {
-    const { bankAccount, upiAddress } = getVirtualAccountDetails(
+    const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(
       this.props.virtualaccount
     );
 
@@ -35,7 +37,7 @@ export default class extends React.Component {
       component: (
         <EnableTransferMode
           closeModal={this.props.closeModal}
-          isForBankAccount={!bankAccount}
+          isForBankAccount={!(bankAccount1 || bankAccount2)}
           isForUPIAddress={!upiAddress}
           updateVirtualAccountDetails={this.updateVirtualAccountDetails}
         />
@@ -103,11 +105,17 @@ export default class extends React.Component {
 
     const isClosed = virtualaccount.status === 'closed';
 
-    const { bankAccount, upiAddress } = getVirtualAccountDetails(
+    const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(
       virtualaccount
     );
+
+    const hasYESBankAccountVA =
+      isYESBankAccountVA(bankAccount1) || isYESBankAccountVA(bankAccount2);
+    const hasBankAccount = bankAccount1 || bankAccount2;
+
     const valueToCopy = getVirtualAccountDetailsToCopy({
-      bankAccount,
+      bankAccount1,
+      bankAccount2,
       upiAddress,
     });
 
@@ -127,6 +135,55 @@ export default class extends React.Component {
             <div class="SliderPanel__Body">
               <Alert type={statusMsg.type} message={statusMsg.message} />
               <div class="panel-body">
+                {/* If only VPA is enabled */}
+                {!hasBankAccount &&
+                  user.isVACreationBankAccountDisabled(
+                    <>
+                      <Banner>
+                        Bank Transfers (NEFT, RTGS, IMPS) are temporarily
+                        unavailable. Use UPI Transfer to accept payments
+                        <a
+                          class="highlight"
+                          target="_blank"
+                          href="https://lp.razorpay.com/unregistered-businesses-faqs-0"
+                        >
+                          Know more
+                          <i
+                            class="i i-external-link"
+                            style={{ marginLeft: '5px' }}
+                          />
+                        </a>
+                      </Banner>
+
+                      <br />
+                    </>
+                  )}
+
+                {/* If bank account is enabled and has YES bank as bank account details */}
+                {hasBankAccount &&
+                  hasYESBankAccountVA && (
+                    <>
+                      <Banner>
+                        Use the new account details or UPI ID to accept
+                        payments. Older account details are no longer valid due
+                        to Yes Bank Moratorium by RBI
+                        <a
+                          class="highlight"
+                          target="_blank"
+                          href="https://lp.razorpay.com/unregistered-businesses-faqs-0"
+                        >
+                          Know more
+                          <i
+                            class="i i-external-link"
+                            style={{ marginLeft: '5px' }}
+                          />
+                        </a>
+                      </Banner>
+
+                      <br />
+                    </>
+                  )}
+
                 <div class="VirtualAccountDetails">
                   <EntityDetailRow label="Account Details">
                     <CustomClipboard
@@ -143,24 +200,26 @@ export default class extends React.Component {
 
                   <div class="divider" />
                   <AccountDetails
-                    bankAccount={bankAccount}
+                    bankAccount1={bankAccount1}
+                    bankAccount2={bankAccount2}
                     upiAddress={upiAddress}
                   />
                 </div>
 
-                {!isClosed &&
-                  !bankAccount && (
-                    <>
-                      <br />
+                {!user.isVACreationBankAccountDisabled &&
+                  (!isClosed &&
+                    !hasBankAccount && (
+                      <>
+                        <br />
 
-                      <button
-                        class="btn btn-default"
-                        onClick={this.openEnableTransferModeModal}
-                      >
-                        Enable Account Transfer
-                      </button>
-                    </>
-                  )}
+                        <button
+                          class="btn btn-default"
+                          onClick={this.openEnableTransferModeModal}
+                        >
+                          Enable Account Transfer
+                        </button>
+                      </>
+                    ))}
 
                 {!isClosed &&
                   !upiAddress &&

@@ -498,6 +498,10 @@ export default class User {
     return isLiveMode && this.getExpStatus('vpa_enabled');
   }
 
+  get isVACreationBankAccountDisabled() {
+    return this.getExpStatus('disable_va_creation_bank_account');
+  }
+
   get isCompanyNameHiddenRazorX() {
     return this.getExpStatus('hide_company_name');
   }

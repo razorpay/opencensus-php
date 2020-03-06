@@ -2,9 +2,11 @@ import react from 'react';
 import moment from 'moment';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import ModalHeader from 'common/ui/ModalHeader';
-import AccountDetails, { getVirtualAccountDetails } from './AccountDetails';
+import AccountDetails, {
+  getVirtualAccountDetails,
+  getVirtualAccountDetailsToCopy,
+} from './AccountDetails';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import { getVirtualAccountDetailsToCopy } from './AccountDetails';
 
 const AccountDetailsSummary = ({
   modalTitle,
@@ -14,7 +16,9 @@ const AccountDetailsSummary = ({
   showUPIAddressDetails = true,
   showBankAccountDetails = true,
 }) => {
-  const { bankAccount, upiAddress } = getVirtualAccountDetails(virtualAccount);
+  const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(
+    virtualAccount
+  );
   const valueToCopy = getVirtualAccountDetailsToCopy({
     bankAccount,
     upiAddress,
@@ -32,7 +36,8 @@ const AccountDetailsSummary = ({
         <br />
 
         <AccountDetails
-          bankAccount={bankAccount}
+          bankAccount1={bankAccount1}
+          bankAccount2={bankAccount2}
           upiAddress={upiAddress}
           showUPIAddressDetails={showUPIAddressDetails}
           showBankAccountDetails={showBankAccountDetails}
