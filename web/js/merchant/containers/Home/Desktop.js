@@ -207,141 +207,139 @@ class AnalyticsDesktop extends Component {
             </div>
           )}
         </div>
-        <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
-          <Header className="clearfix" title="" showMode={false}>
-            <div
-              id="analytics-daterange-picker"
-              className="pull-left date-range-container"
-            >
-              <DateRangePicker
-                presets={dateRangePresets}
-                onDatesChange={onDatesChange}
-                defaultPreset={defaultPreset}
-                onSelectPreset={trackPresetChange}
-              />
-            </div>
-            <div
-              className={`pull-right ${
-                this.props.user.isOndemandSettlementEnabled
-                  ? 'ondemand-enabled'
-                  : ''
-              }`}
-            >
-              <Group>
-                {this.props.user.isOrgAllowedFunctionality(
-                  'current_balance'
-                ) && (
-                  <GroupItem>
-                    <div style={{ textAlign: 'right' }}>
-                      <span class="settlement-balance-amount">
-                        Current Balance:{' '}
-                        {!current_balance.loading && (
-                          <Amount
-                            value={balance}
-                            currency={'INR'}
-                            className={negativeBalanceClassName}
-                          />
-                        )}
-                      </span>
-                      <br />
-                      {no_settlement ? (
-                        <div class="text-right" style={{ width: '100%' }}>
-                          {no_settlement.caption}
-                          {no_settlement.reason && (
-                            <React.Fragment>
-                              <div style={{ display: 'inline' }}>
-                                <i class="i i-info-circle" />
-                                <Popover theme="dark" align="left">
-                                  <PopoverBody>
-                                    <div>{no_settlement.reason}</div>
-                                  </PopoverBody>
-                                </Popover>
-                              </div>
-                            </React.Fragment>
-                          )}
-                        </div>
-                      ) : null}
-                      {!no_settlement && !nextSettlement ? (
-                        <div class="text-right" style={{ width: '100%' }}>
-                          <strong>
-                            <Amount
-                              value={settlement_amount.data.settlement_amount}
-                              currency={'INR'}
-                            />
-                          </strong>{' '}
-                          will be settled on{' '}
-                          <Time
-                            value={settlement_amount.data.next_settlement_time}
-                            format={'DD MMM YYYY, hh:mm:ss a'}
-                          />{' '}
-                          {settlement_amount.data.reason_for_delay && (
-                            <React.Fragment>
-                              <div style={{ display: 'inline' }}>
-                                <i class="i i-info-circle" />
-                                <Popover theme="dark" align="left">
-                                  <PopoverBody>
-                                    <div>
-                                      {settlement_amount.data.reason_for_delay}
-                                    </div>
-                                  </PopoverBody>
-                                </Popover>
-                              </div>
-                            </React.Fragment>
-                          )}
-                          <span
-                            class="btn-link"
-                            style={{ marginLeft: '5px' }}
-                            onClick={() => {
-                              this.props.openModal({
-                                size: 'medium',
-                                component: (
-                                  <SettlementDetail
-                                    settlementAmount={settlement_amount.data}
-                                  />
-                                ),
-                              });
-                              window.rzpAnalytics({
-                                eventCategory: 'Settlement Revamp',
-                                eventAction: 'Know more - Next Settlement',
-                                eventLabel: `Home`,
-                              });
-                            }}
-                          >
-                            Know more
-                          </span>
-                        </div>
-                      ) : null}
-                    </div>
-                  </GroupItem>
-                )}
+        {/* <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}> */}
+        <Header className="clearfix" title="" showMode={false}>
+          <div
+            id="analytics-daterange-picker"
+            className="pull-left date-range-container"
+          >
+            <DateRangePicker
+              presets={dateRangePresets}
+              onDatesChange={onDatesChange}
+              defaultPreset={defaultPreset}
+              onSelectPreset={trackPresetChange}
+            />
+          </div>
+          <div
+            className={`pull-right ${
+              this.props.user.isOndemandSettlementEnabled
+                ? 'ondemand-enabled'
+                : ''
+            }`}
+          >
+            <Group>
+              {this.props.user.isOrgAllowedFunctionality('current_balance') && (
                 <GroupItem>
-                  {this.props.user.isOndemandSettlementEnabled &&
-                  this.props.user.isAllowedView('early_settlement') ? (
-                    <Button.Secondary
-                      class="settle-btn btn-outline"
-                      onClick={this.showOndemandSettlementForm}
-                      disabled={
-                        current_balance.loading ||
-                        current_balance.data.balance < 100
-                      }
-                    >
-                      Settle Now
-                    </Button.Secondary>
-                  ) : (
-                    <Link className="pull-right" to="/settlements">
-                      <span
-                        className="text-no-wrap"
-                        onClick={trackSettlementsClick}
-                      >
-                        View Settlements
-                      </span>
-                    </Link>
-                  )}
+                  <div style={{ textAlign: 'right' }}>
+                    <span class="settlement-balance-amount">
+                      Current Balance:{' '}
+                      {!current_balance.loading && (
+                        <Amount
+                          value={balance}
+                          currency={'INR'}
+                          className={negativeBalanceClassName}
+                        />
+                      )}
+                    </span>
+                    <br />
+                    {no_settlement ? (
+                      <div class="text-right" style={{ width: '100%' }}>
+                        {no_settlement.caption}
+                        {no_settlement.reason && (
+                          <React.Fragment>
+                            <div style={{ display: 'inline' }}>
+                              <i class="i i-info-circle" />
+                              <Popover theme="dark" align="left">
+                                <PopoverBody>
+                                  <div>{no_settlement.reason}</div>
+                                </PopoverBody>
+                              </Popover>
+                            </div>
+                          </React.Fragment>
+                        )}
+                      </div>
+                    ) : null}
+                    {!no_settlement && !nextSettlement ? (
+                      <div class="text-right" style={{ width: '100%' }}>
+                        <strong>
+                          <Amount
+                            value={settlement_amount.data.settlement_amount}
+                            currency={'INR'}
+                          />
+                        </strong>{' '}
+                        will be settled on{' '}
+                        <Time
+                          value={settlement_amount.data.next_settlement_time}
+                          format={'DD MMM YYYY, hh:mm:ss a'}
+                        />{' '}
+                        {settlement_amount.data.reason_for_delay && (
+                          <React.Fragment>
+                            <div style={{ display: 'inline' }}>
+                              <i class="i i-info-circle" />
+                              <Popover theme="dark" align="left">
+                                <PopoverBody>
+                                  <div>
+                                    {settlement_amount.data.reason_for_delay}
+                                  </div>
+                                </PopoverBody>
+                              </Popover>
+                            </div>
+                          </React.Fragment>
+                        )}
+                        <span
+                          class="btn-link"
+                          style={{ marginLeft: '5px' }}
+                          onClick={() => {
+                            this.props.openModal({
+                              size: 'medium',
+                              component: (
+                                <SettlementDetail
+                                  settlementAmount={settlement_amount.data}
+                                />
+                              ),
+                            });
+                            window.rzpAnalytics({
+                              eventCategory: 'Settlement Revamp',
+                              eventAction: 'Know more - Next Settlement',
+                              eventLabel: `Home`,
+                            });
+                          }}
+                        >
+                          Know more
+                        </span>
+                      </div>
+                    ) : null}
+                  </div>
                 </GroupItem>
-              </Group>
-            </div>
-          </Header>
-        </Sticky>
+              )}
+              <GroupItem>
+                {this.props.user.isOndemandSettlementEnabled &&
+                this.props.user.isAllowedView('early_settlement') ? (
+                  <Button.Secondary
+                    class="settle-btn btn-outline"
+                    onClick={this.showOndemandSettlementForm}
+                    disabled={
+                      current_balance.loading ||
+                      current_balance.data.balance < 100
+                    }
+                  >
+                    Settle Now
+                  </Button.Secondary>
+                ) : (
+                  <Link className="pull-right" to="/settlements">
+                    <span
+                      className="text-no-wrap"
+                      onClick={trackSettlementsClick}
+                    >
+                      View Settlements
+                    </span>
+                  </Link>
+                )}
+              </GroupItem>
+            </Group>
+          </div>
+        </Header>
+        {/* </Sticky> */}
         {nextSettlement && no_settlement && no_settlement.on_hold === true ? (
           <OnHoldBanner
             ctaOnClick={() => {
