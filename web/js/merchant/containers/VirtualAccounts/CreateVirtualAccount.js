@@ -286,7 +286,8 @@ export default class CreateVirtualAccount extends Component {
 
       if (
         va_config.hasOwnProperty('vpa') &&
-        va_config.vpa.isDescriptorEnabled
+        va_config.vpa.isDescriptorEnabled &&
+        va_config.vpa.prefix
       ) {
         let vpaHandle = va_config.vpa.prefix.split('.')[1];
 

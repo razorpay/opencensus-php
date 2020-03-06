@@ -20,7 +20,8 @@ const AccountDetailsSummary = ({
     virtualAccount
   );
   const valueToCopy = getVirtualAccountDetailsToCopy({
-    bankAccount,
+    bankAccount1,
+    bankAccount2,
     upiAddress,
   });
 

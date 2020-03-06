@@ -96,7 +96,8 @@ export default class EnableTransferMode extends React.Component {
       if (
         Object.keys(va_config).length &&
         va_config.hasOwnProperty('vpa') &&
-        va_config.vpa.isDescriptorEnabled
+        va_config.vpa.isDescriptorEnabled &&
+        va_config.vpa.prefix
       ) {
         let vpaHandle =
           va_config.vpa.prefix && va_config.vpa.prefix.split('.')[1];
