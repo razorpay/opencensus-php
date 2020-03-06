@@ -128,6 +128,13 @@ class Service extends Base\Service
         return $this->handleLoginResponse($error, $genericUser);
     }
 
+    public function postloginNo2fa(array $input)
+    {
+        list($error, $genericUser) = $this->loginOnApiNo2faSetup($input);
+
+        return $this->handleLoginResponse($error, $genericUser);
+    }
+
     public function verify2faOtp(array $input, array $options = [])
     {
         return $this->loginOnApiOnRoute($input,'users/2fa/verify', 'POST', $options);
@@ -698,6 +705,11 @@ class Service extends Base\Service
     public function loginOnApiBy2faSetupSuccessful(array $input)
     {
         return $this->loginOnApiOnRoute($input,'users/login/2fa_setup/verify-mobile', 'POST');
+    }
+
+    public function loginOnApiNo2faSetup(array $input)
+    {
+        return $this->loginOnApiOnRoute($input,'users/login/no2fa', 'POST');
     }
 
     public function getUserFromApi($userId)

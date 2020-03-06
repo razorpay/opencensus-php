@@ -58,6 +58,8 @@ Route::group(['middleware' => ['web']], function () {
     {
         Route::post('/signin', 'UserController@postSignin'); // ePOS
         Route::post('/register', 'UserController@postRegister'); // ePOS
+        Route::post('/unlock', 'UserController@postUnlockUserScreen')->name('unlock_route');
+        Route::post('/2fa_setup/verify-mobile', 'UserController@postSetup2faVerifyMobile');
         Route::post('/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp');
         Route::patch('/2fa/contact', 'UserController@postUpdate2faContact');
         Route::post('/2fa/otp-resend', 'UserController@postResendOtp');

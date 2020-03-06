@@ -7,6 +7,7 @@ use Session;
 use Closure;
 use App\Http\AppResponse;
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Support\Facades\Crypt;
 
 
 class SessionInActivity
@@ -71,7 +72,11 @@ class SessionInActivity
                 $path .= '?email=' . $userEmail;
             }
 
-            return AppResponse::unauthorizedResponse('Unauthorized.', $routeName, $path);
+            $response = AppResponse::unauthorizedResponse('Unauthorized.', $routeName, $path);
+
+            $response->withCookie(cookie('rzp_user_email', Crypt::encrypt($userEmail), $sessionConfig['lifetime']));
+
+            return $response;
         }
 
         return $next($request);

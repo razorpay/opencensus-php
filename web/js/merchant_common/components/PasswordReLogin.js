@@ -65,7 +65,7 @@ export default class PasswordReLogin extends Component {
     };
 
     ajax({
-      url: '/user/signin',
+      url: '/user/unlock',
       method: 'post',
       appendModeInURL: false,
       data: reqPayload,
@@ -73,10 +73,6 @@ export default class PasswordReLogin extends Component {
       .then(resp => {
         if (resp.success) {
           //redirect user if the account is suspended
-          if (resp.data.merchantIds.indexOf(merchantId) < 0) {
-            this.props.history.push('/profile');
-          }
-
           this.props.removeLockScreen();
           this.props.resumeLockActionCB();
         } else {
@@ -93,7 +89,9 @@ export default class PasswordReLogin extends Component {
 
         this.props.showNotification({
           type: 'error',
-          message: errors,
+          message: [
+            'Some network issue. Please re-enter password or Reload the page.',
+          ],
         });
 
         this.resetCaptcha();

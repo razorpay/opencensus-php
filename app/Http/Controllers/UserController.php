@@ -1,11 +1,14 @@
 <?php
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Crypt;
+
 use Auth;
 use Input;
-use App\User;
 use Cookie;
 use Session;
+
+use App\User;
 use App\Admin;
 use App\Merchant;
 use App\Http\ApiUrl;
@@ -353,5 +356,31 @@ class UserController extends Controller
     public function validateJWT()
     {
         return ['success' => true];
+    }
+
+    public function postUnlockUserScreen()
+    {
+        $input = Input::all();
+
+        $encryptedEmail = Cookie::get('rzp_user_email');
+
+        if (empty($encryptedEmail) === false)
+        {
+            $email = Crypt::decrypt($encryptedEmail);
+
+            $this->trace->info(TraceCode::USER_LOGOUT, [$email]);
+            // replace the email.
+            $input['email'] = $email;
+
+            list($error, $data) = (new User\Service)->postloginNo2fa($input);
+
+            $this->trace->info(TraceCode::USER_LOGOUT, [$input, $error, $data]);
+        }
+        else
+        {
+            $error = ["Incorrect password/Network issue, please reload the page"];
+        }
+
+        return AppResponse::jsonResponse($error, $data);
     }
 }
