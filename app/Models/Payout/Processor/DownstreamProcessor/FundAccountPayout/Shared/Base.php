@@ -9,6 +9,7 @@ use RZP\Mail\Banking;
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
@@ -26,6 +27,19 @@ class Base extends FundAccountPayout\Base
             $this->setChannel($payout);
 
             $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
+
+            $variant = $this->app->razorx->getTreatment($payout->merchant->getId(),
+                                                        Merchant\RazorxTreatment::FORCE_ICICI_OVER_YESBANK_FOR_PAYOUTS,
+                                                        $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                if ($payout->getChannel() === Channel::YESBANK)
+                {
+                    $payout->setChannel(Channel::ICICI);
+                }
+            }
 
             $this->createTransaction($payout);
 
@@ -211,6 +225,25 @@ class Base extends FundAccountPayout\Base
         $mode = $payout->getMode();
 
         $valid = Mode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
+
+        if (($channel === Channel::ICICI) and
+            ($mode === Mode::NEFT))
+        {
+            $variant  = $this->app->razorx->getTreatment(
+                $payout->merchant->getId(),
+                Merchant\RazorxTreatment::RAZORPAY_X_ALLOW_NEFT_PAYOUTS_VIA_ICICI,
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                $valid = true;
+            }
+            else
+            {
+                $valid = false;
+            }
+        }
 
         if ($valid === false)
         {

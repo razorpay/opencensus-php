@@ -5,6 +5,7 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Dire
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;

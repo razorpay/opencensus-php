@@ -46,7 +46,7 @@ class Mode
                 Constants\Entity::BANK_ACCOUNT  =>  [
                     //self::RTGS,
                     self::IMPS,
-                    //self::NEFT,
+                    self::NEFT,
                     //self::IFT,
                 ],
                 Constants\Entity::CARD          =>  [
@@ -70,6 +70,7 @@ class Mode
             Settlement\Channel::ICICI     => [
                 Constants\Entity::BANK_ACCOUNT  =>  [
                     self::IMPS,
+                    self::NEFT,
                 ],
                 Constants\Entity::CARD          =>  [
                     self::IMPS,
