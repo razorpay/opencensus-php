@@ -233,6 +233,29 @@ return [
         ],
     ],
 
+    'testValidateVpaYesBankInvalid' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'razorpay@ybl',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
+        ],
+    ],
+
     'testValidateVpaStrUpper' => [
         'request'   => [
             'url'       => '/payment/validate/vpa',
