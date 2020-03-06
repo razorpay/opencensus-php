@@ -136,6 +136,14 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     return isNACH;
   }
 
+  get currentSelectedMethod() {
+    return {
+      emandate: this.isEmandatePayment,
+      card: this.isCardPayment,
+      nach: this.isNACHPayment,
+    };
+  }
+
   get Tabs() {
     return getTabs(this.isEmandatePayment || this.isNACHPayment);
   }
@@ -486,6 +494,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             trackSkipBankDetails={trackSkipBankDetails}
             formReference1={formFields.formReference1}
             formReference2={formFields.formReference2}
+            currentSelectedMethod={this.currentSelectedMethod}
           />
         );
       }
