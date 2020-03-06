@@ -2739,6 +2739,7 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentCreateForYesBankUpi()
     {
+        $this->markTestSkipped('Not needed');
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['vpa'] = 'vishnu@ybl';
