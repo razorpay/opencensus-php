@@ -5,6 +5,7 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 use App;
 
 use RZP\Models\Admin;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Base\PublicEntity;
@@ -67,7 +68,7 @@ class DownstreamProcessor
                 $channel = $this->getChannelForFundTransfer($accountType);
             }
 
-            self::blockYesbankPayoutsIfRequired($channel, $this->payout);
+            self::blockYesbankPayoutsIfRequired($channel, $this->payout, $this->mode);
 
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
@@ -75,8 +76,13 @@ class DownstreamProcessor
         return new $subProcessor;
     }
 
-    public static function blockYesbankPayoutsIfRequired($channel, $payout)
+    public static function blockYesbankPayoutsIfRequired($channel, $payout, $mode)
     {
+        if ($mode === Mode::TEST)
+        {
+            return;
+        }
+
         if ($channel === Channel::YESBANK)
         {
             $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::BLOCK_YESBANK_PAYOUTS]) ?? false;

@@ -17,7 +17,7 @@ class CustomerWalletPayout extends Base
     {
         $channel = Channel::YESBANK;
 
-        DownstreamProcessor::blockYesbankPayoutsIfRequired($channel, $payout);
+        DownstreamProcessor::blockYesbankPayoutsIfRequired($channel, $payout, $this->mode);
 
         $payout->setChannel($channel);
     }

@@ -3,7 +3,6 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
-use RZP\Error\ErrorCode;
 use Throwable;
 
 use RZP\Exception;
@@ -563,8 +562,6 @@ class Activate extends Base\Core
 
         if ($onboardMerchant === true)
         {
-            $this->blockRxActivationIfApplicable($merchant);
-
             // Create Banking Balance
             $balance = (new Balance\Core)->createOrFetchSharedBankingBalance($merchant, $mode);
 
@@ -593,14 +590,14 @@ class Activate extends Base\Core
 
         if (boolval($config) === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_BLOCKING_RX_ACTIVATIONS,
-                [
-                    'onboard_merchant'  => true,
-                    'merchant_id'       => $merchant->getId(),
-                    'config'            => $config,
-                ]);
+            $this->trace->info(TraceCode::BLOCKING_RX_ACTIVATIONS_TEMPORARILY, [
+                'onboard_merchant'  => true,
+                'merchant_id'       => $merchant->getId(),
+                'config'            => $config,
+            ]);
         }
+
+        return boolval($config);
     }
 
     protected function addPayoutFeatureIfApplicable(Entity $merchant, string $mode)
@@ -653,7 +650,7 @@ class Activate extends Base\Core
 
     protected function onBoardMerchantOnRazorpayxInLiveMode(Entity $merchant)
     {
-        return ($merchant->isActivated() === true);
+        return (($merchant->isActivated() === true) and ($this->blockRxActivationIfApplicable($merchant) === false));
     }
 
     protected function onBoardMerchantOnRazorpayxInTestMode(Entity $merchant)
