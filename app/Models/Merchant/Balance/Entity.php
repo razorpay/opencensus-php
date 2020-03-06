@@ -138,12 +138,10 @@ class Entity extends Base\PublicEntity
 
         $channel = $attributes[self::CHANNEL];
 
-        if ($accountType === AccountType::DIRECT and $channel === Channel::RBL)
+        if (($accountType === AccountType::DIRECT) and
+            ($channel === Channel::RBL))
         {
-            /** @var Entity $balance */
-            $balance =  (new Repository)->findOrFailById($attributes[self::ID]);
-
-            $attributes[self::BALANCE] = $balance->bankingAccount->getGatewayBalance();
+            $attributes[self::BALANCE] = $this->bankingAccount->getGatewayBalance();
         }
     }
 
@@ -153,12 +151,10 @@ class Entity extends Base\PublicEntity
 
         $channel = $attributes[self::CHANNEL];
 
-        if ($accountType === AccountType::DIRECT and $channel === Channel::RBL)
+        if (($accountType === AccountType::DIRECT) and
+            ($channel === Channel::RBL))
         {
-            /** @var Entity $balance */
-            $balance =  (new Repository)->findOrFailById($attributes[self::ID]);
-
-            $attributes[self::LAST_FETCHED_AT] = $balance->bankingAccount->getBalanceLastFetchedAt();
+            $attributes[self::LAST_FETCHED_AT] = $this->bankingAccount->getBalanceLastFetchedAt();
         }
     }
 
