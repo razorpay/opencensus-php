@@ -7,6 +7,7 @@ use App;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
@@ -68,7 +69,7 @@ class DownstreamProcessor
                 $channel = $this->getChannelForFundTransfer($accountType);
             }
 
-            self::blockYesbankPayoutsIfRequired($channel, $this->payout, $this->mode);
+            $this->blockYesbankPayoutsIfRequired($channel, $this->payout);
 
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
@@ -76,18 +77,23 @@ class DownstreamProcessor
         return new $subProcessor;
     }
 
-    public static function blockYesbankPayoutsIfRequired($channel, $payout, $mode)
+    public function blockYesbankPayoutsIfRequired($channel, $payout)
     {
-        if ($mode === Mode::TEST)
+        if ($this->mode === Mode::TEST)
         {
             return;
         }
 
         if ($channel === Channel::YESBANK)
         {
-            $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::BLOCK_YESBANK_PAYOUTS]) ?? false;
+            $variant = $this->app->razorx->getTreatment($payout->merchant->getId(),
+                                                        Merchant\RazorxTreatment::RAZORPAY_X_ENABLE_YESBANK_PAYOUTS,
+                                                        $this->mode);
 
-            if (boolval($config) === false)
+            // Enable payouts only for certain merchants. If the experiment is not created or times out, razorx
+            // will return back "control" and we will throw an exception on payout creation.
+
+            if (strtolower($variant) === 'on')
             {
                 return;
             }

@@ -3,11 +3,15 @@
 namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
 use RZP\Constants;
+use RZP\Models\Admin;
+use RZP\Constants\Mode;
 use RZP\Models\Pricing;
+use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Adjustment;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Settlement\Channel;
+use RZP\Exception\BadRequestException;
 
 class CustomerWalletPayout extends Base
 {
@@ -17,9 +21,36 @@ class CustomerWalletPayout extends Base
     {
         $channel = Channel::YESBANK;
 
-        DownstreamProcessor::blockYesbankPayoutsIfRequired($channel, $payout, $this->mode);
+        $this->blockYesbankCustomerWalletPayoutsIfRequired($channel, $payout, $this->mode);
 
         $payout->setChannel($channel);
+    }
+
+    public function blockYesbankCustomerWalletPayoutsIfRequired($channel, $payout, $mode)
+    {
+        if ($mode === Mode::TEST)
+        {
+            return;
+        }
+
+        if ($channel === Channel::YESBANK)
+        {
+            $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::BLOCK_YESBANK_WALLET_PAYOUTS]) ?? false;
+
+            if (boolval($config) === false)
+            {
+                return;
+            }
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY,
+                null,
+                [
+                    'channel'       => 'yesbank',
+                    'merchant_id'   => $payout->getMerchantId(),
+                    'payout_id'     => $payout->getId(),
+                ]);
+        }
     }
 
     protected function createTransaction(Entity $payout)
