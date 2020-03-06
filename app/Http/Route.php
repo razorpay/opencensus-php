@@ -1666,6 +1666,7 @@ final class Route
         'card_check_recurring',
         'card_fetch_by_id',
         'iin_list_by_flow',
+        'balance_fetch',
         'order_create',
         'order_fetch',
         'order_fetch_by_id',

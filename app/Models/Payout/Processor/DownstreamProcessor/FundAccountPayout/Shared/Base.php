@@ -41,6 +41,8 @@ class Base extends FundAccountPayout\Base
                 }
             }
 
+            $this->checkAllowNeftOnIcici($payout);
+
             $this->createTransaction($payout);
 
             //
@@ -227,25 +229,6 @@ class Base extends FundAccountPayout\Base
 
         $valid = Mode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
 
-        if (($channel === Channel::ICICI) and
-            ($mode === Mode::NEFT))
-        {
-            $variant  = $this->app->razorx->getTreatment(
-                $payout->merchant->getId(),
-                Merchant\RazorxTreatment::RAZORPAY_X_ALLOW_NEFT_PAYOUTS_VIA_ICICI,
-                $this->mode
-            );
-
-            if ($variant === 'on')
-            {
-                $valid = true;
-            }
-            else
-            {
-                $valid = false;
-            }
-        }
-
         if ($valid === false)
         {
             throw new BadRequestException(
@@ -258,6 +241,45 @@ class Base extends FundAccountPayout\Base
                 ],
                 $mode . ' is not supported'
             );
+        }
+    }
+
+    /**
+     * @param Entity $payout
+     *
+     * @throws BadRequestException
+     */
+    protected function checkAllowNeftOnIcici(Entity $payout)
+    {
+        $channel = $payout->getChannel();
+
+        $mode = $payout->getMode();
+
+        if (($channel === Channel::ICICI) and
+            ($mode === Mode::NEFT))
+        {
+            $variant  = $this->app->razorx->getTreatment(
+                $payout->merchant->getId(),
+                Merchant\RazorxTreatment::RAZORPAY_X_ALLOW_NEFT_PAYOUTS_VIA_ICICI,
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                return;
+            }
+            else
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+                    null,
+                    [
+                        'channel'           => $channel,
+                        'mode'              => $mode,
+                    ],
+                    $mode . ' is not supported'
+                );
+            }
         }
     }
 }
