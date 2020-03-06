@@ -61,6 +61,8 @@ class WebhookTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->setupMockDns();
+
+        $this->mockRazorX('diableWebhookUpdate', 'disable_webhook_update', 'off', 10000000000000);
     }
 
     public function testCreateWebhook()
