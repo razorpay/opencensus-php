@@ -375,7 +375,7 @@ class Processor
 
             $this->app['events']->fire('api.payment.created', $eventPayload);
 
-            $this->cache->put($cacheKey, true, 3600);
+            $this->cache->put($cacheKey, true, 1200);
         }
     }
 
