@@ -9,6 +9,7 @@ use RZP\Mail\Banking;
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
@@ -209,7 +210,7 @@ class Base extends FundAccountPayout\Base
 
         $mode = $payout->getMode();
 
-        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+        $valid = Mode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
 
         if ($valid === false)
         {

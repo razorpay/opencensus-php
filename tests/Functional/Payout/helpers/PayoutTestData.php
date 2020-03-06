@@ -662,7 +662,7 @@ return [
                 'amount'            => 2000000,
                 'currency'          => 'INR',
                 'fund_account_id'   => 'fa_100000000000fa',
-                'mode'              => 'NEFT',
+                'mode'              => 'IMPS',
                 'purpose'           => 'refund',
                 'notes'             => [
                     'abc' => 'xyz',
@@ -679,7 +679,7 @@ return [
                 'purpose'         => 'refund',
                 'status'          => 'processing',
                 'failure_reason'  => null,
-                'mode'            => 'NEFT',
+                'mode'            => 'IMPS',
                 'tax'             => 162,
                 'fees'            => 1062,
                 'notes'           => [
@@ -2476,7 +2476,7 @@ return [
                 'currency'        => 'INR',
                 'purpose'         => 'refund',
                 'narration'       => 'Batman',
-                'mode'            => 'NEFT',
+                'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
                 'notes'           => [
                     'abc' => 'xyz',
@@ -2492,7 +2492,7 @@ return [
                 'narration'       => 'Batman',
                 'purpose'         => 'refund',
                 'status'          => 'processing',
-                'mode'            => 'NEFT',
+                'mode'            => 'IMPS',
                 'tax'             => 162,
                 'fees'            => 1062,
                 'notes'           => [
