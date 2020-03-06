@@ -571,12 +571,12 @@ class Service extends Base\Service
         return $balance->toArrayPublic();
     }
 
-    public function updateLockedBalance(string $balanceId, array $input)
+    public function updateLockedBalance(array $input, string $balanceId)
     {
         /** @var Balance\Entity $balance */
-        $balance = $this->repo->balance->findOrFail($balanceId);
+        $balance = $this->repo->balance->findOrFailById($balanceId);
 
-        $balance->getValidator()->validateInput($input, Balance\Validator::LOCKED_BALANCE);
+        $balance->getValidator()->validateInput(Balance\Validator::LOCKED_BALANCE, $input);
 
         $lockedBalance = $input[Merchant\Balance\Entity::LOCKED_BALANCE];
 
