@@ -107,10 +107,22 @@ export default class NoCostEmiMethods extends React.Component {
                 }
               />
             </div>
-            <p>{emiMerchantPaybacks[duration].merchant_payback}</p>
+            <p>{emiMerchantPaybacks[duration].merchant_payback} %</p>
           </div>
         );
       }
+
+      planFields.unshift(
+        <div
+          class="offers-emi-options-row"
+          style={{ padding: '13px', fontWeight: 'bold' }}
+        >
+          <div class="emi-checkfield">
+            <p>EMI tenure</p>
+          </div>
+          <p>Discount borne by merchant</p>
+        </div>
+      );
     }
     if (planFields.length > 0) {
       return (
