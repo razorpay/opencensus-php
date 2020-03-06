@@ -417,8 +417,8 @@ class RblPayoutTest extends TestCase
         $payout1 = $this->getDbEntityById('payout', $payoutId1)->toArray();
         $payout2 = $this->getDbEntityById('payout', $payoutId2)->toArray();
 
-        $this->assertEquals('created', $payout1['status']);
-        $this->assertEquals('created', $payout2['status']);
+        $this->assertEquals('initiated', $payout1['status']);
+        $this->assertEquals('initiated', $payout2['status']);
     }
 
     // Case when both payout amount is greater than balance in CA and queue_if_low_balance = false
@@ -442,7 +442,7 @@ class RblPayoutTest extends TestCase
         $payout1 = $this->getDbEntityById('payout', $payoutId1)->toArray();
         $payout2 = $this->getDbEntityById('payout', $payoutId2)->toArray();
 
-        $this->assertEquals('created', $payout1['status']);
-        $this->assertEquals('created', $payout2['status']);
+        $this->assertEquals('initiated', $payout1['status']);
+        $this->assertEquals('initiated', $payout2['status']);
     }
 }
