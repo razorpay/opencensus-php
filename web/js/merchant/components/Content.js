@@ -145,9 +145,9 @@ export default class Content extends Component {
 
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
-        {!HIDDEN_YES_BANK_ANNOUNCEMENT_ROUTES.includes(
+        {/* {!HIDDEN_YES_BANK_ANNOUNCEMENT_ROUTES.includes(
           this.baseLocation.pathname
-        ) && <YesBankAnnouncement />}
+        ) && <YesBankAnnouncement />} */}
 
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />

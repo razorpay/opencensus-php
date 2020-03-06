@@ -29,6 +29,8 @@ import {
 import WelcomeModal from 'merchant/components/Home/WelcomeModal';
 import InstantActivationSuccess from 'merchant/components/InstantActivationSuccess';
 import PANVerficationStatusModal from 'merchant/components/PANVerficationStatusModal';
+import YesBankAnnouncementHome from 'merchant/components/Announcements/YesBankAnnouncements/YesBankAnnouncementHome';
+
 import KYCStatusModal from 'merchant/components/KYCStatusModal';
 import KycDetailsModal from 'merchant/components/KycDetailsModal';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
@@ -50,6 +52,7 @@ import Desktop from './Desktop';
 import Mobile from './Mobile';
 import ShowWhen from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
+import { fetchVirtualAccounts } from 'merchant/reducers/virtualaccounts';
 
 const dateRangePresets = [
     ['Past 7 Days', -7, 'days'],
@@ -120,6 +123,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       showKYCStatus: state.home.instantActivations.showKYCStatus,
       kycStatusModalType: state.home.kycStatusModalType,
       settlement_amount: state.home.settlement_amount,
+      virtualAccounts: state.virtualaccounts,
     };
   },
   {
@@ -127,6 +131,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     ...ModalActions,
     showNotification,
     fetchPayments,
+    fetchVirtualAccounts,
   }
 )
 @RTracking(() => window.rzpQ.component('HomeContainer'))
@@ -480,10 +485,18 @@ export default class HomeContainer extends Component {
   componentWillMount() {
     // to style react-power-selct specific to this tab
     document.body.className += bodyClass;
+    const { user } = this.props;
 
     this.props.fetchCurrentBalance();
     this.fetchOldestTransactionDate();
     this.fetchTxnsGroupedByPlatform();
+
+    if (user && user.isVirtualAccountsEnabled) {
+      this.props.fetchVirtualAccounts({
+        skip: 0,
+        count: 25,
+      });
+    }
   }
 
   componentWillUnmount() {
@@ -740,6 +753,11 @@ export default class HomeContainer extends Component {
 
     return (
       <div class="react-root dashboard-home">
+        <YesBankAnnouncementHome
+          virtualAccounts={this.props.virtualAccounts}
+          user={this.props.user}
+        />
+
         {/* Show Diwali Promotional Banner */}
         {this.props.user.isDiwaliPromoEnabled &&
           !hideDiwaliPromotion && (

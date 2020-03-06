@@ -8,7 +8,6 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import YesBankEmandate from 'merchant/components/Announcements/YesBankEmandate';
 
 import { fetchPlans } from 'merchant/reducers/plans';
 import { fetchSubscriptions } from 'merchant/reducers/subscriptions';
@@ -141,11 +140,6 @@ export default class SubscriptionsController extends React.Component {
 
     return (
       <div class={classList('Subscriptions-Container')}>
-        <YesBankEmandate
-          user={this.props.user}
-          payments={this.props.payments}
-        />
-
         <tabbed-container>
           {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}
 

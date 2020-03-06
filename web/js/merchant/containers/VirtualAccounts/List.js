@@ -27,7 +27,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import VirtualAccountsListFilter from 'merchant/components/VirtualAccounts/ListFilter';
-import YesBankSmartCollect from 'merchant/components/Announcements/YesBankSmartCollect';
+import YesBankAnnouncementSmartCollect from 'merchant/components/Announcements/YesBankAnnouncements/YesBankAnnouncementSmartCollect';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
@@ -162,7 +162,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
 
     return (
       <React.Fragment>
-        <YesBankSmartCollect items={items} />
+        <YesBankAnnouncementSmartCollect />
 
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
