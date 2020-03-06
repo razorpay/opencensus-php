@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Diag\EventCode;
@@ -164,6 +165,27 @@ trait SettlementTrait
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
+        $cutoffConfig = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::REMOVE_SETTLEMENT_BA_COOL_OFF]);
+
+        $coolOff = (bool) ($cutoffConfig ?? false);
+
+        $accountChange = $this->repo->bank_account->isBankAccountChanged($bankAccount);
+
+        if (($coolOff === true) and ($accountChange === true) and ($this->env !== Environment::TESTING))
+        {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_NOT_SKIPPING_BANK_ACCOUNT_RECENT_CREATION,
+                [
+                    'bank_account_created_at'   => $bankAccount->getCreatedAt(),
+                    'last_working_day'          => $lastWorkingDay->getTimestamp(),
+                    'channel'                   => $channel,
+                    'merchant_id'               => $merchant->getId(),
+                    'bank_account_id'           => $bankAccount->getId(),
+                ]);
+
+            return [true, []];
+        }
+
         //
         // Check if beneficiary registration cutoff is crossed
         // required for all non 24/7 channels
@@ -171,26 +193,28 @@ trait SettlementTrait
         if (($this->env !== Environment::TESTING) and
             ($bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {
+
             $createdAt = Carbon::createFromTimestamp($bankAccount->getCreatedAt(), Timezone::IST)->format('Y-m-d H:i:s');
 
-            $this->traceMerchantSettlementSkip(
-                $merchant,
-                [
-                    'reason'               => 'bank account created yesterday',
-                    'bank_account_created' => $createdAt,
-                ]);
+                $this->traceMerchantSettlementSkip(
+                    $merchant,
+                    [
+                        'reason'               => 'bank account created yesterday',
+                        'bank_account_created' => $createdAt,
+                    ]);
 
-            return [
-                false,
-                [
-                    'caption' => 'There won\'t be any settlement',
-                    'reason'  => 'Bank account created yesterday. bank account was created/updated at '
-                        . $createdAt
-                        . '. It would require a day (except bank holidays)'
-                        . ' to register the same with our banking partners',
-                    'on_hold' => false,
-                ]
-            ];
+                return [
+                    false,
+                    [
+                        'caption' => 'There won\'t be any settlement',
+                        'reason'  => 'Bank account created yesterday. bank account was created/updated at '
+                            . $createdAt
+                            . '. It would require a day (except bank holidays)'
+                            . ' to register the same with our banking partners',
+                        'on_hold' => false,
+                    ]
+                ];
+
         }
 
         return [true, []];

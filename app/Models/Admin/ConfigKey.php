@@ -80,6 +80,8 @@ class ConfigKey
 
     const BLOCK_YESBANK_RX_FAV                  = self::PREFIX . 'block_yesbank_rx_fav';
 
+    const REMOVE_SETTLEMENT_BA_COOL_OFF         = self::PREFIX . 'remove_settlement_ba_cool_off';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -122,6 +124,7 @@ class ConfigKey
         self::BLOCK_YESBANK_PAYOUTS,
         self::BLOCK_X_REGISTRATION,
         self::BLOCK_YESBANK_RX_FAV,
+        self::REMOVE_SETTLEMENT_BA_COOL_OFF,
     ];
 
     public static function isSensitive(string $key)
