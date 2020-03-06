@@ -470,6 +470,7 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED          => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_PAYMENTS_DISABLED         => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::PAYOUT_PENDING                    => Feature\Constants::PAYOUT,
+        self::PAYMENT_CREATED                   => Feature\Constants::PAYMENT_CREATED_WEBHOOK,
     ];
 
     /**

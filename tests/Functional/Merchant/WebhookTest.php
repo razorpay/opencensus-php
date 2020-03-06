@@ -756,10 +756,14 @@ class WebhookTest extends TestCase
 
     public function testWebhookPaymentCreatedForJsonp()
     {
-        $this->createMerchantWebhook(
-            [
-                'events'      => ['payment.created' => "1"]
-            ]);
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
+
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
+
+//        $this->createMerchantWebhook(
+//            [
+//                'events'      => ['payment.created' => "1"]
+//            ]);
 
         $inferno = $this->mockInferno();
 
@@ -773,10 +777,14 @@ class WebhookTest extends TestCase
 
     public function testWebhookPaymentCreatedForAuth()
     {
-        $this->createMerchantWebhook(
-            [
-                'events'      => ['payment.created' => "1"]
-            ]);
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
+
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
+
+//        $this->createMerchantWebhook(
+//            [
+//                'events'      => ['payment.created' => "1"]
+//            ]);
 
         $inferno = $this->mockInferno();
 
@@ -790,10 +798,14 @@ class WebhookTest extends TestCase
 
     public function testWebhookPaymentCreatedForAjax()
     {
-        $this->createMerchantWebhook(
-            [
-                'events'      => ['payment.created' => "1"]
-            ]);
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
+
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
+
+//        $this->createMerchantWebhook(
+//            [
+//                'events'      => ['payment.created' => "1"]
+//            ]);
 
         $inferno = $this->mockInferno();
 
@@ -815,10 +827,14 @@ class WebhookTest extends TestCase
 
     public function testWebhookPaymentCreatedForCheckout()
     {
-        $this->createMerchantWebhook(
-            [
-                'events'      => ['payment.created' => "1"]
-            ]);
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
+
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
+
+//        $this->createMerchantWebhook(
+//            [
+//                'events'      => ['payment.created' => "1"]
+//            ]);
 
         $inferno = $this->mockInferno();
 
@@ -834,10 +850,14 @@ class WebhookTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['s2s']);
 
-        $this->createMerchantWebhook(
-            [
-                'events'      => ['payment.created' => "1"]
-            ]);
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
+
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
+
+//        $this->createMerchantWebhook(
+//            [
+//                'events'      => ['payment.created' => "1"]
+//            ]);
 
         $this->ba->privateAuth();
 
@@ -859,10 +879,14 @@ class WebhookTest extends TestCase
 
         $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
 
-        $this->createMerchantWebhook(
-            [
-                'events'      => ['payment.created' => "1"]
-            ]);
+        $this->fixtures->merchant->addFeatures(['payment_created_webhook']);
+
+        $this->createWebhook(['events'      => ['payment.created' => "1"]]);
+
+//        $this->createMerchantWebhook(
+//            [
+//                'events'      => ['payment.created' => "1"]
+//            ]);
 
         $this->ba->privateAuth();
 

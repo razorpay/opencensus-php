@@ -319,6 +319,11 @@ class Constants
      */
     const SKIP_HITACHI_AUTO_ONBOARD  = 'skip_hitachi_auto_onboard';
 
+    /*
+     * This flag will be used to enable payment created webhook
+     */
+    const PAYMENT_CREATED_WEBHOOK  = 'payment_created_webhook';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -520,6 +525,7 @@ class Constants
         self::SKIP_WORKFLOWS_FOR_API          => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
+        self::PAYMENT_CREATED_WEBHOOK         => true,
     ];
 
     // Entity type constants
