@@ -29,6 +29,30 @@ return [
         ],
     ],
 
+    'testNormalRefundWithInstantRefundsDisabledWithoutExperiment' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/refunds/',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+            ],
+        ],
+    ],
+
+    'testNormalRefundWithInstantRefundsDisabledWithExperiment' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/refunds/',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+            ],
+        ],
+    ],
+
     'testFlipkartRefundsWithFeatureShowRefundPublicStatus' => [
         'request' => [
             'method'  => 'get',

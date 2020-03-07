@@ -198,7 +198,7 @@ class Response extends Core
             Constants::NAME              => $account->getName(),
             Constants::DESCRIPTION       => $accountDetails->getBusinessDescription(),
             Constants::BUSINESS_MODEL    => $accountDetails->getBusinessPaymentDetails(),
-            Constants::MCC               => (int) $account->getCategory(),
+            Constants::MCC               => $account->getCategory(),
             Constants::DASHBOARD_DISPLAY => $account->getDisplayName(),
             Constants::WEBSITE           => $account->getWebsite(),
             Constants::BILLING_LABEL     => $account->getDbaName(),

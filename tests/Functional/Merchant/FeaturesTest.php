@@ -541,6 +541,8 @@ class FeaturesTest extends TestCase
 
     public function testEsEligibleEmailNotify()
     {
+        $this->markTestSkipped('Disable es on demand mailer till existing merchant reboarded');
+
         Mail::fake();
 
         $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND]);

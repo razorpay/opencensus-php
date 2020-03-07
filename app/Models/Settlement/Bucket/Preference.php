@@ -154,6 +154,13 @@ class Preference extends Base\Core
             return $data;
         }
 
+        $data = $this->getScripBoxMerchantBucket($merchant, $settlementTime);
+
+        if ($data[0] === true)
+        {
+            return $data;
+        }
+
         return [false, $settlementTime->getTimestamp()];
     }
 
@@ -338,5 +345,34 @@ class Preference extends Base\Core
         }
 
         return [false, 0];
+    }
+
+    /**
+     * ScripBox Merchant Preference
+     * This merchant wants the settlement for T-1 1PM to T 11 AM on T 11 AM
+     * and for T 11 AM to T 1PM on T 1PM
+     * @param Merchant\Entity $merchant
+     * @param Carbon $settlementTime
+     * @return array
+     */
+    protected function getScripBoxMerchantBucket(Merchant\Entity $merchant, Carbon $settlementTime): array
+    {
+        $merchantId = $merchant->getId();
+
+        if ($merchantId !== Merchant\Preferences::MID_SCRIP_BOX)
+        {
+            return [false, 0];
+        }
+
+        $hour = Constants::ONE_PM;
+
+        if (($settlementTime->hour <= Constants::ELEVEN_AM) or ($settlementTime->hour > Constants::ONE_PM))
+        {
+            $hour = Constants::ELEVEN_AM;
+        }
+
+        $timestamp = self::getNextBucket($settlementTime->getTimestamp(), $hour);
+
+        return [true, $timestamp];
     }
 }

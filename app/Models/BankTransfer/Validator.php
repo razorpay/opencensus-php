@@ -36,6 +36,19 @@ class Validator extends Base\Validator
         Entity::ATTEMPT            => 'nullable|integer',
     ];
 
+    public static $rblRules = [
+        'ServiceName'                   => 'required|in:VirtualAccount',
+        'Action'                        => 'required|in:VirtualAccountTransaction',
+        'Data'                          => 'required|array',
+        'Data.0.messageType'            => 'required|string',
+        'Data.0.amount'                 => 'required|string',
+        'Data.0.UTRNumber'              => 'required|string',
+        'Data.0.senderIFSC'             => 'required|string',
+        'Data.0.senderAccountNumber'    => 'required|string',
+        'Data.0.senderName'             => 'required|string',
+        'Data.0.creditAccountNumber'    => 'required|string',
+    ];
+
     protected static $createValidators = [
         Entity::PAYER_IFSC,
     ];

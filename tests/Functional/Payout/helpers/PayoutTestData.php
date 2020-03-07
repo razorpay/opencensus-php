@@ -662,7 +662,7 @@ return [
                 'amount'            => 2000000,
                 'currency'          => 'INR',
                 'fund_account_id'   => 'fa_100000000000fa',
-                'mode'              => 'NEFT',
+                'mode'              => 'IMPS',
                 'purpose'           => 'refund',
                 'notes'             => [
                     'abc' => 'xyz',
@@ -679,7 +679,7 @@ return [
                 'purpose'         => 'refund',
                 'status'          => 'processing',
                 'failure_reason'  => null,
-                'mode'            => 'NEFT',
+                'mode'            => 'IMPS',
                 'tax'             => 162,
                 'fees'            => 1062,
                 'notes'           => [
@@ -973,7 +973,7 @@ return [
             ],
         ],
     ],
-    'testCreateMerchantPayoutOnDemandNonBankingHours' => [
+    'testCreateMerchantPayoutOnDemandNonBankingHoursWithLessThan2Lakhs' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/merchant/payout/demand',
@@ -1036,12 +1036,12 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-    'testCreateMerchantPayoutOnDemandExceedAmountLimitNonBankingHours'=> [
+    'testCreateMerchantPayoutOnDemandNonBankingHours'=> [
         'request' => [
             'method'  => 'POST',
             'url'     => '/merchant/payout/demand',
             'content' => [
-                'amount'   => 20000100,
+                'amount'   => 2000,
                 'currency' => 'INR'
             ],
         ],
@@ -1049,7 +1049,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Please provide an amount less than 2 Lacs to get a settlement at this point of time.',
+                    'description' => 'Settlements cannot be created at this point of time.',
                 ],
             ],
             'status_code' => 400,
@@ -2476,7 +2476,7 @@ return [
                 'currency'        => 'INR',
                 'purpose'         => 'refund',
                 'narration'       => 'Batman',
-                'mode'            => 'NEFT',
+                'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
                 'notes'           => [
                     'abc' => 'xyz',
@@ -2492,7 +2492,7 @@ return [
                 'narration'       => 'Batman',
                 'purpose'         => 'refund',
                 'status'          => 'processing',
-                'mode'            => 'NEFT',
+                'mode'            => 'IMPS',
                 'tax'             => 162,
                 'fees'            => 1062,
                 'notes'           => [

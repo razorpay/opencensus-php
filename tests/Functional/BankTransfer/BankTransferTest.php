@@ -214,6 +214,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferWithInActiveAccount()
     {
+        $this->markTestSkipped('Skipped due to yesbank disablement');
+
         $bankAccount = $this->createVirtualAccount('live', 'BankAccountMer');
 
         $this->fixtures->on('live')->merchant->edit('BankAccountMer', ['live' => false]);
@@ -542,6 +544,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferImpsWithNbin()
     {
+        $this->markTestSkipped('Skipped due to yesbank disablement');
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $ifsc = Provider::IFSC[Provider::YESBANK];
@@ -1802,6 +1806,66 @@ class BankTransferTest extends TestCase
         $this->assertEquals(57930, $payment['amount']);
     }
 
+    public function testBankTransferRbl()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+    }
+
+    public function testBankTransferRblWithInvalidData()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testBankTransferRblWithMissingHeader()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testBankTransferRblWithDuplicateUtr()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->makeRequestAndGetContent($testData['request']);
+
+        $this->startTest($testData);
+    }
+
+    public function testBankTransferRblWithInternalServerError()
+    {
+        $this->ba->directAuth();
+
+        $this->startTest();
+    }
+
     public function testBankTransferEditPayerBankAccount()
     {
         $accountNumber = $this->bankAccount['account_number'];
@@ -2202,6 +2266,17 @@ class BankTransferTest extends TestCase
 
         // Key becomes available when feature is enabled
         $this->assertArrayHasKey('bank_transfer', $methods);;
+    }
+
+    protected function getRblVaBankAccount()
+    {
+        $terminalAttributes = [ 'id' =>'GENERICBANKRBL', 'gateway' => Gateway::BT_RBL, 'gateway_merchant_id' => '0001046' ];
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $bankAccount = $this->createVirtualAccount();
+
+        return $bankAccount['account_number'];
     }
 
     protected function getPreferences()

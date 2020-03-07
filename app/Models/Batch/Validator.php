@@ -791,6 +791,7 @@ class Validator extends Base\Validator
         // After validating contents per row only should do following aggregate validations.
 
         $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT));
+        // TODO: Consider Locked Balance as well here.
         $bankingBalance = $merchant->sharedBankingBalance->getBalance();
 
         if ($totalPayoutAmount > $bankingBalance)
