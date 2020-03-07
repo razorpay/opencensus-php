@@ -109,23 +109,14 @@ class PaperMandateTest extends TestCase
 
     protected function mockExtractNACHWithWrongAccountNumber($merchant)
     {
-        $this->testData['hyperVergeExtractNACHOutput']['details']['accountNumber']['value'] = '000';
-
-        $this->mockExtractNACH($merchant);
-    }
-
-    protected function mockExtractNACHWithLessConfidentAccountNumber($merchant)
-    {
-        $this->testData['hyperVergeExtractNACHOutput']['details']['accountNumber']['to-be-reviewed'] = 'yes';
-
-        $this->testData['hyperVergeExtractNACHOutput']['details']['accountNumber']['value'] = '000';
+        $this->testData['hyperVergeExtractNACHOutput']['account_number'] = '000';
 
         $this->mockExtractNACH($merchant);
     }
 
     protected function mockExtractNACHWithoutCustomerSignature($merchant)
     {
-        $this->testData['hyperVergeExtractNACHOutput']['details']['signaturePresentPrimary']['value'] = 'no';
+        $this->testData['hyperVergeExtractNACHOutput']['signature_present_primary'] = 'no';
 
         return $this->mockExtractNACH($merchant);
     }
@@ -258,6 +249,8 @@ class PaperMandateTest extends TestCase
                         'start_at'          => (new Carbon('+5 day'))->timestamp,
                         'utility_code'      => 'NACH00000000013149',
                         'sponsor_bank_code' => 'RATN0TREASU',
+                        'terminal_id'       => '1citinachDTmnl',
+                        'form_checksum'     => 'XXXXXXX',
                     ],
                     $overrideWith
                 )

@@ -9,7 +9,8 @@ use RZP\Mail\Banking;
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Transaction;
+use RZP\Models\Merchant;
+use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
@@ -27,16 +28,22 @@ class Base extends FundAccountPayout\Base
 
             $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
 
-            $this->createTransaction($payout);
+            $variant = $this->app->razorx->getTreatment($payout->merchant->getId(),
+                                                        Merchant\RazorxTreatment::FORCE_ICICI_OVER_YESBANK_FOR_PAYOUTS,
+                                                        $this->mode
+            );
 
-            //
-            // In case of payouts with status=(queued, payouts), we don't create the transaction yet.
-            // This event will be dispatched later when we are actually processing the payout.
-            //
-            if ($payout->isStatusBeforeCreate() === false)
+            if ($variant === 'on')
             {
-                (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+                if ($payout->getChannel() === Channel::YESBANK)
+                {
+                    $payout->setChannel(Channel::ICICI);
+                }
             }
+
+            $this->checkAllowNeftOnIcici($payout);
+
+            $this->createTransaction($payout);
 
             //
             // Create a fund transfer entity where the fund transfers will be processed.
@@ -120,6 +127,7 @@ class Base extends FundAccountPayout\Base
 
             $lowBalanceThreshold = $merchantConfig['low_balance_threshold'] ?? 0;
 
+            // TODO: Have to handle locked balance here
             $balance = $payout->balance->getBalance();
 
             if ($balance > $lowBalanceThreshold)
@@ -219,7 +227,7 @@ class Base extends FundAccountPayout\Base
 
         $mode = $payout->getMode();
 
-        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+        $valid = Mode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
 
         if ($valid === false)
         {
@@ -233,6 +241,45 @@ class Base extends FundAccountPayout\Base
                 ],
                 $mode . ' is not supported'
             );
+        }
+    }
+
+    /**
+     * @param Entity $payout
+     *
+     * @throws BadRequestException
+     */
+    protected function checkAllowNeftOnIcici(Entity $payout)
+    {
+        $channel = $payout->getChannel();
+
+        $mode = $payout->getMode();
+
+        if (($channel === Channel::ICICI) and
+            ($mode === Mode::NEFT))
+        {
+            $variant  = $this->app->razorx->getTreatment(
+                $payout->merchant->getId(),
+                Merchant\RazorxTreatment::RAZORPAY_X_ALLOW_NEFT_PAYOUTS_VIA_ICICI,
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                return;
+            }
+            else
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+                    null,
+                    [
+                        'channel'           => $channel,
+                        'mode'              => $mode,
+                    ],
+                    $mode . ' is not supported'
+                );
+            }
         }
     }
 }

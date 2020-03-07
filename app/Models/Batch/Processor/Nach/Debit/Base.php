@@ -32,6 +32,8 @@ class Base extends BaseProcessor
     {
         $payment = $this->getPayment($content);
 
+        $this->updateGatewayPaymentEntity($content, $payment);
+
         $this->assertAmount($payment, $content);
 
         // Update payment
@@ -148,6 +150,11 @@ class Base extends BaseProcessor
     }
 
     protected function sendProcessedMail()
+    {
+        return;
+    }
+
+    protected function updateGatewayPaymentEntity($content, $payment)
     {
         return;
     }

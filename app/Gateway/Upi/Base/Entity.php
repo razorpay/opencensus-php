@@ -14,7 +14,6 @@ class Entity extends Base\Entity
     const ACQUIRER              = 'acquirer';
     const BANK                  = 'bank';
     const PROVIDER              = 'provider';
-    const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const MERCHANT_REFERENCE    = 'merchant_reference';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
@@ -32,6 +31,8 @@ class Entity extends Base\Entity
     const VPA                   = 'vpa';
     const RECONCILED_AT         = 'reconciled_at';
 
+    const GATEWAY_DATA          = 'gateway_data';
+
     public $incrementing = true;
 
     protected $entity = 'upi';
@@ -45,7 +46,7 @@ class Entity extends Base\Entity
         self::BANK,
         self::PROVIDER,
         self::CONTACT,
-        self::EMAIL,
+        self::GATEWAY_DATA,
         self::NAME,
         self::MERCHANT_REFERENCE,
         self::GATEWAY_MERCHANT_ID,
@@ -72,7 +73,7 @@ class Entity extends Base\Entity
         self::BANK,
         self::PROVIDER,
         self::CONTACT,
-        self::EMAIL,
+        self::GATEWAY_DATA,
         self::NAME,
         self::MERCHANT_REFERENCE,
         self::GATEWAY_MERCHANT_ID,

@@ -34,8 +34,20 @@ class Server extends Base\Mock\Server
         // Create request array here
         $input = $this->getContentFromInput($input);
 
+        // in case of terminals procured by merchant, we sent payment id in AdditionalInfo3.
+        // AdditionalInfo1 and customerID will have details specific to merchant
+        // In normal flow we send payment id in both AdditionalInfo1 and CustomerID
+        if ($input['AdditionalInfo1'] !== $input['CustomerID'])
+        {
+            $paymentId = $input['AdditionalInfo3'];
+        }
+        else
+        {
+            $paymentId = $input['CustomerID'];
+        }
+
         $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
-            $input['CustomerID'], Action::AUTHORIZE);
+            $paymentId, Action::AUTHORIZE);
 
         $payment = $this->repo->payment->findOrFailPublic($gatewayPayment->getPaymentId());
 
@@ -70,7 +82,7 @@ class Server extends Base\Mock\Server
             'TxnDate'           => $date,
             'AuthStatus'        => AuthStatus::SUCCESS,
             'SettlementType'    => 'NA',
-            'AdditionalInfo1'   => 'NA',
+            'AdditionalInfo1'   => $input['CustomerID'],
             'AdditionalInfo2'   => 'NA',
             'AdditionalInfo3'   => 'NA',
             'AdditionalInfo4'   => 'NA',
@@ -84,6 +96,13 @@ class Server extends Base\Mock\Server
         if ($gatewayPayment->getBankId() === 'ICO')
         {
             $content['AuthStatus'] = AuthStatus::PENDING;
+        }
+
+        // procurer terminal case
+        if ($input['AdditionalInfo1'] !== $input['CustomerID'])
+        {
+            $content['AdditionalInfo1'] = 'NA';
+            $content['AdditionalInfo3'] = $input['AdditionalInfo3'];
         }
 
         $this->content($content, 'bank_preprocess');

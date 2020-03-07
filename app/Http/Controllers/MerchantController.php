@@ -370,6 +370,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateLockedBalance(string $balanceId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateLockedBalance($input, $balanceId);
+
+        return ApiResponse::json($data);
+    }
+
     // This is on proxy Auth
     public function getAccountConfig()
     {

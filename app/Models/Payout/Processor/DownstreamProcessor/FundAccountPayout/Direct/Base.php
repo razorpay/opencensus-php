@@ -7,8 +7,10 @@ use Carbon\Carbon;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Timezone;
+use RZP\Models\Merchant;
+use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Core;
+use RZP\Constants\Timezone;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
@@ -67,10 +69,7 @@ class Base extends FundAccountPayout\Base
 
         // Suppose merchant makes request soon after code is deployed and cron hasn't run yet, then gateway_balance will
         // be null . In that case use balance from balance table
-        if ($merchantBalance === null)
-        {
-            $merchantBalance = $payout->balance->getBalance();
-        }
+        $merchantBalance = $merchantBalance ?? $payout->balance->getBalance();
 
         $hasBalance = ($merchantBalance >= $payoutAmount);
 
@@ -112,7 +111,7 @@ class Base extends FundAccountPayout\Base
 
         $mode = $payout->getMode();
 
-        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+        $valid = Mode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
 
         if ($valid === false)
         {

@@ -129,24 +129,6 @@ class TransactionHelper extends P2pHelper
         return $this->get($request);
     }
 
-    public function callback(string $gateway, array $options = [])
-    {
-        // This API work on direct auth
-        $this->setMerchantInContext(false);
-        $this->setCustomerInContext(false);
-        $this->setDeviceInContext(false);
-
-        $request = $this->request('callback/%s', [$gateway]);
-
-        $this->resetContexts();
-
-        $request->server($options['server'] ?? []);
-
-        $request->json($options['content']);
-
-        return $this->post($request);
-    }
-
     public function raiseConcern(string $transactionId, array $content = [])
     {
         $this->validationJsonSchemaPath = 'transaction/raise_concern';

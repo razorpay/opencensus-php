@@ -5620,6 +5620,9 @@ ALTER TABLE banking_accounts
     ADD COLUMN gateway_balance BIGINT DEFAULT NULL,
     ADD COLUMN balance_last_fetched_at INT DEFAULT NULL;
 
+ALTER TABLE `legal_entity`
+    modify `mcc` char(4) DEFAULT NULL ;
+
 ALTER TABLE merchant_details
     ADD COLUMN estd_year smallint(4) DEFAULT NULL,
     ADD COLUMN authorized_signatory_residential_address varchar(255) DEFAULT NULL,
@@ -5633,3 +5636,15 @@ ALTER TABLE payout_links
 ALTER TABLE users
     ADD COLUMN old_password1 varchar(100) DEFAULT NULL,
     ADD COLUMN old_password2 varchar(100) DEFAULT NULL;
+
+ALTER TABLE blade
+    MODIFY COLUMN amount BIGINT NOT NULL;
+
+ALTER TABLE merchant_details
+    ADD COLUMN fund_account_validation_id char(14) DEFAULT NULL;
+
+ALTER TABLE upi
+    CHANGE `email` `gateway_data` VARCHAR(255);
+
+ALTER TABLE balance
+    ADD COLUMN locked_balance BIGINT UNSIGNED DEFAULT 0;

@@ -7,17 +7,19 @@ final class Constants
     //
     // Early settlement bucket anchor
     //
-    const NINE_AM  = 9;
+    const NINE_AM   = 9;
 
-    const TEN_AM   = 10;
+    const TEN_AM    = 10;
 
-    const ONE_PM   = 13;
+    const ELEVEN_AM = 11;
 
-    const TWO_PM   = 14;
+    const ONE_PM    = 13;
 
-    const THREE_PM = 15;
+    const TWO_PM    = 14;
 
-    const FIVE_PM  = 17;
+    const THREE_PM  = 15;
+
+    const FIVE_PM   = 17;
 
     const MERCHANT_DSP = '7thBRSDflu7NHL';
 }
