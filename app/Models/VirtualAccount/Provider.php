@@ -22,6 +22,7 @@ class Provider
     // Bank Account Providers
     const YESBANK   = 'yesbank';
     const KOTAK     = 'kotak';
+    const ICICI     = 'icici';
     const RBL       = 'rbl';
 
     /*
@@ -47,6 +48,7 @@ class Provider
         self::YESBANK   => 'YESB0CMSNOC',
         self::KOTAK     => 'KKBK0000958',
         self::DASHBOARD => 'RAZR0000001',
+        self::ICICI     => 'ICIC0000104',
         self::RBL       => 'RATN0000057',
     ];
 
@@ -65,6 +67,9 @@ class Provider
         self::DASHBOARD => [
             BankAccount::IFSC_CODE => self::IFSC[self::DASHBOARD],
         ],
+        self::ICICI => [
+            BankAccount::IFSC_CODE => self::IFSC[self::ICICI],
+        ],
         self::RBL => [
             BankAccount::IFSC_CODE => self::IFSC[self::RBL],
         ],
@@ -73,6 +78,7 @@ class Provider
     const LIVE_PROVIDERS = [
         self::YESBANK,
         self::KOTAK,
+        self::ICICI,
         self::RBL,
     ];
 
@@ -96,6 +102,9 @@ class Provider
         ],
         self::AUTOMATION => [
             '*',
+        ],
+        self::ICICI => [
+            '*'
         ],
         self::RBL => [
             '*',

@@ -25,6 +25,24 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function processBankTransferFile()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processFile($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function processIciciBankTransfer()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->process($input, Provider::ICICI, true);
+
+        return ApiResponse::json($response);
+    }
+
     public function processRblBankTransferTest()
     {
         $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);

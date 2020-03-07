@@ -91,6 +91,7 @@ return [
         'wallet_paypal',
         'bt_yesbank',
         'bt_kotak',
+        'bt_icici',
         'bt_rbl',
         'bajajfinserv',
         'p2p_upi_sharp',

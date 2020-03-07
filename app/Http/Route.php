@@ -299,6 +299,8 @@ final class Route
         'terminal_onboarding_verification'         => ['post',     'terminals/onboard/verification',                 'TerminalOnboardingController@postOnboardTerminalVerification'      ],
         'terminal_onboarding_creation'             => ['post',     'terminals/onboard/creation',                     'TerminalOnboardingController@postOnboardTerminalCreation'          ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
+        'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransfer'                   ],
+        'bank_transfer_process_file'               => ['post',     'ecollect/validate/file',                         'BankTransferController@processBankTransferFile'                    ],
         'bank_transfer_process_rbl'                => ['post',     'ecollect/validate/rbl',                          'BankTransferController@processRblBankTransferLive'                 ],
         'bank_transfer_process_rbl_test'           => ['post',     'ecollect/validate/rbl/test',                     'BankTransferController@processRblBankTransferTest'                 ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
@@ -1860,6 +1862,8 @@ final class Route
         'admin_reset_password',
         'bank_transfer_notify',
         'bank_transfer_process',
+        'bank_transfer_process_file',
+        'bank_transfer_process_icici',
         'bank_transfer_refund_retry',
         'batch_process_file',
         'billdesk_create_cancelled_refunds',
@@ -3964,6 +3968,7 @@ final class Route
         'mailgun' => [
             'reconciliate',
             'emandate_debit_reconcile',
+            'bank_transfer_process_file',
         ],
 
         'raven' => [
@@ -4048,6 +4053,7 @@ final class Route
             'mdr_adjustment',
             'entity_bulk_update',
             'adj_add_batch',
+            'bank_transfer_process_icici',
         ],
 
         'stork' => [

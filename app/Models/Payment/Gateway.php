@@ -128,6 +128,7 @@ class Gateway
 
     const BT_YESBANK         = 'bt_yesbank';
     const BT_KOTAK           = 'bt_kotak';
+    const BT_ICICI           = 'bt_icici';
     const BT_DASHBOARD       = 'bt_dashboard';
     const BT_RBL             = 'bt_rbl';
 
@@ -941,6 +942,7 @@ class Gateway
         Provider::YESBANK   => self::BT_YESBANK,
         Provider::KOTAK     => self::BT_KOTAK,
         Provider::DASHBOARD => self::BT_DASHBOARD,
+        Provider::ICICI     => self::BT_ICICI,
         Provider::RBL       => self::BT_RBL,
     ];
 
@@ -951,6 +953,7 @@ class Gateway
         self::BT_YESBANK,
         self::BT_KOTAK,
         self::BT_DASHBOARD,
+        self::BT_ICICI,
         self::BT_RBL,
     ];
 

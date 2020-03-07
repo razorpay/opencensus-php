@@ -782,4 +782,72 @@ return [
             'description'    => 'NEFT payment of 50,000 rupees',
         ],
     ],
+
+    'testBankTransferIcici' => [
+        'url'     => '/ecollect/validate/icici',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => 'ICIC0000104',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees',
+        ],
+    ],
+
+    'testBankTransferIciciWithIfscAsBankCode' => [
+        'url'     => '/ecollect/validate/icici',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => 'SBIN',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 100,
+            'description'    => 'IMPS payment of 50,000 rupees',
+        ],
+    ],
+
+    'testBankTransferIciciWithIfscAsInvalidBankCode' => [
+        'url'     => '/ecollect/validate/icici',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => 'SBI',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 100,
+            'description'    => 'IMPS payment of 50,000 rupees',
+        ],
+    ],
+
+    'testCheckEcollectIciciBatchCreate' => [
+        'request'  => [
+            'url'     => '/ecollect/validate/file',
+            'method'  => 'post',
+            'content' => [
+                'sender' => 'harshil@razorpay.com',
+                'subject' => 'This is a test',
+                'recipient' => 'shk@razorpay.com',
+                'timestamp' => '1583501748',
+                'stripped-html' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];
