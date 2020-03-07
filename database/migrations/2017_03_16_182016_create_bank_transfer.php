@@ -60,6 +60,9 @@ class CreateBankTransfer extends Migration
 
             $table->string(BankTransfer::UTR);
 
+            $table->string(BankTransfer::NARRATION)
+                  ->nullable();
+
             $table->bigInteger(BankTransfer::TIME);
 
             $table->text(BankTransfer::DESCRIPTION)
@@ -99,6 +102,7 @@ class CreateBankTransfer extends Migration
             $table->index(BankTransfer::PAYEE_ACCOUNT);
             $table->index(BankTransfer::CREATED_AT);
             $table->index(BankTransfer::UPDATED_AT);
+            $table->index(BankTransfer::NARRATION, BankTransfer::PAYER_IFSC);
         });
     }
 

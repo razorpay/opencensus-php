@@ -1817,11 +1817,65 @@ class BankTransferTest extends TestCase
         $this->startTest($testData);
 
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
         $this->assertEquals(343946, $bankTransfer['amount']);
 
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals(343946, $payment['amount']);
         $this->assertEquals('bt_rbl', $payment['gateway']);
+    }
+
+    public function testBankTransferRblImps()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->makeRequestAndGetContent($testData['request']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals($bankTransfer['utr'], '006713653919');
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+    }
+
+    public function testBankTransferRblUpi()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->makeRequestAndGetContent($testData['request']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals($bankTransfer['utr'], '006713070094');
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+
+        $this->ba->privateAuth();
     }
 
     public function testBankTransferRblWithInvalidData()
@@ -1864,6 +1918,17 @@ class BankTransferTest extends TestCase
         $this->ba->directAuth();
 
         $this->startTest();
+    }
+
+    public function testBankTransferRblWithEmptyFields()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
     }
 
     public function testBankTransferEditPayerBankAccount()

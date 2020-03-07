@@ -113,7 +113,9 @@ class BankTransferController extends Controller
 
         $data = $input['Data'][0];
 
-        $mode = '';
+        $mode = null;
+
+        $utr = $data['UTRNumber'];
 
         $messageType = strtolower($data['messageType']);
 
@@ -135,11 +137,48 @@ class BankTransferController extends Controller
                 break;
 
             case 'imps':
-                $mode = \RZP\Models\BankTransfer\Mode::IMPS;
+                $utr = null;
+                $utrPrefix = substr($data['UTRNumber'], 0, 4);
+                switch ($utrPrefix)
+                {
+                    case 'UPI/':
+                        $mode = \RZP\Models\BankTransfer\Mode::UPI;
+
+                        // we receive UTR number in this format : UPI/006752404360/PAYMENT FROM PHONEPE/8199080070@Y
+                        // 006752404360 is the UTR
+                        $pieces = explode('/', $data['UTRNumber']);
+                        $upiUtr = $pieces[1];
+                        if (strlen($upiUtr) === 12)
+                        {
+                            $utr = $upiUtr;
+                        }
+                        break;
+
+                    case 'IMPS':
+                        $mode = \RZP\Models\BankTransfer\Mode::IMPS;
+
+                        // we receive UTR narration in this format: IMPS 006713653919 FROM MR  AAGOSH
+                        // 006713653919 is the UTR
+                        $value = trim(preg_replace('/\s+/', ' ', $data['UTRNumber']));
+                        $pieces = explode(' ', $value);
+
+                        $impsUtr = $pieces[1];
+                        if (strlen($impsUtr) === 12)
+                        {
+                            $utr = $impsUtr;
+                        }
+                        break;
+                }
                 break;
 
             default:
                 throw new BadRequestValidationFailureException('invalid mode: '. $data['messageType'], null, $data);
+        }
+
+        if (($mode === null) or
+            ($utr === null))
+        {
+            throw new BadRequestValidationFailureException('invalid data', null, $data);
         }
 
         try
@@ -169,10 +208,11 @@ class BankTransferController extends Controller
             'payer_account'  => $data['senderAccountNumber'],
             'payer_ifsc'     => $data['senderIFSC'],
             'mode'           => $mode,
-            'transaction_id' => $data['UTRNumber'],
+            'transaction_id' => $utr,
             'time'           => $time,
             'amount'         => number_format($data['amount'], 2, '.', ''),
             'description'    => $data['senderInformation'] ?? null,
+            'narration'      => $data['UTRNumber'],
         ];
     }
 
