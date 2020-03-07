@@ -41,6 +41,10 @@ class BankTransferController extends Controller
 
     public function processRblBankTransfer()
     {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::RBL_VA_CALLBACK, $input);
+
         $errorResp = $this->validateRequestToken();
 
         if ($errorResp !== null)
@@ -48,12 +52,8 @@ class BankTransferController extends Controller
             return $errorResp;
         }
 
-        $input = Request::all();
-
         try
         {
-            $this->trace->info(TraceCode::RBL_VA_CALLBACK, $input);
-
             $input = $this->modifyRblDataToEntity($input);
 
             $response = $this->service()->process($input, Provider::RBL);
