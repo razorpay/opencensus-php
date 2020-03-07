@@ -74,7 +74,6 @@ class Repository extends Base\Repository
     public function getBankingAccountsWithBalance($merchantId)
     {
         return $this->newQuery()
-                    ->with(['balance:id,balance,currency'])
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->get();
     }
