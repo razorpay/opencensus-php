@@ -48,7 +48,7 @@ class Core extends Base\Core
 
         try
         {
-            $this->blockYesbank($input);
+            $this->blockYesbank($input, $merchant);
 
             $fundAccountValidation = $this->createValidationEntity($input, $merchant);
 
@@ -68,12 +68,24 @@ class Core extends Base\Core
         return $fundAccountValidation;
     }
 
-    protected function blockYesbank(array $input)
+    protected function blockYesbank(array $input, $merchant)
     {
-        if ((isset($input['fund_account']['bank_account']['ifsc']) === true) and
-            (substr($input['fund_account']['bank_account']['ifsc'], 0, 4) === 'YESB'))
+        if (isset($input['fund_account']['bank_account']['ifsc']) === true)
         {
-            (new PaymentProcessor)->throwYesbankException();
+            $ifsc = $input['fund_account']['bank_account']['ifsc'];
+        }
+        else if (isset($input['fund_account']['details']['ifsc']) === true)
+        {
+            $ifsc = $input['fund_account']['details']['ifsc'];
+        }
+        else
+        {
+            return;
+        }
+
+        if (substr($ifsc, 0, 4) === 'YESB')
+        {
+            (new PaymentProcessor($merchant))->throwYesbankException();
         }
     }
 
