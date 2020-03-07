@@ -49,7 +49,7 @@ class Provider
         self::KOTAK     => 'KKBK0000958',
         self::DASHBOARD => 'RAZR0000001',
         self::ICICI     => 'ICIC0000104',
-        self::RBL       => 'RATN0000057',
+        self::RBL       => 'RATN0VAAPIS',
     ];
 
     // The default details are fixed by each provider, most specifically
