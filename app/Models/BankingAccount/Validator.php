@@ -16,7 +16,6 @@ class Validator extends Base\Validator
     const INTERNAL_EDIT_STATUS  = 'internal_edit_status';
     const ACTIVATED_STATUS      = 'activated_status';
 
-    const FETCH_GATEWAY_BALANCE    = 'fetch_gateway_balance';
     const DISPATCH_GATEWAY_BALANCE = 'dispatch_gateway_balance';
 
     protected static $preProcessRules = [
@@ -159,13 +158,12 @@ class Validator extends Base\Validator
         Entity::PINCODES,
     ];
 
-    protected static $fetchGatewayBalanceRules = [
-        Entity::CHANNEL     => 'required|string',
-        Entity::MERCHANT_ID => 'required|string',
+    protected static $dispatchGatewayBalanceRules = [
+        Entity::CHANNEL => 'required|string|custom',
     ];
 
-    protected static $dispatchGatewayBalanceRules = [
-        Entity::CHANNEL => 'required|string',
+    protected static $dispatchGatewayBalanceValidators = [
+        'direct_channel'
     ];
 
     public function validatePincodes(array $input)
@@ -232,21 +230,25 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateChannelForFetchingGatewayBalance(array $input)
+    protected function validateDirectChannel($input)
     {
-        if (isset($input[Entity::CHANNEL]) === true)
+        if (empty($input[Entity::CHANNEL]) === true)
         {
-            $channel = array_get($input, Entity::CHANNEL);
+            return;
+        }
 
-            if (Channel::isValidDirectTypeChannel($channel) === false)
-            {
-                throw new BadRequestValidationFailureException(
-                    'Not a valid direct type channel: ' . $channel,
-                    Entity::CHANNEL,
-                    [
-                        Entity::CHANNEL => $channel,
-                    ]);
-            }
+        $channel = $input[Entity::CHANNEL];
+
+        $valid = Channel::isValidDirectTypeChannel($input[Entity::CHANNEL]);
+
+        if ($valid === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Not a valid direct type channel: ' . $channel,
+                Entity::CHANNEL,
+                [
+                    Entity::CHANNEL => $channel,
+                ]);
         }
     }
 }

@@ -573,40 +573,15 @@ class Core extends Base\Core
      * which is agreed upon in SLA. This function will be used to fetch balance from gateway before making normal/queued
      * payouts depending upon balance_last_fetched_at.
      *
-     * @param array $input
+     * @param Entity $bankingAccount
      *
      * @return mixed
-     *
-     * @throws BadRequestException | BadRequestValidationFailureException
      */
-    public function fetchAndUpdateGatewayBalance(array $input)
+    public function fetchAndUpdateGatewayBalance(Entity $bankingAccount)
     {
-        $validator = new Validator();
+        $channel = $bankingAccount->getChannel();
 
-        $validator->validateInput(Validator::FETCH_GATEWAY_BALANCE, $input);
-
-        $validator->validateChannelForFetchingGatewayBalance($input);
-
-        $channel = array_get($input, Entity::CHANNEL);
-
-        $merchantId = array_get($input, Entity::MERCHANT_ID);
-
-        $gatewayProcessor = $this->getGatewayProcessorClass($channel);
-
-        /** @var Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account
-                                     ->getBankingAccountByMerchantIdAndChannel($merchantId, $channel);
-
-        if ($bankingAccount === null)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND,
-                null,
-                [
-                    'input' => $input,
-                ]
-            );
-        }
+        $gatewayProcessor = $this->getProcessor($channel);
 
         // every gateway processor must implement fetchGatewayBalance function. This function sends Mozart request
         // to fetch balance from gateway and return balance.
@@ -624,53 +599,27 @@ class Core extends Base\Core
                 TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_SUCCEEDED,
                 [
                     Entity::CHANNEL                 => $channel,
-                    Entity::MERCHANT_ID             => $merchantId,
+                    Entity::MERCHANT_ID             => $bankingAccount->getMerchantId(),
                     Entity::ACCOUNT_NUMBER          => $bankingAccount->getAccountNumber(),
                     Entity::GATEWAY_BALANCE         => $bankingAccount->getGatewayBalance(),
                     Entity::BALANCE_LAST_FETCHED_AT => $bankingAccount->getBalanceLastFetchedAt(),
-                ]
-            );
-
-            return ['success' => true];
+                ]);
         }
         catch (\Throwable $exception)
         {
+
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
                 [
                     Entity::CHANNEL                 => $channel,
-                    Entity::MERCHANT_ID             => $merchantId,
+                    Entity::MERCHANT_ID             => $bankingAccount->getMerchantId(),
                     Entity::ACCOUNT_NUMBER          => $bankingAccount->getAccountNumber(),
                     Entity::GATEWAY_BALANCE         => $bankingAccount->getGatewayBalance(),
                     Entity::BALANCE_LAST_FETCHED_AT => $bankingAccount->getBalanceLastFetchedAt(),
-                ]
-            );
-
-            return ['success' => false];
-        }
-
-    }
-
-    protected function getGatewayProcessorClass($channel)
-    {
-        $gatewayProcessor = __NAMESPACE__ . '\\' .
-                            studly_case(self::GATEWAY) . '\\' .
-                            studly_case($channel) . '\\' .
-                            studly_case(self::PROCESSOR);
-
-        if (class_exists($gatewayProcessor) === true)
-        {
-            return new $gatewayProcessor;
-        }
-        else
-        {
-            throw new BadRequestException(
-                'Bad request, gateway Processor class does not exist for the channel:' . $channel,
-                null,
-                [
-                    'channel' => $channel,
                 ]);
         }
+
+        return $bankingAccount;
     }
 
     public function getActivationStatusChangeLog(Entity $bankingAccount)
@@ -754,7 +703,19 @@ class Core extends Base\Core
 
         $processor .= '\\' . studly_case($channel) . '\\' . 'Processor';
 
-        return new $processor();
+        if (class_exists($processor) === true)
+        {
+            return new $processor;
+        }
+        else
+        {
+            throw new LogicException(
+                'Bad request, Gateway Processor class does not exist for the channel:' . $channel,
+                ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_GATEWAY_PROCESSOR_CLASS_ABSENCE,
+                [
+                    'channel' => $channel,
+                ]);
+        }
     }
 
     protected function getYesbankAccountAttributes(BankAccount\Entity $bankAccount)
@@ -800,8 +761,6 @@ class Core extends Base\Core
         $validator = new Validator();
 
         $validator->validateInput(Validator::DISPATCH_GATEWAY_BALANCE, $input);
-
-        $validator->validateChannelForFetchingGatewayBalance($input);
 
         $channel = $input[Entity::CHANNEL];
 
