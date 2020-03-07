@@ -58,7 +58,6 @@ class RblBankingAccountStatementTest extends TestCase
         $balanceId = $this->balance->getId();
 
         $this->fixtures->create('banking_account', [
-            'id'                    => 'xba00000000001',
             'account_number'        => '2224440041626905',
             'account_type'          => 'current',
             'merchant_id'           => '10000000000000',
@@ -884,10 +883,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
 
-        $bankingAccount = $this->fixtures->edit('banking_account', 'xba00000000001', [
-            'balance_last_fetched_at' => 1578044039
-        ]);
-
         $startTime = Carbon::now()->timestamp;
 
         $this->testRblAccountStatementCase1();
@@ -902,7 +897,8 @@ class RblBankingAccountStatementTest extends TestCase
         {
             if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
             {
-                $this->assertEquals('1578044039', $balance['last_fetched_at']);
+                $this->assertGreaterThanOrEqual($startTime, $balance['last_fetched_at']);
+                $this->assertLessThanOrEqual($endTime, $balance['last_fetched_at']);
             }
         }
 
@@ -922,10 +918,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
 
-        $bankingAccount = $this->fixtures->edit('banking_account', 'xba00000000001', [
-            'balance_last_fetched_at' => 1578044039
-        ]);
-
         $startTime = Carbon::now()->timestamp;
 
         $this->testRblAccountStatementCase2();
@@ -940,7 +932,8 @@ class RblBankingAccountStatementTest extends TestCase
         {
             if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
             {
-                $this->assertEquals('1578044039', $balance['last_fetched_at']);
+                $this->assertGreaterThanOrEqual($startTime, $balance['last_fetched_at']);
+                $this->assertLessThanOrEqual($endTime, $balance['last_fetched_at']);
             }
         }
 
@@ -959,10 +952,6 @@ class RblBankingAccountStatementTest extends TestCase
         // Need to edit here as balance creation and update occur in test within the same second.
         $this->fixtures->edit('balance', $balanceId, ['updated_at' => 1578044039]);
 
-        $bankingAccount = $this->fixtures->edit('banking_account', 'xba00000000001', [
-            'balance_last_fetched_at' => 1578044039
-        ]);
-
         $initialBalance = $this->getDbEntityById('balance', $balanceId)->toArray();
 
         $this->testRblAccountStatementCase3();
@@ -977,7 +966,8 @@ class RblBankingAccountStatementTest extends TestCase
         {
             if (isset($balance['type']) and ($balance['type'] === 'banking') and ($balance['account_type'] === 'direct'))
             {
-                $this->assertEquals('1578044039', $balance['last_fetched_at']);
+                // Since, BAS wasn't fetched, last_fetched_at will be equal to balance's updated_at
+                $this->assertEquals($finalBalance['updated_at'], $balance['last_fetched_at']);
             }
         }
 
