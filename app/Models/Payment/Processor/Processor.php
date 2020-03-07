@@ -456,6 +456,11 @@ class Processor
                 return;
         }
 
+        $this->throwYesbankException($data);
+    }
+
+    public function throwYesbankException(array $data = [])
+    {
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
             null,

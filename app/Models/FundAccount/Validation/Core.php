@@ -18,6 +18,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Core extends Base\Core
 {
@@ -47,6 +48,8 @@ class Core extends Base\Core
 
         try
         {
+            $this->blockYesbank($input);
+
             $fundAccountValidation = $this->createValidationEntity($input, $merchant);
 
             $processor = Processor\Factory::get($fundAccountValidation);
@@ -63,6 +66,15 @@ class Core extends Base\Core
         }
 
         return $fundAccountValidation;
+    }
+
+    protected function blockYesbank(array $input)
+    {
+        if ((isset($input['fund_account']['bank_account']['ifsc']) === true) and
+            (substr($input['fund_account']['bank_account']['ifsc'], 0, 4) === 'YESB'))
+        {
+            (new PaymentProcessor)->throwYesbankException();
+        }
     }
 
     public function retry(array $input): array
