@@ -776,8 +776,18 @@ class Service extends Base\Service
 
                 $merchant = $payment->merchant;
 
+                $amount = $payment->getAmount();
+
+                // For bulk capture, we hit capture with the total payment amount(Payment amount+fee).We are subtracting
+                // fee here as we add fee while capturing the payments. This will ensure that the correct amount is sent
+                // for capture.
+                if ($payment->isFeeBearerCustomer() === true)
+                {
+                    $amount = $amount - $payment->getFee();
+                }
+
                 $captureInput = [
-                    Payment\Entity::AMOUNT   => $payment->getAmount(),
+                    Payment\Entity::AMOUNT   => $amount,
                     Payment\Entity::CURRENCY => $payment->getCurrency()
                 ];
 

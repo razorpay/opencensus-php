@@ -83,6 +83,7 @@ class Constants
     const AXIS_EXPRESS_PAY                = 'axis_express_pay';
     const BANK_TRANSFER_REFUND            = 'bank_transfer_refund';
     const CARD_TRANSFER_REFUND            = 'card_transfer_refund';
+    const DISABLE_INSTANT_REFUNDS         = 'disable_instant_refunds';
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
     const DISABLE_AMOUNT_CHECK            = 'disable_amount_check';
@@ -309,6 +310,11 @@ class Constants
     const X_PRO_INVITE  = 'x_pro_invite';
 
     /*
+     * This is a feature flag to enable Payout-Links V1+(Dashboard access) for merchants.
+     */
+    const X_PAYOUT_LINKS  = 'x_payout_links';
+
+    /*
      * This flag will be used to skip some merchants from hitachi automatic onboarding
      */
     const SKIP_HITACHI_AUTO_ONBOARD  = 'skip_hitachi_auto_onboard';
@@ -419,6 +425,7 @@ class Constants
         self::PRE_AUTH_SHIELD_INTG            => true,
         self::BANK_TRANSFER_REFUND            => true,
         self::CARD_TRANSFER_REFUND            => true,
+        self::DISABLE_INSTANT_REFUNDS         => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
         self::DISABLE_AMOUNT_CHECK            => true,
@@ -476,6 +483,7 @@ class Constants
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
+        self::X_PAYOUT_LINKS                  => true,
         self::GOOGLE_PAY_OMNICHANNEL          => true,
         self::TERMINAL_ONBOARDING             => true,
         self::TEST_MODE_SETTLEMENT            => true,
@@ -639,6 +647,11 @@ class Constants
         self::X_PRO_INVITE              => [
             'feature'       => self::X_PRO_INVITE,
             'display_name'  => 'Razorpay X Pro Invite',
+            'documentation' => '',
+        ],
+        self::X_PAYOUT_LINKS              => [
+            'feature'       => self::X_PAYOUT_LINKS,
+            'display_name'  => 'Razorpay X - Payout Links',
             'documentation' => '',
         ],
         self::PAYOUT_WORKFLOWS          => [

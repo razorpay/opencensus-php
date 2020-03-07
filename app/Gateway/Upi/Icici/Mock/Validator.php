@@ -19,6 +19,7 @@ class Validator extends Base\Validator
         'note'                 => 'sometimes|string|max:50',
         'collectByDate'        => 'sometimes|string|max:255',
         'ValidatePayerAccFlag' => 'sometimes|in:Y,N',
+        'validatePayerAccFlag' => 'sometimes|in:Y,N',
         'payerAccount'         => 'required_if:ValidatePayerAccFlag,Y',
         'payerIFSC'            => 'required_if:ValidatePayerAccFlag,Y|size:11',
     ];

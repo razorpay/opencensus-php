@@ -54,6 +54,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KYC_SUBMITTED_EMAIL                                  =  'KYC_SUBMITTED_EMAIL';
     const ACTIVATION_CONFIRMATION_EMAIL                        =  'ACTIVATION_CONFIRMATION_EMAIL';
 
+    const BLOCKING_RX_PRODUCT_SWITCH_TEMPORARILY                = 'BLOCKING_RX_PRODUCT_SWITCH_TEMPORARILY';
+    const BLOCKING_RX_ACTIVATIONS_TEMPORARILY                   = 'BLOCKING_RX_ACTIVATIONS_TEMPORARILY';
+
     // payout links
     const PAYOUT_LINK_NOTIFICATION_JOB_RELEASED                 = 'PAYOUT_LINK_NOTIFICATION_JOB_RELEASED';
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
@@ -337,6 +340,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_USER_ACTION_NOT_SUPPORTED                    = 'MERCHANT_USER_ACTION_NOT_SUPPORTED';
 
+    const USER_ROLE_MAPPING                                     = 'USER_ROLE_MAPPING';
+    const USER_ROLE_MAPPING_ADD                                 = 'USER_ROLE_MAPPING_ADD';
+    const USER_ROLE_MAPPING_UPDATE                              = 'USER_ROLE_MAPPING_UPDATE';
+
     const AUTO_CAPTURE_REFUND_DELAY                             = 'AUTO_CAPTURE_REFUND_DELAY';
 
     const MPESA_GATEWAY_PARAM_ARRAY                             = 'MPESA_GATEWAY_PARAM_ARRAY';
@@ -412,6 +419,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_SOURCE_PROCESSING_DATA                            = 'FTA_SOURCE_PROCESSING_DATA';
     const SETTLEMENT_API_RESPONSE                               = 'NODAL_SETTLEMENT_API_RESPONSE';
     const SETTLEMENT_API_REQUEST                                = 'NODAL_SETTLEMENT_API_REQUEST';
+    const SETTLEMENT_NOT_SKIPPING_BANK_ACCOUNT_RECENT_CREATION  = 'SETTLEMENT_NOT_SKIPPING_BANK_ACCOUNT_RECENT_CREATION';
 
     const KOTAK_NODAL_BALANCE_REQUEST                           = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                          = 'KOTAK_NODAL_BALANCE_RESPONSE';
@@ -618,6 +626,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const RX_LOW_BALANCE_EMAIL_ALERT_FAILED                     = 'RX_LOW_BALANCE_EMAIL_ALERT_FAILED';
     const RX_LOW_BALANCE_EMAIL_ALERT_DATA                       = 'RX_LOW_BALANCE_EMAIL_ALERT_DATA';
+
+    const LOCKED_BALANCE_UPDATE_REQUEST                         = 'LOCKED_BALANCE_UPDATE_REQUEST';
 
     const MAILER_JOB_ERROR                                      = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                              = 'INVOICE_ACTION_JOB_ERROR';
@@ -1160,6 +1170,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PENNY_TESTING_ATTEMPT                        = 'MERCHANT_PENNY_TESTING_ATTEMPT';
     const MERCHANT_PENNY_TESTING_EVENT_PAYLOAD                  = 'MERCHANT_PENNY_TESTING_EVENT_PAYLOAD';
     const MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING       = 'MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING';
+    const MERCHANT_HOLD_FUNDS_POST_TRANSCACTION                 = 'MERCHANT_HOLD_FUNDS_POST_TRANSCACTION';
+    const MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION                  = 'MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION';
     const PAYOUT_RETRY_REQUEST                                  = 'PAYOUT_RETRY_REQUEST';
     const PAYOUT_QUEUE_DISPATCH_INIT                            = 'PAYOUT_QUEUE_DISPATCH_INIT';
     const PAYOUT_QUEUE_DISPATCH_COMPLETE                        = 'PAYOUT_QUEUE_DISPATCH_COMPLETE';
@@ -1903,6 +1915,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_FETCH_SUBMERCHANTS                            = 'PARTNER_FETCH_SUBMERCHANTS';
     const PARTNER_CONFIG_CREATED                                = 'PARTNER_CONFIG_CREATED';
     const PARTNER_CONFIG_EDITED                                 = 'PARTNER_CONFIG_EDITED';
+    const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN                  = 'SUBMERCHANT_PROMOTIONAL_PRICING_PLAN';
 
     const FEE_CREDITS_THRESHOLD_ALERT                           = 'FEE_CREDITS_THRESHOLD_ALERT';
 
@@ -2637,16 +2650,23 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Error Response
     const ERROR_RESPONSE_MAPPING_READ_FAILED                    = 'ERROR_RESPONSE_MAPPING_READ_FAILED';
     const ERROR_RESPONSE_FILE_READING_FAILED                    = 'ERROR_RESPONSE_FILE_READING_FAILED';
+    const ERROR_RESPONSE_DATA                                   = 'ERROR_RESPONSE_DATA';
 
     // Razorpayx onboarding
     const MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE  = 'MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE';
     const MERCHANT_RAZORPAYX_ACTIVATION_REQUEST                 = 'MERCHANT_RAZORPAYX_ACTIVATION_REQUEST';
     const MERCHANT_RAZORPAYX_ACTIVATION_FAILED                  = 'MERCHANT_RAZORPAYX_ACTIVATION_FAILED';
+    const MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE          = 'MERCHANT_RAZORPAYX_ACTIVATION_UNKNOWN_SOURCE';
 
     // Terminal service
     const TERMINALS_SERVICE_REQUEST                             = 'TERMINALS_SERVICE_REQUEST';
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
+
+
+    // RBL VA integration
+    const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
+    const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

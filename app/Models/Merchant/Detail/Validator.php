@@ -40,6 +40,7 @@ class Validator extends Base\Validator
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
     const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
     const INVALID_REASON_TYPE                           = 'Invalid reason type';
+    const BLACKLISTED_BANK_ACCOUNT_NUMBER               = 'Accounts from this Bank are temporarily not supported. Please contact our support for help.';
     const ADDITIONAL_FIELD_NOT_REQUIRED                 = 'Not required additional field ';
 
     // Constant representing operations for which Validation rules exists
@@ -249,10 +250,12 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         'business_subcategory_for_category',
+        'blacklisted_bank',
     ];
 
     protected static $editValidators = [
         'business_subcategory_for_category',
+        'blacklisted_bank',
     ];
 
     protected static $pennyTestingEventPayloadRules = [
@@ -563,6 +566,29 @@ class Validator extends Base\Validator
                 [
                     Entity::BUSINESS_SUBCATEGORY => $businessSubcategory
                 ]);
+        }
+    }
+
+    /**
+     * @param array $input
+     */
+    public function validateBlacklistedBank(array $input)
+    {
+        if (isset($input[Entity::BANK_BRANCH_IFSC]) === true)
+        {
+            $code = $input[Entity::BANK_BRANCH_IFSC];
+
+            $bankCode   = strtoupper(substr($code, 0, 4));
+
+            if (in_array($bankCode, Constants::BLACKLISTED_BANKS) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    self::BLACKLISTED_BANK_ACCOUNT_NUMBER,
+                    Merchant\Detail\Entity::BANK_BRANCH_IFSC,
+                    [
+                        Merchant\Detail\Entity::BANK_BRANCH_IFSC => $code
+                    ]);
+            }
         }
     }
 
