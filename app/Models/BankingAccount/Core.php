@@ -35,7 +35,7 @@ class Core extends Base\Core
     const GATEWAY   = 'gateway';
     const PROCESSOR = 'processor';
 
-    const DEFAULT_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = 5000;
+    const DEFAULT_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = 1000;
 
     public function __construct()
     {
@@ -751,18 +751,15 @@ class Core extends Base\Core
      * by balance last fetched at).Job fetches balance from gateway and then update in banking account associated
      * with merchant
      *
-     * @param $input
+     * @param string $channel
      *
      * @return mixed
-     * @throws BadRequestValidationFailureException
      */
-    public function dispatchGatewayBalanceUpdateForMerchants($input)
+    public function dispatchGatewayBalanceUpdateForMerchants(string $channel)
     {
         $validator = new Validator();
 
-        $validator->validateInput(Validator::DISPATCH_GATEWAY_BALANCE, $input);
-
-        $channel = $input[Entity::CHANNEL];
+        $validator->validateInput(Validator::DISPATCH_GATEWAY_BALANCE, [Entity::CHANNEL => $channel]);
 
         $limit = (int) (new AdminService)->getConfigKey(
                                 ['key' => ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);

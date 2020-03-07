@@ -74,6 +74,7 @@ class Repository extends Base\Repository
     public function getBankingAccountsWithBalance($merchantId)
     {
         return $this->newQuery()
+                    ->with(['balance'])
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->get();
     }
@@ -83,7 +84,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->where(Entity::STATUS, '=', Status::ACTIVATED)
-                    ->orderBy(Entity::BALANCE_LAST_FETCHED_AT, 'asc')
+                    ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
                     ->limit($limit)
                     ->pluck(Entity::MERCHANT_ID);
     }
