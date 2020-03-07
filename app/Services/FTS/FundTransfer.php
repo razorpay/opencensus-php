@@ -182,6 +182,11 @@ class FundTransfer extends Base
     {
         $channel = $this->fta->getChannel();
 
+        if ($channel === Channel::YESBANK)
+        {
+            $channel = Channel::ICICI;
+        }
+
         $sourceType = $this->fta->getSourceType();
 
         $request[Constants::TRANSFER] = [

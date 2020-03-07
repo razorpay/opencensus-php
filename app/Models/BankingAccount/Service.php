@@ -154,6 +154,19 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function processGatewayBalanceUpdate(array $input)
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_PROCESS_GATEWAY_BALANCE_UPDATE_REQUEST,
+            [
+               'input' => $input
+            ]);
+
+        $response = $this->core->dispatchGatewayBalanceUpdateForMerchants($input);
+
+        return $response;
+    }
+
     public function getActivationStatusChangeLog(string $bankingAccountId)
     {
         /** @var Entity $bankingAccount */

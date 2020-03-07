@@ -990,7 +990,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $enachNpciNetbankingEditTerminalRules = [
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [
@@ -1020,6 +1022,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:bt_kotak',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:6',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'required|array',
+        Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+    ];
+
+    protected static $btRblTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_rbl',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:7',
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
     ];

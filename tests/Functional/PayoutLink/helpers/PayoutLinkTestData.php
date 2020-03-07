@@ -78,18 +78,18 @@ return [
             'content' => [
                 'UPI'             => true,
                 'IMPS'            => '0',
-                'SUPPORT_EMAIL'   => 'anubhav@f.com',
-                'SUPPORT_URL'     => 'http://dsjsd',
-                'SUPPORT_CONTACT' => '1212121212'
+                'support_email'   => 'anubhav@f.com',
+                'support_url'     => 'http://dsjsd',
+                'support_contact' => '1212121212'
             ],
         ],
         'response' => [
             'content' => [
                 'UPI'             => '1',
                 'IMPS'            => '0',
-                'SUPPORT_EMAIL'   => 'anubhav@f.com',
-                'SUPPORT_URL'     => 'http://dsjsd',
-                'SUPPORT_CONTACT' => '1212121212'
+                'support_email'   => 'anubhav@f.com',
+                'support_url'     => 'http://dsjsd',
+                'support_contact' => '1212121212'
             ]
         ]
     ],
@@ -105,9 +105,9 @@ return [
             'content' => [
                 'UPI'             => '1',
                 'IMPS'            => '0',
-                'SUPPORT_EMAIL'   => 'anubhav@f.com',
-                'SUPPORT_URL'     => 'http://dsjsd',
-                'SUPPORT_CONTACT' => '1212121212'
+                'support_email'   => 'anubhav@f.com',
+                'support_url'     => 'http://dsjsd',
+                'support_contact' => '1212121212'
             ]
         ]
     ],

@@ -215,6 +215,46 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::END_AT);
     }
 
+    public function getUtilityCode()
+    {
+        return $this->getAttribute(self::UTILITY_CODE);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getSponsorBankCode()
+    {
+        return $this->getAttribute(self::SPONSOR_BANK_CODE);
+    }
+
+    public function getFormChecksum()
+    {
+        return $this->getAttribute(self::FORM_CHECKSUM);
+    }
+
+    public function getDebitType()
+    {
+        return $this->getAttribute(self::DEBIT_TYPE);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function getUmrn()
+    {
+        return $this->getAttribute(self::UMRN);
+    }
+
+    public function getFrequency()
+    {
+        return $this->getAttribute(self::FREQUENCY);
+    }
+
     public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);

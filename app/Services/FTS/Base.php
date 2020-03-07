@@ -68,6 +68,8 @@ class Base
 
     const FTS_ALERT_URI = '/alert';
 
+    const SOURCE_ACCOUNT = '/source_account';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';

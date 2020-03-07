@@ -80,6 +80,49 @@ class Processor extends Base\Processor
         $token = $this->input->get(RegisterToken\Entity::TOKEN);
         $registerToken = (new RegisterToken\Core)->fetch($token);
 
+        // If the register token was marked completed by another request/callback
+        if ($registerToken->isCompleted())
+        {
+            $device = (new Core)->fetch($registerToken->getDeviceId());
+
+            $deviceId = array_get($this->input->get(Entity::DEVICE), Entity::ID);
+
+            // Gateway must acknowledge that RT was completed and send device block
+            // TODO: Handle race condition where RT was marked completed in between of request
+            if ($device->getId() !== $deviceId)
+            {
+                $response = [
+                    'expected'  => $device->getId(),
+                    'actual'    => $deviceId,
+                ];
+
+                $this->setException(new Exception\LogicException('Device id mismatch', $response));
+
+                return $response;
+            }
+
+            // Device token must be there if RT is completed
+            $deviceToken = $device->deviceToken($this->context()->getHandle());
+
+            if (empty($deviceToken) === true)
+            {
+                $response = [
+                    'device_id' => $device->getId(),
+                    'handle'    => $this->context()->handleCode(),
+                ];
+
+                $this->setException(new Exception\LogicException('Device token is missing', $response));
+
+                return $response;
+            }
+
+            // Now set the device/and token in context
+            $this->context()->setDevice($device, true);
+            $this->context()->setDeviceToken($deviceToken);
+
+            return $this->makeTokenResponse($deviceToken);
+        }
+
         // Gateway might return device data to be saved in device_token
         $deviceData = array_merge_recursive(
             $this->input->get(RegisterToken\Entity::DEVICE_DATA, []),

@@ -147,6 +147,191 @@ return [
         ],
     ],
 
+    'testBankTransferRbl' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+              'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'ft',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'CMS480098890',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '010405000010',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '00010469876543210',
+                        'creditDate'                => '13-10-2016 1929',
+                        'creditAccountNumber'       => '409000404030',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testBankTransferRblWithDuplicateUtr' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'N',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'CMS480098890',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '010405000010',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '00010469876543210',
+                        'creditDate'                => '13-10-2016 091929',
+                        'creditAccountNumber'       => '409000404030',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Success',
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testBankTransferRblWithInvalidData' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'N',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => '',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '010405000010',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => 'VACAFLT02405',
+                        'creditDate'                => '13-10-2016 091929',
+                        'creditAccountNumber'       => '',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Failure.',
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testBankTransferRblWithMissingHeader' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'N',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'CMS480098890',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '010405000010',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => '',
+                        'creditDate'                => '13-10-2016 091929',
+                        'creditAccountNumber'       => '409000404030',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'    => 'Failure Invalid token.',
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testBankTransferRblWithInternalServerError' => [
+        'request' => [
+            'url'     => '/ecollect/validate/rbl/test',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_XorgToken'   => 'RANDOM_RBL_SECRET',
+            ],
+            'content' => [
+                'ServiceName' => 'VirtualAccount',
+                'Action' => 'VirtualAccountTransaction',
+                'Data' =>  [
+                    [
+                        'messageType'               => 'N',
+                        'amount'                    => '3439.46',
+                        'UTRNumber'                 => 'CMS480098890',
+                        'senderIFSC'                => 'ICIC0000104',
+                        'senderAccountNumber'       => '010405000010',
+                        'senderAccountType'         => 'Current Account',
+                        'senderName'                => 'CREDIT CARD OPERATIONS',
+                        'beneficiaryAccountType'    => 'Current Account',
+                        'beneficiaryAccountNumber'  => 'VACAFLT02405',
+                        'creditDate'                => '13-10-2016 091929',
+                        'creditAccountNumber'       => '',
+                        'corporateCode'             => 'CAFLT',
+                        'clientCodeMaster'          => '02405',
+                        'senderInformation'         => 'MID 74256975 ICICI PYT 121016',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ]
+    ],
+
     'testBankTransferSpecialCharsInAccNumber' => [
         'url'     => '/ecollect/validate',
         'method'  => 'post',
@@ -316,7 +501,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'valid' => true,
+                'valid' => null,
             ],
         ],
     ],

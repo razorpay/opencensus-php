@@ -60,6 +60,8 @@ class EnachRblGatewayTest extends TestCase
         $this->setupMockDns();
 
         Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_digio"}}', 2);
+
+        $this->markTestSkipped();
     }
 
     public function testSuccessfulEsignGeneration()

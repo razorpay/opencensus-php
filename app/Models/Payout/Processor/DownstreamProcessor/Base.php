@@ -4,9 +4,11 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 

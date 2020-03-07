@@ -11,6 +11,7 @@ use RZP\Jobs;
 use RZP\Exception;
 use RZP\Jobs\EsSync;
 use RZP\Models\Card;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
