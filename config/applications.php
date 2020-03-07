@@ -299,7 +299,7 @@ return [
     'shield' => [
         'mock'     => env('SHIELD_MOCK', false),
         'url'      => env('SHIELD_BASE_URL'),
-        'mock_url '=> env('SHIELD_BASE_MOCK_URL'),
+        'mock_url' => env('SHIELD_BASE_MOCK_URL'),
         'auth' => [
             'username' => 'api',
             'password' => env('SHIELD_SECRET'),
