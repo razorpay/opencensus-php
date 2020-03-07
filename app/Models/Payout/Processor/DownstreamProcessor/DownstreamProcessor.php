@@ -69,7 +69,7 @@ class DownstreamProcessor
                 $channel = $this->getChannelForFundTransfer($accountType);
             }
 
-            $this->blockYesbankPayoutsIfRequired($channel, $this->payout);
+            // $this->blockYesbankPayoutsIfRequired($channel, $this->payout);
 
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
