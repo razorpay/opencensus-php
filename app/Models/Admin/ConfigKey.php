@@ -69,12 +69,12 @@ class ConfigKey
 
     const LOW_BALANCE_RX_EMAIL                  = self::PREFIX . 'low_balance_rx_email';
 
+    const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = self::PREFIX . 'gateway_balance_last_fetched_at_rate_limiting';
+
     // RBL_STATEMENT_FETCH_ATTEMPT_LIMIT is defining the number of attempt count for account statement fetch
     // per request. RBL has internal pagination with flag for statement fetch and we need to refetch with
     // last transaction mentioned to fetch more data.
     const RBL_STATEMENT_FETCH_ATTEMPT_LIMIT     = self::PREFIX . 'rbl_statement_fetch_attempt_limit';
-
-    const BLOCK_YESBANK_PAYOUTS                 = self::PREFIX . 'block_yesbank_payouts';
 
     const BLOCK_YESBANK_WALLET_PAYOUTS          = self::PREFIX . 'block_yesbank_wallet_payouts';
 
@@ -122,8 +122,8 @@ class ConfigKey
         self::CARD_PAYMENT_SERVICE_ENABLED,
         self::NB_PLUS_SERVICE_ENABLED,
         self::LOW_BALANCE_RX_EMAIL,
+        self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,
         self::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT,
-        self::BLOCK_YESBANK_PAYOUTS,
         self::BLOCK_X_REGISTRATION,
         self::BLOCK_YESBANK_RX_FAV,
         self::REMOVE_SETTLEMENT_BA_COOL_OFF,

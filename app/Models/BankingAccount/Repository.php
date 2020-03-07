@@ -79,6 +79,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getBankingAccountByMerchantIdAndChannel($merchantId, string $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->first();
+    }
+
     // To be used for x test mode migration purpose only
     public function fetchBankingAccounts(array $merchantIds, int $skip, int $limit)
     {
