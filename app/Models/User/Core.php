@@ -1426,4 +1426,28 @@ class Core extends Base\Core
 
         return [Entity::OTP_AUTH_TOKEN => $token];
     }
+
+    /**
+     * @param string $userId
+     * @return array
+     */
+    public function getUserRoleIdsInMerchant(string $userId) : array
+    {
+        $mapping = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(),
+            $userId,
+            null,
+            'banking'
+        );
+
+        $roleCode = $mapping->pivot->role;
+
+        $roleName = (new BankingRole())->getNamesForWorkflowRoles([$roleCode]);
+
+        $roleId = $this->repo->role->newQueryWithoutTimestamps()
+            ->where('name', '=', $roleName)
+            ->pluck('id')
+            ->toArray();
+
+        return $roleId;
+    }
 }

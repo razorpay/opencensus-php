@@ -4,9 +4,9 @@ namespace RZP\Models\Workflow\Action\Checker;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Error\ErrorCode;
-use RZP\Models\User\BankingRole;
 use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
@@ -71,7 +71,10 @@ class Core extends Base\Core
         }
         else
         {
-            $checkerRoleIds = $this->getUserRoleIdsInMerchant($checkerEntity->getId());
+            // If the entity is a user, then the role ids for that user for the merchant in context
+            // will have to be fetched from the merchant_users table. This is because the role_map table
+            // doesn't have any merchant context.
+            $checkerRoleIds = (new User\Core())->getUserRoleIdsInMerchant($checkerEntity->getId());
         }
 
         $currentLevel = $action->getCurrentLevel();
@@ -265,29 +268,5 @@ class Core extends Base\Core
         {
             (new Action\Service)->executeAction($action->getPublicId(), $role, $checkerEntity);
         }
-    }
-
-    /**
-     * @param string $userId
-     * @return array
-     */
-    protected function getUserRoleIdsInMerchant(string $userId) : array
-    {
-        $mapping = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(),
-                                                                 $userId,
-                                                                 null,
-                                                                 'banking'
-                                                                 );
-
-        $roleCode = $mapping->pivot->role;
-
-        $roleName = (new BankingRole())->getNamesForWorkflowRoles([$roleCode]);
-
-        $roleId = $this->repo->role->newQueryWithoutTimestamps()
-                                   ->where('name', '=', $roleName)
-                                   ->pluck('id')
-                                   ->toArray();
-
-        return $roleId;
     }
 }
