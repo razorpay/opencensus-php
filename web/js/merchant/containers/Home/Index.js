@@ -753,10 +753,10 @@ export default class HomeContainer extends Component {
 
     return (
       <div class="react-root dashboard-home">
-        <YesBankAnnouncementHome
+        {/* <YesBankAnnouncementHome
           virtualAccounts={this.props.virtualAccounts}
           user={this.props.user}
-        />
+        /> */}
 
         {/* Show Diwali Promotional Banner */}
         {this.props.user.isDiwaliPromoEnabled &&
