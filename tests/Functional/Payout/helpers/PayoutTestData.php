@@ -3204,6 +3204,27 @@ return [
             ],
         ],
     ],
+
+    'testDispatchGatewayBalanceUpdateJobForInvalidDirectChannel' => [
+        'request' => [
+            'url'     => '/banking_accounts/gateway/hdfc/balance',
+            'method'  => 'put',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not a valid direct type channel: hdfc',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testFiringOfWebhookOnRejectionOfPayoutEventData' => [
         'entity'   => 'event',
         'event'    => 'payout.rejected',

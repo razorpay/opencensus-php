@@ -2,12 +2,16 @@
 
 namespace RZP\Tests\Functional\Payout;
 
+use Queue;
 use Carbon\Carbon;
 
+use RZP\Models\Admin;
 use RZP\Constants\Timezone;
 use RZP\Services\Mock\Mozart;
+use RZP\Models\BankingAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Gateway\Rbl;
+use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -207,5 +211,52 @@ class RblPayoutTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($dispatchResponse, $expectedResponse);
+    }
+
+    protected function setupRblDispatchGatewayBalanceUpdateForMerchants()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
+
+        $request = [
+            'method'  => 'put',
+            'url'     => '/banking_accounts/gateway/rbl/balance',
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    public function testDispatchGatewayBalanceUpdateJob()
+    {
+        Queue::fake();
+
+        $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+        Queue::assertPushed(BankingAccountGatewayBalanceUpdate::class, 1);
+    }
+
+    public function testProcessGatewayBalanceUpdate()
+    {
+        /** @var BankingAccount\Entity $baBeforeTest */
+        $baBeforeTest = $this->getDbEntityById('banking_account', 'xba00000000000');
+
+        $this->assertNull($baBeforeTest->getBalanceLastFetchedAt());
+
+        $response = $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var BankingAccount\Entity $baAfterCronRuns */
+        $baAfterCronRuns = $this->getDbEntityById('banking_account', 'xba00000000000');
+
+        $this->assertNotNull($baAfterCronRuns->getBalanceLastFetchedAt());
+    }
+
+    public function testDispatchGatewayBalanceUpdateJobForInvalidDirectChannel()
+    {
+        $this->ba->cronAuth();
+
+        $this->startTest();
     }
 }

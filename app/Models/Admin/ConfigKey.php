@@ -71,6 +71,9 @@ class ConfigKey
 
     const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = self::PREFIX . 'gateway_balance_last_fetched_at_rate_limiting';
 
+    //Banking account current accounts balance update for merchants .limit on number of merchants for which to update in one run
+    const BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = self::PREFIX . 'banking_account_gateway_balance_update_rate_limit';
+
     // RBL_STATEMENT_FETCH_ATTEMPT_LIMIT is defining the number of attempt count for account statement fetch
     // per request. RBL has internal pagination with flag for statement fetch and we need to refetch with
     // last transaction mentioned to fetch more data.
@@ -123,6 +126,7 @@ class ConfigKey
         self::NB_PLUS_SERVICE_ENABLED,
         self::LOW_BALANCE_RX_EMAIL,
         self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,
+        self::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
         self::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT,
         self::BLOCK_X_REGISTRATION,
         self::BLOCK_YESBANK_RX_FAV,
