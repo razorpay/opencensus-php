@@ -456,6 +456,11 @@ class Processor
                 return;
         }
 
+        $this->throwYesbankException($data);
+    }
+
+    public function throwYesbankException(array $data = [])
+    {
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
             null,
@@ -2817,6 +2822,13 @@ class Processor
         // or in bulk via the bank transfer batch job (run via cli)
         //
         if ($this->app->runningInQueue() === true)
+        {
+            return;
+        }
+
+        $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test'];
+
+        if (in_array(Route::currentRouteName(), $rblVaRoutes, true) === true)
         {
             return;
         }

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payout;
 
+use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -185,5 +186,31 @@ class CompositePayoutTest extends TestCase
         $this->assertEquals(count($payouts), 0);
         $this->assertEquals(count($fundAccounts), 0);
         $this->assertEquals(count($contacts), 0);
+    }
+
+    public function testCreateCompositePayoutForCred()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $contact = $this->getDbLastEntity('contact');
+
+        // Assert that the last entities in db are created by the composite payout request
+        $this->assertEquals('pout_' . $payout['id'], $response['id']);
+        $this->assertEquals('fa_' . $fundAccount['id'], $response['fund_account_id']);
+        $this->assertEquals('cont_' . $contact['id'], $response['fund_account']['contact_id']);
+
+        // Assert that contact, fund_account and payout in db are related to each other
+        $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
+        $this->assertEquals($fundAccount['source_id'], $contact['id']);
+
+        // Assert that the response payout, fund_account and contact are also related to each other
+        $this->assertEquals($response['fund_account_id'], $response['fund_account']['id']);
+        $this->assertEquals($response['fund_account']['contact_id'], $response['fund_account']['contact']['id']);
     }
 }

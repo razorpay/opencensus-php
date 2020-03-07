@@ -45,6 +45,7 @@ class Limit
         TYPE::PRICING_RULE                          => 50000,
         Type::ADMIN_BATCH                           => 5000,
         Type::MDR_ADJUSTMENT                        => 1100000,
+        Type::ECOLLECT_ICICI                        => 100000,
     ];
 
     /**

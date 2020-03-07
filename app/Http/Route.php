@@ -299,6 +299,10 @@ final class Route
         'terminal_onboarding_verification'         => ['post',     'terminals/onboard/verification',                 'TerminalOnboardingController@postOnboardTerminalVerification'      ],
         'terminal_onboarding_creation'             => ['post',     'terminals/onboard/creation',                     'TerminalOnboardingController@postOnboardTerminalCreation'          ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
+        'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransfer'                   ],
+        'bank_transfer_process_file'               => ['post',     'ecollect/validate/file',                         'BankTransferController@processBankTransferFile'                    ],
+        'bank_transfer_process_rbl'                => ['post',     'ecollect/validate/rbl',                          'BankTransferController@processRblBankTransferLive'                 ],
+        'bank_transfer_process_rbl_test'           => ['post',     'ecollect/validate/rbl/test',                     'BankTransferController@processRblBankTransferTest'                 ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'bank_transfer_refund_retry'               => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
@@ -1390,6 +1394,7 @@ final class Route
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
+        'banking_account_gateway_balance_fetch'   => ['put',      'banking_accounts/gateway/{channel}/balance',                'BankingAccountController@processGatewayBalanceUpdate'      ],
         'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
         'banking_account_webhook_account_info'
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
@@ -1857,6 +1862,8 @@ final class Route
         'admin_reset_password',
         'bank_transfer_notify',
         'bank_transfer_process',
+        'bank_transfer_process_file',
+        'bank_transfer_process_icici',
         'bank_transfer_refund_retry',
         'batch_process_file',
         'billdesk_create_cancelled_refunds',
@@ -2012,7 +2019,7 @@ final class Route
         'merchant_mtu_update',
         'webhook_deactivate',
         'transaction_settled_data_fix',
-
+        'banking_account_gateway_balance_fetch',
         'merchant_poc_update',
         'unclaimed_merchant_poc_update',
     ];
@@ -3616,6 +3623,8 @@ final class Route
         'inspector_view_get',
         'batch_upload_form_get',
         'batch_upload_form_validate_file',
+        'bank_transfer_process_rbl',
+        'bank_transfer_process_rbl_test',
         'device_verify',
         'upi_get_bank_list',
         'upi_read_async',
@@ -3887,6 +3896,7 @@ final class Route
             'banking_account_statement_process_cron',
             'create_merchant_options_admin',
             'transaction_settled_data_fix',
+            'banking_account_gateway_balance_fetch',
             'merchant_poc_update',
             'unclaimed_merchant_poc_update',
         ],
@@ -3958,6 +3968,7 @@ final class Route
         'mailgun' => [
             'reconciliate',
             'emandate_debit_reconcile',
+            'bank_transfer_process_file',
         ],
 
         'raven' => [
@@ -4042,6 +4053,7 @@ final class Route
             'mdr_adjustment',
             'entity_bulk_update',
             'adj_add_batch',
+            'bank_transfer_process_icici',
             'reporting_log_create',
         ],
 

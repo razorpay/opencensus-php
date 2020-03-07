@@ -28,17 +28,11 @@ class Base extends FundAccountPayout\Base
 
             $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
 
-            $variant = $this->app->razorx->getTreatment($payout->merchant->getId(),
-                                                        Merchant\RazorxTreatment::FORCE_ICICI_OVER_YESBANK_FOR_PAYOUTS,
-                                                        $this->mode
-            );
-
-            if ($variant === 'on')
+            // We are overriding only for live mode for now. To check for test mode later.
+            if (($payout->getChannel() === Channel::YESBANK) and
+                ($this->isLiveMode() === true))
             {
-                if ($payout->getChannel() === Channel::YESBANK)
-                {
-                    $payout->setChannel(Channel::ICICI);
-                }
+                $payout->setChannel(Channel::ICICI);
             }
 
             $this->checkAllowNeftOnIcici($payout);

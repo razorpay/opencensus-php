@@ -271,7 +271,7 @@ class ProviderCode
         self::VIJAYABANK         => IFSC::VIJB,
         self::VIJB               => IFSC::VIJB,
         self::VJB                => IFSC::VIJB,
-        // self::YBL                => IFSC::YESB,
+        self::YBL                => IFSC::YESB,
         // self::YESBANK            => IFSC::YESB,
         // self::YESBANKLTD         => IFSC::YESB,
         self::RAZORPAY           => 'RZPY',
@@ -290,11 +290,10 @@ class ProviderCode
         self::UPI           => 'bhim',
         self::ICICI         => 'whatsapp',
         self::PAYTM         => 'paytm',
-        //self::YBL           => 'phonepe',
+        self::YBL           => 'phonepe',
     ];
 
     protected static $yesBankSpecificProviders = [
-        self::YBL,
         self::YESB,
         self::YESBANK,
         self::YESBANKLTD,

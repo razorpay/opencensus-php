@@ -96,6 +96,8 @@ class Type
 
     const ADJUSTMENT            = 'adjustment';
 
+    const ECOLLECT_ICICI        = 'ecollect_icici';
+
     const REPORT                = 'report';
 
     public static $disabledTypes = [
@@ -129,6 +131,7 @@ class Type
         self::ENTITY_UPDATE_ACTION,
         self::MDR_ADJUSTMENT,
         self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
         self::REPORT,
     ];
 
@@ -196,7 +199,6 @@ class Type
         self::PRICING_RULE,
         self::ADMIN_BATCH,
         self::ADJUSTMENT,
-        self::REPORT,
     ];
 
     /**
@@ -271,6 +273,7 @@ class Type
         self::OAUTH_MIGRATION_TOKEN,
         self::LINKED_ACCOUNT_REVERSAL,
         self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
         self::REPORT,
     ];
 
@@ -288,6 +291,7 @@ class Type
         self::MDR_ADJUSTMENT,
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
         self::REPORT,
     ];
 
