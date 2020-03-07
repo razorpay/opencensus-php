@@ -89,7 +89,7 @@ class Provider
             '*',
         ],
         self::KOTAK => [
-            self::KOTAK_IP,
+            '*',
         ],
         self::DASHBOARD => [
             '*',
