@@ -112,6 +112,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::LOCKED_BALANCE,
+        self::BALANCE,
+        self::LAST_FETCHED_AT,
     ];
 
     protected $appends = [
@@ -135,11 +137,6 @@ class Entity extends Base\PublicEntity
 
     protected $dates = [
         self::LAST_FETCHED_AT
-    ];
-
-    protected $publicSetters = [
-        self::BALANCE,
-        self::LAST_FETCHED_AT,
     ];
 
     protected function setPublicBalanceAttribute(array & $attributes)
