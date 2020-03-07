@@ -30,7 +30,7 @@ class Base extends FundAccountPayout\Base
 
             // We are overriding only for live mode for now. To check for test mode later.
             if (($payout->getChannel() === Channel::YESBANK) and
-                ($payout->getMode() === \RZP\Constants\Mode::LIVE))
+                ($this->isLiveMode() === true))
             {
                 $payout->setChannel(Channel::ICICI);
             }
