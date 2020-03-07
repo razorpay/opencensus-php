@@ -112,6 +112,7 @@ class Validator extends Base\Validator
         Payment\Gateway::PAYLATER,
         Payment\Gateway::CARDLESS_EMI,
         Payment\Gateway::NACH_CITI,
+        Payment\Gateway::BT_RBL,
     ];
 
     protected static $createValidators = [
@@ -1036,9 +1037,16 @@ class Validator extends Base\Validator
 
     protected static $btRblTerminalRules = [
         Entity::GATEWAY                     => 'required|in:bt_rbl',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:7',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+    ];
+
+    protected static $btRblEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_rbl',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::BANK_TRANSFER               => 'bail|sometimes|boolean|in:1',
     ];
 
     protected static $btDashboardTerminalRules = [
