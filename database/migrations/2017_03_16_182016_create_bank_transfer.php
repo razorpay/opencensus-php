@@ -34,7 +34,8 @@ class CreateBankTransfer extends Migration
             $table->string(BankTransfer::PAYER_ACCOUNT, 40)
                   ->nullable();
 
-            $table->string(BankTransfer::PAYER_IFSC, 13);
+            $table->string(BankTransfer::PAYER_IFSC, 20)
+                  ->nullable();
 
             $table->char(BankTransfer::PAYER_BANK_ACCOUNT_ID, BankTransfer::ID_LENGTH)
                   ->nullable();
@@ -57,7 +58,7 @@ class CreateBankTransfer extends Migration
 
             $table->string(BankTransfer::MODE, 5);
 
-            $table->string(BankTransfer::UTR, 30);
+            $table->string(BankTransfer::UTR);
 
             $table->bigInteger(BankTransfer::TIME);
 

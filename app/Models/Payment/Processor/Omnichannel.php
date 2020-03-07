@@ -32,10 +32,11 @@ trait Omnichannel
         {
             $upiProvider = $payment->getMetadata(Payment\Entity::UPI_PROVIDER, null);
 
-            $this->app['diag']->trackPaymentEvent(
+            $this->app['diag']->trackPaymentEventV2(
                 EventCode::PAYMENT_AUTHENTICATION_OMNICHANNEL_REQUEST_INITIATED,
                 $payment,
                 null,
+                [],
                 [
                     'upi_provider' => $upiProvider
                 ]);
@@ -64,13 +65,13 @@ trait Omnichannel
 
             $this->callOmniPayGatewayFunction($gatewayData, $gateway, $terminal);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OMNICHANNEL_REQUEST_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_OMNICHANNEL_REQUEST_PROCESSED, $payment);
 
             return $request;
         }
         catch (\Throwable $ex)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OMNICHANNEL_REQUEST_PROCESSED, $payment, $ex);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_OMNICHANNEL_REQUEST_PROCESSED, $payment, $ex);
 
             throw $ex;
         }

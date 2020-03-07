@@ -58,6 +58,8 @@ class Service extends Base\Service
             $idempotencyKey = $adjustmentInput[\RZP\Models\Batch\Constants::IDEMPOTENCY_KEY] ?? '';
             unset($adjustmentInput[\RZP\Models\Batch\Constants::IDEMPOTENCY_KEY]);
 
+            $adjustmentInput[Entity::TYPE] = trim($adjustmentInput[Entity::TYPE]) ?: Balance\Type::PRIMARY;
+
             try
             {
                 $this->app['workflow']->skipWorkflows(function() use ($adjustmentInput)

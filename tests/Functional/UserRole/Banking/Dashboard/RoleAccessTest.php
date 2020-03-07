@@ -16,10 +16,6 @@ class RoleAccessTest extends TestCase
     use BankingRoleTrait;
 
     /**
-     * @var UserRolePermissionsMap
-     */
-    private $userRolePermissionMap;
-    /**
      * @var array
      */
     private $routePermissions;
@@ -30,7 +26,6 @@ class RoleAccessTest extends TestCase
 
         parent::setUp();
 
-        $this->userRolePermissionMap = new UserRolePermissionsMap();
         $this->routePermissions = Route::$bankingRoutePermissions;
     }
 
@@ -86,6 +81,12 @@ class RoleAccessTest extends TestCase
 
         // Validate for Finance L1 Role
         $this->validateAccesses(BankingRole::FINANCE_L1);
+
+        // Validate for Operations role
+        $this->validateAccesses(BankingRole::OPERATIONS);
+
+        // Validate for View_Only role
+        $this->validateAccesses(BankingRole::VIEW_ONLY);
     }
 
     protected function validateAccesses(string $role)
@@ -108,7 +109,7 @@ class RoleAccessTest extends TestCase
 
             $this->assertEquals(
                 true,
-                $this->userRolePermissionMap->isValidRolePermission(BankingRole::OWNER, $routePermission),
+                UserRolePermissionsMap::isValidRolePermission(BankingRole::OWNER, $routePermission),
                 "Route $route permission missing for role $role");
         }
     }

@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Http\Request\Request as RzpRequest;
+use RZP\Http\Request\Requests as RzpRequest;
 
 class OfflineVerificationController extends Controller
 {
@@ -153,6 +153,13 @@ class OfflineVerificationController extends Controller
             'code' => $code,
             'body' => $body,
         ]);
+
+        $routeName = $this->app['request.ctx']->getRoute();
+
+        if ($routeName === 'offline_verification_webhook')
+        {
+            return ApiResponse::json($body, $code);
+        }
 
         if ($body['success'] === false)
         {

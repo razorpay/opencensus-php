@@ -28,12 +28,25 @@ class Validator extends Base\Validator
         Entity::PAYEE_ACCOUNT      => 'required|string|max:40',
         Entity::PAYEE_IFSC         => 'required|string|size:'.self::IFSC_LENGTH,
         Entity::MODE               => 'required|custom',
-        Entity::REQ_UTR            => 'required|string|max:30',
+        Entity::REQ_UTR            => 'required|string|max:255',
         Entity::TIME               => 'required',
         Entity::AMOUNT             => 'required|numeric|min:0',
         Entity::CURRENCY           => 'nullable|in:INR',
         Entity::DESCRIPTION        => 'nullable|string|max:255',
         Entity::ATTEMPT            => 'nullable|integer',
+    ];
+
+    public static $rblRules = [
+        'ServiceName'                   => 'required|in:VirtualAccount',
+        'Action'                        => 'required|in:VirtualAccountTransaction',
+        'Data'                          => 'required|array',
+        'Data.0.messageType'            => 'required|string',
+        'Data.0.amount'                 => 'required|string',
+        'Data.0.UTRNumber'              => 'required|string',
+        'Data.0.senderIFSC'             => 'required|string',
+        'Data.0.senderAccountNumber'    => 'required|string',
+        'Data.0.senderName'             => 'required|string',
+        'Data.0.creditAccountNumber'    => 'required|string',
     ];
 
     protected static $createValidators = [

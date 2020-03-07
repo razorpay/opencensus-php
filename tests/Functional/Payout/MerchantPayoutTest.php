@@ -11,6 +11,7 @@ use RZP\Models\Payout;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -67,6 +68,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
@@ -99,6 +101,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
@@ -106,8 +109,9 @@ class MerchantPayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateMerchantPayoutOnDemandNonBankingHours()
+    public function testCreateMerchantPayoutOnDemandNonBankingHoursWithLessThan2Lakhs()
     {
+        $this->markTestSkipped('bye bye yesbank');
         // Es on demand should be given to merchants during non banking hours.
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
@@ -117,6 +121,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // Force setting non banking hour for non banking hour test.
         $nonBankingHour = Carbon::create(2020, 2, 18, 20, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($nonBankingHour);
@@ -125,15 +130,16 @@ class MerchantPayoutTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
+        $this->assertEquals(Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
 
         $payout = $this->getLastEntity('payout', true);
 
-        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
+        $this->assertEquals(Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
     }
 
     public function testCreateMerchantPayoutOnDemandHoliday()
     {
+        $this->markTestSkipped('bye bye yesbank');
         // Es on demand should be given to merchants during holidays.
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
@@ -143,6 +149,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // Force setting non banking hour for non banking hour test.
         $nonBankingHour = Carbon::create(2020, 2, 16, 12, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($nonBankingHour);
@@ -151,11 +158,11 @@ class MerchantPayoutTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
+        $this->assertEquals(Channel::YESBANK, $txn[Transaction\Entity::CHANNEL]);
 
         $payout = $this->getLastEntity('payout', true);
 
-        $this->assertEquals(\RZP\Models\Settlement\Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
+        $this->assertEquals(Channel::YESBANK, $payout[Payout\Entity::CHANNEL]);
     }
 
     public function testCreateMerchantPayoutOnDemandExceedAmountLimit()
@@ -167,6 +174,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
@@ -174,7 +182,7 @@ class MerchantPayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateMerchantPayoutOnDemandExceedAmountLimitNonBankingHours()
+    public function testCreateMerchantPayoutOnDemandNonBankingHours()
     {
         // Es on demand 24x7 should fail for amounts that exceed 2 L.
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
@@ -183,6 +191,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // Force setting non banking hour for non banking hour test.
         $nonBankingHour = Carbon::create(2020, 2, 18, 20, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($nonBankingHour);
@@ -279,6 +288,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);
@@ -305,6 +315,10 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        $bankingHour = Carbon::create(2020, 2, 13, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
         $this->startTest();
     }
 
@@ -318,11 +332,19 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        $bankingHour = Carbon::create(2020, 2, 13, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
         $this->startTest();
     }
 
     public function testCreateMerchantPayoutExceedAmountLimit()
     {
+        $bankingHour = Carbon::create(2020, 2, 13, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
         // Merchant payouts should fail for amounts that exceed 80 L.
         $this->ba->appAuth();
 
@@ -334,6 +356,10 @@ class MerchantPayoutTest extends TestCase
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
 
         $this->ba->proxyAuth();
+
+        $bankingHour = Carbon::create(2020, 2, 13, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
 
         $this->startTest();
     }
@@ -349,6 +375,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        // We want the test to be during banking hours as es on demand can switch to different channel during non banking hours.
         $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($bankingHour);

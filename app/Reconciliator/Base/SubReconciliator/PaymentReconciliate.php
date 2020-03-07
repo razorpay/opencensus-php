@@ -310,11 +310,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     public function resetRowProcessingAttributes()
     {
-        $this->payment            = null;
-        $this->reconciled         = false;
-        $this->paymentIin         = null;
-        $this->gatewayPayment     = null;
-        $this->paymentTransaction = null;
+        $this->payment                         = null;
+        $this->reconciled                      = false;
+        $this->paymentIin                      = null;
+        $this->gatewayPayment                  = null;
+        $this->paymentTransaction              = null;
+        $this->isPaymentIdRevalidatedOnGateway = false;
 
         parent::resetRowProcessingAttributes();
     }

@@ -206,6 +206,17 @@ class UpiTransactionTransformer extends Transformer
             Transaction\Entity::AMOUNT           => $this->toPaisa($this->input[Fields::AMOUNT]),
         ];
 
+        /*
+        * Special case: For PAY api which is for a P2P Transaction we need to unset the
+        * transaction id for the callback, as we are relying on the (gatewayTransactionId+action)
+        * combination to fetch the transaction.
+        */
+        if ($this->input[Fields::TYPE] === UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_PAY)
+        {
+            unset($output[Entity::TRANSACTION_ID]);
+            unset($output[Transaction\Entity::TRANSACTION][Transaction\Entity::ID]);
+        }
+
         return array_merge($request, $output);
     }
 

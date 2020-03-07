@@ -458,6 +458,8 @@ return [
 
     E::PAYMENT_LINK => [],
 
+    E::PAPER_MANDATE_UPLOAD => [],
+
     E::CONTACT => [],
 
     E::FUND_ACCOUNT => [],
@@ -497,6 +499,8 @@ return [
     E::MPAN => [],
 
     E::UPI_TRANSFER => [],
+
+    E::UPI_METADATA => [],
 
     E::BALANCE_CONFIG => [
         Type::PROXY_AUTH => [

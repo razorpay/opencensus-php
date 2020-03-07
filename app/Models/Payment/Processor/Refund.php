@@ -116,12 +116,33 @@ trait Refund
 
     public function isCapturedPaymentAndFeatureEnabled(Payment\Entity $payment)
     {
+        // old flow
+        $cardTransferRefundFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true);
+
+        // new flow
+        $disableInstantRefundsFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false);
+
+        //
+        // Using razorx to ramp up instant refunds self serve
+        //
+        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+            Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
+            $this->mode
+        );
+
+        $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureDisabled :
+            $cardTransferRefundFeatureEnabled;
+
         return (($payment->isCaptured() === true) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true));
+                ($featureCheck === true));
     }
 
     protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
     {
+        //
+        // Pricing is defined only for merchants of RZP Org - please refer calculator/refund.php : getPricingRule()
+        // before removing org checks
+        //
         return ((isset($input[RefundEntity::SPEED]) === true) and
                 (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
                 (($this->isCapturedPaymentAndFeatureEnabled($payment) === false) or
@@ -1432,7 +1453,24 @@ trait Refund
         $refund->setSpeedRequested(RefundSpeed::NORMAL);
         $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
-        if ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true)
+        // old flow
+        $cardTransferRefundFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true);
+
+        // new flow
+        $disableInstantRefundsFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === false);
+
+        //
+        // Using razorx to ramp up instant refunds self serve
+        //
+        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+            Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
+            $this->mode
+        );
+
+        $isInstantRefundsEnabled = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureDisabled :
+            $cardTransferRefundFeatureEnabled;
+
+        if ($isInstantRefundsEnabled === true)
         {
             $refund->setSpeedRequested($this->merchant->getDefaultRefundSpeed());
 
@@ -2534,6 +2572,11 @@ trait Refund
         Payment\Entity $payment,
         bool $ignoreFeatureFlag = false): bool
     {
+        // proceeding only if decisioned speed is OPTIMUM
+        if ($refund->getSpeedRequested() !== Payment\Refund\Speed::OPTIMUM)
+        {
+            return false;
+        }
         //
         // Check if any card FTA already exists, not allowing card fta if any previous card fta exists
         //
@@ -2560,8 +2603,25 @@ trait Refund
                     (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === true) and
                     (IIN::isIinPrepaid($iin->getIin()) === false))
                 {
+                    // old flow
+                    $cardTransferRefundFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false);
+
+                    // new flow
+                    $disableInstantRefundsFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true);
+
+                    //
+                    // Using razorx to ramp up instant refunds self serve
+                    //
+                    $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+                        Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
+                        $this->mode
+                    );
+
+                    $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureEnabled :
+                        $cardTransferRefundFeatureDisabled;
+
                     if (($ignoreFeatureFlag === false) and
-                        ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                        ($featureCheck === true))
                     {
                         return false;
                     }
@@ -2606,8 +2666,25 @@ trait Refund
             (empty($payment->getVpa()) === false) and
             ($payment->isGatewayCaptured() === true))
         {
+            // old flow
+            $cardTransferRefundFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false);
+
+            // new flow
+            $disableInstantRefundsFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true);
+
+            //
+            // Using razorx to ramp up instant refunds self serve
+            //
+            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+                Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
+                $this->mode
+            );
+
+            $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureEnabled :
+                $cardTransferRefundFeatureDisabled;
+
             if (($ignoreFeatureFlag === false) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                ($featureCheck === true))
             {
                 return false;
             }
@@ -2650,8 +2727,25 @@ trait Refund
         if (($payment->getMethod() === Payment\Method::NETBANKING) and
             ($payment->isGatewayCaptured() === true))
         {
+            // old flow
+            $cardTransferRefundFeatureDisabled = ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false);
+
+            // new flow
+            $disableInstantRefundsFeatureEnabled = ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true);
+
+            //
+            // Using razorx to ramp up instant refunds self serve
+            //
+            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+                Merchant\RazorxTreatment::INSTANT_REFUNDS_SELF_SERVE,
+                $this->mode
+            );
+
+            $featureCheck = ($variant === RefundConstants::RAZORX_VARIANT_ON) ? $disableInstantRefundsFeatureEnabled :
+                $cardTransferRefundFeatureDisabled;
+
             if (($ignoreFeatureFlag === false) and
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                ($featureCheck === true))
             {
                 return false;
             }
@@ -2729,6 +2823,14 @@ trait Refund
             $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $token->getAccountNumber();
             $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
         }
+        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
+        {
+            $customerName = $this->getFormattedCustomerNameFromPayment($payment);
+
+            $input[BankAccount\Entity::IFSC_CODE]          = $payment->upiTransfer->getPayerIfsc();
+            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $payment->upiTransfer->getPayerAccount();
+            $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
+        }
 
         if ((isset($input[BankAccount\Entity::IFSC_CODE]) === true) and
             ($input[BankAccount\Entity::IFSC_CODE] === null))
@@ -2762,12 +2864,6 @@ trait Refund
         if (isset($data['vpa']) === true)
         {
             $input = $data['vpa'];
-        }
-        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
-        {
-            $input = [
-                VPA\Entity::ADDRESS => $payment->getVpa(),
-            ];
         }
 
         return $input;

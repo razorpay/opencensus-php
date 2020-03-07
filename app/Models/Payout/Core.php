@@ -3,10 +3,10 @@
 namespace RZP\Models\Payout;
 
 use App;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Constants;
-use Carbon\Carbon;
 use RZP\Models\Base;
 use DeepCopy\DeepCopy;
 use RZP\Models\Payment;
@@ -25,6 +25,9 @@ use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Jobs\QueuedPayouts;
 use RZP\Models\Transaction;
+use RZP\Constants\Timezone;
+use RZP\Models\BankingAccount;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
@@ -32,6 +35,8 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 /**
@@ -425,6 +430,37 @@ class Core extends Base\Core
         }
     }
 
+    public function fetchAndUpdateGatewayBalance(BankingAccount\Entity & $merchantBankingAccount)
+    {
+        $balanceLastFetchedAt = $merchantBankingAccount->getBalanceLastFetchedAt();
+
+        $nowTime = Carbon::now(Timezone::IST);
+
+        $diffTime = $nowTime->diffInMinutes(Carbon::createFromTimestamp($balanceLastFetchedAt, Timezone::IST));
+
+        $lastFetchedAtRateLimit =  (int) (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING]);
+
+        if (empty($lastFetchedAtRateLimit) === true)
+        {
+            $lastFetchedAtRateLimit = FundAccountPayout\Direct\Base::DEFAULT_GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING;
+        }
+
+        if ($diffTime > $lastFetchedAtRateLimit)
+        {
+            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance([
+                                                                                    Entity::CHANNEL     => $merchantBankingAccount->getChannel(),
+                                                                                    Entity::MERCHANT_ID => $merchantBankingAccount->getMerchantId(),
+                                                                                ]);
+
+            //need reload since we are updating banking account entity because of above call
+            if ($response['success'] === true)
+            {
+                $merchantBankingAccount->reload();
+            }
+        }
+    }
+
     public function processDispatchForQueuedPayouts(Base\PublicCollection $queuedPayouts)
     {
         $grouped = $queuedPayouts->groupBy(Entity::BALANCE_ID);
@@ -435,9 +471,32 @@ class Core extends Base\Core
         {
             // We get balance via payout since we would have already fetched balance entity
             // when fetching the payouts list. Avoiding an extra DB query here by doing this.
+
             $balanceEntity = $payouts->first()->balance;
 
+            // In case of current accounts(direct), balance in balance entity is stale since in our system we create
+            // transactions only when we fetch account statement from bank.So for current account we can't use balance
+            // from balance table.
+            // So before making payout we need to get balance amount in account from gateway.
+            // We check if account type is direct or not. If direct then fetch balance from gateway if balance last
+            // fetched at was a while ago(using threshold to decide that).Use this balance amount to dispatch payout.
+            // If account type shared then use balance amount from balance entity.
+
             $balanceAmount = $balanceEntity->getBalance();
+
+            if ($balanceEntity->getAccountType() === Merchant\Balance\AccountType::DIRECT)
+            {
+                /** @var BankingAccount\Entity $merchantBankingAccount */
+                $merchantBankingAccount = $balanceEntity->bankingAccount;
+
+                $this->fetchAndUpdateGatewayBalance($merchantBankingAccount);
+
+                $balanceAmount = $merchantBankingAccount->getGatewayBalance();
+
+                // Suppose merchant makes request soon after code is deployed and cron hasn't run yet, then gateway_balance will
+                // be null . In that case use balance from balance table
+                $balanceAmount = $balanceAmount ?? $balanceEntity->getBalance();
+            }
 
             $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts);
 

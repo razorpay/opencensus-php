@@ -23,7 +23,7 @@ class Source
         return ((defined($key) === true) and (constant($key) === $source));
     }
 
-    public static function checkSource(string $source)
+    public static function validateSource(string $source)
     {
         if (self::isSourceValid($source) === false)
         {

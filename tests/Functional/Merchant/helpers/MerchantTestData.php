@@ -1840,7 +1840,7 @@ return [
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
 //                    'BARB' => 'Bank of Baroda',
-                    'YESB' => 'Yes Bank',
+                    'HDFC' => 'HDFC Bank',
                 ],
                 'wallet' => [
                     'paytm' => true,
@@ -5685,6 +5685,21 @@ return [
                         'name'              => null,
                         'balance'           => 0,
                     ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetBalancesWhenNoBalanceExists' => [
+        'request'  => [
+            'url'    => '/balances',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 0,
+                'items' => [
                 ]
             ],
         ],

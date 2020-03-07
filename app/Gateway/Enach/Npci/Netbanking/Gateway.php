@@ -31,9 +31,13 @@ class Gateway extends Base\Gateway
 
     protected $crypto;
 
+    protected $switch;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        $this->switch = $input['terminal']['gateway_merchant_id2'];
 
         $this->setCrypto();
 
@@ -46,6 +50,8 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
+        $this->switch = $input['terminal']['gateway_merchant_id2'];
+
         parent::callback($input);
 
         $this->setCrypto();
@@ -62,6 +68,14 @@ class Gateway extends Base\Gateway
 
         if ($input['gateway'][ResponseFields::RESPONSE_TYPE] === ResponseType::SUCCESS)
         {
+            if ($this->switch === 'false')
+            {
+                $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                              [ResponseXmlTags::ACCEPT_DETAILS]
+                              [ResponseXmlTags::ORIGINAL_MSG_INFO]
+                              [ResponseXmlTags::MANDATE_ID] = null;
+            }
+
             $xmlData = $this->getDataFromResponse($responseArray);
 
             $secureData = [
@@ -145,31 +159,10 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $recurringData);
     }
 
-    public function forceAuthorizeFailed($input)
-    {
-        $gatewayPayment = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
-
-        // If it's already authorized on gateway side, We just return back.
-        if ($gatewayPayment->getStatus() === RegistrationStatus::SUCCESS)
-        {
-            return true;
-        }
-
-        $attributes = [
-            Base\Entity::STATUS          => RegistrationStatus::SUCCESS,
-            Base\Entity::ERROR_MESSAGE   => null,
-            Base\Entity::ERROR_CODE      => null
-        ];
-
-        $gatewayPayment->fill($attributes);
-
-        $this->repo->saveOrFail($gatewayPayment);
-
-        return true;
-    }
-
     public function verify(array $input)
     {
+        $this->switch = $input['terminal']['gateway_merchant_id2'];
+
         parent::verify($input);
 
         $verify = new Verify($this->gateway, $input);
@@ -194,6 +187,15 @@ class Gateway extends Base\Gateway
 
         $data = $this->getDataForXml($input, $secureData);
 
+        if ($this->switch === 'false')
+        {
+            $pid = $data[NpciXmlHeaderTags::MANDATE][RequestNpciTags::MANDATE_ID];
+
+            unset($data[NpciXmlHeaderTags::INFO][RequestNpciTags::SPONSORED_BANK_NAME], $data[NpciXmlHeaderTags::MANDATE], $data[NpciXmlHeaderTags::DEBTOR][RequestNpciTags::ACCOUNT_TYPE]);
+
+            $data[RequestNpciTags::MANDATE_ID] = $pid;
+        }
+
         $xml = $this->getXml($data);
 
         $signedxml = $this->crypto->addSignature($xml);
@@ -217,7 +219,12 @@ class Gateway extends Base\Gateway
             RequestFields::AUTH_MODE   => $authType,
         ];
 
-        $request = $this->getStandardRequestArray($content, 'post', 'npciauth');
+        $request = $this->getStandardRequestArray($content, 'post', 'npciauth_old');
+
+        if ($this->switch === 'false')
+        {
+            $request = $this->getStandardRequestArray($content, 'post', 'npciauth_old');
+        }
 
         $request = $this->addHeadersForNpciRequest($request);
 
@@ -241,6 +248,7 @@ class Gateway extends Base\Gateway
     protected function getSecureData($input)
     {
         $date = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], Timezone::IST)
+                        ->addDay()
                         ->format('Y-m-d+05:30');
 
         $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST)
@@ -288,6 +296,8 @@ class Gateway extends Base\Gateway
 
         $catCode = Base\CategoryCode::getCategoryCodeFromMcc($mcc);
 
+        $accountType = $input['bank_account']['account_type'] ?? "SAVINGS";
+
         $createdDate = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
                               ->format('Y-m-d\TH:i:s');
 
@@ -303,9 +313,13 @@ class Gateway extends Base\Gateway
                 RequestNpciTags::UTILITY_CODE          => $mid,
                 RequestNpciTags::CATEGORY_DESCRIPTION  => str_limit(Base\CategoryCode::getCategoryDescriptionFromCode($catCode), 25, ''),
                 RequestNpciTags::NAME                  => $merchantName,
+                RequestNpciTags::SPONSORED_BANK_NAME   => 'CITI BANK'
             ],
 
-            RequestNpciTags::MANDATE_ID           => $pid,
+            NpciXmlHeaderTags::MANDATE           => [
+                RequestNpciTags::MANDATE_ID           => $pid,
+                RequestNpciTags::MANDATE_TYPE         => 'DEBIT',
+            ],
 
             NpciXmlHeaderTags::OCCURENCE          => [
                 RequestNpciTags::SEQUENCE_TYPE         => 'RCUR',
@@ -319,6 +333,7 @@ class Gateway extends Base\Gateway
             NpciXmlHeaderTags::DEBTOR              => [
                 RequestNpciTags::DEBTOR_NAME           => str_limit($input['token']->getBeneficiaryName(), 40, ''),
                 RequestNpciTags::DEBTOR_ACCOUNT        => $encryptedData[RequestNpciTags::DEBTOR_ACCOUNT],
+                RequestNpciTags::ACCOUNT_TYPE          => $accountType
             ],
 
             NpciXmlHeaderTags::CREDITOR            => [
@@ -350,7 +365,14 @@ class Gateway extends Base\Gateway
 
         $mandate = $mandateroot->addChild(NpciXmlHeaderTags::MANDATE);
 
-        $mandate->addChild(RequestNpciTags::MANDATE_ID, $data[RequestNpciTags::MANDATE_ID]);
+        if ($this->switch === 'false')
+        {
+            $mandate->addChild(RequestNpciTags::MANDATE_ID, $data[RequestNpciTags::MANDATE_ID]);
+        }
+        else
+        {
+            $this->addChildren($data[NpciXmlHeaderTags::MANDATE], $mandate);
+        }
 
         $occurrence = $mandate->addChild(NpciXmlHeaderTags::OCCURENCE);
 
@@ -469,6 +491,11 @@ class Gateway extends Base\Gateway
                                                                  [ResponseXmlTags::ORIGINAL_MSG_INFO]
                                                                  [ResponseXmlTags::ORIGINGAL_MSG_ID],
 
+            ResponseXmlTags::MANDATE_ID         => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ORIGINAL_MSG_INFO]
+                                                                 [ResponseXmlTags::MANDATE_ID],
+
             ResponseXmlTags::REQUEST_DATE_TIME  => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
                                                                  [ResponseXmlTags::ACCEPT_DETAILS]
                                                                  [ResponseXmlTags::ORIGINAL_MSG_INFO]
@@ -571,6 +598,7 @@ class Gateway extends Base\Gateway
             $attr[Base\Entity::STATUS]                = RegistrationStatus::SUCCESS;
             $attr[Base\Entity::GATEWAY_REFERENCE_ID]  = $data[ResponseXmlTags::ORIGINGAL_MSG_ID];
             $attr[Base\Entity::GATEWAY_REFERENCE_ID2] = $data[ResponseXmlTags::ACCEPT_REF_NO];
+            $attr[Base\Entity::UMRN]                  = $data[ResponseXmlTags::MANDATE_ID];
         }
         else
         {
@@ -612,6 +640,11 @@ class Gateway extends Base\Gateway
 
         $recurringStatus = RegistrationStatus::STATUS_TO_RECURRING_STATUS_MAP[$status];
 
+        if (($this->switch === 'false') and ($recurringStatus === Token\RecurringStatus::CONFIRMED))
+        {
+            $recurringStatus = Token\RecurringStatus::INITIATED;
+        }
+
         $errorCode = $gatewayPayment->getErrorCode();
 
         $recurringFailureReason = null;
@@ -624,6 +657,7 @@ class Gateway extends Base\Gateway
         $recurringData = [
             Token\Entity::RECURRING_STATUS         => $recurringStatus,
             Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
+            Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getUmrn(),
             Token\Entity::ACKNOWLEDGED_AT          => Carbon::now(Timezone::IST)->getTimestamp()
         ];
 
@@ -760,6 +794,11 @@ class Gateway extends Base\Gateway
     {
         $content = $verify->verifyResponseContent;
 
+        if ($this->switch === 'false')
+        {
+            $content[ResponseXmlTags::MANDATE_ID] = null;
+        }
+
         $gatewayPayment = $verify->payment;
 
         $gatewayRefId  = $gatewayPayment->getGatewayReferenceId();
@@ -771,6 +810,7 @@ class Gateway extends Base\Gateway
         {
             $attributes[Base\Entity::GATEWAY_REFERENCE_ID]  = $content[ResponseXmlTags::VER_NPCI_REF_ID];
             $attributes[Base\Entity::GATEWAY_REFERENCE_ID2] = $content[ResponseXmlTags::ACCEPT_REF_NO];
+            $attributes[Base\Entity::UMRN]                  = $content[ResponseXmlTags::MANDATE_ID];
         }
 
         if ((isset($gatewayPayment[Base\Entity::STATUS]) === false) or

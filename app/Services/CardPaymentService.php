@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
+use Illuminate\Support\Arr;
 use RZP\Reconciliator\Base\InfoCode;
 
 class CardPaymentService
@@ -26,6 +27,7 @@ class CardPaymentService
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
     const X_RAZORPAY_MODE_HEADER   = 'X-Razorpay-Mode';
     const X_REQUEST_ID             = 'X-Request-ID';
+    const X_RAZORPAY_TRACKID       = 'X-Razorpay-TrackId';
     const X_RZP_TESTCASE_ID        = 'X-RZP-TESTCASE-ID';
 
     const REQUEST_TIMEOUT = 75; // Seconds
@@ -226,6 +228,7 @@ class CardPaymentService
             'headers' => [
                 self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
                 self::X_REQUEST_ID             => $this->app['request']->getId(),
+                self::X_RAZORPAY_TRACKID       => $this->app['req.context']->getTrackId(),
             ],
         ];
 
@@ -252,44 +255,61 @@ class CardPaymentService
 
     protected function traceRequest(array $request)
     {
-        unset($request['options']['auth']);
-        unset($request['content'][self::INPUT]['card']);
-        unset($request['content'][self::INPUT]['gateway_config']);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
-        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
-
-        // Unset PII
-
-        // Payment Data
-        unset($request['content'][self::INPUT][Entity::PAYMENT][Payment\Entity::EMAIL]);
-        unset($request['content'][self::INPUT][Entity::PAYMENT][Payment\Entity::CONTACT]);
-
-        // Merchant Data
-        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::EMAIL]);
-        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::INVOICE_CODE]);
-        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::TRANSACTION_REPORT_EMAIL]);
-        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::METHODS]);
-        unset($request['content'][self::INPUT][Entity::MERCHANT][Merchant\Entity::MERCHANT_DETAIL]);
-        unset($request['content'][self::INPUT][Entity::MERCHANT_DETAIL]);
-
-        // Gateway Data
-        unset($request['content'][self::INPUT]['gateway']['otp']);
-
-
-        if (empty($request['content'][self::INPUT]['terminals']) === false)
+        try
         {
-            foreach ($request['content'][self::INPUT]['terminals'] as $index => $terminal)
-            {
-                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
-                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
-                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_SECURE_SECRET]);
-                unset($request['content'][self::INPUT]['terminals'][$index][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
-            }
-        }
+            unset($request['content'][self::INPUT]['gateway']['otp']);
 
-        $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_REQUEST, $request);
+            $request['content'][self::INPUT]['terminal_ids'] = [];
+
+            if (empty($request['content'][self::INPUT]['terminals']) === false)
+            {
+                foreach ($request['content'][self::INPUT]['terminals'] as $idx => $terminal)
+                {
+                    $request['content'][self::INPUT]['terminal_ids'][$idx] = $terminal[Terminal\Entity::ID];
+                }
+            }
+
+            $traceMap = [
+                'payment.id'               => 'content.input.payment.id',
+                'payment.auth_type'        => 'content.input.payment.auth_type',
+                'merchant.id'              => 'content.input.merchant.id',
+                'merchant.name'            => 'content.input.merchant.name',
+                'terminal.id'              => 'content.input.terminal.id',
+                'terminal.merchant_id'     => 'content.input.terminal.merchant_id',
+                'terminal.type'            => 'content.input.terminal.type',
+                'card.network'             => 'content.input.card.network',
+                'card.issuer'              => 'content.input.card.issuer',
+                'card.country'             => 'content.input.card.country',
+                'card.is_international'    => 'content.input.card.international',
+                'authentication.auth'      => 'content.input.authenticate',
+                'authentication.auth_type' => 'content.input.auth_type',
+                'gateway.data'             => 'content.input.gateway',
+                'gateway.callback_url'     => 'content.input.callbackUrl',
+                'gateway.otpsubmit_url'    => 'content.input.otpSubmitUrl',
+                'terminals'                => 'content.input.terminal_ids',
+                'token.id'                 => 'content.input.token.id',
+                'analytics.risk_engine'    => 'content.input.payment_analytics.risk_engine',
+                'analytics.risk_score'     => 'content.input.payment_analytics.risk_score',
+            ];
+
+            $requestTrace = [];
+
+            foreach ($traceMap as $key => $srcPath)
+            {
+                $value = Arr::get($request, $srcPath);
+
+                if (is_null($value) === false)
+                {
+                    Arr::set($requestTrace, $key, $value);
+                }
+            }
+
+            $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_REQUEST, $requestTrace);
+        }
+        catch (\Throwable $e)
+        {
+
+        }
     }
 
     protected function sendRawRequest($request)

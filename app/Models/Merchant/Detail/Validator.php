@@ -40,6 +40,7 @@ class Validator extends Base\Validator
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
     const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
     const INVALID_REASON_TYPE                           = 'Invalid reason type';
+    const BLACKLISTED_BANK_ACCOUNT_NUMBER               = 'Accounts from this Bank are temporarily not supported. Please contact our support for help.';
     const ADDITIONAL_FIELD_NOT_REQUIRED                 = 'Not required additional field ';
 
     // Constant representing operations for which Validation rules exists
@@ -119,8 +120,8 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes',
-        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:5',
-        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|url',
+        Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:9',
+        Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|active_url',
     ];
 
     protected static $editRules = [
@@ -207,8 +208,8 @@ class Validator extends Base\Validator
         Entity::LIVE_TRANSACTION_DONE                    => 'filled|numeric|in:0,1,2',
         Entity::KYC_CLARIFICATION_REASONS                => 'sometimes|array|custom',
         Entity::KYC_ADDITIONAL_DETAILS                   => 'sometimes|array|custom',
-        Entity::ADDITIONAL_WEBSITES                      => 'sometimes|array|max:5',
-        Entity::ADDITIONAL_WEBSITES . '.*'               => 'required_with:' . Entity::ADDITIONAL_WEBSITES . '|string|url',
+        Entity::ADDITIONAL_WEBSITES                      => 'sometimes|array|max:9',
+        Entity::ADDITIONAL_WEBSITES . '.*'               => 'required_with:' . Entity::ADDITIONAL_WEBSITES . '|string|active_url',
         Entity::ESTD_YEAR                                => 'sometimes|max:4',
         Entity::AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS => 'sometimes|max:255',
         Entity::AUTHORIZED_SIGNATORY_DOB                 => 'sometimes|date_format:"Y-m-d"|before:"today"',
@@ -249,10 +250,12 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         'business_subcategory_for_category',
+        'blacklisted_bank',
     ];
 
     protected static $editValidators = [
         'business_subcategory_for_category',
+        'blacklisted_bank',
     ];
 
     protected static $pennyTestingEventPayloadRules = [
@@ -566,6 +569,29 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @param array $input
+     */
+    public function validateBlacklistedBank(array $input)
+    {
+        if (isset($input[Entity::BANK_BRANCH_IFSC]) === true)
+        {
+            $code = $input[Entity::BANK_BRANCH_IFSC];
+
+            $bankCode   = strtoupper(substr($code, 0, 4));
+
+            if (in_array($bankCode, Constants::BLACKLISTED_BANKS) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    self::BLACKLISTED_BANK_ACCOUNT_NUMBER,
+                    Merchant\Detail\Entity::BANK_BRANCH_IFSC,
+                    [
+                        Merchant\Detail\Entity::BANK_BRANCH_IFSC => $code
+                    ]);
+            }
+        }
+    }
+
     public function validateBusinessSubcategoryForCategory(array $input)
     {
         // If category and subcategory are not set
@@ -766,7 +792,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateFileType($file)
+    public function validateFile($file)
     {
         $extension = strtolower($file->getClientOriginalExtension());
 

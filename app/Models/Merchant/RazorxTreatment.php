@@ -57,10 +57,14 @@ final class RazorxTreatment
     const PAYOUTS_CREATED_WEBHOOK = 'payouts_created_webhook';
 
     //Decides to hit KYC Service or Mozart for KYC verification
-    const KYC_SERVICE_VERIFICATION = 'kyc_service_verification';
+    const KYC_SERVICE_VERIFICATION     = 'kyc_service_verification';
+    const POI_KYC_SERVICE_VERIFICATION = 'poi_kyc_service_verification';
+    const POA_KYC_SERVICE_VERIFICATION = 'poa_kyc_service_verification';
 
     // Decides if the Settlement UX changes are displayed to the merchant
     const SETTLEMENT_UX_REVAMP = 'settlement_ux_revamp';
+
+    const USE_UFH_FILE_STORE = 'use_ufh_file_store';
 
     // Decides payout channel based on IMPS mode
     const IMPS_MODE_PAYOUT_FILTER = 'imps_mode_payout_filter';
@@ -85,4 +89,21 @@ final class RazorxTreatment
 
     // Access control to allow pg request after new acl
     const RAZORPAY_X_ACL_DENY_UNAUTHORISED = 'razorpay_x_acl_deny_unauthorised';
+
+    // promotional pricing plan for onboarding submerchants
+    const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN = 'submerchant_promotional_pricing_plan';
+
+    // instant refunds self serve ramp up
+    const INSTANT_REFUNDS_SELF_SERVE = 'instant_refunds_self_serve';
+
+    // restrict user to one role per merchant and product
+    const RESTRICT_USER_TO_ONE_ROLE_PER_MERCHANT_AND_PRODUCT = 'restrict_user_to_one_role_per_merchant_and_product';
+
+    // Forces ICICI channel when we get channel as yesbank
+    const FORCE_ICICI_OVER_YESBANK_FOR_PAYOUTS = 'force_icici_over_yesbank_for_payouts';
+
+    // Allow NEFT Payouts via ICICI
+    const RAZORPAY_X_ALLOW_NEFT_PAYOUTS_VIA_ICICI = 'razorpay_x_allow_neft_payouts_via_icici';
+
+    const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
 }

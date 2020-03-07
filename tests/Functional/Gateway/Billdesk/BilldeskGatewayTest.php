@@ -98,6 +98,43 @@ class BilldeskGatewayTest extends TestCase
             $this->testData['testPaymentBilldeskEntity'], $payment);
     }
 
+    public function testPaymentWithMerchantProcuredTerminal()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['description'] = '1234';
+
+        $this->fixtures->edit('terminal', $this->sharedTerminal['id'], ['procurer' => 'merchant']);
+
+        $payment = $this->doAuthPayment($payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterAuthorize'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('billdesk', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentBilldeskEntity'], $payment);
+
+        $this->assertEquals(
+            '1234', $payment['CustomerID']);
+
+        $this->fixtures->edit('terminal', $this->sharedTerminal['id'], ['procurer' => 'razorpay']);
+    }
+
     // Test to check if gateway access code and secret is picked from terminal
     // instead of config
     public function testPaymentWithCredsFromTerminal()
@@ -409,7 +446,7 @@ class BilldeskGatewayTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(82, $count);
+        $this->assertEquals(80, $count);
     }
 
     public function testServerToServerCallback()

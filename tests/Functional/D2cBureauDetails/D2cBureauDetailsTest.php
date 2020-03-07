@@ -138,7 +138,7 @@ class D2cBureauDetailsTest extends TestCase
             'provider'              => 'experian',
 //            'score'                 => 752,
 //            'report'                => '{"active_accounts": "1", "closed_accounts": "1", "count_of_accounts": "2", "total_outstanding_balance": "152000", "secured_account_outstanding_balance": "152000", "un_secured_account_outstanding_balance": "0"}',
-            'ufh_file_id'           => 'rzp_file_mock_id_1000000_bureau_report',
+            'ufh_file_id'           => 'file_1cXSLlUU8V9sXl',
 //                'created_at'        => 1571374473
         ], $d2cBureauReport);
     }
