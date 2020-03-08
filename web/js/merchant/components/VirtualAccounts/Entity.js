@@ -164,13 +164,15 @@ export default class extends React.Component {
                   hasYESBankAccountVA && (
                     <>
                       <Banner>
-                        Use the new account details or UPI ID to accept
-                        payments. Older account details are no longer valid due
-                        to Yes Bank Moratorium by RBI
+                        Due to Yes Bank moratorium, existing YESB accounts are
+                        no longer valid. All active accounts created in the last
+                        90 days have been migrated to RBL with a new IFSC.
+                        Migration of remaining accounts is ongoing and will take
+                        up to 72 hours.{' '}
                         <a
                           class="highlight"
                           target="_blank"
-                          href="https://lp.razorpay.com/unregistered-businesses-faqs-0"
+                          href="https://razorpay.com/docs/smart-collect/yesbank-moratorium-migration/"
                         >
                           Know more
                           <i

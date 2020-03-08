@@ -9,10 +9,9 @@ export default function YesBankAnnouncementSmartCollect() {
       Your API integration and dashboard workflows do not require any changes.
       Incoming payments into existing Virtual Accounts{' '}
       <strong>will currently not be processed.</strong> Virtual UPI-IDs continue
-      to work smoothly. Know More"
-      <span class="big-dot-separator" />
+      to work smoothly. <span class="big-dot-separator" />
       <a
-        href="https://lp.razorpay.com/unregistered-businesses-faqs-0"
+        href="https://razorpay.com/docs/smart-collect/yesbank-moratorium-migration/"
         target="_blank"
       >
         Know more
