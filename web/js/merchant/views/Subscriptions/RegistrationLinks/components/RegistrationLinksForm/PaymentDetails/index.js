@@ -1,5 +1,4 @@
 import Input from 'common/new-ui/Input';
-import Banner from 'common/ui/Banner';
 
 import Card from './Card';
 import NACH from './NACH';
@@ -28,15 +27,7 @@ export default props => {
     trackNACHToolTipHover,
     formReference1,
     formReference2,
-    currentSelectedMethod,
   } = props;
-
-  let bannerText;
-
-  if (currentSelectedMethod.card) {
-    bannerText =
-      'Registeration links will not be authorised for Yes Bank Accounts and Cards';
-  }
 
   return (
     <React.Fragment>
@@ -45,20 +36,6 @@ export default props => {
         avlblMethods={avlblMethods}
         trackClickPaymentMethod={trackClickPaymentMethod}
       />
-
-      {bannerText && (
-        <Banner>
-          {bannerText}{' '}
-          <a
-            class="highlight"
-            target="_blank"
-            href="https://lp.razorpay.com/unregistered-businesses-faqs-0"
-          >
-            Know more
-            <i class="i i-external-link" style={{ marginLeft: '5px' }} />
-          </a>
-        </Banner>
-      )}
 
       {isEmandatePayment && (
         <Emandate
