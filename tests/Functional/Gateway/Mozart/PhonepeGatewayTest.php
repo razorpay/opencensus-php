@@ -34,10 +34,6 @@ class PhonepeGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'phonepe');
-
-        // Ref: https://razorpay.slack.com/archives/CNP473LRF/p1583436023089300?thread_ts=1583424797.083200&cid=CNP473LRF
-        // Yesbank shutdown means Phonepe is affected too.
-        $this->markTestSkipped('Phonepe disabled due to Yesbank shutdown');
     }
 
     public function testPayment()

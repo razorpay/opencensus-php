@@ -113,6 +113,7 @@ class Validator extends Base\Validator
         Payment\Gateway::CARDLESS_EMI,
         Payment\Gateway::NACH_CITI,
         Payment\Gateway::HDFC_DEBIT_EMI,
+        Payment\Gateway::BT_RBL,
     ];
 
     protected static $createValidators = [
@@ -991,7 +992,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $enachNpciNetbankingEditTerminalRules = [
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [
@@ -1023,6 +1026,28 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+    ];
+
+    protected static $btIciciTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_icici',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:6',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'required|array',
+        Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+    ];
+
+    protected static $btRblTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_rbl',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::TYPE                        => 'required|array',
+        Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+    ];
+
+    protected static $btRblEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_rbl',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::BANK_TRANSFER               => 'bail|sometimes|boolean|in:1',
     ];
 
     protected static $btDashboardTerminalRules = [

@@ -2837,6 +2837,14 @@ trait Refund
             $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $token->getAccountNumber();
             $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
         }
+        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
+        {
+            $customerName = $this->getFormattedCustomerNameFromPayment($payment);
+
+            $input[BankAccount\Entity::IFSC_CODE]          = $payment->upiTransfer->getPayerIfsc();
+            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $payment->upiTransfer->getPayerAccount();
+            $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
+        }
 
         if ((isset($input[BankAccount\Entity::IFSC_CODE]) === true) and
             ($input[BankAccount\Entity::IFSC_CODE] === null))
@@ -2870,12 +2878,6 @@ trait Refund
         if (isset($data['vpa']) === true)
         {
             $input = $data['vpa'];
-        }
-        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
-        {
-            $input = [
-                VPA\Entity::ADDRESS => $payment->getVpa(),
-            ];
         }
 
         return $input;

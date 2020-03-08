@@ -572,7 +572,7 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'enach_npci_netbanking',
-            'gateway_acquirer'          => 'yesb',
+            'gateway_acquirer'          => 'citi',
             'card'                      => 0,
             'emandate'                  => 1,
             'type'                      => [

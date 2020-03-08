@@ -215,6 +215,9 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MANDATE_EXECUTION_ATTEMPT_BEFORE_START_TIME               = 'Mandate execution attempted before the start time';
 
+    const BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING                         = 'Locked Balance update is not allowed.';
+
+    const BAD_REQUEST_INSUFFICIENT_BALANCE_LOCKED                               = 'Insufficient available balance to make the transaction.';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_LINK_CURRENCY_MISMATCH                            = 'Payment currency provided does not match with the currency in the payment page';
@@ -1016,4 +1019,6 @@ class PublicErrorDescription
 
     //Invalid Bank Account
     const BAD_REQUEST_INVALID_BANK_ACCOUNT                                          =  'The bank account entered is invalid';
+
+    const BAD_REQUEST_YESBANK_PAYMENT_DISABLED                                      = 'We are unable to complete this transaction due to the restrictions on YES Bank\'s operations by RBI (Gazette notification (S.O. 993(E)) dated 5th March 2020';
 }

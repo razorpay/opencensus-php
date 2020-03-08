@@ -39,6 +39,10 @@ class CreateBalance extends Migration
             $table->bigInteger(Balance::BALANCE)
                   ->default(0);
 
+            $table->bigInteger(Balance::LOCKED_BALANCE)
+                  ->unsigned()
+                  ->default(0);
+
             $table->bigInteger(Balance::ON_HOLD)
                   ->default(0);
 

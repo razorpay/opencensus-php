@@ -147,6 +147,9 @@ class Entity extends Base\PublicEntity
     // Used for composite API request input
     const CONTACT = 'contact';
     const PAYOUT  = 'payout';
+    const IFSC    = 'ifsc';
+    const CARD    = 'card';
+    const NUMBER  = 'number';
 
     protected $queueFlag = false;
 

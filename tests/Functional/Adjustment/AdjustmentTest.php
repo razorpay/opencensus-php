@@ -6,6 +6,7 @@ use Mail;
 
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Banking\YesbankLoadViaAdjustment;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\ReserveBalanceActivate as ReserveBalanceActivateMail;
@@ -125,7 +126,72 @@ class AdjustmentTest extends TestCase
 
             return true;
         });
+    }
 
+    public function testSendYesbankLoadSuccessfulEmail()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('balance',
+                                [
+                                    'type'           => 'banking',
+                                    'account_type'   => 'shared',
+                                    'account_number' => 'ABC123PQR',
+                                    'merchant_id'    => '100abc000abc00',
+                                    'balance'        => 30000
+                                ]);
+
+        $response = $this->startTest();
+
+        $adjId = $response['id'];
+
+        $txnId = $response['transaction_id'];
+
+        $adjustment = $this->getDbEntityById('adjustment', $adjId);
+
+        $balanceId = $adjustment['balance_id'];
+
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $transaction = $this->getDbEntityById('transaction', $txnId);
+
+        $this->assertNotNull($adjustment, 'adjustment should not be null');
+
+        $this->assertNotNull($balance, 'balance should not be null');
+
+        $this->assertNotNull($transaction, 'transaction should not be null');
+
+        $this->assertEquals($txnId, $adjustment['transaction_id']);
+        $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
+        $this->assertEquals(250000, $adjustment['amount']);
+
+        $this->assertEquals('banking', $balance['type']);
+        $this->assertEquals('100abc000abc00', $balance['merchant_id']);
+        $this->assertEquals(280000, $balance['balance']);
+
+        $this->assertEquals('adjustment', $transaction['type']);
+        $this->assertEquals('100abc000abc00', $transaction['merchant_id']);
+        $this->assertEquals(250000, $transaction['amount']);
+        $this->assertEquals($balanceId, $transaction['balance_id']);
+
+        Mail::assertQueued(YesbankLoadViaAdjustment::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('250000', $viewData['amount']); // raw amount
+            $this->assertEquals('2,500.00', amount_format_IN($viewData['amount'])); // formatted amount
+
+            $expectedData = [
+                'adjustment_description' => 'Account: ABC123, Bank: ICICI',
+                'account_number'         => 'ABC123PQR',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $this->assertEquals('emails.banking.yesbank_load_via_adjustment', $mail->view);
+
+            return true;
+        });
     }
 
     public function testAddReserveBalance()
@@ -239,7 +305,7 @@ class AdjustmentTest extends TestCase
     {
         $merchantId = $id ?? '100abc000abc00';
 
-        $this->fixtures->create('merchant', ['id' => $merchantId]);
+        $this->fixtures->create('merchant', ['id' => $merchantId, 'email' => "mahbubani.amit@gmail.com"]);
 
         $admin = $this->ba->getAdmin();
 
