@@ -172,7 +172,7 @@ class Entity extends Base\PublicEntity
     {
         list($username, $handle) = explode(self::AROBASE, $address);
 
-        $query->whereRaw('LOWER(`' . Entity::USERNAME . '`) = ?', strtolower($username))
-              ->whereRaw('LOWER(`' . Entity::HANDLE . '`) = ?', strtolower($handle));
+        $query->where(Entity::USERNAME, $username)
+              ->where(Entity::HANDLE, $handle);
     }
 }
