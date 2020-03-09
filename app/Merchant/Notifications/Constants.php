@@ -188,21 +188,6 @@ class Constants
             ],
         ],
         [
-            'title'       => 'Yes Bank Moratorium',
-            'description' => 'Our payment gateway services are unaffected. We are working to ensure there is no disruption in any services. In case of any concerns please write to support.oncall@razorpay.com',
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/attention.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'primary-inverted',
-                    'label' => 'Learn More',
-                    'url'   => 'https://lp.razorpay.com/unregistered-businesses-faqs-0',
-                ],
-            ],
-            'start_ts'    => 1583494110,
-            'end_ts'      => 1586131200,
-            'filters'     => []
-        ],
-        [
             'title'       => 'Introducing RazorpayX',
             'description' => 'Vendor and customer payouts are now just a click away with RazorpayX',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/razorpayx.svg',
@@ -214,7 +199,7 @@ class Constants
                 ],
                 [
                     'type'  => 'primary-inverted',
-                    'label' => 'Know More',
+                    'label' => 'Learn More',
                     'url'   => 'https://razorpay.com/x/payouts/',
                 ],
             ],
