@@ -810,6 +810,20 @@ class Header
     const ADJUSTMENT_BALANCE_TYPE   = 'balance_type';
     const ADJUSTMENT_DESCRIPTION    = 'description';
 
+    const ICICI_ECOLLECT_REMITTING_BANK_UTR_NO      = 'REMITTING BANK UTR NO.';
+    const ICICI_ECOLLECT_PAYMENT_TYPE               = 'PAYMENT TYPE';
+    const ICICI_ECOLLECT_CREDIT_ACCOUNT_NO          = 'CREDIT ACCOUNT NO.';
+    const ICICI_ECOLLECT_TRANSACTION_AMOUNT         = 'TRANSACTION AMOUNT';
+    const ICICI_ECOLLECT_REMITTER_ACCOUNT_NAME      = 'REMITTER ACCOUNT NAME';
+    const ICICI_ECOLLECT_REMITTER_ACCOUNT_NO        = 'REMITTER ACCOUNT NO.';
+    const ICICI_ECOLLECT_REMITTING_BANK_IFSC_CODE   = 'REMITTING BANK IFSC CODE';
+    const ICICI_ECOLLECT_TRANSACTION_DATE           = 'TRANSACTION DATE';
+    const ICICI_ECOLLECT_UTR                        = 'ICICI BANK UTR NO.';
+    const ICICI_ECOLLECT_CUSTOMER_CODE              = 'CUSTOMER CODE';
+    const ICICI_ECOLLECT_DEALER_CODE                = 'DEALER CODE';
+    const ICICI_ECOLLECT_REMITTANCE_INFORMATION     = 'REMITTANCE INFORMATION';
+
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -2520,6 +2534,37 @@ class Header
                 self::ADJUSTMENT_DESCRIPTION,
             ],
         ],
+
+        Type::ECOLLECT_ICICI => [
+            self::INPUT => [
+                self::ICICI_ECOLLECT_UTR,
+                self::ICICI_ECOLLECT_CUSTOMER_CODE,
+                self::ICICI_ECOLLECT_CREDIT_ACCOUNT_NO,
+                self::ICICI_ECOLLECT_DEALER_CODE,
+                self::ICICI_ECOLLECT_PAYMENT_TYPE,
+                self::ICICI_ECOLLECT_REMITTANCE_INFORMATION,
+                self::ICICI_ECOLLECT_REMITTER_ACCOUNT_NAME,
+                self::ICICI_ECOLLECT_REMITTER_ACCOUNT_NO,
+                self::ICICI_ECOLLECT_REMITTING_BANK_IFSC_CODE,
+                self::ICICI_ECOLLECT_TRANSACTION_AMOUNT,
+                self::ICICI_ECOLLECT_TRANSACTION_DATE,
+                self::ICICI_ECOLLECT_REMITTING_BANK_UTR_NO,
+            ],
+            self::OUTPUT => [
+                self::ICICI_ECOLLECT_UTR,
+                self::ICICI_ECOLLECT_CUSTOMER_CODE,
+                self::ICICI_ECOLLECT_CREDIT_ACCOUNT_NO,
+                self::ICICI_ECOLLECT_DEALER_CODE,
+                self::ICICI_ECOLLECT_PAYMENT_TYPE,
+                self::ICICI_ECOLLECT_REMITTANCE_INFORMATION,
+                self::ICICI_ECOLLECT_REMITTER_ACCOUNT_NAME,
+                self::ICICI_ECOLLECT_REMITTER_ACCOUNT_NO,
+                self::ICICI_ECOLLECT_REMITTING_BANK_IFSC_CODE,
+                self::ICICI_ECOLLECT_TRANSACTION_AMOUNT,
+                self::ICICI_ECOLLECT_TRANSACTION_DATE,
+                self::ICICI_ECOLLECT_REMITTING_BANK_UTR_NO,
+            ],
+        ]
     ];
 
     /**

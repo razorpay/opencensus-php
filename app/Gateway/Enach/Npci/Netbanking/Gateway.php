@@ -313,7 +313,7 @@ class Gateway extends Base\Gateway
                 RequestNpciTags::UTILITY_CODE          => $mid,
                 RequestNpciTags::CATEGORY_DESCRIPTION  => str_limit(Base\CategoryCode::getCategoryDescriptionFromCode($catCode), 25, ''),
                 RequestNpciTags::NAME                  => $merchantName,
-                RequestNpciTags::SPONSORED_BANK_NAME   => 'YES BANK'
+                RequestNpciTags::SPONSORED_BANK_NAME   => 'CITI BANK'
             ],
 
             NpciXmlHeaderTags::MANDATE           => [

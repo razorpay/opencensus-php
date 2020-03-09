@@ -425,4 +425,81 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testCreateCompositePayoutForCred' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 2000000,
+                'currency'       => 'INR',
+                'purpose'        => 'refund',
+                'narration'      => 'Batman',
+                'mode'           => 'IMPS',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card' => [
+                        'name'      => 'Prashanth YV',
+    		            'number'    => '04111111111111111',
+                        'ifsc'      => 'KKBK0000430',
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 2000000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'refund',
+                'status'       => 'processing',
+                'mode'         => 'IMPS',
+                'tax'          => 162,
+                'fees'         => 1062,
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'name'      => 'Prashanth YV',
+                        'last4'     =>  '1111',
+                        'network'   =>  'Visa',
+                        'type'      =>  'credit',
+                        'issuer'    =>  'HDFC',
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

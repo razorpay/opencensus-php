@@ -948,6 +948,7 @@ class ErrorCode
     const BAD_REQUEST_KYC_ID_MISSING                                                = 'BAD_REQUEST_KYC_ID_MISSING';
     const BAD_REQUEST_INVALID_RESPONSE_BODY                                         = 'BAD_REQUEST_INVALID_RESPONSE_BODY';
 
+    const SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING                           = 'SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING';
     const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
     const SERVER_ERROR_NO_TERMINAL_FOUND                                            = 'SERVER_ERROR_NO_TERMINAL_FOUND';
     const SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND                                       = 'SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND';
@@ -1142,6 +1143,8 @@ class ErrorCode
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
     const BAD_REQUEST_INVALID_PASSWORD                                              = 'BAD_REQUEST_INVALID_PASSWORD';
     const BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD                             = 'BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD';
+
+    const BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING                             = 'BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING';
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                        = 'BAD_REQUEST_USER_2FA_ALREADY_SETUP';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                             = 'BAD_REQUEST_LOCKED_USER_LOGIN';
@@ -1513,6 +1516,7 @@ class ErrorCode
 
     const BAD_REQUEST_INSUFFICIENT_MERCHANT_BALANCE                                  = 'BAD_REQUEST_INSUFFICIENT_MERCHANT_BALANCE';
     const BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                      = 'BAD_REQUEST_NEGATIVE_BALANCE_BREACHED';
+    const BAD_REQUEST_INSUFFICIENT_BALANCE_LOCKED                                    = 'BAD_REQUEST_INSUFFICIENT_BALANCE_LOCKED';
     const RESERVE_BALANCE_CREATE_ALREADY_IN_PROGRESS                                 = 'RESERVE_BALANCE_CREATE_ALREADY_IN_PROGRESS';
     const BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND                               = 'BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND';
 
@@ -1521,9 +1525,13 @@ class ErrorCode
     //IRCTC Error codes
     const BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND                         = 'BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND';
 
+    const BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND                               = 'BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND';
+
     //FuzzyMatcher Error Codes
     const BAD_REQUEST_INVALID_MATCH_PERCENT                                         = 'BAD_REQUEST_INVALID_MATCH_PERCENT';
     const BAD_REQUEST_INVALID_MATCH_TYPE                                            = 'BAD_REQUEST_INVALID_MATCH_TYPE';
 
     const BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS';
+
+    const BAD_REQUEST_YESBANK_PAYMENT_DISABLED                                      = 'BAD_REQUEST_YESBANK_PAYMENT_DISABLED';
 }

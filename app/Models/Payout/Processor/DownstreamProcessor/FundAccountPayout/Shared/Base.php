@@ -9,6 +9,8 @@ use RZP\Mail\Banking;
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
@@ -25,6 +27,15 @@ class Base extends FundAccountPayout\Base
             $this->setChannel($payout);
 
             $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
+
+            // We are overriding only for live mode for now. To check for test mode later.
+            if (($payout->getChannel() === Channel::YESBANK) and
+                ($this->isLiveMode() === true))
+            {
+                $payout->setChannel(Channel::ICICI);
+            }
+
+            $this->checkAllowNeftOnIcici($payout);
 
             $this->createTransaction($payout);
 
@@ -110,6 +121,7 @@ class Base extends FundAccountPayout\Base
 
             $lowBalanceThreshold = $merchantConfig['low_balance_threshold'] ?? 0;
 
+            // TODO: Have to handle locked balance here
             $balance = $payout->balance->getBalance();
 
             if ($balance > $lowBalanceThreshold)
@@ -209,7 +221,7 @@ class Base extends FundAccountPayout\Base
 
         $mode = $payout->getMode();
 
-        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+        $valid = Mode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
 
         if ($valid === false)
         {
@@ -223,6 +235,45 @@ class Base extends FundAccountPayout\Base
                 ],
                 $mode . ' is not supported'
             );
+        }
+    }
+
+    /**
+     * @param Entity $payout
+     *
+     * @throws BadRequestException
+     */
+    protected function checkAllowNeftOnIcici(Entity $payout)
+    {
+        $channel = $payout->getChannel();
+
+        $mode = $payout->getMode();
+
+        if (($channel === Channel::ICICI) and
+            ($mode === Mode::NEFT))
+        {
+            $variant  = $this->app->razorx->getTreatment(
+                $payout->merchant->getId(),
+                Merchant\RazorxTreatment::RAZORPAY_X_ALLOW_NEFT_PAYOUTS_VIA_ICICI,
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                return;
+            }
+            else
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+                    null,
+                    [
+                        'channel'           => $channel,
+                        'mode'              => $mode,
+                    ],
+                    $mode . ' is not supported'
+                );
+            }
         }
     }
 }

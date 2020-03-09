@@ -98,4 +98,12 @@ final class RazorxTreatment
 
     // restrict user to one role per merchant and product
     const RESTRICT_USER_TO_ONE_ROLE_PER_MERCHANT_AND_PRODUCT = 'restrict_user_to_one_role_per_merchant_and_product';
+
+    // Forces ICICI channel when we get channel as yesbank
+    const FORCE_ICICI_OVER_YESBANK_FOR_PAYOUTS = 'force_icici_over_yesbank_for_payouts';
+
+    // Allow NEFT Payouts via ICICI
+    const RAZORPAY_X_ALLOW_NEFT_PAYOUTS_VIA_ICICI = 'razorpay_x_allow_neft_payouts_via_icici';
+
+    const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
 }

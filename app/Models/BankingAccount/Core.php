@@ -3,7 +3,10 @@
 namespace RZP\Models\BankingAccount;
 
 use Mail;
+use Carbon\Carbon;
+
 use Razorpay\IFSC\Bank;
+use RZP\Models\Admin\ConfigKey;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
@@ -21,12 +24,19 @@ use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Mail\BankingAccount\XProActivation;
+use RZP\Models\Admin\Service as AdminService;
+use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 
 class Core extends Base\Core
 {
+    const GATEWAY   = 'gateway';
+    const PROCESSOR = 'processor';
+
+    const DEFAULT_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = 5000;
+
     public function __construct()
     {
         parent::__construct();
@@ -558,6 +568,111 @@ class Core extends Base\Core
         return $response;
     }
 
+    /**
+     * for CA, balance needs to be fetched from balance api provided by respective banks/gateways at regular frequency
+     * which is agreed upon in SLA. This function will be used to fetch balance from gateway before making normal/queued
+     * payouts depending upon balance_last_fetched_at.
+     *
+     * @param array $input
+     *
+     * @return mixed
+     *
+     * @throws BadRequestException | BadRequestValidationFailureException
+     */
+    public function fetchAndUpdateGatewayBalance(array $input)
+    {
+        $validator = new Validator();
+
+        $validator->validateInput(Validator::FETCH_GATEWAY_BALANCE, $input);
+
+        $validator->validateChannelForFetchingGatewayBalance($input);
+
+        $channel = array_get($input, Entity::CHANNEL);
+
+        $merchantId = array_get($input, Entity::MERCHANT_ID);
+
+        $gatewayProcessor = $this->getGatewayProcessorClass($channel);
+
+        /** @var Entity $bankingAccount */
+        $bankingAccount = $this->repo->banking_account
+                                     ->getBankingAccountByMerchantIdAndChannel($merchantId, $channel);
+
+        if ($bankingAccount === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND,
+                null,
+                [
+                    'input' => $input,
+                ]
+            );
+        }
+
+        // every gateway processor must implement fetchGatewayBalance function. This function sends Mozart request
+        // to fetch balance from gateway and return balance.
+        try
+        {
+            $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
+
+            $bankingAccount->setGatewayBalance($balance);
+
+            $bankingAccount->setBalanceLastFetchedAt(Carbon::now()->getTimestamp());
+
+            $this->repo->saveOrFail($bankingAccount);
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_SUCCEEDED,
+                [
+                    Entity::CHANNEL                 => $channel,
+                    Entity::MERCHANT_ID             => $merchantId,
+                    Entity::ACCOUNT_NUMBER          => $bankingAccount->getAccountNumber(),
+                    Entity::GATEWAY_BALANCE         => $bankingAccount->getGatewayBalance(),
+                    Entity::BALANCE_LAST_FETCHED_AT => $bankingAccount->getBalanceLastFetchedAt(),
+                ]
+            );
+
+            return ['success' => true];
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
+                [
+                    Entity::CHANNEL                 => $channel,
+                    Entity::MERCHANT_ID             => $merchantId,
+                    Entity::ACCOUNT_NUMBER          => $bankingAccount->getAccountNumber(),
+                    Entity::GATEWAY_BALANCE         => $bankingAccount->getGatewayBalance(),
+                    Entity::BALANCE_LAST_FETCHED_AT => $bankingAccount->getBalanceLastFetchedAt(),
+                ]
+            );
+
+            return ['success' => false];
+        }
+
+    }
+
+    protected function getGatewayProcessorClass($channel)
+    {
+        $gatewayProcessor = __NAMESPACE__ . '\\' .
+                            studly_case(self::GATEWAY) . '\\' .
+                            studly_case($channel) . '\\' .
+                            studly_case(self::PROCESSOR);
+
+        if (class_exists($gatewayProcessor) === true)
+        {
+            return new $gatewayProcessor;
+        }
+        else
+        {
+            throw new BadRequestException(
+                'Bad request, gateway Processor class does not exist for the channel:' . $channel,
+                null,
+                [
+                    'channel' => $channel,
+                ]);
+        }
+    }
+
     public function getActivationStatusChangeLog(Entity $bankingAccount)
     {
         return $bankingAccount->getActivationStatusChangeLog();
@@ -663,5 +778,72 @@ class Core extends Base\Core
         ];
 
         return $attributes;
+    }
+
+    protected function redactSecrets(array $input)
+    {
+        unset($input[Entity::PASSWORD]);
+    }
+
+    /**
+     * This function is used by cron to dispatch job for each merchant(merchants selected based upon channel and ordered
+     * by balance last fetched at).Job fetches balance from gateway and then update in banking account associated
+     * with merchant
+     *
+     * @param $input
+     *
+     * @return mixed
+     * @throws BadRequestValidationFailureException
+     */
+    public function dispatchGatewayBalanceUpdateForMerchants($input)
+    {
+        $validator = new Validator();
+
+        $validator->validateInput(Validator::DISPATCH_GATEWAY_BALANCE, $input);
+
+        $validator->validateChannelForFetchingGatewayBalance($input);
+
+        $channel = $input[Entity::CHANNEL];
+
+        $limit = (int) (new AdminService)->getConfigKey(
+                                ['key' => ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);
+
+        if (empty($limit) === true)
+        {
+            $limit = self::DEFAULT_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT;
+        }
+
+        // get list of merchants based upon channel and balance last fetched at
+        $merchantIds = $this->repo->banking_account
+                                  ->getMerchantIdsByChannel($channel, $limit);
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $this->dispatchGatewayBalanceUpdateJob($channel, $merchantId);
+        }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_DISPATCHED,
+            [
+                'merchant_ids' => $merchantIds
+            ]);
+
+        return $merchantIds;
+    }
+
+    protected function dispatchGatewayBalanceUpdateJob(string $channel, $merchantId)
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_REQUEST,
+            [
+                Entity::CHANNEL     => $channel,
+                Entity::MERCHANT_ID => $merchantId,
+            ]);
+
+        BankingAccountGatewayBalanceUpdate::dispatch($this->mode,
+                                                     [
+                                                            Entity::CHANNEL     => $channel,
+                                                            Entity::MERCHANT_ID => $merchantId,
+                                                        ]);
     }
 }
