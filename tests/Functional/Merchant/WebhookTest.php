@@ -50,31 +50,11 @@ class WebhookTest extends TestCase
     use DbEntityFetchTrait;
     use PartnerTrait;
 
-    protected function enableRazorXTreatmentForRazorX()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-            $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode) use ($value)
-                {
-                    if ($feature === Merchant\RazorxTreatment::DISABLE_WEBHOOK_UPDATE)
-                    {
-                        return 'off';
-                    }
-                }));
-
-        $this->app->instance('razorx', $razorxMock);
-    }
-
     public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
     {
         $testData = &$this->testData[$functionName];
 
-        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::LIVE);
+        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, 'live');
 
         $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
 
