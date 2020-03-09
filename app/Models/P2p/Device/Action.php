@@ -33,6 +33,7 @@ class Action extends Base\Action
     const UPDATE_WITH_ACTION               = 'update_with_action';
 
     const RESTORE_DEVICE                   = 'restore_device';
+    const REASSIGN_CUSTOMER                = 'reassign_customer';
 
     protected $actionToRoute = [
         self::INITIATE_VERIFICATION            => Requests::P2P_CUSTOMER_VERIFICATION,
@@ -59,6 +60,7 @@ class Action extends Base\Action
 
     protected static $updateAllowedActions = [
         self::RESTORE_DEVICE,
+        self::REASSIGN_CUSTOMER,
     ];
 
     public static function getUpdateAllowedActions()

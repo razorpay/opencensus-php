@@ -11,6 +11,7 @@ class Request
     const SDK           = 'sdk';
     const DESTINATION   = 'destination';
     const URL           = 'url';
+    const TIME          = 'time';
     const ACTION        = 'action';
     const CONTENT       = 'content';
     const VALIDATE      = 'validate';
@@ -50,6 +51,13 @@ class Request
         $this->setType('post');
         $this->load[self::URL] = $url;
         return $this;
+    }
+
+    public function setPoll(string $time = null, string $url = null)
+    {
+        $this->setType('poll');
+        $this->load[self::TIME] = $time;
+        $this->load[self::URL] = $url;
     }
 
     public function setAction($action)

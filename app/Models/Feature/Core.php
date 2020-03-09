@@ -183,7 +183,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        else if(($feature->getName() === Constants::ES_ON_DEMAND) and
+        /*else if(($feature->getName() === Constants::ES_ON_DEMAND) and
                 ($isLiveMode === true) and
                 ($shouldSync === true))
         {
@@ -207,7 +207,7 @@ class Core extends Base\Core
                     Entity::NEW_FEATURE       => $feature,
                     Merchant\Entity::EMAIL    => $merchantEmail
                 ]);
-        }
+        }*/
         else
         {
             $this->trace->info(

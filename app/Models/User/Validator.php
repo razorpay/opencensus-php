@@ -65,14 +65,15 @@ class Validator extends Base\Validator
     protected static $loginRules = [
         Entity::EMAIL                 => 'required|email',
         Entity::PASSWORD              => 'required|between:6,50',
-        Entity::OTP                   => 'sometimes|filled',
         Entity::CAPTCHA               => 'required_without:captcha_disable',
         Entity::CAPTCHA_DISABLE       => 'sometimes|string',
     ];
 
+    protected static $verifyUserSecondFactorRules = [
+        Entity::OTP                   => 'required|string|between:4,6',
+    ];
+
     protected static $setup2faMobileRules = [
-        Entity::EMAIL                 => 'required|email',
-        Entity::PASSWORD              => 'required|between:6,50',
         Entity::CONTACT_MOBILE        => 'required|max:15',
     ];
 
@@ -123,6 +124,14 @@ class Validator extends Base\Validator
     protected static $updateContactMobileRules = [
         Entity::USER_ID        => 'required|alpha_num|size:14',
         Entity::CONTACT_MOBILE => 'required|numeric|digits_between:8,11',
+    ];
+
+    protected static $bulkUserMappingRules = [
+        Entity::USER_ID               => 'required|alpha_num|size:14',
+        Entity::MERCHANT_ID           => 'required|alpha_num|size:14',
+        Merchant\Entity::PRODUCT      => 'required|in:primary,banking',
+        Entity::ROLE                  => 'required|string|custom',
+        Entity::ACTION                => 'required|custom',
     ];
 
     protected static $actionValidators = [
@@ -286,6 +295,12 @@ class Validator extends Base\Validator
      */
     protected function validateCaptcha(array $input)
     {
+        if ((isset($input[Entity::CAPTCHA_DISABLE])) and
+            ($input[Entity::CAPTCHA_DISABLE] === self::DISABLE_CAPTCHA_SECRET))
+        {
+            return;
+        }
+
         $app = App::getFacadeRoot();
 
         $emailData['email'] = $input[Entity::EMAIL];

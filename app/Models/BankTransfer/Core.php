@@ -96,7 +96,7 @@ class Core extends Base\Core
         }
         catch (\Throwable $ex)
         {
-            $this->alertException($ex, $input);
+            return $this->alertException($ex, $input);
         }
 
         return true;
@@ -180,6 +180,8 @@ class Core extends Base\Core
                 'icon'     => ':x:'
             ]
         );
+
+        return false;
     }
 
     /**

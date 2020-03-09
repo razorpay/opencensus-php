@@ -42,10 +42,6 @@ class HyperVerge extends Base\Core
 
     const OUTPUT_IMAGE             = 'outputImage';
 
-    const SIGNATURE_PRESENT           = 'signaturePresentPrimary';
-    const SECONDARY_SIGNATURE_PRESENT = 'signaturePresentSecondary';
-    const TERTIARY_SIGNATURE_PRESENT  = 'signaturePresentTertiary';
-
     const IMAGE                    = 'base64AlignedJPEG';
 
     const VALUE                    = 'value';
@@ -72,11 +68,6 @@ class HyperVerge extends Base\Core
     static $frequencyMapping = [
         Frequency::AS_AND_WHEN_PRESENTED => 'whenPresent',
         Frequency::YEARLY                => 'yearly'
-    ];
-
-    static $frequencyMappingExtracted = [
-        'whenPresented' => Frequency::AS_AND_WHEN_PRESENTED,
-        'yearly'      => Frequency::YEARLY,
     ];
 
     static $toBeReviewed = [
@@ -109,190 +100,6 @@ class HyperVerge extends Base\Core
             Entity::GENERATED_IMAGE => $response[self::OUTPUT_IMAGE],
             Entity::FORM_CHECKSUM   => $response[self::FORM_CHECKSUM],
         ];
-    }
-
-    public function extractPaperMandateFormData(Entity $paperMandate, array $input): array
-    {
-        $extractedMandateData = $this->app->hyperVerge->extractNACHWithOutputImage($input, $paperMandate);
-
-        $this->validateAndFormatExtractedData($extractedMandateData, $paperMandate);
-
-        $traceExtractedMandateData = $this->getExtractedDataToTrace($extractedMandateData);
-
-        unset($traceExtractedMandateData[self::DETAILS][self::IMAGE]);
-
-        $this->trace->info(TraceCode::PAPER_MANDATE_EXTRACTED_DATA,
-            [
-                'paper_mandate'  => $paperMandate->toArrayPublic(),
-                'extracted_data' => $traceExtractedMandateData,
-            ]);
-
-        $mappedMandateData = $this->mapFromHyperVerge($extractedMandateData[self::DETAILS]);
-
-        return $mappedMandateData;
-    }
-
-    public function validateAndFormatExtractedData(array & $extractedMandateData, Entity $paperMandate)
-    {
-        foreach ($extractedMandateData[self::DETAILS] as $key => $item)
-        {
-            if ($key === self::IMAGE)
-            {
-                continue;
-            }
-
-            $extractedMandateData[self::DETAILS][$key] = $item[self::VALUE];
-
-            // not considering confidence score for now
-//            if ((isset($item[self::TO_BE_REVIEWED]) === true) and
-//                ($item[self::TO_BE_REVIEWED] === 'yes') and
-//                (in_array($key, self::$toBeReviewed) === true))
-//            {
-//                $data = [
-//                    'paper_mandate'  => $paperMandate->toArray(),
-//                    'extracted_data' => $extractedMandateData,
-//                ];
-//
-//                throw new BadRequestValidationFailureException(
-//                    'image is not clear',
-//                    $key,
-//                    $data
-//                );
-//            }
-        }
-    }
-
-    public function mapFromHyperVerge(array $extractedMandateData): array
-    {
-        $mappedData = [];
-
-        $mappedData[Entity::CUSTOMER][Customer\Entity::NAME]     = $extractedMandateData[self::PRIMARY_ACCOUNT_HOLDER];
-        $mappedData[Entity::CUSTOMER][Customer\Entity::EMAIL]    = $extractedMandateData[self::EMAIL_ID];
-        $mappedData[Entity::CUSTOMER][Customer\Entity::CONTACT]  = $extractedMandateData[self::PHONE_NUMBER];
-        $mappedData[Entity::CUSTOMER][Entity::SIGNATURE_PRESENT] = $extractedMandateData[self::SIGNATURE_PRESENT] === 'no' ? false : true;
-
-        $mappedData[Entity::CUSTOMER][Entity::SECONDARY_SIGNATURE_PRESENT] = $extractedMandateData[self::SECONDARY_SIGNATURE_PRESENT] === 'no' ? false : true;
-        $mappedData[Entity::CUSTOMER][Entity::TERTIARY_SIGNATURE_PRESENT]  = $extractedMandateData[self::TERTIARY_SIGNATURE_PRESENT] === 'no' ? false : true;
-
-        $mappedData[Entity::SECONDARY_ACCOUNT_HOLDER]            = $extractedMandateData[self::SECONDARY_ACCOUNT_HOLDER];
-        $mappedData[Entity::TERTIARY_ACCOUNT_HOLDER]             = $extractedMandateData[self::TERTIARY_ACCOUNT_HOLDER];
-
-        $mappedData[Entity::BANK_ACCOUNT][BankAccount\Entity::NAME]           = $extractedMandateData[self::BANK_NAME];
-        $mappedData[Entity::BANK_ACCOUNT][BankAccount\Entity::ACCOUNT_NUMBER] = $extractedMandateData[self::ACCOUNT_NUMBER];
-        $mappedData[Entity::BANK_ACCOUNT][BankAccount\Entity::IFSC_CODE]      = $extractedMandateData[self::IFSCCode];
-        $mappedData[Entity::BANK_ACCOUNT][BankAccount\Entity::ACCOUNT_TYPE]   = $extractedMandateData[self::ACCOUNT_TYPE];
-
-        $this->formatBankAccountFromExtraction($mappedData);
-
-        $mappedData[Entity::MERCHANT][Merchant\Entity::NAME] = $extractedMandateData[self::COMPANY_NAME];
-
-        $mappedData[Entity::UTILITY_CODE]                    = $extractedMandateData[self::UTILITY_CODE];
-
-        $mappedData[Entity::DEBIT_TYPE]                      = $this->getFormattedDebitTypeFromExtracted($extractedMandateData[self::DEBIT_TYPE]);
-
-        $mappedData[Entity::FREQUENCY]                       = self::$frequencyMappingExtracted[$extractedMandateData[self::FREQUENCY]] ?? '';
-
-        $mappedData[Entity::TYPE]                            = $extractedMandateData[self::NACH_TYPE];
-
-        $mappedData[Entity::UMRN]                            = empty($extractedMandateData[self::UMRN]) ? null : $extractedMandateData[self::UMRN];
-
-        $mappedData[Entity::AMOUNT]                          = $this->getFormattedAmountFromExtracted($extractedMandateData[self::AMOUNT_IN_NUMBER]);
-
-        $mappedData[Entity::SPONSOR_BANK_CODE]               = $extractedMandateData[self::SPONSOR_CODE];
-
-        $mappedData[Entity::REFERENCE_1] = $extractedMandateData[self::REFERENCE_1];
-        $mappedData[Entity::REFERENCE_2] = $extractedMandateData[self::REFERENCE_2];
-
-        $mappedData[Entity::CREATED_AT]      = $extractedMandateData[self::NACH_DATE];
-
-        $mappedData[Entity::START_AT]        = $extractedMandateData[self::START_DATE];
-
-        $mappedData[Entity::END_AT]          = $extractedMandateData[self::END_DATE];
-
-        $mappedData[Entity::UNTIL_CANCELLED] = $extractedMandateData[self::UNTIL_CANCELLED] === "true" ? true : false;
-
-        $this->formatDatesExtracted($mappedData);
-
-        $mappedData[Entity::ENHANCED_IMAGE]  = $extractedMandateData[self::IMAGE];
-
-        $mappedData[Entity::FORM_CHECKSUM]   = $extractedMandateData[self::FORM_CHECKSUM];
-
-        return $mappedData;
-    }
-
-    protected function getExtractedDataToTrace(array & $extractedData)
-    {
-        $extractedDataToTrace = $extractedData;
-
-        unset($extractedDataToTrace[self::DETAILS][self::IMAGE]);
-        unset($extractedDataToTrace[self::DETAILS][self::BANK_NAME]);
-        unset($extractedDataToTrace[self::DETAILS][self::ACCOUNT_NUMBER]);
-        unset($extractedDataToTrace[self::DETAILS][self::IFSCCode]);
-        unset($extractedDataToTrace[self::DETAILS][self::ACCOUNT_TYPE]);
-
-        return $extractedDataToTrace;
-    }
-
-    private function getFormattedAmountFromExtracted(int $amount): int
-    {
-        return $amount * 100;
-    }
-
-    private function formatDatesExtracted(array & $extracted)
-    {
-        if (isset($extracted[Entity::CREATED_AT]) === true)
-        {
-            $extracted[Entity::CREATED_AT] = $this->formatDateExtracted($extracted[Entity::CREATED_AT]);
-        }
-
-        if (isset($extracted[Entity::START_AT]) === true)
-        {
-            $extracted[Entity::START_AT] = $this->formatDateExtracted($extracted[Entity::START_AT]);
-        }
-
-        if (empty($extracted[Entity::END_AT]) === false)
-        {
-            $extracted[Entity::END_AT] = $this->formatDateExtracted($extracted[Entity::END_AT]);
-        }
-    }
-
-    private function formatDateExtracted(string $date)
-    {
-        if (empty($date) === true)
-        {
-            return $date;
-        }
-
-        try
-        {
-            $dt = Carbon::createFromFormat('d/m/Y', $date);
-
-            return $dt->getTimestamp();
-        }
-        catch (\InvalidArgumentException $e)
-        {
-            return $date;
-        }
-    }
-
-    private function formatBankAccountFromExtraction(array & $extractedData)
-    {
-        $accountType = $extractedData[Entity::BANK_ACCOUNT][BankAccount\Entity::ACCOUNT_TYPE];
-
-        switch ($accountType)
-        {
-            case self::SB:
-                $formattedAccountType = BankAccount\AccountType::SAVINGS;
-                break;
-            case self::CA:
-                $formattedAccountType = BankAccount\AccountType::CURRENT;
-                break;
-            default:
-                $formattedAccountType = '';
-                break;
-        }
-
-        $extractedData[Entity::BANK_ACCOUNT][BankAccount\Entity::ACCOUNT_TYPE] = $formattedAccountType;
     }
 
     private function getGenerateMandateInput(Entity $paperMandate): array
@@ -417,19 +224,6 @@ class HyperVerge extends Base\Core
                 return self::FIXED_AMOUNT;
             case DebitType::MAXIMUM_AMOUNT:
                 return self::MAXIMUM_AMOUNT;
-            default:
-                return null;
-        }
-    }
-
-    protected function getFormattedDebitTypeFromExtracted(string $debitType)
-    {
-        switch ($debitType)
-        {
-            case self::FIXED_AMOUNT:
-                return DebitType::FIXED_AMOUNT;
-            case self::MAXIMUM_AMOUNT:
-                return DebitType::MAXIMUM_AMOUNT;
             default:
                 return null;
         }

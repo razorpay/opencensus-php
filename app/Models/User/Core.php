@@ -23,6 +23,7 @@ use RZP\Services\TokenService;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
+use RZP\Http\UserRolePermissionsMap;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 
 class Core extends Base\Core
@@ -124,6 +125,16 @@ class Core extends Base\Core
         return $user;
     }
 
+    public function resendOtp(Entity $user)
+    {
+        $this->checkUserAccountNotLockedOrThrowException($user);
+
+        $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user);
+
+        $this->app['module']->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH)
+             ->sendOtp($smsOtpAuthPayload);
+    }
+
     private function checkUserAccountNotLockedOrThrowException(Entity $user)
     {
         if ($user->isAccountLocked() === true)
@@ -136,7 +147,11 @@ class Core extends Base\Core
                     null,
                     [
                     'internal_error_code'  => ErrorCode::BAD_REQUEST_LOCKED_USER_LOGIN,
-                    'user_details'         => ['restricted' => $user->restricted, 'account_locked' => true],
+                    'user_details'         => [
+                        'restricted'     => $user->restricted,
+                        'account_locked' => true,
+                        'user_id'        => $user->getId(),
+                        ],
                     ]);
         }
     }
@@ -248,7 +263,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function login(array $input)
+    public function login(array $input, $validate2fa = true)
     {
         (new Entity)->getValidator()->validateInput('login', $input);
 
@@ -256,7 +271,7 @@ class Core extends Base\Core
 
         $enable2FAExpForUser = $this->is2FAForUserEnabled($user);
 
-        if ($enable2FAExpForUser === false)
+        if (($enable2FAExpForUser === false) or ($validate2fa === false))
         {
             return $this->get($user);
         }
@@ -273,7 +288,7 @@ class Core extends Base\Core
 
             if ($user->isSecondFactorAuthSetup() === true)
             {
-                return $this->handleLoginFlowUser2faEnabledAndSetupDone($user, $input);
+                return $this->sendOtpForSecondFactorAuthOnLogin($user);
             }
             else
             {
@@ -287,7 +302,12 @@ class Core extends Base\Core
                         null,
                         [
                             'internal_error_code'    => ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
-                            'user_details'           => ['restricted' => $user->getRestricted()]
+                            'user_details'           => [
+                                'restricted'     => $user->getRestricted(),
+                                'user_id'        => $user->getId(),
+                                'contact_mobile' => $user->getContactMobile(),
+                                'account_locked' => $user->isAccountLocked(),
+                            ],
                         ]);
             }
         }
@@ -297,58 +317,77 @@ class Core extends Base\Core
         return $this->get($user);
     }
 
+    public function verifyUserSecondFactorAuth(Entity $user, array $input): array
+    {
+        (new Entity)->getValidator()->validateInput('verify_user_second_factor', $input);
+
+        $this->checkUserAccountNotLockedOrThrowException($user);
+
+        return $this->verifyOtpForSecondFactorAuthOnLogin($user, $input);
+    }
+
     // User 2fa is enabled and 2fa is setup. If the request has the otp, it will check
     // if the otp is correct. Else if the otp is not there it will throw an exception.
-    private function handleLoginFlowUser2faEnabledAndSetupDone(Entity $user, array $input)
+    private function verifyOtpForSecondFactorAuthOnLogin(Entity $user, array $input)
     {
         $smsOtpAuth = $this->app['module']->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH);
 
-        if (isset($input[Entity::OTP]) === true)
+        $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user);
+        $smsOtpAuthPayload[Entity::OTP] = $input[Entity::OTP];
+
+        if ($smsOtpAuth->is2faCredentialValid($smsOtpAuthPayload) === true)
         {
-            $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user);
-            $smsOtpAuthPayload[Entity::OTP] = $input[Entity::OTP];
+            $this->trace->count(Metric::LOGIN_2FA_CORRECT_OTP);
 
-            if ($smsOtpAuth->is2faCredentialValid($smsOtpAuthPayload) === true)
-            {
-                $this->trace->count(Metric::LOGIN_2FA_CORRECT_OTP);
+            $this->resetUserWrong2faAttempts($user);
 
-                $this->resetUserWrong2faAttempts($user);
-                return $this->get($user);
-            }
-            else
-            {
-                $this->trace->count(Metric::LOGIN_2FA_CORRECT_OTP);
-
-                //if the otp is incorrect, increment the number of wrong 2fa attempts.
-                $this->incrementWrong2faAttempts($user);
-
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
-                        null,
-                        [
-                        'internal_error_code'    => ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
-                        'user_details'           => ['restricted' => $user->restricted, 'account_locked' => $user->isAccountLocked()],
-                        ]);
-            }
+            return $this->get($user);
         }
         else
         {
-            $smsOtpAuth->sendOtp($this->getSmsOtpAuthBasePayload($user));
+            $this->trace->count(Metric::LOGIN_2FA_CORRECT_OTP);
 
-            $this->trace->info(TraceCode::USER_LOGIN_2FA_OTP_SENT, ['user_id' => $user->getId()]);
+            //if the otp is incorrect, increment the number of wrong 2fa attempts.
+            $this->incrementWrong2faAttempts($user);
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
-                        null,
-                        [
-                        'internal_error_code'    => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
-                        ]);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+                    null,
+                    [
+                    'internal_error_code'    => ErrorCode::BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP,
+                    'user_details'           => [
+                            'user_id' => $user->getId(),
+                            'restricted' => $user->restricted,
+                            'account_locked' => $user->isAccountLocked()
+                        ],
+                    ]);
         }
+    }
+
+    private function sendOtpForSecondFactorAuthOnLogin(Entity $user)
+    {
+        $smsOtpAuth = $this->app['module']
+                            ->secondFactorAuth::make(AuthConstants::SMS_OTP_AUTH);
+
+        $smsOtpAuth->sendOtp($this->getSmsOtpAuthBasePayload($user));
+
+        $this->trace->info(TraceCode::USER_LOGIN_2FA_OTP_SENT, ['user_id' => $user->getId()]);
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                    null,
+                    [
+                    'internal_error_code'    => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                    'user_details'           => ['user_id' => $user->getId(), 'account_locked' => $user->isAccountLocked()],
+                    ]);
     }
 
     private function resetUserWrong2faAttempts(Entity $user)
     {
-        if ($user->getWrong2faAttempts() !== 0)
+        if (($user->getWrong2faAttempts() !== 0) or ($user->isContactMobileVerified() === false))
         {
+            $user->setContactMobileVerified(true);
+
             $user->setWrong2faAttempts(0);
+
             $this->repo->saveOrFail($user);
         }
     }
@@ -384,11 +423,9 @@ class Core extends Base\Core
      *
      * @param   array $input
      */
-    public function setup2faMobileOnLogin(array $input)
+    public function setup2faContactMobile(Entity $user, array $input)
     {
         (new Entity)->getValidator()->validateInput('setup2faMobile', $input);
-
-        $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
 
         $this->checkIfUserCanHitSetup2faRoute($user);
 
@@ -609,6 +646,11 @@ class Core extends Base\Core
                 {
                     return $merchant;
                 }
+
+                // Attach Permission
+                $userMerchantPermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);
+
+                $merchant[Constants::PERMISSIONS] = $userMerchantPermissions;
 
                 /** @var Merchant\Balance\Entity $balance */
                 $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
@@ -1172,9 +1214,7 @@ class Core extends Base\Core
             }
         }
 
-        $smsOtpAuth = $this->app['module']
-            ->secondFactorAuth
-            ::make('SmsOtpAuth');
+        $smsOtpAuth = $this->app['module']->secondFactorAuth::make('SmsOtpAuth');
 
         $smsOtpAuthPayload = $this->getSmsOtpAuthBasePayload($user, $input);
 
