@@ -321,9 +321,7 @@ class Processor extends VirtualAccount\Processor
             return null;
         }
 
-        $virtualAccount = $this->repo
-                               ->virtual_account
-                               ->getActiveVirtualAccountFromBankAccountId($bankAccount->getId());
+        $virtualAccount = $bankAccount->source;
 
         return $virtualAccount;
     }
