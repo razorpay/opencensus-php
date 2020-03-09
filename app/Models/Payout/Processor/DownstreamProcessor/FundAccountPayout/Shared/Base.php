@@ -15,6 +15,7 @@ use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
+use PhpParser\Node\Expr\AssignOp\Mod;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
@@ -93,7 +94,8 @@ class Base extends FundAccountPayout\Base
         $treatmentName = 'RAZORPAY_X_ALLOW_' . strtoupper($mode) .'_PAYOUTS_VIA_ICICI';
 
         if (($channel === Channel::ICICI) and
-            ($mode === Mode::RTGS))
+            (($mode === Mode::RTGS) or
+            ($mode === Mode::UPI)))
         {
             $variant  = $this->app->razorx->getTreatment(
                 $payout->merchant->getId(),
