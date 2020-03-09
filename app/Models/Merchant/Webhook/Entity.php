@@ -362,8 +362,8 @@ class Entity extends Base\PublicEntity
 
         // to avoid that an event that belongs in $bitPosition2 which is disabled, is marked enabled because
         // in the same bit-position an event is enabled in the $bitPosition array
-        return ((Event::isEventEnabled($hex, $event) and in_array($event, Event::$bitPosition, true) === true) or
-                (Event::isEventEnabled($hex2, $event) and in_array($event, Event::$bitPosition2, true) === true));
+        return ((Event::isEventEnabled($hex, $event) and in_array($event, array_keys(Event::$bitPosition), true) === true) or
+                (Event::isEventEnabled($hex2, $event) and in_array($event, array_keys(Event::$bitPosition2), true) === true));
     }
 
     public function resetFailureCount()
