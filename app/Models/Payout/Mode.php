@@ -40,19 +40,19 @@ class Mode
     {
         return [
             Settlement\Channel::YESBANK   => [
-                Constants\Entity::VPA           =>  [
-                    self::UPI,
-                ],
+                //Constants\Entity::VPA           =>  [
+                //    self::UPI,
+                //],
                 Constants\Entity::BANK_ACCOUNT  =>  [
-                    self::RTGS,
+                    //self::RTGS,
                     self::IMPS,
                     self::NEFT,
                     //self::IFT,
                 ],
                 Constants\Entity::CARD          =>  [
                     self::IMPS,
-                    self::UPI,
-                    self::NEFT,
+                    //self::UPI,
+                    //self::NEFT,
                 ]
             ],
             Settlement\Channel::CITI      => [
@@ -68,18 +68,12 @@ class Mode
                 ]
             ],
             Settlement\Channel::ICICI     => [
-                Constants\Entity::VPA           =>  [
-                    self::UPI,
-                ],
                 Constants\Entity::BANK_ACCOUNT  =>  [
                     self::IMPS,
                     self::NEFT,
-                    self::RTGS,
                 ],
                 Constants\Entity::CARD          =>  [
                     self::IMPS,
-                    self::UPI,
-                    self::NEFT,
                 ]
             ],
             Settlement\Channel::RBL       => [

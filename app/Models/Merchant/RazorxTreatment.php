@@ -102,11 +102,8 @@ final class RazorxTreatment
     // Forces ICICI channel when we get channel as yesbank
     const FORCE_ICICI_OVER_YESBANK_FOR_PAYOUTS = 'force_icici_over_yesbank_for_payouts';
 
-    // Allow RTGS Payouts via ICICI
-    const RAZORPAY_X_ALLOW_RTGS_PAYOUTS_VIA_ICICI = 'razorpay_x_allow_rtgs_payouts_via_icici';
-
-    // Allow UPI Payouts via ICICI
-    const RAZORPAY_X_ALLOW_UPI_PAYOUTS_VIA_ICICI = 'razorpay_x_allow_upi_payouts_via_icici';
+    // Allow NEFT Payouts via ICICI
+    const RAZORPAY_X_ALLOW_NEFT_PAYOUTS_VIA_ICICI = 'razorpay_x_allow_neft_payouts_via_icici';
 
     const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
 }

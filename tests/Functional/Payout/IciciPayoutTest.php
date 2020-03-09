@@ -56,8 +56,6 @@ class IciciPayoutTest extends TestCase
 
     public function testCreatePayoutForIciciToCardViaNEFT()
     {
-        $this->markTestSkipped('Skipping because we are allowing this now');
-
         $this->fixtures->create(
             'fund_account',
             [

@@ -313,18 +313,12 @@ class Channel
                 ]
             ],
             self::ICICI     => [
-                Constants\Entity::VPA           =>  [
-                    Mode::UPI,
-                ],
                 Constants\Entity::BANK_ACCOUNT  =>  [
-                    Mode::RTGS,
                     Mode::IMPS,
                     Mode::NEFT,
                 ],
                 Constants\Entity::CARD          =>  [
                     Mode::IMPS,
-                    Mode::NEFT,
-                    Mode::UPI,
                 ]
             ],
             self::RBL       => [
