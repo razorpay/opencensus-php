@@ -1617,14 +1617,14 @@ class VirtualAccountTest extends TestCase
             $merchant->sharedBankingBalance->getAccountNumber());
     }
 
-    public function testFetchVirtualAccountMultipleWithBalanceId()
+    public function testFetchVirtualAccountBankingMultipleWithBalanceId()
     {
         $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
 
         $bankingBalance = $this->getDbLastEntity('balance');
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/virtual_accounts?balance_id=' . $bankingBalance['id'];
+        $testData['request']['url'] = '/virtual_accounts/banking/account?balance_id=' . $bankingBalance['id'];
 
         $this->startTest();
     }

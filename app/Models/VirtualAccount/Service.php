@@ -149,14 +149,20 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        if (isset($input[Entity::BALANCE_ID]) === false)
-        {
-            $input[Entity::BALANCE_ID] = $this->merchant->primaryBalance->getId();
-        }
+        $input[Entity::BALANCE_ID] = $this->merchant->primaryBalance->getId();
 
         $virtualAccounts = $this->repo
                                 ->virtual_account
                                 ->fetch($input, $this->merchant->getId());
+
+        return $virtualAccounts->toArrayPublic();
+    }
+
+    public function fetchMultipleBanking(array $input)
+    {
+        $virtualAccounts = $this->repo
+            ->virtual_account
+            ->fetch($input, $this->merchant->getId());
 
         return $virtualAccounts->toArrayPublic();
     }

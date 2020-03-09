@@ -345,6 +345,7 @@ final class Route
         'virtual_account_order_create'             => ['post',     'orders/{id}/virtual_accounts',                   'VirtualAccountController@createForOrder'                           ],
         'virtual_account_edit'                     => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
         'virtual_account_close'                    => ['post',     'virtual_accounts/{id}/close',                    'VirtualAccountController@closeVirtualAccount'                      ],
+        'virtual_account_banking_fetch_multiple'   => ['get',      'virtual_accounts/banking/account',               'VirtualAccountController@listBanking'                              ],
         'virtual_account_fetch'                    => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
         'virtual_account_fetch_multiple'           => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
         'virtual_account_fetch_payments'           => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
@@ -2348,6 +2349,7 @@ final class Route
         'payout_links_resend_notification',
         'payout_links_merchant_summary',
         'fts_get_source_account',
+        'virtual_account_banking_fetch_multiple',
     ];
 
     //

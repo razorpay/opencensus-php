@@ -964,9 +964,9 @@ return [
         ]
     ],
 
-    'testFetchVirtualAccountMultipleWithBalanceId' => [
+    'testFetchVirtualAccountBankingMultipleWithBalanceId' => [
         'request' => [
-            'url' =>'/virtual_accounts?balance_id=10000000000000',
+            'url' =>'/virtual_accounts/banking/account?balance_id=10000000000000',
             'method' => 'get',
         ],
         'response' => [
