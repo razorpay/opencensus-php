@@ -86,14 +86,18 @@ class Repository extends Base\Repository
         $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
         $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
 
-        $balanceIdColumn   = $this->repo->balance->dbColumn(Entity::ID);
-        $accountTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceAccountTypeColumn   = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn          = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $bankingAccountAttrs = $this->dbColumn('*');
 
         return $this->newQuery()
-                    ->selectRaw('banking_accounts.*')
+                    ->select($bankingAccountAttrs)
                     ->where($merchantIdColumn, '=', $merchantId)
                     ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
-                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+                    ->where($balanceAccountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
                     ->where($channelColumn, '=', $channel)
                     ->first();
     }
@@ -104,14 +108,19 @@ class Repository extends Base\Repository
         $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
         $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
 
-        $balanceIdColumn   = $this->repo->balance->dbColumn(Entity::ID);
-        $accountTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
+        $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $bankingAccountAttrs = $this->dbColumn('*');
 
         return $this->newQuery()
+                    ->select($bankingAccountAttrs)
                     ->where($channelColumn, '=', $channel)
                     ->where(Entity::STATUS, '=', Status::ACTIVATED)
                     ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
                     ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
                     ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
                     ->limit($limit)
                     ->pluck($merchantIdColumn);

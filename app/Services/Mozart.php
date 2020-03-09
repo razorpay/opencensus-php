@@ -75,10 +75,10 @@ class Mozart
         string $gateway,
         string $action,
         array $input,
-        int $timeout = self::TIMEOUT,
-        int $connectTimeout = self::CONNECT_TIMEOUT,
         string $version = self::DEFAULT_MOZART_VERSION,
-        bool $useMozartMappedInternalErrorCode = false)
+        bool $useMozartMappedInternalErrorCode = false,
+        int $timeout = self::TIMEOUT,
+        int $connectTimeout = self::CONNECT_TIMEOUT)
     {
         $this->namespace = $namespace;
         $this->gateway   = $gateway;

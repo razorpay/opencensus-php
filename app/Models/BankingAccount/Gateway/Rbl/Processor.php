@@ -278,6 +278,8 @@ class Processor extends BankingAccount\Gateway\Processor
                                                                   BankingAccount\Channel::RBL,
                                                                   Action::ACCOUNT_BALANCE,
                                                                   $request,
+                                                                  Mozart::DEFAULT_MOZART_VERSION,
+                                                                  false,
                                                                   self::FETCH_GATEWAY_BALANCE_TIMEOUT,
                                                                   self::FETCH_GATEWAY_BALANCE_CONNECT_TIMEOUT
                 );
