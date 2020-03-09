@@ -68,6 +68,7 @@ class Validator extends Base\Validator
         Entity::PASSWORD              => 'required|between:6,50',
         Entity::CAPTCHA               => 'required_without:captcha_disable',
         Entity::CAPTCHA_DISABLE       => 'sometimes|string',
+        Entity::APP                   => 'sometimes|string',
     ];
 
     protected static $verifyUserSecondFactorRules = [
