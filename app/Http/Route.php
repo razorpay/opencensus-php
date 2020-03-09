@@ -1441,6 +1441,7 @@ final class Route
 
         //route for testing raven sms gateways
         'send_test_sms'                           => ['post',      'admin/test-sms',                                           'AdminController@sendTestSms'                              ],
+        'd2c_create_csv_report'                   => ['get',      'd2c_bureau_details/d2c_create_csv_report',                  'D2cController@fetchD2cCSVReport'                          ],
         'd2c_bureau_details_fetch'                => ['post',      'd2c_bureau_details',                                       'D2cController@getOrCreate'                                ],
         'd2c_bureau_details_patch'                => ['patch',     'd2c_bureau_details/{id}',                                  'D2cController@patchDetails'                               ],
         'd2c_bureau_details_otp_submit'           => ['post',      'd2c_bureau_details/{id}/otp_submit',                       'D2cController@getReportWithOtp'                           ],
@@ -2354,6 +2355,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'd2c_create_csv_report',
         'offline_verification_service_get',
         'offline_verification_service_put',
         'offline_verification_service_post',
@@ -2894,6 +2896,7 @@ final class Route
         'offline_verification_service_put'         => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
         'offline_verification_service_delete'      => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
         'd2c_bureau_reports_download'              => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
+        'd2c_create_csv_report'                    => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
         'payout_update_pull_payout_status'         => '*',
         'merchant_activation_update_website_status'=> '*',
         'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
@@ -3449,10 +3452,10 @@ final class Route
         'update_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
         'delete_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
 
-        'merchant_inheritance_parent_fetch'                  =>  '*',
-        'merchant_inheritance_parent_set'                    =>  '*',
-        'merchant_inheritance_parent_set_bulk'               =>  '*',
-        'merchant_inheritance_parent_delete'                 =>  '*',
+        'merchant_inheritance_parent_fetch'                  => '*',
+        'merchant_inheritance_parent_set'                    => '*',
+        'merchant_inheritance_parent_set_bulk'               => '*',
+        'merchant_inheritance_parent_delete'                 => '*',
 
         'mdr_adjustment'                                     => '*',
 

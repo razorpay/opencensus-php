@@ -13,7 +13,6 @@ use RZP\Base\JitValidator;
 use RZP\Constants\Product;
 use RZP\Models\D2cBureauReport;
 
-
 class Service extends Base\Service
 {
     /** @var D2cBureauReport\Service  */
