@@ -458,6 +458,8 @@ return [
 
     E::PAYMENT_LINK => [],
 
+    E::PAPER_MANDATE_UPLOAD => [],
+
     E::CONTACT => [],
 
     E::FUND_ACCOUNT => [],

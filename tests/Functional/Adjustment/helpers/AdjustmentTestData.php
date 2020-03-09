@@ -77,6 +77,28 @@ return [
         ]
     ],
 
+    'testSendYesbankLoadSuccessfulEmail' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  250000,
+                'type'          =>  'banking',
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'INR',
+                'description'   =>  'Account: ABC123, Bank: ICICI'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => 250000,
+                'currency'      => 'INR',
+                'description'   => 'Account: ABC123, Bank: ICICI',
+            ],
+        ]
+    ],
+
     'testAddReserveBalance' => [
         'request' => [
             'url' => '/adjustments',

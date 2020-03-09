@@ -115,6 +115,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const UPDATED_AT                         = 'updated_at';
     const COUPON_CODE                        = 'coupon_code';
     const REFERRAL_CODE                      = 'referral_code';
+    const FUND_ACCOUNT_VALIDATION_ID         = 'fund_account_validation_id';
 
     const SUBMIT                                   = 'submit';
     const ARCHIVE                                  = 'archive';
@@ -358,6 +359,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS,
         self::AUTHORIZED_SIGNATORY_DOB,
         self::PLATFORM,
+        self::FUND_ACCOUNT_VALIDATION_ID,
     ];
 
     protected $defaults = [
@@ -1050,5 +1052,15 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getId()
     {
         return $this->getMerchantId();
+    }
+
+    public function setFundAccountValidationId(string $favId)
+    {
+        return $this->setAttribute(self::FUND_ACCOUNT_VALIDATION_ID, $favId);
+    }
+
+    public function getFundAccountValidationId()
+    {
+        return $this->getAttribute(self::FUND_ACCOUNT_VALIDATION_ID);
     }
 }

@@ -1900,6 +1900,24 @@ class AdminFetch
                 ],
             ],
 
+            Entity::PAPER_MANDATE_UPLOAD => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'status' => [
+                    Fetch::LABEL  => 'status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'pending',
+                        'failed',
+                        'accepted',
+                        'rejected',
+                    ],
+                ],
+                'paper_mandate_id' => [
+                    Fetch::LABEL => 'paper_mandate_id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::PAYOUT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'balance_id' => Fetch::FIELD_BALANCE_ID,

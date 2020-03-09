@@ -128,7 +128,7 @@ class Base extends Core
         self::MPESA                  => [],
         self::PAYTM                  => [],
         self::KOTAK                  => ['bankalerts@kotak.com'],
-        self::OLAMONEY               => ['olamoney-noreply@olacabs.com'],
+        self::OLAMONEY               => [],
         self::FREECHARGE             => ['noreply@fcemail.in', 'noreply@freechargemail.in'],
         self::EMANDATE_AXIS          => ['cmsdirect.debit@axisbank.com'],
         self::NETBANKING_AXIS        => ['ibanking@axisbank.com'],

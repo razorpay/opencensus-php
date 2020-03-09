@@ -7,13 +7,17 @@ local mbs               = tonumber(ARGV[1])
 local lrv               = tonumber(ARGV[2])
 local lrd               = tonumber(ARGV[3])
 local lft               = tonumber(ARGV[4])
-local now               = tonumber(ARGV[5])
+-- Variable 'now_unused' is unused, for quick fix not removing argument from
+-- script, just absorbing it. See variable 'time' & 'now' below.
+local now_unused        = tonumber(ARGV[5])
 local cost              = tonumber(ARGV[6])
 local retry_after       = -1
 local leak              = 0
 local allow_attempt     = false
 local last_updated_key  = 'last_updated'
 local bucket_size_key   = 'bucket_size'
+local time              = redis.call('TIME')
+local now               = tonumber(time[1])
 -- Read value of hash with given key, extracts last updated and bucket size.
 local current       = redis.call('hmget', key, last_updated_key, bucket_size_key)
 local last_updated  = tonumber(current[1]) or 0
@@ -35,6 +39,7 @@ else
       retry_after = now + lrd
 end
 -- Finally set the values and TTL for the redis hash.
+redis.replicate_commands()
 redis.call('hmset', key, last_updated_key, last_updated, bucket_size_key, bucket_size)
 redis.call('expire', key, lft)
 -- Returns-
@@ -53,5 +58,5 @@ return {
 ]==]
 
 return function ()
-	return leaky_bucket_script
+    return leaky_bucket_script
 end

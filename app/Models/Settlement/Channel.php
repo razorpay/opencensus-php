@@ -315,6 +315,7 @@ class Channel
             self::ICICI     => [
                 Constants\Entity::BANK_ACCOUNT  =>  [
                     Mode::IMPS,
+                    Mode::NEFT,
                 ],
                 Constants\Entity::CARD          =>  [
                     Mode::IMPS,
