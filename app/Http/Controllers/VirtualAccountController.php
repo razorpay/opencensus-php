@@ -69,13 +69,4 @@ class VirtualAccountController extends Controller
 
         return ApiResponse::json($data);
     }
-
-    public function listBanking()
-    {
-        $input = Request::all();
-
-        $entities = $this->service()->fetchMultipleBanking($input);
-
-        return ApiResponse::json($entities);
-    }
 }

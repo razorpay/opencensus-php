@@ -158,15 +158,6 @@ class Service extends Base\Service
         return $virtualAccounts->toArrayPublic();
     }
 
-    public function fetchMultipleBanking(array $input)
-    {
-        $virtualAccounts = $this->repo
-            ->virtual_account
-            ->fetch($input, $this->merchant->getId());
-
-        return $virtualAccounts->toArrayPublic();
-    }
-
     public function update(string $id, array $input)
     {
         $virtualAccount = $this->repo
