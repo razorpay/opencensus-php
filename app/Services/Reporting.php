@@ -294,7 +294,10 @@ class Reporting implements ExternalService
             $input['generated_by'] = $this->ba->authCreds->getKey();
         }
 
-        $input['batch_id'] = Request::header(self::BATCH_ID) ?? null;
+        if (Request::header(self::BATCH_ID) !== null)
+        {
+            $input['batch_id'] = Request::header(self::BATCH_ID);
+        }
 
         $path = self::LOG_PATH;
 

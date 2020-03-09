@@ -297,6 +297,7 @@ class Type
 
     public static $batchToAdminPermissionMapping = [
         self::ADJUSTMENT    => Name::ADJUSTMENT_BATCH_UPLOAD,
+        self::REPORT        => Name::REPORTING_BATCH_UPLOAD,
     ];
 
     public static function exists(string $type)
