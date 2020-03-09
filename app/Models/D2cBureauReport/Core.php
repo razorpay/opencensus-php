@@ -38,6 +38,8 @@ class Core extends Base\Core
                                                       Provider::EXPERIAN,
                                                       self::MOZART_GET_REPORT_ACTION,
                                                       $request,
+                                                      Mozart::TIMEOUT,
+                                                      Mozart::CONNECT_TIMEOUT,
                                                       Mozart::DEFAULT_MOZART_VERSION,
                                                       true);
 
