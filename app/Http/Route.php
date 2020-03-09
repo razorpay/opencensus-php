@@ -267,6 +267,7 @@ final class Route
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'merchant_balance_fetch'                   => ['get',      'balances',                                       'MerchantController@getAccountBalances'                             ],
+        'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_create_bulk'                      => ['post',     'merchants/credits/bulk',                         'MerchantController@bulkCreateMerchantCredits'                      ],
         'merchant_balance_bulk_backfill_ids'       => ['post',     'merchants/balances/backfill',                    'MerchantController@bulkRegenerateBalanceIds'                       ],
@@ -2889,6 +2890,8 @@ final class Route
         'fetch_batch_action_entities',
 
         'merchant_locked_balance_update',
+
+        'merchant_balance_fetch_admin',
         ];
 
     public static $routePermission = [
@@ -2980,6 +2983,7 @@ final class Route
         'merchant_put_payment_methods'             => Permission::EDIT_MERCHANT_METHODS,
         'balance_fetch'                            => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_balance_fetch'                   => Permission::VIEW_MERCHANT_BALANCE,
+        'merchant_balance_fetch_admin'             => Permission::VIEW_MERCHANT_BALANCE,
         'feature_get_multiple'                     => Permission::VIEW_MERCHANT_FEATURES,
         'merchant_actions'                         => '*',
         'merchant_live_enable'                     => Permission::EDIT_MERCHANT_ENABLE_LIVE,
@@ -3492,6 +3496,7 @@ final class Route
     public static $bankingRoutePermissions = [
         // common routes between banking and admin dashboard
         'merchant_balance_fetch'                       => Permission::VIEW_MERCHANT_BALANCE,
+        'merchant_balance_fetch_admin'                 => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_edit_config'                         => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_details'                  => '*',
         'merchant_fetch_users'                         => Permission::VIEW_MERCHANT_USER,
