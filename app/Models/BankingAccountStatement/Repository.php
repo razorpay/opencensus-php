@@ -29,15 +29,19 @@ class Repository extends Base\Repository
     public function findDebitTxnWithPonum($ponum, $amount, $channel, $merchantId, $transactionDate)
     {
         // NEFT has a 4 hour cycle. PONUM can be same for different NEFT cycles so having
-        // an explicit check on date, the txn date for debit and credit should be the same
+        // an explicit check on date, that the debit and credit txn date should like within
+        // a gap of 4 hours for them to be related. ie: payout and reversal txn.
+
+        $transactionDateBefore = Carbon::createFromTimestamp($transactionDate)->subHours(4)->getTimestamp();
 
         return $this->newQuery()
                     ->where(Entity::PONUM, $ponum)
                     ->where(Entity::AMOUNT, $amount)
                     ->where(Entity::CHANNEL, $channel)
                     ->where(Entity::TYPE, Type::DEBIT)
+                    ->where(Entity::TRANSACTION_DATE, '>=' , $transactionDateBefore)
+                    ->where(Entity::TRANSACTION_DATE, '<=', $transactionDate)
                     ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->where(Entity::TRANSACTION_DATE, '=' , $transactionDate)
                     ->first();
     }
 
