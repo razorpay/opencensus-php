@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
@@ -79,14 +80,41 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getBankingAccountByMerchantIdAndChannel($merchantId, string $channel)
+    {
+        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
+        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceIdColumn   = $this->repo->balance->dbColumn(Entity::ID);
+        $accountTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+
+        return $this->newQuery()
+                    ->selectRaw('banking_accounts.*')
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+                    ->where($channelColumn, '=', $channel)
+                    ->first();
+    }
+
     public function getMerchantIdsByChannel($channel, $limit)
     {
+        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
+        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceIdColumn   = $this->repo->balance->dbColumn(Entity::ID);
+        $accountTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+
         return $this->newQuery()
-                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->where($channelColumn, '=', $channel)
                     ->where(Entity::STATUS, '=', Status::ACTIVATED)
+                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
                     ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
                     ->limit($limit)
-                    ->pluck(Entity::MERCHANT_ID);
+                    ->pluck($merchantIdColumn);
     }
 
     // To be used for x test mode migration purpose only

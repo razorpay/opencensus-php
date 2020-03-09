@@ -44,7 +44,7 @@ class BankingAccountGatewayBalanceUpdate extends Job
                     'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
                 ]);
 
-            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance($this->params);
+            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalanceWrapper($this->params);
 
             $this->delete();
         }

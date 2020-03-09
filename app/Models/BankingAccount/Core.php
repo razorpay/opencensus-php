@@ -568,6 +568,23 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function fetchAndUpdateGatewayBalanceWrapper(array $input)
+    {
+        $validator = new Validator();
+
+        $validator->validateInput(Validator::FETCH_GATEWAY_BALANCE, $input);
+
+        $channel    = $input[Entity::CHANNEL];
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        /** @var Entity $bankingAccount */
+        $bankingAccount = $this->repo->banking_account->getBankingAccountByMerchantIdAndChannel($merchantId, $channel);
+
+        $bankingAccount = $this->fetchAndUpdateGatewayBalance($bankingAccount);
+
+        return $bankingAccount;
+    }
+
     /**
      * for CA, balance needs to be fetched from balance api provided by respective banks/gateways at regular frequency
      * which is agreed upon in SLA. This function will be used to fetch balance from gateway before making normal/queued

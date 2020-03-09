@@ -16,6 +16,7 @@ class Validator extends Base\Validator
     const INTERNAL_EDIT_STATUS  = 'internal_edit_status';
     const ACTIVATED_STATUS      = 'activated_status';
 
+    const FETCH_GATEWAY_BALANCE    = 'fetch_gateway_balance';
     const DISPATCH_GATEWAY_BALANCE = 'dispatch_gateway_balance';
 
     protected static $preProcessRules = [
@@ -158,8 +159,17 @@ class Validator extends Base\Validator
         Entity::PINCODES,
     ];
 
+    protected static $fetchGatewayBalanceRules = [
+    Entity::CHANNEL     => 'required|string',
+    Entity::MERCHANT_ID => 'required|string',
+];
+
     protected static $dispatchGatewayBalanceRules = [
         Entity::CHANNEL => 'required|string|custom',
+    ];
+
+    protected static $fetchGatewayBalanceValidators = [
+        'direct_channel'
     ];
 
     protected static $dispatchGatewayBalanceValidators = [
