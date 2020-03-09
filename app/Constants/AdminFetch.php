@@ -599,18 +599,18 @@ class AdminFetch
 
             Entity::BALANCE_CONFIG => [
                 'balance_id' => Fetch::FIELD_BALANCE_ID,
-                'negative_limit_auto' => [
-                    Fetch::LABEL => 'Negative Limit Auto',
-                    Fetch::TYPE  => Fetch::TYPE_NUMBER,
-                ],
-                'negative_limit_manual' => [
-                    Fetch::LABEL => 'Negative Limit Manual',
-                    Fetch::TYPE  => Fetch::TYPE_NUMBER,
-                ],
-                'negative_transaction_flows' => [
-                    Fetch::LABEL => 'Negative Transaction Flows',
-                    Fetch::TYPE  => Fetch::TYPE_JSON,
-                ],
+//                'negative_limit_auto' => [
+//                    Fetch::LABEL => 'Negative Limit Auto',
+//                    Fetch::TYPE  => Fetch::TYPE_NUMBER,
+//                ],
+//                'negative_limit_manual' => [
+//                    Fetch::LABEL => 'Negative Limit Manual',
+//                    Fetch::TYPE  => Fetch::TYPE_NUMBER,
+//                ],
+//                'negative_transaction_flows' => [
+//                    Fetch::LABEL => 'Negative Transaction Flows',
+//                    Fetch::TYPE  => Fetch::TYPE_JSON,
+//                ],
             ],
 
             Entity::BANK_ACCOUNT => [
