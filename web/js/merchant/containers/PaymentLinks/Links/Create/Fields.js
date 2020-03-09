@@ -7,8 +7,6 @@ import { isAmount, isEmail, isPhone, maxLength } from 'common/utils/validators';
 import { AmountTooltip } from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
-import ShowWhen from 'merchant/components/ShowWhen';
-
 import { trackHelpClick, trackSelectCurrency } from '../ga';
 
 import {
@@ -87,25 +85,7 @@ export default [
   [
     {
       name: 'partial_payment',
-      fieldLabel: (
-        <span>
-          Enable Partial Payment
-          <ShowWhen
-            additionalCondition={user =>
-              user.isOrgAllowedFunctionality('external_links')
-            }
-          >
-            <a
-              class="btn-link m-l"
-              href="https://razorpay.com/docs/payment-links/partial-payments/"
-              target="_blank"
-              onClick={trackHelpClick}
-            >
-              (What's this?)
-            </a>
-          </ShowWhen>
-        </span>
-      ),
+      fieldLabel: <span>Enable Partial Payment</span>,
       _cmp: Input.Check,
       _autoRenderImpure: true,
     },
