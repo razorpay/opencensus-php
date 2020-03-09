@@ -87,6 +87,7 @@ class Base extends Core
     const NETBANKING_KVB         = 'NetbankingKvb';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
+    const VIRTUAL_ACC_RBL        = 'VirtualAccRbl';
     const JIOMONEY               = 'Jiomoney';
     const UPI_SBI                = 'UpiSbi';
     const PAYUMONEY              = 'PayuMoney';
@@ -162,6 +163,7 @@ class Base extends Core
         self::UPI_ICICI              => [],
         self::VIRTUAL_ACC_KOTAK      => ['kmb.reports@kotak.com'],
         self::VIRTUAL_ACC_YESBANK    => ['ereport@yesbank.in'],
+        self::VIRTUAL_ACC_RBL        => [],
         self::UPI_SBI                => [],
         self::PAYUMONEY              => [],
         self::HITACHI                => [],

@@ -292,7 +292,8 @@ return array(
     ],
 
     'signup' => [
-        'nocaptcha_secret' => env('NOCAPTCHA_SECRET', ''),
+        'nocaptcha_secret'       => env('NOCAPTCHA_SECRET', ''),
+        'android_captcha_secret' => env('ANDROID_NOCAPTCHA_SECRET', ''),
     ],
 
     'customer_refund_details' => [

@@ -692,7 +692,7 @@ class Core extends Base\Core
         {
             $bankingAccountArray = $bankingAccount->toArrayPublic();
 
-            $bankingAccountArray['banking_balance'] = $bankingAccount->balance;
+            $bankingAccountArray['banking_balance'] = $bankingAccount->balance->toArrayPublic();
 
             $result[] = $bankingAccountArray;
         }

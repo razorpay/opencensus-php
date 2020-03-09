@@ -3,6 +3,7 @@
 namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
+use RZP\Base\BuilderEx;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Customer;
