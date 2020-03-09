@@ -35,7 +35,6 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::BUSINESS_TYPE => 'int',
-        self::MCC           => 'int',
     ];
 
     protected $dates = [

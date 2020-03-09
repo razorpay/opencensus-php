@@ -337,7 +337,7 @@ class Name
     const GENERATE_BANKING_ACCOUNT_STATEMENT  = 'generate_banking_account_statement';
     const MERCHANT_INSTANT_ACTIVATION         = 'merchant_instant_activation';
     const UPDATE_MERCHANT_FEATURE             = 'update_merchant_feature';
-
+    const UPDATE_TEST_MERCHANT_BALANCE        = 'update_test_merchant_balance';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

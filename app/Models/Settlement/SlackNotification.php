@@ -83,7 +83,7 @@ class SlackNotification extends Base\Core
                 ];
             }
 
-            if($slackChannel !== null)
+            if ($slackChannel !== null)
             {
                 $channel = Config::get('slack.channels.' . $slackChannel);
             }

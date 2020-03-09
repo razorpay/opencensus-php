@@ -120,4 +120,25 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getYesbankMigrateQuery(string $afterId, string $fromTime, string $toTime, int $limit, array $merchantIds = [])
+    {
+        /** @var BuilderEx $query */
+        $query = $this->newQuery();
+
+        $query->where(Entity::ID, '>', $afterId)
+              ->where(Entity::STATUS, Status::ACTIVE)
+              ->whereNotNull(Entity::BANK_ACCOUNT_ID)
+              ->whereNull(Entity::BANK_ACCOUNT_ID2)
+              ->whereBetween(Entity::CREATED_AT, [$fromTime, $toTime])
+              ->orderBy(Entity::ID);
+
+        if (empty($merchantIds) === false)
+        {
+            $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
+        }
+
+        $query->limit($limit);
+
+        return $query;
+    }
 }
