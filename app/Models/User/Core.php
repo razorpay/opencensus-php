@@ -23,6 +23,7 @@ use RZP\Services\TokenService;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
+use RZP\Exception\BadRequestException;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 
 class Core extends Base\Core
@@ -1428,6 +1429,10 @@ class Core extends Base\Core
     }
 
     /**
+     * Fetch role ids for a particular user by fetching through merchant_users table.
+     * This function provides merchant context which is needed while fetching user roles,
+     * and hence the role_map table cannot be used for fetching role ids.
+     *
      * @param string $userId
      * @return array
      */
@@ -1439,14 +1444,19 @@ class Core extends Base\Core
             'banking'
         );
 
+        if (empty($mapping) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
+        }
+
         $roleCode = $mapping->pivot->role;
 
-        $roleName = (new BankingRole())->getNamesForWorkflowRoles([$roleCode]);
+        $roleName = (new BankingRole())->getNameForWorkflowRole($roleCode);
 
-        $roleId = $this->repo->role->newQueryWithoutTimestamps()
-            ->where('name', '=', $roleName)
-            ->pluck('id')
-            ->toArray();
+        $roleId = $this->repo->role->fetchIdsByOrgIdNames(Org\Entity::RAZORPAY_ORG_ID,
+                                                          [$roleName])
+                                                          ->pluck('id')
+                                                          ->toArray();
 
         return $roleId;
     }

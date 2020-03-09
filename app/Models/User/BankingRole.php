@@ -16,10 +16,10 @@ use RZP\Trace\TraceCode;
 class BankingRole
 {
     // Static Roles
+    const OWNER      = Role::OWNER;
+    const ADMIN      = Role::ADMIN;
     const VIEW_ONLY  = Role::VIEW_ONLY;
     const OPERATIONS = Role::OPERATIONS;
-    const OWNER     = Role::OWNER;
-    const ADMIN     = Role::ADMIN;
 
     //
     // Dynamic Roles:

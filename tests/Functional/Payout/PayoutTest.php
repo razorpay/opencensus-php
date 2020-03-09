@@ -2617,4 +2617,21 @@ class PayoutTest extends TestCase
 
         $this->assertEquals('pending', $payout['status']);
     }
+
+    public function testApprovePayoutWithNonBankingRoleInWorkflow()
+    {
+        $this->liveSetUp();
+
+        $workflow = $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow($workflow, [], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Checker role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $this->startTest();
+    }
 }
