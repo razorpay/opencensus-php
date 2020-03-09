@@ -1359,7 +1359,7 @@ class Service extends Base\Service
     public function createWebhook($input)
     {
         $disableWebhookUpdate = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
+            'any',
             RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
             'live'
         );
@@ -1379,7 +1379,7 @@ class Service extends Base\Service
     {
 
         $disableWebhookUpdate = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
+            'any',
             RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
             'live'
         );
