@@ -3613,6 +3613,7 @@ final class Route
         'user_verify_through_email'                    => '*',
         'merchant_bank_account_change_status'          => '*',
         'fts_get_source_account'                       => '*',
+        'virtual_account_banking_fetch_multiple'       => '*',
 
         // This should go away after the fix
         // https://razorpay.atlassian.net/browse/RX-1701
