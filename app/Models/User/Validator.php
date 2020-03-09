@@ -338,7 +338,13 @@ class Validator extends Base\Validator
             {
                 $app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CAPTCH_VERIFICATION_FAILED, null, null, $emailData);
 
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_CAPTCHA_FAILED);
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_CAPTCHA_FAILED,
+                    null,
+                    [
+                        'output_from_google'        => (array)$output,
+                    ]
+                );
             }
         }
 
