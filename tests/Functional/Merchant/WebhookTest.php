@@ -20,7 +20,6 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Webhook\Inferno;
-use RZP\Models\Merchant\RazorxTreatment;
 use Illuminate\Database\Eloquent\Factory;
 use Http\Discovery\MessageFactoryDiscovery;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
