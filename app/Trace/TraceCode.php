@@ -29,6 +29,8 @@ class TraceCode
     const USER_LOGIN_FAILURE                        = 'USER_LOGIN_FAILURE';
     const SWITCH_MERCHANT                           = 'SWITCH_MERCHANT';
     const USER_LOGOUT                               = 'USER_LOGOUT';
+    const USER_UNLOCK_REQUEST                       = 'USER_UNLOCK_REQUEST';
+    const USER_UNLOCK_RESPONSE                      = 'USER_UNLOCK_RESPONSE';
     const ENABLE_INSTANT_ACTIVATIONS                = 'ENABLE_INSTANT_ACTIVATIONS';
 
     const BULK_RAZORX_CALL_FAILED                   = 'BULK_RAZORX_CALL_FAILED';

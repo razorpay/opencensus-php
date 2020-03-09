@@ -368,13 +368,19 @@ class UserController extends Controller
         {
             $email = Crypt::decrypt($encryptedEmail);
 
-            $this->trace->info(TraceCode::USER_LOGOUT, [$email]);
+            $this->trace->info(TraceCode::USER_UNLOCK_REQUEST, [$email]);
             // replace the email.
             $input['email'] = $email;
 
             list($error, $data) = (new User\Service)->postloginNo2fa($input);
 
-            $this->trace->info(TraceCode::USER_LOGOUT, [$input, $error, $data]);
+            $traceData = [
+                'email'         => $input['email'],
+                'error'         => $error,
+                'data'          => $data,
+            ];
+
+            $this->trace->info(TraceCode::USER_UNLOCK_RESPONSE, $traceData);
         }
         else
         {
