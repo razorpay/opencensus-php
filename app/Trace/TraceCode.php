@@ -2666,10 +2666,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
 
-
     // RBL VA integration
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';
+
+    // VA Migrate - Yesbank -> RBL
+    const VA_MIGRATE_REQUEST            = 'VA_MIGRATE_REQUEST';
+    const VA_MIGRATE_JOB_TRIGGERED      = 'VA_MIGRATE_JOB_TRIGGERED';
+    const VA_MIGRATE_PROCESS_TRIGGERING = 'VA_MIGRATE_PROCESS_TRIGGERING';
+    const VA_MIGRATE_AFTER_ID_RETRIEVED = 'VA_MIGRATE_AFTER_ID_RETRIEVED';
+    const VA_MIGRATE_JOB_FAILED         = 'VA_MIGRATE_JOB_FAILED';
+    const VA_MIGRATE_TIME               = 'VA_MIGRATE_TIME';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
