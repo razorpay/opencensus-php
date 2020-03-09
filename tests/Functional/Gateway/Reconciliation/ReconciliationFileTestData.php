@@ -29,6 +29,24 @@ return [
             'udf14'              => null,
         ],
 
+        'virtual_acc_rbl' => [
+            'transaction_type'              =>  'IMPS',
+            'amount'                        =>  100,
+            'utr_number'                    =>  '',
+            'rrn_number'                    =>  'IMPS 006722951703 FROM ENTERPRISES',
+            'sender_ifsc'                   =>  'SBIN0000000',
+            'sender_account_number'         =>  37366555177,
+            'sender_account_type'           =>  'Current Account',
+            'sender_name'                   =>  'ENTERPRISES',
+            'beneficiary_account_type'      =>  'Current Account',
+            'beneficiary_account_number'    =>  93000000105504,
+            'benename'                      =>  '',
+            'credit_date'                   =>  '08-03-2020 221042',
+            'credit_account_number'         =>  409000863333,
+            'corporate_code'                =>  'SATCDCDD',
+            'sender_information'            =>  'Some Random comments'
+        ],
+
         'yes_bank' => [
             'CTX_ID'                    => '5810725851246772703057',
             'MERCHANT ID'               => '120000000004780',

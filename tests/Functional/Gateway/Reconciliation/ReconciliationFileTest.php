@@ -31,6 +31,7 @@ use RZP\Reconciliator\Axis\SubReconciliator\PaymentReconciliate as AxisPaymentRe
 use RZP\Reconciliator\Atom\SubReconciliator\PaymentReconciliate as AtomPaymentRecon;
 use RZP\Reconciliator\FirstData\SubReconciliator\PaymentReconciliate as FDPaymentRecon;
 use RZP\Reconciliator\Hitachi\SubReconciliator\RefundReconciliate as HitachiRefundRecon;
+use RZP\Reconciliator\VirtualAccRbl\SubReconciliator\PaymentReconciliate as VirtualAccRbl;
 use RZP\Reconciliator\BillDesk\SubReconciliator\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\SubReconciliator\PaymentReconciliate as HitachiPaymentRecon;
 use RZP\Reconciliator\VasAxis\SubReconciliator\PaymentReconciliate as VasAxisPaymentRecon;
@@ -928,7 +929,75 @@ class ReconciliationFileTest extends TestCase
         $transaction = $this->getLastEntity('transaction', true);
 
         $this->assertNotNull($transaction['reconciled_at']);
+    }
 
+    /**
+     * Creates 3 payments, 1 of IMPS, 1 UPI, 1 NEFT and reconcile them.
+     * Getting UTR from recon row is different for these 3 cases.
+     */
+    public function testVirtualAccRblReconFile()
+    {
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $account = $this->createVirtualAccount();
+
+        // Intentionally changing the IFSC to validate IFSC is not updated from recon file anymore.
+        $payment1 = $this->payVirtualAccount($account['id'], ['payer_ifsc' => 'PYTM0000001']);
+
+        //create 3 payments
+        $paymentEntity1 = $this->getLastEntity('payment', true);
+        $transaction1 = $this->getDbEntityById('transaction', $paymentEntity1['transaction_id']);
+        $this->assertNull($transaction1['reconciled_at']);
+        $this->assertNull($transaction1['reconciled_type']);
+
+        $payment2 = $this->payVirtualAccount($account['id'], ['payer_ifsc' => 'PYTM0000001']);
+        $paymentEntity2 = $this->getLastEntity('payment', true);
+        $transaction2 = $this->getDbEntityById('transaction', $paymentEntity2['transaction_id']);
+        $this->assertNull($transaction2['reconciled_at']);
+        $this->assertNull($transaction2['reconciled_type']);
+
+        $payment3 = $this->payVirtualAccount($account['id'], ['payer_ifsc' => 'PYTM0000001']);
+        $paymentEntity3 = $this->getLastEntity('payment', true);
+        $transaction3 = $this->getDbEntityById('transaction', $paymentEntity3['transaction_id']);
+        $this->assertNull($transaction3['reconciled_at']);
+        $this->assertNull($transaction3['reconciled_type']);
+
+        $entries[] = $this->overrideVirtualAccRblPayment($account, $payment1, 'IMPS');
+        $entries[] = $this->overrideVirtualAccRblPayment($account, $payment2, 'UPI');
+        $entries[] = $this->overrideVirtualAccRblPayment($account, $payment3, 'NEFT');
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccRbl', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccRbl');
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $updatedTransaction1 = $this->getDbEntityById('transaction', $paymentEntity1['transaction_id']);
+        $updatedTransaction2 = $this->getDbEntityById('transaction', $paymentEntity2['transaction_id']);
+        $updatedTransaction3 = $this->getDbEntityById('transaction', $paymentEntity3['transaction_id']);
+
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+        $this->assertNotNull($updatedTransaction1['reconciled_type']);
+
+        $this->assertNotNull($updatedTransaction2['reconciled_at']);
+        $this->assertNotNull($updatedTransaction2['reconciled_type']);
+
+        $this->assertNotNull($updatedTransaction3['reconciled_at']);
+        $this->assertNotNull($updatedTransaction3['reconciled_type']);
+
+        // Check further assertions only for last payment
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertNotEquals($entries[2]['sender_ifsc'], $bankTransfer['payer_ifsc']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertNotEquals($entries[2]['sender_ifsc'], $bankAccount['ifsc_code']);
+
+        // Beneficiary name should be overridden by the one in the file.
+        $this->assertEquals($entries[2]['sender_name'], $bankAccount['beneficiary_name']);
     }
 
     public function testAxisCyberSourceReconPaymentFile()
@@ -1648,6 +1717,37 @@ class ReconciliationFileTest extends TestCase
 
         $facade[VirtualAccYesBank::COLUMN_UTR]           = $payment['transaction_id'];
         $facade[VirtualAccYesBank::COLUMN_PAYEE_ACCOUNT] = $account['receivers'][0]['account_number'];
+
+        return $facade;
+    }
+
+    private function overrideVirtualAccRblPayment($account, $payment, $mode = 'NEFT')
+    {
+        $facade = $this->testData['facades']['virtual_acc_rbl'];
+
+        // For IMPS or UPI txn, UTR is not present in UTR_number column,
+        // rather it is mentioned in RRN number column.
+        // e.g. IMPS 001234567811 FROM SK ENTERPRISES
+        // or
+        // UPI/006752404360/PAYMENT FROM PHONEPE/8199080070@Y
+        if ($mode === 'IMPS')
+        {
+            $facade[VirtualAccRbl::COLUMN_TRANSACTION_TYPE] = 'IMPS';
+            $facade[VirtualAccRbl::COLUMN_RRN_NUMBER]       = 'IMPS ' . $payment['transaction_id'] . ' FROM ENTERPRISES';
+        }
+        else if ($mode === 'UPI')
+        {
+            $facade[VirtualAccRbl::COLUMN_TRANSACTION_TYPE] = 'IMPS';
+            $facade[VirtualAccRbl::COLUMN_RRN_NUMBER]       = 'UPI/' . $payment['transaction_id'] . '/PAYMENT FROM PHONEPE/8199080070@Y';
+        }
+        else
+        {
+            // For NEFT/RTGS, utr directly present in the column
+            $facade[VirtualAccRbl::COLUMN_TRANSACTION_TYPE] = 'N';
+            $facade[VirtualAccRbl::COLUMN_UTR]              = $payment['transaction_id'];
+        }
+
+        $facade[VirtualAccRbl::COLUMN_PAYEE_ACCOUNT] = $account['receivers'][0]['account_number'];
 
         return $facade;
     }
