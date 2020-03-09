@@ -51,8 +51,8 @@ class Mode
                 ],
                 Constants\Entity::CARD          =>  [
                     self::IMPS,
-                    //self::UPI,
-                    //self::NEFT,
+                    self::UPI,
+                    self::NEFT,
                 ]
             ],
             Settlement\Channel::CITI      => [
@@ -78,6 +78,8 @@ class Mode
                 ],
                 Constants\Entity::CARD          =>  [
                     self::IMPS,
+                    self::UPI,
+                    self::NEFT,
                 ]
             ],
             Settlement\Channel::RBL       => [

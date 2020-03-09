@@ -323,6 +323,8 @@ class Channel
                 ],
                 Constants\Entity::CARD          =>  [
                     Mode::IMPS,
+                    Mode::NEFT,
+                    Mode::UPI,
                 ]
             ],
             self::RBL       => [
