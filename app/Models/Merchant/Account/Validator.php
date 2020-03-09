@@ -71,7 +71,7 @@ class Validator extends Merchant\Validator
         Constants::CHARGEBACK        => 'sometimes|array',
         Constants::REFUND            => 'sometimes|array',
         Constants::DISPUTE           => 'sometimes|array',
-        Constants::BILLING_LABEL     => 'required|string|max:25',
+        Constants::BILLING_LABEL     => 'required|string|max:100',
         Constants::IDENTIFICATION    => 'sometimes|array',
         Constants::OWNER_INFO        => 'sometimes|array',
     ];
@@ -90,7 +90,7 @@ class Validator extends Merchant\Validator
         Constants::CHARGEBACK        => 'sometimes|array',
         Constants::REFUND            => 'sometimes|array',
         Constants::DISPUTE           => 'sometimes|array',
-        Constants::BILLING_LABEL     => 'sometimes|string|max:25',
+        Constants::BILLING_LABEL     => 'sometimes|string|max:100',
     ];
 
     protected static $accountAddressRules = [
@@ -149,7 +149,7 @@ class Validator extends Merchant\Validator
     protected static $bankAccountRules = [
         Constants::NOTES          => 'sometimes|notes',
         Constants::IFSC           => 'required|string|size:11',
-        Constants::NAME           => 'required|string|max:50',
+        Constants::NAME           => 'required|string|max:120',
         Constants::ACCOUNT_NUMBER => 'required|string|max:16',
     ];
 

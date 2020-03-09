@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Upi;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Device;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Transaction;
 
@@ -57,6 +58,17 @@ class Service extends Base\Service
                         Transaction\Entity::CONCERN => $concern,
                     ], $device);
                 }
+
+                break;
+
+            case Device\Entity::REGISTER_TOKEN:
+
+                $processor = new Device\Processor;
+
+                $processor->processAction($context[Base\Entity::ACTION],
+                                          $callback[Device\Entity::REGISTER_TOKEN]);
+
+                break;
         }
     }
 }

@@ -9,8 +9,10 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Services\Mozart;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccountStatement\Type;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccountStatement\Entity;
 use RZP\Models\BankingAccountStatement\Category;
 use RZP\Models\BankingAccountStatement\Processor\Source;
@@ -23,6 +25,8 @@ class Gateway extends BaseProcessor
     const DATE_FORMAT = 'Y-m-d\TH:i:s.000';
 
     const STATEMENT_START_TIME_DATE_FORMAT = 'Y-m-d';
+
+    const DEFAULT_RBL_STATEMENT_FETCH_ATTEMPT_LIMIT = 3;
 
     public function __construct(string $channel, string $accountNumber)
     {
@@ -42,6 +46,13 @@ class Gateway extends BaseProcessor
         $finalFormattedResponse = [];
 
         // TODO: This whole thing needs to be re-looked at. How we fetch the details.
+
+        $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT]);
+
+        if (empty($attemptLimit) === true)
+        {
+            $attemptLimit = self::DEFAULT_RBL_STATEMENT_FETCH_ATTEMPT_LIMIT;
+        }
 
         do
         {
@@ -97,7 +108,7 @@ class Gateway extends BaseProcessor
             $attemptCount++;
 
         } while (($this->hasMoreData($bankResponse) === true) and
-                 ($attemptCount < 3));
+                 ($attemptCount < $attemptLimit));
 
         return $finalFormattedResponse;
     }

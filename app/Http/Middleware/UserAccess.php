@@ -5,13 +5,19 @@ namespace RZP\Http\Middleware;
 use Closure;
 use ApiResponse;
 
+use RZP\Exception;
 use RZP\Http\Route;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\UserRolesScope;
 use Illuminate\Http\Request;
 use RZP\Http\BasicAuth\BasicAuth;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Http\UserRolePermissionsMap;
+use RZP\Exception\BadRequestException;
 use Illuminate\Foundation\Application;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 
 class UserAccess
@@ -29,6 +35,16 @@ class UserAccess
     protected $repo;
 
     /**
+     * Trace instance used for tracing
+     * @var Trace
+     */
+    protected $trace;
+
+    const WILDCARD_PERMISSION = '*';
+
+    private $razorx;
+
+    /**
      * UserAccess constructor.
      *
      * @param \RZP\Http\Middleware\Application $app
@@ -41,7 +57,11 @@ class UserAccess
 
         $this->router = $app['router'];
 
+        $this->razorx = $app->razorx;
+
         $this->userRoleScope = new UserRolesScope();
+
+        $this->trace = $app['trace'];
     }
 
     /**
@@ -94,12 +114,12 @@ class UserAccess
             // when merchant (not admin) is hitting the route
             if ($this->ba->isProxyAuth() === true)
             {
-                $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
+                $userAccessResponse = $this->validateUserAccess($route);
 
                 // If there's an exception then return and fail
-                if ($routeUserRolePolicy !== null)
+                if ($userAccessResponse !== null)
                 {
-                    return $routeUserRolePolicy;
+                    return $userAccessResponse;
                 }
             }
         }
@@ -156,6 +176,14 @@ class UserAccess
         $this->ba->setRequestOriginProduct($product);
     }
 
+    private function validateUserAccess(string $route)
+    {
+        $userAccessResponse = $this->ba->isProductBanking() ? $this->validateBankingUserAccess($route) :
+                                                              $this->validateRouteUserRolesPolicy($route);
+
+        return $userAccessResponse;
+    }
+
     private function validateRouteUserRolesPolicy($route)
     {
         $routeRoles = $this->userRoleScope->getRouteUserRoles($route);
@@ -186,5 +214,95 @@ class UserAccess
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
+    }
+
+    private function validateBankingUserAccess(string $route)
+    {
+        try
+        {
+            $this->validateBankingUserRoutePolicy($route);
+        }
+        catch (\Throwable $e)
+        {
+            // TODO: This is added to identify impact on other clients if unauthorised requests are blocked
+            $variant = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
+                                                   RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED,
+                                                   $this->ba->getMode());
+
+            $this->trace->traceException($e,
+                Trace::INFO,
+                TraceCode::BANKING_ACCOUNT_USER_PERMISSION_ERROR,
+                [
+                    'experiment' => $variant,
+                    'user_role'  => $this->ba->getUserRole(),
+                ]);
+
+            if (strtolower($variant) === 'on')
+            {
+                return ApiResponse::unauthorized(
+                    ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+            }
+        }
+    }
+
+    /**
+     * Banking API request will be validated based on whitelisted permissions
+     * Roles are assigned with set of permissions and route is also assigned with permission
+     * If user role has current route permission then allow otherwise deny
+     *
+     * @param $route
+     *
+     * @throws BadRequestException
+     */
+    private function validateBankingUserRoutePolicy($route)
+    {
+        $userRole = $this->getUserRole();
+
+        $routePermission = $this->getRoutePermission($route);
+
+        // Allow route to all roles having wildcard permission
+        if ($routePermission === self::WILDCARD_PERMISSION)
+        {
+            return;
+        }
+
+        // If role doesn't have route permission then deny otherwise allow
+        if (UserRolePermissionsMap::isInvalidRolePermission($userRole, $routePermission))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function getUserRole()
+    {
+        $userRole = $this->ba->getUserRole();
+
+        if (empty($userRole) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING);
+        }
+
+        return $userRole;
+    }
+
+    /**
+     * @param string $routeName
+     *
+     * @return mixed
+     * @throws BadRequestException
+     */
+    private function getRoutePermission(string $routeName)
+    {
+        $routePermissionList = Route::$bankingRoutePermissions;
+
+        if (isset($routePermissionList[$routeName]) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BANKING_ROUTE_PERMISSION_MISSING);
+        }
+
+        return $routePermissionList[$routeName];
     }
 }

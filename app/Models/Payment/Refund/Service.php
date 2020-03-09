@@ -637,42 +637,17 @@ class Service extends Base\Service
 
     protected function addPublicStatus(array &$refundsArray, $refunds, array $input = [])
     {
-        // Public Status param will be added only for feature enabled merchants
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
+        if (isset($input[Entity::PUBLIC_STATUS]))
         {
-            if (isset($input[Entity::PUBLIC_STATUS]))
+            foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
             {
-                foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
-                {
-                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $input[Entity::PUBLIC_STATUS];
+                $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $input[Entity::PUBLIC_STATUS];
 
-                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::STATUS] = $input[Entity::PUBLIC_STATUS];
-                }
-            }
-            else
-            {
-                $refundStatus = $this->getPublicStatusForRefunds($refunds);
-
-                foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
-                {
-                    $refundId = $refundArray[Entity::ID];
-
-                    Entity::verifyIdAndStripSign($refundId);
-
-                    $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
-
-                    $refundArray[Entity::STATUS] = $refundStatus[$refundId];
-                }
+                $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::STATUS] = $input[Entity::PUBLIC_STATUS];
             }
         }
-    }
-
-    public function addModeAndPublicStatus(&$refundsArray, $refunds)
-    {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
+        else
         {
-            $refundModes = $this->getModeForRefunds($refunds);
-
             $refundStatus = $this->getPublicStatusForRefunds($refunds);
 
             foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
@@ -681,12 +656,30 @@ class Service extends Base\Service
 
                 Entity::verifyIdAndStripSign($refundId);
 
-                $refundArray[Entity::MODE] = $refundModes[$refundId];
-
                 $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
 
                 $refundArray[Entity::STATUS] = $refundStatus[$refundId];
             }
+        }
+    }
+
+    public function addModeAndPublicStatus(&$refundsArray, $refunds)
+    {
+        $refundModes = $this->getModeForRefunds($refunds);
+
+        $refundStatus = $this->getPublicStatusForRefunds($refunds);
+
+        foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
+        {
+            $refundId = $refundArray[Entity::ID];
+
+            Entity::verifyIdAndStripSign($refundId);
+
+            $refundArray[Entity::MODE] = $refundModes[$refundId];
+
+            $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+
+            $refundArray[Entity::STATUS] = $refundStatus[$refundId];
         }
     }
 
@@ -1268,6 +1261,63 @@ class Service extends Base\Service
             ]);
     }
 
+    public function retryBulkViaFta(array $input)
+    {
+        (new Validator)->validateInput('retry_bulk_via_fta', $input);
+
+        $this->trace->info(TraceCode::REFUND_RETRY_BULK_VIA_FTA_INITIATED, $input);
+
+        $retryFailures = [];
+
+        foreach ($input[RefundConstants::REFUND_IDS] as $key => $refundId)
+        {
+            try
+            {
+                $refund = $this->repo->refund->findOrFail($refundId);
+
+                $ftaData = [];
+
+                switch ($input[RefundConstants::TRANSFER_METHOD])
+                {
+                    case RefundConstants::SOURCE_VPA :
+
+                        $vpaId = $refund->payment->getVpa();
+
+                        if (empty($vpaId) === false)
+                        {
+                            $ftaData[RefundConstants::VPA][RefundConstants::VPA_ADDRESS] = $vpaId;
+                        }
+
+                        break;
+                }
+
+                if (empty($ftaData) === true)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA);
+                }
+
+                // Grouping 5 refunds for a second delay. Max. refunds allowed per request is 1000
+                // so max delay for last group of refunds will be 199 seconds. Doing this since
+                // Max delay supported by SQS is 900 seconds
+                $ftaData[RefundConstants::DISPATCH_DELAY_TIME] = floor($key / RefundConstants::DISPATCH_BATCH_SIZE);
+
+                $this->getNewProcessor($refund->merchant)->processRefundRetry($refund, $ftaData);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex, null, null, [RefundConstants::REFUND_ID => $refundId]);
+
+                $retryFailures[] = $refundId;
+            }
+        }
+
+        return [
+            'success_count' => count($input['refund_ids']) - count($retryFailures),
+            'failure_count' => count($retryFailures),
+            'failed_ids'    => $retryFailures,
+        ];
+    }
+
     public function directRetryBulk(array $input)
     {
         (new Validator)->validateInput('direct_retry_bulk', $input);
@@ -1551,7 +1601,8 @@ class Service extends Base\Service
                 if ($refund->isScrooge() === true)
                 {
                     $data = [
-                        Payment\Entity::STATUS => Status::PROCESSED
+                        Entity::MODE           => $input[Entity::PROCESSED_SOURCE] ?? '',
+                        Payment\Entity::STATUS => Status::PROCESSED,
                     ];
 
                     $this->makeScroogeEditRefundRequest($refund, $data);
@@ -1605,7 +1656,7 @@ class Service extends Base\Service
                         Entity::REFERENCE1 => $input[Entity::REFERENCE1] ?? '',
                         Entity::REFERENCE2 => $input[Entity::REFERENCE2] ?? '',
                     ],
-                    'processed_source' => $input[Entity::MODE] ?? '',
+                    Entity::PROCESSED_SOURCE    => $input[Entity::MODE] ?? '',
                     RefundConstants::FTA_UPDATE => $input[RefundConstants::FTA_UPDATE] ?? false,
                 ]
             ],
@@ -2566,30 +2617,27 @@ class Service extends Base\Service
 
     protected function addParamsForDashboard(array &$refundArray)
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
+        try
         {
-            try
-            {
-                $refundId = $refundArray[Entity::ID];
+            $refundId = $refundArray[Entity::ID];
 
-                Entity::verifyIdAndStripSign($refundId);
+            Entity::verifyIdAndStripSign($refundId);
 
-                $refund = $this->repo->refund->find($refundId);
+            $refund = $this->repo->refund->find($refundId);
 
-                $this->addProcessedAtTime($refundArray, $refund);
+            $this->addProcessedAtTime($refundArray, $refund);
 
-                $this->addSpeedChangeTime($refundArray, $refund);
-            }
-            catch(\Throwable $exception)
-            {
-                $this->trace->traceException(
-                    $exception,
-                    Trace::WARNING,
-                    TraceCode::REFUND_ADD_DASHBOARD_PARAMS_FAILED,
-                    [
-                        'refund_id' => $refundId,
-                    ]);
-            }
+            $this->addSpeedChangeTime($refundArray, $refund);
+        }
+        catch(\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::WARNING,
+                TraceCode::REFUND_ADD_DASHBOARD_PARAMS_FAILED,
+                [
+                    'refund_id' => $refundId,
+                ]);
         }
     }
 

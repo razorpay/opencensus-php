@@ -65,7 +65,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The fund account id field is required.',
+                    'description' => 'The fund account id field is required when fund account is not present.',
                 ],
             ],
             'status_code' => 400,
@@ -662,7 +662,7 @@ return [
                 'amount'            => 2000000,
                 'currency'          => 'INR',
                 'fund_account_id'   => 'fa_100000000000fa',
-                'mode'              => 'NEFT',
+                'mode'              => 'IMPS',
                 'purpose'           => 'refund',
                 'notes'             => [
                     'abc' => 'xyz',
@@ -679,7 +679,7 @@ return [
                 'purpose'         => 'refund',
                 'status'          => 'processing',
                 'failure_reason'  => null,
-                'mode'            => 'NEFT',
+                'mode'            => 'IMPS',
                 'tax'             => 162,
                 'fees'            => 1062,
                 'notes'           => [
@@ -973,6 +973,46 @@ return [
             ],
         ],
     ],
+    'testCreateMerchantPayoutOnDemandNonBankingHoursWithLessThan2Lakhs' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 20000000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 19763410,
+                'currency'    => 'INR',
+                'tax'         => 36090,
+                'fees'        => 236590,
+                'notes'       => []
+            ],
+        ],
+    ],
+    'testCreateMerchantPayoutOnDemandHoliday' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 20000000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 19763410,
+                'currency'    => 'INR',
+                'tax'         => 36090,
+                'fees'        => 236590,
+                'notes'       => []
+            ],
+        ],
+    ],
     'testCreateMerchantPayoutOnDemandExceedAmountLimit' => [
         'request' => [
             'method'  => 'POST',
@@ -994,6 +1034,29 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testCreateMerchantPayoutOnDemandNonBankingHours'=> [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout/demand',
+            'content' => [
+                'amount'   => 2000,
+                'currency' => 'INR'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Settlements cannot be created at this point of time.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
         ],
     ],
     'testCreateMerchantPayoutExceedAmountLimit' => [
@@ -2413,7 +2476,7 @@ return [
                 'currency'        => 'INR',
                 'purpose'         => 'refund',
                 'narration'       => 'Batman',
-                'mode'            => 'NEFT',
+                'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
                 'notes'           => [
                     'abc' => 'xyz',
@@ -2429,7 +2492,7 @@ return [
                 'narration'       => 'Batman',
                 'purpose'         => 'refund',
                 'status'          => 'processing',
-                'mode'            => 'NEFT',
+                'mode'            => 'IMPS',
                 'tax'             => 162,
                 'fees'            => 1062,
                 'notes'           => [
@@ -2901,7 +2964,6 @@ return [
         ],
     ],
 
-
     'testCreatingPendingPayoutsForRblWithUnsupportedModeChannelDestinationTypeCombo' => [
         'request' => [
             'url'     => '/payouts',
@@ -3063,6 +3125,103 @@ return [
                 ],
             ],
             'status_code' => 200
+        ],
+    ],
+
+    'testCreatePayoutWithFetchAndUpdateBalanceFromGatewayAndBalanceLessThanPayoutAmount' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'fund_account_id' => 'fa_100000000000fa',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'notes'           => [
+                    'abc' => 'xyz'
+                ],
+                'status'          => 'queued',
+                'purpose'         => 'refund',
+                'utr'             => null,
+                'mode'            => 'IMPS',
+                'reference_id'    => null,
+                'narration'       => 'Batman',
+                'batch_id'        => null,
+                'failure_reason'  => NULL,
+            ],
+        ],
+    ],
+    'testCreatePayoutWithFetchAndUpdateBalanceFromGatewayAndBalanceMoreThanPayoutAmount' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'fund_account_id' => 'fa_100000000000fa',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'notes'           => [
+                    'abc' => 'xyz'
+                ],
+                'status'          => 'processing',
+                'purpose'         => 'refund',
+                'utr'             => null,
+                'mode'            => 'IMPS',
+                'reference_id'    => null,
+                'narration'       => 'Batman',
+                'batch_id'        => null,
+                'failure_reason'  => NULL,
+            ],
+        ],
+    ],
+
+    'testDispatchGatewayBalanceUpdateJobForInvalidDirectChannel' => [
+        'request' => [
+            'url'     => '/banking_accounts/gateway/hdfc/balance',
+            'method'  => 'put',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not a valid direct type channel: hdfc',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

@@ -22,6 +22,9 @@ class Role
     const LINKED_ACCOUNT_ADMIN  = 'linked_account_admin';
     const RBL_SUPERVISOR        = 'rbl_supervisor';
     const RBL_AGENT             = 'rbl_agent';
+    const VIEW_ONLY             = 'view_only';
+    const AUTH_LINK_SUPERVISOR  = 'auth_link_supervisor';
+    const AUTH_LINK_AGENT       = 'auth_link_agent';
 
     // SELLERAPP and extra functionality (Reports) - not publicly available.
     const SELLERAPP_PLUS        = 'sellerapp_plus';
@@ -39,6 +42,8 @@ class Role
         self::OWNER,
         self::AGENT,
         self::SELLERAPP_PLUS,
+        self::AUTH_LINK_AGENT,
+        self::AUTH_LINK_SUPERVISOR,
     ];
 
     const WRITER_ROLES = [

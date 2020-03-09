@@ -74,6 +74,10 @@ class Core extends Base\Core
 
         $tokenRegistration = $invoice->entity;
 
+        $this->generateFormIfApplicable($tokenRegistration, $input);
+
+        $invoice->refresh();
+
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
 
         return $invoice;
@@ -97,9 +101,30 @@ class Core extends Base\Core
 
         $tokenRegistration = $invoice->entity;
 
+        $this->generateFormIfApplicable($tokenRegistration, $tokenRegistrationInput);
+
+        $order->refresh();
+
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_CREATED,$tokenRegistration->getMetricDimensions());
 
         return $invoice;
+    }
+
+    protected function generateFormIfApplicable(Entity &$tokenRegistration, array $input = [])
+    {
+        if ($tokenRegistration->getAuthType() !== Payment\AuthType::PHYSICAL)
+        {
+            return;
+        }
+
+        $createForm = $input[E::SUBSCRIPTION_REGISTRATION][Entity::NACH][Entity::CREATE_FORM] ?? true;
+
+        $paperMandate = $tokenRegistration->paperMandate;
+
+        if (($paperMandate !== null) and ($createForm === true))
+        {
+            (new PaperMandate\Core)->generateMandateForm($paperMandate);
+        }
     }
 
     private function populateAuthLinkParamsFromOrder(array & $input, Order\Entity $order)
@@ -134,6 +159,10 @@ class Core extends Base\Core
         $input[Invoice\Entity::AMOUNT] = $order->getAmount();
 
         $input[Invoice\Entity::CUSTOMER_ID] = $customer->getPublicId();
+
+        $input[Invoice\Entity::EMAIL_NOTIFY] = false;
+
+        $input[Invoice\Entity::SMS_NOTIFY] = false;
     }
 
     public function createSubscriptionRegistration(array & $input, Merchant\Entity $merchant, Customer\Entity $customer)
@@ -214,11 +243,6 @@ class Core extends Base\Core
         }
 
         $nachArray = array_pull($subrInput, Entity::NACH, []);
-
-        if (array_key_exists(Entity::CREATE_FORM, $nachArray) === true)
-        {
-            $paperMandateInput[PaperMandate\Entity::GENERATE_FORM] = $nachArray[Entity::CREATE_FORM];
-        }
 
         if (array_key_exists(Entity::FORM_REFERENCE1, $nachArray) === true)
         {
@@ -620,60 +644,20 @@ class Core extends Base\Core
 
     public function paperMandateAuthenticate(Entity $subscriptionRegistration, array $input): array
     {
-        $result = [SubscriptionRegistrationConstants::SUCCESS => true];
-
         $paperMandate = $subscriptionRegistration->paperMandate;
 
-        $data   = (new PaperMandate\Core)->authenticate($paperMandate, $input);
+        $paperMandateUpload = (new PaperMandate\Core)->authenticate($paperMandate, $input);
 
-        $fileId = $data[PaperMandate\Entity::UPLOADED_FILE_ID];
-
-        $signedUrl = (new PaperMandate\FileUploader($paperMandate))->getSignedUrl($fileId);
-
-        $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
-
-        if (empty($validationResult[SubscriptionRegistrationConstants::ERRORS]) === false)
-        {
-            $result = [
-                SubscriptionRegistrationConstants::SUCCESS => false,
-                SubscriptionRegistrationConstants::ERRORS  => $validationResult[SubscriptionRegistrationConstants::ERRORS],
-            ];
-        }
-
-        $result[PaperMandate\Entity::ENHANCED_IMAGE] = $signedUrl;
-
-        $result[PaperMandate\Entity::EXTRACTED_DATA] = $validationResult[PaperMandate\Entity::EXTRACTED_DATA];
-
-        return $result;
+        return $paperMandateUpload->toArrayPublic();
     }
 
     public function paperMandateValidate(Entity $subscriptionRegistration, array $input): array
     {
-        $result = [SubscriptionRegistrationConstants::SUCCESS => true];
-
         $paperMandate = $subscriptionRegistration->paperMandate;
 
-        $data   = (new PaperMandate\Core)->validate($subscriptionRegistration->paperMandate, $input);
+        $paperMandateUpload = (new PaperMandate\Core)->validate($paperMandate, $input);
 
-        $fileId = $data[PaperMandate\Entity::UPLOADED_FILE_ID];
-
-        $signedUrl = (new PaperMandate\FileUploader($paperMandate))->getSignedUrl($fileId);
-
-        $validationResult = $data[PaperMandate\Entity::VALIDATION_RESULT];
-
-        if (empty($validationResult[SubscriptionRegistrationConstants::ERRORS]) === false)
-        {
-            $result = [
-                SubscriptionRegistrationConstants::SUCCESS => false,
-                SubscriptionRegistrationConstants::ERRORS  => $validationResult[SubscriptionRegistrationConstants::ERRORS],
-            ];
-        }
-
-        $result[PaperMandate\Entity::ENHANCED_IMAGE] = $signedUrl;
-
-        $result[PaperMandate\Entity::EXTRACTED_DATA] = $validationResult[PaperMandate\Entity::EXTRACTED_DATA];
-
-        return $result;
+        return $paperMandateUpload->toArrayPublic();
     }
 
     public function nachRegisterTestPaymentAuthorizeOrFail(Entity $subscriptionRegistration, array $input)

@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property Merchant\Entity     $merchant
  * @property Customer\Entity     $customer
  * @property BankAccount\Entity  $bankAccount
+ * @property BankAccount\Entity  $bankAccount2
  */
 class Entity extends Base\PublicEntity
 {
@@ -35,6 +36,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_PAID          = 'amount_paid';
     const AMOUNT_REVERSED      = 'amount_reversed';
     const BANK_ACCOUNT_ID      = 'bank_account_id';
+    const BANK_ACCOUNT_ID2     = 'bank_account_id_2';
     const VPA_ID               = 'vpa_id';
     const QR_CODE_ID           = 'qr_code_id';
     const CUSTOMER_ID          = 'customer_id';
@@ -136,6 +138,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\BankAccount\Entity')->withTrashed();
     }
 
+    public function bankAccount2()
+    {
+        return $this->belongsTo('RZP\Models\BankAccount\Entity', 'bank_account_id_2')->withTrashed();
+    }
+
     public function qrCode()
     {
         return $this->belongsTo('RZP\Models\QrCode\Entity');
@@ -193,6 +200,11 @@ class Entity extends Base\PublicEntity
     public function hasBankAccount()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
+    }
+
+    public function hasBankAccount2()
+    {
+        return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID2));
     }
 
     public function hasQrCode()
@@ -300,6 +312,17 @@ class Entity extends Base\PublicEntity
             {
                 $receivers[] = $this->$assoc->toArrayPublic();
             }
+        }
+
+        if ($this->hasBankAccount2() === true)
+        {
+            $ba2 = clone $this->bankAccount;
+
+            $ba2->setIfsc($this->bankAccount2->getIfscCode());
+
+            $ba2->setId($this->bankAccount2->getId());
+
+            $receivers[] = $ba2->toArrayPublic();
         }
 
         return $receivers;

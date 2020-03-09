@@ -1461,6 +1461,9 @@ class VirtualAccountTest extends TestCase
 
             $this->assertArraySelectiveEquals($testData, $data);
 
+            $paymentArray = $data['event']['payload']['payment']['entity'];
+            $this->assertArrayNotHasKey('terminal_id', $paymentArray);
+
             return true;
         });
 
@@ -1811,5 +1814,57 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->getDbLastEntity('virtual_account');
 
         $this->assertEquals(Status::CLOSED, $virtualAccount->getStatus());
+    }
+
+    public function testFetchVirtualAccountsWithBankAccountId2()
+    {
+        $this->createVirtualAccount();
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+
+        $bankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertEquals($bankAccount['id'], $virtualAccount['bank_account_id']);
+
+        $bankAccount2 = $this->createBankAccount(['account_number' => $bankAccount['account_number']]);
+
+        $virtualAccount->bankAccount2()->associate($bankAccount2);
+
+        $this->app['repo']->virtual_account->saveOrFail($virtualAccount);
+
+        $virtualAccount->refresh();
+
+        $this->assertArraySubset([
+            [
+                'entity'          => 'bank_account',
+                'ifsc'            => 'RAZR0000001',
+                'account_number'  => $bankAccount['account_number'],
+            ],
+            [
+                'entity'          => 'bank_account',
+                'ifsc'            => 'RAZOR000002',
+                'account_number'  => $bankAccount['account_number'],
+            ]
+        ], $virtualAccount['receivers']);
+    }
+
+
+    protected function createBankAccount(array $overrideWith = [])
+    {
+        $bankAccount = $this->fixtures
+            ->create(
+                'bank_account',
+                array_merge(
+                    [
+                        'beneficiary_name' => 'Yes bank deactivated',
+                        'ifsc_code'        => 'RAZOR000002',
+                        'account_type'     => 'savings',
+
+                    ],
+                    $overrideWith
+                )
+            );
+
+        return $bankAccount;
     }
 }

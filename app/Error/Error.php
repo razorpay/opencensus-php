@@ -5,8 +5,9 @@ namespace RZP\Error;
 use App;
 use RZP\Exception;
 use Illuminate\Support;
-use RZP\Services\DowntimeMetric;
 use RZP\Models\Feature\Constants;
+use RZP\Trace\TraceCode;
+use RZP\Services\DowntimeMetric;
 
 class Error extends Support\Fluent
 {
@@ -38,8 +39,29 @@ class Error extends Support\Fluent
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_DESC    = 'gateway_error_desc';
     const METADATA              = 'metadata';
+    const REASON                = 'reason';
+    const FAILURE_TYPE          = 'failure_type';
+    const POINT_OF_FAILURE      = 'point_of_failure';
+    const FAILURE_STAGE         = 'failure_stage';
+    const NEXT_BEST_ACTION      = 'next_best_action';
+    const PAYMENT_METHOD        = 'payment_method';
+    const RECOVERABLE           = 'recoverable';
+
+    const ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_reason_%s.csv';
+
+    const ERROR_CODE_CACHE_KEY  = 'error_code_map_cache_%s';
+
+    const CACHE_EXPIRY          = 14400;
+
+    const REDIS_EXPIRY_PARAM    = 'ex';
 
     protected $attributes = array();
+
+    protected $app;
+
+    protected $trace;
+
+    protected $redis;
 
     public function __construct(
         $code,
@@ -48,6 +70,12 @@ class Error extends Support\Fluent
         $data = null)
     {
         $this->fill($code, $desc, $field, $data);
+
+        $this->app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
+
+        $this->redis = $this->app['redis']->connection();
     }
 
     public function fill($code, $desc = null, $field = null, $data = null, $internalDesc = null)
@@ -200,6 +228,139 @@ class Error extends Support\Fluent
         $this->setAttribute(self::METADATA, $metadata);
     }
 
+    public function setPaymentMethod($paymentMethod)
+    {
+        $this->setAttribute(self::PAYMENT_METHOD, $paymentMethod);
+    }
+
+    public function setDetailedError($code, $method)
+    {
+        if (isset($method) === false)
+        {
+            return;
+        }
+
+        $errorCodeMap = array();
+
+        $cacheKey = sprintf(self::ERROR_CODE_CACHE_KEY,$method);
+
+        if ($this->redis->exists($cacheKey) === 1)
+        {
+            if ($this->redis->get($cacheKey) !== null)
+            {
+                $errorCodeMap = get_object_vars(json_decode($this->redis->get($cacheKey)));
+            }
+            else
+            {
+                $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
+            }
+
+        }
+        else
+        {
+            $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
+        }
+
+        $this->setErrorParamsIfApplicable($errorCodeMap, $code);
+    }
+
+    protected function readMappingFromFile($cacheKey, $method, & $errorCodeMap)
+    {
+        $filePath = storage_path(sprintf(self::ERROR_CODE_FILE_PATH, $method));
+
+        if (file_exists($filePath) === false)
+        {
+            return;
+        }
+
+        $handle = fopen($filePath,"r");
+
+        if ($handle === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $header = fgetcsv($handle);
+
+            while ($row = fgetcsv($handle))
+            {
+                $key = array_shift($row);
+
+                $errorCodeMap[$key] = $row;
+            }
+
+            $this->redis->set($cacheKey, json_encode($errorCodeMap), self::REDIS_EXPIRY_PARAM, self::CACHE_EXPIRY);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException($exception, null, TraceCode::ERROR_RESPONSE_FILE_READING_FAILED,
+                ['payment_method'  => $method, 'cacheKey'  => $cacheKey]);
+        }
+        finally
+        {
+            fclose($handle);
+        }
+    }
+
+    protected function setErrorParamsIfApplicable($errorCodeMap, $code)
+    {
+        try
+        {
+            if (array_key_exists($code, $errorCodeMap))
+            {
+                //$this->setDesc($errorCodeMap[$code][0]);
+
+                $this->setReason($errorCodeMap[$code][1]);
+
+                $this->setFailureType($errorCodeMap[$code][2]);
+
+                $this->setPointOfFailure($errorCodeMap[$code][3] ?: "NA");
+
+                $this->setNextBestAction($errorCodeMap[$code][4]);
+
+                $this->setFailureStage($errorCodeMap[$code][5] ?: "NA");
+
+                $this->setRecoverable($errorCodeMap[$code][6]);
+            }
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->info(TraceCode::ERROR_RESPONSE_MAPPING_READ_FAILED, $errorCodeMap[$code]);
+        }
+    }
+
+    protected function setReason($reason)
+    {
+        $this->setAttribute(self::REASON, $reason);
+    }
+
+    protected function setFailureType($failureType)
+    {
+        $this->setAttribute(self::FAILURE_TYPE, $failureType);
+    }
+
+    protected function setPointOfFailure($pointOfFailure)
+    {
+        $this->setAttribute(self::POINT_OF_FAILURE, $pointOfFailure);
+    }
+
+    protected function setFailureStage($failureStage)
+    {
+        $this->setAttribute(self::FAILURE_STAGE, $failureStage);
+    }
+
+    protected function setNextBestAction($nextBestAction)
+    {
+        $this->setAttribute(self::NEXT_BEST_ACTION, $nextBestAction);
+    }
+
+    protected function setRecoverable($recoverable)
+    {
+        $this->setAttribute(self::RECOVERABLE, $recoverable);
+    }
+
     protected function getAttribute($attr)
     {
         if (isset($this->attributes[$attr]))
@@ -338,6 +499,8 @@ class Error extends Support\Fluent
 
     public function toPublicArray($isPublicRoute = false)
     {
+        $this->setDetailedError($this->getInternalErrorCode(), $this->getAttribute(self::PAYMENT_METHOD));
+
         $description = $isPublicRoute ? $this->getCustomerDescription() : $this->getDescription();
 
         $error = array(
@@ -345,21 +508,38 @@ class Error extends Support\Fluent
             self::DESCRIPTION       => $description,
         );
 
-        $app = App::getFacadeRoot();
-
         $isMetadataFeatureEnabled = false;
 
-        if (($app['basicauth'] !== null) and
-            ($app['basicauth']->getMerchant() !== null))
+        if (($this->app['basicauth'] !== null) and
+            ($this->app['basicauth']->getMerchant() !== null))
         {
-                $merchant = $app['basicauth']->getMerchant();
+            $merchant = $this->app['basicauth']->getMerchant();
 
-                $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
+            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
         }
 
         if ($isMetadataFeatureEnabled === true)
         {
-            $error = array_merge($error, [self::METADATA  => $this->getAttribute(self::METADATA)]);
+            $publicReason   = null;
+
+            if($this->getAttribute(self::REASON) !== null)
+            {
+                $publicReason   = $this->getAttribute(self::POINT_OF_FAILURE)."-".
+                    $this->getAttribute(self::FAILURE_STAGE)."-".$this->getAttribute(self::REASON);
+            }
+
+            $reasonArr = array(
+                self::REASON            => $publicReason,
+                self::METADATA          => $this->getAttribute(self::METADATA)
+            );
+
+            $error = array_merge($error, $reasonArr);
+
+            $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
+                [
+                'error_response' => $error
+                ]
+            );
         }
 
         $error = $this->checkAndAddDataToErrorResp($error);
@@ -405,6 +585,8 @@ class Error extends Support\Fluent
 
     public function toDebugArray()
     {
+        $this->setDetailedError($this->getInternalErrorCode(), $this->getAttribute(self::PAYMENT_METHOD));
+
         $error = $this->checkAndAddDataToErrorResp($this->getAttributes());
 
         return array('error' => $error);

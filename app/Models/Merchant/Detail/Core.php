@@ -31,13 +31,11 @@ use RZP\Models\Merchant\LegalEntity;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
-use RZP\Models\Merchant\AutoKyc\ServiceFactory;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
-use RZP\Models\Merchant\AutoKyc\Verifiers\POIVerifier;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -118,11 +116,6 @@ class Core extends Base\Core
 
         $this->updateActivationSource($merchant, $originProduct);
 
-        //
-        // does penny testing for un-registered business type
-        //
-        $this->attemptPennyTesting($merchantDetails, $merchant);
-
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails, $merchant);
 
         $activationStatusData = [
@@ -137,11 +130,18 @@ class Core extends Base\Core
 
         $response['auto_activated'] = $autoActivated;
 
-        $this->fireActivationTrigger($merchantDetails, $merchant);
-
         $eventAttributes = $merchant->toArrayEvent();
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
+
+        //
+        // does penny testing for un-registered business type
+        //
+        $this->attemptPennyTesting($merchantDetails, $merchant); // async
+
+        $this->fireActivationTrigger($merchantDetails, $merchant);
+
+        $this->repo->saveOrFail($merchantDetails);
 
         return $response;
     }
@@ -627,6 +627,8 @@ class Core extends Base\Core
         if (isset($input[Merchant\Entity::WEBSITE]) === true)
         {
             $data[Entity::BUSINESS_WEBSITE] = $input[Merchant\Entity::WEBSITE];
+
+            (new Merchant\Core())->updateWhitelistedDomain($merchant, $input);
         }
 
         if (empty($data) === false)
@@ -674,8 +676,11 @@ class Core extends Base\Core
 
 
     /**
-     * Fills up dummy file IDs, required fields for merchant activation
-     * Use with caution
+     * Fills up dummy file IDs, required fields for merchant activation.
+     *
+     * This function is being used for creating and activating sub merchant .
+     *
+     * In this case kyc is handled by partner , so we upload dummy files .
      *
      * @param Merchant\Entity $merchant
      *
@@ -687,11 +692,17 @@ class Core extends Base\Core
 
         $requiredDocuments = $this->getRequireActivationDocuments($merchantDetails);
 
-        $params = [];
+        $merchantDetailsParams  = [];
+        $merchantDocumentParams = [];
 
         foreach ($requiredDocuments as $requiredDocument)
         {
-            $params[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
+            $merchantDetailsParams[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
+
+            $merchantDocumentParams[$requiredDocument] = [
+                Document\Constants::FILE_ID => DEConstants::DUMMY_ACTIVATION_FILE,
+                Document\Constants::SOURCE  => Document\Source::UFH,
+            ];
         }
 
         //
@@ -700,12 +711,12 @@ class Core extends Base\Core
         //
         if ($merchantDetails->isUnregisteredBusiness() === false)
         {
-            $merchantDetails->fill($params);
+            $merchantDetails->fill($merchantDetailsParams);
 
             $this->repo->saveOrFail($merchantDetails);
         }
 
-        (new Document\Core)->storeInMerchantDocument($merchant, $params);
+        (new Document\Core)->storeInMerchantDocument($merchant, $merchantDocumentParams);
     }
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
@@ -818,7 +829,7 @@ class Core extends Base\Core
         $product = $this->app['basicauth']->getRequestOriginProduct();
 
         $activationFlow = $merchant->merchantDetail->getActivationFlow();
-        
+
         $this->trace->info(TraceCode::KYC_SUBMITTED_EMAIL,
                            [
                                'merchant_id'         => $merchant->getPublicId(),
@@ -1297,37 +1308,21 @@ class Core extends Base\Core
     public function getValidationFields(Entity $merchantDetails): array
     {
         // @todo: Activation flow will define its own validation fields
-        $validationDocumentFields = [];
 
-        $validationFields = ValidationFields::DASHBOARD_FIELDS;
-
-        if ($merchantDetails->getBusinessType() === BusinessType::NGO)
-        {
-            $ngoValidationFields = ValidationFields::NGO_MERCHANT_FIELDS;
-
-            $validationFields = array_merge($validationFields, $ngoValidationFields);
-        }
-
-        // Business Types which have limited fields
-        $limitedFieldTypes = [BusinessType::INDIVIDUAL, BusinessType::NOT_YET_REGISTERED];
-
-        if (in_array($merchantDetails->getBusinessType(), $limitedFieldTypes, true) === true)
-        {
-            $validationFields         = ValidationFields::DASHBOARD_UNREGISTERED_LIMITED;
-            $validationDocumentFields = ValidationFields::UNREGISTERED_DOCUMENT_FIELDS;
-        }
+        [$validationFields, $validationDocumentFields, $validationOptionalFields] = ValidationFields::getValidationFields($merchantDetails);
 
         if (self::shouldSkipBankAccountRegistration() === true)
         {
-            $validationFields = array_diff($validationFields, ValidationFields::BANK_ACCOUNT_FIELDS);
+            $validationFields = array_diff($validationFields, RequiredFields::BANK_ACCOUNT_FIELDS);
         }
 
         $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)
         {
-            $validationFields         = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
+            $validationFields         = RequiredFields::MARKETPLACE_ACCOUNT_FIELDS;
             $validationDocumentFields = [];
+            $validationOptionalFields = [];
 
             $parentMerchant = $merchant->parent;
 
@@ -1338,13 +1333,13 @@ class Core extends Base\Core
             //
             if ($parentMerchant->linkedAccountsRequireKyc() === true)
             {
-                $kycValidationFields = ValidationFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
+                $kycValidationFields = RequiredFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
 
                 $validationFields = array_merge($validationFields, $kycValidationFields);
             }
         }
 
-        return [$validationFields, $validationDocumentFields];
+        return [$validationFields, $validationDocumentFields, $validationOptionalFields];
     }
 
     public function createResponse(Entity $merchantDetails): array
@@ -1355,7 +1350,7 @@ class Core extends Base\Core
 
         $requiredFields = [];
 
-        [$validationFields, $validationDocumentFields] = $this->getValidationFields($merchantDetails);
+        [$validationFields, $validationDocumentFields, $validationOptionalFields] = $this->getValidationFields($merchantDetails);
 
         //
         // refreshing the merchant relation here as createResponse is called at many places
@@ -1422,6 +1417,7 @@ class Core extends Base\Core
                 'status'              => 'disabled',
                 'disabled_reason'     => 'required_fields',
                 'required_fields'     => $requiredFields,
+                'optional_fields'     => $validationOptionalFields,
                 'activation_progress' => 100 - intval($remainingFields * 100 / $totalFields),
             ];
 
@@ -1698,7 +1694,9 @@ class Core extends Base\Core
                                 Detail\Constants::BANK_DETAILS_VERIFICATION_STATUS => BankDetailsVerificationStatus::INITIATED
                             ]);
 
-        (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+        $fundAccountValidation = (new PennyTesting)->attempt($merchantDetails, $fromMerchant);
+
+        $merchantDetails->setFundAccountValidationId($fundAccountValidation->getId());
     }
 
     public function isAdditionalFieldRequired($field)

@@ -35,9 +35,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $sfPocDataRules = [
-        'totalSize' => 'required|integer',
-        'done'      => 'required|boolean',
-        'records'   => 'required|array',
+        'totalSize'      => 'required|integer',
+        'done'           => 'required|boolean',
+        'nextRecordsUrl' => 'sometimes|string',
+        'records'        => 'required|array',
     ];
 
     protected static $sfPocRecordRules = [
@@ -46,7 +47,7 @@ class Validator extends Base\Validator
         'Owner'                         => 'required',
         'Owner.Email'                   => 'required|email',
         'Owner_Role__c'                 => 'required|string',
-        'Managers_In_Role_Hierarchy__c' => 'required|string|custom',
+        'Managers_In_Role_Hierarchy__c' => 'sometimes|string|custom|nullable',
     ];
 
     protected static $setConfigKeysRules = [
@@ -90,10 +91,18 @@ class Validator extends Base\Validator
         ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',
 
         ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
+
+        ConfigKey::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING     => 'filled|integer',
+        ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 'filled|integer',
+
+        ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT  => 'filled|integer',
+        ConfigKey::BLOCK_X_REGISTRATION               => 'filled|boolean',
+        ConfigKey::BLOCK_YESBANK_RX_FAV               => 'filled|boolean',
+        ConfigKey::REMOVE_SETTLEMENT_BA_COOL_OFF      => 'filled|boolean',
+        ConfigKey::BLOCK_YESBANK_WALLET_PAYOUTS       => 'filled|boolean',
     ];
 
     protected static $setRedisKeysRules = [
-        ConfigKey::FTS_TRANSFER_SLA                 => 'filled|array',
         ConfigKey::HEARTBEAT_ROUTES                 => 'filled|array',
         ConfigKey::DOWNTIME_THROTTLE                => 'filled|array',
         ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => 'filled|array',
@@ -150,7 +159,7 @@ class Validator extends Base\Validator
      */
     public function validateManagersInRoleHierarchyC(string $attribute, string $value)
     {
-        $value=rtrim($value,',');
+        $value = rtrim($value, ',');
 
         $emails = explode(',', $value);
 

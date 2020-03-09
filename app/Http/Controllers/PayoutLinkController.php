@@ -61,9 +61,9 @@ class PayoutLinkController extends Controller
      * @param $merchantId
      * @return
      */
-    public function updateSettings($merchantId)
+    public function updateSettings($merchantId = null)
     {
-        $response = $this->service()->updateSettings($merchantId, $this->input);
+        $response = $this->service()->updateSettings($this->input, $merchantId);
 
         return ApiResponse::json($response);
     }
@@ -73,7 +73,7 @@ class PayoutLinkController extends Controller
      * @param $merchantId
      * @return
      */
-    public function getSettings($merchantId)
+    public function getSettings($merchantId = null)
     {
         $response = $this->service()->getSettings($merchantId, $this->input);
 
@@ -94,6 +94,13 @@ class PayoutLinkController extends Controller
         $this->addCorsHeaders($response);
 
         return $response;
+    }
+
+    public function resendNotification(string $payoutLinkId)
+    {
+        $this->service()->resendNotification($payoutLinkId, $this->input);
+
+        return ApiResponse::json();
     }
 
     public function generateAndSendCustomerOtp(string $payoutLinkId)
@@ -123,6 +130,22 @@ class PayoutLinkController extends Controller
         $response = $this->service()->viewHostedPage($payoutLinkId);
 
         return $response;
+    }
+
+    public function onBoardingStatus()
+    {
+        $response = $this->service()
+                         ->onBoardingStatus($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function summary()
+    {
+        $response = $this->service()
+                         ->summary($this->input);
+
+        return ApiResponse::json($response);
     }
 
     public function cancel(string $payoutLinkId)

@@ -29,7 +29,15 @@ class Status
      * Used only to expose publicly.
      * It's used in place of created/initiated.
      */
-    const PROCESSING = 'processing';
+    const PROCESSING   = 'processing';
+
+    public static $finalStates = [
+        self::PROCESSED,
+        self::REVERSED,
+        self::REJECTED,
+        self::CANCELLED,
+        self::FAILED
+    ];
 
     public static $internalToPublicStatusMap = [
         self::PENDING   => self::PENDING,
@@ -71,6 +79,8 @@ class Status
             self::FAILED,
         ],
         self::INITIATED => [
+            // FTA tries to update to initiated multiple times.
+            self::INITIATED,
             self::REVERSED,
             self::FAILED,
             self::PROCESSED,
@@ -206,8 +216,9 @@ class Status
     /**
      * Validate status change based on state machine
      *
-     * @param string      $currentStatus
+     * @param string $currentStatus
      * @param string|null $previousStatus
+     * @throws BadRequestValidationFailureException
      */
     public static function validateStatusUpdate(string $currentStatus, string $previousStatus = null)
     {
@@ -223,5 +234,12 @@ class Status
                     'previous_status' => $previousStatus,
                 ]);
         }
+    }
+
+    public static function isFinalState($status): bool
+    {
+        return in_array($status,
+                        self::$finalStates,
+                        true);
     }
 }

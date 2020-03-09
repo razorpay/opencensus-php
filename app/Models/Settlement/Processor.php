@@ -12,6 +12,7 @@ use RZP\Models\Feature;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
@@ -927,10 +928,10 @@ class Processor extends Base\Core
             ];
         }
 
-        // fetch all the valid transactions for a given merchant
+        // fetch all the valid transactions from all channels for a given merchant
         $txns = $this->repo
                      ->transaction
-                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $channel, $balance, $params);
+                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $balance, $params);
 
         // If there are no transactions to settle then return
         if ($txns->isEmpty() === true)

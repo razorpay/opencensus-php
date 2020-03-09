@@ -8,12 +8,18 @@ use RZP\Models\BankingAccount\Channel;
 
 class Validator extends Base\Validator
 {
+    const LOCKED_BALANCE = 'locked_balance';
+
     protected static $createRules = [
         Entity::CURRENCY         => 'required|string|in:INR',
         Entity::TYPE             => 'required|string|custom',
         Entity::ACCOUNT_TYPE     => 'filled|string|custom',
         Entity::CHANNEL          => 'sometimes|string|nullable|custom',
         Entity::ACCOUNT_NUMBER   => 'sometimes|string|nullable',
+    ];
+
+    protected static $lockedBalanceRules = [
+        Entity::LOCKED_BALANCE => 'required|int|min:0',
     ];
 
     protected function validateType($attribute, $type)
