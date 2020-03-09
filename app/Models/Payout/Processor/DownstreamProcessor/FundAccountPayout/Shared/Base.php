@@ -35,7 +35,7 @@ class Base extends FundAccountPayout\Base
                 $payout->setChannel(Channel::ICICI);
             }
 
-            $this->checkAllowNeftOnIcici($payout);
+            $this->checkAllowModeOnIcici($payout, $ftaAccount);
 
             $this->createTransaction($payout);
 
@@ -75,6 +75,65 @@ class Base extends FundAccountPayout\Base
             else
             {
                 throw $ex;
+            }
+        }
+    }
+
+    /**
+     * @param Entity $payout
+     *
+     * @throws BadRequestException
+     */
+    protected function checkAllowModeOnIcici(Entity $payout, $ftaAccount)
+    {
+        $channel = $payout->getChannel();
+
+        $mode = $payout->getMode();
+
+        $destination = $ftaAccount->getEntity();
+
+        $treatmentName = 'RAZORPAY_X_ALLOW_' . strtoupper($mode) .'_PAYOUTS_VIA_ICICI_TO_' . strtoupper($destination);
+
+        $key = Merchant\RazorxTreatment::class . '::' . strtoupper($treatmentName);
+
+        $treatmentExists = ((defined($key) === true) and
+                            (constant($key) === $treatmentName));
+
+        // If we don't have a treatment defined, we will allow the mode to go through.
+        if ($treatmentExists === false)
+        {
+            return;
+        }
+
+        //
+        // If we have the treatment defined AND the channel is ICICI, we check RazorX.
+        // If RazorX fails, we assume that the mode is not supported and fail it.
+        // We don't have mode check based on experiment for other channels.
+        //
+        if ($channel === Channel::ICICI)
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $payout->getMerchantId(),
+                constant(Merchant\RazorxTreatment::class . '::' . $treatmentName),
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                return;
+            }
+            else
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+                    null,
+                    [
+                        'channel'       => $channel,
+                        'mode'          => $mode,
+                        'payout_id'     => $payout->getId()
+                    ],
+                    $mode . ' is not supported'
+                );
             }
         }
     }
@@ -235,45 +294,6 @@ class Base extends FundAccountPayout\Base
                 ],
                 $mode . ' is not supported'
             );
-        }
-    }
-
-    /**
-     * @param Entity $payout
-     *
-     * @throws BadRequestException
-     */
-    protected function checkAllowNeftOnIcici(Entity $payout)
-    {
-        $channel = $payout->getChannel();
-
-        $mode = $payout->getMode();
-
-        if (($channel === Channel::ICICI) and
-            ($mode === Mode::NEFT))
-        {
-            $variant  = $this->app->razorx->getTreatment(
-                $payout->merchant->getId(),
-                Merchant\RazorxTreatment::RAZORPAY_X_ALLOW_NEFT_PAYOUTS_VIA_ICICI,
-                $this->mode
-            );
-
-            if ($variant === 'on')
-            {
-                return;
-            }
-            else
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
-                    null,
-                    [
-                        'channel'           => $channel,
-                        'mode'              => $mode,
-                    ],
-                    $mode . ' is not supported'
-                );
-            }
         }
     }
 }
