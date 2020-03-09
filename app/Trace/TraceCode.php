@@ -628,6 +628,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RX_LOW_BALANCE_EMAIL_ALERT_DATA                       = 'RX_LOW_BALANCE_EMAIL_ALERT_DATA';
 
     const LOCKED_BALANCE_UPDATE_REQUEST                         = 'LOCKED_BALANCE_UPDATE_REQUEST';
+    const LOCKED_BALANCE_UPDATE_RESPONSE                        = 'LOCKED_BALANCE_UPDATE_RESPONSE';
 
     const MAILER_JOB_ERROR                                      = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                              = 'INVOICE_ACTION_JOB_ERROR';
