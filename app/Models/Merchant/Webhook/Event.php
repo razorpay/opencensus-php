@@ -360,7 +360,7 @@ class Event
         self::PAYMENT_CREATED                   => [Product::PRIMARY],
         self::PAYOUT_PENDING                    => [Product::PRIMARY, Product::BANKING],
         // TODO: change to banking after testing
-        self::PAYOUT_LINK_ATTEMPTED             => [Product::PRIMARY],
+        self::PAYOUT_LINK_ATTEMPTED             => [Product::BANKING],
     ];
 
     /**

@@ -271,7 +271,7 @@ class Entity extends Base\PublicEntity
                 $hex = $this->attributes[self::EVENTS];
             }
 
-            $this->attributes[self::EVENTS] = Event::getHexValue($events, $hex);
+            $this->attributes[self::EVENTS] = Event::getHexValue($events1events, $hex);
         }
     }
 
@@ -360,8 +360,8 @@ class Entity extends Base\PublicEntity
 
         $hex2 = $this->getEvents2HexValue();
 
-        return (Event::isEventEnabled($hex, $event) or
-                Event::isEventEnabled($hex2, $event));
+        return ((Event::isEventEnabled($hex, $event) and in_array($event, Event::$bitPosition, true) === true) or
+                (Event::isEventEnabled($hex2, $event) and in_array($event, Event::$bitPosition2, true) === true));
     }
 
     public function resetFailureCount()
