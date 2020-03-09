@@ -146,7 +146,11 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
         self::PAYMENT_CREATED,
+        self::PAYOUT_LINK_ISSUED,
+        self::PAYOUT_LINK_PROCESSING,
         self::PAYOUT_LINK_ATTEMPTED,
+        self::PAYOUT_LINK_CANCELLED,
+        self::PAYOUT_LINK_PROCESSED,
     ];
 
     /**
@@ -217,10 +221,11 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
         self::PAYOUT_LINK_ISSUED,
-        self::PAYOUT_LINK_PROCESSED,
+        self::PAYOUT_LINK_ISSUED,
         self::PAYOUT_LINK_PROCESSING,
-        self::PAYOUT_LINK_CANCELLED,
         self::PAYOUT_LINK_ATTEMPTED,
+        self::PAYOUT_LINK_CANCELLED,
+        self::PAYOUT_LINK_PROCESSED,
         self::PAYMENT_CREATED
     ];
 
@@ -291,7 +296,11 @@ class Event
     ];
 
     public static $bitPosition2 = [
-        self::PAYOUT_LINK_ATTEMPTED             => 1,
+        self::PAYOUT_LINK_ISSUED     => 1,
+        self::PAYOUT_LINK_PROCESSING => 2,
+        self::PAYOUT_LINK_CANCELLED  => 3,
+        self::PAYOUT_LINK_ATTEMPTED  => 4,
+        self::PAYOUT_LINK_PROCESSED  => 5,
     ];
 
     /**
@@ -359,8 +368,11 @@ class Event
         self::PAYOUT_REJECTED                   => [Product::PRIMARY, Product::BANKING],
         self::PAYMENT_CREATED                   => [Product::PRIMARY],
         self::PAYOUT_PENDING                    => [Product::PRIMARY, Product::BANKING],
-        // TODO: change to banking after testing
+        self::PAYOUT_LINK_ISSUED                => [Product::BANKING],
+        self::PAYOUT_LINK_PROCESSING            => [Product::BANKING],
+        self::PAYOUT_LINK_PROCESSED             => [Product::BANKING],
         self::PAYOUT_LINK_ATTEMPTED             => [Product::BANKING],
+        self::PAYOUT_LINK_CANCELLED             => [Product::BANKING],
     ];
 
     /**
@@ -477,6 +489,11 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED          => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_PAYMENTS_DISABLED         => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::PAYOUT_PENDING                    => Feature\Constants::PAYOUT,
+        self::PAYOUT_LINK_ISSUED                => Feature\Constants::X_PAYOUT_LINKS,
+        self::PAYOUT_LINK_ATTEMPTED             => Feature\Constants::X_PAYOUT_LINKS,
+        self::PAYOUT_LINK_PROCESSED             => Feature\Constants::X_PAYOUT_LINKS,
+        self::PAYOUT_LINK_PROCESSING            => Feature\Constants::X_PAYOUT_LINKS,
+        self::PAYOUT_LINK_CANCELLED             => Feature\Constants::X_PAYOUT_LINKS,
     ];
 
     /**

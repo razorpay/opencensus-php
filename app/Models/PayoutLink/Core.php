@@ -147,8 +147,8 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($payoutLink);
 
-               /* $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus(Status::CANCELLED),
-                                         [$payoutLink]);*/
+                $this->app->events->fire(Status::getWebhookEventCorrespondingToStatus(Status::CANCELLED),
+                                         [$payoutLink]);
 
                 return $payoutLink;
             },
