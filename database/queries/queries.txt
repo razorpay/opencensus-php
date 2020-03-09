@@ -5661,3 +5661,5 @@ ALTER TABLE bank_transfers
 ALTER TABLE bank_transfers
     ADD COLUMN narration VARCHAR(255) DEFAULT NULL,
     ADD INDEX `narration_payer_ifsc_index` (`narration`, `payer_ifsc`);
+
+ALTER TABLE merchants MODIFY COLUMN whitelisted_domains text COLLATE utf8_bin DEFAULT NULL;
