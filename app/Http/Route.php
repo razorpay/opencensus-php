@@ -3590,6 +3590,7 @@ final class Route
         'merchant_instant_activation_post'             => Permission::MERCHANT_INSTANT_ACTIVATION,
         'merchant_features_update'                     => Permission::UPDATE_MERCHANT_FEATURE,
         'bank_transfer_process_test'                   => Permission::UPDATE_TEST_MERCHANT_BALANCE,
+        'virtual_account_banking_fetch_multiple'       => Permission::VIEW_VIRTUAL_ACCOUNT,
         'banking_account_create'                       => '*',
         'merchant_activation_upload_file'              => '*',
         'user_verify_contact'                          => '*',
@@ -3613,7 +3614,6 @@ final class Route
         'user_verify_through_email'                    => '*',
         'merchant_bank_account_change_status'          => '*',
         'fts_get_source_account'                       => '*',
-        'virtual_account_banking_fetch_multiple'       => '*',
 
         // This should go away after the fix
         // https://razorpay.atlassian.net/browse/RX-1701
