@@ -97,7 +97,7 @@ class Base extends FundAccountPayout\Base
         $key = Merchant\RazorxTreatment::class . '::' . strtoupper($treatmentName);
 
         $treatmentExists = ((defined($key) === true) and
-                            (constant($key) === $treatmentName));
+                            (constant($key) === strtolower($treatmentName)));
 
         // If we don't have a treatment defined, we will allow the mode to go through.
         if ($treatmentExists === false)
