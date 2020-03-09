@@ -19,6 +19,7 @@ use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Webhook\Inferno;
+use RZP\Models\Merchant\RazorxTreatment;
 use Illuminate\Database\Eloquent\Factory;
 use Http\Discovery\MessageFactoryDiscovery;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
@@ -72,7 +73,7 @@ class WebhookTest extends TestCase
     {
         $testData = &$this->testData[$functionName];
 
-        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::TEST);
+        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, Mode::LIVE);
 
         $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
 
