@@ -628,6 +628,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RX_LOW_BALANCE_EMAIL_ALERT_DATA                       = 'RX_LOW_BALANCE_EMAIL_ALERT_DATA';
 
     const LOCKED_BALANCE_UPDATE_REQUEST                         = 'LOCKED_BALANCE_UPDATE_REQUEST';
+    const LOCKED_BALANCE_UPDATE_RESPONSE                        = 'LOCKED_BALANCE_UPDATE_RESPONSE';
 
     const MAILER_JOB_ERROR                                      = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                              = 'INVOICE_ACTION_JOB_ERROR';
@@ -2552,6 +2553,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const D2C_BUREAU_DETAILS_UPDATE                             = 'D2C_BUREAU_DETAILS_UPDATE';
     const D2C_BUREAU_REPORT_UPDATE                              = 'D2C_BUREAU_REPORT_UPDATE';
     const D2C_BUREAU_REPORT_DOWNLOAD_REQUEST                    = 'D2C_BUREAU_REPORT_DOWNLOAD_REQUEST';
+    const D2C_BUREAU_CREATE_CSV_REPORT                          = 'D2C_BUREAU_CREATE_CSV_REPORT';
+    const D2C_BUREAU_REPORT_CONVERSION_ERROR                    = 'D2C_BUREAU_REPORT_CONVERSION_ERROR';
     const MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST               = 'MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST';
 
     const MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST           = 'MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST';
