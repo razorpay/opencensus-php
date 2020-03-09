@@ -37,6 +37,7 @@ class Validator extends Base\Validator
         Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::SETTINGS                        => 'nullable|associative_array',
         Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
+        Entity::APP                             => 'sometimes|string',
     ];
 
     protected static $editRules = [
@@ -139,8 +140,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $userAccountLockUnlockRules = [
-        Entity::USER_ID         =>  'required|alpha_num|size:14',
-        Entity::ACTION          =>  'required|string|filled|in:lock,unlock',
+        Entity::USER_ID => 'required|alpha_num|size:14',
+        Entity::ACTION  => 'required|string|filled|in:lock,unlock',
     ];
 
     protected static $createOtpRules = [
@@ -312,6 +313,11 @@ class Validator extends Base\Validator
             $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'];
 
             $noCaptchaSecret = config('app.signup.nocaptcha_secret');
+
+            if ((empty($input[Entity::APP]) === false) and ($input[Entity::APP] === 'android'))
+            {
+                $noCaptchaSecret = config('app.signup.android_captcha_secret');
+            }
 
             $input = [
                 'secret'   => $noCaptchaSecret,

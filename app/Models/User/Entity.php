@@ -58,6 +58,8 @@ class Entity extends Base\PublicEntity
     const INVITATIONS                   = 'invitations';
     const PRODUCT                       = 'product';
 
+    const APP                           = 'app';
+
     const PASSWORD_TOKEN_LENGTH         = 50;
 
     // Boolean attribute is true if contact mobile is verified via OTP
