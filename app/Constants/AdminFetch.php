@@ -608,8 +608,8 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_NUMBER,
                 ],
                 'negative_transaction_flows' => [
-                    Fetch::LABEL => 'Negative Flows',
-                    Fetch::TYPE  => Fetch::TYPE_ARRAY,
+                    Fetch::LABEL => 'Negative Transaction Flows',
+                    Fetch::TYPE  => Fetch::TYPE_JSON,
                 ],
             ],
 

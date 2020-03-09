@@ -32,6 +32,7 @@ class Fetch
     const TYPE_NUMBER          = 'number';
     const TYPE_BOOLEAN         = 'boolean';
     const TYPE_ARRAY           = 'array';
+    const TYPE_JSON            = 'json';
     const TYPE_OBJECT          = 'object';
 
     const FIELD_MERCHANT_ID         = 'merchant_id';
