@@ -2,23 +2,28 @@ import React from 'react';
 import Announcement from 'merchant/components/Announcement';
 
 export default function YesBankAnnouncementSmartCollect() {
-  const title = 'Razorpay Smart Collect is now up and running!';
+  const title = 'Smart Collect is up and running!';
   const description = (
     <React.Fragment>
-      You can now create new Virtual Accounts via - both Dashboard and our APIs.
-      Your API integration and dashboard workflows do not require any changes.
-      Incoming payments into existing Virtual Accounts{' '}
-      <strong>will currently not be processed.</strong> Virtual UPI-IDs continue
-      to work smoothly. <span class="big-dot-separator" />
+      You can now create new Virtual Accounts via both Dashboard and APIs. Your
+      integration and dashboard workflows do not require any changes. Virtual
+      UPI IDs also continue to work smoothly.{' '}
+      <strong>
+        {' '}
+        Virtual Accounts created before the Yes Bank Moratorium have been
+        migrated to our new banking partner.
+      </strong>{' '}
+      You can learn more about how payments to these accounts can be processed{' '}
       <a
         href="https://razorpay.com/docs/smart-collect/yesbank-moratorium-migration/"
         target="_blank"
       >
-        Know more
+        here
       </a>
+      .
     </React.Fragment>
   );
-  const theme = 'danger';
+  const theme = 'success';
 
   return (
     <Announcement
