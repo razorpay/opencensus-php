@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\HdfcDebitEmi\SubReconciliator;
 
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
@@ -57,5 +58,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $raw = json_encode($data);
 
         $gatewayPayment->setRaw($raw);
+    }
+
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
+    {
+        $this->allowForceAuthorization = true;
     }
 }
