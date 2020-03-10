@@ -23,4 +23,9 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
         return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$transactionType] ?? null ;
     }
+
+    protected function ignoreReconParseError(): bool
+    {
+        return true;
+    }
 }
