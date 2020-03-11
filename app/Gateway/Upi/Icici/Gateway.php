@@ -88,22 +88,25 @@ class Gateway extends Base\Gateway
 
         if ($this->isBharatQrPayment() === true)
         {
-            $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
+            //
+            //Hacky fixture: When ORIGINAL_BANK_RRN_REQ is null, the entity NPCI_REFERENCE_ID method becomes
+            // inaccessible for the gateway.To fix the issue, we assign it to BANK_RRN so that paymentData can
+            //access NPCI_REFERENCE_ID using getNpciReferenceId() method.
+            //
+            $input[Fields::ORIGINAL_BANK_RRN_REQ] = $input[Fields::BANK_RRN];
 
-            return null;
+            $paymentData = $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
+
+            return [
+                'acquirer' => [
+                    Payment\Entity::REFERENCE16 => $paymentData->getNpciReferenceId(),
+                ],
+            ];
         }
 
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
         {
-            if ($input['merchant']->isTPVRequired() === true)
-            {
-               throw new Exception\ServerErrorException(
-                   'Intent TPV not Supported',
-                ErrorCode::SERVER_ERROR_INTENT_TPV_NOT_SUPPORTED
-               );
-            }
-
             return $this->authorizeIntent($input);
         }
 
@@ -454,15 +457,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $traceData = $data;
-
-        unset($traceData[Fields::PAYER_ACCOUNT], $traceData[Fields::PAYER_VA]);
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
                 'request'           => $request,
-                'decrypted_content' => $traceData,
+                'decrypted_content' => $data,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],
             ]);
@@ -482,9 +481,20 @@ class Gateway extends Base\Gateway
             Fields::TERMINAL_ID      => $this->getTerminalId($input),
         ];
 
+        $path = 'pay';
+
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $path = 'pay_v3';
+
+            $data[Fields::VALIDATE_PAYER_ACCOUNT2] = 'Y';
+            $data[Fields::PAYER_ACCOUNT] = $input['order']['bank_account'][BankAccount\Entity::ACCOUNT_NUMBER];
+            $data[Fields::PAYER_IFSC] = $input['order']['bank_account'][BankAccount\Entity::IFSC];
+        }
+
         $content = $this->transformRequestArrayToContent($data);
 
-        $request = $this->getStandardRequestArray($content, 'post', 'pay');
+        $request = $this->getStandardRequestArray($content, 'post', $path);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,

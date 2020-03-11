@@ -27,6 +27,7 @@ use RZP\Models\Currency;
 use RZP\Models\Terminal;
 use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\BankAccount;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
@@ -46,7 +47,9 @@ use RZP\Models\Payment\Refund\Speed;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Services\NbPlus as NbPlusPaymentService;
 
@@ -157,6 +160,11 @@ class Processor
     const CARD_PAYMENTS_PREFIX                  = 'card_payments_gateway_routing';
     const NB_PLUS_PAYMENTS_PREFIX               = 'nb_plus_payments_gateway_routing';
     const CARD_PAYMENTS_AUTHORIZE_ALL_TERMINALS = 'card_payments_authorize_all_terminals';
+
+    /**
+     * Card payment service feature flag
+     */
+    const CARD_PAYMENT_SERVICE_VARIANT_PREFIX          = 'cardps';
     /**
      * 3D Secure international feature flag
      */
@@ -293,7 +301,18 @@ class Processor
 
             $this->preProcessForUpiIfApplicable($input);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED);
+            $this->validateYesBankPayments($input);
+
+            $meta = [
+                'metadata' => [
+                    'trackId' => $this->app['req.context']->getTrackId()
+
+                ],
+                'read_key' => array('trackId'),
+                'write_key' => '',
+            ];
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED, null, null, $meta);
 
             $payment = $this->buildPaymentEntity($input);
 
@@ -329,7 +348,7 @@ class Processor
 
             $this->logRequestTime($payment, $startTime);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
 
             return $paymentData;
         }
@@ -346,10 +365,109 @@ class Processor
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
 
             throw $e;
         }
+    }
+
+    /**
+     * Block all Yesbank payments with the same stipulated error message
+     */
+    protected function validateYesBankPayments($input)
+    {
+        // If there is no method in input, do nothing
+        if (isset($input['method']) === false)
+        {
+            return;
+        }
+
+        $data = [];
+
+        switch ($input['method'])
+        {
+            case Payment\Method::CARD:
+            case Payment\Method::EMI:
+
+                // No card number for card payment
+                if (isset($input[Payment\Entity::CARD][Card\Entity::NUMBER]) === false)
+                {
+                    return;
+                }
+
+                $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
+
+                $iin = $this->repo->iin->find($iinId);
+
+                // IIN not available
+                if (empty($iin) === true)
+                {
+                    return;
+                }
+
+                if (($iin->getIssuer() !== Card\Issuer::YESB) or
+                    ($iin->isEnabled() === true))
+                {
+                    return;
+                }
+
+                $data['iin'] = $iinId;
+
+                break;
+
+            case Payment\Method::NETBANKING:
+                if ((isset($input[Payment\Entity::BANK]) === false) or
+                    (($input[Payment\Entity::BANK] !== IFSC::YESB) and
+                     ($input[Payment\Entity::BANK] !== Netbanking::YESB_C)))
+                {
+                    return;
+                }
+
+                break;
+
+            case Payment\Method::UPI:
+
+                $vpa = '';
+
+                if (isset($input[Payment\Method::UPI][Payment\Entity::VPA]) === true)
+                {
+                    $vpa = $input[Payment\Method::UPI][Payment\Entity::VPA];
+                }
+                else if (isset($input[Payment\Entity::VPA]) === true)
+                {
+                    $vpa =  $input[Payment\Entity::VPA];
+                }
+
+                // VPA Could be anything, validators are not run yet.
+                // If not string, validator will catch this
+                if ((is_string($vpa) === false))
+                {
+                    return;
+                }
+
+                // If it's not Yesbank vpa, return
+                if (ProviderCode::isYesBankSpecificVpa($vpa) === false)
+                {
+                    return;
+                }
+
+                $data['vpa'] = $vpa;
+
+                break;
+
+            default:
+                return;
+        }
+
+        $this->throwYesbankException($data);
+    }
+
+    public function throwYesbankException(array $data = [])
+    {
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
+            null,
+            $data);
     }
 
     protected function eventPaymentCreated()
@@ -395,10 +513,10 @@ class Processor
         $metaDetails = [
             'metadata'  => $properties,
             'read_key'  => array(),
-            'write_key' => 'request.id',
+            'write_key' => 'trackId',
         ];
 
-        $metaDetails['metadata']['request']['id'] = $this->app['request']->getId();
+        $metaDetails['metadata']['trackId'] = $this->app['req.context']->getTrackId();
 
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_RESPAWN, null, null, $metaDetails, $properties);
     }
@@ -497,12 +615,9 @@ class Processor
         }
 
         if (isset($input['dcc_currency']) === true and
-            isset($input['dcc_amount']) and
-            isset($input['currency_request_id']))
+            isset($input['currency_request_id']) === true)
         {
             $dccCurrency = $input['dcc_currency'];
-
-            $dccAmount = $input['dcc_amount'];
 
             $dccCurrencyRequestId = $input['currency_request_id'];
 
@@ -511,34 +626,25 @@ class Processor
 
             if (empty($requestedCurrencyData) === true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_REQUEST_DATA, null,
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, null,
                     [
                         'currency_request_id' => $dccCurrencyRequestId,
                         'dcc_currency'        => $dccCurrency,
                     ]);
             }
-            else if ($requestedCurrencyData['amount'] !== $dccAmount)
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_AMOUNT, null,
-                    [
-                        'dcc_amount' => $dccAmount,
-                    ]);
-            }
-            else
-            {
-                $paymentMetaInput = [
-                    'gateway_amount'            => $requestedCurrencyData['amount'],
-                    'gateway_currency'          => $requestedCurrencyData['currency'],
-                    'forex_rate'                => $requestedCurrencyData['forex_rate'],
-                    'dcc_offered'               => true,
-                    'payment_id'                => $payment->getId(),
-                    'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
-                ];
 
-                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+            $paymentMetaInput = [
+                'gateway_amount'            => $requestedCurrencyData['amount'],
+                'gateway_currency'          => $requestedCurrencyData['currency'],
+                'forex_rate'                => $requestedCurrencyData['forex_rate'],
+                'dcc_offered'               => true,
+                'payment_id'                => $payment->getId(),
+                'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
+            ];
 
-                $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
-            }
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+            $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
         }
     }
 
@@ -1288,7 +1394,21 @@ class Processor
     {
         if ($this->isCardPaymentServiceConfigEnabled() === true)
         {
+            if (Payment\Gateway::shouldAlwaysRouteThroughCardPaymentService($payment->getGateway()))
+            {
+                $this->setPaymentService($payment, self::CARD_PAYMENT_SERVICE_VARIANT_PREFIX);
+                return;
+            }
+
             $variant = $this->getRazorxVariant($payment, self::CARD_PAYMENTS_PREFIX);
+
+            // To route all ivr payments through payments-card
+            if (($variant !== 'cardps') and
+                (isset($gatewayInput['auth_type']) === true) and
+                ($gatewayInput['auth_type'] === 'ivr'))
+            {
+                $variant = 'cardps';
+            }
 
             $this->setPaymentService($payment, $variant);
         }
@@ -1346,6 +1466,7 @@ class Processor
 
     protected function setPaymentService(Payment\Entity $payment, $variant)
     {
+        //TODO Use Constants Here
         $variant = strtolower($variant);
 
         switch($variant)
@@ -2056,7 +2177,7 @@ class Processor
 
         $this->app['events']->fire('api.payment.failed', $eventPayload);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
     }
 
     protected function setPaymentError(Exception\BaseException $e, $traceCode)
@@ -2749,6 +2870,13 @@ class Processor
             return;
         }
 
+        $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test'];
+
+        if (in_array(Route::currentRouteName(), $rblVaRoutes, true) === true)
+        {
+            return;
+        }
+
         // TODO: Following is not testable in cases. Ref: BankTransferBatchTest
         if (($this->app['basicauth']->isAppAuth() === false) and
             (Route::currentRouteName() !== 'bank_transfer_process_test'))
@@ -2876,8 +3004,9 @@ class Processor
                 $input[Payment\Entity::CARD][Card\Entity::IIN] = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
             }
 
-            unset($input[Payment\Entity::CARD][Card\Entity::CVV]);
+            unset($input[Payment\Entity::CARD][Card\Entity::NAME]);
             unset($input[Payment\Entity::CARD][Card\Entity::NUMBER]);
+            unset($input[Payment\Entity::CARD][Card\Entity::CVV]);
         }
     }
 
@@ -3224,31 +3353,12 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice);
 
-        //
-        // There could be a case where the current time is greater
-        // than the expire_by of the invoice. But, if we haven't
-        // yet marked the invoice as expired, we still go ahead
-        // and capture the payment.
-        //
-
-        //
-        // Ideally this should check for `validateInvoicePayable` as a partially paid
-        // PL would qualify for this.
-        //
-        // TODO: Change/fix this and test complete flow including the exception
-        // cases with the feature BLOCK_PL_PAY_POST_EXPIRY set.
-        //
-        if ($invoice->isIssued() === false)
+        try
         {
-            $this->trace->debug(
-                TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
-                [
-                    'payment_id'        => $payment->getId(),
-                    'status'            => $payment->getStatus(),
-                    'invoice_id'        => $invoice->getId(),
-                    'invoice_status'    => $invoice->getStatus(),
-                ]);
-
+            $invoice->getValidator()->validateInvoicePayableForPayment($payment);
+        }
+        catch (Exception\BadRequestValidationFailureException $e)
+        {
             return false;
         }
 
@@ -3465,7 +3575,7 @@ class Processor
     {
         $payment = $this->retrieve($id);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED, $payment);
 
         $diff = time() - $payment->getCreatedAt();
 

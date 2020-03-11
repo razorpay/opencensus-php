@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Diag\EventCode;
@@ -18,6 +19,7 @@ use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Models\Settlement\Bucket\Constants;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\FundTransfer\Attempt\Purpose;
 use RZP\Models\Settlement\Merchant as SetlMerchant;
@@ -163,6 +165,27 @@ trait SettlementTrait
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
+        $cutoffConfig = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::REMOVE_SETTLEMENT_BA_COOL_OFF]);
+
+        $coolOff = (bool) ($cutoffConfig ?? false);
+
+        $accountChange = $this->repo->bank_account->isBankAccountChanged($bankAccount);
+
+        if (($coolOff === true) and ($accountChange === true) and ($this->env !== Environment::TESTING))
+        {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_NOT_SKIPPING_BANK_ACCOUNT_RECENT_CREATION,
+                [
+                    'bank_account_created_at'   => $bankAccount->getCreatedAt(),
+                    'last_working_day'          => $lastWorkingDay->getTimestamp(),
+                    'channel'                   => $channel,
+                    'merchant_id'               => $merchant->getId(),
+                    'bank_account_id'           => $bankAccount->getId(),
+                ]);
+
+            return [true, []];
+        }
+
         //
         // Check if beneficiary registration cutoff is crossed
         // required for all non 24/7 channels
@@ -170,26 +193,28 @@ trait SettlementTrait
         if (($this->env !== Environment::TESTING) and
             ($bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {
+
             $createdAt = Carbon::createFromTimestamp($bankAccount->getCreatedAt(), Timezone::IST)->format('Y-m-d H:i:s');
 
-            $this->traceMerchantSettlementSkip(
-                $merchant,
-                [
-                    'reason'               => 'bank account created yesterday',
-                    'bank_account_created' => $createdAt,
-                ]);
+                $this->traceMerchantSettlementSkip(
+                    $merchant,
+                    [
+                        'reason'               => 'bank account created yesterday',
+                        'bank_account_created' => $createdAt,
+                    ]);
 
-            return [
-                false,
-                [
-                    'caption' => 'There won\'t be any settlement',
-                    'reason'  => 'Bank account created yesterday. bank account was created/updated at '
-                        . $createdAt
-                        . '. It would require a day (except bank holidays)'
-                        . ' to register the same with our banking partners',
-                    'on_hold' => false,
-                ]
-            ];
+                return [
+                    false,
+                    [
+                        'caption' => 'There won\'t be any settlement',
+                        'reason'  => 'Bank account created yesterday. bank account was created/updated at '
+                            . $createdAt
+                            . '. It would require a day (except bank holidays)'
+                            . ' to register the same with our banking partners',
+                        'on_hold' => false,
+                    ]
+                ];
+
         }
 
         return [true, []];
@@ -338,6 +363,15 @@ trait SettlementTrait
             $skipForKarvy = $this->skipForKarvy($txn);
 
             if ($skipForKarvy === true)
+            {
+                $transactionSkipCount++;
+
+                continue;
+            }
+
+            $skipForScripBox = $this->skipForScripBox($txn);
+
+            if ($skipForScripBox === true)
             {
                 $transactionSkipCount++;
 
@@ -1250,6 +1284,30 @@ trait SettlementTrait
                 ]);
 
             return true;
+
+        }
+
+        return false;
+    }
+
+    /**
+     * Scripbox wants the settlement only at 10AM and 1PM
+     *
+     * @param $txn
+     * @return bool
+     */
+    protected function skipForScripBox($txn): bool
+    {
+        $merchantId = $txn->getMerchantId();
+
+        if ($merchantId === Preferences::MID_SCRIP_BOX)
+        {
+            $hour = Carbon::now(Timezone::IST)->hour;
+
+            if (($hour < Constants::ELEVEN_AM) or ($hour > Constants::ONE_PM))
+            {
+                return true;
+            }
 
         }
 

@@ -2,10 +2,17 @@
 
 namespace RZP\Tests\Functional\D2cBureauDetails;
 
+use Mail;
+use Queue;
+
+use RZP\Models\Base\Entity;
+use RZP\Services\UfhService;
 use RZP\Services\Mock\Mozart;
 use RZP\Models\D2cBureauDetail;
+use RZP\Jobs\D2cCsvReportCreate;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\D2CReport\D2cReportGenerated;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -13,6 +20,8 @@ class D2cBureauDetailsTest extends TestCase
 {
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+
+    protected $reportUrl;
 
     public function setUp()
     {
@@ -32,6 +41,42 @@ class D2cBureauDetailsTest extends TestCase
             'entity_id'     => $this->merchantDetail['merchant_id'],
             'entity_type'   => 'merchant',
         ]);
+
+        $mozartServiceMock = $this->getMockBuilder(Mozart::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendMozartRequest'])
+            ->getMock();
+
+        $mozartServiceMock->method('sendMozartRequest')
+            ->will($this->returnCallback(
+                function ($namespace, $gateway, $action, $input, $version, $useMozartMappedInternalErrorCode)
+                {
+                    $this->assertArraySelectiveEquals([
+                        'first_name'    => 'testhello',
+                        'address'       => 'Adress',
+                        'city'          => 'city',
+                    ], $input['d2c_bureau_details']);
+
+                    return [
+                        'success'   => true,
+                        'data'      => [
+                            'score'         => '752',
+                            'report'        => [
+                                'active_accounts'                           => '1',
+                                'closed_accounts'                           => '1',
+                                'count_of_accounts'                         => '2',
+                                'secured_account_outstanding_balance'       => '152000',
+                                'total_outstanding_balance'                 => '152000',
+                                'un_secured_account_outstanding_balance'    => '0'
+                            ],
+                            '_raw'          => 'garbage',
+                            'raw_report'    => json_decode(file_get_contents(__DIR__ . '/helpers/report.txt'), true),
+                        ]
+                    ];
+                }));
+
+        $this->app->instance('mozart', $mozartServiceMock);
+
     }
 
     public function testPostCreate()
@@ -72,60 +117,47 @@ class D2cBureauDetailsTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
 
+        $this->reportUrl = 'report_experian_' . $response['id'] . '.txt.txt';
+
         $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $response['id'],]);
 
-        $mozartServiceMock = $this->getMockBuilder(Mozart::class)
-                                  ->setConstructorArgs([$this->app])
-                                  ->setMethods(['sendMozartRequest'])
-                                  ->getMock();
+        $ufhServiceMock = $this->getMockBuilder(UfhService::class)
+                               ->setConstructorArgs([$this->app])
+                               ->setMethods(['getSignedUrl', 'uploadFileAndGetUrl'])
+                               ->getMock();
 
-        $mozartServiceMock->method('sendMozartRequest')
-                          ->will($this->returnCallback(
-                                function ($namespace, $gateway, $action, $input, $version, $useMozartMappedInternalErrorCode)
-                                {
-                                    $this->assertArraySelectiveEquals([
-                                            'first_name'    => 'testhello',
-                                            'address'       => 'Adress',
-                                            'city'          => 'city',
-                                    ], $input['d2c_bureau_details']);
+        $ufhServiceMock->expects($this->at(0))
+                       ->method('getSignedUrl')
+                       ->will($this->returnCallback(
+                           function (string $fileId, array $params = [], $merchantId = null)
+                           {
+                               return [
+                                   'signed_url'    => 'storage/files/filestore/' .  $this->reportUrl,
+                               ];
+                           }));
 
-                                    return [
-                                        'success'   => true,
-                                        'data'      => [
-                                            'score'         => '752',
-                                            'report'        => [
-                                                'active_accounts'                           => '1',
-                                                'closed_accounts'                           => '1',
-                                                'count_of_accounts'                         => '2',
-                                                'secured_account_outstanding_balance'       => '152000',
-                                                'total_outstanding_balance'                 => '152000',
-                                                'un_secured_account_outstanding_balance'    => '0'
-                                            ],
-                                            '_raw'          => 'garbage',
-                                            'raw_report'    => [
-                                                'INProfileResponse' => [
-                                                    'CAIS_Account'  => [
-                                                        'CAIS_Account_DETAILS' => [
-                                                            'AccountHoldertypeCode' => '1',
-                                                            'Account_Number'        => 'XXXXXXXX0304',
-                                                            'Account_Status'        => '11',
-                                                            'Account_Type'          => '51',
-                                                            'Amount_Past_Due'       => '501',
-                                                            'CAIS_Account_History'  => [
-                                                                'Asset_Classification'  => '?',
-                                                                'Days_Past_Due'         => '14',
-                                                                'Month'                 => '08',
-                                                                'Year'                  => '2019'
-                                                            ],
-                                                        ],
-                                                    ]
-                                                ]
-                                            ]
-                                        ]
-                                    ];
-                                }));
+        $ufhServiceMock->method('getSignedUrl')
+                       ->will($this->returnCallback(
+                           function (string $fileId, array $params = [], $merchantId = null)
+                           {
+                               return [
+                                   'signed_url'    => 'rzp_file_mock_id_1000000_bureau_report_csv'
+                               ];
+                           }));
 
-        $this->app->instance('mozart', $mozartServiceMock);
+        $ufhServiceMock->method('uploadFileAndGetUrl')
+                       ->will($this->returnCallback(
+                           function ($file, $storageFileName, string $type, Entity $entity, array $metadata = [])
+                           {
+                               return [
+                                   'file_id'           => 'file_1cXSLlUU8V9sXl',
+                                   'relative_location' => $storageFileName,
+                               ];
+                           }));
+
+        $this->app->instance('ufh.service', $ufhServiceMock);
+
+        Queue::fake();
 
         $this->startTest();
 
@@ -138,9 +170,11 @@ class D2cBureauDetailsTest extends TestCase
             'provider'              => 'experian',
 //            'score'                 => 752,
 //            'report'                => '{"active_accounts": "1", "closed_accounts": "1", "count_of_accounts": "2", "total_outstanding_balance": "152000", "secured_account_outstanding_balance": "152000", "un_secured_account_outstanding_balance": "0"}',
-            'ufh_file_id'           => 'rzp_file_mock_id_1000000_bureau_report',
+            'ufh_file_id'           => 'file_1cXSLlUU8V9sXl',
 //                'created_at'        => 1571374473
         ], $d2cBureauReport);
+
+        Queue::assertPushed(D2cCsvReportCreate::class);
     }
 
     public function testPatchBureauReport()
@@ -170,14 +204,56 @@ class D2cBureauDetailsTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($this->testData['testPostCreate']['request']);
 
+        $this->reportUrl = 'report_experian_' . $response['id'] . '.txt.txt';
+
         $this->testData['testSubmitOtp']['request']['url'] = strtr($this->testData['testSubmitOtp']['request']['url'], ['{id}' => $response['id'],]);
 
         $response = $this->makeRequestAndGetContent($this->testData['testSubmitOtp']['request']);
+
+        $ufhServiceMock = $this->getMockBuilder(UfhService::class)
+                               ->setConstructorArgs([$this->app])
+                               ->setMethods(['getSignedUrl', 'uploadFileAndGetUrl'])
+                               ->getMock();
+
+        $ufhServiceMock->expects($this->at(0))
+                       ->method('getSignedUrl')
+                       ->will($this->returnCallback(
+                           function (string $fileId, array $params = [], $merchantId = null)
+                           {
+                               return [
+                                   'signed_url'    => 'storage/files/filestore/' .  $this->reportUrl,
+                               ];
+                           }));
+
+        $ufhServiceMock->method('getSignedUrl')
+                       ->will($this->returnCallback(
+                           function (string $fileId, array $params = [], $merchantId = null)
+                           {
+                               return [
+                                   'signed_url'    => 'rzp_file_mock_id_1000000_bureau_report_csv'
+                               ];
+                           }));
+
+        $ufhServiceMock->method('uploadFileAndGetUrl')
+                       ->will($this->returnCallback(
+                           function ($file, $storageFileName, string $type, Entity $entity, array $metadata = [])
+                           {
+                               return [
+                                   'file_id'           => 'rzp_file_mock_id_1000000' . '_'.$type,
+                                   'relative_location' => $storageFileName,
+                               ];
+                           }));
+
+        $this->app->instance('ufh.service', $ufhServiceMock);
+
+        Mail::fake();
 
         $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $response['id'],]);
 
         $this->ba->adminAuth();
 
         $this->startTest();
+
+        Mail::assertQueued(D2cReportGenerated::class);
     }
 }

@@ -125,6 +125,22 @@ class Processor extends Base\Processor
         return $bankAccount->toArrayPublic();
     }
 
+    public function setUpiPinFailure(array $input): array
+    {
+        // This is just to validate the data update in case of failure
+        // Not being used any where but for sharp testing
+        // Thus no validator are required for this
+        $this->initialize(Action::SET_UPI_PIN_FAILURE, $input);
+
+        $bankAccount = $this->core->fetch($this->input->get(Entity::ID));
+
+        $bankAccount->mergeGatewayData($this->input->get(Entity::GATEWAY_DATA));
+
+        $this->core->update($bankAccount, []);
+
+        return $bankAccount->toArrayPublic();
+    }
+
     public function initiateFetchBalance(array $input): array
     {
         $this->initialize(Action::INITIATE_FETCH_BALANCE, $input, true);

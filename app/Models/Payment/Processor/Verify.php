@@ -19,12 +19,13 @@ trait Verify
      * Run Verify on a given Payment
      *
      * @param Payment\Entity $payment Payment for which verify should be ran
+     * @param array $gatewayData Additional gateway data if required for verify
      *
      * @return array having refund and payment data
      * @throws Exception\PaymentVerificationException
      * @throws \Exception
      */
-    public function verify(Payment\Entity $payment)
+    public function verify(Payment\Entity $payment, array $gatewayData = null)
     {
         $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_INITIATED, $payment);
 
@@ -37,6 +38,11 @@ trait Verify
             'refunds' => $refunds->toArrayGateway(),
             'merchant' => $this->merchant,
         ];
+
+        if (isset($gatewayData) === true)
+        {
+            $data['gateway_data'] = $gatewayData;
+        }
 
         if ($payment->isMethodCardOrEmi())
         {

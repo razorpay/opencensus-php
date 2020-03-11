@@ -308,11 +308,11 @@ class Service extends Base\Service
             }
 
             // cant do this before as mode is set in above, and mode is required to ensure data goes to write place
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, $payment, null, $traceData);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, $payment, null, [], $traceData);
 
             $response = $this->getNewProcessor($merchant)->processRedirectToAuthorize($payment, $id);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, $traceData);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, [], $traceData);
 
             $this->cachePaysecureResponseDataIfApplicable($payment, $response);
 
@@ -329,7 +329,7 @@ class Service extends Base\Service
                 $traceData
             );
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, $e, $traceData);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, $e, [], $traceData);
 
             throw $e;
         }
@@ -779,8 +779,18 @@ class Service extends Base\Service
 
                 $merchant = $payment->merchant;
 
+                $amount = $payment->getAmount();
+
+                // For bulk capture, we hit capture with the total payment amount(Payment amount+fee).We are subtracting
+                // fee here as we add fee while capturing the payments. This will ensure that the correct amount is sent
+                // for capture.
+                if ($payment->isFeeBearerCustomer() === true)
+                {
+                    $amount = $amount - $payment->getFee();
+                }
+
                 $captureInput = [
-                    Payment\Entity::AMOUNT   => $payment->getAmount(),
+                    Payment\Entity::AMOUNT   => $amount,
                     Payment\Entity::CURRENCY => $payment->getCurrency()
                 ];
 
@@ -1148,19 +1158,6 @@ class Service extends Base\Service
                                                                 ->isInstantRefundSupported($payment);
     }
 
-    private function getDCCInfo($baseAmount, $baseCurrency)
-    {
-        $dccInfo = [];
-
-        $currencyRequestId = UniqueIdEntity::generateUniqueId();
-
-        $dccInfo['all_currencies'] = (new Currency\Core)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId);
-
-        $dccInfo['currency_request_id'] = $currencyRequestId;
-
-        return $dccInfo;
-    }
-
     public function getPaymentFlows(array $input)
     {
         $merchant = $this->merchant;
@@ -1171,27 +1168,7 @@ class Service extends Base\Service
 
         $data = $merchant->getPaymentFlows($iinEntity);
 
-        if ((isset($input['currency'])) and
-            (isset($input['amount'])) and
-            (empty($iinEntity) === false))
-        {
-            $data[IIN\Constants::IS_INTERNATIONAL] = $iinEntity->isInternational();
-
-            $cardHomeCountryCode = IIN\Country::COUNTRY_ISO_NUMERIC_CODE[$iinEntity->getCountry()];
-
-            $cardHomeCurrency = Currency\Currency::getCurrency($cardHomeCountryCode) ?? $input['currency'];
-
-            $data['card_currency'] = $cardHomeCurrency;
-
-            if (($merchant->isDCCEnabled() === true) and
-                ($iinEntity->isDCCSupported() === true) and
-                ($input['currency'] === Currency\Currency::INR))
-            {
-                $dccInfo = $this->getDCCInfo($input['amount'], $input['currency']);
-
-                $data = array_merge($data, $dccInfo);
-            }
-        }
+        $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
 
         if (isset($input['order_id']) === true)
         {
@@ -1208,6 +1185,61 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    public function updateDccDataIfApplicable($input, $iinEntity, $merchant, & $data)
+    {
+        // get dcc options for customer if dcc is enabled for merchant
+        if ($merchant->isDCCEnabled() === false)
+        {
+            return;
+        }
+
+        if ($iinEntity === null)
+        {
+            return;
+        }
+
+        if ((isset($input['currency']) === true) and
+            (isset($input['amount']) === true))
+        {
+            $amount = $input['amount'];
+            $currency = $input['currency'];
+
+            if (($this->isDccEnabledIIN($iinEntity) === true) and
+                ($currency === Currency\Currency::INR))
+            {
+                $dccInfo = $this->getDCCInfo($amount, $currency);
+
+                $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? $currency;
+
+                $data = array_merge($data, $dccInfo);
+            }
+        }
+    }
+
+    public function isDccEnabledIIN($iinEntity): bool
+    {
+        if (($iinEntity->isInternational() === true) and
+            (Card\Network::isDCCSupportedNetwork($iinEntity->getNetworkCode())) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getDCCInfo($baseAmount, $baseCurrency)
+    {
+        $dccInfo = [];
+
+        $currencyRequestId = UniqueIdEntity::generateUniqueId();
+
+        $dccInfo['all_currencies'] = (new Currency\Core)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId);
+
+        $dccInfo['currency_request_id'] = $currencyRequestId;
+
+        return $dccInfo;
     }
 
     public function getPaymentFlowsPrivate(array $input)
@@ -1576,7 +1608,7 @@ class Service extends Base\Service
                              ->setRazorXDopplerProperty($this->razorXForDoppler)
                              ->timeoutPayment();
 
-                        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
+                        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
 
                         $count++;
 
@@ -1733,6 +1765,19 @@ class Service extends Base\Service
     public function verifyPayment($payment)
     {
         return (new Verify)->verifyPayment($payment);
+    }
+
+    /**
+     * Certain gateways require gateway data such as bank reference number for payment verification
+     * to function accurately
+     *
+     * @param $payment
+     * @param null $gatewayData
+     * @return null|string
+     */
+    public function verifyPaymentWithGatewayData($payment, $gatewayData = null)
+    {
+        return (new Verify)->verifyPayment($payment, null, $gatewayData);
     }
 
     public function sendReminderMerchantMailForAuthorizedPayments()

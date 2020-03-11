@@ -15,7 +15,7 @@ class Core extends Base\Core
 
         $this->$paymentMeta = $paymentMeta;
 
-        $paymentMeta->saveOrFail();
+        $this->repo->saveOrFail($paymentMeta);
 
         return $paymentMeta;
     }

@@ -86,6 +86,8 @@ class Entity extends Base\PublicEntity
     // This is used to generate the value for the UTR field.
     const REQ_UTR            = 'transaction_id';
 
+    const NARRATION          = 'narration';
+
     // Input keys
     const REFUND_ID          = 'refund_id';
     const GATEWAY            = 'gateway';
@@ -106,6 +108,7 @@ class Entity extends Base\PublicEntity
         self::TIME,
         self::AMOUNT,
         self::DESCRIPTION,
+        self::NARRATION,
     ];
 
     protected $public = [
@@ -139,6 +142,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::MODE,
         self::GATEWAY,
+        self::NARRATION,
         self::UTR,
         self::TIME,
         self::EXPECTED,
@@ -450,6 +454,11 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getNarration()
+    {
+        return $this->getAttribute(self::NARRATION);
     }
 
     // ----------------------- Setters -----------------------------------------

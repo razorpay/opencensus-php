@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -797,12 +798,31 @@ class Header
     const IIN_MC_MASTERCARD_COUNTRY              = 'COUNTRY';
     const IIN_MC_MASTERCARD_REGION               = 'REGION';
 
+    // entity update action batch
+    const ID = Detail\Entity::ID;
+    const BUSINESS_REGISTERED_ADDRESS = Detail\Entity::BUSINESS_REGISTERED_ADDRESS;
+    const BUSINESS_REGISTERED_STATE = Detail\Entity::BUSINESS_REGISTERED_STATE;
+
 
     const ADJUSTMENT_REFERENCE_ID   = 'reference_id';
     const ADJUSTMENT_MERCHANT_ID    = 'merchant_id';
     const ADJUSTMENT_AMOUNT         = 'amount';
     const ADJUSTMENT_BALANCE_TYPE   = 'balance_type';
     const ADJUSTMENT_DESCRIPTION    = 'description';
+
+    const ICICI_ECOLLECT_REMITTING_BANK_UTR_NO      = 'REMITTING BANK UTR NO.';
+    const ICICI_ECOLLECT_PAYMENT_TYPE               = 'PAYMENT TYPE';
+    const ICICI_ECOLLECT_CREDIT_ACCOUNT_NO          = 'CREDIT ACCOUNT NO.';
+    const ICICI_ECOLLECT_TRANSACTION_AMOUNT         = 'TRANSACTION AMOUNT';
+    const ICICI_ECOLLECT_REMITTER_ACCOUNT_NAME      = 'REMITTER ACCOUNT NAME';
+    const ICICI_ECOLLECT_REMITTER_ACCOUNT_NO        = 'REMITTER ACCOUNT NO.';
+    const ICICI_ECOLLECT_REMITTING_BANK_IFSC_CODE   = 'REMITTING BANK IFSC CODE';
+    const ICICI_ECOLLECT_TRANSACTION_DATE           = 'TRANSACTION DATE';
+    const ICICI_ECOLLECT_UTR                        = 'ICICI BANK UTR NO.';
+    const ICICI_ECOLLECT_CUSTOMER_CODE              = 'CUSTOMER CODE';
+    const ICICI_ECOLLECT_DEALER_CODE                = 'DEALER CODE';
+    const ICICI_ECOLLECT_REMITTANCE_INFORMATION     = 'REMITTANCE INFORMATION';
+
 
     /**
      * Input and output file headers
@@ -2451,6 +2471,23 @@ class Header
             ]
         ],
 
+        Type::ENTITY_UPDATE_ACTION => [
+            self::INPUT => [
+                self::ID,
+                self::BUSINESS_NAME,
+                self::BUSINESS_REGISTERED_ADDRESS,
+                self::BUSINESS_REGISTERED_STATE,
+            ],
+            self::OUTPUT => [
+                self::ID,
+                self::BUSINESS_NAME,
+                self::BUSINESS_REGISTERED_ADDRESS,
+                self::BUSINESS_REGISTERED_STATE,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
         Type::ADMIN_BATCH => [
             self::INPUT => [
                 self::ADMIN_ID,
@@ -2497,6 +2534,37 @@ class Header
                 self::ADJUSTMENT_DESCRIPTION,
             ],
         ],
+
+        Type::ECOLLECT_ICICI => [
+            self::INPUT => [
+                self::ICICI_ECOLLECT_UTR,
+                self::ICICI_ECOLLECT_CUSTOMER_CODE,
+                self::ICICI_ECOLLECT_CREDIT_ACCOUNT_NO,
+                self::ICICI_ECOLLECT_DEALER_CODE,
+                self::ICICI_ECOLLECT_PAYMENT_TYPE,
+                self::ICICI_ECOLLECT_REMITTANCE_INFORMATION,
+                self::ICICI_ECOLLECT_REMITTER_ACCOUNT_NAME,
+                self::ICICI_ECOLLECT_REMITTER_ACCOUNT_NO,
+                self::ICICI_ECOLLECT_REMITTING_BANK_IFSC_CODE,
+                self::ICICI_ECOLLECT_TRANSACTION_AMOUNT,
+                self::ICICI_ECOLLECT_TRANSACTION_DATE,
+                self::ICICI_ECOLLECT_REMITTING_BANK_UTR_NO,
+            ],
+            self::OUTPUT => [
+                self::ICICI_ECOLLECT_UTR,
+                self::ICICI_ECOLLECT_CUSTOMER_CODE,
+                self::ICICI_ECOLLECT_CREDIT_ACCOUNT_NO,
+                self::ICICI_ECOLLECT_DEALER_CODE,
+                self::ICICI_ECOLLECT_PAYMENT_TYPE,
+                self::ICICI_ECOLLECT_REMITTANCE_INFORMATION,
+                self::ICICI_ECOLLECT_REMITTER_ACCOUNT_NAME,
+                self::ICICI_ECOLLECT_REMITTER_ACCOUNT_NO,
+                self::ICICI_ECOLLECT_REMITTING_BANK_IFSC_CODE,
+                self::ICICI_ECOLLECT_TRANSACTION_AMOUNT,
+                self::ICICI_ECOLLECT_TRANSACTION_DATE,
+                self::ICICI_ECOLLECT_REMITTING_BANK_UTR_NO,
+            ],
+        ]
     ];
 
     /**
@@ -2578,6 +2646,17 @@ class Header
             // header can contain empty columns when input file is CSV
             // this is due to trailing comma in the given input file
             $actualHeaders = array_filter($actualHeaders);
+        }
+
+
+        //
+        // In case of subMerchant batch adding support of optional header merchant_id
+        // With this data support team will be able to fix issue by their own and we can move this batch to new service .
+        //
+        if (($type === Type::SUB_MERCHANT) and
+            ((in_array(self::MERCHANT_ID, $actualHeaders, true) === true)))
+        {
+            $expectedHeaders[] = self::MERCHANT_ID;
         }
 
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);

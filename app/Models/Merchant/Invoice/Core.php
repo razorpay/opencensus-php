@@ -137,9 +137,17 @@ class Core extends Base\Core
             $merchant = $this->repo->merchant->findOrFail($row[Entity::MERCHANT_ID]);
 
             unset($row[Entity::MERCHANT_ID]);
-            // TODO: Accept balance_id in invoice_entities passed as input on route merchant_invoice_add_bulk
-            //Jira link : https://razorpay.atlassian.net/browse/RX-612
-            $this->create($row, $merchant, $merchant->primaryBalance);
+
+            $balance = $merchant->primaryBalance;
+
+            if (isset($row[Entity::BALANCE_ID]) === true)
+            {
+                $balanceId = array_pull($row, Entity::BALANCE_ID);
+
+                $balance = $this->repo->balance->findOrFailById($balanceId);
+            }
+
+            $this->create($row, $merchant, $balance);
         }
     }
 

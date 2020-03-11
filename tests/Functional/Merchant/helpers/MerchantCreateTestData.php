@@ -217,6 +217,24 @@ return [
         ],
     ],
 
+    'testCreateSubMerchantAndAssignPromotionalPricingPlan' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'   => 'NewSubmerchant',
+                'name' => 'Submerchant',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => 'acc_NewSubmerchant',
+                'name'            => 'Submerchant',
+                'email'           => 'test@razorpay.com',
+            ],
+        ],
+    ],
+
     'testCreateSubMerchantFor24x7Settlement' => [
         'request'  => [
             'url'     => '/submerchants',

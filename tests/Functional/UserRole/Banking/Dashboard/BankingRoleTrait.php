@@ -1,9 +1,9 @@
 <?php
 
-
 namespace RZP\Tests\Functional\UserRole\Banking\Dashboard;
 
-
+use RZP\Models\Merchant;
+use RZP\Services\RazorXClient;
 use RZP\Models\User\BankingRole;
 
 trait BankingRoleTrait
@@ -31,6 +31,14 @@ trait BankingRoleTrait
                 'payout_links_fetch_by_id',
                 'payout_links_create',
                 'payout_links_cancel',
+                'merchant_edit_config_logo',
+                'payout_links_settings_post',
+                'payout_links_settings_get',
+                'payout_links_merchant_settings_get',
+                'payout_links_merchant_settings_post',
+                'payout_links_merchant_on_boarding_status',
+                'payout_links_merchant_summary',
+                'payout_links_resend_notification',
                 'contact_get',
                 'contact_list',
                 'contact_create',
@@ -81,6 +89,7 @@ trait BankingRoleTrait
                 'reporting_log_list',
                 'reporting_log_create',
                 'reporting_log_update',
+                'bank_transfer_process_test',
             ],
             BankingRole::ADMIN => [
                 'payout_bulk_create',
@@ -102,6 +111,14 @@ trait BankingRoleTrait
                 'payout_links_fetch_by_id',
                 'payout_links_create',
                 'payout_links_cancel',
+                'payout_links_settings_post',
+                'payout_links_settings_get',
+                'payout_links_merchant_settings_get',
+                'payout_links_merchant_settings_post',
+                'payout_links_merchant_on_boarding_status',
+                'payout_links_merchant_summary',
+                'payout_links_resend_notification',
+                'merchant_edit_config_logo',
                 'contact_get',
                 'contact_list',
                 'contact_create',
@@ -145,6 +162,8 @@ trait BankingRoleTrait
                 'reporting_log_list',
                 'reporting_log_create',
                 'reporting_log_update',
+                'bank_transfer_process_test',
+                'merchant_features_update',
             ],
             BankingRole::FINANCE_L1 => [
                 'payout_bulk_create',
@@ -166,6 +185,14 @@ trait BankingRoleTrait
                 'payout_links_fetch_by_id',
                 'payout_links_create',
                 'payout_links_cancel',
+                'payout_links_settings_post',
+                'payout_links_settings_get',
+                'payout_links_merchant_settings_get',
+                'payout_links_merchant_settings_post',
+                'payout_links_merchant_on_boarding_status',
+                'payout_links_merchant_summary',
+                'payout_links_resend_notification',
+                'merchant_edit_config_logo',
                 'contact_get',
                 'contact_list',
                 'contact_create',
@@ -206,12 +233,90 @@ trait BankingRoleTrait
                 'reporting_log_list',
                 'reporting_log_create',
                 'reporting_log_update',
+                'bank_transfer_process_test',
             ],
+
+            BankingRole::OPERATIONS => [
+                'user_otp_create',
+                'user_edit_self',
+                'user_fetch',
+                'merchant_user_reset_password',
+                'reporting_log_get',
+                'payout_fetch_by_id',
+                'payout_links_fetch_multiple',
+                'payout_links_create',
+                'payout_links_cancel',
+                'payout_links_settings_post',
+                'payout_links_settings_get',
+                'payout_links_merchant_settings_get',
+                'payout_links_merchant_settings_post',
+                'payout_links_merchant_on_boarding_status',
+                'payout_links_merchant_summary',
+                'payout_links_resend_notification',
+                'merchant_edit_config_logo',
+            ],
+
+            BankingRole::VIEW_ONLY => [
+                'payout_fetch_by_id',
+                'payout_purpose_get',
+                'payout_fetch_reversals',
+                'payouts_summary',
+                'payout_links_fetch_multiple',
+                'payout_links_fetch_by_id',
+                'payouts_workflow_summary',
+                'contact_get',
+                'contact_list',
+                'contact_types_get',
+                'fund_account_validate_fetch',
+                'fund_account_get',
+                'fund_account_list',
+                'merchant_fetch_keys',
+                'merchant_analytics',
+                'merchant_balance_fetch',
+                'merchant_invoice_fetch_multiple',
+                'user_fetch',
+                'merchant_fetch_users',
+                'webhook_fetch',
+                'webhook_fetch_multiple',
+                'webhook_fetch_events',
+                'reporting_log_get',
+                'reporting_log_list',
+                'transaction_statement_fetch',
+                'transaction_statement_fetch_multiple',
+                'reporting_config_get',
+                'reporting_config_list',
+                'merchant_product_switch',
+                'payout_links_merchant_summary',
+                'payout_links_merchant_on_boarding_status',
+                'user_edit_self',
+            ]
         ];
     }
 
     protected function getUserRolePermissibleRouteMap(string $role)
     {
         return $this->getUserRoleRouteMap()[$role] ?? null;
+    }
+
+    protected function mockRazorXTreatmentAccessDenyUnauthorised($value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                        ->setConstructorArgs([$this->app])
+                        ->setMethods(['getTreatment'])
+                        ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                                    function ($mid, $feature, $mode) use ($value)
+                                    {
+                                        if ($feature === Merchant\RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED)
+                                        {
+                                            return $value;
+                                        }
+
+                                        return 'off';
+                                    }));
     }
 }

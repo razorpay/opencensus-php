@@ -803,7 +803,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function capturePayment($id, $amount, $currency = 'INR', $verifyAmount = 0)
+    protected function capturePayment($id, $amount, $currency = 'INR', $verifyAmount = 0, $status = 'captured')
     {
         $request = array(
             'method'  => 'POST',
@@ -830,7 +830,7 @@ trait PaymentTrait
             $this->assertEquals($content['amount'], $amount);
         }
 
-        $this->assertEquals($content['status'], 'captured');
+        $this->assertEquals($content['status'], $status);
 
         return $content;
     }

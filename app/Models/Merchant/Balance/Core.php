@@ -5,8 +5,8 @@ namespace RZP\Models\Merchant\Balance;
 use App;
 use Mail;
 use Carbon\Carbon;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -16,6 +16,7 @@ use RZP\Constants\MailTags;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Mail\Merchant\NegativeBalanceAlert as NegativeBalanceAlertMail;
 use RZP\Mail\Merchant\BalancePositiveAlert as BalancePositiveAlertMail;
@@ -419,7 +420,15 @@ class Core extends Base\Core
     {
         $reserveBalance = null;
 
-        $reserveType = 'reserve_' . $balanceType;
+        if (($balanceType === Type::PRIMARY) or
+            ($balanceType === Type::BANKING))
+        {
+            $reserveType = 'reserve_' . $balanceType;
+        }
+        else
+        {
+            return 0;
+        }
 
         try
         {
@@ -578,18 +587,52 @@ class Core extends Base\Core
         Mail::queue($reserveBalanceActivateMail);
     }
 
-    public function getNegativeLimit(Transaction\Entity $txn)
+    /**
+     * Get the Maximum Negative Limit upto which the balance
+     *
+     * @param Transaction\Entity $txn
+     * @return int
+     */
+    public function getNegativeLimit(Transaction\Entity $txn) : int
     {
-        $negativeBalanceEnabled =  (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txn->getType(),
-                                                                                            $txn->merchant->getId());
-
         $negativeLimit = 0;
+
+        // If the Transaction Type is Payment, then we only allow Negative Balance for
+        // E-Mandate Registrations (Recurring type: Initital, not second recurring).
+        if ($txn->getType() === Transaction\Type::PAYMENT)
+        {
+            if ($txn->source === null)
+            {
+                return $negativeLimit;
+            }
+
+            $payment = $txn->source;
+
+            if (($payment->getMethod() !== Payment\Method::EMANDATE) or
+                (($payment->getMethod() === Payment\Method::EMANDATE) and
+                    ($payment->isRecurringTypeInitial() === false)))
+            {
+                return $negativeLimit;
+            }
+        }
+
+        $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txn->getType(),
+                                                                                            $txn->merchant->getId());
 
         if ($negativeBalanceEnabled === true)
         {
-            //TODO: remove hardcoding of balance type to primary, for future use cases
-            $negativeLimit = -1 * $this->getMaximumNegativeAllowedForBalanceType($txn->merchant,
-                   Type::PRIMARY, $txn->getType());
+            $txnSource = $txn->source;
+
+            $balanceType = Type::PRIMARY;
+
+            if ($txnSource !== null)
+            {
+                $balance = $txnSource->balance;
+
+                $balanceType = $balance !== null ? $balance->getType() : Type::PRIMARY;
+            }
+
+            $negativeLimit = -1 * $this->getMaximumNegativeAllowedForBalanceType($txn->merchant, $balanceType, $txn->getType());
         }
 
         return $negativeLimit;

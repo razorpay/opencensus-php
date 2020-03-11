@@ -3,7 +3,6 @@
 namespace RZP\Models\BankAccount;
 
 use Mail;
-use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -12,7 +11,8 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
-use RZP\Jobs\FTS\CreateAccount;
+use RZP\Models\Merchant\Document;
+use RZP\Models\Merchant\Document\FileHandler;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
@@ -123,8 +123,9 @@ class Core extends Base\Core
      * @param  BankAccount\Entity $oldBankAccount
      *
      * @return mixed
+     * @throws Exception\ServerErrorException
      */
-    protected function changeBankAccount($input, $merchant, $oldBankAccount)
+    protected function changeBankAccount(array $input, MerchantEntity $merchant, BankAccount\Entity $oldBankAccount)
     {
         $detail = $this->formatBankAccountForMerchantDetail($input);
 
@@ -187,24 +188,9 @@ class Core extends Base\Core
 
                 if ($merchantDetails !== null)
                 {
-                    //
-                    // for backward compatibility in case of re upload delete entries
-                    // from merchant documents and merchant_detail also
-                    //
                     if (isset($input[Detail\Entity::ADDRESS_PROOF_URL]) === true)
                     {
-                        $previousAddressProof = $merchantDetails->getAttribute(Detail\Entity::ADDRESS_PROOF_URL);
-
-                        if (isset($previousAddressProof) === true)
-                        {
-                            (new DocumentCore)->deleteDocuments([$previousAddressProof]);
-                        }
-
-                        $params = [
-                            Detail\Entity::ADDRESS_PROOF_URL => $input[Detail\Entity::ADDRESS_PROOF_URL],
-                        ];
-
-                        (new DocumentCore)->storeInMerchantDocument($merchant, $params);
+                        $this->handleAddressProofUrl($input, $merchantDetails, $merchant);
                     }
 
                     // Doing a fill only for ADDRESS_PROOF_URL because Details\Validator
@@ -220,6 +206,35 @@ class Core extends Base\Core
             });
     }
 
+    /**
+     *
+     * @param array          $input
+     * @param DetailEntity   $merchantDetails
+     * @param MerchantEntity $merchant
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
+     */
+    function handleAddressProofUrl(array &$input, Merchant\Detail\Entity $merchantDetails, Merchant\Entity $merchant): void
+    {
+        $params = [
+            Detail\Entity::ADDRESS_PROOF_URL => $input[Detail\Entity::ADDRESS_PROOF_URL]
+        ];
+
+        $detailService = new Detail\Service();
+
+        $detailService->deleteExistingDocuments($params, $merchantDetails);
+
+        $documentParams[Detail\Entity::ADDRESS_PROOF_URL] = [
+            Document\Constants::FILE_ID => $input[Detail\Entity::ADDRESS_PROOF_URL],
+            Document\Constants::SOURCE  => (new FileHandler\Factory())->getDocumentSource($input[Detail\Entity::ADDRESS_PROOF_URL], $merchant->getId())
+        ];
+
+        (new DocumentCore)->storeInMerchantDocument($merchant, $documentParams);
+    }
+
+
     protected function uploadAddressProof($merchant, $input)
     {
         (new Validator)->validateAddressProofUploadOverProxyAuth();
@@ -232,19 +247,17 @@ class Core extends Base\Core
             Detail\Entity::ADDRESS_PROOF_URL => $input[Detail\Entity::ADDRESS_PROOF_URL]
         ];
 
-        $uploadedFileIds = $merchantDetailService->storeActivationFile(
-            $merchantDetails,
-            $fileInputs);
+        $fileAttributes = $merchantDetailService->storeActivationFile($merchantDetails, $fileInputs);
 
-        if ((is_array($uploadedFileIds) === false) or
-            (isset($uploadedFileIds[Detail\Entity::ADDRESS_PROOF_URL]) === false))
+        if ((is_array($fileAttributes) === false) or
+            (isset($fileAttributes[Detail\Entity::ADDRESS_PROOF_URL]) === false))
         {
             throw new Exception\ServerErrorException(
                 'Address Proof URL upload failed.',
                 ErrorCode::SERVER_ERROR);
         }
 
-        $input[Detail\Entity::ADDRESS_PROOF_URL] = $uploadedFileIds[Detail\Entity::ADDRESS_PROOF_URL];
+        $input[Detail\Entity::ADDRESS_PROOF_URL] = $fileAttributes[Detail\Entity::ADDRESS_PROOF_URL][Document\Constants::FILE_ID];
 
         return $input;
     }

@@ -26,6 +26,22 @@ class Entity extends Base\PublicEntity
     use HasBalance;
     use SoftDeletes;
 
+    const PAYOUT_ID             = 'payout_id';
+    const PAYOUT                = 'payout';
+    const TIMELINE              = 'timeline';
+    const API_POUT_LNK_SRC      = 'api.pout_l';
+    const SOURCE                = 'source';
+    const TEMPLATE              = 'template';
+    const PARAMS                = 'params';
+    const RECEIVER              = 'receiver';
+    const PAYOUTS               = 'payouts';
+    const BRANDING_COMPLETED    = 'branding_completed';
+    const ATTEMPTED_LINKS_COUNT = 'attempted_links_count';
+    const LINK_PROCESSED        = 'link_processed';
+    const TOTAL_COUNT           = 'total_count';
+    const ISSUED_LINKS_COUNT    = 'issued_links_count';
+    const LINK_CREATED          = 'link_created';
+
     protected $table = Table::PAYOUT_LINK;
 
     // Payout Link Columns
@@ -54,6 +70,7 @@ class Entity extends Base\PublicEntity
     const CANCELLED_AT         = 'cancelled_at';
     const CREATED_AT           = 'created_at';
     const UPDATED_AT           = 'updated_at';
+    const ATTEMPT_COUNT        = 'attempt_count';
 
     // Strings used in Core / Validators
     const CONTEXT              = 'context';
@@ -62,6 +79,10 @@ class Entity extends Base\PublicEntity
     const IMPS                 = 'IMPS';
     const NEFT                 = 'NEFT';
     const UPI                  = 'UPI';
+    const SUPPORT_URL          = 'support_url';
+    const SUPPORT_CONTACT      = 'support_contact';
+    const SUPPORT_EMAIL        = 'support_email';
+    const CUSTOM_MESSAGE       = 'payout_links_custom_message';
     const ACCOUNT_TYPE         = 'account_type';
     const VPA                  = 'vpa';
     const BANK_ACCOUNT         = 'bank_account';
@@ -70,6 +91,8 @@ class Entity extends Base\PublicEntity
     const NAME                 = 'name';
     const EMAIL                = 'email';
     const PHONE_NUMBER         = 'contact';
+    const SEND_SMS             = 'send_sms';
+    const SEND_EMAIL           = 'send_email';
 
     const MAX_PAYOUT_LIMIT     = Payout\Entity::MAX_PAYOUT_LIMIT;
     const MERCHANT_NAME        = 'merchant_name';
@@ -93,6 +116,8 @@ class Entity extends Base\PublicEntity
         self::CONTACT_NAME,
         self::CONTACT_EMAIL,
         self::CONTACT_PHONE_NUMBER,
+        self::SEND_EMAIL,
+        self::SEND_SMS,
     ];
 
     protected $visible = [
@@ -113,6 +138,8 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::NOTES,
         self::SHORT_URL,
+        self::SEND_SMS,
+        self::SEND_EMAIL,
         self::CANCELLED_AT,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -121,6 +148,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::PAYOUTS,
         self::CONTACT_ID,
         self::CONTACT,
         self::FUND_ACCOUNT_ID,
@@ -129,9 +157,12 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
+        self::ATTEMPT_COUNT,
         self::RECEIPT,
         self::NOTES,
         self::SHORT_URL,
+        self::SEND_SMS,
+        self::SEND_EMAIL,
         self::CANCELLED_AT,
         self::CREATED_AT,
     ];
@@ -142,7 +173,9 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::CONTACT_ID,
         self::FUND_ACCOUNT_ID,
-        self::CONTACT
+        self::PAYOUTS,
+        self::CONTACT,
+        self::ATTEMPT_COUNT
     ];
 
     protected $hosted = [
@@ -183,6 +216,8 @@ class Entity extends Base\PublicEntity
         self::RECEIPT              => null,
         self::NOTES                => [],
         self::CANCELLED_AT         => null,
+        self::SEND_EMAIL           => false,
+        self::SEND_SMS             => false
     ];
 
     // -------------------------------------- Relations -------------------------------
@@ -222,7 +257,7 @@ class Entity extends Base\PublicEntity
      */
     public function payout()
     {
-        return $this->payouts()->orderBy('created_at', 'desc')->first();
+        return $this->payouts()->orderBy(Entity::CREATED_AT, 'desc')->first();
     }
 
     public function getReceipt()
@@ -230,9 +265,28 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECEIPT);
     }
 
+    public function getCancelledAt()
+    {
+        return $this->getAttribute(self::CANCELLED_AT);
+    }
+
+    public function getCreatedAt()
+    {
+        return $this->getAttribute(self::CREATED_AT);
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getFormattedAmount()
+    {
+        $amount = $this->getAttribute(self::AMOUNT);
+
+        $amount = (float) sprintf('%0.2f', ((int) $amount / 100));
+
+        return $amount;
     }
 
     public function getCurrency()
@@ -250,9 +304,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PURPOSE);
     }
 
+    public function getShortUrl()
+    {
+        return $this->getAttribute(self::SHORT_URL);
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    // to handle payouts creation
+    public function getTrimmedDescription()
+    {
+        return substr($this->getAttribute(self::DESCRIPTION), 0, 30);
     }
 
     public function getBalanceId()
@@ -285,6 +350,23 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT_EMAIL);
     }
 
+    public function getSendSms()
+    {
+        return $this->getAttribute(self::SEND_SMS);
+    }
+
+    public function getSendEmail()
+    {
+        return $this->getAttribute(self::SEND_EMAIL);
+    }
+
+    public function getPayoutUtr()
+    {
+        if ($this->payout() !== null)
+        {
+            return $this->payout()->getUtr();
+        }
+    }
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------
@@ -292,6 +374,26 @@ class Entity extends Base\PublicEntity
     public function setShortUrl(string $shortUrl)
     {
         $this->setAttribute(self::SHORT_URL, $shortUrl);
+    }
+
+    public function setContactPhoneNumber(string $phoneNumber)
+    {
+        $this->setAttribute(self::CONTACT_PHONE_NUMBER, $phoneNumber);
+    }
+
+    public function setContactEmail(string $email)
+    {
+        $this->setAttribute(self::CONTACT_EMAIL, $email);
+    }
+
+    public function setSendSms(bool $sendSms)
+    {
+        $this->setAttribute(self::SEND_SMS, $sendSms);
+    }
+
+    public function setSendEmail(bool $sendEmail)
+    {
+        $this->setAttribute(self::SEND_EMAIL, $sendEmail);
     }
 
     public function setStatus($newStatus)
@@ -338,6 +440,24 @@ class Entity extends Base\PublicEntity
         $attributes[self::FUND_ACCOUNT_ID] = FundAccount\Entity::getSignedIdOrNull($attributes[self::FUND_ACCOUNT_ID]);
     }
 
+    public function setPublicPayoutsAttribute(array & $attributes)
+    {
+        //
+        // We never want to expose Payouts on private.
+        // The correct way to do this would be to not add it in $public array.
+        // But, we want to expose it in proxy auth (via expands). Hence, we
+        // cannot remove it from $public array.
+        // It's possible that the payouts is loaded in some flow. This check
+        // ensures that it's always removed before sending out the response.
+        //
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, self::PAYOUTS);
+
+            return;
+        }
+    }
+
     public function setPublicContactAttribute(array & $attributes)
     {
         $attributes[self::CONTACT] = [
@@ -346,13 +466,21 @@ class Entity extends Base\PublicEntity
             self::PHONE_NUMBER => $this->getContactPhoneNumber(),
         ];
     }
+
+    public function setPublicAttemptCountAttribute(array & $attributes)
+    {
+        $attributes[self::ATTEMPT_COUNT] = $this->payouts()->count();
+    }
+
     // -------------------------------------- End Mutators -----------------------------
 
-    public function getPayoutUtr()
+    public function shouldSendSms()
     {
-        if ($this->payout() !== null)
-        {
-            return $this->payout()->getUtr();
-        }
+        return boolval($this->getSendSms());
+    }
+
+    public function shouldSendEmail()
+    {
+        return boolval($this->getSendEmail());
     }
 }

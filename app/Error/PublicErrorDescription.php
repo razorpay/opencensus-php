@@ -42,6 +42,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARDHOLDER_NOT_ENROLLED_IN_3DSECURE_AUTH          = 'Card is not enrolled for 3D Secure authentication';
     const BAD_REQUEST_ERROR                                                     = 'Bad request';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
+    const BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY                             = 'Payouts are temporarily blocked. Please contact support.';
+    const BAD_REQUEST_BLOCKING_RX_ACTIVATIONS                                   = 'RazorpayX activations are currently blocked';
+    const BAD_REQUEST_FAV_NOT_ALLOWED_CURRENTLY                                 = 'Fund Account Validations are temporarily blocked. Please contact support.';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_PAYMENT_NOT_FOUND                                         = 'The requested payment was not found on the server';
@@ -212,6 +215,9 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MANDATE_EXECUTION_ATTEMPT_BEFORE_START_TIME               = 'Mandate execution attempted before the start time';
 
+    const BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING                         = 'Locked Balance update is not allowed.';
+
+    const BAD_REQUEST_INSUFFICIENT_BALANCE_LOCKED                               = 'Insufficient available balance to make the transaction.';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_LINK_CURRENCY_MISMATCH                            = 'Payment currency provided does not match with the currency in the payment page';
@@ -321,6 +327,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION                      = 'The merchant must be unarchived before being activated.';
     const BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED                               = 'The merchant cannot be archived';
     const BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED                                 = 'The merchant has already been archived.';
+    const MERCHANT_EMAIL_AND_INPUT_EMAIL_DIFFERENT                              = 'Merchant email and input email are different';
     const BAD_REQUEST_MERCHANT_NOT_ARCHIVED                                     = 'The merchant has not been archived. This action can only be taken for archived merchants';
     const BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED                                = 'The merchant has already been suspended';
     const BAD_REQUEST_MERCHANT_NOT_SUSPENDED                                    = 'The merchant has not been suspended. This action can only be taken for suspended merchants';
@@ -361,6 +368,7 @@ class PublicErrorDescription
 
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
+    const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                          = 'Server error';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
@@ -646,7 +654,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                    = 'User already has a verified mobile number associated with the account';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                         = 'User cannot login. User account is locked.';
-    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                   = 'Login failed because of incorrect OTP';
+    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                   = 'Verification failed because of incorrect OTP.';
     const BAD_REQUEST_2FA_SETUP_INCORRECT_OTP                                   = 'Second factor authentication setup failed because of incorrect OTP';
     const BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA                          = 'User is restricted by its associated merchant to perform the action';
     const BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED                               = 'Second factor authentication is enabled for user. OTP field is required';
@@ -807,6 +815,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS                      = 'Another payout operation is in progress. Please try again later.';
     const BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED                            = 'The payout is already being processed.';
     const BAD_REQUEST_INVALID_PASSWORD                                          = 'Invalid password';
+    const BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD                         = 'Your new password cannot match any of your last three passwords';
     const BAD_REQUEST_INVALID_LOCALE                                            = 'Issue on bank side';
     const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
     const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                       = 'Could not read card magnetic stripe';
@@ -832,11 +841,18 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_OTP_AUTH_TOKEN                                   = 'Token passed is either invalid or expired';
     const BAD_REQUEST_CUSTOMER_OTP_GENERATION_FAILED                           = 'OTP generation failed';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS                               = 'Invalid Payout Link status passed';
+    const BAD_REQUEST_REWRITING_EMAIL_NOT_PERMITTED                            = 'Cannot over-write existing email information in created Payout Link';
+    const BAD_REQUEST_REWRITING_PHONE_NUMBER_NOT_PERMITTED                     = 'Cannot over-write existing phone number information in created Payout Link';
+    const BAD_REQUEST_INVALID_PAYOUT_LINK_NOTIFICATION_TYPE                    = 'Invalid Payout Link Notification Type';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATUS_TRANSITION                    = 'The following state transition is not allowed for this payout link';
     const BAD_REQUEST_PAYOUT_LINK_CANNOT_BE_CANCELLED_IN_THIS_STATE            = 'Payout Link cannot be cancelled in this state';
     const BAD_REQUEST_PAYOUT_LINK_INVALID_STATE_FOR_INITIATE_REQUEST           = 'Cannot initiate Payout Link in this state';
     const BAD_REQUEST_PAYOUT_LINK_ANOTHER_OPERATION_IN_PROGRESS                = 'Request failed because another operation is in progress';
     const BAD_REQUEST_EITHER_CONTACT_ID_OR_INFORMATION_TO_BE_SENT              = 'Either Contact ID or Contact Information is required, not both';
+    const BAD_REQUEST_EMAIL_NOTIFICATION_WITH_EMPTY_EMAIL                      = 'send_email cannot be true when contact does not have an associated email';
+    const BAD_REQUEST_SMS_NOTIFICATION_WITH_EMPTY_PHONE                        = 'send_sms cannot be true when contact does not have an associated phone number ';
+    const BAD_REQUEST_INVALID_CONTACT_ID                                       = 'Contact Id provided is invalid';
+    const BAD_REQUEST_CONTACT_ID_EMAIL_AND_PHONE_NUMBER_MISSING                = 'Cannot create payout link as the contact_id provided does not have either email or phone number';
 
     // Merchant Config Inheritance
     const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';
@@ -999,4 +1015,6 @@ class PublicErrorDescription
 
     //Invalid Bank Account
     const BAD_REQUEST_INVALID_BANK_ACCOUNT                                          =  'The bank account entered is invalid';
+
+    const BAD_REQUEST_YESBANK_PAYMENT_DISABLED                                      = 'We are unable to complete this transaction due to the restrictions on YES Bank\'s operations by RBI (Gazette notification (S.O. 993(E)) dated 5th March 2020';
 }

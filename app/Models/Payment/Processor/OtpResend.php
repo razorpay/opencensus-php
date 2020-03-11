@@ -26,7 +26,7 @@ trait OtpResend
         {
             $payment = $this->retrieve($id);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_INITIATED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_INITIATED, $payment);
         
             $this->validatePaymentStatus($payment);
 
@@ -42,7 +42,7 @@ trait OtpResend
                 
                 $this->repo->saveOrFail($payment);
 
-                $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment);
+                $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment);
 
                 return $data;
             }
@@ -58,7 +58,7 @@ trait OtpResend
         }
         catch (\Throwable $ex)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment, $ex);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment, $ex);
          
             $this->app['segment']->trackPayment($payment, TraceCode::OTP_RESEND_EXCEPTION);
 

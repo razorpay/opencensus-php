@@ -53,6 +53,12 @@ trait HeadlessOtp
 
     protected function canRunHeadlessOtpFlow($payment, $gatewayInput)
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment(Environment::PRODUCTION) === true))
+        {
+            return false;
+        }
+
         if ($payment[Payment\Entity::CPS_ROUTE] === Payment\Entity::CARD_PAYMENT_SERVICE)
         {
             return false;
@@ -107,19 +113,19 @@ trait HeadlessOtp
             return;
         }
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_INITIATED, $payment);
 
         try
         {
             $response = $this->openHeadlessBrowser($payment, $request);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment);
 
             return $response;
         }
         catch(\Throwable $ex)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment, $ex);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment, $ex);
 
             throw $ex;
         }

@@ -76,6 +76,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::OCR_VERIFY);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function setOcrVerify(string $ocrVerify)
     {
         $this->setAttribute(self::OCR_VERIFY, $ocrVerify);

@@ -20,6 +20,11 @@ class Entity extends Base\PublicEntity
     const EMAIL                         = 'email';
     const PASSWORD                      = 'password';
     const OLD_PASSWORD                  = 'old_password';
+    // The attribute OLD_PASSWORD_1 and OLD_PASSWORD_2 are stored in table which
+    // gets used during password reset to assert new password doest not match
+    // last three passwords. Ref User/Validator.php file.
+    const OLD_PASSWORD_1                = 'old_password1';
+    const OLD_PASSWORD_2                = 'old_password2';
     const PASSWORD_CONFIRMATION         = 'password_confirmation';
     const CONTACT_MOBILE                = 'contact_mobile';
     const REMEMBER_TOKEN                = 'remember_token';
@@ -52,6 +57,8 @@ class Entity extends Base\PublicEntity
     const CONFIRMED                     = 'confirmed';
     const INVITATIONS                   = 'invitations';
     const PRODUCT                       = 'product';
+
+    const APP                           = 'app';
 
     const PASSWORD_TOKEN_LENGTH         = 50;
 
@@ -101,6 +108,8 @@ class Entity extends Base\PublicEntity
         self::REMEMBER_TOKEN,
         self::CONFIRM_TOKEN,
         self::PASSWORD_RESET_TOKEN,
+        self::OLD_PASSWORD_1,
+        self::OLD_PASSWORD_2,
     ];
 
     protected static $generators = [

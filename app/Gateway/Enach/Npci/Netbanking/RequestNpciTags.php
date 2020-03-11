@@ -24,4 +24,7 @@ class RequestNpciTags
     const CREDITOR_NAME         = 'Nm';
     const CREDITOR_ACCOUNT      = 'AccNo';
     const IFSC_SPONSOR          = 'MmbId';
+    const MANDATE_TYPE          = 'Mndt_Type';
+    const SPONSORED_BANK_NAME   = 'Spn_Bnk_Nm';
+    const ACCOUNT_TYPE          = 'Acct_Type';
 }

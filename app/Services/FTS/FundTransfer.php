@@ -182,6 +182,11 @@ class FundTransfer extends Base
     {
         $channel = $this->fta->getChannel();
 
+        if ($channel === Channel::YESBANK)
+        {
+            $channel = Channel::ICICI;
+        }
+
         $sourceType = $this->fta->getSourceType();
 
         $request[Constants::TRANSFER] = [
@@ -214,17 +219,6 @@ class FundTransfer extends Base
                 ];
             }
         }
-
-        $transferBy  = $this->fta->getCreatedAt();
-
-        if ($sourceType === Entity::PAYOUT)
-        {
-            $transferBy  += $this->getTransferSLA($this->fta->getMode());
-        }
-
-        $request[Constants::TRANSFER] += [
-            Constants::TRANSFER_BY => $transferBy,
-        ];
 
         return $request;
     }
@@ -600,22 +594,6 @@ class FundTransfer extends Base
         }
 
         return Mode::NEFT;
-    }
-
-    /**
-     * @param string $mode
-     * @return int
-     */
-    protected function getTransferSLA(string $mode)
-    {
-        $sla = (int) $this->redis->HGET(ConfigKey::FTS_TRANSFER_SLA, strtolower($mode));
-
-        if ($sla < 0)
-        {
-            return 0;
-        }
-
-        return $sla;
     }
 
     public function bulkUpdateFtsAttempts(array $input)

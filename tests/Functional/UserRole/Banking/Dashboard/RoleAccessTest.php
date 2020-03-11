@@ -2,10 +2,10 @@
 
 namespace RZP\Tests\Functional\UserRole;
 
-use RZP\Http\Middleware\UserAccess;
 use RZP\Http\Route;
 use RZP\Models\User\BankingRole;
 use RZP\Tests\Functional\TestCase;
+use RZP\Http\Middleware\UserAccess;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\UserRole\Banking\Dashboard\BankingRoleTrait;
@@ -16,20 +16,59 @@ class RoleAccessTest extends TestCase
     use BankingRoleTrait;
 
     /**
-     * @var UserRolePermissionsMap
-     */
-    private $userRolePermissionMap;
-    /**
      * @var array
      */
     private $routePermissions;
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/RoleAccessTestData.php';
+
         parent::setUp();
 
-        $this->userRolePermissionMap = new UserRolePermissionsMap();
         $this->routePermissions = Route::$bankingRoutePermissions;
+    }
+
+    public function testGrantAccessWhenExperimentOff()
+    {
+        $user = $this->fixtures->create('user',['id'  => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::VIEW_ONLY,
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->mockRazorXTreatmentAccessDenyUnauthorised("off");
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testDenyAccessWhenExperimentOn()
+    {
+        $user = $this->fixtures->create('user',['id'  => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::VIEW_ONLY,
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->mockRazorXTreatmentAccessDenyUnauthorised("on");
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->startTest();
     }
 
     public function testAllRoleAccesses()
@@ -42,6 +81,12 @@ class RoleAccessTest extends TestCase
 
         // Validate for Finance L1 Role
         $this->validateAccesses(BankingRole::FINANCE_L1);
+
+        // Validate for Operations role
+        $this->validateAccesses(BankingRole::OPERATIONS);
+
+        // Validate for View_Only role
+        $this->validateAccesses(BankingRole::VIEW_ONLY);
     }
 
     protected function validateAccesses(string $role)
@@ -64,7 +109,7 @@ class RoleAccessTest extends TestCase
 
             $this->assertEquals(
                 true,
-                $this->userRolePermissionMap->isValidRolePermission(BankingRole::OWNER, $routePermission),
+                UserRolePermissionsMap::isValidRolePermission(BankingRole::OWNER, $routePermission),
                 "Route $route permission missing for role $role");
         }
     }

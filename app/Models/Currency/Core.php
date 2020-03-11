@@ -120,7 +120,7 @@ class Core extends Base\Core
 
     protected function getDCCMarkUpPercentage($rates)
     {
-        return isset($rates[self::DCC_MARK_UP_PERCENTAGE_KEY]) ? $rates[self::DCC_MARK_UP_PERCENTAGE_KEY] : self::DCC_MARK_UP_PERCENTAGE;
+        return isset($rates[self::DCC_MARK_UP_PERCENTAGE_KEY]) === true ? $rates[self::DCC_MARK_UP_PERCENTAGE_KEY] : self::DCC_MARK_UP_PERCENTAGE;
     }
 
     /**
@@ -161,13 +161,13 @@ class Core extends Base\Core
 
         $rates = $this->getOrUpdateRates($baseCurrency, $roundedTime);
 
-        $markUpPercent = self::getDCCMarkUpPercentage($rates);
+        $markUpPercent = $this->getDCCMarkUpPercentage($rates);
 
         $supportedCurrencies = $this->getSupportedCurrenciesDetails();
 
         foreach (array_keys($supportedCurrencies) as $currency)
         {
-            if(isset($rates[$currency]))
+            if(isset($rates[$currency]) === true)
             {
                 $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $rates[$currency], $markUpPercent);
             }
@@ -190,9 +190,9 @@ class Core extends Base\Core
         {
             $rates = $this->getRates($baseCurrency, $ratesTimestamp);
 
-            if((empty($rates) === false) and (isset($rates[$requestedCurrency])))
+            if((empty($rates) === false) and (isset($rates[$requestedCurrency]) === true))
             {
-                $markUpPercent = self::getDCCMarkUpPercentage($rates);
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates);
 
                 $requestedCurrencyData['currency'] = $requestedCurrency;
 

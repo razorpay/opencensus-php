@@ -2,8 +2,7 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
-use Carbon\Carbon;
-use RZP\Models\Transaction;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -360,10 +359,9 @@ class TransactionTest extends TestCase
         $this->assertEquals($oldBalance['balance'] - $refund['amount'], $balance['balance']);
     }
 
-
     public function testDirectSettlementNoMerchnatBalance()
     {
-         $this->fixtures->create('credits', [
+        $this->fixtures->create('credits', [
             'type'        => 'fee',
             'value'       => 0,
             'merchant_id' => '10000000000000',
@@ -371,7 +369,19 @@ class TransactionTest extends TestCase
 
         $this->fixtures->merchant->editBalance('100', '10000000000000');
 
-        $oldBalance = $this->getEntityById('balance', '10000000000000', true);
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertTrue($balance['balance'] === 100);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
 
         $this->makeRequestAndCatchException(function ()
         {
@@ -379,6 +389,90 @@ class TransactionTest extends TestCase
         },BadRequestException::class, 'Payment failed');
 
         $payment = $this->getLastEntity('payment', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+
+        $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testDirectSettlementZeroMerchnatBalance()
+    {
+         $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 0,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->merchant->editBalance(0, '10000000000000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertTrue($balance['balance'] === 0);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                           ->willReturn('on');
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $this->createDirectSettlementPayment();
+        },BadRequestException::class, 'Payment failed');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+
+        $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testDirectSettlementNegativeMerchnatBalance()
+    {
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 0,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->merchant->editBalance(-1000, '10000000000000');
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertTrue($balance['balance'] === -1000);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $this->makeRequestAndCatchException(function ()
+        {
+            $this->createDirectSettlementPayment();
+        },BadRequestException::class, 'Payment failed');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
 
         $this->assertEquals('netbanking_hdfc', $payment['gateway']);
         $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
@@ -486,6 +580,8 @@ class TransactionTest extends TestCase
 
     public function testHandleAsyncMerchantBalanceUpdate()
     {
+        $this->mockRazorx();
+
         $this->fixtures->merchant->addFeatures(['async_balance_update']);
         $payment = $this->getDefaultPaymentArray();
 
@@ -601,6 +697,7 @@ class TransactionTest extends TestCase
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
         $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+
         $payment = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -628,5 +725,18 @@ class TransactionTest extends TestCase
         $this->org = $this->fixtures->create('org');
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
+    private function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
     }
 }

@@ -17,6 +17,7 @@ class Limit
         Type::REFUND                                => 1000,
         Type::PAYMENT_LINK                          => 500100,
         Type::INSTANT_ACTIVATION                    => 50001,
+        Type::ENTITY_UPDATE_ACTION                  => 50000,
         Type::IRCTC_REFUND                          => 100000,
         Type::IRCTC_DELTA_REFUND                    => 100000,
         Type::IRCTC_SETTLEMENT                      => 100000,
@@ -44,6 +45,7 @@ class Limit
         TYPE::PRICING_RULE                          => 50000,
         Type::ADMIN_BATCH                           => 5000,
         Type::MDR_ADJUSTMENT                        => 1100000,
+        Type::ECOLLECT_ICICI                        => 100000,
     ];
 
     /**

@@ -92,7 +92,11 @@ class Type
 
     const ADMIN_BATCH           = 'admin_batch';
 
+    const ENTITY_UPDATE_ACTION = 'entity_update_action';
+
     const ADJUSTMENT            = 'adjustment';
+
+    const ECOLLECT_ICICI        = 'ecollect_icici';
 
     public static $disabledTypes = [
         //
@@ -122,8 +126,10 @@ class Type
         self::PRICING_RULE,
         self::ADMIN_BATCH,
         self::MERCHANT_CONFIG_INHERITANCE,
+        self::ENTITY_UPDATE_ACTION,
         self::MDR_ADJUSTMENT,
         self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
     ];
 
     /**
@@ -264,6 +270,7 @@ class Type
         self::OAUTH_MIGRATION_TOKEN,
         self::LINKED_ACCOUNT_REVERSAL,
         self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
     ];
 
     /**
@@ -278,7 +285,9 @@ class Type
         self::PRICING_RULE,
         self::MERCHANT_CONFIG_INHERITANCE,
         self::MDR_ADJUSTMENT,
+        self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
     ];
 
     public static $batchToAdminPermissionMapping = [

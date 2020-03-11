@@ -7,6 +7,7 @@ use RZP\Models\Card;
 use RZP\Models\Bank\Name;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Type;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\QueryCache\Cacheable;
 
@@ -400,14 +401,8 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    public function isDCCSupported(): bool
+    public function getIinCurrency()
     {
-        if (($this->isInternational() === true) and
-            (Card\Network::isDCCSupportedNetwork($this->getNetworkCode())) === true)
-        {
-            return true;
-        }
-
-        return false;
+        return Currency::getCurrency($this->getCountry());
     }
 }

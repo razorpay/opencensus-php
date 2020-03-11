@@ -88,6 +88,7 @@ class Table
     //Subscriptions Tables end
 
     const PAPER_MANDATE              = 'paper_mandates';
+    const PAPER_MANDATE_UPLOAD       = 'paper_mandate_uploads';
     const METHODS                    = 'merchant_banks';
     const BANK_TRANSFER              = 'bank_transfers';
     const UPI_TRANSFER               = 'upi_transfers';
@@ -191,6 +192,9 @@ class Table
     const MOZART                = 'mozart';
     const WORLDLINE             = 'worldline';
 
+    // Upi Related
+    const UPI_METADATA          = 'upi_metadata';
+
     // Sessions table
     const SESSION               = 'sessions';
 
@@ -253,6 +257,8 @@ class Table
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 
     const OPTIONS              = 'options';
+
+    const UPI_MANDATE          = 'upi_mandates';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,

@@ -87,6 +87,7 @@ class Base extends Core
     const NETBANKING_KVB         = 'NetbankingKvb';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
+    const VIRTUAL_ACC_RBL        = 'VirtualAccRbl';
     const JIOMONEY               = 'Jiomoney';
     const UPI_SBI                = 'UpiSbi';
     const PAYUMONEY              = 'PayuMoney';
@@ -111,6 +112,7 @@ class Base extends Core
     const BAJAJFINSERV           = 'BajajFinserv';
     const GETSIMPL               = 'Getsimpl';
     const VAS_AXIS               = 'VasAxis';
+    const YES_BANK               = 'YesBank';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -127,7 +129,7 @@ class Base extends Core
         self::MPESA                  => [],
         self::PAYTM                  => [],
         self::KOTAK                  => ['bankalerts@kotak.com'],
-        self::OLAMONEY               => ['olamoney-noreply@olacabs.com'],
+        self::OLAMONEY               => [],
         self::FREECHARGE             => ['noreply@fcemail.in', 'noreply@freechargemail.in'],
         self::EMANDATE_AXIS          => ['cmsdirect.debit@axisbank.com'],
         self::NETBANKING_AXIS        => ['ibanking@axisbank.com'],
@@ -158,12 +160,13 @@ class Base extends Core
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
-        self::UPI_ICICI              => ['eazypay@icicibank.com'],
+        self::UPI_ICICI              => [],
         self::VIRTUAL_ACC_KOTAK      => ['kmb.reports@kotak.com'],
         self::VIRTUAL_ACC_YESBANK    => ['ereport@yesbank.in'],
+        self::VIRTUAL_ACC_RBL        => [],
         self::UPI_SBI                => [],
         self::PAYUMONEY              => [],
-        self::HITACHI                => ['reportsmailer@hitachi-payments.com'],
+        self::HITACHI                => [],
         self::CARD_FSS_HDFC          => ['merchantops@fss.co.in'],
         self::ATOM                   => [],
         self::CARD_FSS_BOB           => [],
@@ -180,6 +183,7 @@ class Base extends Core
         self::VAS_AXIS               => [],
         self::GETSIMPL               => [],
         self::BAJAJFINSERV           => ['remiecftransactions@bizsupportc.com'],
+        self::YES_BANK               => ['yesacquirer@insolutionsglobal.com'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -258,7 +262,8 @@ class Base extends Core
 
         Gateway::CYBERSOURCE            => [
             Gateway::ACQUIRER_AXIS   => self::AXIS,
-            Gateway::ACQUIRER_HDFC   => self::HDFC
+            Gateway::ACQUIRER_HDFC   => self::HDFC,
+            Gateway::ACQUIRER_YESB   => self::YES_BANK,
         ],
 
         Gateway::CARD_FSS               => [

@@ -171,8 +171,16 @@ return [
         'secret'    => env('YESBANK_SECRET'),
     ],
 
+    'rbl_va'    => [
+        'org_token' => env('RBL_VA_SECRET'),
+    ],
+
     'rbl' => [
         'secret' => env('BANKING_ACCOUNT_RBL_WEBHOOK_SECRET'),
+    ],
+
+    'ecom' => [
+        'secret' => env('ECOM_WEBHOOK_SECRET'),
     ],
 
     'bharatqr' => [
@@ -342,6 +350,13 @@ return [
         'url'      => env('APP_SUBSCRIPTIONS_URL'),
         'username' => 'rzp',
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
+    ],
+
+    'offline_verification' => [
+        'url'           => env('APP_OFFLINE_VERIFICATION_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_OFFLINE_VERIFICATION_SECRET'),
+        'timeout'       => env('APP_OFFLINE_VERIFICATION_TIMEOUT', 60),
     ],
 
     'payment_links' => [
