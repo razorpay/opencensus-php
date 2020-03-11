@@ -929,22 +929,7 @@ class Core extends Base\Core
 
         $txn->setBalance($merchantBalance->getBalance(), $negativeLimit, $checkNegativeLimit);
 
-        if (in_array($txn->getType(), Balance\Core::NEGATIVE_FLOWS[Balance\Type::PRIMARY]) === true)
-        {
-            if ($newBalance < 0)
-            {
-                $dimensions = (new Balance\Metric)->getBalanceNegativeDimensions($this->merchant->getId(),
-                    $merchantBalance->getType(),
-                    $merchantBalance->getBalance(),
-                    $txn->getType());
-
-                $this->trace->count(Balance\Metric::BALANCE_NEGATIVE, $dimensions);
-            }
-
-            (new Balance\Core)->sendNegativeBalanceMailIfApplicable($txn->merchant, $oldBalance, $newBalance,
-                $merchantBalance->getType(), 'merchant balance',
-                $txn->getType());
-        }
+        (new Balance\Core)->postProcessingForNegativeBalance($oldBalance, 'merchant balance', $txn->getType(), $merchantBalance);
 
         return $txn;
     }
@@ -1139,10 +1124,8 @@ class Core extends Base\Core
         }
         $this->merchantBalance->subtractRefundCredits($amount, $negativeLimit);
 
-        $newCredits = $this->merchantBalance->getRefundCredits();
-
-        (new Balance\Core)->sendNegativeBalanceMailIfApplicable($merchantBalance->merchant, $refundCredits, $newCredits,
-            $merchantBalance->getType(), 'refund credits', $txn->getType());
+        (new Balance\Core)->postProcessingForNegativeBalance($refundCredits, 'refund credits',
+                                                             $txn->getType(), $merchantBalance);
 
         //create a credit transaction for the same
         $this->createCreditTransaction($amount, $txn, Credits\Type::REFUND);

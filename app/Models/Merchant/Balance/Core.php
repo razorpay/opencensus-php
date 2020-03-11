@@ -164,7 +164,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::RESERVE_BALANCE_CREATE_REQUEST,
             [
                 Entity::TYPE         => $balanceType,
-                Entity::MERCHANT_ID  => $merchant->getMerchantId()
+                Entity::MERCHANT_ID  => $merchant->getId()
             ]
         );
 
@@ -181,7 +181,7 @@ class Core extends Base\Core
                 $this->trace->info(TraceCode::RESERVE_BALANCE_CREATE_SUCCESSFUL,
                     [
                         Entity::TYPE           => $balanceType,
-                        Entity::MERCHANT_ID    => $merchant->getMerchantId()
+                        Entity::MERCHANT_ID    => $merchant->getId()
                     ]
                 );
 
@@ -516,9 +516,9 @@ class Core extends Base\Core
             'merchant_name'         => $merchant->getName(),
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
             'percentage'            => $threshold,
-            'max_negative_allowed'  => ($maxNegativeAllowed / 100) . " INR",
+            'max_negative_allowed'  => ($maxNegativeAllowed / 100) . ' INR',
             'balance_source'        => $balanceSource,
-            'balance'                => ($balance / 100) . " INR",
+            'balance'                => ($balance / 100) . 'INR',
             'headers'                => MailTags::NEGATIVE_BALANCE_THRESHOLD_ALERT,
         ];
 
@@ -543,7 +543,7 @@ class Core extends Base\Core
             'merchant_id'           => $merchant->getId(),
             'merchant_name'         => $merchant->getName(),
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
-            'balance'               => ($balance) / 100 . " INR",
+            'balance'               => ($balance) / 100 . ' INR',
             'balance_source'        => $balanceSource,
             'headers'                => MailTags::BALANCE_NEGATIVE_ALERT,
         ];
@@ -561,7 +561,7 @@ class Core extends Base\Core
             'email'                  => $merchant->getEmail(),
             'merchant_id'           => $merchant->getId(),
             'merchant_name'         => $merchant->getName(),
-            'balance'               => ($newBalance) / 100 . " INR",
+            'balance'               => ($newBalance) / 100 . ' INR',
             'balance_source'        => $balanceSource,
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
             'headers'                => MailTags::BALANCE_POSITIVE_ALERT,
@@ -577,7 +577,7 @@ class Core extends Base\Core
         $data = [
             'email'                 => $merchant->getEmail(),
             'merchant_id'           => $merchant->getId(),
-            'reserve_limit'         => ($balance->getBalance()) / 100 . " INR",
+            'reserve_limit'         => ($balance->getBalance()) / 100 . ' INR',
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
             'headers'               => MailTags::RESERVE_BALANCE_ACTIVATED,
         ];
@@ -591,11 +591,14 @@ class Core extends Base\Core
      * Get the Maximum Negative Limit upto which the balance
      *
      * @param Transaction\Entity $txn
+     * @param Type $balanceType
      * @return int
      */
     public function getNegativeLimit(Transaction\Entity $txn) : int
     {
         $negativeLimit = 0;
+
+        $balanceType = $this->getTransactionBalanceType($txn);
 
         // If the Transaction Type is Payment, then we only allow Negative Balance for
         // E-Mandate Registrations (Recurring type: Initital, not second recurring).
@@ -617,24 +620,67 @@ class Core extends Base\Core
         }
 
         $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txn->getType(),
-                                                                                            $txn->merchant->getId());
+                                                                                            $txn->merchant->getId(),
+                                                                                            $balanceType);
 
         if ($negativeBalanceEnabled === true)
         {
-            $txnSource = $txn->source;
-
-            $balanceType = Type::PRIMARY;
-
-            if ($txnSource !== null)
-            {
-                $balance = $txnSource->balance;
-
-                $balanceType = $balance !== null ? $balance->getType() : Type::PRIMARY;
-            }
-
-            $negativeLimit = -1 * $this->getMaximumNegativeAllowedForBalanceType($txn->merchant, $balanceType, $txn->getType());
+            return -1 * $this->getMaximumNegativeAllowedForBalanceType($txn->merchant, $balanceType, $txn->getType());
         }
 
         return $negativeLimit;
+    }
+
+    public function getTransactionBalanceType(Transaction\Entity $txn) : string
+    {
+        $txnSource = $txn->source;
+
+        $balanceType = Type::PRIMARY;
+
+        if ($txnSource !== null)
+        {
+            $balance = $txnSource->balance;
+
+            $balanceType = $balance !== null ? $balance->getType() : Type::PRIMARY;
+        }
+
+        return $balanceType;
+    }
+
+    public function postProcessingForNegativeBalance(int $oldBalance,
+                                                     string $balanceSource,
+                                                     string $txnType,
+                                                     Entity $merchantBalance)
+    {
+        $balanceType = $merchantBalance->getType();
+
+        $merchantId = $merchantBalance->merchant->getId();
+
+        $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txnType,
+                                                                                            $merchantId,
+                                                                                            $balanceType);
+
+        if ($negativeBalanceEnabled === true)
+        {
+            if ($balanceSource === 'refund credits')
+            {
+                $newBalance = $merchantBalance->getRefundCredits();
+            }
+            else
+            {
+                $newBalance = $merchantBalance->getBalance();
+            }
+
+            if ($newBalance < 0)
+            {
+                $dimensions = (new Metric)->getBalanceNegativeDimensions($merchantId, $balanceType,
+                                                                         $merchantBalance->getBalance(), $txnType);
+
+                $this->trace->count(Metric::BALANCE_NEGATIVE, $dimensions);
+            }
+
+            $this->sendNegativeBalanceMailIfApplicable($merchantBalance->merchant, $oldBalance, $newBalance,
+                $balanceType, $balanceSource, $txnType);
+        }
     }
 }

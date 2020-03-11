@@ -29,6 +29,16 @@ class AdjustmentTest extends TestCase
     {
         Mail::fake();
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
         $response = $this->startTest();
 
         $adjId = $response['id'];
@@ -78,6 +88,16 @@ class AdjustmentTest extends TestCase
     {
         Mail::fake();
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
         $response = $this->startTest();
 
         $adjId = $response['id'];
@@ -126,6 +146,16 @@ class AdjustmentTest extends TestCase
     public function testSendYesbankLoadSuccessfulEmail()
     {
         Mail::fake();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
 
         $this->fixtures->create('balance',
                                 [
@@ -193,6 +223,16 @@ class AdjustmentTest extends TestCase
     {
         Mail::fake();
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
         $this->createFixtures('100xyz000xyz00');
 
         $this->fixtures->create(
@@ -244,6 +284,16 @@ class AdjustmentTest extends TestCase
 
     public function testCreateNegativeAdjustmentWithLowBalance()
     {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
         $this->fixtures->create(
             'balance',
             [
@@ -300,7 +350,7 @@ class AdjustmentTest extends TestCase
     {
         $merchantId = $id ?? '100abc000abc00';
 
-        $this->fixtures->create('merchant', ['id' => $merchantId, 'email' => "mahbubani.amit@gmail.com"]);
+        $this->fixtures->create('merchant', ['id' => $merchantId, 'email' => 'mahbubani.amit@gmail.com']);
 
         $admin = $this->ba->getAdmin();
 
