@@ -963,4 +963,22 @@ return [
             ],
         ]
     ],
+
+    'testFetchVirtualAccountBankingMultipleWithBalanceId' => [
+        'request' => [
+            'url' =>'/virtual_accounts/banking/account?balance_id=10000000000000',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    [
+                        'name' => "Test Merchant",
+                        'entity' => "virtual_account",
+                        'status' => "active",
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

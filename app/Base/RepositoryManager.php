@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity;
 use RZP\Base\Database\MySqlConnection;
+use RZP\Base\Database\Connectors\MySqlConnector;
 
 /**
  * @property Models\Plan\Subscription\Repository                $subscription
@@ -239,6 +240,8 @@ class RepositoryManager extends Illuminate\Support\Manager
 
     public function beginTransactionAndRollback(Closure $callback)
     {
+        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT);
+
         try
         {
             $this->db->beginTransaction();
@@ -249,6 +252,8 @@ class RepositoryManager extends Illuminate\Support\Manager
         {
             $this->db->rollback();
         }
+
+        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT);
 
         return $result;
     }
@@ -264,6 +269,10 @@ class RepositoryManager extends Illuminate\Support\Manager
      */
     public function transaction($callback, ...$params)
     {
+        $start = millitime();
+
+        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT);
+
         if ((is_object($callback) === false) or
             ($callback instanceof Closure === false))
         {
@@ -281,6 +290,12 @@ class RepositoryManager extends Illuminate\Support\Manager
             $result = $this->db->transaction($callback, ...$params);
         }
 
+        $duration = millitime() - $start;
+
+        $this->app['db.connector.mysql']->recordTransactionDuration($duration);
+
+        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT);
+
         return $result;
     }
 
@@ -294,6 +309,9 @@ class RepositoryManager extends Illuminate\Support\Manager
         // instance on relationship based queries.
         //
         $currentConnection = $this->getDefaultDbConn();
+
+        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Mode::LIVE);
+        $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_TRANSACTION_WAIT_TIMEOUT, Mode::TEST);
 
         $this->db->connection(Mode::TEST)->beginTransaction();
         $this->db->connection(Mode::LIVE)->beginTransaction();
@@ -322,6 +340,8 @@ class RepositoryManager extends Illuminate\Support\Manager
         finally
         {
             $this->setDefaultDbConn($currentConnection);
+            $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT, Mode::LIVE);
+            $this->app['db.connector.mysql']->setWaitTimeout(MySqlConnector::TYPE_WAIT_TIMEOUT, Mode::TEST);
         }
 
         return $result;
