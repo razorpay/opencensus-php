@@ -134,7 +134,6 @@ class Constants
     const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
-    const VALIDATE_MERCHANT_DOMAIN        = 'validate_merchant_domain';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
 
     const ENACH_INTERMEDIATE              = 'enach_intermediate';
@@ -501,7 +500,6 @@ class Constants
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
         self::SUBMERCHANT_ONBOARDING          => true,
         self::EXPOSE_FA_VALIDATION_UTR        => true,
-        self::VALIDATE_MERCHANT_DOMAIN        => true,
         self::PARTNER_ACTIVATE_MERCHANT       => true,
         self::GOOGLE_PAY_CARDS                => true,
         self::FORCE_GREYLIST_INTERNAT         => true,

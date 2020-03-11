@@ -182,6 +182,8 @@ class Entity extends Base\PublicEntity
         self::INTERNAL_COMMENT,
         self::BALANCE,
         self::BANKING_ACCOUNT_DETAILS,
+        self::GATEWAY_BALANCE,
+        self::BALANCE_LAST_FETCHED_AT,
         //
         // This has been added so that banking_account_details
         // relations can be fetched on admin auth.

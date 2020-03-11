@@ -49,6 +49,16 @@ class WebhookTest extends TestCase
     use DbEntityFetchTrait;
     use PartnerTrait;
 
+    public function mockRazorX(string $functionName, string $featureName, string $variant, $merchantId = '1cXSLlUU8V9sXl')
+    {
+        $testData = &$this->testData[$functionName];
+
+        $uniqueLocalId = RazorXClient::getLocalUniqueId($merchantId, $featureName, 'live');
+
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
+
+    }
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/WebhookData.php';
@@ -62,6 +72,8 @@ class WebhookTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->setupMockDns();
+
+        $this->mockRazorX('diableWebhookUpdate', 'disable_webhook_update', 'off', 10000000000000);
     }
 
     public function testCreateWebhook()

@@ -628,6 +628,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RX_LOW_BALANCE_EMAIL_ALERT_DATA                       = 'RX_LOW_BALANCE_EMAIL_ALERT_DATA';
 
     const LOCKED_BALANCE_UPDATE_REQUEST                         = 'LOCKED_BALANCE_UPDATE_REQUEST';
+    const LOCKED_BALANCE_UPDATE_RESPONSE                        = 'LOCKED_BALANCE_UPDATE_RESPONSE';
 
     const MAILER_JOB_ERROR                                      = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                              = 'INVOICE_ACTION_JOB_ERROR';
@@ -2552,6 +2553,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const D2C_BUREAU_DETAILS_UPDATE                             = 'D2C_BUREAU_DETAILS_UPDATE';
     const D2C_BUREAU_REPORT_UPDATE                              = 'D2C_BUREAU_REPORT_UPDATE';
     const D2C_BUREAU_REPORT_DOWNLOAD_REQUEST                    = 'D2C_BUREAU_REPORT_DOWNLOAD_REQUEST';
+    const D2C_BUREAU_CREATE_CSV_REPORT                          = 'D2C_BUREAU_CREATE_CSV_REPORT';
+    const D2C_BUREAU_REPORT_CONVERSION_ERROR                    = 'D2C_BUREAU_REPORT_CONVERSION_ERROR';
     const MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST               = 'MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST';
 
     const MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST           = 'MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST';
@@ -2663,10 +2666,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
 
-
     // RBL VA integration
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';
+
+    // VA Migrate - Yesbank -> RBL
+    const VA_MIGRATE_REQUEST            = 'VA_MIGRATE_REQUEST';
+    const VA_MIGRATE_JOB_TRIGGERED      = 'VA_MIGRATE_JOB_TRIGGERED';
+    const VA_MIGRATE_PROCESS_TRIGGERING = 'VA_MIGRATE_PROCESS_TRIGGERING';
+    const VA_MIGRATE_AFTER_ID_RETRIEVED = 'VA_MIGRATE_AFTER_ID_RETRIEVED';
+    const VA_MIGRATE_JOB_FAILED         = 'VA_MIGRATE_JOB_FAILED';
+    const VA_MIGRATE_TIME               = 'VA_MIGRATE_TIME';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

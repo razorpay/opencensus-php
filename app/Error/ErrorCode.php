@@ -954,6 +954,7 @@ class ErrorCode
     const BAD_REQUEST_KYC_ID_MISSING                                                = 'BAD_REQUEST_KYC_ID_MISSING';
     const BAD_REQUEST_INVALID_RESPONSE_BODY                                         = 'BAD_REQUEST_INVALID_RESPONSE_BODY';
 
+    const SERVER_ERROR_BANKING_ACCOUNT_GATEWAY_PROCESSOR_CLASS_ABSENCE              = 'SERVER_ERROR_BANKING_ACCOUNT_GATEWAY_PROCESSOR_CLASS_ABSENCE';
     const SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING                           = 'SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING';
     const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
     const SERVER_ERROR_NO_TERMINAL_FOUND                                            = 'SERVER_ERROR_NO_TERMINAL_FOUND';
@@ -1020,6 +1021,7 @@ class ErrorCode
     const SERVER_ERROR_WEBHOOK_IN_TRANSACTION                                       = 'SERVER_ERROR_WEBHOOK_IN_TRANSACTION';
     const SERVER_ERROR_SIGNED_XML_EMPTY                                             = 'SERVER_ERROR_SIGNED_XML_EMPTY';
 
+    const SERVER_ERROR_WEBHOOK_UPDATE_DISABLED                                      = 'SERVER_ERROR_WEBHOOK_UPDATE_DISABLED';
     const SERVER_ERROR_RAZORX_FAILURE                                               = 'SERVER_ERROR_RAZORX_FAILURE';
 
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';

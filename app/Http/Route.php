@@ -267,6 +267,7 @@ final class Route
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'merchant_balance_fetch'                   => ['get',      'balances',                                       'MerchantController@getAccountBalances'                             ],
+        'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_create_bulk'                      => ['post',     'merchants/credits/bulk',                         'MerchantController@bulkCreateMerchantCredits'                      ],
         'merchant_balance_bulk_backfill_ids'       => ['post',     'merchants/balances/backfill',                    'MerchantController@bulkRegenerateBalanceIds'                       ],
@@ -350,7 +351,8 @@ final class Route
         'virtual_account_fetch_payments'           => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
         'virtual_account_close_cron'               => ['post',     'virtual_accounts/close',                         'VirtualAccountController@closeVirtualAccountsByCloseBy'            ],
         'virtual_account_add_receiver'             => ['patch',    'virtual_accounts/{id}/receiver',                 'VirtualAccountController@addReceiver'                              ],
-        'virtual_account_configs'                  => ['get',      'virtual_account/configs',                        'VirtualAccountController@getReceiverConfigs'                                     ],
+        'virtual_account_configs'                  => ['get',      'virtual_account/configs',                        'VirtualAccountController@getReceiverConfigs'                       ],
+        'virtual_account_batch_migrate_yesbank'    => ['post',     'virtual_accounts/batch_migrate_yesbank',         'VirtualAccountController@bulkMigrateYesbank'                       ],
         'upi_transfer_process'                     => ['post',     'live/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'upi_transfer_process_test'                => ['post',     'test/upi/callback/hdfc/upi_mindgate',            'UpiTransferController@processUpiTransferPayment'                   ],
         'payment_upi_transfer_fetch'               => ['get',      'payments/{id}/upi_transfer',                     'UpiTransferController@fetchForPayment'                             ],
@@ -1441,6 +1443,7 @@ final class Route
 
         //route for testing raven sms gateways
         'send_test_sms'                           => ['post',      'admin/test-sms',                                           'AdminController@sendTestSms'                              ],
+        'd2c_create_csv_report'                   => ['get',      'd2c_bureau_details/d2c_create_csv_report',                  'D2cController@fetchD2cCSVReport'                          ],
         'd2c_bureau_details_fetch'                => ['post',      'd2c_bureau_details',                                       'D2cController@getOrCreate'                                ],
         'd2c_bureau_details_patch'                => ['patch',     'd2c_bureau_details/{id}',                                  'D2cController@patchDetails'                               ],
         'd2c_bureau_details_otp_submit'           => ['post',      'd2c_bureau_details/{id}/otp_submit',                       'D2cController@getReportWithOtp'                           ],
@@ -2022,6 +2025,7 @@ final class Route
         'banking_account_gateway_balance_fetch',
         'merchant_poc_update',
         'unclaimed_merchant_poc_update',
+        'virtual_account_batch_migrate_yesbank',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2354,6 +2358,7 @@ final class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'd2c_create_csv_report',
         'offline_verification_service_get',
         'offline_verification_service_put',
         'offline_verification_service_post',
@@ -2885,6 +2890,8 @@ final class Route
         'fetch_batch_action_entities',
 
         'merchant_locked_balance_update',
+
+        'merchant_balance_fetch_admin',
         ];
 
     public static $routePermission = [
@@ -2894,6 +2901,7 @@ final class Route
         'offline_verification_service_put'         => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
         'offline_verification_service_delete'      => Permission::OFFLINE_VERIFICATION_SERVICE_EDIT,
         'd2c_bureau_reports_download'              => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
+        'd2c_create_csv_report'                    => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
         'payout_update_pull_payout_status'         => '*',
         'merchant_activation_update_website_status'=> '*',
         'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
@@ -2975,6 +2983,7 @@ final class Route
         'merchant_put_payment_methods'             => Permission::EDIT_MERCHANT_METHODS,
         'balance_fetch'                            => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_balance_fetch'                   => Permission::VIEW_MERCHANT_BALANCE,
+        'merchant_balance_fetch_admin'             => Permission::VIEW_MERCHANT_BALANCE,
         'feature_get_multiple'                     => Permission::VIEW_MERCHANT_FEATURES,
         'merchant_actions'                         => '*',
         'merchant_live_enable'                     => Permission::EDIT_MERCHANT_ENABLE_LIVE,
@@ -3222,7 +3231,7 @@ final class Route
         'schedule_update_next_run'                 => '*',
         'send_newsletter'                          => '*',
         'send_test_newsletter'                     => '*',
-        'set_config_keys'                          => '*',
+        'set_config_keys'                          => Permission::UPDATE_CONFIG_KEY,
         'update_config_key'                        => Permission::UPDATE_CONFIG_KEY,
         'get_config_key'                           => '*',
         'delete_config_key'                        => '*',
@@ -3449,10 +3458,10 @@ final class Route
         'update_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
         'delete_merchant_options_admin'             => Permission::MANAGE_RENDERING_PREFERENCES,
 
-        'merchant_inheritance_parent_fetch'                  =>  '*',
-        'merchant_inheritance_parent_set'                    =>  '*',
-        'merchant_inheritance_parent_set_bulk'               =>  '*',
-        'merchant_inheritance_parent_delete'                 =>  '*',
+        'merchant_inheritance_parent_fetch'                  => '*',
+        'merchant_inheritance_parent_set'                    => '*',
+        'merchant_inheritance_parent_set_bulk'               => '*',
+        'merchant_inheritance_parent_delete'                 => '*',
 
         'mdr_adjustment'                                     => '*',
 
@@ -3487,6 +3496,7 @@ final class Route
     public static $bankingRoutePermissions = [
         // common routes between banking and admin dashboard
         'merchant_balance_fetch'                       => Permission::VIEW_MERCHANT_BALANCE,
+        'merchant_balance_fetch_admin'                 => Permission::VIEW_MERCHANT_BALANCE,
         'merchant_edit_config'                         => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_details'                  => '*',
         'merchant_fetch_users'                         => Permission::VIEW_MERCHANT_USER,
@@ -3899,6 +3909,7 @@ final class Route
             'banking_account_gateway_balance_fetch',
             'merchant_poc_update',
             'unclaimed_merchant_poc_update',
+            'virtual_account_batch_migrate_yesbank',
         ],
 
         'subscriptions' => [

@@ -16,4 +16,12 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->first();
     }
+
+    public function getReportsForCsvCreation($provider)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PROVIDER, $provider)
+                    ->whereNull(Entity::CSV_REPORT_UFH_FILE_ID)
+                    ->get();
+    }
 }
