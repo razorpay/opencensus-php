@@ -2650,6 +2650,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUPPORT_TICKET_STATUS_REQUEST                         = 'SUPPORT_TICKET_STATUS_REQUEST';
     const SUPPORT_TICKET_STATUS_RESPONSE                        = 'SUPPORT_TICKET_STATUS_RESPONSE';
 
+    const DB_WAIT_TIMEOUT_FILE_READ_FAILED                      = 'DB_WAIT_TIMEOUT_FILE_READ_FAILED';
+
     //Error Response
     const ERROR_RESPONSE_MAPPING_READ_FAILED                    = 'ERROR_RESPONSE_MAPPING_READ_FAILED';
     const ERROR_RESPONSE_FILE_READING_FAILED                    = 'ERROR_RESPONSE_FILE_READING_FAILED';
@@ -2666,6 +2668,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
 
+    // DB wait timeout
+    const WAIT_TIMEOUT_EXCEPTION                                = 'WAIT_TIMEOUT_EXCEPTION';
+
+    // DB wait timeout
+    const DB_EXECUTING_WAIT_TIMEOUT                             = 'DB_EXECUTING_WAIT_TIMEOUT';
+  
     // RBL VA integration
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';
