@@ -90,6 +90,54 @@ class UpiIciciGatewayTest extends TestCase
         $this->assertEquals('vishnu@icici', $gatewayEntity['vpa']);
     }
 
+    public function testIntentTpvPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+
+        $terminal->setAttribute('tpv', 2)->saveOrFail();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'user@icici';
+            }
+        });
+
+        $this->startTest($this->testData['testTpvPayment']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['vpa']);
+        $payment['_']['flow'] = 'intent';
+
+        $payment['amount'] = $order['amount'];
+        $payment['bank'] = $order['bank'];
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('pay', $gatewayEntity['type']);
+    }
+
     public function testIntentDisabledPayment()
     {
         $this->fixtures->merchant->addFeatures(['disable_upi_intent']);
@@ -172,36 +220,6 @@ class UpiIciciGatewayTest extends TestCase
         $this->assertEquals('icici', $upi['provider']);
         $this->assertSame('12345678987654321', $upi['npci_reference_id']);
         $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
-    }
-
-    public function testIntentTpvPayment()
-    {
-        $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
-
-        $terminal->setAttribute('tpv', 2)->saveOrFail();
-
-        $this->ba->privateAuth();
-
-        $this->fixtures->merchant->enableTPV();
-
-        $order = $this->startTest($this->testData['testTpvPayment']);
-
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        unset($payment['vpa']);
-        $payment['_']['flow'] = 'intent';
-
-        $payment['amount'] = $order['amount'];
-        $payment['bank'] = 'RATN';
-        $payment['order_id'] = $order['id'];
-
-        $this->makeRequestAndCatchException(
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            },
-            ServerErrorException::class,
-            'Intent TPV not Supported');
     }
 
     public function testPaymentWithExpiryPublicAuth()

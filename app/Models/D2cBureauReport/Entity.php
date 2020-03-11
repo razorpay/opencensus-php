@@ -18,17 +18,18 @@ class Entity extends Base\PublicEntity
 
     const ID_LENGTH = 14;
 
-    const ID                    = 'id';
-    const MERCHANT_ID           = 'merchant_id';
-    const USER_ID               = 'user_id';
-    const D2C_BUREAU_DETAIL_ID  = 'd2c_bureau_detail_id';
-    const PROVIDER              = 'provider';
-    const SCORE                 = 'score';
-    const REPORT                = 'report';
-    const UFH_FILE_ID           = 'ufh_file_id';
-    const INTERESTED            = 'interested';
-    const CREATED_AT            = 'created_at';
-    const UPDATED_AT            = 'updated_at';
+    const ID                        = 'id';
+    const MERCHANT_ID               = 'merchant_id';
+    const USER_ID                   = 'user_id';
+    const D2C_BUREAU_DETAIL_ID      = 'd2c_bureau_detail_id';
+    const PROVIDER                  = 'provider';
+    const SCORE                     = 'score';
+    const REPORT                    = 'report';
+    const UFH_FILE_ID               = 'ufh_file_id';
+    const INTERESTED                = 'interested';
+    const CSV_REPORT_UFH_FILE_ID    = 'csv_report_ufh_file_id';
+    const CREATED_AT                = 'created_at';
+    const UPDATED_AT                = 'updated_at';
 
     protected $public = [
         self::ID,
@@ -53,6 +54,7 @@ class Entity extends Base\PublicEntity
         self::REPORT,
         self::INTERESTED,
         self::UFH_FILE_ID,
+        self::CSV_REPORT_UFH_FILE_ID,
         self::CREATED_AT,
     ];
 
@@ -63,6 +65,11 @@ class Entity extends Base\PublicEntity
     public function getUfhFileId()
     {
         return $this->getAttribute(self::UFH_FILE_ID);
+    }
+
+    public function getCsvReportUfhFileId()
+    {
+        return $this->getAttribute(self::CSV_REPORT_UFH_FILE_ID);
     }
 
     public function merchant()
@@ -83,5 +90,10 @@ class Entity extends Base\PublicEntity
     public function toArrayForDashboard()
     {
         return $this->makeVisible([self::SCORE, self::REPORT])->toArrayPublic();
+    }
+
+    public function setCsvReportFileId($fileId)
+    {
+        $this->setAttribute(self::CSV_REPORT_UFH_FILE_ID, $fileId);
     }
 }

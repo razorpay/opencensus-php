@@ -612,7 +612,13 @@ class Service extends Base\Service
 
             foreach ($subCategories as $subCategory)
             {
-                $subCategoriesMetaData[$subCategory] =  $this->getSubCategoryMetaDataFields($subCategory);
+                $subcategoryMetaDataFields = BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
+
+                if ($this->isSubcategoryToBeShownOnDashboard($subcategoryMetaDataFields) === true)
+                {
+                    $subCategoriesMetaData[$subCategory] = $this->getSubCategoryMetaDataFields($subcategoryMetaDataFields);
+                }
+
             }
             $businessCategories[$businessCategory][BusinessCategory::DESCRIPTION]   = BusinessCategory::DESCRIPTIONS[$businessCategory];
             $businessCategories[$businessCategory][BusinessCategory::SUBCATEGORIES] = $subCategoriesMetaData;
@@ -652,19 +658,34 @@ class Service extends Base\Service
      * for admin all meta data fields(description, category, category2, activation category) will be returned
      * for other then admin description and category2 will be returned
      *
-     * @param string $subCategory
+     * @param array $subcategoryMetaDataFields
      *
      * @return array
      */
-    private function getSubCategoryMetaDataFields(string $subCategory): array
+    private function getSubCategoryMetaDataFields(array $subcategoryMetaDataFields)
     {
         if ($this->auth->isAdminAuth() === true)
         {
-            return BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
+            return $subcategoryMetaDataFields;
         }
 
-        return array_only(BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory],
-                          BusinessSubCategoryMetaData::NORMAL_AUTH_FIELDS);
+        return array_only($subcategoryMetaDataFields, BusinessSubCategoryMetaData::NORMAL_AUTH_FIELDS);
+    }
+
+    /**
+     * @param $subcategoryMetaDataFields
+     *
+     * @return bool
+     */
+    private function isSubcategoryToBeShownOnDashboard($subcategoryMetaDataFields): bool
+    {
+        if ($this->auth->isAdminAuth() === true)
+        {
+            return true;
+        }
+
+        return (isset($subcategoryMetaDataFields[BusinessSubCategoryMetaData::EXISTING_OR_NEW_SUBCATEGORY]) === true) and
+               ($subcategoryMetaDataFields[BusinessSubCategoryMetaData::EXISTING_OR_NEW_SUBCATEGORY] === BusinessSubCategoryMetaData::EXISTING_SUBCATEGORY);
     }
 
     public function getRejectionReasons()

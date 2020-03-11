@@ -100,7 +100,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'signed_url'    => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf',
+//              'signed_url' => 'report_experian_d2cbd_EKTOtrqmCOoNhF.txt.txt',
+                'csv_signed_url' =>'rzp_file_mock_id_1000000_bureau_report_csv',
             ],
         ],
     ]

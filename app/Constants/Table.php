@@ -88,6 +88,7 @@ class Table
     //Subscriptions Tables end
 
     const PAPER_MANDATE              = 'paper_mandates';
+    const PAPER_MANDATE_UPLOAD       = 'paper_mandate_uploads';
     const METHODS                    = 'merchant_banks';
     const BANK_TRANSFER              = 'bank_transfers';
     const UPI_TRANSFER               = 'upi_transfers';

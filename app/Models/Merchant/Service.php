@@ -42,6 +42,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Admin as MainAdmin;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\EsEnabledNotify;
@@ -568,6 +569,54 @@ class Service extends Base\Service
         $balance = $this->repo->balance->fetch($input, $merchantId);
 
         return $balance->toArrayPublic();
+    }
+
+    public function updateLockedBalance(array $input, string $balanceId)
+    {
+        /** @var Balance\Entity $balance */
+        $balance = $this->repo->balance->findOrFailById($balanceId);
+
+        $balance->getValidator()->validateInput(Balance\Validator::LOCKED_BALANCE, $input);
+
+        $lockedBalance = $input[Merchant\Balance\Entity::LOCKED_BALANCE];
+
+        $oldLockedBalance = $balance->getLockedBalance();
+
+        $traceData = [
+            'input'                     => $input,
+            'balance_id'                => $balanceId,
+            'balance_type'              => $balance->getType(),
+            'balance_account_type'      => $balance->getAccountType(),
+            'current_locked_balance'    => $oldLockedBalance,
+        ];
+
+        $this->trace->info(TraceCode::LOCKED_BALANCE_UPDATE_REQUEST, $traceData);
+
+        if (($balance->isTypeBanking() === false) or
+            ($balance->getAccountType() !== Merchant\Balance\AccountType::SHARED))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING,
+                null,
+                $traceData);
+        }
+
+        $balance->setLockedBalance($lockedBalance);
+
+        $this->repo->saveOrFail($balance);
+
+        $response = [
+            'balance_id'            => $balance->getId(),
+            'current_balance'       => $balance->getBalance(),
+            'old_locked_balance'    => $oldLockedBalance,
+            'new_locked_balance'    => $balance->getLockedBalance(),
+        ];
+
+        $this->trace->info(
+            TraceCode::LOCKED_BALANCE_UPDATE_RESPONSE,
+            $response);
+
+        return $response;
     }
 
     public function editAmountCredits($merchantId, $input)
@@ -1323,6 +1372,18 @@ class Service extends Base\Service
 
     public function createWebhook($input)
     {
+        $disableWebhookUpdate = $this->app->razorx->getTreatment(
+            'any',
+            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
+            'live'
+        );
+
+        if (strtolower($disableWebhookUpdate) === 'on')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
+        }
+
         $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
 
         return $webhook->toArrayPublic();
@@ -1330,6 +1391,18 @@ class Service extends Base\Service
 
     public function editWebhook($webhookId, $input)
     {
+
+        $disableWebhookUpdate = $this->app->razorx->getTreatment(
+            'any',
+            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
+            'live'
+        );
+
+        if (strtolower($disableWebhookUpdate) === 'on')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
+        }
         $this->trace->info(
             TraceCode::WEBHOOK_EDIT,
             [
@@ -3494,6 +3567,29 @@ class Service extends Base\Service
 
     public function switchProductMerchant($product = null)
     {
+        // TODO: remove this once Yesbank issue is resolved
+        $merchant = $this->auth->getMerchant();
+
+        if (($merchant->isBusinessBankingEnabled() === false) and
+            (($product === Product::BANKING) or
+             ($this->auth->getRequestOriginProduct() === Product::BANKING)))
+        {
+            $config = (new MainAdmin\Service)->getConfigKey(['key' => MainAdmin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
+
+            if (boolval($config) === true)
+            {
+                $this->trace->info(
+                    TraceCode::BLOCKING_RX_PRODUCT_SWITCH_TEMPORARILY,
+                    [
+                        'product'           => $product,
+                        'business_banking'  => false,
+                        'config'            => $config
+                    ]);
+
+                return;
+            }
+        }
+
         $this->repo->transactionOnLiveAndTest(function() use ($product)
         {
             // Add Banking Role for the current merchant User.
@@ -3501,9 +3597,19 @@ class Service extends Base\Service
 
             $merchant = $this->auth->getMerchant();
 
+            $currentlyEnabled = $merchant->isBusinessBankingEnabled();
+
             $this->enableBusinessBankingIfApplicable($merchant);
 
             $this->repo->saveOrFail($merchant);
+
+            $config = (new MainAdmin\Service)->getConfigKey(['key' => MainAdmin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
+
+            if ((boolval($config) === true) and
+                ($currentlyEnabled === true))
+            {
+                return;
+            }
 
             (new Activate)->activateBusinessBankingIfApplicable($merchant);
         });

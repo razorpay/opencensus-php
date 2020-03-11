@@ -9,7 +9,6 @@ use RZP\Models\Settings;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Role;
 use RZP\Models\Invitation;
-use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Merchant\MerchantUser;
 
 class Entity extends Base\PublicEntity
@@ -58,6 +57,8 @@ class Entity extends Base\PublicEntity
     const CONFIRMED                     = 'confirmed';
     const INVITATIONS                   = 'invitations';
     const PRODUCT                       = 'product';
+
+    const APP                           = 'app';
 
     const PASSWORD_TOKEN_LENGTH         = 50;
 
@@ -184,14 +185,8 @@ class Entity extends Base\PublicEntity
                      WHEN role='owner' THEN 1
                      else 2 END";
 
-        /** @var BasicAuth $basicAuth */
-        $basicAuth = app('basicauth');
-
-        $product = $basicAuth->getRequestOriginProduct();
-
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
                     ->withPivot([self::ROLE, self::PRODUCT])
-                    ->where(self::PRODUCT, $product)
                     ->orderByRaw($sql, [$this->getEmail()]);
     }
 

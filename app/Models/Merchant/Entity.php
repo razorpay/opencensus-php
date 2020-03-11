@@ -162,7 +162,8 @@ class Entity extends Base\PublicEntity
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
     const AUTO_REFUND_DELAY_FOR_NACH = 1728000; // 20 days
-    const DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
+  
+    const DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 2;
     const INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 7;
     // 30 minutes in seconds
     const MIN_AUTO_REFUND_DELAY = 1800;
@@ -770,7 +771,7 @@ class Entity extends Base\PublicEntity
     }
 
     public function isFeatureEnabledOnNonPurePlatformPartner(string $featureName): bool
-    {        
+    {
         $nonPurePlatformPartner = $this->getNonPurePlatformPartner();
 
         return isset($nonPurePlatformPartner) ? $nonPurePlatformPartner->isFeatureEnabled($featureName) : false;
@@ -1434,7 +1435,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CATEGORY);
     }
 
-    public function setCategory(int $category)
+    public function setCategory($category)
     {
         $this->setAttribute(self::CATEGORY, $category);
     }

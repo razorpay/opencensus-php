@@ -98,6 +98,10 @@
                     "type" : "string",
                     "description": "URL to poll for actual response for [response.type = 'poll']"
                 },
+                "time" : {
+                    "type" : "string",
+                    "description": "Epoch before which SDK should poll for [response.type = 'poll']"
+                },
                 "action" : {
                     "type" : "string",
                     "description": "Name of SDK action to invode for [response.type = 'sdk']"

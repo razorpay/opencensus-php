@@ -69,4 +69,13 @@ class VirtualAccountController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function bulkMigrateYesbank()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkMigrateYesbank($input);
+
+        return ApiResponse::json($data);
+    }
 }
