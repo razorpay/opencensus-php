@@ -32,7 +32,13 @@
       },
       reporting: function() {
         return window.rzpQ;
-      }
+      },
+      chargeAtWill: function() {
+        return window.rzpQ;
+      },
+      invoice: function() {
+        return window.rzpQ;
+      },
     };
 
     //Above code doesn't perform any function, can avoid application breakage if the library is
@@ -131,6 +137,26 @@
                   value:'paymentlink-dashboard'
               },
           ],
+          chargeAtWill: [
+            {
+              propertyName: 'event_type',
+              value: 'charge_at_will'
+            },
+            {
+              propertyName: 'event_group',
+              value: 'charge_at_will_dashboard'
+            },
+          ],
+          invoice: [
+            {
+              propertyName: 'event_type',
+              value: 'invoice'
+            },
+            {
+              propertyName: 'event_group',
+              value: 'invoice_dashboard'
+            },
+          ]
         });
 
         ga('create', 'UA-53341507-1', 'auto', 'old');
