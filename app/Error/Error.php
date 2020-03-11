@@ -5,7 +5,6 @@ namespace RZP\Error;
 use App;
 use RZP\Exception;
 use Illuminate\Support;
-use RZP\Models\Feature\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Services\DowntimeMetric;
 
@@ -503,44 +502,26 @@ class Error extends Support\Fluent
 
         $description = $isPublicRoute ? $this->getCustomerDescription() : $this->getDescription();
 
+        $publicReason   = null;
+
+        if($this->getAttribute(self::REASON) !== null)
+        {
+            $publicReason   = $this->getAttribute(self::POINT_OF_FAILURE)."-".
+                $this->getAttribute(self::FAILURE_STAGE)."-".$this->getAttribute(self::REASON);
+        }
+
         $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
+            self::REASON            => $publicReason,
+            self::METADATA          => $this->getAttribute(self::METADATA)
         );
 
-        $isMetadataFeatureEnabled = false;
-
-        if (($this->app['basicauth'] !== null) and
-            ($this->app['basicauth']->getMerchant() !== null))
-        {
-            $merchant = $this->app['basicauth']->getMerchant();
-
-            $isMetadataFeatureEnabled = $merchant->isFeatureEnabled(Constants::ERROR_METADATA_RESPONSE);
-        }
-
-        if ($isMetadataFeatureEnabled === true)
-        {
-            $publicReason   = null;
-
-            if($this->getAttribute(self::REASON) !== null)
-            {
-                $publicReason   = $this->getAttribute(self::POINT_OF_FAILURE)."-".
-                    $this->getAttribute(self::FAILURE_STAGE)."-".$this->getAttribute(self::REASON);
-            }
-
-            $reasonArr = array(
-                self::REASON            => $publicReason,
-                self::METADATA          => $this->getAttribute(self::METADATA)
-            );
-
-            $error = array_merge($error, $reasonArr);
-
-            $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
-                [
+        $this->trace->info(TraceCode::ERROR_RESPONSE_DATA,
+            [
                 'error_response' => $error
-                ]
-            );
-        }
+            ]
+        );
 
         $error = $this->checkAndAddDataToErrorResp($error);
 
