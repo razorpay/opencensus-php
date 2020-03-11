@@ -673,6 +673,11 @@ class Constants
             'display_name'  => 'Razorpay X - Skip workflows for API requests',
             'documentation' => '',
         ],
+        self::DISABLE_INSTANT_REFUNDS     => [
+            'feature'       => self::DISABLE_INSTANT_REFUNDS,
+            'display_name'  => 'Disable Instant Refunds',
+            'documentation' => '',
+        ],
     ];
 
     /**
