@@ -299,8 +299,6 @@ class Constants
 
     const REDIRECTION_ONHOLD       = 'redirection_onhold';
 
-    //const ERROR_METADATA_RESPONSE  = 'error_metadata_response';
-
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
