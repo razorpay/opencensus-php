@@ -88,4 +88,17 @@ class TerminalOnboardingController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postTerminalOnboardCallback(string $gateway, string $mode)
+    {
+        $input = Request::all();
+
+        $app = App::getFacadeRoot();
+
+        $app['basicauth']->setMode($mode);
+
+        $response = $this->service()->processTerminalOnboardCallback($gateway, $input);
+
+        return ApiResponse::json($response);
+    }
 }
