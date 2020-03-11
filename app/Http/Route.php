@@ -1511,6 +1511,7 @@ final class Route
         'entity_bulk_update'                      => ['post',      'entities/bulk-update',                                         'MerchantController@merchantsBulkUpdate'                    ],
         'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
         'fetch_batch_action_entities'             => ['get',       'batch_action_entities',                                  'MerchantController@getBatchActionEntities'                 ],
+        'update_wait_timeout'                     => ['post',      'db/wait_timeout',                                        'AdminController@setWaitTimeout'                 ],
     ];
 
     public static $public = [
@@ -3712,6 +3713,7 @@ final class Route
         'activate_live_offline_device',
         'offline_qr_poll_test_order_status',
         'offline_qr_poll_live_order_status',
+        'update_wait_timeout',
     ];
 
     /**

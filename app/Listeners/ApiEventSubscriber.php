@@ -366,8 +366,6 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
-        $payment->setAttribute('updated_at', Carbon::now(Timezone::IST)->getTimestamp());
-
         $this->prepareAndDispatchWebhook($payload);
     }
 
