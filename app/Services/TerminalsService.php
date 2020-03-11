@@ -41,6 +41,7 @@ class TerminalsService
     const ADD_MERCHANT_TO_TERMINAL             = 'add_merchant_to_terminal';
     const REMOVE_MERCHANT_FROM_TERMINAL        = 'remove_merchant_from_terminal';
     const FETCH_MERCHANT_TERMINAL_BY_ID        = 'fetch_merchant_terminal_by_id';
+    const TERMINAL_ONBOARD_CALLBACK            = 'terminal_onboard_callback';
 
     const PARAMS = [
         self::CREATE_TERMINAL       =>   [
@@ -71,6 +72,10 @@ class TerminalsService
             self::PATH   => 'v2/terminal/submerchant',
             self::METHOD => Requests::GET,
         ],
+        self::TERMINAL_ONBOARD_CALLBACK => [
+            self::PATH   => 'v2/terminal/onboard/callback/%s',
+            self::METHOD => Requests::POST,
+        ]
     ];
 
     public function __construct($app)
@@ -168,6 +173,17 @@ class TerminalsService
         $response = $this->sendRequest($path, $content, $params[self::METHOD]);
 
         return $this->parseAndReturnResponse($response)[self::DATA][0] ?? [];
+    }
+
+    public function terminalOnboardCallback(string $gateway, array $input)
+    {
+        $params = self::PARAMS[self::TERMINAL_ONBOARD_CALLBACK];
+
+        $path = sprintf($params[self::PATH], $gateway);
+
+        $response = $this->sendRequest($path, $input, $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST): \Requests_Response

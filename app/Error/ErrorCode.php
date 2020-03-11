@@ -1522,5 +1522,8 @@ class ErrorCode
     const BAD_REQUEST_INVALID_MATCH_PERCENT                                         = 'BAD_REQUEST_INVALID_MATCH_PERCENT';
     const BAD_REQUEST_INVALID_MATCH_TYPE                                            = 'BAD_REQUEST_INVALID_MATCH_TYPE';
 
+    // Terminals service error codes
+    const SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR                          = 'SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR';
+
     const BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS';
 }

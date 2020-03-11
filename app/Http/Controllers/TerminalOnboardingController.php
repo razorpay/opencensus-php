@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Onboarding;
+use Illuminate\Support\Facades\App;
 
 class TerminalOnboardingController extends Controller
 {
