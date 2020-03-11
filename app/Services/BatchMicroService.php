@@ -5,6 +5,7 @@ namespace RZP\Services;
 use App;
 use Requests;
 use RZP\Exception;
+use RZP\Http\RequestHeader;
 use RZP\Models\Batch;
 use GuzzleHttp\Client;
 use RZP\Constants\Mode;
@@ -136,6 +137,7 @@ class BatchMicroService
     {
         try
         {
+            $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID, null);
             $response = $this->client->request(Requests::POST, $relativeUri, [
                 'multipart' =>
                     $multipartData,
@@ -144,8 +146,9 @@ class BatchMicroService
                     $this->secret
                 ],
                 'headers'   => [
-                    'X-Entity-Id' => $merchant->getId(),
-                    'mode'        => $this->mode,
+                    'X-Entity-Id'         => $merchant->getId(),
+                    'mode'                => $this->mode,
+                    'X-Dashboard-User-Id' => $userId,
                 ],
             ]);
         }
