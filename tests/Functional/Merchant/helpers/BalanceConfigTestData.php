@@ -449,5 +449,37 @@ return [
             ],
             'status_code' => 200
         ]
+    ],
+
+    'testFetchSharedBankingBalances' => [
+        'request'  => [
+            'url'     => '/admin_balances?type=banking&account_type=shared',
+            'method'  => 'GET',
+            'content' => [],
+            'server' => [
+                'HTTP_X_RAZORPAY_ACCOUNT' => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'type'            => "banking",
+                        'currency'        => "INR",
+                        'name'            => null,
+                        'balance'         => 100000,
+                        'credits'         => 0,
+                        'fee_credits'     => 0,
+                        'refund_credits'  => 0,
+                        'account_number'  => "2224440041626906",
+                        'account_type'    => "shared",
+                        'channel'         => null,
+                        'last_fetched_at' => null,
+                    ]
+                ]
+            ]
+        ]
     ]
 ];

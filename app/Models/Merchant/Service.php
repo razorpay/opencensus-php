@@ -580,29 +580,43 @@ class Service extends Base\Service
 
         $lockedBalance = $input[Merchant\Balance\Entity::LOCKED_BALANCE];
 
-        $this->trace->info(
-            TraceCode::LOCKED_BALANCE_UPDATE_REQUEST,
-            [
-                'input'         => $input,
-                'type'          => $balance->getType(),
-                'balance_id'    => $balanceId,
-            ]);
+        $oldLockedBalance = $balance->getLockedBalance();
 
-        if ($balance->isTypeBanking() === false)
+        $traceData = [
+            'input'                     => $input,
+            'balance_id'                => $balanceId,
+            'balance_type'              => $balance->getType(),
+            'balance_account_type'      => $balance->getAccountType(),
+            'current_locked_balance'    => $oldLockedBalance,
+        ];
+
+        $this->trace->info(TraceCode::LOCKED_BALANCE_UPDATE_REQUEST, $traceData);
+
+        if (($balance->isTypeBanking() === false) or
+            ($balance->getAccountType() !== Merchant\Balance\AccountType::SHARED))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING,
                 null,
-                [
-                    'input'         => $input,
-                    'type'          => $balance->getType(),
-                    'balance_id'    => $balanceId,
-                ]);
+                $traceData);
         }
 
         $balance->setLockedBalance($lockedBalance);
 
         $this->repo->saveOrFail($balance);
+
+        $response = [
+            'balance_id'            => $balance->getId(),
+            'current_balance'       => $balance->getBalance(),
+            'old_locked_balance'    => $oldLockedBalance,
+            'new_locked_balance'    => $balance->getLockedBalance(),
+        ];
+
+        $this->trace->info(
+            TraceCode::LOCKED_BALANCE_UPDATE_RESPONSE,
+            $response);
+
+        return $response;
     }
 
     public function editAmountCredits($merchantId, $input)
@@ -1358,6 +1372,18 @@ class Service extends Base\Service
 
     public function createWebhook($input)
     {
+        $disableWebhookUpdate = $this->app->razorx->getTreatment(
+            'any',
+            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
+            'live'
+        );
+
+        if (strtolower($disableWebhookUpdate) === 'on')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
+        }
+
         $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
 
         return $webhook->toArrayPublic();
@@ -1365,6 +1391,18 @@ class Service extends Base\Service
 
     public function editWebhook($webhookId, $input)
     {
+
+        $disableWebhookUpdate = $this->app->razorx->getTreatment(
+            'any',
+            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
+            'live'
+        );
+
+        if (strtolower($disableWebhookUpdate) === 'on')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
+        }
         $this->trace->info(
             TraceCode::WEBHOOK_EDIT,
             [

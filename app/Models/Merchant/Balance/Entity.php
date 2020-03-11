@@ -112,6 +112,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::LOCKED_BALANCE,
+        self::BALANCE,
+        self::LAST_FETCHED_AT,
     ];
 
     protected $appends = [
@@ -136,6 +138,34 @@ class Entity extends Base\PublicEntity
     protected $dates = [
         self::LAST_FETCHED_AT
     ];
+
+    protected function setPublicBalanceAttribute(array & $attributes)
+    {
+        $accountType = $attributes[self::ACCOUNT_TYPE];
+
+        $channel = $attributes[self::CHANNEL];
+
+        if (($accountType === AccountType::DIRECT) and
+            ($channel === Channel::RBL))
+        {
+            $attributes[self::BALANCE] = $this->bankingAccount->getGatewayBalance() ??
+                                         $attributes[self::BALANCE];
+        }
+    }
+
+    protected function setPublicLastFetchedAtAttribute(array & $attributes)
+    {
+        $accountType = $attributes[self::ACCOUNT_TYPE];
+
+        $channel = $attributes[self::CHANNEL];
+
+        if (($accountType === AccountType::DIRECT) and
+            ($channel === Channel::RBL))
+        {
+            $attributes[self::LAST_FETCHED_AT] = $this->bankingAccount->getBalanceLastFetchedAt() ??
+                                                 $attributes[self::LAST_FETCHED_AT];
+        }
+    }
 
     protected function addAmount($amount)
     {
@@ -426,15 +456,17 @@ class Entity extends Base\PublicEntity
     {
         assertTrue ($lockedBalance >= 0);
 
-        if ($this->isTypeBanking() === false)
+        if (($this->isTypeBanking() === false) or
+            ($this->getAccountType() !== AccountType::SHARED))
         {
             throw new Exception\LogicException(
-                'Locked balance being set for non-banking type',
+                'Locked balance being set for non-banking or/and non-shared type',
                 ErrorCode::SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING,
                 [
-                    'balance_id'        => $this->getId(),
-                    'locked_balance'    => $lockedBalance,
-                    'balance_type'      => $this->getType(),
+                    'balance_id'            => $this->getId(),
+                    'locked_balance'        => $lockedBalance,
+                    'balance_type'          => $this->getType(),
+                    'balance_account_type'  => $this->getAccountType(),
                 ]);
         }
 
@@ -512,8 +544,8 @@ class Entity extends Base\PublicEntity
     public function updateLastFetchedAt()
     {
         $this->getSettingsAccessor()
-            ->upsert(self::LAST_FETCHED_AT, Carbon::now(Timezone::IST)->getTimestamp())
-            ->save();
+             ->upsert(self::LAST_FETCHED_AT, Carbon::now(Timezone::IST)->getTimestamp())
+             ->save();
     }
 
     protected function getLastFetchedAt()
