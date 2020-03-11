@@ -231,7 +231,7 @@ class Entity extends Base\PublicEntity
 
     public function setStatus(string $status)
     {
-        if ($this->isChannelYesbank() === true)
+        if ($this->isSharedChannel() === true)
         {
             $this->setAttribute(self::STATUS, $status);
 
@@ -522,11 +522,13 @@ class Entity extends Base\PublicEntity
             ]);
     }
 
-    protected function isChannelYesbank()
+    protected function isSharedChannel()
     {
         $channel = $this->getChannel();
 
-        if ($channel === Channel::YESBANK)
+        $allowedChannels = Channel::getAllowedSharedChannels();
+
+        if (in_array($channel, $allowedChannels) === true)
         {
             return true;
         }
