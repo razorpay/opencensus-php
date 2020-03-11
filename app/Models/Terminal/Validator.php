@@ -92,6 +92,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_BOB,
         Payment\Gateway::NETBANKING_ICICI,
+        Payment\Gateway::NETBANKING_AXIS,
         Payment\Gateway::NETBANKING_INDUSIND,
         Payment\Gateway::NETBANKING_EQUITAS,
         Payment\Gateway::NETBANKING_CANARA,
@@ -767,6 +768,7 @@ class Validator extends Base\Validator
     protected static $netbankingAxisEditTerminalRules = [
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
     ];
 
     protected static $nachCitiTerminalRules = [
