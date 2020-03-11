@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
@@ -55,9 +56,13 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
+        $input = $this->trimCardNumberIfRequired($input);
+
         $traceRequest = $this->core->unsetSensitiveCardDetails($input);
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $traceRequest);
+
+        $this->unsetIfscIfRequired($input);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
@@ -323,5 +328,25 @@ class Service extends Base\Service
         $flag = ($variant === 'create_duplicate') ? true : false;
 
         return $flag;
+    }
+
+    protected function unsetIfscIfRequired(array & $input)
+    {
+        if (isset($input[Payout\Entity::CARD][Payout\Entity::IFSC]) === true)
+        {
+            unset($input[Payout\Entity::CARD][Payout\Entity::IFSC]);
+        }
+    }
+
+    protected function trimCardNumberIfRequired(array $input)
+    {
+        if (isset($input[Payout\Entity::CARD][Payout\Entity::NUMBER]) === true)
+        {
+            $cardNumber = $input[Payout\Entity::CARD][Payout\Entity::NUMBER];
+
+            $input[Payout\Entity::CARD][Payout\Entity::NUMBER] = ltrim($cardNumber, '0');
+        }
+
+        return $input;
     }
 }

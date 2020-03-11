@@ -108,6 +108,7 @@ class Validator extends Base\Validator
         $rules = $this->makeRules([
             RegisterToken\Entity::TOKEN         => 'required',
             RegisterToken\Entity::DEVICE_DATA   => 'sometimes',
+            RegisterToken\Entity::DEVICE        => 'sometimes',
         ]);
 
         return $rules;

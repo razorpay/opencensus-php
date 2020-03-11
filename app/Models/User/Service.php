@@ -316,9 +316,9 @@ class Service extends Base\Service
         return $user->toArrayPublic();
     }
 
-    public function login(array $input): array
+    public function login(array $input, $validate2fa = true): array
     {
-        return (new Core)->login($input);
+        return (new Core)->login($input, $validate2fa);
     }
 
     public function checkUserAccess(array $input)
@@ -338,14 +338,30 @@ class Service extends Base\Service
 
     }
 
-    public function setup2faMobileOnLogin(array $input): array
+    public function setup2faContactMobile(array $input): array
     {
-        return (new Core)->setup2faMobileOnLogin($input);
+        $user = $this->auth->getUser();
+
+        return (new Core)->setup2faContactMobile($user, $input);
+    }
+
+    public function resendOtp()
+    {
+        $user = $this->auth->getUser();
+
+        return (new Core)->resendOtp($user);
     }
 
     public function setup2faVerifyMobileOnLogin(array $input): array
     {
         return (new Core)->setup2faVerifyMobileOnLogin($input);
+    }
+
+    public function verifyUserSecondFactorAuth(array $input): array
+    {
+        $user = $this->auth->getUser();
+
+        return (new Core)->verifyUserSecondFactorAuth($user, $input);
     }
 
     public function get(string $id): array

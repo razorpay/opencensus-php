@@ -7,6 +7,7 @@ use Throwable;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -583,6 +584,22 @@ class Activate extends Base\Core
         }
     }
 
+    protected function blockRxActivationIfApplicable($merchant)
+    {
+        $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
+
+        if (boolval($config) === true)
+        {
+            $this->trace->info(TraceCode::BLOCKING_RX_ACTIVATIONS_TEMPORARILY, [
+                'onboard_merchant'  => true,
+                'merchant_id'       => $merchant->getId(),
+                'config'            => $config,
+            ]);
+        }
+
+        return boolval($config);
+    }
+
     protected function addPayoutFeatureIfApplicable(Entity $merchant, string $mode)
     {
         if ($merchant->isFeatureEnabled(Feature\Constants::PAYOUT) === true)
@@ -633,7 +650,7 @@ class Activate extends Base\Core
 
     protected function onBoardMerchantOnRazorpayxInLiveMode(Entity $merchant)
     {
-        return ($merchant->isActivated() === true);
+        return (($merchant->isActivated() === true) and ($this->blockRxActivationIfApplicable($merchant) === false));
     }
 
     protected function onBoardMerchantOnRazorpayxInTestMode(Entity $merchant)

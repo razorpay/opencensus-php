@@ -28,12 +28,26 @@ class Validator extends Base\Validator
         Entity::PAYEE_ACCOUNT      => 'required|string|max:40',
         Entity::PAYEE_IFSC         => 'required|string|size:'.self::IFSC_LENGTH,
         Entity::MODE               => 'required|custom',
-        Entity::REQ_UTR            => 'required|string|max:30',
+        Entity::REQ_UTR            => 'required|string|max:255',
         Entity::TIME               => 'required',
         Entity::AMOUNT             => 'required|numeric|min:0',
         Entity::CURRENCY           => 'nullable|in:INR',
         Entity::DESCRIPTION        => 'nullable|string|max:255',
         Entity::ATTEMPT            => 'nullable|integer',
+        Entity::NARRATION          => 'nullable|string',
+    ];
+
+    public static $rblRules = [
+        'ServiceName'                   => 'required|in:VirtualAccount',
+        'Action'                        => 'required|in:VirtualAccountTransaction',
+        'Data'                          => 'required|array',
+        'Data.0.messageType'            => 'required|string',
+        'Data.0.amount'                 => 'required|string',
+        'Data.0.UTRNumber'              => 'required|string',
+        'Data.0.senderIFSC'             => 'nullable|string',
+        'Data.0.senderAccountNumber'    => 'nullable|string',
+        'Data.0.senderName'             => 'required|string',
+        'Data.0.creditAccountNumber'    => 'required|string',
     ];
 
     protected static $createValidators = [
@@ -51,11 +65,16 @@ class Validator extends Base\Validator
         }
     }
 
+    const MODES_WITHOUT_IFSC = [
+        Mode::IMPS,
+        Mode::UPI,
+    ];
+
     protected function validatePayerIfsc($input)
     {
         // We currently aren't getting the actual payer_ifsc for IMPS payments.
         if ((strlen($input[Entity::PAYER_IFSC]) !== self::IFSC_LENGTH) and
-            ($input[Entity::MODE] !== Mode::IMPS))
+            (in_array($input[Entity::MODE], self::MODES_WITHOUT_IFSC, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'IFSC is of invalid length',
