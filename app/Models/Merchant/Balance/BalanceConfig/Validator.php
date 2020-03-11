@@ -4,8 +4,8 @@ namespace RZP\Models\Merchant\Balance\BalanceConfig;
 
 use RZP\Base;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
