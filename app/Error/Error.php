@@ -261,7 +261,7 @@ class Error extends Support\Fluent
             $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
         }
 
-        $this->setErrorParamsIfApplicable($errorCodeMap, $code);
+        $this->setErrorParamsIfApplicable($errorCodeMap, $code, $method);
     }
 
     protected function readMappingFromFile($cacheKey, $method, & $errorCodeMap)
@@ -304,7 +304,7 @@ class Error extends Support\Fluent
         }
     }
 
-    protected function setErrorParamsIfApplicable($errorCodeMap, $code)
+    protected function setErrorParamsIfApplicable($errorCodeMap, $code, $method)
     {
         try
         {
@@ -323,6 +323,21 @@ class Error extends Support\Fluent
                 $this->setFailureStage($errorCodeMap[$code][5] ?: "NA");
 
                 $this->setRecoverable($errorCodeMap[$code][6]);
+            }
+            else
+            {
+                $metadata = $this->getAttribute(self::METADATA);
+
+                if ($metadata !== null)
+                {
+                    $this->trace->info(TraceCode::ERROR_RESPONSE_MAPPING_NOT_FOUND,
+                        [
+                            'payment_method'       => $method,
+                            'internal_error_code'  => $code,
+                            'description'          => $this->getDescription()
+                        ]
+                    );
+                }
             }
         }
         catch (\Exception $exception)

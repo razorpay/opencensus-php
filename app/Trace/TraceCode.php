@@ -2653,6 +2653,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DB_WAIT_TIMEOUT_FILE_READ_FAILED                      = 'DB_WAIT_TIMEOUT_FILE_READ_FAILED';
 
     //Error Response
+    const ERROR_RESPONSE_MAPPING_NOT_FOUND                      = 'ERROR_RESPONSE_MAPPING_NOT_FOUND';
     const ERROR_RESPONSE_MAPPING_READ_FAILED                    = 'ERROR_RESPONSE_MAPPING_READ_FAILED';
     const ERROR_RESPONSE_FILE_READING_FAILED                    = 'ERROR_RESPONSE_FILE_READING_FAILED';
     const ERROR_RESPONSE_DATA                                   = 'ERROR_RESPONSE_DATA';
