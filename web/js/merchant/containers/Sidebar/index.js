@@ -126,30 +126,37 @@ export default class Sidebar extends Component {
     }
   }
 
-  onSidebarBannerClick = e => {
+  onSidebarBannerClick = () => {
     const { user } = this.props,
       { showInstantActivation } = user;
+    let isAcceptPaymentsShown = false;
 
     if (this.props.showMobileMenu) {
       this.props.toggleMobileMenu();
     }
 
-    // if instantly activated, open accept payments modal
-    if (
+    if (user.isSubmitted) {
+      this.props.history.push('/config');
+    } else if (
       user.activation_progress < 100 &&
       user.instantActivation.isL1Submitted &&
-      user.isActivated
+      user.isActivated &&
+      user.instantActivation.isWhitelistFlow
     ) {
-      e.preventDefault();
+      // if instantly activated and whitelisted, open accept payments modal
+      isAcceptPaymentsShown = true;
       this.props.showAcceptPaymentsModal();
+    } else {
+      this.props.history.push('/activation');
     }
 
     return this.props.user.isSubmitted
       ? trackGoToConfig(showInstantActivation)
-      : trackGoToActivation(
-          showInstantActivation &&
-            (user.instantActivation.isL1Submitted ? 'KYC Form' : 'L1 Form')
-        );
+      : !isAcceptPaymentsShown &&
+          trackGoToActivation(
+            showInstantActivation &&
+              (user.instantActivation.isL1Submitted ? 'KYC Form' : 'L1 Form')
+          );
   };
 
   hideSidebar() {

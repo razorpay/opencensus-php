@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom';
-
 import ShowWhen from 'merchant/components/ShowWhen';
 import ProgressBar from 'common/ui/ProgressBar';
 import { classList } from 'common/utils/rzp-utils';
@@ -51,9 +49,8 @@ export default RTracking((state, props, args) => {
         (!user.isSubmitted || !config.hasPersonalised)
       }
     >
-      <Link
+      <div
         className="activation-status-link"
-        to={!user.isSubmitted ? '/activation' : '/config'}
         onClick={() => {
           trackingIntent &&
             props.tracking.trackEvent(
@@ -118,7 +115,7 @@ export default RTracking((state, props, args) => {
             }
           }}
         </div>
-      </Link>
+      </div>
     </ShowWhen>
   ) : null;
 });
