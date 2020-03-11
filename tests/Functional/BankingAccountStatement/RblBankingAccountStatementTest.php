@@ -657,8 +657,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($externals[1]['id'], $basEntries[2]['entity_id']);
         $this->assertEquals($externals[1]['transaction_id'], $basEntries[2]['transaction_id']);
         $this->assertEquals($externals[1]['banking_account_statement_id'], $basEntries[2]['id']);
-        $this->assertEquals('003030303030303', $basEntries[2]['ponum']);
-        $this->assertNull($basEntries[2]['utr']);
 
         $feeBreakup1 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[0]['transaction_id']]);
         $feeBreakup2 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[1]['transaction_id']]);

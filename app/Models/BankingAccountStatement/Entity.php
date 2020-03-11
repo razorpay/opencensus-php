@@ -38,7 +38,6 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID        = 'transaction_id';
     const POSTED_DATE           = 'posted_date';
     const TRANSACTION_DATE      = 'transaction_date';
-    const PONUM                 = 'ponum';
 
     // Used to find out which format the banking account statement is to be generated
     const FORMAT                = 'format';
@@ -61,9 +60,6 @@ class Entity extends Base\PublicEntity
     const DEBIT_REGEX = '/^(.*?)-/';
 
     const RTGS_DEBIT_REGEX = '/^(RTGS\/)(.*?)(\/)/';
-
-    const NEFT_PONUM_REGEX = '/^(NEFT\/)(.*?)(\/)/';
-
     protected static $sign = 'bas';
 
     protected $entity = 'banking_account_statement';
@@ -84,7 +80,6 @@ class Entity extends Base\PublicEntity
         self::POSTED_DATE,
         self::TRANSACTION_DATE,
         self::UTR,
-        self::PONUM,
     ];
 
     protected $visible = [
@@ -108,7 +103,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::TRANSACTION_ID,
         self::UTR,
-        self::PONUM,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -253,17 +247,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UTR, $utr);
     }
 
-    public function setPonum($ponum = null)
-    {
-        if ((empty($ponum) === true) and
-            ($this->getChannel() === Channel::RBL))
-        {
-            $ponum = $this->getPonumFromDescription();
-        }
-
-        $this->setAttribute(self::PONUM, $ponum);
-    }
-
     // -------------------------- Getters ------------------------------------ //
 
     public function getAmount()
@@ -341,11 +324,6 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::DEBIT);
     }
 
-    public function getPonum()
-    {
-        return $this->getAttribute(self::PONUM);
-    }
-
     protected function getUtrFromDescription()
     {
         $description = $this->getDescription();
@@ -387,24 +365,6 @@ class Entity extends Base\PublicEntity
         // Could be an empty string match
         if (empty($match) === false)
         {
-            return $match;
-        }
-
-        return null;
-    }
-
-    protected function getPonumFromDescription()
-    {
-        $description = $this->getDescription();
-
-        $regex = self::NEFT_PONUM_REGEX;
-
-        $match = preg_match($regex, $description, $matches);
-
-        if ($match === 1)
-        {
-            $match = $matches[2];
-
             return $match;
         }
 

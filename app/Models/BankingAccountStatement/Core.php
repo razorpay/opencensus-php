@@ -319,12 +319,6 @@ class Core extends Base\Core
                 $basEntity->setUtr();
             }
 
-            // currently will be setting this field for only NEFT.
-            if (empty($basEntity->getPonum()) === true)
-            {
-                $basEntity->setPonum();
-            }
-
             $basEntity->merchant()->associate($merchant);
 
             $sourceEntity = $this->processSourceEntity($basEntity);
@@ -380,62 +374,9 @@ class Core extends Base\Core
 
         if ($reversal === null)
         {
-            // For all modes except NEFT, the logic to map a credit row to payout is
-            // same. However for NEFT, PONUM is the only field out of all present
-            // in the statement that matches with the payout. But the PONUM field returned
-            // by FTS response is not being persisted anywhere as of now and adding columns in
-            // FTA table is not feasible as we are trying to remove complete dependency from FTA
-            // and move to FTS. Also persisting this information in Payout level is also not the
-            // right way as this info is bank specific. So for NEFT in order to link a credit
-            // txn to a debit txn we are matching its PONUM to any existing txn with same PONUM
-            // The value of PONUM might not be unique and so we are explicitly checking for date
-            // and amount also while finding the payout.
-
-            // Once we have other CA Integration in picture, this code will need to be structured in a
-            // manner that the based on a statement, logic to figure out a payout will be present
-            // in the respective bank processors. Or this logic will completely moved out to FTS.
-
-            $bankPonum = $basEntity->getPonum();
-
-            if ($bankPonum === null)
-            {
-                return null;
-            }
-
-            $existingDebitTxn = $this->repo->banking_account_statement->findDebitTxnWithPonum(
-                $bankPonum,
-                $basEntity->getAmount(),
-                $basEntity->getChannel(),
-                $basEntity->getMerchantId(),
-                $basEntity->getTransactionDate());
-
-            if ($existingDebitTxn !== null)
-            {
-                $this->trace->info(
-                    TraceCode::BANKING_ACCOUNT_STATEMENT_PONUM_MATCH,
-                    [
-                        'debit'     => $existingDebitTxn->getId(),
-                        'credit'    => $basEntity->getId(),
-                        'ponum'     => $basEntity->getPonum(),
-                    ]
-                );
-
-                // getting the payout for this BAS entry
-                $payoutId = $existingDebitTxn->getEntityId();
-
-                $existingPayout = $this->repo->payout->findByIdAndMerchant($payoutId, $basEntity->merchant);
-
-                if ($existingPayout !== null)
-                {
-                    $reversal = $existingPayout->reversal;
-                }
-            }
-
-            if ($reversal === null)
-            {
-                return null;
-            }
+            return null;
         }
+
         //
         // TODO: Explore creating a reversal entity and its transaction here
         // if we are able to map the reversal BAS to a payout entity in the system.

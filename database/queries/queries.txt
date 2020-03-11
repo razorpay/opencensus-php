@@ -5596,10 +5596,6 @@ ALTER TABLE payouts
    ADD COLUMN payout_link_id CHAR(14) DEFAULT NULL AFTER `idempotency_key`,
    ADD INDEX `payouts_payout_link_id_index` (`payout_link_id`);
 
-
-ALTER TABLE banking_account_statement
-    ADD COLUMN ponum VARCHAR(255) DEFAULT NULL ;
-
 ALTER TABLE merchants
     ADD COLUMN external_id varchar(255) DEFAULT NULL AFTER partnership_url,
     ADD INDEX `merchants_external_id_index` (`external_id`);
