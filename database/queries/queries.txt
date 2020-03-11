@@ -5666,3 +5666,6 @@ ALTER TABLE merchants MODIFY COLUMN whitelisted_domains text COLLATE utf8_bin DE
 
 ALTER TABLE webhooks
     ADD COLUMN events2 BIGINT DEFAULT 0 AFTER events;
+
+ALTER TABLE terminals
+    ADD COLUMN account_type VARCHAR(255) DEFAULT NULL;

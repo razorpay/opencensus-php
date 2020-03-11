@@ -69,6 +69,7 @@ class Validator extends Base\Validator
         Entity::VIRTUAL_UPI_HANDLE          => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_ROOT            => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_MERCHANT_PREFIX => 'sometimes_if:type.upi_transfer,1|string',
+        Entity::ACCOUNT_TYPE                => 'sometimes|string',
     ];
 
     protected static $editTerminalGateways = [
@@ -1033,6 +1034,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+        Entity::ACCOUNT_TYPE                => 'sometimes|string',
     ];
 
     protected static $btRblTerminalRules = [
@@ -1164,7 +1166,8 @@ class Validator extends Base\Validator
         Entity::PROCURER,
         Entity::MC_MPAN,
         Entity::VISA_MPAN,
-        Entity::RUPAY_MPAN
+        Entity::RUPAY_MPAN,
+        Entity::ACCOUNT_TYPE,
     ];
 
     public function validateType()
