@@ -202,6 +202,7 @@ class Gateway extends BaseProcessor
         }
 
         return [
+            Fields::BALANCE => $this->getFormattedBalanceForRequest($lastTransaction),
             Fields::AMOUNT => $this->getFormattedAmountForRequest($lastTransaction),
             Fields::CURRENCY => $this->getFormattedCurrencyForRequest($lastTransaction),
             Fields::POSTED_DATE => $this->getFormattedPostedDateForRequest($lastTransaction),
@@ -209,6 +210,15 @@ class Gateway extends BaseProcessor
             Fields::TRANSACTION_ID => $this->getFormattedBankTransactionIdForRequest($lastTransaction),
             Fields::SERIAL_NUMBER => $this->getFormattedSerialNumberForRequest($lastTransaction),
         ];
+    }
+
+    protected function getFormattedBalanceForRequest(array $bankTxn)
+    {
+        $data = $bankTxn[Entity::BALANCE];
+
+        $formattedData = number_format($data / 100, 2, '.', '');
+
+        return (string) $formattedData;
     }
 
     protected function getFormattedAmountForRequest(array $bankTxn)

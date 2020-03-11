@@ -24,6 +24,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankingAccount;
 use RZP\Base\RepositoryManager;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Settlement\Channel;
@@ -38,6 +39,7 @@ use RZP\Models\Feature\Constants as Features;
  * @property FundAccount\Entity     $fundAccount
  * @property Transaction\Entity     $transaction
  * @property BankingAccount\Entity  $bankingAccount
+ * @property Balance\Entity         $balance
  */
 class Entity extends Base\PublicEntity
 {

@@ -270,6 +270,9 @@ class UserRolePermissionsMap
                  Permission::VIEW_TRANSACTION_STATEMENT,
                  Permission::GET_SELF_SERVE_REPORT,
                  Permission::MERCHANT_PRODUCT_SWITCH,
+                 Permission::UPDATE_USER_PROFILE,
+                 Permission::ONBOARDING_PAYOUT_LINKS,
+                 Permission::SUMMARY_PAYOUT_LINKS,
              ],
         ];
 

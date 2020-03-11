@@ -44,7 +44,7 @@ class BankingAccountGatewayBalanceUpdate extends Job
                     'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
                 ]);
 
-            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance($this->params);
+            $response = (new BankingAccount\Core)->fetchAndUpdateGatewayBalanceWrapper($this->params);
 
             $this->delete();
         }
@@ -67,29 +67,28 @@ class BankingAccountGatewayBalanceUpdate extends Job
     {
         if ($this->attempts() < self::MAX_RETRY_ATTEMPT)
         {
-            $this->release(self::MAX_RETRY_DELAY);
-
             $this->trace->info(TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_RELEASED,
                                [
                                    'channel'     => $this->params[BankingAccount\Entity::CHANNEL],
                                    'merchant_id' => $this->params[BankingAccount\Entity::MERCHANT_ID],
                                ]);
+
+            $this->release(self::MAX_RETRY_DELAY);
         }
         else
         {
-            $this->delete();
-
             $this->trace->error(TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_DELETED,
                                 [
                                     'channel'      => $this->params[BankingAccount\Entity::CHANNEL],
                                     'merchant_id'  => $this->params[BankingAccount\Entity::MERCHANT_ID],
                                     'job_attempts' => $this->attempts(),
-                                    'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
                                 ]);
 
             $operation = 'banking account gateway balance update job failed';
 
             (new SlackNotification)->send($operation, $this->params, null, 1, 'rbl_alerts');
+
+            $this->delete();
         }
     }
 }
