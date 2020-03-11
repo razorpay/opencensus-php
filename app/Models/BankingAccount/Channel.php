@@ -28,11 +28,9 @@ class Channel
 
     public static function isValidDirectTypeChannel(string $channel = null): bool
     {
-        $key = __CLASS__ . '::' . strtoupper($channel);
+        self::validateChannel($channel);
 
-        return ((defined($key) === true)
-                and (constant($key) === $channel)
-                and in_array($channel, self::$directTypeChannels, true));
+        return (in_array($channel, self::$directTypeChannels, true) === true);
     }
 
     public static function validateChannel(string $channel = null)

@@ -192,7 +192,15 @@ class Server extends Base\Mock\Server
             ResponseFields::APPROVAL_NUMBER        => random_int(100000, 999999),
             ResponseFields::STATUS                 => Status::SUCCESS,
             ResponseFields::STATUS_DESCRIPTION     => 'Payment Successful',
-            ResponseFields::ADDITIONAL_INFO        => [],
+            ResponseFields::ADDITIONAL_INFO        => [
+                ResponseFields::ADDITIONAL_INFO2   => '7971807546',
+                ResponseFields::STATUS_DESCRIPTION => 'status description in addInfo not expected from gateway, but we
+                                                       still need to remove before making database call, because our
+                                                       poor database can only take 255 characters and gateway can still
+                                                       send a very large data in addInfo, Off course same applies
+                                                       for addInfo2, but since this contract is different story we are
+                                                       fine with db failure'
+            ],
             ResponseFields::PAYER_VPA              => $gatewayPayment->getVpa(),
             ResponseFields::PAYEE_VPA              => self::DEFAULT_PAYEE_VPA,
         ];
@@ -213,7 +221,15 @@ class Server extends Base\Mock\Server
             ResponseFields::APPROVAL_NUMBER        => random_int(100000, 999999),
             ResponseFields::STATUS                 => Status::SUCCESS,
             ResponseFields::STATUS_DESCRIPTION     => 'Payment Successful',
-            ResponseFields::ADDITIONAL_INFO        => [],
+            ResponseFields::ADDITIONAL_INFO        => [
+                ResponseFields::ADDITIONAL_INFO2   => '7971807546',
+                ResponseFields::STATUS_DESCRIPTION => 'status description in addInfo not expected from gateway, but we
+                                                       still need to remove before making database call, because our
+                                                       poor database can only take 255 characters and gateway can still
+                                                       send a very large data in addInfo, Off course same applies
+                                                       for addInfo2, but since this contract is different story we are
+                                                       fine with db failure'
+            ],
             ResponseFields::PAYER_VPA              => $upiEntity[Entity::VPA],
             ResponseFields::PAYEE_VPA              => self::DEFAULT_PAYEE_VPA,
         ];

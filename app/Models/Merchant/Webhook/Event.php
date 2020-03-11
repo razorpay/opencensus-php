@@ -146,6 +146,11 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
         self::PAYMENT_CREATED,
+        self::PAYOUT_LINK_ISSUED,
+        self::PAYOUT_LINK_PROCESSING,
+        self::PAYOUT_LINK_ATTEMPTED,
+        self::PAYOUT_LINK_CANCELLED,
+        self::PAYOUT_LINK_PROCESSED,
     ];
 
     /**
@@ -216,14 +221,15 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
         self::PAYOUT_LINK_ISSUED,
-        self::PAYOUT_LINK_PROCESSED,
+        self::PAYOUT_LINK_ISSUED,
         self::PAYOUT_LINK_PROCESSING,
-        self::PAYOUT_LINK_CANCELLED,
         self::PAYOUT_LINK_ATTEMPTED,
+        self::PAYOUT_LINK_CANCELLED,
+        self::PAYOUT_LINK_PROCESSED,
         self::PAYMENT_CREATED
     ];
 
-    protected static $bitPosition = [
+    public static $bitPosition = [
         self::PAYMENT_AUTHORIZED                => 1,
         self::PAYMENT_FAILED                    => 2,
         self::PAYMENT_CAPTURED                  => 3,
@@ -287,6 +293,14 @@ class Event
         self::PAYOUT_REJECTED                   => 61,
         self::PAYMENT_CREATED                   => 62,
         self::PAYOUT_PENDING                    => 63,
+    ];
+
+    public static $bitPosition2 = [
+        self::PAYOUT_LINK_ISSUED     => 1,
+        self::PAYOUT_LINK_PROCESSING => 2,
+        self::PAYOUT_LINK_CANCELLED  => 3,
+        self::PAYOUT_LINK_ATTEMPTED  => 4,
+        self::PAYOUT_LINK_PROCESSED  => 5,
     ];
 
     /**
@@ -354,6 +368,11 @@ class Event
         self::PAYOUT_REJECTED                   => [Product::PRIMARY, Product::BANKING],
         self::PAYMENT_CREATED                   => [Product::PRIMARY],
         self::PAYOUT_PENDING                    => [Product::PRIMARY, Product::BANKING],
+        self::PAYOUT_LINK_ISSUED                => [Product::BANKING],
+        self::PAYOUT_LINK_PROCESSING            => [Product::BANKING],
+        self::PAYOUT_LINK_PROCESSED             => [Product::BANKING],
+        self::PAYOUT_LINK_ATTEMPTED             => [Product::BANKING],
+        self::PAYOUT_LINK_CANCELLED             => [Product::BANKING],
     ];
 
     /**
@@ -471,6 +490,11 @@ class Event
         self::ACCOUNT_PAYMENTS_DISABLED         => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::PAYOUT_PENDING                    => Feature\Constants::PAYOUT,
         self::PAYMENT_CREATED                   => Feature\Constants::PAYMENT_CREATED_WEBHOOK,
+        self::PAYOUT_LINK_ISSUED                => Feature\Constants::X_PAYOUT_LINKS,
+        self::PAYOUT_LINK_ATTEMPTED             => Feature\Constants::X_PAYOUT_LINKS,
+        self::PAYOUT_LINK_PROCESSED             => Feature\Constants::X_PAYOUT_LINKS,
+        self::PAYOUT_LINK_PROCESSING            => Feature\Constants::X_PAYOUT_LINKS,
+        self::PAYOUT_LINK_CANCELLED             => Feature\Constants::X_PAYOUT_LINKS,
     ];
 
     /**
@@ -506,13 +530,21 @@ class Event
         return self::$launchedEvents;
     }
 
-    public static function getEnabledEvents($hex)
+    public static function getEnabledEvents($hex, array $bitPosition)
     {
         $events = [];
 
         foreach (self::$events as $event)
         {
-            $pos = self::$bitPosition[$event];
+            $pos = $bitPosition[$event] ?? null;
+
+            // If the event is present in the other bit position (we have two bit position arrays),
+            // it'll be taken care of in the next run with a different bitPosition array set
+            if (empty($pos) === true)
+            {
+                continue;
+            }
+
             $value = ($hex >> ($pos - 1)) & 1;
 
             if ($value)
@@ -526,6 +558,7 @@ class Event
 
     public static function isEventEnabled($hexEvent, $event)
     {
+        // This checks in both the bitPosition arrays.
         $pos = self::getBitPosition($event);
 
         return ($hexEvent >> ($pos - 1)) & 1;
@@ -538,7 +571,10 @@ class Event
 
     public static function getBitPosition(string $event): int
     {
-        return self::$bitPosition[$event];
+        // TODO: If the same event is defined in 2 arrays, throw an error? But, since this is temp, let it be for now?
+
+        // The event could be either in the first bit position or the second.
+        return self::$bitPosition[$event] ?? self::$bitPosition2[$event];
     }
 
 

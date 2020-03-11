@@ -129,7 +129,7 @@ class Core extends Base\Core
     /*
     * Check if the merchant has an active webhook for the event
     */
-    public function isWebhookActiveAndEnabled(Webhook\Entity $webhook, String $event): bool
+    public function isWebhookActiveAndEnabled(Webhook\Entity $webhook, string $event): bool
     {
         return (($webhook !== null) and
             ($webhook->isActive() === true) and

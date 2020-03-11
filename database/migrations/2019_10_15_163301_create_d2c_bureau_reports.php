@@ -33,6 +33,9 @@ class CreateD2cBureauReports extends Migration
 
             $table->char(Entity::UFH_FILE_ID);
 
+            $table->char(Entity::CSV_REPORT_UFH_FILE_ID)
+                  ->nullable();
+
             $table->tinyInteger(Entity::INTERESTED)
                   ->nullable();
 

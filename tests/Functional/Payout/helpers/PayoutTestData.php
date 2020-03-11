@@ -3214,7 +3214,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid direct type channel: hdfc',
+                    'description' => 'Not a valid channel: hdfc',
                 ],
             ],
             'status_code' => 400,
