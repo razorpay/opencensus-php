@@ -511,7 +511,7 @@ class Processor
         }
 
         if (isset($input['dcc_currency']) === true and
-            isset($input['currency_request_id']))
+            isset($input['currency_request_id']) === true)
         {
             $dccCurrency = $input['dcc_currency'];
 
@@ -541,7 +541,6 @@ class Processor
             $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
 
             $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
-
         }
     }
 
