@@ -396,7 +396,7 @@ class Core extends Base\Core
 
             if($maxNegative === 0)
             {
-                return BalanceConfig\Entity::DEFAULT_MAX_NEGATIVE;
+                return max($reserveAmount, BalanceConfig\Entity::DEFAULT_MAX_NEGATIVE);
             }
 
             return max($reserveAmount, $maxNegative);
