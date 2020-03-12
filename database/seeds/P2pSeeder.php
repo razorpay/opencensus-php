@@ -70,7 +70,7 @@ class P2pSeeder extends Seeder
                 'id'                    => Constants::CUSTOMER_1_DEVICE_1,
                 'customer_id'           => Constants::RZP_LOCAL_CUSTOMER_1,
                 'merchant_id'           => Constants::TEST_MERCHANT,
-                'contact'               => '+919988771111',
+                'contact'               => '919988771111',
                 'auth_token'            => Constants::CUSTOMER_1_DEVICE_1
             ]);
 
@@ -79,7 +79,7 @@ class P2pSeeder extends Seeder
                 'id'                    => Constants::CUSTOMER_2_DEVICE_1,
                 'customer_id'           => Constants::RZP_LOCAL_CUSTOMER_2,
                 'merchant_id'           => Constants::TEST_MERCHANT,
-                'contact'               => '+919988772222',
+                'contact'               => '919988772222',
                 'auth_token'            => Constants::CUSTOMER_2_DEVICE_1
             ]);
     }

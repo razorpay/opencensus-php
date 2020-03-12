@@ -66,21 +66,36 @@ class Controller extends Controllers\Controller
 
     protected function checkForNextAction($response)
     {
+        // Base processor makes sure that these two set for next action
         if ((isset($response['request']) === true) and
             (isset($response['callback']['action']) === true))
         {
             $route = $this->action->toRoute($response['callback']['action']);
 
-            // First remove their is any data set in callback
+            // The callback is generated from two parts
+            // 1. which processor adds by itself, which is used by processor only
+            // 2. which gateway passes by itself, which is only used by processor
+            // Now, processor specific data goes on first level and gateway specific goes inside callback field
+
+            // First remove if there is any data set in callback
+            // This is the callback input which can not be part of url
+            // Example post parameters like username, bank_account_id
             $data = $response['callback']['input']['data'] ?? [];
             unset($response['callback']['input']['data']);
 
-            // Now merge gateway specific callback data in this
+            // Now add gateway specific callback data in this
             $data['callback']= $response['callback']['gateway'];
 
+            // if we had to maintain the consistency, we can put a hash with query
+            // Which the controller itself can verify
             $query = http_build_query($data);
 
-            $response['callback'] = route($route, $response['callback']['input']) . '?' . $query;
+            // Append question mark only when query is not empty
+            $append = empty($query) ? '' : ('?' . $query);
+
+            // The callback input is used to resolve the URL path itself
+            // By default the route method set url path to be absolute
+            $response['callback'] = route($route, $response['callback']['input']) . $append;
         }
 
         return $response;

@@ -5,9 +5,12 @@ namespace RZP\Gateway\P2p\Upi\Sharp;
 use RZP\Gateway\P2p\Upi;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\Mock\Scenario;
+use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 class Gateway extends Upi\Gateway
 {
+    use Upi\Npci\ClTrait;
+
     const RAZORSHARP    = 'razorsharp';
     const RZPSHARP      = 'rzpsharp';
     const NORZPSHARP    = 'norzpsharp';
@@ -46,5 +49,10 @@ class Gateway extends Upi\Gateway
         }
 
         return false;
+    }
+
+    protected function inputSdk(): ArrayBag
+    {
+        return $this->input->get(Fields::SDK);
     }
 }
