@@ -63,8 +63,7 @@ class Repository extends Base\Repository
                       ->where(function($query) use ($reversal, $payout)
                         {
                             $query->where(Entity::UTR, $reversal->getUtr())
-                                  ->orWhere(Entity::UTR, $payout->getUtr())
-                                  ->orWhere(Payout\Entity::RETURN_UTR, $payout->getReturnUtr());
+                                  ->orWhere(Entity::UTR, $payout->getUtr());
                         })
                       ->where(Entity::CREATED_AT, '>=', $payout->getCreatedAt());
 
