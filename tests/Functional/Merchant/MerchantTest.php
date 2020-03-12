@@ -1600,6 +1600,11 @@ class MerchantTest extends TestCase
     {
         $documentType = 'address_proof_url';
 
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'merchant_id' => '10000000000000',
+                                ]);
+
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->updateUploadDocumentData(__FUNCTION__, $documentType);
@@ -1622,7 +1627,6 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountWithAddressProofUsingUFH()
     {
-
         $this->mockRazorX('testUpdateBankAccountWithAddressProof', 'use_ufh_file_store', 'on', 10000000000000);
 
         $this->testUpdateBankAccountWithAddressProof();

@@ -10,16 +10,21 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
-        Entity::FILE          => 'required|file|mimes:pdf,jpeg,jpg,png,zip',
+        Entity::FILE          => 'required|file|mimes:pdf,jpeg,jpg,png',
         Entity::FILE_STORE_ID => 'sometimes|string|max:14',
         Entity::SOURCE        => 'required_with:file_store_id|string|custom',
     ];
 
     protected static $editRules = [
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
-        Entity::FILE          => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+        Entity::FILE          => 'sometimes|file|mimes:pdf,jpeg,jpg,png',
         Entity::FILE_STORE_ID => 'sometimes|string|max:14',
         Entity::SOURCE        => 'required_with:file_store_id|string|custom',
+    ];
+
+    protected static $uploadDocumentRules = [
+        Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
+        Entity::FILE          => 'required|file|mimes:pdf,jpeg,jpg,png',
     ];
 
     /**
