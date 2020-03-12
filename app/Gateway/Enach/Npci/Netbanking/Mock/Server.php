@@ -162,11 +162,6 @@ class Server extends Base\Mock\Server
             ];
         }
 
-        if (isset($requestArray['MndtAuthReq']['GrpHdr']['ReqInitPty']['Info']['Spn_Bnk_Nm']) === false)
-        {
-            unset($requestArray['OrgnlMsgInf']['MndtId']);
-        }
-
         $this->content($data, 'authorize_get_data');
 
         return $data;
