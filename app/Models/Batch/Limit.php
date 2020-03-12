@@ -46,6 +46,7 @@ class Limit
         Type::ADMIN_BATCH                           => 5000,
         Type::MDR_ADJUSTMENT                        => 1100000,
         Type::ECOLLECT_ICICI                        => 100000,
+        'nach_debit_nach_citi'                      => 50000,
     ];
 
     /**

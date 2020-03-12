@@ -1336,7 +1336,19 @@ class Terminal extends Base
             ],
         ];
 
-        return $this->createBankAccountTerminal(array_merge($defaultValues, $attributes));
+        $defaultValues1 = [
+            'id'                  => 'BANKACC3DSN3DZ',
+            'gateway_merchant_id' => '232323',
+            'type'                => [
+                Type::NON_RECURRING    => '1',
+                Type::NUMERIC_ACCOUNT  => '1',
+                Type::BUSINESS_BANKING => '1',
+            ],
+        ];
+
+         $this->createBankAccountTerminal(array_merge($defaultValues, $attributes));
+
+        $this->createBankAccountTerminal(array_merge($defaultValues1, $attributes));
     }
 
     public function createSharedBankAccountTerminal(array $attributes = [])
@@ -3522,5 +3534,26 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->create($attributes);
+    }
+
+    public function createHdfcDebitEmi(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                   => 'HdfcDebitEmiTl',
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'hdfc_debit_emi',
+            'card'                 => 0,
+            'netbanking'           => 0,
+            'cardless_emi'         => 0,
+            'emi'                  => 1,
+            'emi_duration'         => 3,
+            'gateway_merchant_id'  => 'debit_emi_merchant',
+            'gateway_merchant_id2' => 'debit_emi_merchant2',
+            'mode'                 => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 }

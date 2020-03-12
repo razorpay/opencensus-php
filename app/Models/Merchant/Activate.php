@@ -11,6 +11,7 @@ use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
@@ -560,13 +561,17 @@ class Activate extends Base\Core
                 'mode'              => $mode,
             ]);
 
+        $seriesPrefix = trim(Terminal\Core::getBankAccountSeriesPrefixForX($merchant, $mode));
+
         if ($onboardMerchant === true)
         {
             // Create Banking Balance
             $balance = (new Balance\Core)->createOrFetchSharedBankingBalance($merchant, $mode);
 
             // Create Virtual Account
-            $virtualAccount = (new VirtualAccount\Core)->createOrFetchBankingVirtualAccount($merchant, $balance);
+            $virtualAccount = (new VirtualAccount\Core)->createOrFetchBankingVirtualAccount($merchant,
+                                                                                            $balance,
+                                                                                            $seriesPrefix);
 
             // Create Banking Account
             $bankingAccount = (new BankingAccount\Core)->createOrFetchSharedBankingAccountFromVA($virtualAccount);
@@ -578,6 +583,7 @@ class Activate extends Base\Core
                     'banking_account_id' => $bankingAccount->getId(),
                     'merchant_id'        => $virtualAccount->getMerchantId(),
                     'mode'               => $mode,
+                    'series_prefix'      => $seriesPrefix,
                 ]);
 
             $this->addPayoutFeatureIfApplicable($merchant, $mode);
@@ -693,7 +699,7 @@ class Activate extends Base\Core
             $mode
         );
 
-        $result = (strtolower($variant) === 'on');
+        $result = (strtolower($variant) !== 'off');
 
         return $result;
     }

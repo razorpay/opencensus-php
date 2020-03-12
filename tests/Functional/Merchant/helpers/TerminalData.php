@@ -2807,5 +2807,54 @@ return [
                 'enabled'                   =>  true
             ]
         ]
-    ]
+    ],
+
+    'testAssignTerminalWithNoAccountTypeAttribute' => [
+        'request'   => [
+            'content'   => [
+                'gateway'                   => 'bt_icici',
+                'gateway_merchant_id'       => '2323',
+                'bank_transfer'             => '1',
+                'type'                      => [
+                    'business_banking'  => '1',
+                    'non_recurring'     => '1',
+                    'numeric_account'   => '1',
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
+        ]
+    ],
+
+    'testAssignTerminalWithDifferentAccountTypeAttribute' => [
+        'request'   => [
+            'content'   => [
+                'gateway'                   => 'bt_icici',
+                'gateway_merchant_id'       => '2323',
+                'bank_transfer'             => '1',
+                'account_type'              => 'current',
+                'type'                      => [
+                    'business_banking'  => '1',
+                    'non_recurring'     => '1',
+                    'numeric_account'   => '1',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => '2323',
+                'enabled'                   =>  true
+            ]
+        ]
+    ],
 ];

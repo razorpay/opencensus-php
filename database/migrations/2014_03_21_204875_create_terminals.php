@@ -189,6 +189,9 @@ class CreateTerminals extends Migration
             $table->string(Terminal::VIRTUAL_UPI_HANDLE, 10)
                   ->nullable();
 
+            $table->string(Terminal::ACCOUNT_TYPE, 255)
+                  ->nullable();
+
             $table->text(Terminal::NOTES)
                   ->nullable();
 
