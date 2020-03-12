@@ -1600,6 +1600,11 @@ class MerchantTest extends TestCase
     {
         $documentType = 'address_proof_url';
 
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'merchant_id' => '10000000000000',
+                                ]);
+
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->updateUploadDocumentData(__FUNCTION__, $documentType);
@@ -1622,7 +1627,6 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountWithAddressProofUsingUFH()
     {
-
         $this->mockRazorX('testUpdateBankAccountWithAddressProof', 'use_ufh_file_store', 'on', 10000000000000);
 
         $this->testUpdateBankAccountWithAddressProof();
@@ -2330,6 +2334,25 @@ class MerchantTest extends TestCase
         $this->assertEquals(1, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
+    }
+
+    public function testGetCheckoutPreferencesForDebitEmi()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->emiPlan->create(
+            [
+                'merchant_id' => '10000000000000',
+                'bank'        => 'HDFC',
+                'type'        => 'debit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
     }
 
     public function testGetCheckoutPreferencesForPayLater()

@@ -40,9 +40,10 @@ class Core extends Base\Core
      * @param array           $params
      * @param Entity|null     $inputDocument
      *
+     * @return array
      * @throws BadRequestException
      */
-    public function storeInMerchantDocument(Merchant\Entity $merchant, array $params, Entity $inputDocument = null)
+    public function storeInMerchantDocument(Merchant\Entity $merchant, array $params, Entity $inputDocument = null) : array
     {
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $params]);
 
@@ -54,6 +55,8 @@ class Core extends Base\Core
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_NOT_SUPPORTED_FEATURE);
         }
+
+        $uploadedDocuments = [];
 
         foreach ($params as $documentType => $fileAttributes)
         {
@@ -72,7 +75,11 @@ class Core extends Base\Core
             $document->setEntityType();
 
             $this->repo->saveOrFail($document);
+
+            $uploadedDocuments[$documentType] = $document;
         }
+
+        return $uploadedDocuments;
     }
 
     /**
@@ -83,12 +90,17 @@ class Core extends Base\Core
      * @param bool            $validateLock
      *
      * @return array
+     * @throws BadRequestException
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\LogicException
      */
     public function uploadActivationFile(Merchant\Entity $merchant, array $input, bool $validateLock = true)
     {
-        $merchantDetailCore = new Detail\Core();
+        (new Validator)->validateInput('uploadDocument', $input);
 
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $input]);
+
+        $merchantDetailCore = new Detail\Core();
 
         $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
 
@@ -97,22 +109,23 @@ class Core extends Base\Core
             $merchantDetails->getValidator()->validateIsNotLocked();
         }
 
-        $document = (new Entity)->generateId()->build($input);
+        $documentType = $input[Entity::DOCUMENT_TYPE];
+
+        $param = [
+            $documentType => $input[Entity::FILE]
+        ];
+
+        $document = (new Entity)->generateId();
 
         $document->merchant()->associate($merchant);
 
-        $document->setEntityType();
+        $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
 
-        $this->repo->transaction(function() use ($document, $merchant, $input, $merchantDetails) {
-            $this->repo->saveOrFail($document);
+        $this->repo->transaction(function() use ($documentType, $merchant, $merchantDetails, $fileAttributes, $document) {
 
-            $param = [
-                $input[Entity::DOCUMENT_TYPE] => $input[Entity::FILE]
-            ];
+            $uploadedDocuments = $this->storeInMerchantDocument($merchant, $fileAttributes, $document);
 
-            $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
-
-            $this->storeInMerchantDocument($merchant, $fileAttributes, $document);
+            $document = $uploadedDocuments[$documentType];
 
             $this->handleAndPerformOcrForUnRegisteredBusinessType(
                 $merchantDetails,
@@ -131,6 +144,8 @@ class Core extends Base\Core
      * @param string $merchantId
      *
      * @return array
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\LogicException
      */
     public function fetchActivationFilesFromDocument(string $merchantId): array
     {
