@@ -165,10 +165,8 @@ export default class extends React.Component {
                     <>
                       <Banner>
                         Due to Yes Bank moratorium, existing YESB accounts are
-                        no longer valid. All active accounts created in the last
-                        90 days have been migrated to RBL with a new IFSC.
-                        Migration of remaining accounts is ongoing and will take
-                        up to 72 hours.{' '}
+                        no longer valid. All active accounts created on YBL have
+                        been migrated to RBL with a new IFSC.{' '}
                         <a
                           class="highlight"
                           target="_blank"
