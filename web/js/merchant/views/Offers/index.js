@@ -11,6 +11,12 @@ import DocsLink from 'merchant/components/DocsLink';
 
 @RTracking(() => window.rzpQ.component('OfferIndex'))
 export default class OfferIndex extends Component {
+  componentDidMount() {
+    this.props.tracking.trackEvent(
+      window.rzpQ.merchantActions().success('Offer_rendered')
+    );
+  }
+
   render() {
     return (
       <tabbed-container>
