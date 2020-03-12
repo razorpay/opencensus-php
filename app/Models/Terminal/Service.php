@@ -667,7 +667,7 @@ class Service extends Base\Service
 
         if ($this->isMigrateTerminalSuccess($terminal, $fetchedTerminal, true) === true)
         {
-            $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS);
+            $this->pushTerminalsServiceMetrics(Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, $data);
         }
         else
         {
