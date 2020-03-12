@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 use Carbon\Carbon;
 
+use RZP\Http\BasicAuth;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
@@ -59,6 +60,9 @@ class BankTransferController extends Controller
 
     public function processRblBankTransfer()
     {
+        // hardcoding this for now. We will fix this later.
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PRIVILEGE_AUTH);
+
         $input = Request::all();
 
         $this->trace->info(TraceCode::RBL_VA_CALLBACK, $input);

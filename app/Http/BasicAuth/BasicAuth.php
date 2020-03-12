@@ -1592,6 +1592,11 @@ class BasicAuth
         $this->setMerchant($merchant);
     }
 
+    public function setBasicType(string $type)
+    {
+        $this->type = $type;
+    }
+
     protected function setType($type)
     {
         $this->type = $type;

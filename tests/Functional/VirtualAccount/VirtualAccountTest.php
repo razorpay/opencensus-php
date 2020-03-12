@@ -1314,6 +1314,9 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountForOrderPayAndRefund()
     {
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
+
         $order = $this->fixtures->create('order');
 
         $virtualAccount = $this->createVirtualAccountForOrder($order);
@@ -1615,6 +1618,18 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals(
             $virtualAccount->bankAccount->getAccountNumber(),
             $merchant->sharedBankingBalance->getAccountNumber());
+    }
+
+    public function testFetchVirtualAccountBankingMultipleWithBalanceId()
+    {
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $bankingBalance = $this->getDbLastEntity('balance');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/virtual_accounts/banking/account?balance_id=' . $bankingBalance['id'];
+
+        $this->startTest();
     }
 
     public function testUpdateOnVirtualAccountOfBankingBalanceFails()

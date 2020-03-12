@@ -12,7 +12,7 @@ class Validator extends Base\Validator
     const INTERNAL_EDIT         = 'internal_edit';
     const PROCESSED_STATUS      = 'processed_status';
     const SERVICEABLE_PINCODE   = 'serviceable_pincode';
-    const YESBANK_CREATE        = 'yesbank_create';
+    const SHARED_CREATE         = 'shared_create';
     const INTERNAL_EDIT_STATUS  = 'internal_edit_status';
     const ACTIVATED_STATUS      = 'activated_status';
 
@@ -23,7 +23,8 @@ class Validator extends Base\Validator
         Entity::CHANNEL => 'required|string|custom',
     ];
 
-    protected static $yesbankCreateRules = [
+    protected static $sharedCreateRules = [
+        Entity::CHANNEL                         => 'required|string',
         Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,40',
         Entity::ACCOUNT_IFSC                    => 'required|alpha_num|size:11',
         Entity::FTS_FUND_ACCOUNT_ID             => 'sometimes|nullable|string|size:14',
