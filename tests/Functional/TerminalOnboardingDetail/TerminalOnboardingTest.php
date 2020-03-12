@@ -26,7 +26,14 @@ class TerminalOnboardingTest extends TestCase
 
     public function testTerminalOnboardCallback()
     {
-        $this->mockTerminalsServiceSendRequest(function () {
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            $this->assertEquals(Requests::POST, $method);
+
+            $this->assertEquals("v2/terminal/onboard/callback/paypal", $path);
+
+            $this->assertEquals(['foo' => 'bar'], $content);
+
             $response = new \Requests_Response;
 
             $response->body = json_encode(['foo' => 'bar']);

@@ -4,6 +4,9 @@ return [
         'request' => [
             'url'       => '/terminals/onboard/paypal/callback/test',
             'method'    => 'POST',
+            'content'   => [
+                'foo'   => 'bar',
+            ],
         ],
         'response' => [
             'content' => [
