@@ -90,6 +90,12 @@ class Service extends Base\Service
      */
     public function update(array $input)
     {
+        if (isset($input['type']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The type field is required'
+            );
+        }
         if ($input['type'] === 'checkout')
         {
             return $this->updateCheckoutConfig($input);
