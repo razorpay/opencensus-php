@@ -97,8 +97,8 @@ class TerminalOnboardingController extends Controller
 
         $app['basicauth']->setMode($mode);
 
-        $response = $this->service()->processTerminalOnboardCallback($gateway, $input);
+        $this->service()->processTerminalOnboardCallback($gateway, $input);
 
-        return ApiResponse::json($response);
+        return ApiResponse::json(['success' => true]);
     }
 }
