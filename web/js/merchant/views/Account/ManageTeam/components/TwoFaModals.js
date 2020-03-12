@@ -8,6 +8,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { Field, reduxForm } from 'redux-form';
 import InputField from 'common/ui/Forms/InputField';
 import { required, phone, mobile } from 'common/utils/validators';
+import { OtpInput } from 'merchant/components/OtpInput';
 
 @connect(null, { showNotification })
 class VerifyOtp extends Component {
@@ -218,4 +219,4 @@ class PasswordVerification extends Component {
   }
 }
 
-export { PasswordVerification };
+export { AskMobileNumber, PasswordVerification, VerifyOtp };
