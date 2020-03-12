@@ -3,7 +3,9 @@
 namespace RZP\Listeners;
 
 use Throwable;
+use Carbon\Carbon;
 use Razorpay\Trace\Logger;
+use RZP\Constants\Timezone;
 
 use RZP\Error;
 use RZP\Constants;
@@ -360,6 +362,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onPaymentCreated($payment)
+    {
+        $payload = $this->getPaymentPayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onPaymentDisputeCreated($payment)
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
@@ -684,6 +693,15 @@ class ApiEventSubscriber extends Base\Core
     }
 
     protected function onPayoutRejected(Payout\Entity $payout)
+    {
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
+    protected function onPayoutPending(Payout\Entity $payout)
     {
         if ($this->webhookEnabledForEvent === true)
         {
@@ -1152,7 +1170,6 @@ class ApiEventSubscriber extends Base\Core
         $eventFired = $this->event;
         $entity     = $this->mainEntity;
         $merchant   = $this->getMerchantFromEntity($entity);
-
         //
         // Send the signed account id of the merchant associated with the entity, along with the payload
         // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed

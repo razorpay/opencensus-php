@@ -31,6 +31,8 @@ return [
                 'last_name'     => 'doe',
                 'email'         => 'test@razorpay.com',
                 'state'         => 'PB',
+                'date_of_birth' => '1996-10-10',
+                'gender'        => 'male'
             ]
         ],
         'response' => [
@@ -87,6 +89,19 @@ return [
                 'report'            => '{"active_accounts": "1", "closed_accounts": "1", "count_of_accounts": "2", "total_outstanding_balance": "152000", "secured_account_outstanding_balance": "152000", "un_secured_account_outstanding_balance": "0"}',
                 'interested'        => true,
 //                'created_at'        => 1571374473
+            ],
+        ],
+    ],
+
+    'testGetDownloadUrl' => [
+        'request' => [
+            'url' => '/d2c_bureau_reports/{id}/download_url',
+            'method'    => 'get',
+        ],
+        'response' => [
+            'content' => [
+//              'signed_url' => 'report_experian_d2cbd_EKTOtrqmCOoNhF.txt.txt',
+                'csv_signed_url' =>'rzp_file_mock_id_1000000_bureau_report_csv',
             ],
         ],
     ]

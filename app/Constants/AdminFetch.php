@@ -399,7 +399,8 @@ class AdminFetch
                 ],
                 'status' => [
                     Fetch::LABEL    => 'Status',
-                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => FundTransfer\Attempt\Status::STATUSES,
                 ],
                 'merchant_id'       => [
                     Fetch::LABEL        => 'Merchant Id',
@@ -415,6 +416,16 @@ class AdminFetch
                     Fetch::LABEL  => 'Gateway Ref No',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'channel' => [
+                    Fetch::LABEL    => 'Channel',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => Channel::getFtsSupportedChannels(),
+                ],
+                'status' => [
+                    Fetch::LABEL    => 'Status',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => FundTransfer\Attempt\Status::STATUSES,
+                ],
             ],
             Entity::FTS_FUND_ACCOUNT => [],
             Entity::FTS_BENEFICIARY_STATUS => [
@@ -425,7 +436,11 @@ class AdminFetch
                 'source_account_id'       => [
                     Fetch::LABEL        => 'Source Account Id',
                     Fetch::TYPE         => Fetch::TYPE_STRING,
-                ]
+                ],
+                'gateway_ref_no' => [
+                    Fetch::LABEL => 'Gateway Ref No',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
             ]
         ];
     }
@@ -1097,6 +1112,10 @@ class AdminFetch
                 ]
             ],
 
+            Entity::D2C_BUREAU_REPORT => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::EMI_PLAN => [
                 'bank' => [
                     Fetch::LABEL  => 'Bank',
@@ -1154,6 +1173,17 @@ class AdminFetch
                         'completed',
                         'failed',
                     ],
+                ],
+            ],
+
+            Entity::SETTLEMENT_DESTINATION => [
+                'settlement_id' => [
+                    Fetch::LABEL => 'Settlement ID',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'destination_type' => [
+                    Fetch::LABEL => 'destination type',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
 
@@ -1854,6 +1884,24 @@ class AdminFetch
                 ],
             ],
 
+            Entity::PAPER_MANDATE_UPLOAD => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'status' => [
+                    Fetch::LABEL  => 'status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'pending',
+                        'failed',
+                        'accepted',
+                        'rejected',
+                    ],
+                ],
+                'paper_mandate_id' => [
+                    Fetch::LABEL => 'paper_mandate_id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::PAYOUT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'balance_id' => Fetch::FIELD_BALANCE_ID,
@@ -1886,7 +1934,12 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => array_keys(Payout\Status::$internalToPublicStatusMap),
                 ],
-                'reference_id'    => [],
+                'reference_id'  => [],
+                'channel'       => [
+                    Fetch::LABEL    => 'Channel',
+                    Fetch::TYPE     => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES   => Channel::getChannels(),
+                ],
             ],
 
             Entity::PAYTM => [

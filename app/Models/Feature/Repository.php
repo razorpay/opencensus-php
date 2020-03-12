@@ -2,14 +2,17 @@
 
 namespace RZP\Models\Feature;
 
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Base\Repository as BaseRepository;
+use RZP\Models\Base\QueryCache\CacheQueries;
 
-class Repository extends BaseRepository
+class Repository extends Base\Repository
 {
+    use CacheQueries;
+
     protected $entity = 'feature';
 
     protected $appFetchParamRules = array(
@@ -20,9 +23,14 @@ class Repository extends BaseRepository
 
     public function fetchByEntityTypeAndEntityId(string $entityType, string $entityId)
     {
+        $cacheTtl = $this->getCacheTtl();
+        $cacheTags = Entity::getCacheTagsForEntities($entityType, $entityId);
+
         return $this->newQuery()
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
+                    ->remember($cacheTtl)
+                    ->cacheTags($cacheTags)
                     ->get();
     }
 
@@ -114,9 +122,19 @@ class Repository extends BaseRepository
      *
      * @return PublicCollection
      */
-    public function getApplicationFeatures(string $applicationId): PublicCollection
+    public function getApplicationFeatureNames(string $applicationId): PublicCollection
     {
-        return $this->fetchByEntityTypeAndEntityId(Constants::APPLICATION, $applicationId);
+        $cacheTtl = $this->getCacheTtl();
+
+        $cacheTags = Entity::getCacheTagsForNames(Constants::APPLICATION , $applicationId);
+
+        return new PublicCollection($this->newQuery()
+                                         ->where(Entity::ENTITY_TYPE, Constants::APPLICATION )
+                                         ->where(Entity::ENTITY_ID, $applicationId)
+                                         ->remember($cacheTtl)
+                                         ->cacheTags($cacheTags)
+                                         ->pluck(Entity::NAME)
+                                         ->toArray());
     }
 
     /**

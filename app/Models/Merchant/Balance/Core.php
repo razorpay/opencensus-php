@@ -5,8 +5,8 @@ namespace RZP\Models\Merchant\Balance;
 use App;
 use Mail;
 use Carbon\Carbon;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -16,9 +16,11 @@ use RZP\Constants\MailTags;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Mail\Merchant\NegativeBalanceAlert as NegativeBalanceAlertMail;
 use RZP\Mail\Merchant\BalancePositiveAlert as BalancePositiveAlertMail;
+use RZP\Mail\Merchant\ReserveBalanceActivate as ReserveBalanceActivateMail;
 use RZP\Mail\Merchant\NegativeBalanceThresholdAlert as NegativeBalanceThresholdAlertMail;
 
 class Core extends Base\Core
@@ -34,10 +36,15 @@ class Core extends Base\Core
             Transaction\Type::PAYMENT,
             Transaction\Type::TRANSFER,
             Transaction\Type::REFUND,
+            Transaction\Type::ADJUSTMENT,
         ],
         Type::BANKING => [
-            Transaction\Type::PAYOUT
-        ]
+            Transaction\Type::PAYOUT,
+            Transaction\Type::ADJUSTMENT,
+        ],
+        Type::COMMISSION => [
+            Transaction\Type::ADJUSTMENT,
+        ],
     ];
 
     /**
@@ -141,17 +148,17 @@ class Core extends Base\Core
      * @param Type $balanceType
      * @param string $mode
      *
-     * @return Entity
+     * @return array
      * @throws \RZP\Exception\AssertionException
      */
-    public function createOrFetchReserveBalance(Merchant\Entity $merchant, string $balanceType, string $mode): Entity
+    public function createOrFetchReserveBalance(Merchant\Entity $merchant, string $balanceType, string $mode): array
     {
         $balance = $balanceType === Type::RESERVE_PRIMARY ? $merchant->reservePrimaryBalance :
                                                              $merchant->reserveBankingBalance;
 
         if ($balance !== null)
         {
-            return $balance;
+            return [$balance, false];
         }
 
         $this->trace->info(TraceCode::RESERVE_BALANCE_CREATE_REQUEST,
@@ -178,7 +185,7 @@ class Core extends Base\Core
                     ]
                 );
 
-                return $balance;
+                return [$balance, true];
             },
             self::RESERVE_BALANCE_CREATE_LOCK_TIMEOUT,
             ErrorCode::RESERVE_BALANCE_CREATE_ALREADY_IN_PROGRESS);
@@ -413,7 +420,15 @@ class Core extends Base\Core
     {
         $reserveBalance = null;
 
-        $reserveType = 'reserve_' . $balanceType;
+        if (($balanceType === Type::PRIMARY) or
+            ($balanceType === Type::BANKING))
+        {
+            $reserveType = 'reserve_' . $balanceType;
+        }
+        else
+        {
+            return 0;
+        }
 
         try
         {
@@ -501,9 +516,9 @@ class Core extends Base\Core
             'merchant_name'         => $merchant->getName(),
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
             'percentage'            => $threshold,
-            'max_negative_allowed'  => $maxNegativeAllowed,
+            'max_negative_allowed'  => ($maxNegativeAllowed / 100) . " INR",
             'balance_source'        => $balanceSource,
-            'balance'                => $balance,
+            'balance'                => ($balance / 100) . " INR",
             'headers'                => MailTags::NEGATIVE_BALANCE_THRESHOLD_ALERT,
         ];
 
@@ -528,7 +543,7 @@ class Core extends Base\Core
             'merchant_id'           => $merchant->getId(),
             'merchant_name'         => $merchant->getName(),
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
-            'balance'               => $balance,
+            'balance'               => ($balance) / 100 . " INR",
             'balance_source'        => $balanceSource,
             'headers'                => MailTags::BALANCE_NEGATIVE_ALERT,
         ];
@@ -546,7 +561,7 @@ class Core extends Base\Core
             'email'                  => $merchant->getEmail(),
             'merchant_id'           => $merchant->getId(),
             'merchant_name'         => $merchant->getName(),
-            'balance'               => $newBalance,
+            'balance'               => ($newBalance) / 100 . " INR",
             'balance_source'        => $balanceSource,
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
             'headers'                => MailTags::BALANCE_POSITIVE_ALERT,
@@ -555,5 +570,71 @@ class Core extends Base\Core
         $balancePositiveAlertMail = new BalancePositiveAlertMail($data);
 
         Mail::queue($balancePositiveAlertMail);
+    }
+
+    public function sendReserveBalanceActivatedMail(Merchant\Entity $merchant, Entity $balance)
+    {
+        $data = [
+            'email'                 => $merchant->getEmail(),
+            'merchant_id'           => $merchant->getId(),
+            'reserve_limit'         => ($balance->getBalance()) / 100 . " INR",
+            'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
+            'headers'               => MailTags::RESERVE_BALANCE_ACTIVATED,
+        ];
+
+        $reserveBalanceActivateMail = new ReserveBalanceActivateMail($data);
+
+        Mail::queue($reserveBalanceActivateMail);
+    }
+
+    /**
+     * Get the Maximum Negative Limit upto which the balance
+     *
+     * @param Transaction\Entity $txn
+     * @return int
+     */
+    public function getNegativeLimit(Transaction\Entity $txn) : int
+    {
+        $negativeLimit = 0;
+
+        // If the Transaction Type is Payment, then we only allow Negative Balance for
+        // E-Mandate Registrations (Recurring type: Initital, not second recurring).
+        if ($txn->getType() === Transaction\Type::PAYMENT)
+        {
+            if ($txn->source === null)
+            {
+                return $negativeLimit;
+            }
+
+            $payment = $txn->source;
+
+            if (($payment->getMethod() !== Payment\Method::EMANDATE) or
+                (($payment->getMethod() === Payment\Method::EMANDATE) and
+                    ($payment->isRecurringTypeInitial() === false)))
+            {
+                return $negativeLimit;
+            }
+        }
+
+        $negativeBalanceEnabled = (new BalanceConfig\Core)->isNegativeBalanceEnabledForTxnAndMerchant($txn->getType(),
+                                                                                            $txn->merchant->getId());
+
+        if ($negativeBalanceEnabled === true)
+        {
+            $txnSource = $txn->source;
+
+            $balanceType = Type::PRIMARY;
+
+            if ($txnSource !== null)
+            {
+                $balance = $txnSource->balance;
+
+                $balanceType = $balance !== null ? $balance->getType() : Type::PRIMARY;
+            }
+
+            $negativeLimit = -1 * $this->getMaximumNegativeAllowedForBalanceType($txn->merchant, $balanceType, $txn->getType());
+        }
+
+        return $negativeLimit;
     }
 }

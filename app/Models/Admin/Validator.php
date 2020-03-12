@@ -34,6 +34,22 @@ class Validator extends Base\Validator
         'reason'            => 'sometimes|string',
     ];
 
+    protected static $sfPocDataRules = [
+        'totalSize'      => 'required|integer',
+        'done'           => 'required|boolean',
+        'nextRecordsUrl' => 'sometimes|string',
+        'records'        => 'required|array',
+    ];
+
+    protected static $sfPocRecordRules = [
+        'attributes'                    => 'sometimes',
+        'Merchant_ID__c'                => 'required|string|max:14',
+        'Owner'                         => 'required',
+        'Owner.Email'                   => 'required|email',
+        'Owner_Role__c'                 => 'required|string',
+        'Managers_In_Role_Hierarchy__c' => 'sometimes|string|custom|nullable',
+    ];
+
     protected static $setConfigKeysRules = [
         ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE     => 'filled|boolean',
         ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE => 'filled|boolean',
@@ -75,10 +91,20 @@ class Validator extends Base\Validator
         ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',
 
         ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
+
+        ConfigKey::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING     => 'filled|integer',
+        ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 'filled|integer',
+
+        ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT  => 'filled|integer',
+        ConfigKey::BLOCK_X_REGISTRATION               => 'filled|boolean',
+        ConfigKey::BLOCK_YESBANK_RX_FAV               => 'filled|boolean',
+        ConfigKey::REMOVE_SETTLEMENT_BA_COOL_OFF      => 'filled|boolean',
+        ConfigKey::BLOCK_YESBANK_WALLET_PAYOUTS       => 'filled|boolean',
+        ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX    => 'filled|array',
+        ConfigKey::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [
-        ConfigKey::FTS_TRANSFER_SLA                 => 'filled|array',
         ConfigKey::HEARTBEAT_ROUTES                 => 'filled|array',
         ConfigKey::DOWNTIME_THROTTLE                => 'filled|array',
         ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => 'filled|array',
@@ -125,6 +151,26 @@ class Validator extends Base\Validator
         'update_config_value'
     ];
 
+    protected static $emailRules = [
+        'email' => 'required|email',
+    ];
+
+    /**
+     * @param string $attribute
+     * @param string $value
+     */
+    public function validateManagersInRoleHierarchyC(string $attribute, string $value)
+    {
+        $value = rtrim($value, ',');
+
+        $emails = explode(',', $value);
+
+        foreach ($emails as $email)
+        {
+            $this->validateInput('email', ['email' => $email]);
+        }
+    }
+
     /**
      * @param array $input
      * @throws Exception\BadRequestValidationFailureException
@@ -157,7 +203,7 @@ class Validator extends Base\Validator
 
     protected static $mozartGatewayPvtRules = [
         'gateway'            => 'required|string|in:citi,icici,yesbank_upi,yesbank,icici_imps,rbl',
-        'action'             => 'required|string|in:gateway_auth,transfer_init,transfer_status,beneficiary_verify,beneficiary_register,registration',
+        'action'             => 'required|string|in:gateway_auth,transfer_init,transfer_status,beneficiary_verify,beneficiary_register,registration,account_balance',
         'namespace'          => 'required|string',
         'payload'            => 'required|array',
         'payload.entities'   => 'required|array',

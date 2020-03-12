@@ -873,6 +873,31 @@ return [
         ],
     ],
 
+    'testCreatePaytmCardTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                  => 'paytm',
+                'card'                      => 1,
+                'gateway_terminal_id'      => '12344',
+                'gateway_access_code'      => '12344',
+                'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => '12345',
+                'type'                      => [
+                    'non_recurring'                 => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'type'  => ['non_recurring',
+                    'direct_settlement_with_refund'
+                ],
+            ]
+        ],
+    ],
+
     'testCreateDirectSettlemtTerminal' => [
         'request' => [
             'content' => [
@@ -2753,6 +2778,82 @@ return [
                 'gateway_merchant_id'       => 'MER0000000000111',
                 'gateway_acquirer'          =>  'axis',
                 'enabled'                   => true
+            ]
+        ]
+    ],
+
+    'testCreateCybersourceYesBTerminal'      => [
+        'request'   => [
+            'content'   => [
+                'gateway'                   => 'cybersource',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_terminal_id'       => 'randommerchantid',
+                'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_secure_secret2'    => 'secure_secret2',
+                'gateway_access_code'       => 'access_code',
+                'gateway_acquirer'          => 'yesb',
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'recurring_3ds'     => '0',
+                    'recurring_non_3ds' => '1',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_acquirer'          => 'yesb',
+                'enabled'                   =>  true
+            ]
+        ]
+    ],
+
+    'testAssignTerminalWithNoAccountTypeAttribute' => [
+        'request'   => [
+            'content'   => [
+                'gateway'                   => 'bt_icici',
+                'gateway_merchant_id'       => '2323',
+                'bank_transfer'             => '1',
+                'type'                      => [
+                    'business_banking'  => '1',
+                    'non_recurring'     => '1',
+                    'numeric_account'   => '1',
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
+        ]
+    ],
+
+    'testAssignTerminalWithDifferentAccountTypeAttribute' => [
+        'request'   => [
+            'content'   => [
+                'gateway'                   => 'bt_icici',
+                'gateway_merchant_id'       => '2323',
+                'bank_transfer'             => '1',
+                'account_type'              => 'current',
+                'type'                      => [
+                    'business_banking'  => '1',
+                    'non_recurring'     => '1',
+                    'numeric_account'   => '1',
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => '2323',
+                'enabled'                   =>  true
             ]
         ]
     ],

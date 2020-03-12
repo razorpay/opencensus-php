@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Exception;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Type
@@ -91,6 +92,12 @@ class Type
 
     const ADMIN_BATCH           = 'admin_batch';
 
+    const ENTITY_UPDATE_ACTION = 'entity_update_action';
+
+    const ADJUSTMENT            = 'adjustment';
+
+    const ECOLLECT_ICICI        = 'ecollect_icici';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -119,7 +126,10 @@ class Type
         self::PRICING_RULE,
         self::ADMIN_BATCH,
         self::MERCHANT_CONFIG_INHERITANCE,
+        self::ENTITY_UPDATE_ACTION,
         self::MDR_ADJUSTMENT,
+        self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
     ];
 
     /**
@@ -185,6 +195,7 @@ class Type
         self::MPAN,
         self::PRICING_RULE,
         self::ADMIN_BATCH,
+        self::ADJUSTMENT,
     ];
 
     /**
@@ -258,6 +269,8 @@ class Type
         self::PARTNER_SUBMERCHANTS,
         self::OAUTH_MIGRATION_TOKEN,
         self::LINKED_ACCOUNT_REVERSAL,
+        self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
     ];
 
     /**
@@ -272,6 +285,13 @@ class Type
         self::PRICING_RULE,
         self::MERCHANT_CONFIG_INHERITANCE,
         self::MDR_ADJUSTMENT,
+        self::ENTITY_UPDATE_ACTION,
+        self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
+    ];
+
+    public static $batchToAdminPermissionMapping = [
+        self::ADJUSTMENT    => Name::ADJUSTMENT_BATCH_UPLOAD,
     ];
 
     public static function exists(string $type)

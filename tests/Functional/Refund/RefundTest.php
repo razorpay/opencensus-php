@@ -7,12 +7,8 @@ use Mail;
 use Mockery;
 use Carbon\Carbon;
 
-use RZP\Mail\Merchant\BalancePositiveAlert;
-use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
-use RZP\Mail\Merchant\NegativeBalanceAlert;
-use RZP\Mail\Merchant\NegativeBalanceThresholdAlert;
-use RZP\Models\Batch\Header;
 use RZP\Models\Merchant;
+use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Method;
@@ -21,8 +17,11 @@ use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
+use RZP\Mail\Merchant\NegativeBalanceAlert;
+use RZP\Mail\Merchant\BalancePositiveAlert;
 use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
+use RZP\Mail\Merchant\NegativeBalanceThresholdAlert;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1353,6 +1352,18 @@ class RefundTest extends TestCase
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
 
+        $this->fixtures->refund->edit(
+            $rfnd['id'],
+            [
+                'speed_requested'  => 'normal',
+                'speed_decisioned' => 'normal',
+                'speed_processed'  => 'normal',
+                'status'           => 'processed'
+            ]
+        );
+
+        $rfnd = $this->getDbEntityById('refund', $rfnd['id']);
+
         $actual = $rfnd->toArrayPublic();
         $actual['acquirer_data'] = $rfnd->getAcquirerData()->toArray();
 
@@ -2335,6 +2346,9 @@ class RefundTest extends TestCase
         });
 
         $this->fixtures->merchant->addFeatures('card_transfer_refund');
+        $this->fixtures->merchant->addFeatures('disable_instant_refunds');
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
 
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
@@ -2392,6 +2406,198 @@ class RefundTest extends TestCase
         $this->assertEquals('instant', $refund['speed_processed']);
         $this->assertEquals(708, $refund['fee']);
         $this->assertEquals(108, $refund['tax']);
+    }
+
+    public function testInstantRefundSuccessfulWithDefaultPricing()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('processed', $fta['status']);
+
+        $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
+
+        $this->assertEquals(3471, $transaction['amount']);
+        $this->assertEquals(589, $transaction['fee']);
+        $this->assertEquals(90, $transaction['tax']);
+        $this->assertEquals($transaction['amount'] + $transaction['fee'], $transaction['debit']);
+        $this->assertEquals(0, $transaction['credit']);
+
+        $feesBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $transaction['id']]);
+
+        $this->assertEquals('refund', $feesBreakup[0]['name']);
+        $this->assertEquals('tax', $feesBreakup[1]['name']);
+        $this->assertEquals(499, $feesBreakup[0]['amount']);
+        $this->assertEquals(90, $feesBreakup[1]['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('partial', $payment['refund_status']);
+        $this->assertEquals(3471, $payment['amount_refunded']);
+
+        // Assert for fta created for given refund
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertNull($fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals('instant', $refund['speed_processed']);
+        $this->assertEquals(589, $refund['fee']);
+        $this->assertEquals(90, $refund['tax']);
+    }
+
+    public function testInstantRefundSuccessfulWithDefaultPricingUnconfiguredMode()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        $scroogeResponse = json_decode('{
+            "mode": "NEFT"
+        }', true);
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['getInstantRefundsMode'])
+                            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('getInstantRefundsMode')
+                           ->willReturn($scroogeResponse);
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('processed', $fta['status']);
+
+        $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
+
+        $this->assertEquals(3471, $transaction['amount']);
+        $this->assertEquals(589, $transaction['fee']);
+        $this->assertEquals(90, $transaction['tax']);
+        $this->assertEquals($transaction['amount'] + $transaction['fee'], $transaction['debit']);
+        $this->assertEquals(0, $transaction['credit']);
+
+        $feesBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $transaction['id']]);
+
+        $this->assertEquals('refund', $feesBreakup[0]['name']);
+        $this->assertEquals('tax', $feesBreakup[1]['name']);
+        $this->assertEquals(499, $feesBreakup[0]['amount']);
+        $this->assertEquals(90, $feesBreakup[1]['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('partial', $payment['refund_status']);
+        $this->assertEquals(3471, $payment['amount_refunded']);
+
+        // Assert for fta created for given refund
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertNull($fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals('instant', $refund['speed_processed']);
+        $this->assertEquals(589, $refund['fee']);
+        $this->assertEquals(90, $refund['tax']);
     }
 
     public function createUpiPayment()
@@ -3624,6 +3830,174 @@ class RefundTest extends TestCase
         Mail::assertNotQueued(BalancePositiveAlert::class);
     }
 
+    //International Currency Tests for negative balance
+    public function testRefundWithZeroBalanceInternationalCurrency()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('balance', 50000, 0, 0);
+
+        $payment = $this->defaultAuthPayment(['amount' => 200, 'currency' => 'USD']);
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 0]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertQueued(NegativeBalanceAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('test@razorpay.com', $viewData['email']);
+
+            $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+            $this->assertEquals('-20 INR', $viewData['balance']);
+
+            $this->assertEquals('emails.merchant.negative_balance_alert', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testRefundWithNegativeBalanceAndInternationalCurrency()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('balance', 210000, 0, 0);
+
+        //should not fail 2USD -> 142 INR
+        $payment = $this->defaultAuthPayment(['amount' => 200, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -4800]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
+    public function testRefundWithNegativeBalanceAndInternationalCurrencyCrossingThreshold()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('balance', 210000, 0, 0);
+
+        //should fail: 2000 USD -> 1.85 Lakhs INR
+        $payment = $this->defaultAuthPayment(['amount' => 200000, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -4800]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
+    public function testRefundWithNegativeRefundCreditsAndInternationalCurrency()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('credits', 210000, -4800, 0);
+
+        $payment = $this->defaultAuthPayment(['amount' => 200, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000',
+            [
+                'balance'           => 50000,
+                'refund_credits'    => -4800
+            ]
+        );
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
+    public function testRefundWithNegativeRefundCreditsAndInternationalCurrencyCrossingThreshold()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('credits', 210000, -4800, 0);
+
+        $payment = $this->defaultAuthPayment(['amount' => 200000, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000',
+            [
+                'balance'           => 50000,
+                'refund_credits'    => -4800
+            ]
+        );
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
+    public function testRefundWithNegativeAndReserveBalanceAndInternationalCurrency()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('balance', 21000, 0, 1000);
+
+        //should fail: 20USD -> 1426 INR
+        $payment = $this->defaultAuthPayment(['amount' => 2000, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -4800]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
+    public function testRefundWithNegativeAndReserveBalanceAndInternationalCurrencyCrossingThreshold()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->merchant;
+        $merchant->enableInternational();
+        $merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $this->negativeRefundFixtures('balance', 210000, 0, 0);
+
+        $payment = $this->defaultAuthPayment(['amount' => 200000, 'currency' => 'USD']);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -4800]);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+        Mail::assertNotQueued(NegativeBalanceAlert::class);
+    }
+
     private function negativeRefundFixtures(string $refundSource,
                                             int $negativeLimit,
                                             int $refundCredits = 0,
@@ -3716,5 +4090,33 @@ class RefundTest extends TestCase
         $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
         $this->assertEquals('test', $bankAccount['beneficiary_name']);
         $this->assertEquals('refund', $bankAccount['type']);
+    }
+
+    public function testInstantRefundsNotSupportedOnNonRZPOrg()
+    {
+        $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $dummyOrg['id']]);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
+    public function testInstantRefundsNotSupportedForFeatureNotEnabledMerchants()
+    {
+        $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $dummyOrg['id']]);
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
     }
 }

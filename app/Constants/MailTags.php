@@ -42,6 +42,7 @@ class MailTags
     const AIRTEL_MONEY_REFUNDS_MAIL             = 'airtel_money_refunds_mail';
     const AIRTEL_MONEY_FAILED_REFUNDS_MAIL      = 'airtel_money_failed_refunds_mail';
     const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';
+    const ICICI_PAYLATER_REFUNDS_MAIL           = 'icici_paylater_refunds_mail';
     const INDIAN_BANK_NETBANKING_REFUNDS_MAIL   = 'indianbank_netbanking_refunds_mail';
     const CBI_NETBANKING_REFUNDS_MAIL           = 'cbi_netbanking_refunds_mail';
     const CANARA_NETBANKING_REFUNDS_MAIL        = 'canara_netbanking_refunds_mail';
@@ -57,6 +58,7 @@ class MailTags
     const HDFC_FSS_FAILED_REFUNDS_MAIL          = 'fss_failed_refunds_mail';
     const AXIS_CYBERSOURCE_FAILED_REFUNDS_MAIL  = 'axis_cybersource_failed_refunds_mail';
     const FAILED_REFUNDS_MAIL                   = 'failed_refunds_mail';
+    const UPI_SBI_REFUNDS_MAIL                  = 'upi_sbi_refunds_mail';
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
@@ -174,7 +176,12 @@ class MailTags
     // Transactions
     const TRANSACTION_CREATED              = 'transaction_created';
 
+    // Yesbank account loads via adjustment -- notifier email
+    const YESBANK_LOAD_ADJUSTMENT          = 'yesbank_load_adjustment';
+
     const BANKING_ACCOUNT_STATUS_UPDATED   = 'banking_account_status_updated';
+
+    const EXPERIAN_REPORT                  = 'D2C_experian_csv_report';
 
     const BANKING_ACCOUNT_X_PRO_ACTIVATION = 'banking_account_x_pro_activation';
 
@@ -182,6 +189,8 @@ class MailTags
     const NEGATIVE_BALANCE_THRESHOLD_ALERT              = 'negative_balance_threshold_alert';
     const BALANCE_NEGATIVE_ALERT                        = 'balance_negative_alert';
     const BALANCE_POSITIVE_ALERT                        = 'balance_positve_alert';
+    const RESERVE_BALANCE_ACTIVATED                     = 'reserve_balance_activated';
+
 
     //Merchant Invoice tags
     const MERCHANT_INVOICE_EXECUTION_SUMMARY            = 'merchant_invoice_execution_summary';

@@ -4,13 +4,13 @@ namespace RZP\Services;
 
 use Cache;
 use Request;
-use Requests;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Http\Request\Requests;
 
 class RazorXClient
 {
-    const REQUEST_TIMEOUT   = 1; // In seconds
+    const REQUEST_TIMEOUT   = 0.1; // 100 milliseconds
 
     const EVALUATE_URI      = 'evaluate';
 

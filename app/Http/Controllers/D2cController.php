@@ -15,6 +15,13 @@ class D2cController extends Controller
         return ApiResponse::json($entity);
     }
 
+    public function fetchD2cCSVReport()
+    {
+        $response = $this->service(Entity::D2C_BUREAU_REPORT)->getCsvReport();
+
+        return ApiResponse::json($response);
+    }
+
     public function patchDetails(string $id)
     {
         $input = Request::all();
@@ -38,6 +45,13 @@ class D2cController extends Controller
         $input = Request::all();
 
         $response = $this->service(Entity::D2C_BUREAU_REPORT)->update($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getReportDownloadUrl(string $id)
+    {
+        $response = $this->service(Entity::D2C_BUREAU_REPORT)->getDownloadUrl($id);
 
         return ApiResponse::json($response);
     }

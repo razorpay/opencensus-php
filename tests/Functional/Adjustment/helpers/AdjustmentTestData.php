@@ -20,7 +20,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Reserve Balance Amount should be greater than or equal to 1000000',
+                    'description' => 'Reserve Balance Amount should be greater than or equal to 100000',
                 ],
             ],
             'status_code' => 400,
@@ -75,6 +75,28 @@ return [
         ]
     ],
 
+    'testSendYesbankLoadSuccessfulEmail' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  250000,
+                'type'          =>  'banking',
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'INR',
+                'description'   =>  'Account: ABC123, Bank: ICICI'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => 250000,
+                'currency'      => 'INR',
+                'description'   => 'Account: ABC123, Bank: ICICI',
+            ],
+        ]
+    ],
+
     'testAddReserveBalance' => [
         'request' => [
             'url' => '/adjustments',
@@ -95,5 +117,58 @@ return [
                 'description'   => 'reserve_primary balance add',
             ],
         ]
-    ]
+    ],
+
+    'testCreateNegativeAdjustmentWithLowBalance' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  -5000,
+                'type'          =>  'primary',
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'INR',
+                'description'   =>  'loan payment reference id : some_id'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => -5000,
+                'currency'      => 'INR',
+                'description'   => 'loan payment reference id : some_id',
+            ],
+        ]
+    ],
+
+    'testCreateAdjustmentFromBatchRoute'    => [
+        'request' => [
+            'url' => '/adjustments/batch',
+            'method' => 'POST',
+            'content' => [
+                [
+                    'amount'            =>  -5000,
+                    'type'              =>  ' ',
+                    'merchant_id'       =>  '100abc000abc00',
+                    'currency'          =>  'INR',
+                    'description'       =>  'loan payment reference id : some_id',
+                    'idempotency_key'   =>  'batch_100abc000abc01'
+                ]
+
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_100abc000abc01',
+                        'balance'           => 5000,
+                    ],
+                ],
+            ],
+        ]
+    ],
 ];

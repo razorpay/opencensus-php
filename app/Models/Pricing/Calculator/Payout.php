@@ -2,12 +2,9 @@
 
 namespace RZP\Models\Pricing\Calculator;
 
-use RZP\Exception;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payout as PayoutModel;
-use RZP\Models\Merchant\Balance\AccountType;
-use RZP\Models\BankingAccountStatement\Channel;
 
 /**
  * Class Payout
@@ -92,5 +89,27 @@ class Payout extends Base
         ];
 
         return $this->applyFiltersOnRules($rules, $filters);
+    }
+
+    /**
+     * While we do not need to calculate the fees and tax (are being passed as arguments), we still need to create the
+     * feesSplit. The getFees function retains the createFeesBreakup logic so that we don't have to maintain this code.
+     * Any changes made in the feesSplit creation logic will automatically reflect here too.
+     *
+     * @param $fees
+     * @param $tax
+     * @param $pricingRuleId
+     *
+     * @return \RZP\Models\Base\PublicCollection
+     */
+    public function getFeeBreakupFromData($fees, $tax, $pricingRuleId)
+    {
+        $pricingRule = $this->repo->pricing->getPricingFromPricingId($pricingRuleId, true);
+
+        $this->pricingRules = [$pricingRule];
+
+        $this->getFees();
+
+        return $this->feesSplit;
     }
 }

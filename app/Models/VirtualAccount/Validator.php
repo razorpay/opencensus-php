@@ -176,17 +176,6 @@ class Validator extends Base\Validator
                 Entity::RECEIVERS,
                 compact('receivers'));
         }
-
-        // Must no other virtual account exists against this banking balance
-        $exists = app('repo')->virtual_account->existsByBalanceId($virtualAccount->getBalanceId());
-
-        if ($exists === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Only one virtual account per banking balance must exist',
-                Entity::RECEIVERS,
-                compact('receivers'));
-        }
     }
 
     public function validateOfPrimaryBalance()

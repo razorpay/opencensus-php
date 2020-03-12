@@ -17,7 +17,7 @@ return [
                 'card' => true,
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
-                    'YESB' => 'Yes Bank',
+                    'HDFC' => 'HDFC Bank',
                 ],
                 'wallet' => [
 //                    'paytm' => false,
@@ -190,7 +190,7 @@ return [
                 'card' => true,
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
-                    'YESB' => 'Yes Bank',
+                    'HDFC' => 'HDFC Bank',
                 ],
                 'wallet' => [
                     'mobikwik' => true,
@@ -218,7 +218,7 @@ return [
                 'card' => true,
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
-                    'YESB' => 'Yes Bank',
+                    'HDFC' => 'HDFC Bank',
                 ],
                 'wallet' => [
                 ],
@@ -283,6 +283,18 @@ return [
         'response' => [
             'content' => [
                 'emi' => false
+            ],
+        ],
+    ],
+
+    'testMerchantPaybackInEmiOptions' => [
+        'request' => [
+            'url' => '/merchant/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'emi' => true
             ],
         ],
     ],

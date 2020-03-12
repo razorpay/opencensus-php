@@ -51,6 +51,9 @@ class UfhService
     /** @var UfhClient  */
     protected $ufhClient;
 
+    /** @var $merchantId */
+    protected $merchantId;
+
     /** @var  BasicAuth */
     protected $ba;
 
@@ -62,34 +65,39 @@ class UfhService
 
     public function __construct($app)
     {
-        $this->trace     = $app['trace'];
+        $this->trace           = $app['trace'];
 
-        $this->env       = $app['env'];
+        $this->env             = $app['env'];
 
-        $this->ba        = $app['basicauth'];
+        $this->ba              = $app['basicauth'];
 
-        $this->repo      = $app['repo'];
+        $this->repo            = $app['repo'];
 
-        $this->config    = $app['config']['applications.ufh'];
+        $this->config          = $app['config']['applications.ufh'];
 
-        $merchantId      = $this->ba->getMerchantId();
+        $this->merchantId      = $this->ba->getMerchantId();
 
         if (($this->ba->isAdminAuth() === true) && (empty($merchantId) === true))
         {
-            $merchantId = $this->repo->merchant->getSharedAccount()->getId();
+            $this->merchantId = $this->repo->merchant->getSharedAccount()->getId();
         }
 
+        $this->ufhClient = $this->createUfhClient();
+    }
+
+    protected function createUfhClient()
+    {
         $config = [
             'base_uri'      => $this->config['url'],
             'username'      => $this->config['auth']['username'],
             'password'      => $this->config['auth']['password'],
             'headers'       => [
-                'X-Merchant-Id' => $merchantId,
+                'X-Merchant-Id' => $this->merchantId,
             ],
-            'X-Merchant-Id' => $merchantId,
+            'X-Merchant-Id' => $this->merchantId,
         ];
 
-        $this->ufhClient = new UfhClient($config);
+        return new UfhClient($config);
     }
 
     /**
@@ -198,7 +206,18 @@ class UfhService
 
     public function getSignedUrl(string $fileId, array $params = [], $merchantId = null)
     {
-        return $this->ufhClient->getSignedUrl($fileId, $params, $merchantId);
+        //
+        // in case of admin auth we are currently fetching using shared merchant but
+        // In some cases admin team wants to see document uploaded by a merchant
+        //
+        if (empty($merchantId) === false)
+        {
+            $this->merchantId = $merchantId;
+
+            $this->ufhClient = $this->createUfhClient();
+        }
+
+        return $this->ufhClient->getSignedUrl($fileId, $params);
     }
 
     protected function validateResponse(array $res = null)

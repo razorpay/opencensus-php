@@ -39,6 +39,7 @@ class Mailgun extends Base
         self::UPI_HDFC,
         self::UPI_HULK,
         self::CARD_FSS_HDFC,
+        self::CARD_FSS_SBI,
         self::UPI_ICICI,
         self::FREECHARGE,
         self::FIRST_DATA,
@@ -105,6 +106,24 @@ class Mailgun extends Base
         return [
             self::FILE_DETAILS  => $allFilesDetails,
             self::INPUT_DETAILS => $this->inputDetails,
+        ];
+    }
+
+    public function processForVa(array $input): array
+    {
+        // Gets the email details and validates the email details.
+        $inputDetails = $this->getEmailDetails($input);
+
+        $fileLocationType = FileProcessor::UPLOADED;
+
+        $inputDetails[self::SOURCE] = self::MAILGUN;
+
+        $allFilesDetails = $this->getFileDetailsFromInput(
+            $inputDetails, $input, $fileLocationType);
+
+        return [
+            self::FILE_DETAILS  => $allFilesDetails,
+            self::INPUT_DETAILS => $inputDetails,
         ];
     }
 

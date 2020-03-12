@@ -30,10 +30,10 @@ class UserRolesScope
         $this->routeUserRoleMap = [
 
             // batch routes
-            'batch_create'         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP], BankingRole::getAllRoles()),
-            'batch_download_file'  => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP], BankingRole::getAllRoles()),
-            'batch_fetch_by_id'    => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP], BankingRole::getAllRoles()),
-            'batch_fetch_multiple' => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP], BankingRole::getAllRoles()),
+            'batch_create'         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP, Role::AUTH_LINK_SUPERVISOR], BankingRole::getAllRoles()),
+            'batch_download_file'  => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP, Role::AUTH_LINK_SUPERVISOR], BankingRole::getAllRoles()),
+            'batch_fetch_by_id'    => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP, Role::AUTH_LINK_SUPERVISOR], BankingRole::getAllRoles()),
+            'batch_fetch_multiple' => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP, Role::AUTH_LINK_SUPERVISOR], BankingRole::getAllRoles()),
 
             // payment routes
             'payment_capture'        => array_merge(Role::WRITER_ROLES, [ROLE::RBL_SUPERVISOR]),
@@ -94,7 +94,7 @@ class UserRolesScope
             'create_submerchant_user'             => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
             // Merchant user routes
-            'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+            'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 
             //2fa
             'merchant_2fa_change_setting' => [Role::OWNER],
@@ -211,6 +211,7 @@ class UserRolesScope
          */
         $this->batchTypeUserRoleMap = [
             Type::PAYMENT_LINK         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER, Role::SELLERAPP], BankingRole::getAllRoles()),
+            Type::AUTH_LINK            => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER, Role::AUTH_LINK_SUPERVISOR], BankingRole::getAllRoles()),
             self::DEFAULT              => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER], BankingRole::getAllRoles()),
         ];
     }

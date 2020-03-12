@@ -37,6 +37,7 @@ class Constants
     const LINKED_ACCOUNT_REVERSAL = 'linked_account_reversal';
     const RAZORPAY_X              = 'razorpay_x';
     const CAPITAL_SUPPORT         = 'capital_support';
+    const CAPITAL_CREDIT          = 'capital_credit';
     const NACH                    = 'nach';
     const PARTNER_ON_BOARDING     = 'partner_on_boarding';
     const RAZORPAY_HELP_DESK      = 'help_desk';
@@ -44,6 +45,8 @@ class Constants
     const FINANCE                 = 'finance';
 
     const PARTNER_ON_BOARDING_REPLY = 'partner_on_boarding_reply';
+
+    const TEST_MODE_PREFIX          = '[Test Mode] ';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT                   => 'support@razorpay.com',
@@ -77,6 +80,7 @@ class Constants
         self::LINKED_ACCOUNT_REVERSAL   => 'refunds@razorpay.com',
         self::GATEWAY_POD               => 'pod.gateway@razorpay.com',
         self::CAPITAL_SUPPORT           => 'capital.support@razorpay.com',
+        self::CAPITAL_CREDIT            => 'capital-credit@razorpay.com',
         self::NACH                      => 'nach@razorpay.com',
         self::PARTNER_ON_BOARDING       => 'partnercommunication@razorpay.com',
         self::PARTNER_ON_BOARDING_REPLY => 'kzgpFWFVZU@razorpay.com',
@@ -111,6 +115,7 @@ class Constants
         self::RAZORPAY_X              => 'RazorpayX',
         self::PARTNER_ON_BOARDING     => 'Razorpay Partner Program',
         self::CAPITAL_SUPPORT         => 'Razorpay Capital',
+        self::CAPITAL_CREDIT          => 'Capital Credit',
         self::NACH                    => 'Razorpay Nach',
         self::RAZORPAY_HELP_DESK      => 'Team Razorpay'
     ];

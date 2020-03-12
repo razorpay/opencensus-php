@@ -550,7 +550,10 @@ trait RequestHandlerTrait
             });
 
         // If within a day, the counter crosses the 999999 limit, this falls back to start from 0
-        $currentValue = $currentValue % 1000000;
+        //
+        // Since we are migrating to card payment service we have shared the counter space between api and cps.
+        // 0-499999 will be used by api and 500000-999999 will used by cps to avoid collision
+        $currentValue = $currentValue % 500000;
 
         if ($ttl === -1)
         {

@@ -3,111 +3,207 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Merchant\Document\Type;
-use RZP\Models\Merchant\Document\TypeGroups;
 
 class ValidationFields
 {
+    const DEFAULT                   = 'default';
+    const REQUIRED_FIELDS           = 'required_field';
+    const SELECTIVE_REQUIRED_FIELDS = 'selective_required_fields';
+    const OPTIONAL_FIELDS           = 'optional_required_fields';
 
-    const POA_DOCUMENTS = 'poa_documents';
-
-    const DASHBOARD_FIELDS = [
-            Entity::ADDRESS_PROOF_URL,
-            Entity::BANK_ACCOUNT_NAME,
-            Entity::BANK_ACCOUNT_NUMBER,
-            Entity::BANK_BRANCH_IFSC,
-            Entity::BUSINESS_DBA,
-            Entity::BUSINESS_INTERNATIONAL,
-            Entity::BUSINESS_NAME,
-            Entity::BUSINESS_OPERATION_ADDRESS,
-            Entity::BUSINESS_OPERATION_CITY,
-            Entity::BUSINESS_OPERATION_PIN,
-            Entity::BUSINESS_OPERATION_STATE,
-            Entity::BUSINESS_PAN_URL,
-            Entity::BUSINESS_PROOF_URL,
-            Entity::BUSINESS_REGISTERED_ADDRESS,
-            Entity::BUSINESS_REGISTERED_CITY,
-            Entity::BUSINESS_REGISTERED_PIN,
-            Entity::BUSINESS_REGISTERED_STATE,
-            Entity::BUSINESS_TYPE,
-            Entity::CONTACT_EMAIL,
-            Entity::CONTACT_MOBILE,
-            Entity::CONTACT_NAME,
-            Entity::PROMOTER_ADDRESS_URL,
-            Entity::PROMOTER_PAN_NAME,
+    const FIELDS_TYPES = [
+        self::REQUIRED_FIELDS,
+        self::SELECTIVE_REQUIRED_FIELDS,
+        self::OPTIONAL_FIELDS,
     ];
 
-    // There are limited total fields for Individual and Not-yet-registered business types
-    const DASHBOARD_UNREGISTERED_LIMITED = [
-            Entity::BANK_ACCOUNT_NAME,
-            Entity::BANK_ACCOUNT_NUMBER,
-            Entity::BANK_BRANCH_IFSC,
-            Entity::BUSINESS_REGISTERED_ADDRESS,
-            Entity::BUSINESS_REGISTERED_CITY,
-            Entity::BUSINESS_REGISTERED_PIN,
-            Entity::BUSINESS_REGISTERED_STATE,
-            Entity::BUSINESS_TYPE,
-            Entity::CONTACT_EMAIL,
-            Entity::CONTACT_MOBILE,
-            Entity::CONTACT_NAME,
-            Entity::PROMOTER_PAN_NAME,
-    ];
+    // this specify height of the tree
+    const LEVEL_COUNT = 3;
 
     /**
-     * This contains documents required for unregistered business
+     *  selective required fields mapping
+     * self::DEFAULT => [
+     *          document_set_1,
+     *          document_set_2,
+     *      ]
+     *
+     *      document_set_1 refer to selective required fields set
+     *          document_set_1 : {
+     *              "document1": [
+     *                  [ "document_type1" , "document_type2"],
+     *                  [ "document_type3" , "document_type2"]
+     *              ],
+     *              "document2": [
+     *                  [ "document_type4" , "document_type5"],
+     *                  [ "document_type6" , "document_type7"]
+     *              ]
+     *          }
+     *
+     * explanation : For submitting L2 form  document1 and document2 fields are required
+     * for document1 field user can submit (document_type1, document_type2) or (document_type3, document_type2)
+     * for document2 field user can submit (document_type4, document_type5) or (document_type6, document_type7)
      */
-    const UNREGISTERED_DOCUMENT_FIELDS = [
-        self::POA_DOCUMENTS => [
-            [Type::AADHAR_FRONT, Type::AADHAR_BACK],
-            [Type::PASSPORT_FRONT, Type::PASSPORT_BACK],
-            [Type::VOTER_ID_FRONT, Type::VOTER_ID_BACK],
-            [Type::DRIVER_LICENSE_FRONT, Type::DRIVER_LICENSE_BACK],
+    const FINANCIAL_SERVICE_FIELDS = [
+        BusinessSubcategory::MUTUAL_FUND       => [
+            self::DEFAULT => [
+                self::SELECTIVE_REQUIRED_FIELDS => [
+                    SelectiveRequiredDocument::MUTUAL_FUND,
+                ],
+            ]
+        ],
+        BusinessSubcategory::LENDING           => [
+            self::DEFAULT => [
+                self::SELECTIVE_REQUIRED_FIELDS => [
+                    SelectiveRequiredDocument::LENDING
+                ],
+            ],
+        ],
+        BusinessSubcategory::INSURANCE         => [
+            self::DEFAULT => [
+                self::SELECTIVE_REQUIRED_FIELDS => [
+                    SelectiveRequiredDocument::INSURANCE,
+                ],
+            ],
+        ],
+        BusinessSubcategory::NBFC              => [
+            self::DEFAULT => [
+                self::SELECTIVE_REQUIRED_FIELDS => [
+                    SelectiveRequiredDocument::NBFC,
+                ],
+            ],
+        ],
+        BusinessSubcategory::FOREX             => [
+            self::DEFAULT => [
+                self::SELECTIVE_REQUIRED_FIELDS => [
+                    SelectiveRequiredDocument::FOREX,
+                ],
+            ],
+        ],
+        BusinessSubcategory::SECURITIES        => [
+            self::DEFAULT => [
+                self::SELECTIVE_REQUIRED_FIELDS => [
+                    SelectiveRequiredDocument::SECURITIES,
+                ],
+            ],
+        ],
+        BusinessSubcategory::COMMODITIES => [
+            self::DEFAULT => [
+                self::SELECTIVE_REQUIRED_FIELDS => [
+                    SelectiveRequiredDocument::COMMODITIES,
+                ],
+            ],
+        ],
+        BusinessSubcategory::FINANCIAL_ADVISOR => [
+            self::DEFAULT => [
+                self::SELECTIVE_REQUIRED_FIELDS => [
+                    SelectiveRequiredDocument::FINANCIAL_ADVISOR,
+                ],
+            ],
+        ],
+        BusinessSubcategory::TRADING           => [
+            self::DEFAULT => [
+                self::SELECTIVE_REQUIRED_FIELDS => [
+                    SelectiveRequiredDocument::TRADING,
+                ],
+            ],
+        ],
+        self::DEFAULT                          => [
+        ],
+    ];
+
+    //optional fields mapping
+    const EDUCATION_OPTIONAL_FIELDS = [
+        BusinessSubcategory::SCHOOLS    => self::EDUCATION_INSTITUTE_OPTIONAL_FIELDS,
+        BusinessSubcategory::COLLEGE    => self::EDUCATION_INSTITUTE_OPTIONAL_FIELDS,
+        BusinessSubcategory::UNIVERSITY => self::EDUCATION_INSTITUTE_OPTIONAL_FIELDS,
+    ];
+
+    const TOURS_AND_TRAVEL_OPTIONAL_FIELDS = [
+        BusinessSubcategory::AVIATION      => self::TRAVEL_OPTIONAL_FIELDS,
+        BusinessSubcategory::OTA           => self::TRAVEL_OPTIONAL_FIELDS,
+        BusinessSubcategory::TRAVEL_AGENCY => self::TRAVEL_OPTIONAL_FIELDS,
+    ];
+
+    const EDUCATION_INSTITUTE_OPTIONAL_FIELDS = [
+        self::DEFAULT => [
+            self::OPTIONAL_FIELDS => [
+                [Type::AFFILIATION_CERTIFICATE],
+            ],
+        ],
+    ];
+
+    const TRAVEL_OPTIONAL_FIELDS = [
+        self::DEFAULT => [
+            self::OPTIONAL_FIELDS => [
+                [Type::IATA_CERTIFICATE, Type::SLA_IATA_CERTIFICATE],
+            ],
         ]
     ];
 
+    /**
+     * value of key default is made array of arrays for the backward compatibility
+     *
+     * structure of default :-
+     * self::DEFAULT => [
+     *          document_set_1,
+     *          document_set_2,
+     *      ]
+     * and structure of document_set_1:
+     *      case 1: if document_set_1 refer to mandatory fields
+     *          document_set_1 = [
+     *              document_1,
+     *              document_2,
+     *          ];
+     *          same for document_2
+     */
 
-    const BANK_ACCOUNT_FIELDS = [
-        Entity::BANK_ACCOUNT_NAME,
-        Entity::BANK_ACCOUNT_NUMBER,
-        Entity::BANK_BRANCH_IFSC,
+    const DEFAULT_REGISTERED_GROUP = [
+        BusinessCategory::FINANCIAL_SERVICES => self::FINANCIAL_SERVICE_FIELDS,
+        BusinessCategory::EDUCATION          => self::EDUCATION_OPTIONAL_FIELDS,
+        BusinessCategory::TOURS_AND_TRAVEL   => self::TOURS_AND_TRAVEL_OPTIONAL_FIELDS,
+        self::DEFAULT                        => [
+            self::REQUIRED_FIELDS => [RequiredFields::REGISTERED_BUSINESS_FIELDS],
+        ],
     ];
 
-    /**
-     * Fields required when merchant is an NGO
-     * for submitting the activation form
-     *
-     * @var array
-     */
-    const NGO_MERCHANT_FIELDS = [
-        Entity::FORM_12A_URL,
-        Entity::FORM_80G_URL,
+    const NGO_FIELD_GROUP = [
+        BusinessCategory::FINANCIAL_SERVICES => self::FINANCIAL_SERVICE_FIELDS,
+        BusinessCategory::EDUCATION          => self::EDUCATION_OPTIONAL_FIELDS,
+        BusinessCategory::TOURS_AND_TRAVEL   => self::TOURS_AND_TRAVEL_OPTIONAL_FIELDS,
+        self::DEFAULT                        => [
+            self::REQUIRED_FIELDS => [RequiredFields::REGISTERED_BUSINESS_FIELDS, RequiredFields::NGO_MERCHANT_FIELDS],
+        ],
     ];
 
-    /**
-     * Fields required for all types of marketplace linked accounts
-     * for submitting the activation form
-     *
-     * @var array
-     */
-    const MARKETPLACE_ACCOUNT_FIELDS = [
-            Entity::BANK_ACCOUNT_NAME,
-            Entity::BANK_ACCOUNT_NUMBER,
-            Entity::BANK_BRANCH_IFSC,
-            Entity::BUSINESS_NAME,
-            Entity::BUSINESS_TYPE,
+    const UNREGISTERED_FIELD_GROUP = [
+        self::DEFAULT => [
+            self::SELECTIVE_REQUIRED_FIELDS => [SelectiveRequiredDocument::UNREGISTERED],
+        ],
     ];
 
-    /**
-     * Additional fields required when the Marketplace merchant is restricted
-     *
-     * Restricted merchants have flag `linked_account_kyc = 1`, and we require
-     * the following fields to allow the linked account activation to be submitted
-     *
-     * @var array
-     */
-    const MARKETPLACE_ACCOUNT_KYC_FIELDS = [
-            Entity::PROMOTER_PAN,
-            Entity::ADDRESS_PROOF_URL,
-            Entity::PROMOTER_PAN_URL,
+    protected static $BUSINESS_TYPE_FIELDS = [
+        //registered business type
+        BusinessType::LLP                    => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::OTHER                  => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::PARTNERSHIP            => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::PROPRIETORSHIP         => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::PUBLIC_LIMITED         => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::PRIVATE_LIMITED        => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::TRUST                  => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::SOCIETY                => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::EDUCATIONAL_INSTITUTES => self::DEFAULT_REGISTERED_GROUP,
+
+        BusinessType::NGO                => self::NGO_FIELD_GROUP,
+
+        //unregistered business type
+        BusinessType::INDIVIDUAL         => self::UNREGISTERED_FIELD_GROUP,
+        BusinessType::NOT_YET_REGISTERED => self::UNREGISTERED_FIELD_GROUP,
+
+        self::DEFAULT => [
+            self::REQUIRED_FIELDS           => [RequiredFields::BANK_ACCOUNT_FIELDS, RequiredFields::MERCHANT_DEFAULT_DOCUMENTS],
+            self::SELECTIVE_REQUIRED_FIELDS => [],
+            self::OPTIONAL_FIELDS           => [],
+        ],
     ];
 
     /**
@@ -120,21 +216,110 @@ class ValidationFields
      */
     public static function getDocumentsRequired(string $field): array
     {
-        if (Type::isValid($field))
+        if (Type::isValid($field) === true)
         {
             return [$field];
         }
 
+        $allSelectiveFields = self::mergeFirstLevelArrays(SelectiveRequiredDocument::ALL_SELECTIVE_FIELDS);
+
         //
+        // explain :(example)
         // In case of unregistered as a poa document merchant can submit multiple documents
-        // Like aadhaar , passport , voter id , driver license so returning a default document type
+        // Like aadhaar , passport , voter id , driver license so returning a default document type (first set in that document type)
         //
-        if (array_key_exists($field, self::UNREGISTERED_DOCUMENT_FIELDS) === true)
+        if (array_key_exists($field, $allSelectiveFields) === true)
         {
-            return [Type::AADHAR_FRONT, Type::AADHAR_BACK];
+            return $allSelectiveFields[$field][0];
         }
 
         return null;
     }
 
+    /**
+     * @param array $maps
+     *
+     * @return array
+     */
+    protected static function mergeFirstLevelArrays(array $maps)
+    {
+        $result = [];
+
+        foreach ($maps as $map)
+        {
+            $result = array_merge($result, $map);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Entity $merchantDetails
+     *
+     * @return array
+     */
+    public static function getValidationFields(Entity $merchantDetails)
+    {
+        $levels = [$merchantDetails->getBusinessType(), $merchantDetails->getBusinessCategory(), $merchantDetails->getBusinessSubcategory()];
+
+        $fields = self::getRequiredValidationFields($levels, 0, self::$BUSINESS_TYPE_FIELDS);
+
+        //merge first level of array
+        $requiredFields          = self::mergeFirstLevelArrays($fields[self::REQUIRED_FIELDS]);
+        $selectiveRequiredFields = self::mergeFirstLevelArrays($fields[self::SELECTIVE_REQUIRED_FIELDS]);
+        $optionalFields          = self::mergeFirstLevelArrays($fields[self::OPTIONAL_FIELDS]);
+
+        //
+        // if business type is null then we can not determine fields to show , so by default we are showing registered fields
+        //
+        if (empty($merchantDetails->getBusinessType()) === true)
+        {
+            $requiredFields = array_merge($requiredFields, RequiredFields::REGISTERED_BUSINESS_FIELDS);
+        }
+
+        return [$requiredFields, $selectiveRequiredFields, $optionalFields];
+    }
+
+    /**
+     * this function will be called recursively
+     *
+     * @param array $levels                   * contain value of business_type, business_category, business_subcategory
+     *                                        sequentially
+     * @param int   $index                    * index specify which levels default document me need to add.
+     *                                        like default document of business_type or business_category or
+     *                                        business_subcategory
+     * @param array $mapping                  * $mapping contain document mapping of one upper level
+     *                                        meaning if index = 1 means business_type then $documentMapping contain
+     *                                        document of that businessType
+     *
+     *
+     * @return array
+     */
+    protected static function getRequiredValidationFields(array $levels, int $index, array $mapping)
+    {
+        if (($index > self::LEVEL_COUNT === true) or
+            empty($mapping) === true)
+        {
+            return [];
+        }
+
+        $requiredFieldsFromNextLevel = [];
+
+        if ((isset($levels[$index]) === true) and
+            isset($mapping[$levels[$index]]) === true)
+        {
+            $requiredFieldsFromNextLevel = self::getRequiredValidationFields($levels, $index + 1, $mapping[$levels[$index]] ?? []);
+        }
+
+        $defaultMappingForLevel = $mapping[self::DEFAULT] ?? [];
+
+        $requiredFields = [];
+
+        foreach (self::FIELDS_TYPES as $field_type)
+        {
+            $requiredFields[$field_type] = array_merge($defaultMappingForLevel[$field_type] ?? [], $requiredFieldsFromNextLevel[$field_type] ?? []);
+        }
+
+        return $requiredFields;
+    }
 }

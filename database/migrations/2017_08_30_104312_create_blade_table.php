@@ -38,7 +38,7 @@ class CreateBladeTable extends Migration
             $table->char(Mpi::REFUND_ID, Refund::ID_LENGTH)
                   ->nullable();
 
-            $table->integer(Mpi::AMOUNT);
+            $table->bigInteger(Mpi::AMOUNT);
 
             $table->string(Mpi::CURRENCY, 3)
                   ->nullable();

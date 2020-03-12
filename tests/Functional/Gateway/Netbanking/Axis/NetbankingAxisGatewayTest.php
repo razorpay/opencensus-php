@@ -805,4 +805,18 @@ class NetbankingAxisGatewayTest extends TestCase
             }
         });
     }
+
+    public function testDetailedErrorResponseNetBanking()
+    {
+        $this->mockPaymentFailure();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
+    }
 }

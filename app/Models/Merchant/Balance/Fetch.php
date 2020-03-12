@@ -12,6 +12,9 @@ class Fetch extends BaseFetch
             Entity::TYPE           =>    'sometimes|string|max:32',
             Entity::MERCHANT_ID    =>    'sometimes|alpha_num|size:14',
             Entity::ACCOUNT_NUMBER =>    'sometimes|string',
+        ],
+        AuthType::ADMIN_AUTH => [
+            Entity::ACCOUNT_TYPE   =>    'sometimes|string|custom',
         ]
     ];
     const ACCESSES = [
@@ -21,6 +24,12 @@ class Fetch extends BaseFetch
         AuthType::ADMIN_AUTH =>  [
             Entity::MERCHANT_ID,
             Entity::ACCOUNT_NUMBER,
+            Entity::ACCOUNT_TYPE,
         ]
     ];
+
+    public function validateAccountType(string $attribute, string $value)
+    {
+        AccountType::validate($value);
+    }
 }

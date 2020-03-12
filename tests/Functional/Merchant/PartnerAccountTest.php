@@ -65,7 +65,7 @@ class PartnerAccountTest extends TestCase
 
         $this->assertEquals($legalEntity->getId(), $response['legal_entity_id']);
         $this->assertEquals(6, $legalEntity->getBusinessTypeValue());
-        $this->assertEquals($legalEntity->getMcc(), 7011);
+        $this->assertEquals($legalEntity->getMcc(), '7011');
         $this->assertEquals('tours_and_travel', $legalEntity->getBusinessCategory());
         $this->assertEquals('accommodation', $legalEntity->getBusinessSubcategory());
 
@@ -295,7 +295,7 @@ class PartnerAccountTest extends TestCase
 
         $this->assertEquals($legalEntity->getId(), $response['legal_entity_id']);
         $this->assertEquals(6, $legalEntity->getBusinessTypeValue());
-        $this->assertEquals($legalEntity->getMcc(), 7011);
+        $this->assertEquals($legalEntity->getMcc(), '7011');
         $this->assertEquals('FBLegalExternalId', $legalEntity->getExternalId());
         $this->assertEquals('tours_and_travel', $legalEntity->getBusinessCategory());
         $this->assertEquals('accommodation', $legalEntity->getBusinessSubcategory());

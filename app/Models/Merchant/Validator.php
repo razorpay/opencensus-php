@@ -83,7 +83,7 @@ class Validator extends Base\Validator
         Entity::WHITELISTED_IPS_LIVE . '.*'           => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
         Entity::WHITELISTED_IPS_TEST                  => 'sometimes|array|max:15',
         Entity::WHITELISTED_IPS_TEST . '.*'           => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
-        Entity::WHITELISTED_DOMAINS                   => 'sometimes|array|max:5',
+        Entity::WHITELISTED_DOMAINS                   => 'sometimes|array|max:20',
         Entity::WHITELISTED_DOMAINS . '.*'            => 'required_with:' . Entity::WHITELISTED_DOMAINS . '|string',
         Entity::DASHBOARD_WHITELISTED_IPS_LIVE        => 'sometimes|array|max:20',
         Entity::DASHBOARD_WHITELISTED_IPS_LIVE . '.*' => 'distinct|required_with:' .
@@ -125,6 +125,7 @@ class Validator extends Base\Validator
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         Entity::DISPLAY_NAME             => 'sometimes|nullable|string|min:3|max:255',
         Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
+        Entity::DEFAULT_REFUND_SPEED     => 'sometimes|filled|string|in:normal,optimum'
     ];
 
     protected static $actionRules = [

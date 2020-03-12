@@ -126,6 +126,8 @@ class Preferences
     const MID_RBL_INTERIM_PROCESS2  = 'DqPTv7SI18A7y8';
     const MID_LENDING_KART          = 'DfLPWHXDWcfB2Y';
     const MID_BFL                   = 'ChcYXdL7jtknMN';
+    const MID_ICICI_PRUDENTIAL      = 'DyP8dTjuXkgcAA';
+    const MID_SCRIP_BOX             = 'E8D4A78IIz4SAB';
 
     const MID_NSDL_MERCHANTS        = 'Anjg29UHP4PlvQ';
     const MID_AIRTEL                = 'AqUQQH9neAMkUG';

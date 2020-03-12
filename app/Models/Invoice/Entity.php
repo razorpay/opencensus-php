@@ -241,6 +241,7 @@ class Entity extends Base\PublicEntity
         'updateLineItem',
         'removeLineItem',
         'removeManyLineItems',
+        'deleteInvoice',
 
         // Notifier's actions
         'notifyInvoiceIssued',
@@ -557,6 +558,11 @@ class Entity extends Base\PublicEntity
         self::PAID_AT,
         self::EXPIRED_AT,
         self::CANCELLED_AT,
+    ];
+
+    const DELETE_ALLOWED_STATUSES = [
+        Status::EXPIRED,
+        Status::CANCELLED,
     ];
 
     // -------------------------------------- Mutators ---------------

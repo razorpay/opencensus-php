@@ -179,6 +179,15 @@ class InvoiceController extends Controller
         return ApiResponse::json($summary);
     }
 
+    public function deleteInvoices()
+    {
+        $input = Request::all();
+
+        $summary = $this->service()->deleteInvoices($input);
+
+        return ApiResponse::json($summary);
+    }
+
     public function getInvoiceStatus(string $id)
     {
         $data = $this->service()->fetchStatus($id);

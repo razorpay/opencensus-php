@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\lib\FuzzyMatcher;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
@@ -104,22 +105,31 @@ class PennyTesting extends Base\Core
 
     /**
      * Updates bank detail verification status according to fuzzy match results
+     *
      * @param array           $input
      * @param Merchant\Entity $merchant
      * @param Entity          $merchantDetails
      */
     protected function updateBankDetailVerificationStatus(array $input, Merchant\Entity $merchant, Entity $merchantDetails): void
     {
-        $fuzzyMatchResults = $this->getFuzzyMatchResults($input, $merchantDetails);
+        try
+        {
+            $nameValidationData = $this->validateNameForBankAccount($input, $merchantDetails);
 
-        $bankAccountValidationStatus = $this->getBankDetailVerificationStatus($input, $fuzzyMatchResults);
+            $bankAccountValidationStatus = $this->getBankDetailVerificationStatus($input, $nameValidationData);
 
-        $merchantDetails->setBankDetailsVerificationStatus($bankAccountValidationStatus);
+            $merchantDetails->setBankDetailsVerificationStatus($bankAccountValidationStatus);
 
-        $this->sendPennyTestingAndPushEvent($merchant,
-                                            $merchantDetails,
-                                            $fuzzyMatchResults,
-                                            $input);
+            $this->sendPennyTestingAndPushEvent($merchant,
+                                                $merchantDetails,
+                                                $nameValidationData,
+                                                $input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+        }
+
     }
 
 
@@ -169,7 +179,7 @@ class PennyTesting extends Base\Core
                     $existingKycClarificationReason,
                     null,
                     $additionalDetails);
-                
+
                 $merchantDetails->setKycClarificationReasons($kycClarification);
 
                 break;
@@ -220,36 +230,31 @@ class PennyTesting extends Base\Core
 
     /**
      * @param $accountStatus
-     * @param $fuzzyMatchResults
+     * @param $nameValidationData
      *
      * @return bool
      */
-    private function isValidBankAccount($accountStatus, array $fuzzyMatchResults): bool
+    private function isValidBankAccount($accountStatus, array $nameValidationData): bool
     {
-        $fuzzyMatchPercentWithPan         = $fuzzyMatchResults[Constants::FUZZY_MATCH_PERCENTAGE_WITH_PAN];
-        $fuzzyMatchPercentWithBankAccount = $fuzzyMatchResults[Constants::FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME];
-
         $this->trace->info(TraceCode::MERCHANT_BANK_DETAIL_STATUS_AFTER_PENNY_TESTING,
                            [
                                Constants::ACCOUNT_STATUS                                => $accountStatus,
-                               Constants::FUZZY_MATCH_PERCENTAGE_WITH_PAN               => $fuzzyMatchPercentWithPan,
-                               Constants::FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME => $fuzzyMatchPercentWithBankAccount
+                               Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN],
                            ]);
 
-        return ($accountStatus === FundAccountValidationAccountStatus::ACTIVE) and
-               ($fuzzyMatchPercentWithPan >= BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN) and
-               ($fuzzyMatchPercentWithBankAccount >= BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT);
+        return (($accountStatus === FundAccountValidationAccountStatus::ACTIVE) and
+                ($nameValidationData[Constants::IS_VALID_NAME] === true));
     }
 
     /**
      * @param Merchant\Entity $merchant
      * @param Entity          $merchantDetails
-     * @param array           $fuzzyMatchResults
+     * @param array           $nameValidationData
      * @param array           $input
      */
     protected function sendPennyTestingAndPushEvent(Merchant\Entity $merchant,
                                                     Entity $merchantDetails,
-                                                    array $fuzzyMatchResults,
+                                                    array $nameValidationData,
                                                     array $input)
     {
         $eventAttributesForKycModification = [
@@ -263,10 +268,9 @@ class PennyTesting extends Base\Core
             Constants::BANK_DETAILS_VERIFICATION_STATUS              => $merchantDetails->getBankDetailsVerificationStatus(),
             Constants::ACCOUNT_STATUS                                => $input[Constants::ACCOUNT_STATUS] ?? '',
             Constants::REGISTERED_NAME                               => $input[Constants::REGISTERED_NAME] ?? '',
-            Constants::FUZZY_MATCH_PERCENTAGE_WITH_PAN               => $fuzzyMatchResults[Constants::FUZZY_MATCH_PERCENTAGE_WITH_PAN],
-            Constants::FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME => $fuzzyMatchResults[Constants::FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME],
+            Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN],
+            Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        => $nameValidationData[Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN],
             Constants::BANK_VERIFICATION_THRESHOLD_FOR_PAN           => BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN,
-            Constants::BANK_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT  => BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_BANK_ACCOUNT,
         ];
 
         $this->trace->count(DetailMetric::UNREGISTERED_PENNY_TESTING_STATUS_TOTAL,
@@ -280,41 +284,16 @@ class PennyTesting extends Base\Core
     }
 
     /**
-     * @param array  $input
-     * @param Entity $merchantDetails
-     *
-     * @return array
-     */
-    protected function getFuzzyMatchResults(array $input, Entity $merchantDetails): array
-    {
-        $fuzzyMatchPercentWithPan = get_similar_text_percent($merchantDetails->getPromoterPanName(),
-                                                             $input[Constants::REGISTERED_NAME]);
-
-        $fuzzyMatchPercentWithBankAccount = get_similar_text_percent($merchantDetails->getPromoterPanName(),
-                                                                     $merchantDetails->getBankAccountName());
-
-        $fuzzyMatchResults = [
-            Constants::FUZZY_MATCH_PERCENTAGE_WITH_BANK_ACCOUNT_NAME => $fuzzyMatchPercentWithBankAccount,
-            Constants::FUZZY_MATCH_PERCENTAGE_WITH_PAN               => $fuzzyMatchPercentWithPan,
-            Entity::PROMOTER_PAN_NAME                                => $merchantDetails->getPromoterPanName(),
-            Entity::BANK_ACCOUNT_NAME                                => $merchantDetails->getBankAccountName(),
-        ];
-
-        return $fuzzyMatchResults;
-    }
-
-    /**
      * @param array $input
-     * @param       $fuzzyMatchResults
+     * @param array $nameValidationData
      *
      * @return string
      */
-    protected function getBankDetailVerificationStatus(array $input, $fuzzyMatchResults): string
+    protected function getBankDetailVerificationStatus(array $input, array $nameValidationData): string
     {
         $bankAccountValidationStatus = BankDetailsVerificationStatus::FAILED;
 
-        $isValidBankAccount = $this->isValidBankAccount($input[Constants::ACCOUNT_STATUS],
-                                                        $fuzzyMatchResults);
+        $isValidBankAccount = $this->isValidBankAccount($input[Constants::ACCOUNT_STATUS], $nameValidationData);
 
         if ($isValidBankAccount === true)
         {
@@ -322,5 +301,22 @@ class PennyTesting extends Base\Core
         }
 
         return $bankAccountValidationStatus;
+    }
+
+    private function validateNameForBankAccount(array $input, Entity $merchantDetails): array
+    {
+        $panFuzzyMatcher = new FuzzyMatcher(BankDetailsVerificationStatus::BANK_DETAIL_VERIFICATION_THRESHOLD_FOR_PAN, FuzzyMatcher::JUMBLED_MATCH);
+
+        $isValidName = $panFuzzyMatcher->isMatch($merchantDetails->getPromoterPanName(),
+                                                    $input[Constants::REGISTERED_NAME],
+                                                    $panPercentMatch);
+
+        $validationData = [
+            Constants::PENNY_TESTING_FUZZY_MATCH_PERCENTAGE_WITH_PAN => $panPercentMatch,
+            Constants::PENNY_TESTING_FUZZY_MATCH_TYPE_FOR_PAN        => $panFuzzyMatcher->getMatchType(),
+            Constants::IS_VALID_NAME                                 => $isValidName,
+        ];
+
+        return $validationData;
     }
 }

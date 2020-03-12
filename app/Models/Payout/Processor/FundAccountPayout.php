@@ -183,7 +183,7 @@ class FundAccountPayout extends Base
 
         $destinationType = $this->fundTransferDestination->getEntity();
 
-        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+        $valid = Payout\Mode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
 
         if ($valid === false)
         {

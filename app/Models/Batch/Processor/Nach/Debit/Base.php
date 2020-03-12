@@ -32,6 +32,8 @@ class Base extends BaseProcessor
     {
         $payment = $this->getPayment($content);
 
+        $this->updateGatewayPaymentEntity($content, $payment);
+
         $this->assertAmount($payment, $content);
 
         // Update payment
@@ -90,9 +92,12 @@ class Base extends BaseProcessor
     {
         if ($this->isAuthorized($content) === true)
         {
-            return $this->processAuthorizedPayment($payment);
+            $this->processAuthorizedPayment($payment);
         }
-        return $this->processFailedPayment($payment, $content);
+        else if ($this->isRejected($content) === true)
+        {
+            $this->processFailedPayment($payment, $content);
+        }
     }
 
     protected function processAuthorizedPayment(Payment\Entity $payment)
@@ -145,6 +150,11 @@ class Base extends BaseProcessor
     }
 
     protected function sendProcessedMail()
+    {
+        return;
+    }
+
+    protected function updateGatewayPaymentEntity($content, $payment)
     {
         return;
     }

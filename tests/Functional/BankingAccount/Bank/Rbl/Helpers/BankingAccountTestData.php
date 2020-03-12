@@ -132,19 +132,19 @@ return [
         ],
     ],
 
-    'testUpdatedStatusFromProcessingToUnserviceable' => [
+    'testUpdateBankingAccountToPicked' => [
         'request'  => [
             'url'     => '/banking_account',
             'method'  => 'PATCH',
             'content' => [
-                BankingAccount\Entity::STATUS => BankingAccount\Status::UNSERVICEABLE,
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PICKED,
             ],
         ],
         'response' => [
             'content' => [
-                'merchant_id'                 => '10000000000000',
-                'channel'                     => 'rbl',
-                BankingAccount\Entity::STATUS => BankingAccount\Status::UNSERVICEABLE,
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PICKED,
             ],
         ],
     ],
@@ -162,6 +162,23 @@ return [
                 'merchant_id'                  => '10000000000000',
                 'channel'                      => 'rbl',
                 BankingAccount\Entity::STATUS => BankingAccount\Status::CANCELLED,
+            ],
+        ],
+    ],
+
+    'testUpdatedStatusFromCreatedToPicked' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PICKED,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PICKED,
             ],
         ],
     ],

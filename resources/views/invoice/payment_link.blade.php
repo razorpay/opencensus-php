@@ -651,6 +651,7 @@ $view_preferences               = $data['view_preferences'];
             var successNote = "You have successfully paid " + data.invoice.currency_symbol + ' ' + (amount/100).toFixed(2);
 
             if (!data.invoice.partial_payment) {
+                successNote += '<div> Paid Using: <b style="text-transform: capitalize">'+ data.invoice.payments[0].method +'</b> </div>'
                 successNote += '<div> Payment ID: ' + data.invoice.payment_id + ' </div>'
             }
 

@@ -884,6 +884,15 @@ class PaymentCreateController extends Controller
             ]
         ];
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $properties);
+        $metaDetails =[
+            'metadata'  => $properties,
+            'read_key'  => array() ,
+            'write_key' => 'trackId',
+        ];
+
+        $metaDetails['metadata']['trackId'] = $this->app['req.context']->getTrackId();
+
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATION_INITIATED, null, null, $metaDetails, $properties);
     }
 }

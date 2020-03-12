@@ -306,6 +306,46 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertRegistrationReconInvalidStatusEntities($entities);
     }
 
+    public function testEmandateRegistrationLateAuthAfterRecon()
+    {
+        $this->testEmandateInitialPaymentFailure();
+
+        $entities = [
+            [
+                'payment'        => $this->getDbLastEntity('payment'),
+                'token'          => $this->getDbLastEntity('token'),
+                'netbanking'     => $this->getDbLastEntity('netbanking'),
+                'status_in_file' => 'success'
+            ]
+        ];
+
+        $file = $this->generateEmandateRegisterReconFile($entities);
+
+        $this->makeBatchRequest(
+            [
+                'type'     => 'emandate',
+                'sub_type' => 'register',
+                'gateway'  => 'hdfc',
+            ],
+            $file
+        );
+
+        // Validate registration success entities
+        $token = $this->getDbEntityById('token', $entities[0]['token']['id'])->toArray();
+
+        $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token['recurring_status']);
+
+        $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id'])->toArray();
+
+        $this->assertEquals(Payment\Status::CAPTURED, $payment['status']);
+
+        $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
+
+        $this->assertEquals('confirmed', $netbanking[Netbanking::SI_STATUS]);
+
+        $this->assertEquals($payment['terminal_id'], $token['terminal_id']);
+    }
+
     protected function assertRegistrationReconEntities($entities)
     {
         // Validate registration success entities

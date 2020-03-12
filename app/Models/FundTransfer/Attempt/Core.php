@@ -100,11 +100,18 @@ class Core extends Base\Core
     public function dispatchForTransfer(Entity $fta)
     {
         //
+        // Adding initiate_at checks to ensure refund is dispatched only if initiate_at is less than current timestamp
+        // This helps in setting FTA initiate_at to a future date / time.
+        //
+        $isEligibleForInitiation = ((empty($fta->getInitiateAt()) === true) or
+                                    ($fta->getInitiateAt() <= Carbon::now()->getTimestamp()));
+
+        //
         // Not instantly dispatching for fta's with source type as refund in func environment
         // because of absence of queues, this check must be removed when func environment gets queue infra
-        //
-        $isEligibleForInstantDispatch = !(($fta->getSourceType() === Type::REFUND) and
-            (in_array($this->env, [Constants\Environment::FUNC], true) === true));
+        $isEligibleForInstantDispatch = (!(($fta->getSourceType() === Type::REFUND) and
+                                          (in_array($this->env, [Constants\Environment::FUNC], true) === true)) and
+                                         ($isEligibleForInitiation === true));
 
         if ($isEligibleForInstantDispatch === false)
         {
@@ -606,21 +613,29 @@ class Core extends Base\Core
     {
         $extraInfo = $input['extra_info'] ?? [];
 
+        $gatewayErrorCode = $input['gateway_error_code'] ?? '';
+
         $ftaData = [
-            'bank_account_id'   => $fta->getBankAccountId(),
-            'vpa_id'            => $fta->getVpaId(),
-            'merchant_id'       => $fta->getMerchantId(),
-            'fta_id'            => $fta->getId(),
-            'source_id'         => $fta->source->getId(),
-            'utr'               => $fta->getUtr(),
-            'mode'              => $fta->getMode(),
-            'remarks'           => $fta->getRemarks(),
-            'fta_status'        => $fta->getStatus(),
-            'is_fts'            => $fta->getIsFTS(),
-            'bank_status_code'  => $fta->getBankStatusCode(),
-            'failure_reason'    => $fta->getFailureReason(),
-            'return_utr'        => $input[AttemptConstants::RETURN_UTR] ?? null,
+            'bank_account_id'          => $fta->getBankAccountId(),
+            'vpa_id'                   => $fta->getVpaId(),
+            'merchant_id'              => $fta->getMerchantId(),
+            'fta_id'                   => $fta->getId(),
+            'source_id'                => $fta->source->getId(),
+            'utr'                      => $fta->getUtr(),
+            'mode'                     => $fta->getMode(),
+            'remarks'                  => $fta->getRemarks(),
+            'fta_status'               => $fta->getStatus(),
+            'is_fts'                   => $fta->getIsFTS(),
+            'bank_status_code'         => $fta->getBankStatusCode(),
+            'failure_reason'           => $fta->getFailureReason(),
+            'return_utr'               => $input[AttemptConstants::RETURN_UTR] ?? null,
+            Entity::GATEWAY_ERROR_CODE => $gatewayErrorCode,
         ] + $extraInfo;
+
+        if (isset($ftaData['return_utr']) === true)
+        {
+            $ftaData += [ 'return_utr' => $ftaData['return_utr'] ];
+        }
 
         $this->sourceReconByFta($fta->source, $ftaData);
 

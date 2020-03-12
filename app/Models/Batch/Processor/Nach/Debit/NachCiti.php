@@ -2,9 +2,12 @@
 
 namespace RZP\Models\Batch\Processor\Nach\Debit;
 
+use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Citi\Status;
+use RZP\Models\Payment\RecurringType;
+use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
 
 class NachCiti extends Base
@@ -80,15 +83,6 @@ class NachCiti extends Base
         return $data;
     }
 
-    protected function generateTextWithHeadings($data, $glue = '~', $ignoreLastNewline = false, array $headings = [])
-    {
-        array_shift($data);
-
-        array_unshift($data, array_combine($headings, $headings));
-
-        return $this->generateText($data, $glue, $ignoreLastNewline);
-    }
-
     /**
      * @param array $content
      * @return bool
@@ -97,5 +91,89 @@ class NachCiti extends Base
     protected function isAuthorized(array $content): bool
     {
         return Status::isDebitSuccess($content[self::GATEWAY_RESPONSE_CODE]);
+    }
+
+    /**
+     * @param array $content
+     * @return bool
+     * @throws Exception\GatewayErrorException
+     */
+    protected function isRejected(array $content): bool
+    {
+        return Status::isDebitRejected($content[self::GATEWAY_RESPONSE_CODE]);
+    }
+
+    protected function parseFileAndCleanEntries(string $filePath): array
+    {
+        $entries = $this->parseFile($filePath);
+
+        array_shift($entries);
+
+        return $this->cleanParsedEntries($entries);
+    }
+
+    protected function getPayment(array $content)
+    {
+        $paymentId = $content[self::PAYMENT_ID];
+
+        // Get payment
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $fileAccountNumber = $content[self::ACCOUNT_NUMBER];
+
+        $tokenAccNo = $token->getAccountNumber();
+
+        if (($payment->isCreated() === false) or
+            (in_array($payment->getGateway(), [Gateway::ENACH_NPCI_NETBANKING, Gateway::NACH_CITI], true) === false) or
+            ($payment->getRecurringType() !== RecurringType::AUTO) or
+            ($token === null) or
+            ($tokenAccNo !== $fileAccountNumber))
+        {
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_RECURRING_PAYMENT_NOT_FOUND,
+                null,
+                null,
+                [
+                    'payment_id' => $payment->getId(),
+                    'account_number' => $fileAccountNumber,
+                    'token_id' => $token->getId(),
+                    'gateway' => 'netbanking_sbi'
+                ]);
+        }
+
+        return $payment;
+    }
+
+    protected function updateGatewayPaymentEntity($content, $payment)
+    {
+        if ($payment->getGateway() !== Gateway::ENACH_NPCI_NETBANKING)
+        {
+            return;
+        }
+
+        $gatewayPayment = $this->getGatewayPayment($payment->getId());
+
+        $attrs = $this->getGatewayAttributes($content);
+
+        $gatewayPayment->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayPayment);
+    }
+
+    protected function getGatewayPayment(string $paymentId)
+    {
+        return $this->repo
+                    ->enach
+                    ->findAuthorizedPaymentByPaymentId($paymentId);
+    }
+
+    protected function getGatewayAttributes(array $parsedData): array
+    {
+        return [
+            EnachEntity::STATUS        => $parsedData[self::GATEWAY_RESPONSE_CODE],
+            EnachEntity::ERROR_MESSAGE => $parsedData[self::GATEWAY_ERROR_MESSAGE],
+        ];
     }
 }

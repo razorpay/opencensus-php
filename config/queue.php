@@ -394,11 +394,21 @@ return [
         'test'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_TEST_QUEUE'),
         'live'       =>  env('AWS_PAYMENT_NBPLUS_API_RECONCILIATION_LIVE_QUEUE'),
     ],
+    'rbl_banking_account_gateway_balance_update' => [
+        'test'       =>  env('AWS_RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_TEST_QUEUE'),
+        'live'       =>  env('AWS_RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_LIVE_QUEUE'),
+    ],
+
     /*
      | Lists various queues to be used per mailable
      */
     'mail' => [
         'default' => env('AWS_EMAILS_QUEUE'),
+    ],
+
+    'poc_update'=>[
+        'test'       =>  env('AWS_POC_UPDATE_QUEUE'),
+        'live'       =>  env('AWS_POC_UPDATE_QUEUE'),
     ],
 
     /*

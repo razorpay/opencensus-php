@@ -2,17 +2,32 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Direct;
 
+use Carbon\Carbon;
+
+use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Payout\Mode;
+use RZP\Models\Payout\Core;
+use RZP\Constants\Timezone;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
+use RZP\Models\BankingAccount;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 class Base extends FundAccountPayout\Base
 {
+    // while creating payouts we fetch balance from gateway at a frequency decided in SLA. For now have hardcoded this
+    // to 50 minutes . So if last fetched at was while ago (more than 50 minutes) only then we will fetch.
+    const DEFAULT_GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = 50; //in minutes
+
     public function process(Entity $payout, PublicEntity $ftaAccount)
     {
         $this->setChannel($payout);
@@ -23,6 +38,8 @@ class Base extends FundAccountPayout\Base
 
         if ($queued === false)
         {
+            $this->setFeeAndTaxForPayout($payout);
+
             $this->createFundTransferAttempt($payout, $ftaAccount);
         }
     }
@@ -36,7 +53,7 @@ class Base extends FundAccountPayout\Base
 
         $payoutAmount = $payout->getAmount();
 
-        $merchantBalance = $payout->balance->getBalance();
+        $merchantBalance = $this->getMerchantBalanceToCheckForQueued($payout);
 
         $hasBalance = ($merchantBalance >= $payoutAmount);
 
@@ -60,6 +77,11 @@ class Base extends FundAccountPayout\Base
         return false;
     }
 
+    protected function getMerchantBalanceToCheckForQueued(Entity $payout)
+    {
+        return $payout->balance->getBalance();
+    }
+
     /**
      * ADDING for BACKWARD COMPATIBILITY
      * This function makes sure that we don't queue something that will fail when picked up for processing.
@@ -78,7 +100,7 @@ class Base extends FundAccountPayout\Base
 
         $mode = $payout->getMode();
 
-        $valid = Channel::validateChannelAndMode($channel, $destinationType, $mode);
+        $valid = Mode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
 
         if ($valid === false)
         {
@@ -93,5 +115,39 @@ class Base extends FundAccountPayout\Base
                 strtoupper($channel) . ' does not support ' . $mode . ' payouts to ' . strtoupper($destinationType)
             );
         }
+    }
+
+    protected function setFeeAndTaxForPayout($payout)
+    {
+        list($fees, $tax, $pricingRuleId) = $this->calculateFeesAndTaxForPayouts($payout);
+
+        if (empty($pricingRuleId) === true)
+        {
+            throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
+        }
+
+        $payout->setFees($fees);
+
+        $payout->setTax($tax);
+
+        $payout->setPricingRuleId($pricingRuleId);
+    }
+
+    protected function calculateFeesAndTaxForPayouts(Entity $payout)
+    {
+        list($fees, $tax, $feesSplit) = (new Pricing\PayoutFee)->calculateMerchantFees($payout);
+
+        $feesSplitData = $feesSplit->toArray();
+
+        foreach ($feesSplitData as $feesSplit)
+        {
+            // Set pricingRuleId from the feesSplit (there are two entries and at least one has pricingRuleId)
+            if (empty($feesSplit[Entity::PRICING_RULE_ID]) === false)
+            {
+                $pricingRuleId = $feesSplit[Entity::PRICING_RULE_ID];
+            }
+        }
+
+        return [$fees, $tax, $pricingRuleId];
     }
 }

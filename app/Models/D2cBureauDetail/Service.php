@@ -9,9 +9,9 @@ use RZP\Services\Mutex;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Base\JitValidator;
 use RZP\Constants\Product;
 use RZP\Models\D2cBureauReport;
-
 
 class Service extends Base\Service
 {
@@ -80,6 +80,12 @@ class Service extends Base\Service
         $bureauDetail->edit($input);
 
         $this->repo->saveOrFail($bureauDetail);
+
+        (new JitValidator)->rules(Validator::$afterPatchRules)
+                          ->caller($this)
+                          ->input($bureauDetail->toArray())
+                          ->strict(false)
+                          ->validate();
 
         return $bureauDetail->toArrayPublic();
     }

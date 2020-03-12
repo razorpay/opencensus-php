@@ -1,11 +1,14 @@
 <script>
   // Lamberjack analytics events
   function pushToRzpQ(event, event_options) {
+    var eventOptions = event_options || {};
+    eventOptions.mode = data.is_test_mode ? 'test' : 'live';
+
     window.rzpQ.push(
       window.rzpQ
       .now()
       .paymentLink()
-      .interaction(event, event_options)
+      .interaction(event, eventOptions)
     );
   }
 

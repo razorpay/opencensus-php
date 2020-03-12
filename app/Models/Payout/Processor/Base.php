@@ -346,6 +346,8 @@ class Base extends BaseCore
 
             $this->repo->saveOrFail($payout);
 
+            $this->app->events->fire('api.payout.pending', [$payout]);
+
             $this->workflowActivated = true;
         }
         catch (\Throwable $t)

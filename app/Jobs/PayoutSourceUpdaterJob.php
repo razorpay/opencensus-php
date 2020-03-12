@@ -40,7 +40,6 @@ class PayoutSourceUpdaterJob extends Job
 
     public function handle()
     {
-
         parent::handle();
 
         $context = [
@@ -91,13 +90,6 @@ class PayoutSourceUpdaterJob extends Job
 
                 $this->release(self::MAX_RETRY_DELAY);
             }
-        }
-        finally
-        {
-            $this->trace->info(TraceCode::PAYOUT_SOURCE_UPDATER_JOB_RELEASED,
-                               $context);
-
-            $this->delete();
         }
     }
 }

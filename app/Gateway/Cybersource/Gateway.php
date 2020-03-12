@@ -41,10 +41,12 @@ class Gateway extends Base\Gateway
     // Request timeout limit in seconds
     const TIMEOUT = 60;
 
-    const TEST_MERCHANT_ID      = 'test_merchant_id';
-    const TEST_MERCHANT_SECRET  = 'test_merchant_secret';
-    const TEST_USERNAME         = 'test_username';
-    const TEST_PASSWORD         = 'test_password';
+    const TEST_MERCHANT_ID       = 'test_merchant_id';
+    const TEST_MERCHANT_SECRET   = 'test_merchant_secret';
+    const TEST_USERNAME          = 'test_username';
+    const TEST_PASSWORD          = 'test_password';
+    const AUTHENTICATION_FAILED  = 'Authentication Failed';
+
 
     protected $bankAcsResponseRules = [
         'PaRes'     => 'required',
@@ -433,6 +435,8 @@ class Gateway extends Base\Gateway
         {
             Case Card\Network::VISA:
                 return '7';
+            Case Card\Network::RUPAY:
+                return '05';
             Case Card\Network::MC:
             default:
                 return '2';
@@ -477,6 +481,8 @@ class Gateway extends Base\Gateway
                 return 'spa';
             case Card\Network::AMEX:
                 return 'aesk';
+            case Card\Network::RUPAY:
+                return 'rpy';
             default:
                 return '';
         }
@@ -856,6 +862,12 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendMozartRequest($input, false);
 
+        $rawResponse=$content['data']['_raw'] ?? '';
+
+        $decodedResponse=json_decode($rawResponse, true);
+
+        $rmsg=$decodedResponse['response']['rmsg'] ?? '';
+
         if ((isset($content['success']) === true) and
             ($content['success'] === true))
         {
@@ -896,9 +908,17 @@ class Gateway extends Base\Gateway
             }
 
             return $scroogeResponse->setSuccess(true)
-                ->setGatewayVerifyResponse($content['data']['_raw'])
-                ->setGatewayKeys($content['data'])
-                ->toArray();
+                                   ->setGatewayVerifyResponse($content['data']['_raw'])
+                                   ->setGatewayKeys($content['data'])
+                                   ->toArray();
+        }
+        else if($rmsg === self::AUTHENTICATION_FAILED)
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_AUTHENTICATION_FAILED)
+                                   ->setGatewayVerifyResponse($content['data']['_raw'])
+                                   ->setGatewayKeys($content['data'])
+                                   ->toArray();
         }
         else
         {
@@ -925,7 +945,7 @@ class Gateway extends Base\Gateway
         if ($this->isProcessedRefund($input) === true)
         {
             return $scroogeResponse->setSuccess(true)
-                ->toArray();
+                                   ->toArray();
         }
 
         $content = $this->sendRefundVerifyRequest($input);
