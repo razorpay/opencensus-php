@@ -477,6 +477,8 @@ class Core extends Base\Core
         // In case of payouts
         // - IMPS is the most common mode
         // - UTR retrieval is supported only for IMPS.
+        // - CMS Ref no is used for RTGS and IFT
+        // - PONUM is used for NEFT.
         // - We do not know the mode via BAS entity. If we did, we could
         //   fetch using UTR or bank_transaction_id depending on the mode.
         // Due to the above two reasons, we try to fetch a payout using UTR first.

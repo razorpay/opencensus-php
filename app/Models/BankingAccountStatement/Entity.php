@@ -51,10 +51,15 @@ class Entity extends Base\PublicEntity
     // Relation names/attributes
     const SOURCE                = 'source';
 
-    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
+    // for RBL examples of NEFT, IMPS and RTGS Regex
+    // NEFT/000036602888/Bene A/C DOES NOT EXIST
+    // IMPS R-000811000008-REVERSAL-RAZORPAY TESTING
+    // RTGS/HDFCH20191002661/ASDFG/HDFC/000240
+    const CREDIT_REGEX = '/^(RTGS\/|R-)(.*?)(\/|-)/';
 
     const DEBIT_REGEX = '/^(.*?)-/';
 
+    const RTGS_DEBIT_REGEX = '/^(RTGS\/)(.*?)(\/)/';
     protected static $sign = 'bas';
 
     protected $entity = 'banking_account_statement';
@@ -328,13 +333,33 @@ class Entity extends Base\PublicEntity
         if ($this->isTypeCredit() === true)
         {
             $regex = self::CREDIT_REGEX;
+
+            $match = preg_match($regex, $description, $matches);
+
+            if ($match === 1)
+            {
+                $match = $matches[2];
+            }
         }
-
-        $match = preg_match($regex, $description, $matches);
-
-        if ($match === 1)
+        else
         {
-            $match = $matches[1];
+            $match = preg_match($regex, $description, $matches);
+
+            if ($match === 1)
+            {
+                $match = $matches[1];
+            }
+            else
+            {
+                $regex = self::RTGS_DEBIT_REGEX;
+
+                $match = preg_match($regex, $description, $matches);
+
+                if ($match === 1)
+                {
+                    $match = $matches[2];
+                }
+            }
         }
 
         // Could be an empty string match

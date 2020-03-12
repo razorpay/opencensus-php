@@ -581,7 +581,114 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
     }
 
-    protected function setupForRblPayout($channel = Channel::RBL)
+    // case to test reversals mapping in RBL BAS for RTGS, same day reversals have same UTR
+    public function testRblAccountStatementTxnMappingCase4()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel, 'RTGS', 20000300);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S55959']);
+
+        // Fetch account statement from RBL
+        $mockedResponse = $this->getRblDataResponseForRTGS();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $externals = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals($externals[0]['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($externals[0]['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals($externals[0]['banking_account_statement_id'], $basEntries[0]['id']);
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[2]['entity_type']);
+        $this->assertEquals($externals[1]['id'], $basEntries[2]['entity_id']);
+        $this->assertEquals($externals[1]['transaction_id'], $basEntries[2]['transaction_id']);
+        $this->assertEquals($externals[1]['banking_account_statement_id'], $basEntries[2]['id']);
+
+        $feeBreakup1 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[0]['transaction_id']]);
+        $feeBreakup2 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[1]['transaction_id']]);
+        $feeBreakup3 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[2]['transaction_id']]);
+
+        $this->assertEquals(0, $feeBreakup1->count());
+        $this->assertEquals(2, $feeBreakup2->count());
+        $this->assertEquals(0, $feeBreakup3->count());
+    }
+
+    // case to test reversals mapping in RBL BAS for NEFT, should save PONUM in case of credit and UTR in case of debit
+    public function testRblAccountStatementTxnMappingCase5()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel, 'NEFT', 20000300);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S55959']);
+
+        // Fetch account statement from RBL
+        $mockedResponse = $this->getRblDataResponseForNEFT();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $externals = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals($externals[0]['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($externals[0]['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals($externals[0]['banking_account_statement_id'], $basEntries[0]['id']);
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[2]['entity_type']);
+        $this->assertEquals($externals[1]['id'], $basEntries[2]['entity_id']);
+        $this->assertEquals($externals[1]['transaction_id'], $basEntries[2]['transaction_id']);
+        $this->assertEquals($externals[1]['banking_account_statement_id'], $basEntries[2]['id']);
+
+        $feeBreakup1 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[0]['transaction_id']]);
+        $feeBreakup2 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[1]['transaction_id']]);
+        $feeBreakup3 = $this->getDbEntities('fee_breakup', ['transaction_id' => $basEntries[2]['transaction_id']]);
+
+        $this->assertEquals(0, $feeBreakup1->count());
+        $this->assertEquals(2, $feeBreakup2->count());
+        $this->assertEquals(0, $feeBreakup3->count());
+    }
+    protected function setupForRblPayout($channel = Channel::RBL, $mode = 'IMPS', $amount = 10095)
     {
         $this->ba->privateAuth();
 
@@ -591,12 +698,12 @@ class RblBankingAccountStatementTest extends TestCase
 
         $content = [
             'account_number'  => '2224440041626905',
-            'amount'          => 10095,
+            'amount'          => $amount,
             'currency'        => 'INR',
             'purpose'         => 'payout',
             'narration'       => 'Rbl account payout',
             'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
-            'mode'            => 'IMPS',
+            'mode'            => $mode,
             'notes'           => [
                 'abc' => 'xyz',
             ],
@@ -660,6 +767,274 @@ class RblBankingAccountStatementTest extends TestCase
                                 'txnId' => '  S807068',
                                 'txnSrlNo' => '  49',
                                 'valueDate' => '2016-01-05T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
+
+    protected function getRblDataResponseForRTGS()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '400003.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'DEBIT CARD ANNUAL FEE 2635',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '400103.00'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429658',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '200003.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'RTGS/RATNH20009002927/Elite                       ',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '200100.00'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S55959',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2016-01-05T01:36:33.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '200001.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2016-01-05T00:00:00.000',
+                                    'txnDesc' => 'RTGS/RATNH20009002927/R ACCOUNT UNAVAILABLE       ',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '400101.00'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S623024',
+                                'txnSrlNo' => '  49',
+                                'valueDate' => '2016-01-05T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
+    protected function getRblDataResponseForNEFT()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '400003.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'DEBIT CARD ANNUAL FEE 2635',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '400103.00'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429658',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '200003.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T23:58:00.000',
+                                    'txnDesc' => 'NEFT/003030303030303/Elite                       ',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '200100.00'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S55959',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2016-01-05T01:36:33.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '200001.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2016-01-05T00:01:00.000',
+                                    'txnDesc' => 'NEFT/003030303030303/R ACCOUNT UNAVAILABLE       ',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '400101.00'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S623024',
+                                'txnSrlNo' => '  49',
+                                'valueDate' => '2016-01-05T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
+    protected function getRblDataResponseForIFT()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '400003.50',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'DEBIT CARD ANNUAL FEE 2635',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '400103.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429655',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '200003.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'RTGS/RATNH20009002927/Elite                       ',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '200100.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '    M2012',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2015-12-29T00:00:00.000'
                             ],
                         ]
                     ],

@@ -421,6 +421,13 @@ class Core extends Base\Core
             $payout->setFailureReason($ftaFailureReason);
         }
 
+        if ($payout->getReturnUtr() === null)
+        {
+            $returnUtr = $ftaData[Attempt\Constants::RETURN_UTR] ?? null;
+
+            $payout->setReturnUtr($returnUtr);
+        }
+
         $this->repo->saveOrFail($payout);
 
         if (($initialUtr === null) and

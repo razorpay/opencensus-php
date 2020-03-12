@@ -2152,7 +2152,10 @@ class PayoutTest extends TestCase
                 'source_id'           => $payoutId,
                 'source_type'         => 'payout',
                 'status'              => 'PROCESSED',
-                'utr'                 => '933815233814'
+                'utr'                 => '933815233814',
+                // this will not be present when payout will be processeed, but just checking
+                // that this field gets populated in the db.
+                'return_utr'          => '933815233815',
             ],
         ];
 
@@ -2163,6 +2166,7 @@ class PayoutTest extends TestCase
 
         $this->assertEquals('933815233814', $payout->getUtr());
         $this->assertEquals('933815233814', $fta->getUtr());
+        $this->assertEquals('933815233815', $payout->getReturnUtr());
     }
 
     public function testNotFiringOfWebhookOnNotUpdationOfUtr()

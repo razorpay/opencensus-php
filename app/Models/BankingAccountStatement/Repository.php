@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankingAccountStatement;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Reversal;

@@ -628,6 +628,7 @@ class Core extends Base\Core
             'is_fts'                   => $fta->getIsFTS(),
             'bank_status_code'         => $fta->getBankStatusCode(),
             'failure_reason'           => $fta->getFailureReason(),
+            'return_utr'               => $input[AttemptConstants::RETURN_UTR] ?? null,
             Entity::GATEWAY_ERROR_CODE => $gatewayErrorCode,
         ] + $extraInfo;
 
