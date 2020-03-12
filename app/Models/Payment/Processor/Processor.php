@@ -335,9 +335,7 @@ class Processor
             $payment = $this->payment;
 
             $this->preProcessDCCInputs($input, $payment);
-
-            $this->eventPaymentCreated();
-
+            
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
