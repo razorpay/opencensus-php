@@ -132,7 +132,6 @@ class Type
         self::MDR_ADJUSTMENT,
         self::ADJUSTMENT,
         self::ECOLLECT_ICICI,
-        self::REPORT,
     ];
 
     /**
