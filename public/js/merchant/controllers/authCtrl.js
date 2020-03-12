@@ -169,21 +169,6 @@ app
             5: '50 Lacs to 1 Crore',
             6: 'More than 1 Crore',
           },
-
-          department: {
-            1: {
-              name: 'Founder/Proprietor',
-              value: '7',
-            },
-            2: {
-              name: 'Tech/Engineering',
-              value: '1',
-            },
-            3: {
-              name: 'Business',
-              value: '3',
-            },
-          },
         },
         showMore: false,
 
@@ -661,7 +646,7 @@ app
             $scope.signup.currentSubStep == 0 &&
             $scope.canSkipIntermediateScreens()
           ) {
-            $scope.signup.currentSubStep = $scope.signup.currentSubStep + 3;
+            $scope.signup.currentSubStep = $scope.signup.currentSubStep + 2;
           } else {
             $scope.signup.currentSubStep = $scope.signup.currentSubStep + 1;
           }
@@ -750,7 +735,6 @@ app
           var keys = [
             'business_type',
             'transaction_volume',
-            'department',
             'business_name',
             'contact_mobile',
             'contact_name',
@@ -1103,11 +1087,9 @@ app
         if (!merchantData.business_type) {
           $scope.signup.currentSubStep = 0;
         } else if ($scope.canSkipIntermediateScreens()) {
-          $scope.signup.currentSubStep = 3;
+          $scope.signup.currentSubStep = 2;
         } else if (!merchantData.transaction_volume) {
           $scope.signup.currentSubStep = 1;
-        } else if (!merchantData.department) {
-          $scope.signup.currentSubStep = 2;
         } else {
           $scope.signup.currentSubStep = 3;
         }
@@ -1915,8 +1897,7 @@ app
           business_type = null,
           transaction_volume =
             details.transaction_volume[merchantData.transaction_volume],
-          business_type_list = Object.keys(details.business_type),
-          department_list = Object.keys(details.department);
+          business_type_list = Object.keys(details.business_type);
 
         for (var key in business_type_list) {
           idx = business_type_list[key];
@@ -1928,23 +1909,12 @@ app
           }
         }
 
-        for (var key in department_list) {
-          idx = department_list[key];
-
-          if (details.department[idx].value === merchantData.department) {
-            department = details.department[idx].name;
-
-            break;
-          }
-        }
-
         window.trackHubs({
           name: 'update_property',
           data: {
             email: $scope.signup.data.email,
             signup_business_type: business_type,
             signup_transaction_volume: transaction_volume,
-            signup_department: department,
             signup_business_name: merchantData.business_name,
             signup_business_website: merchantData.business_website,
             signup_contact_mobile: merchantData.contact_mobile,

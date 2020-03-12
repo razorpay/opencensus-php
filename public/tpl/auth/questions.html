@@ -5,7 +5,7 @@
 </div>
 <div class="signup-detail-form">
   <div class="steps-dots">
-    <div class="step-dot" ng-style="{ 'width': (25*(signup.currentSubStep+1)) + '%' }"></div>
+    <div class="step-dot" ng-style="{ 'width': (33.33*(signup.currentSubStep+1)) + '%' }"></div>
     <div class="clearfix"></div>
   </div>
 
@@ -73,31 +73,6 @@
 
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
-      <div class="auth-substep">
-        <div class="auth-subheading">
-          Your Business Function?
-        </div>
-
-        <div class="select-one">
-          <div class="select-one-option" ng-repeat="key in toArray(signup.details.department)" >
-            <input override-tab ng-click="slectTrack('department');quickSendDetails('department', signup.details.department[key].value); trackStepClicksOnMore('Step - Your Department', signup.details.department[key].name)" type="radio" name="department" value="{{signup.details.department[key].value}}" id="{{'department_'+ signup.details.department[key].value}}" ng-model="signup.merchantData.department"/>
-            <label for="{{'department_'+ signup.details.department[key].value}}">
-              {{signup.details.department[key].name}}
-              <i class="pull-right fa fa-check"></i>
-            </label>
-          </div>
-        </div>
-        <div class="signup-nav">
-          <div class="back-btn btn" ng-click="goToSignupStep(1, 1);trackBackClick('Estimated Monthly Revenue');">
-            Back
-          </div>
-          <button override-tab ng-disabled="!signup.merchantData.department" class="btn btn-primary signup-details-button pull-right" ng-click="quickSendDetails(); trackStepClicksOnMore('Step - Your Role', 'Next')">
-            Next
-          </button>
-        </div>
-                    
-        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
-      </div>
       <div class="auth-substep name-substep">
         <form class="details-form" name="forms.detailsForm" >
           <label class="form-label details-label" for="business_name" ng-if="showCompanyName">Company:</label>
@@ -145,7 +120,7 @@
           </div>
 
           <div class="signup-nav">
-            <div class="back-btn btn" ng-click="goToSignupStep(1, 2);trackBackClick('Department');">
+            <div class="back-btn btn" ng-click="goToSignupStep(1, 1);trackBackClick('Estimated Monthly Revenue');">
               Back
             </div>
             <button type="submit" ng-if="!showCompanyName" override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.contact_mobile)" class="btn btn-primary signup-details-button pull-right" ng-click="sendDetails();onFinishClick()">
