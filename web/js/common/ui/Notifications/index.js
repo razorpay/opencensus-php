@@ -27,6 +27,8 @@ export default class Notifications extends Component {
             onClose={() => this.closeNotification(notification)}
             closeTimeout={notification.closeTimeout}
             hidePrevious={hidePrevious && idx > 0}
+            onCloseClick={notification.onCloseClick}
+            onTimeOutClose={notification.onTimeOutClose}
           />
         ))}
       </div>

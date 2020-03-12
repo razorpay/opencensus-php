@@ -34,6 +34,8 @@ export default class PairList extends React.PureComponent {
           .focus(),
       10
     );
+
+    this.props.onAddNew && this.props.onAddNew(freshPairs);
   };
 
   updateField = (e, field) => {

@@ -19,6 +19,10 @@ const selector = formValueSelector('issueInvoice');
   form: 'issueInvoice',
 })
 export default class IssueInvoiceConfirmModal extends Component {
+  static defaultProps = {
+    onFieldChange: () => {},
+  };
+
   constructor() {
     super(...arguments);
     this.state = {
@@ -61,6 +65,12 @@ export default class IssueInvoiceConfirmModal extends Component {
       });
   };
 
+  closeModal = () => {
+    this.props.closeModal();
+
+    this.props.onCloseClick && this.props.onCloseClick();
+  };
+
   render() {
     const {
       handleSubmit,
@@ -69,6 +79,7 @@ export default class IssueInvoiceConfirmModal extends Component {
       email_notify,
       isPaymentLink,
       disableIssueOnEmptySelection,
+      onFieldChange,
     } = this.props;
 
     const isTestMode = this.props.session.mode === 'test';
@@ -86,7 +97,7 @@ export default class IssueInvoiceConfirmModal extends Component {
               ? 'Send Link'
               : paymentLink ? 'Issued' : 'Issue Invoice'
           }
-          onCloseClick={this.props.closeModal}
+          onCloseClick={this.closeModal}
         />
 
         <form class="form-horizontal">
@@ -120,6 +131,7 @@ export default class IssueInvoiceConfirmModal extends Component {
                       id="sms_notify"
                       component="input"
                       type="checkbox"
+                      onChange={onFieldChange}
                     />
                     <label for="sms_notify" class="icon i-check">
                       {customer.contact}
@@ -134,6 +146,7 @@ export default class IssueInvoiceConfirmModal extends Component {
                       id="email_notify"
                       component="input"
                       type="checkbox"
+                      onChange={onFieldChange}
                     />
                     <label for="email_notify" class="icon i-check">
                       {customer.email}

@@ -76,7 +76,11 @@ export default class EditExpiry extends React.Component {
               onClick={() => {
                 this.setState(this.resetState());
                 this.props.trackerFn &&
-                  this.props.trackerFn(this.props.entityId, 'Cancel Expiry');
+                  this.props.trackerFn(
+                    this.props.entityId,
+                    'Cancel Expiry',
+                    this.state.expire_by !== this.state.value
+                  );
               }}
             >
               Cancel
@@ -95,7 +99,10 @@ export default class EditExpiry extends React.Component {
                       this.setState(this.resetState());
 
                       this.props.trackerFn &&
-                        this.props.trackerFn('Edit Expiry (Saved)');
+                        this.props.trackerFn(
+                          'Edit Expiry (Saved)',
+                          this.state.expire_by
+                        );
                     }
                   });
               }}

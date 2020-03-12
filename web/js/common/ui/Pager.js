@@ -12,7 +12,8 @@ export default class Pager extends Component {
       skip: Number(this.props.skip) + Number(this.props.count),
       count: +this.props.count,
     };
-    this.props.onClick(newParams);
+
+    this.props.onClick(newParams, 'next');
   }
 
   onPrev() {
@@ -20,7 +21,8 @@ export default class Pager extends Component {
       skip: Number(this.props.skip) - Number(this.props.count),
       count: +this.props.count,
     };
-    this.props.onClick(newParams);
+
+    this.props.onClick(newParams, 'prev');
   }
 
   render() {

@@ -27,6 +27,9 @@ export default class EditablePairsList extends React.PureComponent {
       maxAllowedPairs: this.props.maxAllowedPairs || 10,
       pairs: initialPairs,
       keys: initialKeys,
+      _initialValue: {
+        pairs: initialPairs,
+      },
     };
   }
 
@@ -97,6 +100,9 @@ export default class EditablePairsList extends React.PureComponent {
           }
         });
       },
+      abort: () => {
+        this.props.trackerFn('Delete Notes (Cancelled)');
+      },
     });
   };
 
@@ -105,7 +111,11 @@ export default class EditablePairsList extends React.PureComponent {
     const freshPairs = [...this.state.pairs];
     freshPairs[pairIdx] = pair;
 
-    this.props.trackerFn('Save Notes');
+    const notModified = freshPairs.every(currentValue => {
+      return this.state._initialValue.pairs.includes(currentValue);
+    });
+
+    this.props.trackerFn('Save Notes', !notModified);
 
     return this.props.saveAndUpdate(freshPairs).then(resp => {
       if (resp.data) {
@@ -223,6 +233,7 @@ class PairDecider extends React.Component {
         toggleEditMode={this.toggleEditMode}
         removePair={this.props.removePair}
         handleSave={this.handleSave}
+        trackerFn={this.props.trackerFn}
       />
     ) : (
       <PairView
@@ -279,6 +290,8 @@ class InputEditablePair extends React.Component {
       this.props.removePair(this.props.idx);
       // No need to toggle in this case, because it won't be rendered in next cycle as it's getting removed
     }
+
+    this.props.trackerFn && this.props.trackerFn('Cancel Notes');
   };
 
   updatePair = (e, field) => {

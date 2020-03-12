@@ -59,7 +59,12 @@ export default class EditReceipt extends React.Component {
               class="Button--Link"
               onClick={() => {
                 this.setState(this.resetState());
-                this.props.trackerFn(this.props.entityId, 'Cancel Receipt');
+
+                this.props.trackerFn(
+                  this.props.entityId,
+                  'Cancel Receipt',
+                  this.props.value !== this.state.receipt
+                );
               }}
             >
               Cancel

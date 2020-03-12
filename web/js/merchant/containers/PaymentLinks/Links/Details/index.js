@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
+
 import * as InvoiceActions from 'merchant/reducers/invoices/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
@@ -31,6 +33,7 @@ import { MIN_AMOUNT_TEXT } from '../../Edit/EditMinimumAmount';
     fetchRemindersMerchantConfigs,
   }
 )
+@RTracking(() => window.rzpQ.component('InvoiceDetailContainer'))
 export default class InvoiceDetailContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -56,11 +59,24 @@ export default class InvoiceDetailContainer extends Component {
     this.fetchDataForInvoice();
   }
 
+  componentDidMount() {
+    this.trackPaymentLinkDetailsView('pl.update.details_view');
+  }
+
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchDataForInvoice(nextProps.id);
     }
   }
+
+  trackPaymentLinkDetailsView = (event, options) => {
+    return this.props.tracking.trackEvent(
+      window.rzpQ.paymentLinks().interaction(event, {
+        ...options,
+        origin: 'dashboard',
+      })
+    );
+  };
 
   fetchDataForInvoice = (id = this.props.id) => {
     this.props.fetchInvoice(id);
@@ -124,9 +140,35 @@ export default class InvoiceDetailContainer extends Component {
 
     return Promise.all(promises)
       .then(([emailStatus, smsStatus]) => {
+        this.props.tracking.trackEvent(
+          window.rzpQ.paymentLinks().interaction('pl.resend.issue', {
+            origin: 'dashboard',
+          })
+        );
+
         this.props.showNotification({
           type: 'success',
           message: 'Link sent successfully!',
+          onCloseClick: () => {
+            this.props.tracking.trackEvent(
+              window.rzpQ
+                .paymentLinks()
+                .interaction('pl.resend.issue.success', {
+                  origin: 'dashboard',
+                  close: 1,
+                })
+            );
+          },
+          onTimeOutClose: () => {
+            this.props.tracking.trackEvent(
+              window.rzpQ
+                .paymentLinks()
+                .interaction('pl.resend.issue.success', {
+                  origin: 'dashboard',
+                  close: 0,
+                })
+            );
+          },
         });
       })
       .catch(error => {
@@ -148,6 +190,12 @@ export default class InvoiceDetailContainer extends Component {
       });
       return;
     }
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.paymentLinks().interaction('pl.resend.start', {
+        origin: 'dashboard',
+      })
+    );
 
     this.props.openModal({
       size: 'small',
@@ -177,6 +225,22 @@ export default class InvoiceDetailContainer extends Component {
               eventLabel: `payment_link_id=${this.props.invoice.id}`,
             });
           }}
+          onCloseClick={() => {
+            this.props.tracking.trackEvent(
+              window.rzpQ.paymentLinks().interaction('pl.resend.close', {
+                origin: 'dashboard',
+              })
+            );
+          }}
+          onFieldChange={event => {
+            this.props.tracking.trackEvent(
+              window.rzpQ
+                .paymentLinks()
+                .interaction(`pl.resend.${event.target.name}`, {
+                  origin: 'dashboard',
+                })
+            );
+          }}
         />
       ),
     });
@@ -184,6 +248,9 @@ export default class InvoiceDetailContainer extends Component {
 
   cancelInvoice = () => {
     let invoice = this.props.invoice;
+
+    this.trackPaymentLinkDetailsView('pl.update.deactivate');
+
     this.context.confirm({
       header: 'Cancel Link?',
       message: () => (
@@ -217,7 +284,19 @@ export default class InvoiceDetailContainer extends Component {
             this.props.showNotification({
               type: 'success',
               message: 'Link cancelled!',
+              onCloseClick: () => {
+                this.trackPaymentLinkDetailsView('pl.deactivate.success', {
+                  close: 1,
+                });
+              },
+              onTimeOutClose: () => {
+                this.trackPaymentLinkDetailsView('pl.deactivate.success', {
+                  close: 0,
+                });
+              },
             });
+
+            this.trackPaymentLinkDetailsView('pl.update.deactivate_confirm');
           })
           .catch(({ errors }) => {
             if (
@@ -247,11 +326,56 @@ export default class InvoiceDetailContainer extends Component {
           eventAction: 'Close Form - Cancel Payment Link',
           eventLabel: `payment_link_id=${invoice.id}`,
         });
+
+        this.trackPaymentLinkDetailsView('pl.update.deactivate_abort');
       },
     });
   };
 
+  trackEditReceipt = (changeType, type, modified) => {
+    if (changeType === 'Edit Receipt') return;
+
+    this.trackPaymentLinkDetailsView(
+      `pl.update.${changeType ? 'receipt_abort' : 'receipt_confirm'}`,
+      { modified }
+    );
+  };
+
+  trackEditExpiry = (changeType, type, modified) => {
+    if (changeType === 'Edit Expiry') return;
+
+    let trackEvent = '';
+
+    if (changeType === 'Edit Expiry (Saved)' && !type) {
+      trackEvent = 'expiry_tick';
+    }
+
+    if (type === 'Cancel Expiry') {
+      trackEvent = 'expiry_cancel';
+    }
+
+    this.trackPaymentLinkDetailsView(`pl.update.${trackEvent}`, { modified });
+  };
+
+  trackEditNotes = (changeType, modified) => {
+    if (changeType === 'Save Notes') {
+      this.trackPaymentLinkDetailsView(`pl.update.notes`, { modified });
+    }
+
+    if (changeType === 'Delete Notes (Confirmed)') {
+      this.trackPaymentLinkDetailsView(`pl.update.notes_closed`);
+    }
+
+    if (changeType === 'Delete Notes (Cancelled)') {
+      this.trackPaymentLinkDetailsView(`pl.update.notes.close`);
+    }
+  };
+
   editPaymentLink = data => {
+    if (data.partial_payment) {
+      this.trackPaymentLinkDetailsView('pl.update.partial');
+    }
+
     return editPaymentLink(this.props.invoice.id, data)
       .then(resp => {
         if (resp.data) {
@@ -273,6 +397,22 @@ export default class InvoiceDetailContainer extends Component {
               message: `Auto reminders has been ${
                 d.reminder_enable ? 'enabled' : 'disabled'
               } successfully`,
+              onCloseClick: () => {
+                this.trackPaymentLinkDetailsView(
+                  `pl.update.reminder_enable.success`,
+                  {
+                    close: 1,
+                  }
+                );
+              },
+              onTimeOutClose: () => {
+                this.trackPaymentLinkDetailsView(
+                  `pl.update.reminder_enable.success`,
+                  {
+                    close: 0,
+                  }
+                );
+              },
             });
 
             this.props.fetchInvoice(this.props.id);
@@ -280,6 +420,20 @@ export default class InvoiceDetailContainer extends Component {
             this.props.showNotification({
               type: 'success',
               message: `${keysToSentence(d)} updated successfully`,
+              onCloseClick: () => {
+                Object.keys(data).forEach(key => {
+                  this.trackPaymentLinkDetailsView(`pl.update.${key}.success`, {
+                    close: 1,
+                  });
+                });
+              },
+              onTimeOutClose: () => {
+                Object.keys(data).forEach(key => {
+                  this.trackPaymentLinkDetailsView(`pl.update.${key}.success`, {
+                    close: 0,
+                  });
+                });
+              },
             });
           }
 
@@ -343,6 +497,9 @@ export default class InvoiceDetailContainer extends Component {
         isPaymentLinksRemindersEnabled={
           this.state.isPaymentLinksRemindersEnabled
         }
+        trackEditReceipt={this.trackEditReceipt}
+        trackEditExpiry={this.trackEditExpiry}
+        trackEditNotes={this.trackEditNotes}
       />
     );
   }

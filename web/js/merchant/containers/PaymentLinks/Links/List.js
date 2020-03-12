@@ -63,6 +63,15 @@ export default class PaymentLinksContainer extends ListContainer {
         eventLabel: label,
       });
     }
+
+    Object.keys(params).forEach(param => {
+      this.props.tracking.trackEvent(
+        window.rzpQ.paymentLinks().interaction('pl.search.status', {
+          origin: 'dashboard',
+          modified: this.searchFilters[param] !== params[param],
+        })
+      );
+    });
   };
 
   onClearAnalytics = () => {
@@ -70,6 +79,12 @@ export default class PaymentLinksContainer extends ListContainer {
       eventCategory: 'Dashboard - Payment Links',
       eventAction: 'Clear Search Params - Payment Links',
     });
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.paymentLinks().interaction('pl.search.clear', {
+        origin: 'dashboard',
+      })
+    );
   };
 
   onCopy = ({ invoiceId, text }) => {
@@ -82,6 +97,15 @@ export default class PaymentLinksContainer extends ListContainer {
 
   onDuplicate = invoiceId => {
     this.props.history.push(`/paymentlinks/new?duplicate_id=${invoiceId}`);
+  };
+
+  onAlertCloseClick = () => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.paymentLinks().interaction('pl.search.error', {
+        origin: 'dashboard',
+        response: this.state.status.message[1],
+      })
+    );
   };
 
   render() {
@@ -141,7 +165,11 @@ export default class PaymentLinksContainer extends ListContainer {
           trackSearchFilterForInternational={trackSearchFilterForInternational}
         />
 
-        <Alert type={status.type} message={status.message} />
+        <Alert
+          type={status.type}
+          message={status.message}
+          onCloseClick={this.onAlertCloseClick}
+        />
 
         <InvoicesList
           invoices={invoices}
@@ -156,7 +184,16 @@ export default class PaymentLinksContainer extends ListContainer {
           count={this.state.count}
           skip={this.state.skip}
           length={invoices.length}
-          onClick={this.paginate}
+          onClick={(params, type) => {
+            this.props.tracking.trackEvent(
+              window.rzpQ.paymentLinks().interaction(`pl.browse.${type}`, {
+                origin: 'dashboard',
+                page: params.skip % params.count,
+              })
+            );
+
+            this.paginate(params);
+          }}
         />
       </div>
     );

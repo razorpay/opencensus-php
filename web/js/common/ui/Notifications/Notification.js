@@ -45,8 +45,16 @@ class Notification extends Component {
 
     setTimeout(() => {
       this.props.onClose();
+
+      this.props.onTimeOutClose && this.props.onTimeOutClose();
     }, this.props.transitionTimeout);
   }
+
+  onCloseClick = () => {
+    this.close();
+
+    this.props.onCloseClick && this.props.onCloseClick();
+  };
 
   render() {
     let { type, message, showClose, hidePrevious } = this.props;
@@ -71,7 +79,7 @@ class Notification extends Component {
         ) : (
           message
         )}
-        {showClose && <i class="i i-close" onClick={this.close} />}
+        {showClose && <i class="i i-close" onClick={this.onCloseClick} />}
       </div>
     );
   }

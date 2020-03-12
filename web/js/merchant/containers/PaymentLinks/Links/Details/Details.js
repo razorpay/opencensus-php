@@ -292,7 +292,11 @@ export default props => {
                             value={invoice.receipt}
                             entityId={invoice.id}
                             editFn={editPaymentLink}
-                            trackerFn={trackDetailViewEdits}
+                            trackerFn={(...args) => {
+                              props.trackEditReceipt(...args);
+
+                              trackDetailViewEdits(...args);
+                            }}
                             isRoleAllowedEdit={isRoleAllowedEdit}
                             required={user.isInvoiceReceiptMandatory}
                           />
@@ -325,7 +329,11 @@ export default props => {
                             value={invoice.expire_by}
                             editFn={editPaymentLink}
                             entityId={invoice.id}
-                            trackerFn={trackDetailViewEdits}
+                            trackerFn={(...args) => {
+                              props.trackEditExpiry(...args);
+
+                              trackDetailViewEdits(...args);
+                            }}
                             isRoleAllowedEdit={isRoleAllowedEdit}
                             isExpireByRequired={user.isExpireByRequired}
                           />
@@ -349,7 +357,11 @@ export default props => {
                       editFn={editPaymentLink}
                       isRoleAllowedEdit={isRoleAllowedEdit}
                       entityId={invoice.id}
-                      trackerFn={trackDetailViewEdits}
+                      trackerFn={(...args) => {
+                        props.trackEditNotes(...args);
+
+                        trackDetailViewEdits(...args);
+                      }}
                     />
                   </EntityDetailRow>
                 ) : (

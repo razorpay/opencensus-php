@@ -24,6 +24,8 @@ class Alert extends Component {
     this.setState({
       close: true,
     });
+
+    this.props.onCloseClick && this.props.onCloseClick();
   }
 
   render() {

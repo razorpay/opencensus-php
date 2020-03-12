@@ -71,6 +71,7 @@ function defaultFieldProps(f) {
 
   if (f.name === 'notes') {
     f.onChange = self.onChangeNotes;
+    f.onAddNew = self.onAddNewNote;
   }
 
   if (f.name === 'first_payment_min_amount') {
@@ -138,6 +139,7 @@ function WizardFields(field) {
       autoRender={_autoRenderImpure}
       disabled={isComponentDisabled}
       required={isRequired}
+      onBlur={this.onBlur}
       {...rest}
     />
   );
@@ -244,6 +246,16 @@ export default class CreateNewContainer extends React.Component {
     }
   }
 
+  trackPaymentLinkCreation = (event, options) => {
+    return this.props.tracking.trackEvent(
+      window.rzpQ.paymentLinks().interaction(event, {
+        ...options,
+        origin: 'dashboard',
+        clone: this.isIntentDuplicate ? 1 : 0,
+      })
+    );
+  };
+
   fetchIfIntentDuplicate(invoiceId) {
     return this.props
       .fetchInvoice(invoiceId)
@@ -311,6 +323,16 @@ export default class CreateNewContainer extends React.Component {
 
   componentDidMount() {
     this.toggleDisableState();
+
+    this.trackPaymentLinkCreation('pl.create.initiate');
+
+    if (this.isIntentDuplicate) {
+      this.props.tracking.trackEvent(
+        window.rzpQ.paymentLinks().interaction('pl.clone.start', {
+          origin: 'dashboard',
+        })
+      );
+    }
 
     this.prepareDataForPaymentLinkCreation()
       .then(() => {
@@ -433,6 +455,16 @@ export default class CreateNewContainer extends React.Component {
     }
   };
 
+  onBlur = ({ target }) => {
+    const fieldName = target.name;
+
+    if (!fieldName) return;
+
+    this.trackPaymentLinkCreation(`pl.create.${fieldName}`, {
+      modified: this.isIntentDuplicate ? 1 : 0,
+    });
+  };
+
   /* Handle change of time from time picker */
   onTimeChange(date) {
     const curDate = this.state._name.expire_by_date;
@@ -481,6 +513,10 @@ export default class CreateNewContainer extends React.Component {
         notes: notes,
       },
     });
+  };
+
+  onAddNewNote = () => {
+    this.trackPaymentLinkCreation('pl.create.notes');
   };
 
   onCreate = () => {
@@ -552,6 +588,8 @@ export default class CreateNewContainer extends React.Component {
       }
     });
 
+    this.trackPaymentLinkCreation('pl.create.issue');
+
     return FORM_FIELDS.onCreate(reqPayload)
       .then(resp => {
         this.setState({
@@ -562,6 +600,16 @@ export default class CreateNewContainer extends React.Component {
           this.props.showNotification({
             type: 'success',
             message: notificationMSG,
+            onCloseClick: () => {
+              this.trackPaymentLinkCreation('pl.create.success', {
+                close: 1,
+              });
+            },
+            onTimeOutClose: () => {
+              this.trackPaymentLinkCreation('pl.create.success', {
+                close: 0,
+              });
+            },
           });
 
           tracking.trackEvent(
@@ -569,6 +617,14 @@ export default class CreateNewContainer extends React.Component {
               action: 'PL_Creation_Successful',
             })
           );
+
+          if (this.isIntentDuplicate) {
+            this.props.tracking.trackEvent(
+              window.rzpQ.paymentLinks().interaction('pl.clone.complete', {
+                origin: 'dashboard',
+              })
+            );
+          }
 
           const entityId = resp.data.id;
 
@@ -593,7 +649,6 @@ export default class CreateNewContainer extends React.Component {
       })
       .catch(({ errors }) => {
         let err = errors;
-
         if (Array.isArray(err)) {
           err = [];
 
@@ -601,6 +656,10 @@ export default class CreateNewContainer extends React.Component {
             errors.forEach(e => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
+
+                this.trackPaymentLinkCreation('pl.create.fail', {
+                  response: e,
+                });
               }
             });
 
@@ -717,6 +776,16 @@ export default class CreateNewContainer extends React.Component {
       }
     });
 
+    this.trackPaymentLinkCreation('pl.create.cancel');
+
+    if (this.isIntentDuplicate) {
+      this.props.tracking.trackEvent(
+        window.rzpQ.paymentLinks().interaction('pl.clone.close', {
+          origin: 'dashboard',
+        })
+      );
+    }
+
     if (formUnsaved) {
       this.context
         .confirm({
@@ -726,6 +795,9 @@ export default class CreateNewContainer extends React.Component {
           abortLabel: 'Stay',
           action: () => {
             this.props.onClose();
+
+            this.trackPaymentLinkCreation('pl.create.close');
+
             closePaymentLinkForm('Confirmed');
           },
         })
