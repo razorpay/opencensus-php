@@ -12,7 +12,7 @@ class Validator extends Base\Validator
     const INTERNAL_EDIT         = 'internal_edit';
     const PROCESSED_STATUS      = 'processed_status';
     const SERVICEABLE_PINCODE   = 'serviceable_pincode';
-    const YESBANK_CREATE        = 'yesbank_create';
+    const SHARED_CREATE         = 'shared_create';
     const INTERNAL_EDIT_STATUS  = 'internal_edit_status';
     const ACTIVATED_STATUS      = 'activated_status';
 
@@ -23,7 +23,8 @@ class Validator extends Base\Validator
         Entity::CHANNEL => 'required|string|custom',
     ];
 
-    protected static $yesbankCreateRules = [
+    protected static $sharedCreateRules = [
+        Entity::CHANNEL                         => 'required|string',
         Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,40',
         Entity::ACCOUNT_IFSC                    => 'required|alpha_num|size:11',
         Entity::FTS_FUND_ACCOUNT_ID             => 'sometimes|nullable|string|size:14',
@@ -160,12 +161,20 @@ class Validator extends Base\Validator
     ];
 
     protected static $fetchGatewayBalanceRules = [
-        Entity::CHANNEL     => 'required|string',
-        Entity::MERCHANT_ID => 'required|string',
-    ];
+    Entity::CHANNEL     => 'required|string|custom',
+    Entity::MERCHANT_ID => 'required|string',
+];
 
     protected static $dispatchGatewayBalanceRules = [
-        Entity::CHANNEL => 'required|string',
+        Entity::CHANNEL => 'required|string|custom',
+    ];
+
+    protected static $fetchGatewayBalanceValidators = [
+        'direct_channel'
+    ];
+
+    protected static $dispatchGatewayBalanceValidators = [
+        'direct_channel'
     ];
 
     public function validatePincodes(array $input)
@@ -232,21 +241,25 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateChannelForFetchingGatewayBalance(array $input)
+    protected function validateDirectChannel($input)
     {
-        if (isset($input[Entity::CHANNEL]) === true)
+        if (empty($input[Entity::CHANNEL]) === true)
         {
-            $channel = array_get($input, Entity::CHANNEL);
+            return;
+        }
 
-            if (Channel::isValidDirectTypeChannel($channel) === false)
-            {
-                throw new BadRequestValidationFailureException(
-                    'Not a valid direct type channel: ' . $channel,
-                    Entity::CHANNEL,
-                    [
-                        Entity::CHANNEL => $channel,
-                    ]);
-            }
+        $channel = $input[Entity::CHANNEL];
+
+        $valid = Channel::isValidDirectTypeChannel($input[Entity::CHANNEL]);
+
+        if ($valid === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Not a valid direct type channel: ' . $channel,
+                Entity::CHANNEL,
+                [
+                    Entity::CHANNEL => $channel,
+                ]);
         }
     }
 }

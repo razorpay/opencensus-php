@@ -853,8 +853,8 @@ class RblBankingAccountStatementTest extends TestCase
         $mock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
 
         $mock->shouldReceive([
-            'sendRawRequest' => json_encode($mockedResponse)
-        ]);
+                                 'sendRawRequest' => json_encode($mockedResponse)
+                             ]);
 
         $this->app->instance('mozart', $mock);
     }

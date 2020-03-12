@@ -4,6 +4,7 @@ namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Merchant;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Models\Customer\GatewayToken;
@@ -120,7 +121,19 @@ class Service extends Base\Service
         // This is needed to ensure that the merchant is getting only HIS customer's details
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $tokens = $this->repo->token->getByCustomer($customer);
+        $withVpas = false;
+
+        // We will exclude VPAs tokens except of for this conditions
+        // 1. Feature SAVE_VPA is enabled for merchant.
+        // 2. We do not want this to be on shared merchant (Adding check Just In Case)
+        if (($this->merchant instanceof Merchant\Entity) and
+            ($this->merchant->isShared() === false) and
+            ($this->merchant->shouldSaveVpa() === true))
+        {
+            $withVpas = true;
+        }
+
+        $tokens = $this->repo->token->getByCustomer($customer, $withVpas);
 
         return $tokens->toArrayPublic();
     }

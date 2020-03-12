@@ -194,7 +194,7 @@ class ExceptionTest extends TestCase
                 })->mock();
 
         $handler->shouldReceive('getMerchant')
-                ->times(3)
+                ->once()
                 ->andReturnUsing(function ()
                 {
                     return null;

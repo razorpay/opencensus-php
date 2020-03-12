@@ -87,6 +87,10 @@ class ConfigKey
 
     const REMOVE_SETTLEMENT_BA_COOL_OFF         = self::PREFIX . 'remove_settlement_ba_cool_off';
 
+    const RX_ACCOUNT_NUMBER_SERIES_PREFIX       = self::PREFIX . 'rx_account_number_series_prefix';
+
+    const RX_SHARED_ACCOUNT_ALLOWED_CHANNELS    = self::PREFIX . 'rx_shared_account_allowed_channels';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -132,6 +136,8 @@ class ConfigKey
         self::BLOCK_YESBANK_RX_FAV,
         self::REMOVE_SETTLEMENT_BA_COOL_OFF,
         self::BLOCK_YESBANK_WALLET_PAYOUTS,
+        self::RX_ACCOUNT_NUMBER_SERIES_PREFIX,
+        self::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS,
     ];
 
     public static function isSensitive(string $key)

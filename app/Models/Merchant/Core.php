@@ -366,12 +366,6 @@ class Core extends Base\Core
             Feature\Entity::ENTITY_ID       => $merchant->getId(),
             Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
         ], $shouldSync = true);
-
-        (new Feature\Core)->create([
-            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
-            Feature\Entity::ENTITY_ID       => $merchant->getId(),
-            Feature\Entity::NAME            => Feature\Constants::VALIDATE_MERCHANT_DOMAIN,
-        ], $shouldSync = true);
     }
 
     /**

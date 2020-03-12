@@ -628,6 +628,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RX_LOW_BALANCE_EMAIL_ALERT_DATA                       = 'RX_LOW_BALANCE_EMAIL_ALERT_DATA';
 
     const LOCKED_BALANCE_UPDATE_REQUEST                         = 'LOCKED_BALANCE_UPDATE_REQUEST';
+    const LOCKED_BALANCE_UPDATE_RESPONSE                        = 'LOCKED_BALANCE_UPDATE_RESPONSE';
 
     const MAILER_JOB_ERROR                                      = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                              = 'INVOICE_ACTION_JOB_ERROR';
@@ -2490,6 +2491,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_ONBOARDING_DISPATCHING_TO_QUEUE                 = 'TERMINAL_ONBOARDING_DISPATCHING_TO_QUEUE';
     const TERMINAL_ONBOARDING_VERIFICATION_CRON_RESPONSE           = 'TERMINAL_ONBOARDING_VERIFICATION_CRON_RESPONSE';
     const TERMINAL_ONBOARDING_CREATION_CRON_RESPONSE               = 'TERMINAL_ONBOARDING_CREATION_CRON_RESPONSE';
+    const TERMINAL_SELECTION_LOGIC_FOR_RX                          = 'TERMINAL_SELECTION_LOGIC_FOR_RX';
 
     const SET_MERCHANT_INHERITANCE_PARENT_FAILED                   = 'SET_MERCHANT_INHERITANCE_PARENT_FAILED';
 
@@ -2552,6 +2554,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const D2C_BUREAU_DETAILS_UPDATE                             = 'D2C_BUREAU_DETAILS_UPDATE';
     const D2C_BUREAU_REPORT_UPDATE                              = 'D2C_BUREAU_REPORT_UPDATE';
     const D2C_BUREAU_REPORT_DOWNLOAD_REQUEST                    = 'D2C_BUREAU_REPORT_DOWNLOAD_REQUEST';
+    const D2C_BUREAU_CREATE_CSV_REPORT                          = 'D2C_BUREAU_CREATE_CSV_REPORT';
+    const D2C_BUREAU_REPORT_CONVERSION_ERROR                    = 'D2C_BUREAU_REPORT_CONVERSION_ERROR';
     const MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST               = 'MERCHANT_BANKING_ACCOUNT_DOES_NOT_EXIST';
 
     const MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST           = 'MERCHANT_BANKING_INVOICE_PDF_CREATE_REQUEST';
@@ -2647,7 +2651,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUPPORT_TICKET_STATUS_REQUEST                         = 'SUPPORT_TICKET_STATUS_REQUEST';
     const SUPPORT_TICKET_STATUS_RESPONSE                        = 'SUPPORT_TICKET_STATUS_RESPONSE';
 
+    const DB_WAIT_TIMEOUT_FILE_READ_FAILED                      = 'DB_WAIT_TIMEOUT_FILE_READ_FAILED';
+
     //Error Response
+    const ERROR_RESPONSE_MAPPING_NOT_FOUND                      = 'ERROR_RESPONSE_MAPPING_NOT_FOUND';
     const ERROR_RESPONSE_MAPPING_READ_FAILED                    = 'ERROR_RESPONSE_MAPPING_READ_FAILED';
     const ERROR_RESPONSE_FILE_READING_FAILED                    = 'ERROR_RESPONSE_FILE_READING_FAILED';
     const ERROR_RESPONSE_DATA                                   = 'ERROR_RESPONSE_DATA';
@@ -2663,10 +2670,23 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
 
+    // DB wait timeout
+    const WAIT_TIMEOUT_EXCEPTION                                = 'WAIT_TIMEOUT_EXCEPTION';
 
+    // DB wait timeout
+    const DB_EXECUTING_WAIT_TIMEOUT                             = 'DB_EXECUTING_WAIT_TIMEOUT';
+  
     // RBL VA integration
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';
+
+    // VA Migrate - Yesbank -> RBL
+    const VA_MIGRATE_REQUEST            = 'VA_MIGRATE_REQUEST';
+    const VA_MIGRATE_JOB_TRIGGERED      = 'VA_MIGRATE_JOB_TRIGGERED';
+    const VA_MIGRATE_PROCESS_TRIGGERING = 'VA_MIGRATE_PROCESS_TRIGGERING';
+    const VA_MIGRATE_AFTER_ID_RETRIEVED = 'VA_MIGRATE_AFTER_ID_RETRIEVED';
+    const VA_MIGRATE_JOB_FAILED         = 'VA_MIGRATE_JOB_FAILED';
+    const VA_MIGRATE_TIME               = 'VA_MIGRATE_TIME';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

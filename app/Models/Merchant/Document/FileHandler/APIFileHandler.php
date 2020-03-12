@@ -31,7 +31,6 @@ class APIFileHandler implements FileHandlerInterface
                               ->name($input[Constants::FILE_NAME])
                               ->store($input[FileStore\Entity::STORE] ?? FileStore\Store::S3)
                               ->type($inputFileType)
-                              ->entity($input[Constants::ENTITY])
                               ->merchant($merchant)
                               ->save()
                               ->get();

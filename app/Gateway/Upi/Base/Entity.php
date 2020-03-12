@@ -73,8 +73,8 @@ class Entity extends Base\Entity
         self::BANK,
         self::PROVIDER,
         self::CONTACT,
-        self::GATEWAY_DATA,
         self::NAME,
+        self::GATEWAY_DATA,
         self::MERCHANT_REFERENCE,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
@@ -91,7 +91,9 @@ class Entity extends Base\Entity
     ];
 
     protected $casts = [
-        'amount' => 'int'
+        'amount'       => 'int',
+        'gateway_data' => 'array',
+
     ];
 
     protected static $generators = [
@@ -238,5 +240,15 @@ class Entity extends Base\Entity
         $bank = ProviderCode::getBankCode($provider);
 
         $this->setAttribute(self::BANK, $bank);
+    }
+
+    protected function setGatewayData($value)
+    {
+        $this->setAttribute(self::GATEWAY_DATA, $value);
+    }
+
+    protected function getGatewayData()
+    {
+        return $this->getAttribute(self::GATEWAY_DATA);
     }
 }

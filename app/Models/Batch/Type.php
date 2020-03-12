@@ -96,6 +96,8 @@ class Type
 
     const ADJUSTMENT            = 'adjustment';
 
+    const ECOLLECT_ICICI        = 'ecollect_icici';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -127,6 +129,7 @@ class Type
         self::ENTITY_UPDATE_ACTION,
         self::MDR_ADJUSTMENT,
         self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
     ];
 
     /**
@@ -267,6 +270,7 @@ class Type
         self::OAUTH_MIGRATION_TOKEN,
         self::LINKED_ACCOUNT_REVERSAL,
         self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
     ];
 
     /**
@@ -283,6 +287,7 @@ class Type
         self::MDR_ADJUSTMENT,
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
+        self::ECOLLECT_ICICI,
     ];
 
     public static $batchToAdminPermissionMapping = [
