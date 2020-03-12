@@ -57,7 +57,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-            self::DEFAULT      => true,
+            self::DEFAULT      => false,
             self::RESTRICTIONS => null,
     ];
 
