@@ -95,7 +95,7 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
     {
         $request = new Request();
 
-        $request->setUrl(null);
+        $request->setRedirect(null);
 
         $request->setContent([
             'status' => 'rejecting'

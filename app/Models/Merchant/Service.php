@@ -40,6 +40,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin as MainAdmin;
@@ -516,6 +517,9 @@ class Service extends Base\Service
         $response = $merchant->toArray();
 
         $response['settlement_ux_revamp'] = $this->shouldShowSettlementUxRevamp();
+
+        $response[Refund\Constants::REFUND_STATUS_FILTER] =
+            (new Refund\Service)->getRefundStatusFilterFlagForMerchantDashboard($merchantId);
 
         return $response;
     }

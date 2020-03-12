@@ -169,6 +169,7 @@ class Header
     const MODE           = 'mode';
     const UTR            = 'utr';
     const TIME           = 'time';
+    const NARRATION      = 'narration';
 
     //
     // Batch recurring payments
@@ -1349,6 +1350,7 @@ class Header
                 self::TIME,
                 self::AMOUNT,
                 self::DESCRIPTION,
+                self::NARRATION,
             ],
             self::OUTPUT => [
                 self::PROVIDER,
@@ -1362,6 +1364,7 @@ class Header
                 self::TIME,
                 self::AMOUNT,
                 self::DESCRIPTION,
+                self::NARRATION,
                 self::STATUS,
             ],
         ],
