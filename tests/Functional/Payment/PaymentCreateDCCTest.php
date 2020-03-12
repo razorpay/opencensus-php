@@ -126,7 +126,6 @@ class PaymentCreateDCCTest extends TestCase
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData($iin));
         $responseContent = json_decode($response->getContent(), true);
 
-        $this->assertEquals('INR', $responseContent['card_currency']);
         $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
         $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
     }
@@ -139,7 +138,6 @@ class PaymentCreateDCCTest extends TestCase
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData($iin));
         $responseContent = json_decode($response->getContent(), true);
 
-        $this->assertEquals('USD', $responseContent['card_currency']);
         $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
         $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
     }
