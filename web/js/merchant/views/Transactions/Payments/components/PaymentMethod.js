@@ -35,6 +35,7 @@ export default ({
     wallet: 'wallet',
     emandate: 'emandate',
     aeps: 'aeps',
+    cardless_emi: 'cardless_emi',
   };
 
   const cardDetails = card || {};
