@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::TYPE           => 'required|string',
+        Entity::TYPE           => 'required|string|in:checkout',
         Entity::DEFAULT        => 'required_if:type,checkout|boolean',
         Entity::ID             => 'required_if:type,checkout|string',
     ];

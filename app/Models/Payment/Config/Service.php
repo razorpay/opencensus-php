@@ -61,7 +61,7 @@ class Service extends Base\Service
                 $config = $this->repo->config->transaction(function () use($input, $merchant, $config)
                 {
                     //updating the default value of config if already exist
-                    if ($input['default'] === true or $input['default'] === '1')
+                    if ($input['default'] === true or strval($input['default']) === '1')
                     {
                         $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), $input['type']);
 
@@ -90,17 +90,12 @@ class Service extends Base\Service
      */
     public function update(array $input)
     {
-        if (isset($input['type']) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The type field is required'
-            );
-        }
+        (new Validator())->validateInput('edit', $input);
+
         if ($input['type'] === 'checkout')
         {
             return $this->updateCheckoutConfig($input);
         }
-
     }
 
     private function updateCheckoutConfig(array $input)
@@ -130,7 +125,7 @@ class Service extends Base\Service
                     {
                         $config->edit($input);
 
-                        if (isset($input['default']) and ($input['default'] === true or $input['default'] === '1'))
+                        if (isset($input['default']) and ($input['default'] === true or strval($input['default']) === '1'))
                         {
                             // find if any default config exist
                             $defaultConfig = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($this->merchant->getId(), $type);
