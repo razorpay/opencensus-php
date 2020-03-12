@@ -38,4 +38,17 @@ class TerminalOnboardingTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testTerminalOnboardCallbackTerminalsServiceError()
+    {
+        $this->mockTerminalsServiceSendRequest(function () {
+            $this->throwTerminalsServiceIntegrationException();
+        },1);
+
+        $this->ba->directAuth();
+
+        $this->expectException(\Requests_Exception_Transport_cURL::class);
+
+        $this->startTest();
+    }
 }
