@@ -2792,6 +2792,21 @@ trait Refund
         }
         else if ($payment->isBankTransfer() === true)
         {
+            //
+            // Using razorx to ramp up instant refunds self serve
+            //
+            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+                Merchant\RazorxTreatment::ENABLE_BANK_TRANSFER_REFUNDS,
+                $this->mode
+            );
+
+            if ($variant !== RefundConstants::RAZORX_VARIANT_ON)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $input);
+            }
+
             $paymentId = $payment->getId();
 
             // https://github.com/razorpay/api/pull/9612/files#diff-45d61a7b834fae07d62a86dd461e5940R1697
@@ -2821,6 +2836,14 @@ trait Refund
 
             $input[BankAccount\Entity::IFSC_CODE]          = $token->getIfsc();
             $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $token->getAccountNumber();
+            $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
+        }
+        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
+        {
+            $customerName = $this->getFormattedCustomerNameFromPayment($payment);
+
+            $input[BankAccount\Entity::IFSC_CODE]          = $payment->upiTransfer->getPayerIfsc();
+            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $payment->upiTransfer->getPayerAccount();
             $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
         }
 
@@ -2856,12 +2879,6 @@ trait Refund
         if (isset($data['vpa']) === true)
         {
             $input = $data['vpa'];
-        }
-        else if ($this->isPaymentUpiTransferAndUpiTransferRefund($payment))
-        {
-            $input = [
-                VPA\Entity::ADDRESS => $payment->getVpa(),
-            ];
         }
 
         return $input;

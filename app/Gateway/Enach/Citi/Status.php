@@ -7,9 +7,10 @@ use RZP\Exception\GatewayErrorException;
 
 class Status
 {
-    const DEBIT_SUCCESS = '1';
-    const DEBIT_REJECT  = '0';
-    const DEBIT_PENDING = '3';
+    const DEBIT_SUCCESS         = '1';
+    const DEBIT_REJECT          = '0';
+    const DEBIT_INITIAL_REJECT  = '2';
+    const DEBIT_PENDING         = '3';
 
     const REGISTRATION_SUCCESS          = 'accepted';
     const REGISTRATION_FAILURE          = 'rejected';
@@ -111,6 +112,6 @@ class Status
                 ['status' => $status]);
         }
 
-        return ($status === self::DEBIT_REJECT);
+        return (($status === self::DEBIT_REJECT) or ($status === self::DEBIT_INITIAL_REJECT));
     }
 }

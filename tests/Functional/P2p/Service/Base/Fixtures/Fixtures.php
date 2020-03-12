@@ -311,6 +311,13 @@ class Fixtures extends Constants
         return $entity;
     }
 
+    public function disableHandle(string $code, string $mode = 'live')
+    {
+        $this->getDbEntityById('p2p_handle', $code)
+             ->setConnection($mode)
+             ->setActive(false)->saveOrFail();
+    }
+
     public function __get($property)
     {
         if ($this->current->{$property} !== null)

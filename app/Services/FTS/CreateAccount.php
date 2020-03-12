@@ -560,4 +560,14 @@ class CreateAccount extends Base
     {
         return $this->account;
     }
+
+    public function getSourceAccountForMerchant(array $input)
+    {
+        $merchantId = $this->auth->getMerchant()->getId();
+
+        return $this->createAndSendRequest(
+            parent::SOURCE_ACCOUNT,
+            Requests::GET,
+            ['merchant_id' => $merchantId]);
+    }
 }

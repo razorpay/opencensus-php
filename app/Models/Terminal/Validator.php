@@ -69,6 +69,7 @@ class Validator extends Base\Validator
         Entity::VIRTUAL_UPI_HANDLE          => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_ROOT            => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_MERCHANT_PREFIX => 'sometimes_if:type.upi_transfer,1|string',
+        Entity::ACCOUNT_TYPE                => 'sometimes|string',
     ];
 
     protected static $editTerminalGateways = [
@@ -91,6 +92,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_BOB,
         Payment\Gateway::NETBANKING_ICICI,
+        Payment\Gateway::NETBANKING_AXIS,
         Payment\Gateway::NETBANKING_INDUSIND,
         Payment\Gateway::NETBANKING_EQUITAS,
         Payment\Gateway::NETBANKING_CANARA,
@@ -112,6 +114,7 @@ class Validator extends Base\Validator
         Payment\Gateway::PAYLATER,
         Payment\Gateway::CARDLESS_EMI,
         Payment\Gateway::NACH_CITI,
+        Payment\Gateway::BT_RBL,
     ];
 
     protected static $createValidators = [
@@ -765,6 +768,7 @@ class Validator extends Base\Validator
     protected static $netbankingAxisEditTerminalRules = [
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
     ];
 
     protected static $nachCitiTerminalRules = [
@@ -990,7 +994,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $enachNpciNetbankingEditTerminalRules = [
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [
@@ -1022,6 +1028,31 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+    ];
+
+    protected static $btIciciTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_icici',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:6',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'required|array',
+        Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+        Entity::ACCOUNT_TYPE                => 'sometimes|string',
+    ];
+
+    protected static $btRblTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_rbl',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'required|array',
+        Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+    ];
+
+    protected static $btRblEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_rbl',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::BANK_TRANSFER               => 'bail|sometimes|boolean|in:1',
     ];
 
     protected static $btDashboardTerminalRules = [
@@ -1137,7 +1168,8 @@ class Validator extends Base\Validator
         Entity::PROCURER,
         Entity::MC_MPAN,
         Entity::VISA_MPAN,
-        Entity::RUPAY_MPAN
+        Entity::RUPAY_MPAN,
+        Entity::ACCOUNT_TYPE,
     ];
 
     public function validateType()

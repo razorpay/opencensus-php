@@ -35,7 +35,6 @@ return [
             'api.account.rejected',
             'api.account.payments_enabled',
             'api.account.payments_disabled',
-            'api.transaction.created',
         ],
     ],
 ];

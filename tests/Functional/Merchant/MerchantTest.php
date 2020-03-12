@@ -19,6 +19,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -1839,7 +1840,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(37, $banks);
+        $this->assertCount(36, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -6326,6 +6327,18 @@ class MerchantTest extends TestCase
 
     protected function enableRazorXTreatmentForXOnboarding($value = 'on')
     {
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [
+                    Merchant\Account::SHARED_ACCOUNT => '222444',
+                ]
+            ]);
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS => [Channel::YESBANK, Channel::ICICI]
+            ]);
+
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
             ->setMethods(['getTreatment'])

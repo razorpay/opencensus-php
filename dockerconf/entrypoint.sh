@@ -82,6 +82,26 @@ initialize(){
   configure
 }
 
+change_db_user_for_workers() {
+  vault_file=/app/environment/.env.vault
+
+  # We want queue workers to use a different app user so that we can debug the connections better.
+  # The below code will change the username of the app user to api_worker/api_test_worker.
+  # Please note, that the password for web & queue app users needs to be the same,
+  # as we are NOT changing the password in the below code.
+  if [[ "${APP_MODE}" == "prod" ]]; then
+    sed -i "s/SLAVE_DB_LIVE_USERNAME .*/SLAVE_DB_LIVE_USERNAME=api_worker/g" $vault_file
+    sed -i "s/SLAVE_DB_TEST_USERNAME .*/SLAVE_DB_TEST_USERNAME=api_test_worker/g" $vault_file
+    sed -i "s/DB_LIVE_USERNAME .*/DB_LIVE_USERNAME=api_worker/g" $vault_file
+    sed -i "s/DB_TEST_USERNAME .*/DB_TEST_USERNAME=api_test_worker/g" $vault_file
+  else
+    sed -i "s/SLAVE_DB_LIVE_USERNAME .*/SLAVE_DB_LIVE_USERNAME=${APP_MODE}_api_worker/g" $vault_file
+    sed -i "s/SLAVE_DB_TEST_USERNAME .*/SLAVE_DB_TEST_USERNAME=${APP_MODE}_api_test_worker/g" $vault_file
+    sed -i "s/DB_LIVE_USERNAME .*/DB_LIVE_USERNAME=${APP_MODE}_api_worker/g" $vault_file
+    sed -i "s/DB_TEST_USERNAME .*/DB_TEST_USERNAME=${APP_MODE}_api_test_worker/g" $vault_file
+  fi
+}
+
 ### Check that atleast either webapp or supervisor is specified
 if [ "$#" -eq 0 ]; then
     echo "Specify app type: < web | web-dark | batch-job | sqs | sqs_multi_default >"
@@ -122,6 +142,7 @@ main() {
     month=$5
     php artisan "${command}" "${mode}" "${year}" "${month}"
   elif [[ "${app_type}" == "sqs" ]]; then
+    change_db_user_for_workers
     sleep_time=$2
     #['sqs', '10']
     if [ "$#" -ne 2 ]; then
@@ -133,6 +154,7 @@ main() {
       php artisan queue:work "${app_type}" --sleep="${sleep_time}"
     fi
   elif [[ "${app_type}" == "sqs_multi_default" ]]; then
+    change_db_user_for_workers
     queue_name=$2
     sleep_time=$3
     if [ "$#" -ne 3 ]; then
@@ -145,7 +167,6 @@ main() {
       php artisan queue:work "${app_type}" --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
     fi
   fi
-
 }
 
 main "$@"

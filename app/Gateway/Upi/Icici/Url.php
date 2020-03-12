@@ -12,4 +12,5 @@ class Url
     const AUTHENTICATE = '/api/MerchantAPI/UPI/v3/CollectPay/%s';
     const VERIFY       = '/api/MerchantAPI/UPI/v1/CallbackStatus/%s';
     const REFUND       = '/api/MerchantAPI/UPI/v1/Refund/%s';
+    const PAY_V3       = '/api/MerchantAPI/UPI/v3/QR/%s';
 }

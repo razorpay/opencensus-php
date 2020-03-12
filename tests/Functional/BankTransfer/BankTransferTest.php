@@ -3,24 +3,29 @@
 namespace RZP\Tests\Functional\BankTransfer;
 
 use Carbon\Carbon;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 
 use RZP\Constants\Timezone;
+use RZP\Models\Batch\Header;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing\Fee;
-use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
 class BankTransferTest extends TestCase
 {
     use AttemptTrait;
+    use FileHandlerTrait;
     use DbEntityFetchTrait;
     use AttemptReconcileTrait;
 
@@ -214,6 +219,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferWithInActiveAccount()
     {
+        $this->markTestSkipped('Skipped due to yesbank disablement');
+
         $bankAccount = $this->createVirtualAccount('live', 'BankAccountMer');
 
         $this->fixtures->on('live')->merchant->edit('BankAccountMer', ['live' => false]);
@@ -303,6 +310,22 @@ class BankTransferTest extends TestCase
             Attempt\Purpose::REFUND,
             1,
             Attempt\Type::REFUND);
+    }
+
+    public function testBankTransferRefundFailedDueToBankTransferRefundDisabled()
+    {
+        $channel = Channel::AXIS;
+
+        $this->createRefundFailedDueToBankTransferRefundDisabled($channel);
+
+        $content = $this->initiateTransferViaFileAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            0,
+            Attempt\Type::REFUND);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNull($attempt);
     }
 
     public function testBankTransferRefundIcici()
@@ -468,6 +491,9 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
+
         // IMPS refunds are permitted
         $this->refundPayment($payment['id'], 4000000);
         $refund =  $this->getLastEntity('refund', true);
@@ -542,6 +568,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferImpsWithNbin()
     {
+        $this->markTestSkipped('Skipped due to yesbank disablement');
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $ifsc = Provider::IFSC[Provider::YESBANK];
@@ -591,6 +619,9 @@ class BankTransferTest extends TestCase
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
 
         $payment =  $this->getLastEntity('payment', true);
+
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         // IMPS refunds are permitted now
         $this->refundPayment($payment['id'], 4000000);
@@ -650,6 +681,9 @@ class BankTransferTest extends TestCase
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
 
         $payment =  $this->getLastEntity('payment', true);
+
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         // IMPS refunds are permitted...
         $this->refundPayment($payment['id'], 4000000);
@@ -712,6 +746,9 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
 
         $data = $this->testData['bankTransferImpsFailedRefund'];
+
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         // IMPS refunds are permitted...
         $this->refundPayment($payment['id'], 4000000);
@@ -794,6 +831,9 @@ class BankTransferTest extends TestCase
         $this->assertEquals('Name of account holder', $bankAccount['name']);
 
         $payment =  $this->getLastEntity('payment', true);
+
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         $this->refundPayment($payment['id'], 4000000);
 
@@ -900,6 +940,9 @@ class BankTransferTest extends TestCase
         $this->assertEquals('Name of account holder', $bankAccount['name']);
 
         $payment =  $this->getLastEntity('payment', true);
+
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         $this->refundPayment($payment['id'], 4000000);
 
@@ -1035,6 +1078,9 @@ class BankTransferTest extends TestCase
 
         $data = $this->testData['bankTransferImpsFailedRefund'];
 
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
+
         // IMPS refunds are not permitted when we don't even have an account number
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->refundPayment($payment['id'], 4000000);
@@ -1098,6 +1144,9 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
 
         $data = $this->testData['bankTransferImpsFailedRefund'];
+
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         // Refunds are not permitted when we haven't created a payer bank account
         $this->runRequestResponseFlow($data, function() use ($payment) {
@@ -1401,6 +1450,9 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferProcessCryptoBlock()
     {
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
+
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 
@@ -1479,6 +1531,9 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferProcessInvalidAccount()
     {
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
+
         $accountNumber = 'RZRPYAINVALIDACCOUNT';
         $ifsc = $this->bankAccount['ifsc'];
 
@@ -1683,6 +1738,10 @@ class BankTransferTest extends TestCase
 
         $this->processBankTransfer($accountNumber, $ifsc);
         $payment =  $this->getLastEntity('payment', true);
+
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
+
         $this->refundPayment($payment['id'], 4000000);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
@@ -1744,6 +1803,9 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
+
         $this->refundPayment($payment['id'], 4000000);
 
         // Payment is refunded
@@ -1800,6 +1862,192 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals(57930, $payment['amount']);
+    }
+
+    public function testBankTransferRbl()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+    }
+
+    public function testBankTransferIcici()
+    {
+        $this->processOrNotifyBankTransfer(
+            $this->getIciciVaBankAccount(),
+            'ICIC0000104',
+            'awesome_utr'
+        );
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(5000000, $bankTransfer['amount']);
+        $this->assertEquals("ICIC0000104", $bankTransfer['payer_ifsc']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(5000000, $payment['amount']);
+        $this->assertEquals('bt_icici', $payment['gateway']);
+    }
+
+    public function testBankTransferIciciWithIfscAsBankCode()
+    {
+        $this->processOrNotifyBankTransfer(
+            $this->getIciciVaBankAccount(),
+            'ICIC0000104',
+            'awesome_utr'
+        );
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(5000000, $bankTransfer['amount']);
+
+        $this->assertEquals("SBIN0010411", $bankTransfer['payer_ifsc']);
+
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(5000000, $payment['amount']);
+        $this->assertEquals('bt_icici', $payment['gateway']);
+    }
+
+    public function testBankTransferIciciWithIfscAsInvalidBankCode()
+    {
+        $this->processOrNotifyBankTransfer(
+            $this->getIciciVaBankAccount(),
+            'ICIC0000104',
+            'awesome_utr'
+        );
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(null, $bankTransfer);
+    }
+
+    public function testCheckEcollectIciciBatchCreate()
+    {
+        Queue::fake();
+
+        $this->ba->appAuth();
+
+        $entries = $this->getDefaultFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testBankTransferRblImps()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->makeRequestAndGetContent($testData['request']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals($bankTransfer['utr'], '006713653919');
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+    }
+
+    public function testBankTransferRblUpi()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->makeRequestAndGetContent($testData['request']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals($bankTransfer['utr'], '006713070094');
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+
+        $this->ba->privateAuth();
+    }
+
+    public function testBankTransferRblWithInvalidData()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testBankTransferRblWithMissingHeader()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testBankTransferRblWithDuplicateUtr()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->makeRequestAndGetContent($testData['request']);
+
+        $this->startTest($testData);
+    }
+
+    public function testBankTransferRblWithInternalServerError()
+    {
+        $this->ba->directAuth();
+
+        $this->startTest();
+    }
+
+    public function testBankTransferRblWithEmptyFields()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
     }
 
     public function testBankTransferEditPayerBankAccount()
@@ -1906,6 +2154,11 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
+        if (isset($this->testData[$name]['content']['payer_ifsc']) === true)
+        {
+            $request['content']['payer_ifsc'] = $this->testData[$name]['content']['payer_ifsc'];
+        }
+
         $utr = $utr ?: strtoupper(random_alphanum_string(22));
 
         $request['content']['transaction_id'] = $utr;
@@ -1946,6 +2199,9 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
+
         $this->refundPayment($payment['id'], 4000000);
 
         // Payment is refunded
@@ -1972,6 +2228,49 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
+    }
+
+    protected function createRefundFailedDueToBankTransferRefundDisabled($channel = null)
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+
+        $utr = $response['transaction_id'];
+
+        // Customer bank account created
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id'], 4000000);
+
+        // Payment is refunded
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000000, $payment['amount_refunded']);
+
+        // Refund is created
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(4000000, $refund['amount']);
+
+        // Transaction is created for refund
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals('refund', $transaction['type']);
+        $this->assertEquals($refund['id'], $transaction['entity_id']);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNull($attempt);
     }
 
     protected function createTpvRefund()
@@ -2019,6 +2318,9 @@ class BankTransferTest extends TestCase
         $this->assertArraySelectiveEquals($data['request']['content'], $order);
 
         $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
+
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
 
         $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
 
@@ -2202,6 +2504,70 @@ class BankTransferTest extends TestCase
 
         // Key becomes available when feature is enabled
         $this->assertArrayHasKey('bank_transfer', $methods);;
+    }
+
+    protected function getRblVaBankAccount()
+    {
+        $terminalAttributes = [ 'id' =>'GENERICBANKRBL', 'gateway' => Gateway::BT_RBL, 'gateway_merchant_id' => '0001046' ];
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $bankAccount = $this->createVirtualAccount();
+
+        return $bankAccount['account_number'];
+    }
+
+    protected function getIciciVaBankAccount()
+    {
+        $terminalAttributes = [ 'id' =>'GENERICBANKICI', 'gateway' => Gateway::BT_ICICI, 'gateway_merchant_id' => '2244' ];
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $bankAccount = $this->createVirtualAccount();
+
+        return $bankAccount['account_number'];
+    }
+
+    protected function createAndPutExcelFileInRequest(array $entries, string $callee)
+    {
+        $url = $this->writeToExcelFile($entries, 'file', 'files/batch');
+
+        $uploadedFile = $this->createUploadedFileForBatch($url);
+
+        $this->testData[$callee]['request']['files']['attachment-1'] = $uploadedFile;
+    }
+
+    public function createUploadedFileForBatch(string $url, $fileName = 'file.xlsx', $mime = null): UploadedFile
+    {
+        $mime = $mime ?? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+        return new UploadedFile(
+            $url,
+            $fileName,
+            $mime,
+            filesize($url),
+            null,
+            true);
+    }
+
+    protected function getDefaultFileEntries()
+    {
+        return [
+            [
+                Header::ICICI_ECOLLECT_UTR                      => 'O20374917020',
+                Header::ICICI_ECOLLECT_CUSTOMER_CODE           => '2233',
+                Header::ICICI_ECOLLECT_CREDIT_ACCOUNT_NO        => '205025290',
+                Header::ICICI_ECOLLECT_DEALER_CODE              => '444455556666',
+                Header::ICICI_ECOLLECT_PAYMENT_TYPE             => 'IMPS',
+                Header::ICICI_ECOLLECT_REMITTANCE_INFORMATION   => 'test remittance',
+                Header::ICICI_ECOLLECT_REMITTER_ACCOUNT_NAME    => 'Test Name',
+                Header::ICICI_ECOLLECT_REMITTER_ACCOUNT_NO      => '914010018542355',
+                Header::ICICI_ECOLLECT_REMITTING_BANK_IFSC_CODE => 'UTIB',
+                Header::ICICI_ECOLLECT_TRANSACTION_AMOUNT       => '5000',
+                Header::ICICI_ECOLLECT_TRANSACTION_DATE         => '07/03/2020',
+                Header::ICICI_ECOLLECT_REMITTING_BANK_UTR_NO    => '6716048037',
+            ],
+        ];
     }
 
     protected function getPreferences()
