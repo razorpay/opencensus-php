@@ -20,6 +20,14 @@ class BalanceConfigTest extends TestCase
         parent::setUp();
     }
 
+
+    public function testCreateBalanceConfigInvalidAutoSmallerNegativeLimit()
+    {
+        $this->setUpCreateRequestFixtures();
+
+        $this->startTest();
+    }
+
     public function testCreatePrimaryBalanceConfig()
     {
         $this->setUpCreateRequestFixtures();

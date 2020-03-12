@@ -17,6 +17,13 @@ use RZP\Models\Settlement\Channel as SettlementChannel;
 class Validator extends Base\Validator
 {
     const FEES = 'fees';
+
+    // This is the maximum balance supported in reserve balance.
+    // If user tries to add balance > 50,000 INR, this will throw exception and balance will not be added.
+    // This limit is there for both reserve_primary and reserve_banking balance types.
+    // However, there is no lower limit on reserve balance.
+    // Also, in case the user wants to withdraw from his reserve balance,
+    // we can support that by negative adjustment to reserve balance.
     const MAX_RESERVE_BALANCE_AMOUNT = 5000000; //50,000INR
 
     protected static $createRules = [
@@ -66,6 +73,11 @@ class Validator extends Base\Validator
     }
 
     /**
+     * This validation is strictly for checking Reserve Type adjustment.
+     * If the type is not present or if it is not one of the reserve balance type, then we return.
+     * Else, we validate the amount for Reserve balance.
+     * Amount is mandatory in case of Reserve Balance Type
+     *
      * @param array $input
      * @throws Exception\BadRequestValidationFailureException
      */
@@ -76,17 +88,20 @@ class Validator extends Base\Validator
             return;
         }
 
-        $reserveType = ($input[Entity::TYPE] === Balance\Type::RESERVE_PRIMARY) or
+        $isReserveType = ($input[Entity::TYPE] === Balance\Type::RESERVE_PRIMARY) or
                             ($input[Entity::TYPE] === Balance\Type::RESERVE_BANKING);
 
-        if ($reserveType === true)
+
+        if ($isReserveType === true)
         {
+            // Amount is mandatory in case of Reserve Balance Type
             if (isset($input[Entity::AMOUNT]) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Amount should be passed for reserve balance.');
             }
 
+            // Validate the maximum limit on Reserve Balance Amount.
             if ($input[Entity::AMOUNT] > self::MAX_RESERVE_BALANCE_AMOUNT)
             {
                 throw new Exception\BadRequestValidationFailureException(

@@ -6,6 +6,32 @@ use RZP\Models\Merchant\Balance\BalanceConfig;
 
 return [
 
+    'testCreateBalanceConfigInvalidAutoSmallerNegativeLimit' => [
+        'request'  => [
+            'url'       => '/balance_configs/100ghi000ghi00',
+            'method'    => 'POST',
+            'content'   => [
+                'negative_limit_auto'                => 400000,
+                'negative_limit_manual'              => 60000,
+                'type'                                => 'primary',
+                'negative_transaction_flows'         => ['transfer', 'refund'],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The negative limit auto must be between 500000 and 50000000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePrimaryBalanceConfig' => [
         'request'  => [
             'url'       => '/balance_configs/100ghi000ghi00',
@@ -67,7 +93,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_LIMIT',
+                    'description' => 'negative_limit_manual can not be greater than negative_limit_auto',
                 ],
             ],
             'status_code' => 400,
@@ -93,7 +119,9 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => ErrorCode::BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW
+                    'description' => 'Negative Flow [payout] is not in the allowed flows list.'.
+                    ' Allowed flows for balance type primary are [payment,transfer,refund,adjustment]',
+
                 ],
             ],
             'status_code' => 400,
@@ -315,7 +343,8 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => ErrorCode::BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW
+                    'description' => 'Negative Flow [transfer,refund] is not in the allowed flows list.'.
+                        ' Allowed flows for balance type banking are [payout,adjustment]',
                 ],
             ],
             'status_code' => 400,
@@ -339,7 +368,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_LIMIT',
+                    'description' => 'The negative limit manual must be less than or equal to 50000000',
                 ],
             ],
             'status_code' => 400,
@@ -364,7 +393,9 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => ErrorCode::BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW
+                    'description' => 'Negative Flow [payout] is not in the allowed flows list.'.
+                        ' Allowed flows for balance type primary are [payment,transfer,refund,adjustment]',
+
                 ],
             ],
             'status_code' => 400,
@@ -389,7 +420,8 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => ErrorCode::BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW
+                    'description' => 'Negative Flow [transfer] is not in the allowed flows list.'.
+                        ' Allowed flows for balance type banking are [payout,adjustment]',
                 ],
             ],
             'status_code' => 400,

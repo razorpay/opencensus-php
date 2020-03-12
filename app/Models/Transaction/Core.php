@@ -929,7 +929,7 @@ class Core extends Base\Core
 
         $txn->setBalance($merchantBalance->getBalance(), $negativeLimit, $checkNegativeLimit);
 
-        (new Balance\Core)->postProcessingForNegativeBalance($oldBalance, 'merchant balance', $txn->getType(), $merchantBalance);
+        (new Balance\Core)->postProcessingForNegativeBalance($oldBalance, Balance\Entity::BALANCE, $txn->getType(), $merchantBalance);
 
         return $txn;
     }
@@ -1124,7 +1124,7 @@ class Core extends Base\Core
         }
         $this->merchantBalance->subtractRefundCredits($amount, $negativeLimit);
 
-        (new Balance\Core)->postProcessingForNegativeBalance($refundCredits, 'refund credits',
+        (new Balance\Core)->postProcessingForNegativeBalance($refundCredits, Balance\Entity::REFUND_CREDITS,
                                                              $txn->getType(), $merchantBalance);
 
         //create a credit transaction for the same

@@ -627,7 +627,7 @@ abstract class Base extends BaseCore
 
         $this->txn->setBalance($this->merchantBalance->getBalance(), $negativeLimit, $checkNegativeLimit);
 
-        (new Balance\Core)->postProcessingForNegativeBalance($oldBalance, 'merchant balance',
+        (new Balance\Core)->postProcessingForNegativeBalance($oldBalance, Balance\Entity::BALANCE,
                                                             $this->txn->getType(), $merchantBalance);
     }
 
