@@ -2670,12 +2670,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_RESPONSE                            = 'TERMINALS_SERVICE_RESPONSE';
     const TERMINALS_SERVICE_INTEGRATION_ERROR                   = 'TERMINALS_SERVICE_INTEGRATION_ERROR';
 
+    //payment config
+    const CONFIG_CREATE_REQUEST                                 = 'CONFIG_CREATE_REQUEST';
+    const CONFIG_UPDATE_REQUEST                                 = 'CONFIG_UPDATE_REQUEST';
+
     // DB wait timeout
     const WAIT_TIMEOUT_EXCEPTION                                = 'WAIT_TIMEOUT_EXCEPTION';
 
     // DB wait timeout
     const DB_EXECUTING_WAIT_TIMEOUT                             = 'DB_EXECUTING_WAIT_TIMEOUT';
-  
+
     // RBL VA integration
     const RBL_VA_CALLBACK                                       = 'RBL_VA_CALLBACK';
     const RBL_VA_INVALID_CALLBACK_DATA                          = 'RBL_VA_INVALID_CALLBACK_DATA';

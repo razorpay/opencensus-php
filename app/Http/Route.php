@@ -21,6 +21,9 @@ final class Route
         'checkout'                                 => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                          => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
         'checkout_public_canary'                   => ['get',      'checkout/public/canary',                         'MerchantController@getCheckoutPublic'                              ],
+        'fetch_payment_config'                     => ['get',      'payment/config/{type}',                          'ConfigController@fetchPaymentConfig'                               ],
+        'create_payment_config'                    => ['post',     'payment/config',                                 'ConfigController@createPaymentConfig'                              ],
+        'update_payment_config'                    => ['patch',    'payment/config',                                 'ConfigController@updatePaymentConfig'                              ],
 
         // callback_url case handler for automatic checkout
         'checkout_onyx'                            => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
@@ -2354,6 +2357,9 @@ final class Route
         'payout_links_merchant_summary',
         'fts_get_source_account',
         'virtual_account_banking_fetch_multiple',
+        'fetch_payment_config',
+        'create_payment_config',
+        'update_payment_config',
     ];
 
     //
