@@ -3,15 +3,13 @@
 namespace RZP\Tests\Functional\Merchant;
 
 
-use Mockery;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
-use RZP\Gateway\Base\Metric;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Http\Request\Requests;
-use RZP\Services\NbPlus\Request;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Helpers\MocksMetricTrait;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
@@ -25,6 +23,7 @@ class TerminalMigrationTest extends TestCase
 {
     use PaymentTrait;
     use TestsMetrics;
+    use TerminalTrait;
     use MocksMetricTrait;
 
     protected $razorxValue = RazorXClient::DEFAULT_CASE;
@@ -58,14 +57,7 @@ class TerminalMigrationTest extends TestCase
 
                 }) );
 
-        $this->terminalsServiceMock = Mockery::mock('RZP\Services\TerminalsService')->makePartial();
-
-        $this->terminalsServiceMock->shouldAllowMockingProtectedMethods();
-
-        $this->app['terminals_service'] = $this->terminalsServiceMock;
-
-        $this->app['config']->set('terminals_service.test.url', 'https://terminals-test.razorpay.com/');
-        $this->app['config']->set('terminals_service.live.url', 'https://terminals-live.razorpay.com/');
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
 
         $this->merchant = $this->fixtures->create('merchant');
 
@@ -76,13 +68,6 @@ class TerminalMigrationTest extends TestCase
         $admin = $this->ba->getAdmin();
 
         $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
-    }
-
-    protected function mockTerminalsServiceSendRequest($closure, $times = 2)
-    {
-        $this->terminalsServiceMock->shouldReceive('sendRequest')
-                                    ->times($times)
-                                    ->andReturnUsing($closure);
     }
 
     protected function getTerminalToArrayPassword($terminalId)
@@ -1318,5 +1303,4 @@ class TerminalMigrationTest extends TestCase
 
         $this->startTest();
     }
-
 }
