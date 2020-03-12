@@ -674,7 +674,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
         $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
         $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
-        $this->assertEquals('003030303030303', $basEntries[1]['utr']);
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[2]['entity_type']);
         $this->assertEquals($externals[1]['id'], $basEntries[2]['entity_id']);
