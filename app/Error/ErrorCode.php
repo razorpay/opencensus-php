@@ -317,10 +317,7 @@ class ErrorCode
     const GATEWAY_ERROR_RECONCILE_ERROR                                             = 'GATEWAY_ERROR_RECONCILE_ERROR';
     const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                     = 'GATEWAY_ERROR_TERMINAL_DISABLE_FAILED';
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                      = 'GATEWAY_ERROR_TERMINAL_ENABLE_FAILED';
-    const GATEWAY_ERROR_AUTHENTICATION_FAILED                                       = 'GATEWAY_ERROR_AUTHENTICATION_FAILED';
 
-    const BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY                                 = 'BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY';
-    const BAD_REQUEST_FAV_NOT_ALLOWED_CURRENTLY                                     = 'BAD_REQUEST_FAV_NOT_ALLOWED_CURRENTLY';
 
     const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'BAD_REQUEST_UPI_MPIN_NOT_SET';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                           = 'BAD_REQUEST_UPI_INVALID_ATM_PIN';
@@ -948,8 +945,6 @@ class ErrorCode
     const BAD_REQUEST_KYC_ID_MISSING                                                = 'BAD_REQUEST_KYC_ID_MISSING';
     const BAD_REQUEST_INVALID_RESPONSE_BODY                                         = 'BAD_REQUEST_INVALID_RESPONSE_BODY';
 
-    const SERVER_ERROR_BANKING_ACCOUNT_GATEWAY_PROCESSOR_CLASS_ABSENCE              = 'SERVER_ERROR_BANKING_ACCOUNT_GATEWAY_PROCESSOR_CLASS_ABSENCE';
-    const SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING                           = 'SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING';
     const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
     const SERVER_ERROR_NO_TERMINAL_FOUND                                            = 'SERVER_ERROR_NO_TERMINAL_FOUND';
     const SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND                                       = 'SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND';
@@ -1015,7 +1010,6 @@ class ErrorCode
     const SERVER_ERROR_WEBHOOK_IN_TRANSACTION                                       = 'SERVER_ERROR_WEBHOOK_IN_TRANSACTION';
     const SERVER_ERROR_SIGNED_XML_EMPTY                                             = 'SERVER_ERROR_SIGNED_XML_EMPTY';
 
-    const SERVER_ERROR_WEBHOOK_UPDATE_DISABLED                                      = 'SERVER_ERROR_WEBHOOK_UPDATE_DISABLED';
     const SERVER_ERROR_RAZORX_FAILURE                                               = 'SERVER_ERROR_RAZORX_FAILURE';
 
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
@@ -1145,8 +1139,6 @@ class ErrorCode
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
     const BAD_REQUEST_INVALID_PASSWORD                                              = 'BAD_REQUEST_INVALID_PASSWORD';
     const BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD                             = 'BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD';
-
-    const BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING                             = 'BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING';
 
     const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                        = 'BAD_REQUEST_USER_2FA_ALREADY_SETUP';
     const BAD_REQUEST_LOCKED_USER_LOGIN                                             = 'BAD_REQUEST_LOCKED_USER_LOGIN';
@@ -1518,7 +1510,6 @@ class ErrorCode
 
     const BAD_REQUEST_INSUFFICIENT_MERCHANT_BALANCE                                  = 'BAD_REQUEST_INSUFFICIENT_MERCHANT_BALANCE';
     const BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                      = 'BAD_REQUEST_NEGATIVE_BALANCE_BREACHED';
-    const BAD_REQUEST_INSUFFICIENT_BALANCE_LOCKED                                    = 'BAD_REQUEST_INSUFFICIENT_BALANCE_LOCKED';
     const RESERVE_BALANCE_CREATE_ALREADY_IN_PROGRESS                                 = 'RESERVE_BALANCE_CREATE_ALREADY_IN_PROGRESS';
     const BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND                               = 'BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND';
 
@@ -1527,13 +1518,12 @@ class ErrorCode
     //IRCTC Error codes
     const BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND                         = 'BAD_REQUEST_INCORRECT_AMOUNT_SENT_FOR_FULL_REFUND';
 
-    const BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND                               = 'BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND';
-
     //FuzzyMatcher Error Codes
     const BAD_REQUEST_INVALID_MATCH_PERCENT                                         = 'BAD_REQUEST_INVALID_MATCH_PERCENT';
     const BAD_REQUEST_INVALID_MATCH_TYPE                                            = 'BAD_REQUEST_INVALID_MATCH_TYPE';
 
-    const BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS';
+    // Terminals service error codes
+    const SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR                          = 'SERVER_ERROR_TERMINALS_SERVICE_INTEGRATION_ERROR';
 
-    const BAD_REQUEST_YESBANK_PAYMENT_DISABLED                                      = 'BAD_REQUEST_YESBANK_PAYMENT_DISABLED';
+    const BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_ANOTHER_CREDITS_OPERATION_IN_PROGRESS';
 }
