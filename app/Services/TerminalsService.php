@@ -16,8 +16,6 @@ class TerminalsService
 
     protected $config;
 
-    protected $mode;
-
     protected $trace;
 
     protected $baseUrl;
@@ -78,8 +76,6 @@ class TerminalsService
         $this->app = $app;
 
         $this->trace = $this->app['trace'];
-
-        $this->mode = $this->app['rzp.mode'];
     }
 
     public function migrateTerminal(Terminal\Entity $terminal): array
@@ -172,7 +168,7 @@ class TerminalsService
 
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST): \Requests_Response
     {
-        $url = $this->getBaseUrl($this->mode) . $path;
+        $url = $this->getBaseUrl() . $path;
 
         $headers = $this->getHeaders();
 
@@ -242,9 +238,9 @@ class TerminalsService
         return $responseArray;
     }
 
-    protected function getBaseUrl(string $mode)
+    protected function getBaseUrl()
     {
-        $urlConfig = 'applications.terminals_service.' . $mode . '.url';
+        $urlConfig = 'applications.terminals_service.' . $this->getMode() . '.url';
 
         return $this->app['config']->get($urlConfig);
     }
@@ -271,9 +267,13 @@ class TerminalsService
 
     protected function getPassword()
     {
-        $passwordConfig = 'applications.terminals_service.' . $this->mode . '.password';
+        $passwordConfig = 'applications.terminals_service.' . $this->getMode() . '.password';
 
         return $this->app['config']->get($passwordConfig);
+    }
 
+    protected function getMode()
+    {
+        return $this->app['rzp.mode'];
     }
 }
