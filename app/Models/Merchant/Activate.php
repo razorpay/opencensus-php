@@ -7,9 +7,11 @@ use Throwable;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
@@ -106,6 +108,9 @@ class Activate extends Base\Core
 
         $merchantCore->createBalanceConfig($merchantBalance, 'live');
 
+        //to be removed once hold funds issue is resolved
+        $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
+
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
         {
             $this->repo->saveOrFail($merchant);
@@ -121,7 +126,6 @@ class Activate extends Base\Core
 
             $this->activateBusinessBankingIfApplicable($merchant);
         });
-
         //
         // Activate Promotions/Coupons for Merchant if applicable.
         // Balance need to be created before applying promotion/coupon as credits are associated with it.
@@ -131,6 +135,8 @@ class Activate extends Base\Core
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED);
 
         $this->sendMerchantActivatedEvents($merchant);
+
+        $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_POST_TRANSCACTION,$merchant->toArrayPublic());
 
         return $merchantDetail;
     }
@@ -233,6 +239,8 @@ class Activate extends Base\Core
 
         $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
+        $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
+
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
         {
             $this->repo->saveOrFail($merchant);
@@ -258,6 +266,8 @@ class Activate extends Base\Core
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_KYC_VERIFIED);
 
         $this->sendMerchantActivatedEvents($merchant);
+
+        $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_POST_TRANSCACTION,$merchant->toArrayPublic());
 
         return $merchantDetail;
     }
@@ -551,13 +561,17 @@ class Activate extends Base\Core
                 'mode'              => $mode,
             ]);
 
+        $seriesPrefix = trim(Terminal\Core::getBankAccountSeriesPrefixForX($merchant, $mode));
+
         if ($onboardMerchant === true)
         {
             // Create Banking Balance
             $balance = (new Balance\Core)->createOrFetchSharedBankingBalance($merchant, $mode);
 
             // Create Virtual Account
-            $virtualAccount = (new VirtualAccount\Core)->createOrFetchBankingVirtualAccount($merchant, $balance);
+            $virtualAccount = (new VirtualAccount\Core)->createOrFetchBankingVirtualAccount($merchant,
+                                                                                            $balance,
+                                                                                            $seriesPrefix);
 
             // Create Banking Account
             $bankingAccount = (new BankingAccount\Core)->createOrFetchSharedBankingAccountFromVA($virtualAccount);
@@ -569,10 +583,27 @@ class Activate extends Base\Core
                     'banking_account_id' => $bankingAccount->getId(),
                     'merchant_id'        => $virtualAccount->getMerchantId(),
                     'mode'               => $mode,
+                    'series_prefix'      => $seriesPrefix,
                 ]);
 
             $this->addPayoutFeatureIfApplicable($merchant, $mode);
         }
+    }
+
+    protected function blockRxActivationIfApplicable($merchant)
+    {
+        $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::BLOCK_X_REGISTRATION]) ?? false;
+
+        if (boolval($config) === true)
+        {
+            $this->trace->info(TraceCode::BLOCKING_RX_ACTIVATIONS_TEMPORARILY, [
+                'onboard_merchant'  => true,
+                'merchant_id'       => $merchant->getId(),
+                'config'            => $config,
+            ]);
+        }
+
+        return boolval($config);
     }
 
     protected function addPayoutFeatureIfApplicable(Entity $merchant, string $mode)
@@ -625,7 +656,7 @@ class Activate extends Base\Core
 
     protected function onBoardMerchantOnRazorpayxInLiveMode(Entity $merchant)
     {
-        return ($merchant->isActivated() === true);
+        return (($merchant->isActivated() === true) and ($this->blockRxActivationIfApplicable($merchant) === false));
     }
 
     protected function onBoardMerchantOnRazorpayxInTestMode(Entity $merchant)
@@ -668,7 +699,7 @@ class Activate extends Base\Core
             $mode
         );
 
-        $result = (strtolower($variant) === 'on');
+        $result = (strtolower($variant) !== 'off');
 
         return $result;
     }

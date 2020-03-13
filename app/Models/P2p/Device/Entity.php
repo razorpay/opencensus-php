@@ -5,6 +5,7 @@ namespace RZP\Models\P2p\Device;
 use RZP\Models\P2p\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\P2p\Vpa\Handle;
 use RZP\Models\P2p\Base\Traits;
 
 class Entity extends Base\Entity
@@ -377,6 +378,11 @@ class Entity extends Base\Entity
     public function deviceTokens()
     {
         return $this->hasMany(DeviceToken\Entity::class, DeviceToken\Entity::DEVICE_ID);
+    }
+
+    public function deviceToken(Handle\Entity $handle)
+    {
+        return $this->deviceTokens()->handle($handle)->verified()->latest()->first();
     }
 
     public function setPublicCustomerIdAttribute(& $input)

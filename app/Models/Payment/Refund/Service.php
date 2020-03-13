@@ -1601,8 +1601,8 @@ class Service extends Base\Service
                 if ($refund->isScrooge() === true)
                 {
                     $data = [
-                        Payment\Entity::STATUS   => Status::PROCESSED,
-                        Entity::PROCESSED_SOURCE => $input[Entity::PROCESSED_SOURCE] ?? '',
+                        Entity::MODE           => $input[Entity::PROCESSED_SOURCE] ?? '',
+                        Payment\Entity::STATUS => Status::PROCESSED,
                     ];
 
                     $this->makeScroogeEditRefundRequest($refund, $data);

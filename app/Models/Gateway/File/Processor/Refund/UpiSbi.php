@@ -23,7 +23,7 @@ use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class UpiSbi extends Base
 {
-    const FILE_NAME       = 'SBI_UPI';
+    const FILE_NAME       = 'SBI0000000000232';
     const EXTENSION       = FileStore\Format::CSV;
     const FILE_TYPE       = FileStore\Type::SBI_UPI_REFUND;
     const GATEWAY         = Payment\Gateway::UPI_SBI;
@@ -88,10 +88,12 @@ class UpiSbi extends Base
             $refAmt       = trim(RefundFile::REFUND_REQ_AMT, '"');
             $refRemark    = trim(RefundFile::REFUND_REMARK, '"');
 
+            $referenceNo = $row['gateway']['gateway_data']['addInfo2'] ?? '';
+
             $formattedData[] = [
                 $pgMerchantId  => trim($row['gateway']['gateway_merchant_id'], '"'),
                 $refReqNo      => trim($row['refund']['id'], '"'),
-                $txnRefNo      => trim($row['gateway']['npci_reference_id'], '"'),
+                $txnRefNo      => trim($referenceNo, '"'),
                 $custRefNo     => trim($row['gateway']['gateway_payment_id'], '"'),
                 $orderNo       => trim($row['payment']['id'], '"'),
                 $refAmt        => trim($row['refund']['amount'] / 100, '"'),
