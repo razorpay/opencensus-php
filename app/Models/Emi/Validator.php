@@ -15,7 +15,6 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID             => 'required|string|size:14',
         Entity::BANK                    => 'required_without:network|size:4',
         Entity::NETWORK                 => 'required_without:bank|max:5|in:AMEX,BAJAJ',
-        Entity::TYPE                    => 'sometimes_if:methods,card|in:credit,debit',
         Entity::DURATION                => 'required|integer|in:3,6,9,12,18,24',
         Entity::RATE                    => 'required|integer|min:0',
         Entity::METHODS                 => 'sometimes|in:card,wallet,netbanking',
@@ -54,7 +53,6 @@ class Validator extends Base\Validator
         $params = [
             Entity::MERCHANT_ID => $newEmiPlan->getMerchantId(),
             Entity::DURATION    => $newEmiPlan->getDuration(),
-            Entity::TYPE        => $newEmiPlan->getType(),
         ];
 
         if ($newEmiPlan->getNetwork() === null)

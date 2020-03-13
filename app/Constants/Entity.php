@@ -266,7 +266,6 @@ class Entity
     const WORLDLINE              = 'worldline';
     const GETSIMPL               = 'getsimpl';
     const PAYLATER_ICICI         = 'paylater_icici';
-    const HDFC_DEBIT_EMI         = 'hdfc_debit_emi';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -596,7 +595,6 @@ class Entity
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
         self::GETSIMPL               => \RZP\Gateway\Mozart::class,
         self::PAYLATER_ICICI         => \RZP\Gateway\Mozart::class,
-        self::HDFC_DEBIT_EMI         => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,

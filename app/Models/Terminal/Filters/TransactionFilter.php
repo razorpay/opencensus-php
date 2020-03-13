@@ -132,9 +132,7 @@ class TransactionFilter extends Terminal\Filter
             }
             else
             {
-                $issuer = $payment->card->getIssuer();
-
-                $supported = Gateway::isCardNetworkSupported($network, $gateway, $issuer, $payment->isRecurring());
+                $supported = Gateway::isCardNetworkSupported($network, $gateway, $payment->isRecurring());
             }
 
             return $supported;
@@ -515,9 +513,7 @@ class TransactionFilter extends Terminal\Filter
         }
         else
         {
-            $cardType = $payment->card->getType();
-
-            $gateway = Gateway::$emiBankToGatewayMap[$bank][$cardType];
+            $gateway = Gateway::$emiBankToGatewayMap[$bank];
         }
 
         $emiDuration = $this->input['payment']->emiPlan->getDuration();

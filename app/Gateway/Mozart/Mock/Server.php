@@ -107,20 +107,6 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $authVerifyObj, Action::AUTH_VERIFY);
     }
 
-    public function authenticateInit($input)
-    {
-        $authInitObj = new AuthenticateInitData();
-
-        return $this->processMockResponse($input, $authInitObj, Action::AUTHENTICATE_INIT);
-    }
-
-    public function authenticateVerify($input)
-    {
-        $authVerifyObj = new AuthenticateVerifyData();
-
-        return $this->processMockResponse($input, $authVerifyObj, Action::AUTHENTICATE_VERIFY);
-    }
-
     public function checkBalance($input)
     {
         $checkBalanceObj = new CheckBalanceData();
