@@ -169,6 +169,7 @@ class Header
     const MODE           = 'mode';
     const UTR            = 'utr';
     const TIME           = 'time';
+    const NARRATION      = 'narration';
 
     //
     // Batch recurring payments
@@ -803,6 +804,14 @@ class Header
     const BUSINESS_REGISTERED_ADDRESS = Detail\Entity::BUSINESS_REGISTERED_ADDRESS;
     const BUSINESS_REGISTERED_STATE = Detail\Entity::BUSINESS_REGISTERED_STATE;
 
+    //report headers
+    const CONSUMER     = 'consumer';
+    const REPORT_TYPE  = 'report_type';
+    const CONFIG_ID    = 'config_id';
+    const GENERATED_BY = 'generated_by';
+    const START_TIME   = 'start_time';
+    const END_TIME     = 'end_time';
+
 
     const ADJUSTMENT_REFERENCE_ID   = 'reference_id';
     const ADJUSTMENT_MERCHANT_ID    = 'merchant_id';
@@ -1349,6 +1358,7 @@ class Header
                 self::TIME,
                 self::AMOUNT,
                 self::DESCRIPTION,
+                self::NARRATION,
             ],
             self::OUTPUT => [
                 self::PROVIDER,
@@ -1362,6 +1372,7 @@ class Header
                 self::TIME,
                 self::AMOUNT,
                 self::DESCRIPTION,
+                self::NARRATION,
                 self::STATUS,
             ],
         ],
@@ -2532,6 +2543,25 @@ class Header
                 self::ADJUSTMENT_AMOUNT,
                 self::ADJUSTMENT_BALANCE_TYPE,
                 self::ADJUSTMENT_DESCRIPTION,
+            ],
+        ],
+
+        TYPE::REPORT => [
+            self::INPUT => [
+                self::CONSUMER,
+                self::REPORT_TYPE,
+                self::CONFIG_ID,
+                self::GENERATED_BY,
+                self::START_TIME,
+                self::END_TIME,
+                self::MODE
+            ],
+            self::OUTPUT => [
+                self::ID,
+                self::CONSUMER,
+                self::CONFIG_ID,
+                self::START_TIME,
+                self::END_TIME,
             ],
         ],
 

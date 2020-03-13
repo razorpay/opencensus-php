@@ -299,8 +299,6 @@ class Constants
 
     const REDIRECTION_ONHOLD       = 'redirection_onhold';
 
-    const ERROR_METADATA_RESPONSE  = 'error_metadata_response';
-
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
      * decide to upgrade his account to x_pro. This feature gives flexibility initially
@@ -317,6 +315,11 @@ class Constants
      * This flag will be used to skip some merchants from hitachi automatic onboarding
      */
     const SKIP_HITACHI_AUTO_ONBOARD  = 'skip_hitachi_auto_onboard';
+
+    /*
+     * This flag will be used to enable payment created webhook
+     */
+    const PAYMENT_CREATED_WEBHOOK  = 'payment_created_webhook';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -513,11 +516,11 @@ class Constants
         self::GENERATE_PARTNER_INVOICE        => true,
         self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
-        self::ERROR_METADATA_RESPONSE         => true,
         self::SKIP_HITACHI_AUTO_ONBOARD       => true,
         self::SKIP_WORKFLOWS_FOR_API          => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
+        self::PAYMENT_CREATED_WEBHOOK         => true,
     ];
 
     // Entity type constants
@@ -665,6 +668,16 @@ class Constants
         self::SKIP_WORKFLOWS_FOR_API         => [
             'feature'       => self::SKIP_WORKFLOWS_FOR_API,
             'display_name'  => 'Razorpay X - Skip workflows for API requests',
+            'documentation' => '',
+        ],
+        self::DISABLE_INSTANT_REFUNDS     => [
+            'feature'       => self::DISABLE_INSTANT_REFUNDS,
+            'display_name'  => 'Disable Instant Refunds',
+            'documentation' => '',
+        ],
+        self::CARD_TRANSFER_REFUND        => [
+            'feature'       => self::CARD_TRANSFER_REFUND,
+            'display_name'  => 'Card Transfer Refund',
             'documentation' => '',
         ],
     ];

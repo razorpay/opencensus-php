@@ -23,6 +23,8 @@ class Scenario extends Mock\Scenario
     public function getScenarionCallbackMap()
     {
         $map = [
+            self::N0000 => [
+            ],
             self::DE101 => [
                 'error' => [
                     'code'          => 'BAD_REQUEST_ERROR',
@@ -36,6 +38,44 @@ class Scenario extends Mock\Scenario
                     'code'          => 'BAD_REQUEST_ERROR',
                     'description'   => 'Device is not registered for the given handle',
                 ],
+            ],
+            self::DE202 => [
+            ],
+            self::DE203 => [
+            ],
+            self::DE301 => [
+                'error' => [
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    'description'   => 'Device is not registered for the given handle',
+                ],
+            ],
+            self::DE302 => [
+            ],
+            self::DE304 => [
+                'error' => [
+                    'code'          => 'GATEWAY_ERROR',
+                    'description'   => 'Action could not be completed at bank',
+                ],
+            ],
+            self::DE305 => [
+                'error' => [
+                    'code'          => 'GATEWAY_ERROR',
+                    'description'   => 'Action could not be completed at bank',
+                ],
+            ],
+            self::DE306 => [
+                'error' => [
+                    'code'          => 'GATEWAY_ERROR',
+                    'description'   => 'Action could not be completed at bank',
+                ],
+            ],
+            self::DE401 => [
+                'error' => [
+                    'code'          => 'GATEWAY_ERROR',
+                    'description'   => 'Action could not be completed at bank',
+                ],
+            ],
+            self::DE303 => [
             ],
             self::BA101 => [
 

@@ -12,7 +12,7 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
     {
         $request = new Request();
 
-        $request->setUrl(null);
+        $request->setRedirect(null);
         $request->setAction('retrieve');
 
         $response->setRequest($request);

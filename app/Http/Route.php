@@ -193,7 +193,7 @@ final class Route
         'merchant_create'                          => ['post',     'merchants',                                      'MerchantController@postCreateMerchant'                             ],
         'merchant_product_switch'                  => ['post',     'merchants/product-switch',                       'MerchantController@postSwitchProductMerchant'                      ],
         // Below route is a temporary route and should be deleted after the migration is completed
-        'migration_x_test_mode'                    => ['post',     'merchants/banking-product-switch',               'MerchantController@enableBusinessBankingTestMode'                           ],
+        'migration_multi_va_on_x'                  => ['post',     'merchants/banking-va-migration',                 'MerchantController@migrationBankingVAs'                            ],
         'merchant_fetch'                           => ['get',      'merchants/{id}',                                 'MerchantController@getMerchant'                                    ],
         'merchant_edit'                            => ['put',      'merchants/{id}',                                 'MerchantController@putMerchant'                                    ],
         'merchant_edit_config'                     => ['put',      'account/config',                                 'MerchantController@putMerchantConfig'                              ],
@@ -348,6 +348,7 @@ final class Route
         'virtual_account_close'                    => ['post',     'virtual_accounts/{id}/close',                    'VirtualAccountController@closeVirtualAccount'                      ],
         'virtual_account_fetch'                    => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
         'virtual_account_fetch_multiple'           => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
+        'virtual_account_banking_fetch_multiple'   => ['get',      'virtual_accounts/banking/account',               'VirtualAccountController@list'                                     ],
         'virtual_account_fetch_payments'           => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
         'virtual_account_close_cron'               => ['post',     'virtual_accounts/close',                         'VirtualAccountController@closeVirtualAccountsByCloseBy'            ],
         'virtual_account_add_receiver'             => ['patch',    'virtual_accounts/{id}/receiver',                 'VirtualAccountController@addReceiver'                              ],
@@ -1491,8 +1492,8 @@ final class Route
         'create_virtual_account_from_order'       => ['post',       'virtual_accounts/offline_qr',                              'VirtualAccountController@createOfflineQr'                 ],
 
         // Route for Success Rate Global Configurations
-        'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
-        'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
+        'update_sr_level_global_config'  => ['put', 'cutoffs/{id}', 'SuccessRateController@proxy'],
+        'get_all_sr_level_global_config' => ['get', 'cutoffs', 'SuccessRateController@proxy'],
 
         // Offline
         'fetch_offline_device_multiple'           => ['get',       'offlines/devices',                                          'OfflineController@fetchMultiple'                              ],
@@ -1510,6 +1511,8 @@ final class Route
         'entity_bulk_update'                      => ['post',      'entities/bulk-update',                                         'MerchantController@merchantsBulkUpdate'                    ],
         'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
         'fetch_batch_action_entities'             => ['get',       'batch_action_entities',                                  'MerchantController@getBatchActionEntities'                 ],
+        'update_wait_timeout'                     => ['post',      'db/wait_timeout',                                        'AdminController@setWaitTimeout'                 ],
+        'consume_typeform_webhook'                => ['post',      'typeform/webhook_consumption',                                  'TypeformController@webhookConsumption'          ],
     ];
 
     public static $public = [
@@ -1991,7 +1994,7 @@ final class Route
         'update_fts_nodal_beneficiary',
         'create_fts_nodal_beneficiary',
         'payouts_process_queued',
-        'migration_x_test_mode',
+        'migration_multi_va_on_x',
         'update_fts_fund_transfer',
         'fund_account_validation_retry',
         'setl_initiate_adhoc',
@@ -2351,6 +2354,7 @@ final class Route
         'payout_links_resend_notification',
         'payout_links_merchant_summary',
         'fts_get_source_account',
+        'virtual_account_banking_fetch_multiple',
     ];
 
     //
@@ -3595,6 +3599,7 @@ final class Route
         'merchant_instant_activation_post'             => Permission::MERCHANT_INSTANT_ACTIVATION,
         'merchant_features_update'                     => Permission::UPDATE_MERCHANT_FEATURE,
         'bank_transfer_process_test'                   => Permission::UPDATE_TEST_MERCHANT_BALANCE,
+        'virtual_account_banking_fetch_multiple'       => Permission::VIEW_VIRTUAL_ACCOUNT,
         'banking_account_create'                       => '*',
         'merchant_activation_upload_file'              => '*',
         'user_verify_contact'                          => '*',
@@ -3709,6 +3714,8 @@ final class Route
         'activate_live_offline_device',
         'offline_qr_poll_test_order_status',
         'offline_qr_poll_live_order_status',
+        'consume_typeform_webhook',
+        'update_wait_timeout',
     ];
 
     /**
@@ -3884,7 +3891,7 @@ final class Route
             'payment_page_items_migrate_min_purchase',
             'scrooge_refund_verify_bulk',
             'payouts_process_queued',
-            'migration_x_test_mode',
+            'migration_multi_va_on_x',
             'scrooge_tagging_backfill',
             'payments_downtime_trigger_cron',
             'payment_card_vault_migrate',
@@ -4065,6 +4072,7 @@ final class Route
             'entity_bulk_update',
             'adj_add_batch',
             'bank_transfer_process_icici',
+            'reporting_log_create',
         ],
 
         'stork' => [
@@ -4369,6 +4377,10 @@ final class Route
     const ROUTES_THROUGH_MASTER_REPLICA = [
         'admin_fetch_entity_multiple',
         'admin_fetch_entity_by_id',
+    ];
+
+    const TYPEFORM_SECURITY = [
+        'consume_typeform_webhook',
     ];
 
     /**

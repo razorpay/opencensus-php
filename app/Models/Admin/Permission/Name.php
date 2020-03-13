@@ -255,6 +255,7 @@ class Name
     const UPDATE_DOWNTIME_CONFIG              = 'update_downtime_config';
     const LIST_DOWNTIME_CONFIG                = 'list_downtime_config';
     const ADJUSTMENT_BATCH_UPLOAD             = 'adjustment_batch_upload';
+    const REPORTING_BATCH_UPLOAD              = 'reporting_batch_upload';
     const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
 
     // RazorpayX/Business banking permissions
@@ -338,6 +339,7 @@ class Name
     const MERCHANT_INSTANT_ACTIVATION         = 'merchant_instant_activation';
     const UPDATE_MERCHANT_FEATURE             = 'update_merchant_feature';
     const UPDATE_TEST_MERCHANT_BALANCE        = 'update_test_merchant_balance';
+    const VIEW_VIRTUAL_ACCOUNT                = 'view_virtual_account';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

@@ -61,6 +61,7 @@ class Reporting implements ExternalService
     const LINKED_ACCOUNT_HEADER = 'X-Linked-Account-Parent';
     const USER_ID_HEADER        = 'X-Dashboard-User-Id';
     const GENERATED_BY_HEADER   = 'X-Generated-By';
+    const BATCH_ID              = 'X-Batch-Id';
 
     /**
      * @var array
@@ -291,6 +292,11 @@ class Reporting implements ExternalService
         if ($this->ba->isProxyAuth())
         {
             $input['generated_by'] = $this->ba->authCreds->getKey();
+        }
+
+        if (Request::header(self::BATCH_ID) !== null)
+        {
+            $input['batch_id'] = Request::header(self::BATCH_ID);
         }
 
         $path = self::LOG_PATH;

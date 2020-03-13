@@ -101,6 +101,11 @@ class InvitationTest extends TestCase
         $this->startTest();
     }
 
+    public function testPostSendInvitationWithOwnerRole()
+    {
+        $this->startTest();
+    }
+
     public function testPostSendInvitationByRBLSupervisorToValidRole()
     {
         $nonOwnerUser = $this->fixtures->create('user');

@@ -126,20 +126,20 @@ class Repository extends Base\Repository
                     ->pluck($merchantIdColumn);
     }
 
-    // To be used for x test mode migration purpose only
-    public function fetchBankingAccounts(array $merchantIds, int $skip, int $limit)
+    public function fetchByMerchantIdAndAccountType(string $merchantId, string $accountType)
     {
-         $query = $this->newQuery()
-                       ->where(Entity::CHANNEL, '=', Channel::YESBANK)
-                       ->orderBy(Entity::CREATED_AT)
-                       ->skip($skip)
-                       ->take($limit);
+        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
 
-        if (empty($merchantIds) === false)
-        {
-            $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
-        }
+        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceAccountTypeColumn       = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
 
-         return $query->get();
+        return $this->newQuery()
+                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', $accountType)
+                    ->get();
     }
 }

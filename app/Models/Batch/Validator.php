@@ -130,7 +130,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $nachCreateRules = [
-        Entity::FILE        => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE        => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::TYPE        => 'required|in:nach',
         Entity::SUB_TYPE    => 'required|string|in:register,debit',
         Entity::GATEWAY     => 'required|string',
