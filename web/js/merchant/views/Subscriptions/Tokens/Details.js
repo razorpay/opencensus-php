@@ -286,7 +286,7 @@ class ErrorMessage extends React.PureComponent {
   render() {
     const { recurringDetails: { failure_reason }, isNACHMethod } = this.props;
 
-    if (isNACHMethod) {
+    if (isNACHMethod && failure_reason) {
       return (
         <React.Fragment>
           <Alert type="error" message={failure_reason} showDismiss={false} />
