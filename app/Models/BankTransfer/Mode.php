@@ -9,6 +9,7 @@ class Mode
     const IMPS = 'imps';
     const IFT  = 'ift';
     const UPI  = 'upi';
+    const FT   = 'ft';
 
     public static function isValid($mode)
     {
