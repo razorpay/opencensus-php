@@ -685,6 +685,7 @@ class ErrorCode
     const BAD_REQUEST_RECURRING_TOKEN_EXPIRED                                       = 'BAD_REQUEST_RECURRING_TOKEN_EXPIRED';
     const BAD_REQUEST_CARDHOLDER_STOPPED_WITHDRAWALS                                = 'BAD_REQUEST_CARDHOLDER_STOPPED_WITHDRAWALS';
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                       = 'BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED';
+    const BAD_REQUEST_PAYMENT_INVALID_MERCHANT_NAME                                 = 'BAD_REQUEST_PAYMENT_INVALID_MERCHANT_NAME';
 
     // Paylater gateway errors
     const BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST                                  = 'BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST';
@@ -697,6 +698,11 @@ class ErrorCode
     const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_ACTIVATED                           = 'BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_ACTIVATED';
     const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_APPROVED                            = 'BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_APPROVED';
     const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_EXPIRED                                 = 'BAD_REQUEST_PAYLATER_CREDIT_LIMIT_EXPIRED';
+
+    // Debit card EMI errors
+    const BAD_REQUEST_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE                               = 'BAD_REQUEST_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE';
+    // HDFC wants us to show a specific error message here to customers. Hence adding gateway specific internal error code.
+    const BAD_REQUEST_DEBIT_EMI_HDFC_MAXIMUM_AMOUNT_LIMIT                           = 'BAD_REQUEST_DEBIT_EMI_HDFC_MAXIMUM_AMOUNT_LIMIT';
 
     const BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT                                 = 'BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT';
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                        = 'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD';
@@ -948,6 +954,7 @@ class ErrorCode
     const BAD_REQUEST_KYC_ID_MISSING                                                = 'BAD_REQUEST_KYC_ID_MISSING';
     const BAD_REQUEST_INVALID_RESPONSE_BODY                                         = 'BAD_REQUEST_INVALID_RESPONSE_BODY';
 
+    const SERVER_ERROR_BANKING_ACCOUNT_GATEWAY_PROCESSOR_CLASS_ABSENCE              = 'SERVER_ERROR_BANKING_ACCOUNT_GATEWAY_PROCESSOR_CLASS_ABSENCE';
     const SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING                           = 'SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING';
     const SERVER_ERROR_INCORRECT_ENTITY_DELETE                                      = 'SERVER_ERROR_INCORRECT_ENTITY_DELETE';
     const SERVER_ERROR_NO_TERMINAL_FOUND                                            = 'SERVER_ERROR_NO_TERMINAL_FOUND';
@@ -1014,6 +1021,7 @@ class ErrorCode
     const SERVER_ERROR_WEBHOOK_IN_TRANSACTION                                       = 'SERVER_ERROR_WEBHOOK_IN_TRANSACTION';
     const SERVER_ERROR_SIGNED_XML_EMPTY                                             = 'SERVER_ERROR_SIGNED_XML_EMPTY';
 
+    const SERVER_ERROR_WEBHOOK_UPDATE_DISABLED                                      = 'SERVER_ERROR_WEBHOOK_UPDATE_DISABLED';
     const SERVER_ERROR_RAZORX_FAILURE                                               = 'SERVER_ERROR_RAZORX_FAILURE';
 
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
@@ -1330,7 +1338,7 @@ class ErrorCode
     const GATEWAY_ERROR_SECURE_CGI_PARAM_PUBLIC_KEY_CORRUPT_INVALID                 = 'GATEWAY_ERROR_SECURE_CGI_PARAM_PUBLIC_KEY_CORRUPT_INVALID';
     const GATEWAY_ERROR_GENERIC_TRANSACTION_ERROR                                   = 'GATEWAY_ERROR_GENERIC_TRANSACTION_ERROR';
     const BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED                                    = 'BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED';
-    const GATEWAAY_ERROR_TERMINAL_ERROR                                             = 'GATEWAAY_ERROR_TERMINAL_ERROR';
+    const GATEWAY_ERROR_TERMINAL_ERROR                                              = 'GATEWAY_ERROR_TERMINAL_ERROR';
     const GATEWAY_ERROR_SHARED_TERMINAL_ERROR                                       = 'GATEWAY_ERROR_SHARED_TERMINAL_ERROR';
     const GATEWAY_ERROR_RECON_NOT_IN_PROGRESS                                       = 'GATEWAY_ERROR_RECON_NOT_IN_PROGRESS';
     const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                           = 'BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE';

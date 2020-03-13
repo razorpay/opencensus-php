@@ -99,11 +99,23 @@ final class RazorxTreatment
     // restrict user to one role per merchant and product
     const RESTRICT_USER_TO_ONE_ROLE_PER_MERCHANT_AND_PRODUCT = 'restrict_user_to_one_role_per_merchant_and_product';
 
+    //restrict user form creating/updating webhook
+    const DISABLE_WEBHOOK_UPDATE = 'disable_webhook_update';
+  
     // Forces ICICI channel when we get channel as yesbank
     const FORCE_ICICI_OVER_YESBANK_FOR_PAYOUTS = 'force_icici_over_yesbank_for_payouts';
 
-    // Allow NEFT Payouts via ICICI
-    const RAZORPAY_X_ALLOW_NEFT_PAYOUTS_VIA_ICICI = 'razorpay_x_allow_neft_payouts_via_icici';
+    // Allow UPI Payouts via ICICI (VPA)
+    const RAZORPAY_X_ALLOW_UPI_PAYOUTS_VIA_ICICI_TO_VPA = 'razorpay_x_allow_upi_payouts_via_icici_to_vpa';
+
+    // Allow NEFT Payouts via ICICI (Card)
+    const RAZORPAY_X_ALLOW_NEFT_PAYOUTS_VIA_ICICI_TO_CARD = 'razorpay_x_allow_neft_payouts_via_icici_to_card';
+
+    // Allow UPI Payouts via ICICI (Card)
+    const RAZORPAY_X_ALLOW_UPI_PAYOUTS_VIA_ICICI_TO_CARD = 'razorpay_x_allow_upi_payouts_via_icici_to_card';
 
     const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
+
+    // Disabling bank transfer refunds by default - this feature is to enable it
+    const ENABLE_BANK_TRANSFER_REFUNDS = 'enable_bank_transfer_refunds';
 }

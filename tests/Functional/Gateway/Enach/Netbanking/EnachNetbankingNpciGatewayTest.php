@@ -32,9 +32,20 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     use AttemptReconcileTrait;
     use PartnerTrait;
 
+    // Conditions for debit file generation
+    // 1. Has to be a working day
+    // 2. Payments selected in the file are created within the time interval of 9 AM of previous day to 9 AM today
+
+    const FIXED_WORKING_DAY_TIME     = 1583548200;  // 07-03-2020 8:00 AM
+    const FIXED_NON_WORKING_DAY_TIME = 1583634600;  // 08-03-2020 8:00 AM (sunday)
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/EnachNetbankingNpciGatewayTestData.php';
+
+        $fixedTime = (new Carbon())->timestamp(self::FIXED_WORKING_DAY_TIME);
+
+        Carbon::setTestNow($fixedTime);
 
         parent::setUp();
 
@@ -300,7 +311,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     {
         $response = $this->makeDebitPayment();
 
-        $paymentId = $this->updateCreatedAtOfPayment($response['razorpay_payment_id']);
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
 
         $this->ba->adminAuth();
 
@@ -338,7 +349,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'payment_id' => $paymentId,
+                'payment_id' => $response['razorpay_payment_id'],
                 'action'     => 'authorize',
                 'bank'       => 'UTIB',
                 'status'     => null,
@@ -353,15 +364,11 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
     public function testDebitFileGenerationMultipleUtilityCode()
     {
-        $response = $this->makeDebitPayment();
-
-        $this->updateCreatedAtOfPayment($response['razorpay_payment_id']);
+        $this->makeDebitPayment();
 
         $this->fixtures->create('terminal:direct_enach_npci_netbanking_terminal');
 
-        $response = $this->makeDebitPayment();
-
-        $this->updateCreatedAtOfPayment($response['razorpay_payment_id']);
+        $this->makeDebitPayment();
 
         $this->ba->adminAuth();
 
@@ -405,6 +412,21 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         Queue::assertPushed(BeamJob::class, 1);
 
         Queue::assertPushedOn('beam_test', BeamJob::class);
+    }
+
+    public function testDebitFileGenerationOnNonWorkingDay()
+    {
+        $fixedTime = (new Carbon())->timestamp(self::FIXED_NON_WORKING_DAY_TIME);
+
+        Carbon::setTestNow($fixedTime);
+
+        $response = $this->makeDebitPayment();
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $this->startTest();
     }
 
     public function testDebitFileReconciliation()
@@ -817,23 +839,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
         $this->assertNotNull($attempt['utr']);
-    }
-
-    protected function updateCreatedAtOfPayment($paymentId)
-    {
-        $this->fixtures->stripSign($paymentId);
-
-        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
-        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
-
-        $this->fixtures->edit(
-            'payment',
-            $paymentId,
-            [
-                'created_at' => $createdAt,
-            ]);
-
-        return $paymentId;
     }
 
     protected function createPaymentFailed()

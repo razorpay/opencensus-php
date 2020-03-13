@@ -34,6 +34,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY           => 'nullable|in:INR',
         Entity::DESCRIPTION        => 'nullable|string|max:255',
         Entity::ATTEMPT            => 'nullable|integer',
+        Entity::NARRATION          => 'nullable|string',
     ];
 
     public static $rblRules = [
@@ -43,8 +44,8 @@ class Validator extends Base\Validator
         'Data.0.messageType'            => 'required|string',
         'Data.0.amount'                 => 'required|string',
         'Data.0.UTRNumber'              => 'required|string',
-        'Data.0.senderIFSC'             => 'required|string',
-        'Data.0.senderAccountNumber'    => 'required|string',
+        'Data.0.senderIFSC'             => 'nullable|string',
+        'Data.0.senderAccountNumber'    => 'nullable|string',
         'Data.0.senderName'             => 'required|string',
         'Data.0.creditAccountNumber'    => 'required|string',
     ];
@@ -64,11 +65,16 @@ class Validator extends Base\Validator
         }
     }
 
+    const MODES_WITHOUT_IFSC = [
+        Mode::IMPS,
+        Mode::UPI,
+    ];
+
     protected function validatePayerIfsc($input)
     {
         // We currently aren't getting the actual payer_ifsc for IMPS payments.
         if ((strlen($input[Entity::PAYER_IFSC]) !== self::IFSC_LENGTH) and
-            ($input[Entity::MODE] !== Mode::IMPS))
+            (in_array($input[Entity::MODE], self::MODES_WITHOUT_IFSC, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'IFSC is of invalid length',

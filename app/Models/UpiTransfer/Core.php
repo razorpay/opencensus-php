@@ -30,6 +30,8 @@ class Core extends Base\Core
             $upiTransferInput
         );
 
+        $this->convertPayeeVpaToLower($upiTransferInput);
+
         try
         {
             $terminal = $this->filterTerminal($upiTransferInput, $terminals);
@@ -117,10 +119,17 @@ class Core extends Base\Core
             TraceCode::UPI_TRANSFER_PAYMENT_PROCESSING_FAILED,
             array_merge($input, ['message' => $ex->getMessage()]),
             [
-                'channel'  => Config::get('slack.channels.virtual_accounts_log'),
+                'channel'  => Config::get('slack.channels.upi_transfer_logs'),
                 'username' => 'Scrooge',
                 'icon'     => ':x:'
             ]
         );
+    }
+
+    protected function convertPayeeVpaToLower(array & $input)
+    {
+        $payeeVpa = $input['payee_vpa'];
+
+        $input['payee_vpa'] = strtolower($payeeVpa);
     }
 }

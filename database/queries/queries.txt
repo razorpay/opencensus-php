@@ -5629,6 +5629,9 @@ ALTER TABLE merchant_details
     ADD COLUMN authorized_signatory_dob date DEFAULT NULL,
     ADD COLUMN platform varchar(40) DEFAULT NULL;
 
+ALTER TABLE d2c_bureau_report
+    ADD COLUMN csv_report_ufh_file_id varchar(255)  DEFAULT NULL;
+
 ALTER TABLE payout_links
     ADD COLUMN send_sms BOOLEAN DEFAULT false,
     ADD COLUMN send_email BOOLEAN DEFAULT false;
@@ -5654,3 +5657,21 @@ ALTER TABLE bank_transfers
 
 ALTER TABLE bank_transfers
     MODIFY COLUMN payer_ifsc VARCHAR(20) DEFAULT NULL;
+
+ALTER TABLE bank_transfers
+    ADD COLUMN narration VARCHAR(255) DEFAULT NULL,
+    ADD INDEX `narration_payer_ifsc_index` (`narration`, `payer_ifsc`);
+
+ALTER TABLE merchants MODIFY COLUMN whitelisted_domains text COLLATE utf8_bin DEFAULT NULL;
+
+ALTER TABLE webhooks
+    ADD COLUMN events2 BIGINT DEFAULT 0 AFTER events;
+
+ALTER TABLE terminals
+    ADD COLUMN account_type VARCHAR(255) DEFAULT NULL;
+
+// Since all the existing emi plans are credit, we need to add this.
+// If not, the duplicate emi plan checks will fail, since the ones existing in db has value null
+// and the new requests have value 'credit'.
+ALTER TABLE emi_plans
+    ADD COLUMN type VARCHAR(255) NOT NULL DEFAULT 'credit';

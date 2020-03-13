@@ -97,7 +97,7 @@ trait Reversal
                 ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER);
         }
 
-        $this->validatePaymentForRefund($payment);
+        $this->validatePaymentForRefund($payment, $input);
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
@@ -272,7 +272,7 @@ trait Reversal
                                   ->fetchBySourceTypeAndIdAndMerchant($payment->getEntity(), $payment->getId(), $this->merchant);
             }
 
-            $refundType = $this->getPaymentRefundType($input);
+            $refundType = $this->getPaymentRefundType($input, $payment);
 
             $validator->validateReverseAll($refundType, $transfers);
 
@@ -297,7 +297,7 @@ trait Reversal
      */
     protected function checkReversalsOnRefundType(Payment\Entity $payment, array $input, & $transfers) : bool
     {
-        $refundType = $this->getPaymentRefundType($input);
+        $refundType = $this->getPaymentRefundType($input, $payment);
 
         $reverseAll = false;
 

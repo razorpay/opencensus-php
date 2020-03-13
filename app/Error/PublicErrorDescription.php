@@ -365,7 +365,11 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_INTERNATIONAL_STATUS_CHANGE_REQUEST               = 'Merchant Can not Enable/Disable International';
     const INVALID_ARGUMENT_INVALID_INTERNATIONAL_ACTIVATION_FLOW                = 'Server error while performing operation';
     const BAD_REQUEST_NOT_SUPPORTED_FEATURE                                     = 'Server error while performing operation';
+    const BAD_REQUEST_PAYMENT_INVALID_MERCHANT_NAME                             = 'Invalid merchant name sent to the gateway';
 
+    // Debit EMI errors
+    const BAD_REQUEST_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE                           = 'Debit Card EMI offer is not available for the entered details';
+    const BAD_REQUEST_DEBIT_EMI_HDFC_MAXIMUM_AMOUNT_LIMIT                       = 'Transaction Value is greater than pre-approved limit. To check your Debit Card Pre approved limit send SMS, MYHDFC to 5676712';
 
     const BAD_REQUEST_DOCUMENT_TYPE_INVALID                                     = 'invalid document type';
     const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                          = 'Server error';

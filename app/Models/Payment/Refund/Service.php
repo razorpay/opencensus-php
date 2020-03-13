@@ -2692,4 +2692,25 @@ class Service extends Base\Service
 
         return $responseData;
     }
+
+    /**
+     * Sends flag to merchant config route for merchant dashboard
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    public function getRefundStatusFilterFlagForMerchantDashboard(string $merchantId) : bool
+    {
+        $displayRefundPublicStatus = Payment\Refund\Core::fetchPublicStatusFromScrooge($merchantId);
+        $refundPublicStatusFeatureEnabled =
+            $this->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
+
+        if (($displayRefundPublicStatus === true) or
+            ($refundPublicStatusFeatureEnabled === true))
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

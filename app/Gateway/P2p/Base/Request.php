@@ -46,10 +46,10 @@ class Request
         return $this;
     }
 
-    public function setUrl($url)
+    public function setRedirect(string $time = null)
     {
-        $this->setType('post');
-        $this->load[self::URL] = $url;
+        $this->setType('redirect');
+        $this->load[self::TIME] = $time;
         return $this;
     }
 

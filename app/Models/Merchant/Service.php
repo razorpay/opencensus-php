@@ -40,6 +40,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Admin as MainAdmin;
@@ -517,6 +518,9 @@ class Service extends Base\Service
 
         $response['settlement_ux_revamp'] = $this->shouldShowSettlementUxRevamp();
 
+        $response[Refund\Constants::REFUND_STATUS_FILTER] =
+            (new Refund\Service)->getRefundStatusFilterFlagForMerchantDashboard($merchantId);
+
         return $response;
     }
 
@@ -580,29 +584,43 @@ class Service extends Base\Service
 
         $lockedBalance = $input[Merchant\Balance\Entity::LOCKED_BALANCE];
 
-        $this->trace->info(
-            TraceCode::LOCKED_BALANCE_UPDATE_REQUEST,
-            [
-                'input'         => $input,
-                'type'          => $balance->getType(),
-                'balance_id'    => $balanceId,
-            ]);
+        $oldLockedBalance = $balance->getLockedBalance();
 
-        if ($balance->isTypeBanking() === false)
+        $traceData = [
+            'input'                     => $input,
+            'balance_id'                => $balanceId,
+            'balance_type'              => $balance->getType(),
+            'balance_account_type'      => $balance->getAccountType(),
+            'current_locked_balance'    => $oldLockedBalance,
+        ];
+
+        $this->trace->info(TraceCode::LOCKED_BALANCE_UPDATE_REQUEST, $traceData);
+
+        if (($balance->isTypeBanking() === false) or
+            ($balance->getAccountType() !== Merchant\Balance\AccountType::SHARED))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LOCKED_BALANCE_UPDATE_NON_BANKING,
                 null,
-                [
-                    'input'         => $input,
-                    'type'          => $balance->getType(),
-                    'balance_id'    => $balanceId,
-                ]);
+                $traceData);
         }
 
         $balance->setLockedBalance($lockedBalance);
 
         $this->repo->saveOrFail($balance);
+
+        $response = [
+            'balance_id'            => $balance->getId(),
+            'current_balance'       => $balance->getBalance(),
+            'old_locked_balance'    => $oldLockedBalance,
+            'new_locked_balance'    => $balance->getLockedBalance(),
+        ];
+
+        $this->trace->info(
+            TraceCode::LOCKED_BALANCE_UPDATE_RESPONSE,
+            $response);
+
+        return $response;
     }
 
     public function editAmountCredits($merchantId, $input)
@@ -1358,6 +1376,18 @@ class Service extends Base\Service
 
     public function createWebhook($input)
     {
+        $disableWebhookUpdate = $this->app->razorx->getTreatment(
+            'any',
+            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
+            'live'
+        );
+
+        if (strtolower($disableWebhookUpdate) === 'on')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
+        }
+
         $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
 
         return $webhook->toArrayPublic();
@@ -1365,6 +1395,18 @@ class Service extends Base\Service
 
     public function editWebhook($webhookId, $input)
     {
+
+        $disableWebhookUpdate = $this->app->razorx->getTreatment(
+            'any',
+            RazorxTreatment::DISABLE_WEBHOOK_UPDATE,
+            'live'
+        );
+
+        if (strtolower($disableWebhookUpdate) === 'on')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_WEBHOOK_UPDATE_DISABLED);
+        }
         $this->trace->info(
             TraceCode::WEBHOOK_EDIT,
             [
@@ -3577,30 +3619,61 @@ class Service extends Base\Service
         });
     }
 
-    public function enableBusinessBankingTestMode(array $input)
+    public function migrationBankingVAs(array $input)
     {
         $merchantIds = $input['merchant_ids'] ?? [];
-        $skip        = $input['skip'] ?? 0;
-        $limit       = $input['limit'] ?? 500;
+        $mode        = $input['mode'] ?? Mode::LIVE;
 
-        $bankingAccounts = $this->repo->banking_account->fetchBankingAccounts($merchantIds, $skip, $limit);
+        $processedCount = 0;
 
-        foreach ($bankingAccounts as $bankingAccount)
+        $illegal = [];
+
+        $failed = [];
+
+        foreach ($merchantIds as $merchantId)
         {
-            $this->trace->info(
-                TraceCode::MERCHANT_X_TEST_MODE_MIGRATION,
-                [
-                    'banking_account_id'  => $bankingAccount->getId(),
-                    'merchant_id'         => $bankingAccount->merchant->getId(),
-                ]
-            );
+            try
+            {
+                /** @var Merchant\Entity $merchant */
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-            $this->app['basicauth']->setMerchant($bankingAccount->merchant);
+                $this->trace->info(
+                    TraceCode::MERCHANT_RAZORPAYX_VA_MIGRATION,
+                    [
+                        'merchant_id'        => $merchantId,
+                        'category'           => $merchant->getCategory(),
+                        'category2'          => $merchant->getCategory2(),
+                        'billing_label'      => $merchant->getBillingLabel(),
+                    ]);
 
-            (new Activate)->activateBusinessBankingIfApplicable($bankingAccount->merchant);
+                if ($merchant->isBusinessBankingEnabled() === false)
+                {
+                    $illegal[] = $merchantId;
+
+                    continue;
+                }
+
+                (new Activate)->createBankingEntitiesForMode($merchant, $mode);
+
+                $processedCount++;
+            }
+            catch (\Throwable $e)
+            {
+                $failed[] = $merchantId;
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::MERCHANT_RAZORPAYX_VA_MIGRATION_FAILED);
+            }
         }
 
-        return ['processed' => count($bankingAccounts)];
+        return [
+            'total'     => count($merchantIds),
+            'processed' => $processedCount,
+            'illegal'   => $illegal,
+            'failed'    => $failed
+        ];
     }
 
     /**

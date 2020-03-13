@@ -176,7 +176,7 @@ class CreateMerchants extends Migration
             $table->string(Merchant::WHITELISTED_IPS_TEST, 255)
                   ->nullable();
 
-            $table->string(Merchant::WHITELISTED_DOMAINS, 255)
+            $table->text(Merchant::WHITELISTED_DOMAINS)
                   ->nullable();
 
             $table->tinyInteger(Merchant::SECOND_FACTOR_AUTH)

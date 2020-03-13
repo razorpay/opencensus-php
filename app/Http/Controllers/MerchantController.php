@@ -1530,11 +1530,11 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function enableBusinessBankingTestMode()
+    public function migrationBankingVAs()
     {
         $input = Request::all();
 
-        $response = $this->service()->enableBusinessBankingTestMode($input);
+        $response = $this->service()->migrationBankingVAs($input);
 
         return ApiResponse::json($response);
     }

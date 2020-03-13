@@ -100,4 +100,9 @@ class Constants
 
     const DISPATCH_DELAY_TIME = 'dispatch_delay_time';
     const DISPATCH_BATCH_SIZE = 5;
+
+    // Dashboard related constants
+    // Some constants are named not make complete sense,
+    // basically to avoid user understanding the feature when inspected on dashboard
+    const REFUND_STATUS_FILTER = 'rs_filter';
 }

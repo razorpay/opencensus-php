@@ -20,6 +20,7 @@ class BankTransfer
             Entity::TIME          => $entry[Header::TIME],
             Entity::AMOUNT        => $entry[Header::AMOUNT],
             Entity::DESCRIPTION   => $entry[Header::DESCRIPTION],
+            Entity::NARRATION     => $entry[Header::NARRATION],
         ];
     }
 }

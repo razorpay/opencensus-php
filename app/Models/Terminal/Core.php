@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -16,6 +17,8 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Core extends Base\Core
 {
+    const TEST_MODE_ACCOUNT_NUMBER_SERIES_PREFIX = '232323';
+
     public function create($input, $merchant)
     {
         $this->trace->info(
@@ -484,7 +487,7 @@ class Core extends Base\Core
         if ($existingTerminals->count() !== 0)
         {
             $description = PublicErrorDescription::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS . $existingTerminals->pluck(Entity::ID)->first();
-                        
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS,
                 $field,
@@ -504,5 +507,33 @@ class Core extends Base\Core
         }
 
         return $input;
+    }
+
+    public static function getBankAccountSeriesPrefixForX(Merchant\Entity $merchant, string $mode): string
+
+    {
+        if ($mode === Mode::TEST)
+        {
+            return self::TEST_MODE_ACCOUNT_NUMBER_SERIES_PREFIX;
+        }
+
+        $merchantId = $merchant->getId();
+
+        $config = (new Admin\Service)->getConfigKey(
+            ['key' => Admin\ConfigKey::RX_ACCOUNT_NUMBER_SERIES_PREFIX]);
+
+        if (empty($config) === true)
+        {
+            // In case of redis failure, usr ICICI Pool VA series prefix
+            return '3434';
+        }
+
+        if (array_key_exists($merchantId, $config) === true)
+        {
+            return $config[strval($merchantId)];
+        }
+
+        // If merchant's config is not set, use shared merchant's config
+        return $config[Merchant\Account::SHARED_ACCOUNT];
     }
 }

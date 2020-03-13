@@ -83,6 +83,7 @@ class Core extends Base\Core
         $poaInput = [
             DEConstants::SIGNED_URL       => $input[DEConstants::SIGNED_URL],
             DEConstants::DOCUMENT_TYPE    => $input[DEConstants::DOCUMENT_TYPE],
+            DEConstants::DOCUMENT_SOURCE  => $input[DEConstants::DOCUMENT_SOURCE],
             DEConstants::DOCUMENT_FILE_ID => $input[DEConstants::DOCUMENT_FILE_ID],
             DEConstants::ENTITY_ID        => $entity->getEntityId(),
             DEConstants::KYC_ID           => $entity->getKycId(),

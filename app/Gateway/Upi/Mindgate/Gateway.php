@@ -715,14 +715,18 @@ class Gateway extends Base\Gateway
         // In fact the library returns boolean false when decryption fails.
         // But we are still taking empty string in context too.
         //  1. For certain reasons decryption fails, we might still receive empty string
-        if (empty($response) === true)
+        // Note: Check for ctype_print is for the case when we on decrypting callback
+        // we are receiving binary response(not expected). Thereby , throwing the error
+        // fallback to use the secrets from terminal (for VAS merchants)
+        if ((empty($response) === true) or (ctype_print($response) === false))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED,
                 null,
                 null,
                 [
-                    'cipherText' => $cipherText
+                    'cipherText' => $cipherText,
+                    'decrypted'  => (ctype_print($response) === false) ? bin2hex($response) : $response,
                 ]);
         }
 

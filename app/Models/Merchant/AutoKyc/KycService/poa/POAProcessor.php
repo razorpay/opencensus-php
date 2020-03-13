@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\KycService\poa;
 
+use RZP\Models\FileStore;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Models\Merchant\AutoKyc\Response;
@@ -19,7 +20,7 @@ class POAProcessor extends BaseProcessor
         $content = [
             'customer_id'      => $this->input[Constants::ENTITY_ID],
             'document_type'    => $this->input[Constants::DOCUMENT_TYPE],
-            'document_file_id' => $this->input[Constants::DOCUMENT_FILE_ID],
+            'document_file_id' => FileStore\Entity::getIdPrefix() . $this->input[Constants::DOCUMENT_FILE_ID],
         ];
 
         $requestDetails = $this->getApplicableRequestDetails($this->input[Constants::DOCUMENT_TYPE]);
