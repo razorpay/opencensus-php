@@ -226,24 +226,23 @@ class Constants
                 'experiments'  => ['rev_up_chennai_announcement'],
             ]
         ],
-        // [
-        //     'title'       => 'Instant Settlement!',
-        //     'description' => 'Now get your settlements 24x7x365, even on holidays! Avoid cash-flow issues and to boost your working capital!',
-        //     'start_ts'    => 1582815120,
-        //     'end_ts'      => 1595865592,
-        //     'icon'        => 'settlements',
-        //     'buttons'     => [
-        //         [
-        //             'type'  => 'button',
-        //             'label' => 'Go to Settlements',
-        //             'url'   => '/settlements',
-        //         ],
-        //     ],
-        //     'filters'     => [
-        //         'features' => ['es_on_demand'],
-        //         'role'  => ['owner'],
-        //     ]
-        // ],
+        [
+            'title'       => 'SSL Certificate Update for Razorpay API',
+            'description' => 'We’re updating the SSL certificate for api.razorpay.com on 18th March, 2020. To understand if this update affects you, click on the link below.',
+            'start_ts'    => 1584037800,
+            'end_ts'      => 1584642599,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/attention.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Read more',
+                    'url'   => 'https://razorpay.com/links/update-tls-ssl-certificate',
+                ],
+            ],
+            'filters'     => [
+                'activated' => 1,
+            ]
+        ],
     ];
 
     public static function getNotifications(): array
