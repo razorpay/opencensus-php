@@ -2040,6 +2040,22 @@ trait Refund
     {
         $refundData = $refund->toArray();
 
+        $gatewayAcquirer = $payment->getGateway();
+
+        //
+        //
+        // This terminal was deleted due to Yesbank moratorium
+        // This particular terminal is not a direct settlement terminal
+        // Will be removing this check once the terminal is fixed.
+        //
+        // Slack thread for reference:
+        // https://razorpay.slack.com/archives/CA66F3ACS/p1584100168218900?thread_ts=1584090894.210900&cid=CA66F3ACS
+        //
+        if ($this->payment->getTerminalId() !== 'B2K2t8JD9z98vh')
+        {
+            $gatewayAcquirer = $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway();
+        }
+
         $extraData = [
             'method'                    => $payment->getMethod(),
             'bank'                      => $payment->getBank(),
@@ -2047,7 +2063,7 @@ trait Refund
             'payment_base_amount'       => $payment->getBaseAmount(),
             'payment_created_at'        => $payment->getCreatedAt(),
             'payment_gateway_captured'  => $payment->getGatewayCaptured(),
-            'gateway_acquirer'          => $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway(),
+            'gateway_acquirer'          => $gatewayAcquirer,
             'payment_authorized_at'     => $payment->getAuthorizeTimestamp(),
             'payment_service_route'     => $payment->getCpsRoute(),
         ];

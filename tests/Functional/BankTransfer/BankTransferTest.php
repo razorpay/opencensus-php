@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\BankTransfer;
 
+use DB;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
@@ -294,6 +295,29 @@ class BankTransferTest extends TestCase
         $channel = Channel::AXIS;
 
         $this->createRefund($channel);
+
+        $content = $this->initiateTransferViaFileAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            0,
+            Attempt\Type::REFUND);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals(Attempt\Status::CREATED, $attempt[Attempt\Entity::STATUS]);
+
+        $channel = Channel::YESBANK;
+        $content = $this->initiateTransferAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
+    }
+
+    public function testBankTransferRefundWithDeletedTerminal()
+    {
+        $channel = Channel::AXIS;
+
+        $this->createRefundWithDeletedTerminal($channel);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
             $channel,
@@ -2201,6 +2225,70 @@ class BankTransferTest extends TestCase
 
         // Bank Transfer refunds are behind a razorx experiment
         $this->mockRazorXTreatmentForEnableBankTransferRefunds();
+
+        $this->refundPayment($payment['id'], 4000000);
+
+        // Payment is refunded
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000000, $payment['amount_refunded']);
+
+        // Refund is created
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals(4000000, $refund['amount']);
+
+        // Transaction is created for refund
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals('refund', $transaction['type']);
+        $this->assertEquals($refund['id'], $transaction['entity_id']);
+
+        // Fund transfer attempt created for refund
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('created', $attempt['status']);
+        $this->assertEquals($refund['id'], $attempt['source']);
+        $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
+        $this->assertStringEndsWith($utr, $attempt['narration']);
+    }
+
+    protected function createRefundWithDeletedTerminal($channel = null)
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+
+        $utr = $response['transaction_id'];
+
+        // Customer bank account created
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        // Bank Transfer refunds are behind a razorx experiment
+        $this->mockRazorXTreatmentForEnableBankTransferRefunds();
+
+        $paymentEntity = $this->getDbEntityById('payment', $payment['id']);
+
+        // Disable foreign key checks to allow testing buggy case
+        DB::statement("SET foreign_key_checks = 0");
+
+        $this->fixtures->edit(
+            'payment',
+            $paymentEntity['id'],
+            ['terminal_id' => 'B2K2t8JD9z98vh']);
+
+        // Enable foreign key checks
+        DB::statement("SET foreign_key_checks = 1");
 
         $this->refundPayment($payment['id'], 4000000);
 

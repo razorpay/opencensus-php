@@ -653,6 +653,20 @@ class Entity extends Base\PublicEntity
 
     public function isDirectSettlementRefund(): bool
     {
+        //
+        //
+        // This terminal was deleted due to Yesbank moratorium
+        // This particular terminal is not a direct settlement terminal
+        // Will be removing this check once the terminal is fixed.
+        //
+        // Slack thread for reference:
+        // https://razorpay.slack.com/archives/CA66F3ACS/p1584100168218900?thread_ts=1584090894.210900&cid=CA66F3ACS
+        //
+        if ($this->payment->getTerminalId() === 'B2K2t8JD9z98vh')
+        {
+            return false;
+        }
+
         if (($this->payment->hasTerminal() === true) and
             ($this->payment->terminal->isDirectSettlementWithRefund() === true))
         {
