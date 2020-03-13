@@ -4072,6 +4072,7 @@ final class Route
             'entity_bulk_update',
             'adj_add_batch',
             'bank_transfer_process_icici',
+            'reporting_log_create',
         ],
 
         'stork' => [
