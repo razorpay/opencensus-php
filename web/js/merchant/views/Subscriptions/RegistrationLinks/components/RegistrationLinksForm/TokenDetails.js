@@ -16,6 +16,7 @@ export default ({
   mandateMaxAmount,
   firstPaymentAmount,
   mandateExpireAt,
+  onBlurElement,
 }) => (
   <React.Fragment>
     <Input.Group label="Token Expiry" class="InputGroup--vTop">
@@ -23,6 +24,8 @@ export default ({
         fieldLabel="Until cancelled"
         name="tokenHasNoExpiry"
         defaultValue="1"
+        data-name="token_until_cancelled"
+        onBlur={onBlurElement}
         checked={tokenHasNoExpiry}
       />
 
@@ -36,6 +39,8 @@ export default ({
         description="Expiry of Token"
         onChange={handleDateChange('mandateExpireAt')}
         disabled={!!Number(tokenHasNoExpiry)}
+        data-name="token_expiry_date"
+        onBlur={onBlurElement}
         defaultValue={mandateExpireAt ? moment(mandateExpireAt, 'X') : null}
         disabled={!!Number(tokenHasNoExpiry)}
       />
@@ -45,6 +50,8 @@ export default ({
       name="mandateMaxAmount"
       placeholder={defaultMandateMaxAmount}
       label="Token Max Amount"
+      data-name="token_max_amount"
+      onBlur={onBlurElement}
       addonBefore={
         <AmountTooltip currency={'INR'} parentQuerySelector=".Modal" />
       }
@@ -64,6 +71,8 @@ export default ({
         label="Amount"
         class="Input--Amount"
         description="Amount of First Charge"
+        data-name="first_payment_amount"
+        onBlur={onBlurElement}
         value={firstPaymentAmount}
         validator={firstPaymentAmountValidator(mandateMaxAmount)}
         addonBefore={

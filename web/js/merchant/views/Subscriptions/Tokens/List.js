@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 
 import ListContainer from 'merchant/containers/ListContainer';
+import RTracking from 'react-tracking';
 
 import HeaderAction from 'common/ui/HeaderAction';
 import DataTable from 'common/ui/Table/DataTable';
@@ -40,7 +41,34 @@ const status = {
   }),
   { fetchAll }
 )
+@RTracking(() => window.rzpQ.component('TokensList'))
 export default class TokensList extends ListContainer {
+  trackSearch = (event, options) => {
+    if (!event) return;
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.chargeAtWill().interaction(`token.search.${event}`, options)
+    );
+  };
+
+  onSubmit = filters => {
+    Object.keys(filters).forEach(filter => {
+      this.trackSearch(filter);
+    });
+
+    this.search(filters);
+
+    this.trackSearch('initiate');
+  };
+
+  onClearAnalytics = () => {
+    this.trackSearch('clear');
+  };
+
+  onErrorCloseClick = () => {
+    this.trackSearch('error', { response: this.state.status.message[1] });
+  };
+
   render() {
     return (
       <div class="content-wrapper">
@@ -56,7 +84,8 @@ export default class TokensList extends ListContainer {
         <ListFilter
           form="tokensListFilter"
           count={this.state.count}
-          onSubmit={this.search}
+          onSubmit={this.onSubmit}
+          onClearAnalytics={this.onClearAnalytics}
         />
 
         <DataTable
@@ -66,6 +95,16 @@ export default class TokensList extends ListContainer {
           paginate={this.paginate}
           columns={[tokenId, method, email, contact, createdAt, status]}
           {...this.props}
+          paginate={(params, type) => {
+            this.props.tracking.trackEvent(
+              window.rzpQ.chargeAtWill().interaction(`token.browse.${type}`, {
+                page: params.skip % params.count,
+              })
+            );
+
+            this.paginate(params);
+          }}
+          onErrorCloseClick={this.onErrorCloseClick}
         />
       </div>
     );

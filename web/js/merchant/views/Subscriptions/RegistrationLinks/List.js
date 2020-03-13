@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { NavLink, Link } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import DataTable from 'common/ui/Table/DataTable';
 import HeaderAction from 'common/ui/HeaderAction';
@@ -43,7 +44,36 @@ const createdAt = {
 };
 
 @connect(state => state.registrationLinks, { fetchAll })
+@RTracking(() => window.rzpQ.component('RegistrationLinksList'))
 export default class RegistrationLinksList extends ListContainer {
+  trackSearch = (event, options) => {
+    if (!event) return;
+
+    this.props.tracking.trackEvent(
+      window.rzpQ
+        .chargeAtWill()
+        .interaction(`authlink.search.${event}`, options)
+    );
+  };
+
+  onSubmit = filters => {
+    Object.keys(filters).forEach(filter => {
+      this.trackSearch(filter);
+    });
+
+    this.search(filters);
+
+    this.trackSearch('initiate');
+  };
+
+  onClearAnalytics = () => {
+    this.trackSearch('clear');
+  };
+
+  onErrorCloseClick = () => {
+    this.trackSearch('error', { response: this.state.status.message[1] });
+  };
+
   render() {
     return (
       <div class="content-wrapper">
@@ -59,16 +89,28 @@ export default class RegistrationLinksList extends ListContainer {
         <ListFilter
           form="authLinksListFilter"
           count={this.state.count}
-          onSubmit={this.search}
+          onSubmit={this.onSubmit}
+          onClearAnalytics={this.onClearAnalytics}
         />
 
         <DataTable
           title="Registration Links"
           skip={this.state.skip}
-          paginate={this.paginate}
           columns={[id, amount, receipt, link, customer, createdAt, status]}
           {...this.props}
           count={this.state.count}
+          paginate={(params, type) => {
+            this.props.tracking.trackEvent(
+              window.rzpQ
+                .chargeAtWill()
+                .interaction(`authlink.browse.${type}`, {
+                  page: params.skip % params.count,
+                })
+            );
+
+            this.paginate(params);
+          }}
+          onErrorCloseClick={this.onErrorCloseClick}
         />
       </div>
     );

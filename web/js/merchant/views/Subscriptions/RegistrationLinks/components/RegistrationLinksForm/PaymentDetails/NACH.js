@@ -9,19 +9,38 @@ export default ({
   bankAccountIFSC,
   beneficiaryName,
   bankAccountNumber,
+  onBlurElement,
 }) => (
   <React.Fragment>
-    <BankDetails required hideBankName bankAccountIFSC={bankAccountIFSC} />
+    <BankDetails
+      required
+      hideBankName
+      bankAccountIFSC={bankAccountIFSC}
+      onBlurElement={onBlurElement}
+    />
 
     <AccountDetails
       required
       beneficiaryName={beneficiaryName}
       bankAccountNumber={bankAccountNumber}
       accountType={accountType}
+      onBlurElement={onBlurElement}
     />
 
-    <Input name="formReference1" value={formReference1} label="Reference 1" />
+    <Input
+      name="formReference1"
+      value={formReference1}
+      label="Reference 1"
+      data-name="form_reference1"
+      onBlur={onBlurElement}
+    />
 
-    <Input name="formReference2" value={formReference2} label="Reference 2" />
+    <Input
+      name="formReference2"
+      value={formReference2}
+      label="Reference 2"
+      data-name="form_reference2"
+      onBlur={onBlurElement}
+    />
   </React.Fragment>
 );

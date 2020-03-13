@@ -29,6 +29,7 @@ export default function DataTable(props) {
     noStripe,
     panelHeading,
     EmptyComponent, //-render empty component when the items are 0. see batch list
+    onErrorCloseClick,
   } = props;
 
   const classes = `${noStripe ? '' : 'table-striped'} ${
@@ -37,7 +38,9 @@ export default function DataTable(props) {
 
   return (
     <div class={`data-table ${panelHeading ? 'has-panel' : ''}`}>
-      {error && <Alert type="error" message={error} />}
+      {error && (
+        <Alert type="error" message={error} onCloseClick={onErrorCloseClick} />
+      )}
       {panelHeading && (
         <div class="list-heading">
           <span class="label--primary">{panelHeading.title}</span>

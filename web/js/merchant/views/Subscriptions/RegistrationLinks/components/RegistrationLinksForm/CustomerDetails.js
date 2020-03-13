@@ -15,24 +15,29 @@ export default props => {
     customerEmail,
     configEmailNotify,
     receipt,
+    onBlurElement,
   } = props;
 
   return (
     <React.Fragment>
       <Input.Textarea
         name="description"
+        data-name="description"
         label="Description"
         value={description}
         description="Payment / Authentication Description"
         required
+        onBlur={onBlurElement}
       />
 
       <Input
         required={isCustomerNameRequired}
         name="customerName"
         label="Customer Name"
+        data-name="customer_name"
         value={customerName}
         description="Name of Customer"
+        onBlur={onBlurElement}
       />
 
       <Input.Group class="InputGroup--inline" label="Customer Contact" required>
@@ -41,20 +46,24 @@ export default props => {
             required
             name="customerContact"
             placeholder="Mobile"
+            data-name="customer_contact"
             type="tel"
             value={customerContact}
             validator={validatePhone}
             description="Phone number of Customer"
+            onBlur={onBlurElement}
           />
 
           <Input
             required
             name="customerEmail"
             placeholder="Email"
+            data-name="customer_email"
             type="email"
             value={customerEmail}
             validator={validateEmail}
             description="Email of Customer"
+            onBlur={onBlurElement}
           />
         </div>
       </Input.Group>
@@ -65,12 +74,16 @@ export default props => {
             name="configSmsNotify"
             checked={configSmsNotify}
             fieldLabel="Via SMS"
+            data-name="notify_sms"
+            onBlur={onBlurElement}
           />
 
           <Input.Check
             name="configEmailNotify"
             checked={configEmailNotify}
             fieldLabel="Via Email"
+            data-name="notify_email"
+            onBlur={onBlurElement}
           />
         </div>
       </Input.Group>
@@ -80,6 +93,8 @@ export default props => {
         label="Receipt No."
         value={receipt}
         description="Receipt for Customer"
+        data-name="receipt"
+        onBlur={onBlurElement}
       />
 
       <Input.Group label="Expiry" class="InputGroup--vTop">
@@ -87,6 +102,8 @@ export default props => {
           fieldLabel="No Expiry"
           name="hasNoExpiry"
           checked={hasNoExpiry}
+          data-name="expiry"
+          onBlur={onBlurElement}
         />
 
         <Input.ToCalendar
@@ -100,6 +117,8 @@ export default props => {
           defaultValue={!hasNoExpiry && expireAt ? moment(expireAt, 'X') : null}
           onChange={handleDateChange('expireAt')}
           description="Expiry of Registration Link"
+          data-name="expiry-date"
+          onBlur={() => onBlurElement(null, 'expiry-date')}
         />
       </Input.Group>
     </React.Fragment>

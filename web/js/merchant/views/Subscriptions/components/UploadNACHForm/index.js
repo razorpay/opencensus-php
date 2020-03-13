@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 import { findBy, normalizeDate, classList } from 'common/utils/rzp-utils';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -61,6 +62,7 @@ const initState = {
 @connect(null, {
   showNotification,
 })
+@RTracking(() => window.rzpQ.component('UploadNACHForm'))
 export default class UploadNACHForm extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -116,6 +118,18 @@ export default class UploadNACHForm extends React.Component {
     return 'primary';
   }
 
+  componentDidMount() {
+    this.trackNACHUpload('initiated');
+  }
+
+  trackNACHUpload = (event, options) => {
+    if (!event) return;
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.chargeAtWill().interaction(`nach_upload.${event}`, options)
+    );
+  };
+
   getDataFromExtractedData = key => {
     const data = findBy(this.state.extractedData.extracted_data, 'key', key);
 
@@ -126,6 +140,8 @@ export default class UploadNACHForm extends React.Component {
   };
 
   onCloseClick = () => {
+    this.trackNACHUpload('remove_file.initiate');
+
     this.context.confirm({
       header: 'Remove Nach Form',
       message:
@@ -134,6 +150,11 @@ export default class UploadNACHForm extends React.Component {
       abort: () => {},
       action: () => {
         this.setState(initState);
+
+        this.trackNACHUpload('remove_file.success');
+      },
+      abort: () => {
+        this.trackNACHUpload('remove_file.abort');
       },
     });
   };
@@ -143,6 +164,8 @@ export default class UploadNACHForm extends React.Component {
       uploading: true,
       file,
     });
+
+    this.trackNACHUpload('file.validating.initiate');
 
     return validateNachFile(file, this.props.id)
       .then(resp => {
@@ -159,6 +182,8 @@ export default class UploadNACHForm extends React.Component {
         );
 
         trackReadNachFormStatus('success');
+
+        this.trackNACHUpload('file.validating.success');
       })
       .catch(error => {
         trackReadNachFormStatus('error', error.errors[0]);
@@ -167,10 +192,16 @@ export default class UploadNACHForm extends React.Component {
           uploading: false,
           errors: getErrorMessage(error.errors),
         });
+
+        this.trackNACHUpload('file.validating.fail', {
+          response: getErrorMessage(error.errors),
+        });
       });
   };
 
   handleSubmit = () => {
+    this.trackNACHUpload('file.submit.initiate');
+
     return authenticateNACHFile(this.state.file, this.props.id)
       .then(resp => {
         this.setState({
@@ -178,6 +209,8 @@ export default class UploadNACHForm extends React.Component {
         });
 
         trackUploadNachFormStatus('success');
+
+        this.trackNACHUpload('file.submit.success');
 
         this.props.showNotification({
           type: 'success',
@@ -199,6 +232,8 @@ export default class UploadNACHForm extends React.Component {
           type: 'error',
           message: err.errors,
         });
+
+        this.trackNACHUpload('file.submit.fail', { response: err.errors });
       });
   };
 
@@ -324,6 +359,12 @@ export default class UploadNACHForm extends React.Component {
     );
   };
 
+  onClose = () => {
+    this.trackNACHUpload('close');
+
+    this.props.onClose();
+  };
+
   render() {
     const { uploading, file, errors } = this.state,
       isDataAval =
@@ -382,7 +423,7 @@ export default class UploadNACHForm extends React.Component {
         </main>
 
         <footer>
-          {isModalView && <Button onClick={this.props.onClose}>Cancel</Button>}
+          {isModalView && <Button onClick={this.onClose}>Cancel</Button>}
 
           <AsyncBtn.Primary
             pendingState="Uploading..."
@@ -402,7 +443,7 @@ export default class UploadNACHForm extends React.Component {
     return (
       <Modal
         class={classList('UploadNACHForm animate-down')}
-        onClose={this.props.onClose}
+        onClose={this.onClose}
       >
         <ModalContent>{contentView}</ModalContent>
       </Modal>

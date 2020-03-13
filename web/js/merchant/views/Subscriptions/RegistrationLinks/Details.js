@@ -1,5 +1,6 @@
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
@@ -49,6 +50,7 @@ import {
     closeModal,
   }
 )
+@RTracking(() => window.rzpQ.component('RegistrationLinkDetailsContainer'))
 export default class RegistrationLinkDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -79,15 +81,35 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
     }
   }
 
+  trackRegistrationLinkDetails = (event, options) => {
+    if (!event) return;
+
+    this.props.tracking.trackEvent(
+      window.rzpQ
+        .chargeAtWill()
+        .interaction(`registration_link.${event}`, options)
+    );
+  };
+
   downloadSignedNACHFile = () => {
+    this.trackRegistrationLinkDetails('nach.download_signed_nach.initiate');
+
     return downloadSignedNACHFile({
       auth_link_id: this.props.id,
-    }).catch(err => {
-      this.props.showNotification({
-        type: 'error',
-        message: err.errors,
+    })
+      .then(() => {
+        this.trackRegistrationLinkDetails('nach.download_signed_nach.success');
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+
+        this.trackRegistrationLinkDetails('nach.download_signed_nach.error', {
+          response: err.errors[1],
+        });
       });
-    });
   };
 
   onResendLinkSubmit = notifyProps => {
@@ -109,6 +131,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
 
         this.props.closeModal();
 
+        this.trackRegistrationLinkDetails('resend.success');
         return resp;
       })
       .catch(error => {
@@ -117,12 +140,16 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
           message: error.errors,
         });
 
+        this.trackRegistrationLinkDetails('resend.fail');
+
         return error;
       });
   };
 
   openResendLinkModal = () => {
     const { customer_details } = this.props.entity;
+
+    this.trackRegistrationLinkDetails('resend.initiate');
 
     this.props.openModal({
       size: 'medium',
@@ -146,6 +173,8 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
   };
 
   cancelRegistrationLink = () => {
+    this.trackRegistrationLinkDetails('cancel.initiate');
+
     this.context.confirm({
       header: 'Cancel Link?',
       message: () => (
@@ -167,13 +196,22 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
               type: 'success',
               message: 'Link cancelled!',
             });
+
+            this.trackRegistrationLinkDetails('cancel.success');
           })
           .catch(({ errors }) => {
             this.props.showNotification({
               type: 'error',
               message: errors,
             });
+
+            this.trackRegistrationLinkDetails('cancel.fail', {
+              response: errors,
+            });
           });
+      },
+      abort: () => {
+        this.trackRegistrationLinkDetails('cancel.abort');
       },
     });
   };
@@ -290,9 +328,13 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
                               entity.token.nach.prefilled_form
                             }
                             trackClickUploadNACHForm={trackClickUploadNACHForm}
-                            trackClickDownloadNACHForm={
-                              trackClickDownloadNACHForm
-                            }
+                            trackClickDownloadNACHForm={() => {
+                              this.trackRegistrationLinkDetails(
+                                'nach.download_pre_signed_form'
+                              );
+
+                              trackClickDownloadNACHForm();
+                            }}
                             trackClickViewNACHForm={trackClickViewNACHForm}
                           />
                         </EntityDetailRow>

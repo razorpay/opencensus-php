@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import { fetchEmandatePayments as fetchAll } from 'merchant/reducers/collection';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -9,7 +10,34 @@ import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
 
 @connect(state => ({ ...state.payments }), { fetchAll })
+@RTracking(() => window.rzpQ.component('EmandatePayments'))
 export default class EmandatePayments extends ListContainer {
+  trackSearch = (event, options) => {
+    if (!event) return;
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.chargeAtWill().interaction(`payment.search.${event}`, options)
+    );
+  };
+
+  onSubmit = filters => {
+    Object.keys(filters).forEach(filter => {
+      this.trackSearch(filter);
+    });
+
+    this.search(filters);
+
+    this.trackSearch('initiate');
+  };
+
+  onClearAnalytics = () => {
+    this.trackSearch('clear');
+  };
+
+  onErrorCloseClick = () => {
+    this.trackSearch('error', { response: this.state.status.message[1] });
+  };
+
   render() {
     return (
       <div class="content-wrapper">
@@ -21,8 +49,9 @@ export default class EmandatePayments extends ListContainer {
         <PaymentListFilter
           form="emandatePaymentListFilter"
           count={this.state.count}
-          onSubmit={this.searh}
           showBatchIdFilter
+          onSubmit={this.onSubmit}
+          onClearAnalytics={this.onClearAnalytics}
         />
 
         <PaymentsTable
@@ -30,6 +59,16 @@ export default class EmandatePayments extends ListContainer {
           skip={this.state.skip}
           paginate={this.paginate}
           {...this.props}
+          paginate={(params, type) => {
+            this.props.tracking.trackEvent(
+              window.rzpQ.chargeAtWill().interaction(`payment.browse.${type}`, {
+                page: params.skip % params.count,
+              })
+            );
+
+            this.paginate(params);
+          }}
+          onErrorCloseClick={this.onErrorCloseClick}
         />
       </div>
     );

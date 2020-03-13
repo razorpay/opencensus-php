@@ -497,6 +497,10 @@ class Radio extends Field {
     this.props.onChange && this.props.onChange(e);
   };
 
+  onBlur = e => {
+    this.props.onBlur && this.props.onBlur(e);
+  };
+
   render() {
     let { label, description, options, props } = separateDomProps(this.props);
 
@@ -534,6 +538,7 @@ class Radio extends Field {
                     onChange={this.toggle}
                     value={value}
                     class="Input-el"
+                    onBlur={this.onBlur}
                   />
                   <div className="Input-radio" />
                   <Label text={label} class="Input-inlineLabel" />

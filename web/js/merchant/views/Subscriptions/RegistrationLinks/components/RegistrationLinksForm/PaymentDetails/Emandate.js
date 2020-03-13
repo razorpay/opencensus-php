@@ -11,6 +11,7 @@ export default ({
   beneficiaryName,
   bankAccountNumber,
   trackSkipBankDetails,
+  onBlurElement,
 }) => (
   <React.Fragment>
     <Input.Check
@@ -19,6 +20,8 @@ export default ({
       defaultChecked="0"
       fieldLabel="Skip Bank Details"
       onChange={trackSkipBankDetails}
+      onBlur={onBlurElement}
+      data-name="skip_bank_details"
     />
 
     <BankDetails
@@ -27,6 +30,7 @@ export default ({
       options={emandateBanks}
       bankName={bankName}
       bankAccountIFSC={bankAccountIFSC}
+      onBlurElement={onBlurElement}
     />
 
     <AccountDetails
@@ -35,6 +39,7 @@ export default ({
       accountType={accountType}
       beneficiaryName={beneficiaryName}
       bankAccountNumber={bankAccountNumber}
+      onBlurElement={onBlurElement}
     />
   </React.Fragment>
 );

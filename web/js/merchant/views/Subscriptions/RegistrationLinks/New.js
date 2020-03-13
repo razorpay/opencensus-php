@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import { rupeesToPaise, titleCase } from 'common/utils/rzp-utils';
 import fetchPaymentMethods from 'merchant/utils/fetchPaymentMethods';
@@ -82,6 +83,7 @@ let DEFAULT_FIRST_CHARGE = 0;
   luminateRow,
   createRegistrationLink,
 })
+@RTracking(() => window.rzpQ.component('CreateNewRegistrationLinkContainer'))
 export default class CreateNewRegistrationLinkContainer extends React.Component {
   constructor(props) {
     super(props);
@@ -149,7 +151,19 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
       window.hj('trigger', 'registration_link');
       window.hj('tagRecording', ['registration_link_start']);
     }
+
+    this.trackRegistrationLinkCreation('initiate');
   }
+
+  trackRegistrationLinkCreation = (event, options) => {
+    if (!event) return;
+
+    this.props.tracking.trackEvent(
+      window.rzpQ
+        .chargeAtWill()
+        .interaction(`authlink.create.${event}`, options)
+    );
+  };
 
   setFormFields = (key, value) => {
     this.setState(currentState => ({
@@ -172,6 +186,20 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     }
 
     this.setFormFields(target.name, value);
+  };
+
+  onBlurElement = (event, dataName) => {
+    const eventName = event ? event.target.getAttribute('data-name') : dataName;
+
+    if (eventName === 'method') {
+      this.trackRegistrationLinkCreation(eventName, {
+        method: event.target.value,
+      });
+
+      return;
+    }
+
+    this.trackRegistrationLinkCreation(eventName);
   };
 
   handleDateChange = fieldName => date => {
@@ -346,6 +374,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
     trackSubmitCreateForm(this.state.formFields.mandateMethod);
 
+    this.trackRegistrationLinkCreation('issue');
+
     return this.props
       .createRegistrationLink(payload)
       .then(response => {
@@ -369,12 +399,16 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
           this.props.history.push(redirectUrl);
         }
+
+        this.trackRegistrationLinkCreation('success');
       })
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
           message: errors,
         });
+
+        this.trackRegistrationLinkCreation('fail');
       });
   };
 
@@ -461,6 +495,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             configSmsNotify={formFields.configSmsNotify}
             configEmailNotify={formFields.configEmailNotify}
             handleDateChange={this.handleDateChange}
+            onBlurElement={this.onBlurElement}
           />
         );
       }
@@ -486,6 +521,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             trackSkipBankDetails={trackSkipBankDetails}
             formReference1={formFields.formReference1}
             formReference2={formFields.formReference2}
+            onBlurElement={this.onBlurElement}
           />
         );
       }
@@ -502,6 +538,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
             defaultFirstChargeAmount={DEFAULT_FIRST_CHARGE}
             firstPaymentAmount={formFields.firstPaymentAmount}
             handleDateChange={this.handleDateChange}
+            onBlurElement={this.onBlurElement}
           />
         );
       }
@@ -576,6 +613,8 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
 
   onClose = () => {
     trackCloseCreateForm();
+
+    this.trackRegistrationLinkCreation('cancel');
 
     this.props.onClose();
   };

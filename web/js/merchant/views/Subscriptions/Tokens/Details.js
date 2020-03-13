@@ -2,6 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import { AsyncBtn } from 'common/new-ui/Button';
 import Spinner from 'common/ui/Spinner';
@@ -45,6 +46,7 @@ import {
   deleteToken,
   showNotification,
 })
+@RTracking(() => window.rzpQ.component('TokenDetailsContainer'))
 export default class TokenDetailsContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -68,7 +70,17 @@ export default class TokenDetailsContainer extends Component {
     }
   }
 
+  trackTokenDetailsView = (event, options) => {
+    if (!event) return;
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.chargeAtWill().interaction(`token.${event}`, options)
+    );
+  };
+
   handleChargeNow = () => {
+    this.trackTokenDetailsView('update.charge_now');
+
     this.props.openModal({
       size: 'medium',
       component: (
@@ -81,6 +93,8 @@ export default class TokenDetailsContainer extends Component {
   };
 
   handleDeleteToken = () => {
+    this.trackTokenDetailsView('delete.initiate');
+
     this.context.confirm({
       header: 'Delete Token?',
       message:
@@ -105,26 +119,43 @@ export default class TokenDetailsContainer extends Component {
                   'An error occurred while deleting token. Kindly try again',
               });
             }
+
+            this.trackTokenDetailsView('delete.confirm');
           })
           .catch(({ errors }) => {
             this.props.showNotification({
               type: 'error',
               message: errors[0],
             });
+
+            this.trackTokenDetailsView('delete.fail', { response: errors[1] });
           });
+      },
+      abort: () => {
+        this.trackTokenDetailsView('delete.abandon');
       },
     });
   };
 
   downloadSignedNACHFile = () => {
+    this.trackTokenDetailsView('nach.download_signed_nach.initiate');
+
     return downloadSignedNACHFile({
       token_id: this.props.id,
-    }).catch(err => {
-      this.props.showNotification({
-        type: 'error',
-        message: err.errors,
+    })
+      .then(() => {
+        this.trackTokenDetailsView('nach.download_signed_nach.success');
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+
+        this.trackTokenDetailsView('nach.download_signed_nach.error', {
+          response: err.errors[1],
+        });
       });
-    });
   };
 
   trackClickDownloadNACHForm = () => {
@@ -133,6 +164,8 @@ export default class TokenDetailsContainer extends Component {
     trackClickDownloadNACHForm(
       failure_reason.includes('nach') ? 'Rejected' : 'Approved'
     );
+
+    this.trackTokenDetailsView('nach.download.error', { response: err.errors });
   };
 
   render() {
@@ -179,6 +212,7 @@ export default class TokenDetailsContainer extends Component {
                         id={entity.id}
                         isNACHMethod={this.isNACHMethod}
                         recurringDetails={entity.recurring_details}
+                        trackTokenDetailsView={this.trackTokenDetailsView}
                       />
                     </EntityDetailRow>
 
@@ -266,6 +300,8 @@ class ErrorMessage extends React.PureComponent {
   };
 
   resubmitNACHFile = () => {
+    this.props.trackTokenDetailsView('nach.download_signed_nach.initiate');
+
     return resubmitNACHFile(this.props.id)
       .then(() => {
         trackClickResubmitNachForm();
@@ -274,11 +310,17 @@ class ErrorMessage extends React.PureComponent {
           type: 'success',
           message: 'NACH file re-submitted successfully',
         });
+
+        this.props.trackTokenDetailsView('nach.download_signed_nach.success');
       })
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
           message: errors[0],
+        });
+
+        this.props.trackTokenDetailsView('nach.download_signed_nach.fail', {
+          response: errors,
         });
       });
   };

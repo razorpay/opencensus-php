@@ -204,6 +204,8 @@ class CalendarPicker extends React.Component {
 
   blur = e => {
     this.setState({ focus: false });
+
+    this.props.onBlur && this.props.onBlur(e);
   };
 
   render() {

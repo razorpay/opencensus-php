@@ -126,6 +126,8 @@ class Pair extends React.Component {
     this.setState({
       focusTitle: false,
     });
+
+    this.props.onBlurTitle && this.props.onBlurTitle(e);
   };
 
   onFocusDesc = e => {
@@ -138,6 +140,8 @@ class Pair extends React.Component {
     this.setState({
       focusDesc: false,
     });
+
+    this.props.onBlurDesc && this.props.onBlurDesc(e);
   };
 
   render() {

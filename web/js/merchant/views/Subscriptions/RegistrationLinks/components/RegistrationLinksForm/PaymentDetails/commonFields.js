@@ -8,6 +8,7 @@ export const BankDetails = ({
   bankName,
   bankAccountIFSC,
   required,
+  onBlurElement,
 }) => (
   <Input.Group
     label="Bank Details"
@@ -22,6 +23,8 @@ export const BankDetails = ({
           options={['Select Bank', ...options]}
           placeholder="Bank Name"
           value={bankName}
+          onBlur={onBlurElement}
+          data-name="bank"
           description="Preferred bank for authentication"
         />
       )}
@@ -29,7 +32,9 @@ export const BankDetails = ({
       <Input
         name="bankAccountIFSC"
         placeholder="IFSC"
+        data-name="ifsc"
         value={bankAccountIFSC}
+        onBlur={onBlurElement}
         description="IFSC on the Bank Account"
       />
 
@@ -44,6 +49,7 @@ export const AccountDetails = ({
   accountType,
   beneficiaryName,
   bankAccountNumber,
+  onBlurElement,
 }) => (
   <Input.Group
     label="Account Details"
@@ -54,20 +60,26 @@ export const AccountDetails = ({
     <Input
       placeholder="Beneficiary Name"
       name="beneficiaryName"
+      data-name="beneficiary_name"
       value={beneficiaryName}
+      onBlur={onBlurElement}
       description="Customer/Beneficiary Name on the Account"
     />
 
     <Input
       placeholder="Account Number"
       name="bankAccountNumber"
+      data-name="account_number"
       value={bankAccountNumber}
       description="Bank Account Number"
+      onBlur={onBlurElement}
     />
 
     <Input.Select
       name="accountType"
+      data-name="account_type"
       options={['--Select Account Type--', ...OPTIONS]}
+      onBlur={onBlurElement}
       placeholder="Account Type"
       value={accountType}
     />
