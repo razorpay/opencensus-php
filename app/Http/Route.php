@@ -1492,8 +1492,8 @@ final class Route
         'create_virtual_account_from_order'       => ['post',       'virtual_accounts/offline_qr',                              'VirtualAccountController@createOfflineQr'                 ],
 
         // Route for Success Rate Global Configurations
-        'update_sr_level_global_config'           => ['put',        'cutoffs/{id}',                                             'SuccessRateController@proxy'                              ],
-        'get_all_sr_level_global_config'          => ['get',        'cutoffs',                                                  'SuccessRateController@proxy'                              ],
+        'update_sr_level_global_config'  => ['put', 'cutoffs/{id}', 'SuccessRateController@proxy'],
+        'get_all_sr_level_global_config' => ['get', 'cutoffs', 'SuccessRateController@proxy'],
 
         // Offline
         'fetch_offline_device_multiple'           => ['get',       'offlines/devices',                                          'OfflineController@fetchMultiple'                              ],
@@ -1512,6 +1512,7 @@ final class Route
         'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
         'fetch_batch_action_entities'             => ['get',       'batch_action_entities',                                  'MerchantController@getBatchActionEntities'                 ],
         'update_wait_timeout'                     => ['post',      'db/wait_timeout',                                        'AdminController@setWaitTimeout'                 ],
+        'consume_typeform_webhook'                => ['post',      'typeform/webhook_consumption',                                  'TypeformController@webhookConsumption'          ],
     ];
 
     public static $public = [
@@ -3713,6 +3714,7 @@ final class Route
         'activate_live_offline_device',
         'offline_qr_poll_test_order_status',
         'offline_qr_poll_live_order_status',
+        'consume_typeform_webhook',
         'update_wait_timeout',
     ];
 
@@ -4374,6 +4376,10 @@ final class Route
     const ROUTES_THROUGH_MASTER_REPLICA = [
         'admin_fetch_entity_multiple',
         'admin_fetch_entity_by_id',
+    ];
+
+    const TYPEFORM_SECURITY = [
+        'consume_typeform_webhook',
     ];
 
     /**
