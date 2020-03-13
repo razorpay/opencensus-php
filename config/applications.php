@@ -486,4 +486,8 @@ return [
         ],
 
     ],
+
+    'typeform' => [
+        'typeform_webhook_secret'  => env('TYPEFORM_WEBHOOK_SECRET'),
+    ]
 ];
