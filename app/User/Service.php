@@ -975,6 +975,7 @@ class Service extends Base\Service
             'batch_cancel',
             'rev_up_chennai_announcement',
             'disable_va_creation_bank_account',
+            'rx_ssl_cert_renew',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
