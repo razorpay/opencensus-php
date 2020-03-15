@@ -25,9 +25,10 @@ class Constants
     /**
      * Refund public status related constants
      */
-    const DISPLAY_REFUND_PUBLIC_STATUS           = 'display_refund_public_status';
-    const REFUND_PUBLIC_STATUS_FEATURE_ENABLED   = 'refund_public_status_feature_enabled';
-    const CARD_TRANSFER_FEATURE_ENABLED_MERCHANT = 'card_transfer_feature_enabled_merchant';
+    const DISPLAY_REFUND_PUBLIC_STATUS                     = 'display_refund_public_status';
+    const REFUND_PUBLIC_STATUS_FEATURE_ENABLED             = 'refund_public_status_feature_enabled';
+    const CARD_TRANSFER_FEATURE_ENABLED_MERCHANT           = 'card_transfer_feature_enabled_merchant';
+    const DISABLE_INSTANT_REFUNDS_FEATURE_ENABLED_MERCHANT = 'disable_instant_refunds_feature_enabled_merchant';
     /**
      * Transaction tracker related constants
      */
@@ -74,6 +75,8 @@ class Constants
     // Used to ack scrooge that update status request came from fta status update
     const FTA_UPDATE = 'fta_update';
 
+    const FT_UNKNOWN = 'FT_UNKNOWN';
+
     /**
      * Scrooge File Based Refunds request related constants
      */
@@ -97,4 +100,9 @@ class Constants
 
     const DISPATCH_DELAY_TIME = 'dispatch_delay_time';
     const DISPATCH_BATCH_SIZE = 5;
+
+    // Dashboard related constants
+    // Some constants are named not make complete sense,
+    // basically to avoid user understanding the feature when inspected on dashboard
+    const REFUND_STATUS_FILTER = 'rs_filter';
 }

@@ -623,7 +623,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "Datadog",
+                    "name": "DataDog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -1472,7 +1472,6 @@
                 "shasum": ""
             },
             "require": {
-                "ext-gmp": "*",
                 "php": ">=7.0.0"
             },
             "require-dev": {
@@ -2297,7 +2296,7 @@
             "time": "2017-06-27T06:30:13+00:00"
         },
         {
-            "name": "jeremeamia/SuperClosure",
+            "name": "jeremeamia/superclosure",
             "version": "2.3.0",
             "source": {
                 "type": "git",
@@ -3590,7 +3589,6 @@
                 "shasum": ""
             },
             "require": {
-                "ext-gmp": "*",
                 "fgrosse/phpasn1": "v2.0.x",
                 "php": ">=7.0"
             },
@@ -5950,12 +5948,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/hodor.git",
-                "reference": "fa66e183387644faa4e7cbd9fa16d37242a66004"
+                "reference": "a3a7c687273eee191bbd2080b54fc84b351f1573"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/hodor/zipball/fa66e183387644faa4e7cbd9fa16d37242a66004",
-                "reference": "fa66e183387644faa4e7cbd9fa16d37242a66004",
+                "url": "https://api.github.com/repos/razorpay/hodor/zipball/a3a7c687273eee191bbd2080b54fc84b351f1573",
+                "reference": "a3a7c687273eee191bbd2080b54fc84b351f1573",
                 "shasum": ""
             },
             "require": {
@@ -5984,7 +5982,7 @@
                 "source": "https://github.com/razorpay/hodor/tree/master",
                 "issues": "https://github.com/razorpay/hodor/issues"
             },
-            "time": "2019-03-21T08:38:18+00:00"
+            "time": "2020-03-06T15:01:24+00:00"
         },
         {
             "name": "razorpay/ifsc",
@@ -8590,6 +8588,7 @@
             ],
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
+            "abandoned": true,
             "time": "2019-10-01T08:37:00+00:00"
         },
         {

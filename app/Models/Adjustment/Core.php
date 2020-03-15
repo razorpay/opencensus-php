@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Adjustment;
 
+use Mail;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Dispute;
@@ -13,6 +15,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Banking\YesbankLoadViaAdjustment;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
 use RZP\Models\Settlement\Channel as BankingChannel;
 
@@ -72,6 +75,7 @@ class Core extends Base\Core
              ->setEntityAndId($adj->getEntity(), $merchant->getId())
              ->handle((new \stdClass), $adj);
 
+        /** @var Entity|null $adjustment */
         $adjustment = null;
 
         if (isset($input[Entity::AMOUNT]) === true)
@@ -116,7 +120,31 @@ class Core extends Base\Core
             (new Balance\Core)->sendReserveBalanceActivatedMail($merchant, $balance);
         }
 
+        if (($adjustment->getAmount() > 0) and
+            ($balance->isTypeBanking() === true) and
+            ($balance->getAccountType() === Balance\AccountType::SHARED))
+        {
+            $this->sendYesbankBalanceLoadEmail($adjustment, $merchant);
+        }
+
         return $adjustment;
+    }
+
+    protected function sendYesbankBalanceLoadEmail(Entity $adjustment, Merchant\Entity $merchant)
+    {
+        $data = [
+            // internal
+            'adjustment_id'  => $adjustment->getId(), // added to Mailgun tags
+
+            // external, email body or subject
+            'amount'         => $adjustment->transaction->getAmount(), // subject and body
+            'account_number' => $adjustment->balance->getAccountNumber(), // subject and body
+            'adjustment_description' => $adjustment->getDescription(), // body
+        ];
+
+        $mailable = new YesbankLoadViaAdjustment($merchant, $data);
+
+        Mail::queue($mailable);
     }
 
     public function createAdjustmentForSource(array $input, Base\PublicEntity $source): Entity

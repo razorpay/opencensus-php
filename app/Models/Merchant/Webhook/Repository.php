@@ -85,12 +85,13 @@ class Repository extends Base\Repository
         // SELECT *
         // FROM `webhooks`
         // WHERE `active` = 1
-        //   AND events & 1024 = 1024
+        //   AND events & 1024 = 1024 or events2 & 1024 = 1024
         // -- Here the event queried has position 10, so comparator is 1024
         //
         $query = $this->newQuery()
                       ->where(Entity::ACTIVE, true)
-                      ->whereRaw(Entity::EVENTS . ' & ' . $bitComparator . ' = ' . $bitComparator);
+                      ->whereRaw(Entity::EVENTS . ' & ' . $bitComparator . ' = ' . $bitComparator)
+                      ->orWhereRaw(Entity::EVENTS2 . ' & ' . $bitComparator . ' = ' . $bitComparator);
 
         return $query->get();
     }

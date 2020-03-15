@@ -26,6 +26,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\BankAccount;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
@@ -45,7 +46,9 @@ use RZP\Models\Payment\Refund\Speed;
 use RZP\Gateway\Base\CardCacheTrait;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Services\NbPlus as NbPlusPaymentService;
 
@@ -297,6 +300,8 @@ class Processor
 
             $this->preProcessForUpiIfApplicable($input);
 
+            $this->validateYesBankPayments($input);
+
             $meta = [
                 'metadata' => [
                     'trackId' => $this->app['req.context']->getTrackId()
@@ -327,8 +332,6 @@ class Processor
             });
 
             $payment = $this->payment;
-
-            $this->eventPaymentCreated();
 
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
@@ -363,13 +366,121 @@ class Processor
         }
     }
 
+    /**
+     * Block all Yesbank payments with the same stipulated error message
+     */
+    protected function validateYesBankPayments($input)
+    {
+        // If there is no method in input, do nothing
+        if (isset($input['method']) === false)
+        {
+            return;
+        }
+
+        $data = [];
+
+        switch ($input['method'])
+        {
+            case Payment\Method::CARD:
+            case Payment\Method::EMI:
+
+                // No card number for card payment
+                if (isset($input[Payment\Entity::CARD][Card\Entity::NUMBER]) === false)
+                {
+                    return;
+                }
+
+                $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
+
+                $iin = $this->repo->iin->find($iinId);
+
+                // IIN not available
+                if (empty($iin) === true)
+                {
+                    return;
+                }
+
+                if (($iin->getIssuer() !== Card\Issuer::YESB) or
+                    ($iin->isEnabled() === true))
+                {
+                    return;
+                }
+
+                $data['iin'] = $iinId;
+
+                break;
+
+            case Payment\Method::NETBANKING:
+                if ((isset($input[Payment\Entity::BANK]) === false) or
+                    (($input[Payment\Entity::BANK] !== IFSC::YESB) and
+                     ($input[Payment\Entity::BANK] !== Netbanking::YESB_C)))
+                {
+                    return;
+                }
+
+                break;
+
+            case Payment\Method::UPI:
+
+                $vpa = '';
+
+                if (isset($input[Payment\Method::UPI][Payment\Entity::VPA]) === true)
+                {
+                    $vpa = $input[Payment\Method::UPI][Payment\Entity::VPA];
+                }
+                else if (isset($input[Payment\Entity::VPA]) === true)
+                {
+                    $vpa =  $input[Payment\Entity::VPA];
+                }
+
+                // VPA Could be anything, validators are not run yet.
+                // If not string, validator will catch this
+                if ((is_string($vpa) === false))
+                {
+                    return;
+                }
+
+                // If it's not Yesbank vpa, return
+                if (ProviderCode::isYesBankSpecificVpa($vpa) === false)
+                {
+                    return;
+                }
+
+                $data['vpa'] = $vpa;
+
+                break;
+
+            default:
+                return;
+        }
+
+        $this->throwYesbankException($data);
+    }
+
+    public function throwYesbankException(array $data = [])
+    {
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_YESBANK_PAYMENT_DISABLED,
+            null,
+            $data);
+    }
+
     protected function eventPaymentCreated()
     {
-        $eventPayload = [
-            ApiEventSubscriber::MAIN => $this->payment,
-        ];
+        // the scenario where same payment id gets generated in live and test mode is not handled currently.
+        $cacheKey = 'EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
 
-        $this->app['events']->fire('api.payment.created', $eventPayload);
+        if (($this->cache->get($cacheKey) === null) or
+            ($this->cache->get($cacheKey) === false))
+        {
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $this->payment,
+            ];
+
+            $this->app['events']->fire('api.payment.created', $eventPayload);
+
+            $this->cache->put($cacheKey, true, 1200);
+        }
     }
 
     protected function appendMetadataForPayment(array & $input)
@@ -2718,6 +2829,13 @@ class Processor
         // or in bulk via the bank transfer batch job (run via cli)
         //
         if ($this->app->runningInQueue() === true)
+        {
+            return;
+        }
+
+        $rblVaRoutes = ['bank_transfer_process_rbl', 'bank_transfer_process_rbl_test'];
+
+        if (in_array(Route::currentRouteName(), $rblVaRoutes, true) === true)
         {
             return;
         }

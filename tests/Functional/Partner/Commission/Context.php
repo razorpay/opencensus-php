@@ -275,6 +275,187 @@ return [
         ],
     ],
 
+    'testImplicitVariableWithSubmerchantPartnerESPricingRules' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans' => [
+                [
+                    'id'              => 'DefaultPlnRule',
+                    'plan_id'         => '200MerchantPln',
+                    'plan_name'       => '2 percent merchant plan',
+                    'product'         => 'primary',
+                    'feature'         => 'payment',
+                    'percent_rate'    => 200,
+                    'international'   => 0,
+                    'payment_network' => null,
+                    'receiver_type'   => null,
+                    'type'            => 'pricing',
+                ],
+                [
+                    'id'              => 'EsAutomateRule',
+                    'plan_id'         => '200MerchantPln',
+                    'plan_name'       => '1.5 percent merchant plan',
+                    'product'         => 'primary',
+                    'feature'         => 'esautomatic',
+                    'payment_method'  => 'card',
+                    'percent_rate'    => 150,
+                    'international'   => 0,
+                    'payment_network' => null,
+                    'receiver_type'   => null,
+                    'type'            => 'pricing',
+                ],
+                [
+                    'id'              => 'PartnrRuleBase',
+                    'plan_id'         => '180PartnerPlan',
+                    'plan_name'       => 'Partner plan with recurring set',
+                    'product'         => 'primary',
+                    'feature'         => 'payment',
+                    'percent_rate'    => 180,
+                    'international'   => 0,
+                    'payment_network' => null,
+                    'receiver_type'   => null,
+                    'type'            => 'pricing',
+                ],
+                [
+                    'id'              => 'EsAutoRulePart',
+                    'plan_id'         => '180PartnerPlan',
+                    'plan_name'       => '1 percent merchant plan',
+                    'product'         => 'primary',
+                    'feature'         => 'esautomatic',
+                    'payment_method'  => 'card',
+                    'percent_rate'    => 100,
+                    'international'   => 0,
+                    'payment_network' => null,
+                    'receiver_type'   => null,
+                    'type'            => 'pricing',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '180PartnerPlan',
+            ],
+            'create_payment' => [
+                'amount'    => 4000 * 100, // paise
+                'auth'      => 'partner',
+                'recurring' => 1,
+            ],
+            'add_feature' => [
+                [
+                    'feature_name' => 'es_automatic',
+                    'merchant_id'  => 'BptVjGnFv6ITBm',
+                ],
+                [
+                    'feature_name' => 'es_automatic',
+                    'type'         => 'submerchant',
+                ],
+            ]
+        ],
+    ],
+
+    'testImplicitVariableWithSubmerchantPartnerDiffPricingRules' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans' => [
+                [
+                    'id'              => 'DefaultPlnRule',
+                    'plan_id'         => '200MerchantPln',
+                    'plan_name'       => '2 percent merchant plan',
+                    'product'         => 'primary',
+                    'feature'         => 'payment',
+                    'percent_rate'    => 200,
+                    'international'   => 0,
+                    'payment_network' => null,
+                    'receiver_type'   => null,
+                    'type'            => 'pricing',
+                ],
+                [
+                    'id'              => 'RecurringRule1',
+                    'plan_id'         => '200MerchantPln',
+                    'plan_name'       => '2 percent merchant plan',
+                    'product'         => 'primary',
+                    'feature'         => 'recurring',
+                    'payment_method'  => 'card',
+                    'percent_rate'    => 200,
+                    'international'   => 0,
+                    'payment_network' => null,
+                    'receiver_type'   => null,
+                    'type'            => 'pricing',
+                ],
+                [
+                    'id'              => 'EsAutomateRule',
+                    'plan_id'         => '200MerchantPln',
+                    'plan_name'       => '1.5 percent merchant plan',
+                    'product'         => 'primary',
+                    'feature'         => 'esautomatic',
+                    'payment_method'  => 'card',
+                    'percent_rate'    => 150,
+                    'international'   => 0,
+                    'payment_network' => null,
+                    'receiver_type'   => null,
+                    'type'            => 'pricing',
+                ],
+                [
+                    'id'              => 'PartnrRuleBase',
+                    'plan_id'         => '180PartnerPlan',
+                    'plan_name'       => 'Partner plan with recurring set',
+                    'product'         => 'primary',
+                    'feature'         => 'payment',
+                    'percent_rate'    => 180,
+                    'international'   => 0,
+                    'payment_network' => null,
+                    'receiver_type'   => null,
+                    'type'            => 'pricing',
+                ],
+                [
+                    'id'              => 'PartnrRuleRecu',
+                    'plan_id'         => '180PartnerPlan',
+                    'plan_name'       => 'Partner plan with recurring set',
+                    'product'         => 'primary',
+                    'feature'         => 'recurring',
+                    'payment_method'  => 'card',
+                    'percent_rate'    => 200,
+                    'international'   => 0,
+                    'payment_network' => null,
+                    'receiver_type'   => null,
+                    'type'            => 'pricing',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '180PartnerPlan',
+            ],
+            'create_payment' => [
+                'amount'    => 4000 * 100, // paise
+                'auth'      => 'partner',
+                'recurring' => 1,
+            ],
+            'add_feature' => [
+                [
+                    'feature_name' => 'es_automatic',
+                    'merchant_id'  => 'BptVjGnFv6ITBm',
+                ],
+                [
+                    'feature_name' => 'es_automatic',
+                    'type'         => 'submerchant',
+                ],
+            ]
+        ],
+    ],
+
     'testImplicitVariableMultiplePricingRules' => [
         'setup' => [
             'create_partner'     => [

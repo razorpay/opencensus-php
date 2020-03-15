@@ -10,6 +10,7 @@ use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
@@ -40,6 +41,7 @@ class Validator extends Base\Validator
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
     const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
     const INVALID_REASON_TYPE                           = 'Invalid reason type';
+    const BLACKLISTED_BANK_ACCOUNT_NUMBER               = 'Accounts from this Bank are temporarily not supported. Please contact our support for help.';
     const ADDITIONAL_FIELD_NOT_REQUIRED                 = 'Not required additional field ';
 
     // Constant representing operations for which Validation rules exists
@@ -228,6 +230,11 @@ class Validator extends Base\Validator
         Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
     ];
 
+    protected static $uploadDocumentRules = [
+        Merchant\Document\Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
+        Entity::FILE                            => 'required|file|mimes:pdf,jpeg,jpg,png',
+    ];
+
     protected static $archiveFormRules = [
         Entity::ARCHIVE                         => 'required|boolean',
     ];
@@ -249,10 +256,12 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         'business_subcategory_for_category',
+        'blacklisted_bank',
     ];
 
     protected static $editValidators = [
         'business_subcategory_for_category',
+        'blacklisted_bank',
     ];
 
     protected static $pennyTestingEventPayloadRules = [
@@ -316,6 +325,36 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_ADDRESS => 'filled|max:255',
         Entity::BUSINESS_REGISTERED_STATE   => 'filled|max:255',
     ];
+
+    public function validateDocumentUpload(array $input)
+    {
+        if (empty($input) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_DOCUMENT_TYPE_INVALID
+            );
+        }
+
+        foreach ($input as $key => $value)
+        {
+            $payload = [
+                Merchant\Document\Entity::DOCUMENT_TYPE => $key,
+                Entity::FILE                            => $value,
+            ];
+
+            $this->validateInput('uploadDocument', $payload);
+        }
+    }
+
+    public function validateDocumentType(string $attribute, $value)
+    {
+        if (Type::isValid($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_DOCUMENT_TYPE_INVALID . ':' . $value
+            );
+        }
+    }
 
     public function validateBankDetailsVerificationStatus($attribute, $value)
     {
@@ -563,6 +602,29 @@ class Validator extends Base\Validator
                 [
                     Entity::BUSINESS_SUBCATEGORY => $businessSubcategory
                 ]);
+        }
+    }
+
+    /**
+     * @param array $input
+     */
+    public function validateBlacklistedBank(array $input)
+    {
+        if (isset($input[Entity::BANK_BRANCH_IFSC]) === true)
+        {
+            $code = $input[Entity::BANK_BRANCH_IFSC];
+
+            $bankCode   = strtoupper(substr($code, 0, 4));
+
+            if (in_array($bankCode, Constants::BLACKLISTED_BANKS) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    self::BLACKLISTED_BANK_ACCOUNT_NUMBER,
+                    Merchant\Detail\Entity::BANK_BRANCH_IFSC,
+                    [
+                        Merchant\Detail\Entity::BANK_BRANCH_IFSC => $code
+                    ]);
+            }
         }
     }
 

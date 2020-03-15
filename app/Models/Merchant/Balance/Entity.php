@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use Razorpay\Spine\DataTypes\Dictionary;
@@ -28,6 +29,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY       = 'currency';
     const NAME           = 'name';
     const BALANCE        = 'balance';
+    const LOCKED_BALANCE = 'locked_balance';
     const ON_HOLD        = 'on_hold';
     const AMOUNT_CREDITS = 'credits';
     const FEE_CREDITS    = 'fee_credits';
@@ -78,6 +80,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::NAME,
         self::BALANCE,
+        self::LOCKED_BALANCE,
         self::AMOUNT_CREDITS,
         self::FEE_CREDITS,
         self::REFUND_CREDITS,
@@ -99,8 +102,17 @@ class Entity extends Base\PublicEntity
         self::REFUND_CREDITS,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
+        self::LOCKED_BALANCE,
         self::CHANNEL,
         self::UPDATED_AT,
+        self::LAST_FETCHED_AT,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::LOCKED_BALANCE,
+        self::BALANCE,
         self::LAST_FETCHED_AT,
     ];
 
@@ -126,6 +138,34 @@ class Entity extends Base\PublicEntity
     protected $dates = [
         self::LAST_FETCHED_AT
     ];
+
+    protected function setPublicBalanceAttribute(array & $attributes)
+    {
+        $accountType = $attributes[self::ACCOUNT_TYPE];
+
+        $channel = $attributes[self::CHANNEL];
+
+        if (($accountType === AccountType::DIRECT) and
+            ($channel === Channel::RBL))
+        {
+            $attributes[self::BALANCE] = $this->bankingAccount->getGatewayBalance() ??
+                                         $attributes[self::BALANCE];
+        }
+    }
+
+    protected function setPublicLastFetchedAtAttribute(array & $attributes)
+    {
+        $accountType = $attributes[self::ACCOUNT_TYPE];
+
+        $channel = $attributes[self::CHANNEL];
+
+        if (($accountType === AccountType::DIRECT) and
+            ($channel === Channel::RBL))
+        {
+            $attributes[self::LAST_FETCHED_AT] = $this->bankingAccount->getBalanceLastFetchedAt() ??
+                                                 $attributes[self::LAST_FETCHED_AT];
+        }
+    }
 
     protected function addAmount($amount)
     {
@@ -157,6 +197,11 @@ class Entity extends Base\PublicEntity
     public function getBalance()
     {
         return $this->getAttribute(self::BALANCE);
+    }
+
+    public function getLockedBalance()
+    {
+        return $this->getAttribute(self::LOCKED_BALANCE);
     }
 
     public function getAmountCredits()
@@ -281,21 +326,70 @@ class Entity extends Base\PublicEntity
             'transaction' => $txn->getId(),
         ];
 
+        //
+        // We don't want to do the locked balance check when money is getting added.
+        // i.e., (new balance > old balance).
+        // If (new balance < old balance), we want to check if there's any locked balance
+        // first and see if it's going below the thresholds. If it is, we fail it.
+        // It's equivalent to the merchant not having enough balance to make the txn.
+        //
+        $newBalanceWithLockedBalance = $this->getBalanceWithLockedBalance();
+
         if (($negativeLimit === 0) and
-            ($this->getBalance() < 0))
+            ($newBalance < 0))
         {
             throw new Exception\LogicException(
                 'Something very wrong is happening! Balance is going negative',
                 null,
                 $data);
         }
-        else if ($this->getBalance() < $negativeLimit)
+        else if (($negativeLimit === 0) and
+                 ($newBalanceWithLockedBalance < 0))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_LOCKED,
+                Entity::BALANCE,
+                [
+                    'balance_id'                    => $this->getId(),
+                    'amount'                        => $this->getBalance(),
+                    'locked_balance'                => $this->getLockedBalance(),
+                    'balance_with_locked_balance'   => $newBalanceWithLockedBalance,
+                    'negative_limit'                => $negativeLimit,
+                ]);
+        }
+        else if ($newBalanceWithLockedBalance < $negativeLimit)
         {
             $data['message'] = TraceCode::getMessage(TraceCode::NEGATIVE_BALANCE_BREACHED);
 
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED, abs($amount),
-                $data);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED,
+                Entity::BALANCE,
+                [
+                    'balance_id'                    => $this->getId(),
+                    'amount'                        => $this->getBalance(),
+                    'locked_balance'                => $this->getLockedBalance(),
+                    'balance_with_locked_balance'   => $newBalanceWithLockedBalance,
+                    'negative_limit'                => $negativeLimit,
+                ]);
         }
+    }
+
+    protected function getBalanceWithLockedBalance()
+    {
+        $balance = $this->getBalance();
+
+        //
+        // We are currently checking locked balance only for banking type balance. For other
+        // type of balances, things will need to be handled in the code accordingly before
+        // making a change here. Check for `getBalance` usages specifically, among others.
+        //
+
+        if ($this->isTypeBanking() === true)
+        {
+            $balance = $balance - $this->getLockedBalance();
+        }
+
+        return $balance;
     }
 
     public function subtractAmountCredits($amount)
@@ -358,6 +452,27 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REFUND_CREDITS, $credits);
     }
 
+    public function setLockedBalance(int $lockedBalance)
+    {
+        assertTrue ($lockedBalance >= 0);
+
+        if (($this->isTypeBanking() === false) or
+            ($this->getAccountType() !== AccountType::SHARED))
+        {
+            throw new Exception\LogicException(
+                'Locked balance being set for non-banking or/and non-shared type',
+                ErrorCode::SERVER_ERROR_LOCKED_BALANCE_SET_FOR_NON_BANKING,
+                [
+                    'balance_id'            => $this->getId(),
+                    'locked_balance'        => $lockedBalance,
+                    'balance_type'          => $this->getType(),
+                    'balance_account_type'  => $this->getAccountType(),
+                ]);
+        }
+
+        $this->setAttribute(self::LOCKED_BALANCE, $lockedBalance);
+    }
+
     public function setAccountNumber(string $accountNumber)
     {
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
@@ -371,6 +486,17 @@ class Entity extends Base\PublicEntity
     public function setChannel(string $channel = null)
     {
         $this->setAttribute(self::CHANNEL, $channel);
+    }
+
+    public function setPublicLockedBalanceAttribute(array & $attributes)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::LOCKED_BALANCE]);
+        }
     }
 
     public function save(array $options = array())
@@ -418,8 +544,8 @@ class Entity extends Base\PublicEntity
     public function updateLastFetchedAt()
     {
         $this->getSettingsAccessor()
-            ->upsert(self::LAST_FETCHED_AT, Carbon::now(Timezone::IST)->getTimestamp())
-            ->save();
+             ->upsert(self::LAST_FETCHED_AT, Carbon::now(Timezone::IST)->getTimestamp())
+             ->save();
     }
 
     protected function getLastFetchedAt()

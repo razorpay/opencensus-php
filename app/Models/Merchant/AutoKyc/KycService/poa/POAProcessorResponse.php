@@ -24,7 +24,7 @@ class POAProcessorResponse extends BaseResponse
 
     private function getOcrName(): ?string
     {
-        $ocrName = $this->responseBody['documents'][0]['detail']['name'];
+        $ocrName = $this->responseBody['documents'][0]['detail']['name'] ?? null;
 
         return $ocrName;
     }

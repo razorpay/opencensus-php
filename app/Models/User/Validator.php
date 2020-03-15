@@ -37,6 +37,7 @@ class Validator extends Base\Validator
         Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::SETTINGS                        => 'nullable|associative_array',
         Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
+        Entity::APP                             => 'sometimes|string',
     ];
 
     protected static $editRules = [
@@ -65,14 +66,16 @@ class Validator extends Base\Validator
     protected static $loginRules = [
         Entity::EMAIL                 => 'required|email',
         Entity::PASSWORD              => 'required|between:6,50',
-        Entity::OTP                   => 'sometimes|filled',
         Entity::CAPTCHA               => 'required_without:captcha_disable',
         Entity::CAPTCHA_DISABLE       => 'sometimes|string',
+        Entity::APP                   => 'sometimes|string',
+    ];
+
+    protected static $verifyUserSecondFactorRules = [
+        Entity::OTP                   => 'required|string|between:4,6',
     ];
 
     protected static $setup2faMobileRules = [
-        Entity::EMAIL                 => 'required|email',
-        Entity::PASSWORD              => 'required|between:6,50',
         Entity::CONTACT_MOBILE        => 'required|max:15',
     ];
 
@@ -125,13 +128,21 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE => 'required|numeric|digits_between:8,11',
     ];
 
+    protected static $bulkUserMappingRules = [
+        Entity::USER_ID               => 'required|alpha_num|size:14',
+        Entity::MERCHANT_ID           => 'required|alpha_num|size:14',
+        Merchant\Entity::PRODUCT      => 'required|in:primary,banking',
+        Entity::ROLE                  => 'required|string|custom',
+        Entity::ACTION                => 'required|custom',
+    ];
+
     protected static $actionValidators = [
         'product_role'
     ];
 
     protected static $userAccountLockUnlockRules = [
-        Entity::USER_ID         =>  'required|alpha_num|size:14',
-        Entity::ACTION          =>  'required|string|filled|in:lock,unlock',
+        Entity::USER_ID => 'required|alpha_num|size:14',
+        Entity::ACTION  => 'required|string|filled|in:lock,unlock',
     ];
 
     protected static $createOtpRules = [
@@ -304,6 +315,11 @@ class Validator extends Base\Validator
 
             $noCaptchaSecret = config('app.signup.nocaptcha_secret');
 
+            if ((empty($input[Entity::APP]) === false) and ($input[Entity::APP] === 'android'))
+            {
+                $noCaptchaSecret = config('app.signup.android_captcha_secret');
+            }
+
             $input = [
                 'secret'   => $noCaptchaSecret,
                 'response' => $captchaResponse,
@@ -322,7 +338,13 @@ class Validator extends Base\Validator
             {
                 $app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CAPTCH_VERIFICATION_FAILED, null, null, $emailData);
 
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_CAPTCHA_FAILED);
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_CAPTCHA_FAILED,
+                    null,
+                    [
+                        'output_from_google'        => (array)$output,
+                    ]
+                );
             }
         }
 

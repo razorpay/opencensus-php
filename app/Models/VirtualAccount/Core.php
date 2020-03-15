@@ -3,16 +3,18 @@
 namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
+use RZP\Base\BuilderEx;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
+use RZP\Jobs\VirtualAccountMigrate;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
@@ -119,16 +121,54 @@ class Core extends Base\Core
         return $this->create($input, $merchant, null, null, $balance);
     }
 
-    public function createOrFetchBankingVirtualAccount(Merchant $merchant, Balance\Entity $balance): Entity
+    public function createOrFetchBankingVirtualAccount(Merchant $merchant,
+                                                       Balance\Entity $balance,
+                                                       string $seriesPrefix): Entity
     {
-        $virtualAccount = $this->repo->virtual_account->getActiveVirtualAccountFromBalanceId($balance->getId());
+        $virtualAccount = $this->fetchBankingVirtualAccounts($balance, $seriesPrefix);
 
         if ($virtualAccount === null)
         {
             $virtualAccount = $this->createForBankingBalance($merchant, $balance);
         }
 
+        $accountNumber = trim(optional($virtualAccount->bankAccount)->getAccountNumber());
+
+        // This happens when the terminal selection doesn't pick the
+        // terminal we're expecting, i.e.. with the seriesPrefix
+        // In this case, we should throw an exception
+        if (starts_with($accountNumber, $seriesPrefix) === false)
+        {
+            throw new Exception\LogicException(
+                'Virtual Account account number not be created for expected source account',
+                null,
+                [
+                    'account_number'    => $accountNumber,
+                    'source_prefix'     => $seriesPrefix,
+                ]);
+        }
+
         return $virtualAccount;
+    }
+
+    protected function fetchBankingVirtualAccounts(Balance\Entity $balance, string $seriesPrefix)
+    {
+        $virtualAccounts = $this->repo->virtual_account->getActiveVirtualAccountsFromBalanceId($balance->getId());
+
+        // Since multiple VA can be linked to a balance
+        // Therefore we want to figure out if a VA exists for the given seriesPrefix
+        // If exists return that, else return null
+        foreach ($virtualAccounts as $virtualAccount)
+        {
+            $accountNumber = trim(optional($virtualAccount->bankAccount)->getAccountNumber());
+
+            if (starts_with($accountNumber, $seriesPrefix) === true)
+            {
+                return $virtualAccount;
+            }
+        }
+
+        return null;
     }
 
     protected function buildVirtualAccountAndReceivers(
@@ -274,6 +314,177 @@ class Core extends Base\Core
         return $vaConfig;
     }
 
+    public function bulkMigrateYesbank(array $input): array
+    {
+        $this->trace->debug(TraceCode::VA_MIGRATE_REQUEST, ['input' => $input]);
+
+        // job_mode => sync or async
+        $jobMode = $input['job_mode'] ?? '';
+
+        if ($jobMode !== 'sync' and $jobMode !== 'async')
+        {
+            throw new Exception\BadRequestValidationFailureException('Unknown job_mode: ' . $jobMode);
+        }
+
+        // default whitespace ' ' is on purpose
+        $afterId = $input['after_id'] ?? ' ';
+
+        $fromTime     = $input['from_time'];
+        $toTime       = $input['to_time'];
+        $limit        = $input['limit'] ?? 1000;
+        $processTimes = $input['process_count'] ?? 1;
+        $merchantIds  = $input['merchant_ids'] ?? [];
+
+        // Repeat the whole thing $processTimes
+        for ($currentCount = 1; $currentCount <= $processTimes; $currentCount++)
+        {
+            $this->trace->debug(TraceCode::VA_MIGRATE_PROCESS_TRIGGERING, [
+                'after_id'  => $afterId,
+                'job_mode'  => $jobMode,
+                'from_time' => $fromTime,
+                'count'     => $currentCount,
+            ]);
+
+            // Sub-query for the current set of data
+            $subQuery = $this->repo->virtual_account->getYesbankMigrateQuery($afterId, $fromTime, $toTime, $limit, []);
+
+            // get the max(id) of the above dataset. This is used as the $afterId for the next run.
+            $nextAfterId = $this->getNextBatchIdForYesbankMigrate($subQuery);
+
+            //
+            // In sync mode -> call the function directly.
+            // --
+            // In async mode -> fire multiple VirtualAccountMigrate jobs to process in parallel.
+            // count of jobs fired = $processTimes
+            //
+            if ($jobMode === 'sync')
+            {
+                $this->migrateYesbankVirtualAccounts($afterId, $fromTime, $toTime, $limit, $merchantIds);
+            }
+            elseif ($jobMode === 'async')
+            {
+                VirtualAccountMigrate::dispatch(
+                    $this->mode,
+                    $afterId,
+                    $fromTime,
+                    $toTime,
+                    $limit,
+                    $merchantIds);
+            }
+
+            // Check if all done
+            if ($currentCount === $processTimes)
+            {
+                break;
+            }
+
+            $afterId = $nextAfterId;
+        }
+
+        return [];
+    }
+
+    protected function getNextBatchIdForYesbankMigrate(BuilderEx $subQuery)
+    {
+        // get the max(id) from the dataset, will be used as the "after_id" for the next batch
+        $afterId = \DB::table(\DB::raw("({$subQuery->toSql()}) as sub"))
+                      ->mergeBindings($subQuery->getQuery())
+                      ->max(Entity::ID);
+
+        // For logging and debugging
+        $sqlWithBindings = str_replace_array('?', $subQuery->getBindings(), $subQuery->toSql());
+
+        $this->trace->info(TraceCode::VA_MIGRATE_AFTER_ID_RETRIEVED, [
+            'after_id' => $afterId,
+            'raw_sql'  => $sqlWithBindings
+        ]);
+
+        return $afterId;
+    }
+
+    /**
+     * Gets called in both sync and async flows
+     *
+     * @param string $afterId
+     * @param int    $fromTime
+     * @param int    $toTime
+     * @param int    $limit
+     * @param array  $merchantIds
+     */
+    public function migrateYesbankVirtualAccounts(
+        string $afterId,
+        int $fromTime,
+        int $toTime,
+        int $limit,
+        array $merchantIds = [])
+    {
+        $baseQuery = $this->repo->virtual_account->getYesbankMigrateQuery($afterId, $fromTime, $toTime, $limit, $merchantIds);
+
+        $startTime = millitime();
+
+        $sqlWithBindings = str_replace_array('?', $baseQuery->getBindings(), $baseQuery->toSql());
+
+        $this->trace->info(TraceCode::VA_MIGRATE_AFTER_ID_RETRIEVED, [
+            'after_id' => $afterId,
+            'raw_sql'  => $sqlWithBindings
+        ]);
+
+        $virtualAccounts = $baseQuery->get();
+
+        $count = 0;
+
+        foreach ($virtualAccounts as $virtualAccount)
+        {
+            try
+            {
+                $whetherMigrated = $this->repo->transaction(function() use ($virtualAccount)
+                {
+                    return $this->migrateYesbankToRblIfsc($virtualAccount);
+                });
+
+                $count += $whetherMigrated;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+
+        $this->trace->info(TraceCode::VA_MIGRATE_TIME,
+            [
+                'time_taken'    => millitime() - $startTime,
+                'migrated'      => $count,
+            ]);
+    }
+
+    protected function migrateYesbankToRblIfsc(Entity $virtualAccount)
+    {
+        $bankAccount = $virtualAccount->bankAccount;
+
+        if (($bankAccount === null) or
+            ($virtualAccount->bankAccount->getIfscCode() !== "YESB0CMSNOC"))
+        {
+            return 0;
+        }
+
+        if ($virtualAccount->hasBankAccount2() === true)
+        {
+            return 0;
+        }
+
+        $newBankAccount = $bankAccount->replicate();
+
+        $newBankAccount->setIfsc(Provider::IFSC[Provider::RBL]);
+
+        $this->repo->saveOrFail($newBankAccount);
+
+        $virtualAccount->bankAccount2()->associate($newBankAccount);
+
+        $this->repo->saveOrFail($virtualAccount);
+
+        return 1;
+    }
+
     /**
      * Updates balance's account number if applicable per below condition.
      * @param Entity $virtualAccount
@@ -285,7 +496,12 @@ class Core extends Base\Core
         {
             $accountNumber = $virtualAccount->bankAccount->getAccountNumber();
 
-            (new Balance\Core)->updateBalanceAccountNumber($virtualAccount->balance, $accountNumber);
+            $balance = $virtualAccount->balance;
+
+            if (empty($balance->getAccountNumber()) === true)
+            {
+                (new Balance\Core)->updateBalanceAccountNumber($balance, $accountNumber);
+            }
         }
     }
 

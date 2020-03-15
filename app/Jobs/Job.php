@@ -8,6 +8,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+use Razorpay\Trace\Logger;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
@@ -64,8 +65,7 @@ class Job implements ShouldQueue
     protected $repoManager;
 
     /**
-     * Trace instance
-     *
+     * @var Logger
      */
     protected $trace;
 

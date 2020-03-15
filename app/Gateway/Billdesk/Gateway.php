@@ -36,7 +36,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getAuthRequestContentArray($input);
 
-        $gatewayPayment = $this->createGatewayPaymentEntity($content);
+        $gatewayPayment = $this->createGatewayPaymentEntity($content, $input);
 
         $request = $this->getRequestArrayForAuthorize($content);
 
@@ -98,7 +98,7 @@ class Gateway extends Base\Gateway
         }
 
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-                        $content['CustomerID'], Action::AUTHORIZE);
+                        $input['payment']['id'], Action::AUTHORIZE);
 
         $content['received'] = 1;
         $gatewayPayment->fill($content);
@@ -117,7 +117,15 @@ class Gateway extends Base\Gateway
                     $content['ErrorDescription']);
         }
 
-        $this->assertPaymentId($input['payment']['id'], $content['CustomerID']);
+        if ($input['terminal']['procurer'] === 'merchant')
+        {
+            $this->assertPaymentId($input['payment']['id'], $content['AdditionalInfo3']);
+        }
+        else
+        {
+            $this->assertPaymentId($input['payment']['id'], $content['CustomerID']);
+        }
+
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
         $actualAmount = number_format($content['TxnAmount'], 2, '.', '');
 
@@ -157,7 +165,7 @@ class Gateway extends Base\Gateway
         $response['CurrencyType'] = 'INR';
         $response['received'] = 1;
 
-        $this->createGatewayPaymentEntity($response);
+        $this->createGatewayPaymentEntity($response, $input);
 
         if ($response['ProcessStatus'] !== 'Y')
         {
@@ -205,7 +213,19 @@ class Gateway extends Base\Gateway
 
         $content = array_combine($fields, $content);
 
-        return $content['CustomerID'];
+        // in case of terminals procurred by merchant, we sent payment id in AdditionalInfo3.
+        // Additionalinfo1 and customerID will have details specific to merchant
+        // In normal flow we send payment id in both Additionalinfo1 and CustomerID
+        if ($content['AdditionalInfo1'] !== $content['CustomerID'])
+        {
+            $paymentId = $content['AdditionalInfo3'];
+        }
+        else
+        {
+            $paymentId = $content['CustomerID'];
+        }
+
+        return $paymentId;
     }
 
     public function manualGatewayRefund(array $input)
@@ -376,7 +396,7 @@ class Gateway extends Base\Gateway
                 $refundContent = $this->getRefundContentForGatewayEntity($input, $verifyResponse);
 
                 $this->action = Action::REFUND;
-                $this->createGatewayPaymentEntity($refundContent);
+                $this->createGatewayPaymentEntity($refundContent, $input);
 
                 $success = true;
 
@@ -473,7 +493,7 @@ class Gateway extends Base\Gateway
             ($verifyResponse['AuthStatus'] !== AuthStatus::SUCCESS) or
             (($verifyResponse['RefStatus'] !== RefundStatus::REFUNDED) and
              ($verifyResponse['RefStatus'] !== RefundStatus::CANCELLED)) or
-            ($verifyResponse['CustomerID'] !== $input['payment'][Payment\Entity::ID]))
+            ($verifyResponse['CustomerID'] !== $verify->payment->getCustomerId()))
         {
             return [false, $verifyResponse];
         }
@@ -757,7 +777,7 @@ class Gateway extends Base\Gateway
         $content = [
             'RequestType'   => '0122',
             'Merchant ID'   => $input['terminal']['gateway_merchant_id'],
-            'Customer ID'   => $input['payment']['id'],
+            'Customer ID'   => $verify->payment->getCustomerId(),
             'Current Date/ Timestamp' => $now,
         ];
 
@@ -792,7 +812,7 @@ class Gateway extends Base\Gateway
             'MerchantID'        => $input['terminal']['gateway_merchant_id'],
             'TxnReferenceNo'    => $payment['TxnReferenceNo'],
             'TxnDate'           => $txnDate,
-            'CustomerID'        => $input['payment']['id'],
+            'CustomerID'        => $payment->getCustomerId(),
             'TxnAmount'         => $txnAmount,
             'RefAmount'         => $refundAmount,
             'RefDateTime'       => $now,
@@ -947,14 +967,22 @@ class Gateway extends Base\Gateway
             'Unknown5'                  => 'NA',
             'TypeField2'                => 'F',
             'AdditionalInfo1'           => $input['payment']['id'],
-            'Unknown6'                  => 'NA',
-            'Unknown7'                  => 'NA',
-            'Unknown8'                  => 'NA',
-            'Unknown9'                  => 'NA',
-            'Unknown10'                 => 'NA',
-            'Unknown11'                 => 'NA',
+            'AdditionalInfo2'           => 'NA',
+            'AdditionalInfo3'           => 'NA',
+            'AdditionalInfo4'           => 'NA',
+            'AdditionalInfo5'           => 'NA',
+            'AdditionalInfo6'           => 'NA',
+            'AdditionalInfo7'           => 'NA',
             'RU'                        => $input['callbackUrl'],
         ];
+
+        if (($this->isMerchantProcuredTerminal($input['terminal']) === true) and
+            (isset($input['payment']['description']) === true))
+        {
+            $content['CustomerID'] = substr($input['payment']['description'], 0, 30);
+            $content['AdditionalInfo1'] = 'NA';
+            $content['AdditionalInfo3'] = $input['payment']['id'];
+        }
 
         // Change Content for Merchants with TPV Required
         if ($this->isTPVEnabled())
@@ -966,6 +994,11 @@ class Gateway extends Base\Gateway
             }
 
             $content['AccountNumber'] = $input['order']['account_number'];
+
+            if ($this->isMerchantProcuredTerminal($input['terminal']) === true)
+            {
+                $content = $this->addAdditionalInfoBasedOnMerchant($content, $input);
+            }
         }
 
         if ($this->mode === Mode::TEST)
@@ -974,18 +1007,13 @@ class Gateway extends Base\Gateway
             $content['SecurityID'] = $this->getTestAccessCode();
         }
 
-        if ($input['terminal']['procurer'] === 'merchant')
-        {
-            $content['AdditionalInfo1'] = substr($input['payment']['description'] . '-' . strrev($input['payment']['id']), 0, 30);
-        }
-
         return $content;
     }
 
-    protected function createGatewayPaymentEntity($attributes)
+    protected function createGatewayPaymentEntity($attributes, $input)
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
-        $gatewayPayment->setPaymentId($attributes['CustomerID']);
+        $gatewayPayment->setPaymentId($input['payment']['id']);
 
         $gatewayPayment->fill($attributes);
         $gatewayPayment->setAction($this->action);
@@ -1171,5 +1199,23 @@ class Gateway extends Base\Gateway
     public function verifyRefund(array $input)
     {
         return false;
+    }
+
+    protected function isMerchantProcuredTerminal($terminal)
+    {
+        return ($terminal['procurer'] === 'merchant');
+    }
+
+    protected function addAdditionalInfoBasedOnMerchant($content, $input)
+    {
+        if ($input['payment']['merchant_id'] === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $content['AdditionalInfo1'] = $input['order']['notes']['FolioNo'] ?? 'NA';
+            $content['AdditionalInfo2'] = $input['order']['account_number'] ?? 'NA';
+            $content['AdditionalInfo4'] = $input['order']['notes']['BranchCode'] ?? 'NA';
+            $content['AdditionalInfo5'] = $input['order']['notes']['Scheme'] ?? 'NA';
+        }
+
+        return $content;
     }
 }

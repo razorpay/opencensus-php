@@ -50,7 +50,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               => '7011',
                     'brand'             => [
                         'icon'  => 'https://rtll.com/file/icon.jpg',
                         'logo'  => 'https://rtll.com/file/logo.jpg',
@@ -175,7 +175,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                     'dashboard_display' => 'Ratnalal',
                     'website'           => 'https://medium.com',
                     'billing_label'     => 'Ratnalal',
@@ -277,7 +277,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 7011,
+                    'mcc'               => '7011',
                     'billing_label'     => 'Ratnalal',
                 ],
             ],
@@ -309,7 +309,7 @@ return [
                     ],
                     'name'           => 'Ratnalal Jewellers',
                     'description'    => null,
-                    'mcc'            => 7011,
+                    'mcc'            =>'7011',
                     'business_model' => null,
                     'brand' => [
                         'icon'  => null,
@@ -398,7 +398,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 7011,
+                    'mcc'               => '7011',
                     'billing_label'     => 'Ratnalal',
                 ],
                 'settlement' => [
@@ -445,7 +445,7 @@ return [
                             'line1'         => 'new registered',
                             'line2'         => 'new near Jamnalal Police Stn',
                             'city'          => 'new BENGALURU',
-                            'state'         => 'ANDHRA PRADESH',
+                            'state'         => 'Jammu and kashmir',
                             'pin'           => '560031',
                             'country'       => 'Malaysia',
                         ],
@@ -455,7 +455,7 @@ return [
                             'line2'         => 'new near Jamnalal Police Stn',
                             'city'          => 'new BENGALURU',
                             'district_name' => 'new BENGALURU',
-                            'state'         => 'ANDHRA PRADESH',
+                            'state'         => 'daman and diu',
                             'pin'           => '560031',
                             'country'       => 'Malaysia',
                         ],
@@ -463,7 +463,7 @@ return [
                     'name'              => 'New Ratnalal Jewellers',
                     'description'       => 'New This is a test business',
                     'business_model'    => 'B2C',
-                    'mcc'               => 8931,
+                    'mcc'               => '8931',
                     'brand'             => [
                         'icon'  => 'https://newrtll.com/file/icon.jpg',
                         'logo'  => 'https://newrtll.com/file/logo.jpg',
@@ -539,7 +539,7 @@ return [
                             'line1'   => 'new registered',
                             'line2'   => 'new near Jamnalal Police Stn',
                             'city'    => 'new BENGALURU',
-                            'state'   => 'ANDHRA PRADESH',
+                            'state'   => 'JAMMU & KASHMIR',
                             'pin'     => '560031',
                             'country' => 'Malaysia',
                         ],
@@ -549,7 +549,7 @@ return [
                             'line2'   => 'new near Jamnalal Police Stn',
                             'city'    => 'new BENGALURU',
                             'district_name' => 'new BENGALURU',
-                            'state'   => 'ANDHRA PRADESH',
+                            'state'   => 'DAMAN & DIU',
                             'pin'     => '560031',
                             'country' => 'Malaysia',
                         ],
@@ -557,7 +557,7 @@ return [
                     'name'              => 'New Ratnalal Jewellers',
                     'description'       => 'New This is a test business',
                     'business_model'    => 'B2C',
-                    'mcc'               => 8931,
+                    'mcc'               =>'8931',
                     'brand'             => [
                         'icon'  => 'https://newrtll.com/file/icon.jpg',
                         'logo'  => 'https://newrtll.com/file/logo.jpg',
@@ -682,7 +682,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                     'brand'             => [
                         'icon'  => 'https://rtll.com/file/icon.jpg',
                         'logo'  => 'https://rtll.com/file/logo.jpg',
@@ -793,7 +793,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
@@ -985,7 +985,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               => '7011',
                     'brand'             => [
                         'icon'  => 'https://rtll.com/file/icon.jpg',
                         'logo'  => 'https://rtll.com/file/logo.jpg',
@@ -1051,7 +1051,7 @@ return [
                     'fund_accounts'    => [
                         [
                             'bank_account' => [
-                                'name'           => 'Ratnalal Account Name',
+                                'name'           => 'Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name',
                                 'account_number' => '1200012391',
                                 'ifsc'           => 'ICIC0000031',
                                 'notes'          => [
@@ -1144,7 +1144,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                     'dashboard_display' => 'Ratnalal',
                     'website'           => 'https://medium.com',
                     'billing_label'     => 'Ratnalal',
@@ -1210,7 +1210,7 @@ return [
                     'fund_accounts'    => [
                         [
                             'bank_account' => [
-                                'name'           => 'Ratnalal Account Name',
+                                'name'           => 'Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name',
                                 'account_number' => '1200012391',
                                 'ifsc'           => 'ICIC0000031',
                                 'notes'          => [
@@ -1330,7 +1330,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 8398,
+                    'mcc'               => '8398',
                     'billing_label'     => 'Ratnalal',
                     'identification'    => [
                         [
@@ -1405,7 +1405,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 8398,
+                    'mcc'               => '8398',
                     'billing_label'     => 'Ratnalal',
                     'identification'    => [
                         [
@@ -1512,7 +1512,7 @@ return [
                     ],
                     'name'           => 'Ratnalal Jewellers',
                     'description'    => null,
-                    'mcc'            => 8398,
+                    'mcc'            =>'8398',
                     'business_model' => null,
                     'brand' => [
                         'icon'  => null,
@@ -1622,7 +1622,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                     'dashboard_display' => 'Ratnalal',
                     'website'           => 'https://medium.com',
                     'billing_label'     => 'Ratnalal',
@@ -1730,7 +1730,7 @@ return [
                         ],
                     ],
                     'name'              => 'Ratnalal Jewellers',
-                    'mcc'               => 7011,
+                    'mcc'               => '7011',
                     'billing_label'     => 'Ratnalal',
                     'identification'    => [
                         [
@@ -1797,7 +1797,7 @@ return [
                     ],
                     'name'           => 'Ratnalal Jewellers',
                     'description'    => null,
-                    'mcc'            => 7011,
+                    'mcc'            =>'7011',
                     'business_model' => null,
                     'brand' => [
                         'icon'  => null,
@@ -1883,7 +1883,7 @@ return [
                     'name'              => 'Ratnalal Jewellers',
                     'description'       => 'This is a test business',
                     'business_model'    => 'B2B',
-                    'mcc'               => 7011,
+                    'mcc'               =>'7011',
                     'dashboard_display' => 'Ratnalal',
                     'website'           => 'https://medium.com',
                     'billing_label'     => 'Ratnalal',
@@ -1916,7 +1916,7 @@ return [
                     'fund_accounts'    => [
                         [
                             'bank_account' => [
-                                'name'           => 'Ratnalal Account Name',
+                                'name'           => 'Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name Ratnalal Account Name',
                                 'account_number' => '1200012391',
                                 'ifsc'           => 'ICIC0000031',
                             ],

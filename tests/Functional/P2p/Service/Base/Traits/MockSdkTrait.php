@@ -45,4 +45,20 @@ trait MockSdkTrait
             ->andReturnUsing($closure)
             ->mock();
     }
+
+    protected function expectedCallback(string $route, array $params = [], array $callback = [])
+    {
+        $url = route($route, $params);
+
+        $query = http_build_query([
+            'callback'  => $callback,
+        ]);
+
+        if (empty($query) === false)
+        {
+            $url .= ('?' . $query);
+        }
+
+        return $url;
+    }
 }

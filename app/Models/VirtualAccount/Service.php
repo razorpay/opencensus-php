@@ -149,8 +149,10 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        // Via http route virtual accounts of primary balance only are exposed.
-        $input[Entity::BALANCE_ID] = $this->merchant->primaryBalance->getId();
+        if (isset($input[Entity::BALANCE_ID]) === false)
+        {
+            $input[Entity::BALANCE_ID] = $this->merchant->primaryBalance->getId();
+        }
 
         $virtualAccounts = $this->repo
                                 ->virtual_account
@@ -428,6 +430,11 @@ class Service extends Base\Service
         $va['order_id'] = $orderId;
 
         return $va;
+    }
+
+    public function bulkMigrateYesbank(array $input)
+    {
+        return (new Core)->bulkMigrateYesbank($input);
     }
 
     protected function getDeviceForQr(array $input)

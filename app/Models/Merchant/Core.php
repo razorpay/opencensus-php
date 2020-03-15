@@ -304,7 +304,8 @@ class Core extends Base\Core
 
     /**
      *  Running Promotional Pricing Plan for Submerchant between 27th Feb 2020 - 30th April 2020.
-     *  Handle using Razorx.
+     *  Handle using Razorx. If the old Pricing Plan for Submerchant is SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
+     * then only updating to new pricing plan (SUBMERCHANT_PROMOTIONAL_PRICING_PLAN)
      *
      * @param Entity $subMerchant
      * @param string $pricingPlan
@@ -318,9 +319,22 @@ class Core extends Base\Core
             Merchant\RazorxTreatment::SUBMERCHANT_PROMOTIONAL_PRICING_PLAN,
             $this->mode);
 
-        if (strtolower($variant) === 'on')
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $endOfPromotion = Carbon::create(2020, 4, 30, 23, 59, 59, Timezone::IST)->getTimestamp();
+
+        if (strtolower($variant) === 'on' and
+            $pricingPlan === Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS and
+            $currentTime <= $endOfPromotion)
         {
             $pricingPlan = Pricing\DefaultPlan::SUBMERCHANT_PROMOTIONAL_PRICING_PLAN;
+
+            $this->trace->info(
+                TraceCode::SUBMERCHANT_PROMOTIONAL_PRICING_PLAN,
+                [
+                    'submerchant_id' => $subMerchant->getId(),
+                    'pricing_plan_id' => $pricingPlan
+                ]);
         }
 
         return $pricingPlan;
@@ -351,12 +365,6 @@ class Core extends Base\Core
             Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
             Feature\Entity::ENTITY_ID       => $merchant->getId(),
             Feature\Entity::NAME            => Feature\Constants::OTP_AUTH_DEFAULT,
-        ], $shouldSync = true);
-
-        (new Feature\Core)->create([
-            Feature\Entity::ENTITY_TYPE     => E::MERCHANT,
-            Feature\Entity::ENTITY_ID       => $merchant->getId(),
-            Feature\Entity::NAME            => Feature\Constants::VALIDATE_MERCHANT_DOMAIN,
         ], $shouldSync = true);
     }
 
@@ -2567,7 +2575,7 @@ class Core extends Base\Core
             // Mcc can have values other then predefined values
             // for those cases we should return default values
             //
-            if (BusinessSubCategoryMetaData::isMccPresentInPredefinedList((int) $merchant->getCategory()) === false)
+            if (BusinessSubCategoryMetaData::isMccPresentInPredefinedList($merchant->getCategory()) === false)
             {
                 $this->trace->count(Metric::UNREGISTERED_BUSINESS_DEFAULT_LIMIT_USED_TOTAL);
 

@@ -49,7 +49,7 @@ class CreateUpi extends Migration
             $table->string(Upi::CONTACT)
                   ->nullable();
 
-            $table->string(Upi::EMAIL)
+            $table->string(Upi::GATEWAY_DATA)
                   ->nullable();
 
             $table->string(Upi::VPA)

@@ -130,7 +130,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $nachCreateRules = [
-        Entity::FILE        => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE        => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
         Entity::TYPE        => 'required|in:nach',
         Entity::SUB_TYPE    => 'required|string|in:register,debit',
         Entity::GATEWAY     => 'required|string',
@@ -791,6 +791,7 @@ class Validator extends Base\Validator
         // After validating contents per row only should do following aggregate validations.
 
         $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT));
+        // TODO: Consider Locked Balance as well here.
         $bankingBalance = $merchant->sharedBankingBalance->getBalance();
 
         if ($totalPayoutAmount > $bankingBalance)

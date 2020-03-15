@@ -29,6 +29,7 @@ class Fields
     const PAYER_NAME                = 'PayerName';
     const PAYER_VA                  = 'PayerVA';
     const VALIDATE_PAYER_ACCOUNT    = 'ValidatePayerAccFlag';
+    const VALIDATE_PAYER_ACCOUNT2   = 'validatePayerAccFlag';
     const VERIFY_PAYER_VA           = 'payerVA';
     const PAYER_VA_REQ              = 'payerVa';
     const REFUND_ID                 = 'refund_id';
