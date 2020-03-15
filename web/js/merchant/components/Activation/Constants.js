@@ -1,3 +1,11 @@
+export const LOADING = {
+  ERROR: -1, // Error = show error msg
+  SUCCESS: 1, // Success = show success msg
+  PENDING: 0, // Pending = show spinner
+  INITIAL: null, // Initial = hide spinner
+  DEFAULT: 2, // Some custom message when form opens
+};
+
 // Business categories
 const FINANCIAL_SERVICES = 'financial_services';
 const TOURS_AND_TRAVELS = 'tours_and_travel';

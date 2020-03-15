@@ -66,7 +66,9 @@ import {
 } from './ActivationUtils';
 import QueryString from 'query-string';
 import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
-
+import SubmitFormLayer from './components/SubmitFormLayer';
+import Loader from './components/Loader';
+import { LOADING } from './Constants';
 /*
  *             Main-form        LA-form
  * Submited      E F ~S        ~E ~F ~S
@@ -79,48 +81,6 @@ import { getNeedsClarificationTabsData } from './NeedsClarificationFormMap';
  * */
 
 let onAction = trackers;
-
-const LOADING = {
-  ERROR: -1, // Error = show error msg
-  SUCCESS: 1, // Success = show success msg
-  PENDING: 0, // Pending = show spinner
-  INITIAL: null, // Initial = hide spinner
-  DEFAULT: 2, // Some custom message when form opens
-};
-
-function defaultFieldProps(f) {
-  const self = this;
-
-  if (Array.isArray(f)) {
-    return f.forEach(defaultFieldProps.bind(self));
-  }
-  if (!f._cmp) {
-    f._cmp = Input;
-  }
-  if (!f.hasOwnProperty('required')) {
-    f.required = true;
-  }
-
-  if (f.hasOwnProperty('validator') && typeof f.validator === 'function') {
-    f.validator = f.validator.bind(self); // Field dependent on other field must auto update its validator. Recommended to use with `_autoRenderImpure` to auto show error simultaneously as the other fiels is being updated.
-  }
-
-  if (f.hasOwnProperty('onBlur') && typeof f.onBlur === 'function') {
-    f.onBlur = f.onBlur.bind(self); // Control dependent field for auto-focus, etc.
-  }
-
-  if (f.hasOwnProperty('info') && typeof f.info === 'function') {
-    f.info = f.info.bind(self); // Show different info based on other fields
-  }
-
-  if (!f.hasOwnProperty('autoComplete')) {
-    f.autoComplete = 'off';
-  }
-
-  if (!f.hasOwnProperty('size')) {
-    f.size = 'small';
-  }
-}
 
 let NEEDS_CLARIFICATION_STEP, // To handle specific case for needs clarification screen
   DOCUMENT_UPLOAD_STEP, // To handle specific case for document step
@@ -1657,7 +1617,7 @@ export default class ActivationWizard extends React.Component {
                 isFormLocked && 'main--full'
               )}
             >
-              <SubmitForm
+              <SubmitFormLayer
                 closeActivationForm={() => {
                   this.goto(FORM_TABS.length - 1);
                 }}
@@ -1765,48 +1725,38 @@ export default class ActivationWizard extends React.Component {
   }
 }
 
-/*
- * Component for showing step saving loader in footer
- * @prop {Boolean or null} isSaving - Current status of Loader
- * */
-function Loader({ isSaving, defaultMsg }) {
-  if (isSaving === LOADING.INITIAL) {
-    return <span className="Loader" />;
+function defaultFieldProps(f) {
+  const self = this;
+
+  if (Array.isArray(f)) {
+    return f.forEach(defaultFieldProps.bind(self));
+  }
+  if (!f._cmp) {
+    f._cmp = Input;
+  }
+  if (!f.hasOwnProperty('required')) {
+    f.required = true;
   }
 
-  return (
-    <span className="Loader Loader--visible">
-      {do {
-        if (isSaving === LOADING.PENDING) {
-          <React.Fragment>
-            <span className="spin-btn" />
-            <span className="device--desktop">Saving Changes...</span>
-            <span className="device--mobile">Saving</span>
-          </React.Fragment>;
-        } else if (isSaving === LOADING.SUCCESS) {
-          <React.Fragment>
-            <i className="i-check text-success" />
-            <span className="text-success device--desktop">
-              All changes saved
-            </span>
-            <span className="text-success device--mobile">Saved</span>
-          </React.Fragment>;
-        } else if (isSaving === LOADING.ERROR) {
-          <React.Fragment>
-            <i className="i-close text-danger" />
-            <span className="text-danger device--desktop">
-              Recent changes were not saved!
-            </span>
-            <span className="text-danger device--mobile">Not Saved!</span>
-          </React.Fragment>;
-        } else if (isSaving === LOADING.DEFAULT) {
-          {
-            defaultMsg;
-          }
-        }
-      }}
-    </span>
-  );
+  if (f.hasOwnProperty('validator') && typeof f.validator === 'function') {
+    f.validator = f.validator.bind(self); // Field dependent on other field must auto update its validator. Recommended to use with `_autoRenderImpure` to auto show error simultaneously as the other fiels is being updated.
+  }
+
+  if (f.hasOwnProperty('onBlur') && typeof f.onBlur === 'function') {
+    f.onBlur = f.onBlur.bind(self); // Control dependent field for auto-focus, etc.
+  }
+
+  if (f.hasOwnProperty('info') && typeof f.info === 'function') {
+    f.info = f.info.bind(self); // Show different info based on other fields
+  }
+
+  if (!f.hasOwnProperty('autoComplete')) {
+    f.autoComplete = 'off';
+  }
+
+  if (!f.hasOwnProperty('size')) {
+    f.size = 'small';
+  }
 }
 
 function ActivationField(field) {
@@ -1997,153 +1947,4 @@ function isFieldValid(field, activation) {
   }
 
   return true;
-}
-
-/*
- * Submit Form opens with backdrop inside Activation form's main content
- * - The activeTab keeps showing in the background
- * - @props
- *     {Function} submitActivationForm, call the submit form api
- * */
-class SubmitForm extends React.Component {
-  state = {
-    allowSubmit: false, // Check if checkbox is ticked
-  };
-
-  submit = e => {
-    if (!this.state.allowSubmit) {
-      return;
-    }
-    return this.props.submitActivationForm();
-  };
-
-  render() {
-    return (
-      <div className="SubmitForm-modal">
-        <main-title>
-          <Button
-            class="device--mobile btn--back"
-            iconBefore="arrow-back"
-            onClick={this.props.closeActivationForm}
-          />
-          SUBMIT FORM
-        </main-title>
-
-        <div className="SubmitForm-content">
-          <div className="tnc-text">
-            {/* Confirmation checkbox*/}
-            <Input.Check
-              disabled={this.props.isFormLocked}
-              onChange={e => {
-                this.setState({
-                  allowSubmit: e.target.checked,
-                });
-
-                // Track session for submitting form activity (non-LA account)
-                if (
-                  !this.props.isLinkedAccount &&
-                  typeof window.hj === 'function'
-                ) {
-                  window.hj('tagRecording', ['activation_form_submitted']);
-                }
-              }}
-            />
-
-            {/* Primary copy */}
-            <p>
-              I have read and understood the{' '}
-              <ShowWhen
-                additionalCondition={user =>
-                  user.isOrgAllowedFunctionality('external_links')
-                }
-              >
-                <a
-                  href="https://razorpay.com/terms/"
-                  target="_blank"
-                  className="highlight"
-                  onClick={() =>
-                    onAction && onAction.trackLinkClick('Terms of use')
-                  }
-                >
-                  Terms & Conditions
-                </a>
-              </ShowWhen>
-              <ShowWhen
-                additionalCondition={user =>
-                  !user.isOrgAllowedFunctionality('external_links')
-                }
-              >
-                <span className="highlight">Terms & Conditions</span>
-              </ShowWhen>
-              ,{' '}
-              <ShowWhen
-                additionalCondition={user =>
-                  user.isOrgAllowedFunctionality('external_links')
-                }
-              >
-                <a
-                  href="https://razorpay.com/agreement/"
-                  target="_blank"
-                  className="highlight"
-                  onClick={() =>
-                    onAction && onAction.trackLinkClick('Merchant Agreement')
-                  }
-                >
-                  Merchant Agreement
-                </a>
-              </ShowWhen>
-              <ShowWhen
-                additionalCondition={user =>
-                  !user.isOrgAllowedFunctionality('external_links')
-                }
-              >
-                <span className="highlight">Merchant Agreement</span>
-              </ShowWhen>{' '}
-              and the{' '}
-              <ShowWhen
-                additionalCondition={user =>
-                  user.isOrgAllowedFunctionality('external_links')
-                }
-              >
-                <a
-                  href="https://razorpay.com/privacy/"
-                  target="_blank"
-                  className="highlight"
-                  onClick={() =>
-                    onAction && onAction.trackLinkClick('Privacy Policy')
-                  }
-                >
-                  Privacy Policy
-                </a>
-              </ShowWhen>
-              <ShowWhen
-                additionalCondition={user =>
-                  !user.isOrgAllowedFunctionality('external_links')
-                }
-              >
-                <span className="highlight">Privacy Policy</span>
-              </ShowWhen>
-              . By submitting the form, I agree to abide by the rules at all
-              times.
-            </p>
-          </div>
-
-          {/* Secondary copy */}
-          <p className="text-fade">
-            Please review the form before submitting. For any changes after
-            submission, you can <Link to="#ticket">write to support</Link>
-          </p>
-
-          {/* Action button */}
-          <AsyncBtn.Primary
-            disabled={!this.state.allowSubmit}
-            onClick={this.submit}
-            pendingState="Submitting..."
-          >
-            Submit Form
-          </AsyncBtn.Primary>
-        </div>
-      </div>
-    );
-  }
 }
