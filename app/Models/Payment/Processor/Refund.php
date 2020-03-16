@@ -2985,30 +2985,32 @@ trait Refund
         //
 
         $queryParams = [
-            RefundEntity::GATEWAY        => $payment->getGateway(),
-            RefundConstants::METHOD      => $payment->getMethod(),
-            RefundConstants::AMOUNT      => $payment->getAmount(),
+            RefundEntity::GATEWAY   => $payment->getGateway(),
+            RefundConstants::METHOD => $payment->getMethod(),
+            RefundConstants::AMOUNT => $payment->getAmount(),
         ];
 
         if ($payment->getMethod() === Payment\Method::CARD)
         {
             //
-            // The following checks have already been made in isInstantRefundSupported - keeping these for sanity.
+            // The following checks have already been made in scrooge. Keeping these for sanity.
             // Therefore, Scrooge must not send a validation error.
             //
 
-            if ($payment->hasCard() === true)
+            $iin = $payment->card->iinRelation;
+
+            if (($payment->hasCard() === false) or
+                ($iin === null) or
+                (empty($iin->getIssuer()) === true) or
+                (empty($iin->getType()) === true))
             {
-                $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
-
-                $iin = $payment->card->iinRelation;
-
-                if ($iin !== null)
-                {
-                    $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
-                    $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
-                }
+                // This implies Scrooge cannot decision the mode for Instant Refund on this payment
+                return '';
             }
+
+            $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
+            $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
+            $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
         }
 
         $response = $this->app['scrooge']->getInstantRefundsMode($payment->getMerchantId(), $queryParams);
