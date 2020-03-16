@@ -7,6 +7,7 @@ use Closure;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Feature;
 use RZP\Models\BankTransfer;
 use RZP\Models\Customer\Entity;
 use RZP\Models\Terminal\Type;
@@ -1862,7 +1863,67 @@ class VirtualAccountTest extends TestCase
             ]
         ], $virtualAccount['receivers']);
     }
+    public function testCreateVirtualAccountForBanking()
+    {
+        $this->setUpMerchantForBusinessBanking(true, 10000000);
 
+        $this->fixtures->merchant->addFeatures(Feature\Constants::VIRTUAL_ACCOUNTS_BANKING);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $virtualAccount = $this->getDbEntityById('virtual_account', $response['id']);
+
+        $this->assertEquals($merchant->sharedBankingBalance->getId(), $virtualAccount->getBalanceId());
+        $this->assertNotEmpty($virtualAccount->bankAccount);
+        $this->assertStringStartsWith('232323', $virtualAccount->bankAccount->getAccountNumber());
+        $this->assertNotEquals(
+            $virtualAccount->bankAccount->getAccountNumber(),
+            $merchant->sharedBankingBalance->getAccountNumber());
+    }
+
+    public function testCreateVirtualAccountForBankingWithBody()
+    {
+        $this->setUpMerchantForBusinessBanking(true, 10000000);
+
+        $this->fixtures->merchant->addFeatures(Feature\Constants::VIRTUAL_ACCOUNTS_BANKING);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $virtualAccount = $this->getDbEntityById('virtual_account', $response['id']);
+
+        $this->assertEquals($merchant->sharedBankingBalance->getId(), $virtualAccount->getBalanceId());
+        $this->assertNotEmpty($virtualAccount->bankAccount);
+        $this->assertStringStartsWith('232323', $virtualAccount->bankAccount->getAccountNumber());
+        $this->assertNotEquals(
+            $virtualAccount->bankAccount->getAccountNumber(),
+            $merchant->sharedBankingBalance->getAccountNumber());
+    }
+
+    public function testCreateVirtualAccountForBankingWithoutFeature()
+    {
+        $this->setUpMerchantForBusinessBanking(true, 10000000);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateVirtualAccountForBankingWithoutBusinessBankingFlagEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(Feature\Constants::VIRTUAL_ACCOUNTS_BANKING);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
 
     protected function createBankAccount(array $overrideWith = [])
     {

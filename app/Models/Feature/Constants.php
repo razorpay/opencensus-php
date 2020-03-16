@@ -40,6 +40,7 @@ class Constants
     const EXPOSE_DOWNTIMES                = 'expose_downtimes';
     const PAYMENT_FAILURE_EMAIL           = 'payment_failure_email';
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
+    const VIRTUAL_ACCOUNTS_BANKING        = 'virtual_accounts_banking';
     const BANK_TRANSFER_ON_CHECKOUT       = 'bank_transfer_on_checkout';
     const FUND_ACCOUNT_VALIDATIONS        = 'fund_account_validations';
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
@@ -381,6 +382,7 @@ class Constants
         self::EXPOSE_DOWNTIMES                => true,
         self::PAYMENT_FAILURE_EMAIL           => true,
         self::VIRTUAL_ACCOUNTS                => true,
+        self::VIRTUAL_ACCOUNTS_BANKING        => true,
         self::BANK_TRANSFER_ON_CHECKOUT       => true,
         self::INVOICE_PARTIAL_PAYMENTS        => true,
         self::HIDE_DOWNTIMES                  => true,

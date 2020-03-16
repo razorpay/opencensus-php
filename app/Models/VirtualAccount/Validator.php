@@ -31,6 +31,10 @@ class Validator extends Base\Validator
         Entity::CUSTOMER                        => 'sometimes|array',
     ];
 
+    protected static $createForBankingRules = [
+        Entity::NAME                            => 'filled|string|max:40',
+    ];
+
     protected static $editRules = [
         Entity::NAME            => 'filled|string|max:40',
         Entity::STATUS          => 'sometimes|in:closed',

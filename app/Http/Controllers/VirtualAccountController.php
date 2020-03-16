@@ -78,4 +78,13 @@ class VirtualAccountController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function createForBanking()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createForBanking($input);
+
+        return ApiResponse::json($data);
+    }
 }
