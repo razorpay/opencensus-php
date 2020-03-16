@@ -7,7 +7,12 @@ import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import InputField from 'common/ui/Forms/InputField';
 import ModalHeader from 'common/ui/ModalHeader';
+import Input from 'common/new-ui/Input';
 import { AmountTooltip } from 'common/ui/Amount';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import Amount from 'common/ui/Amount';
+import { Fragment } from 'react';
+
 import {
   isBlank,
   rupeesToPaise,
@@ -35,6 +40,10 @@ export const amountValidation = props => {
 
   if (!value) {
     return 'Amount is required';
+  }
+
+  if (value < 1) {
+    return `Amount can't be less than 1`;
   }
 
   if (isNaN(value) || (value.toString().split('.')[1] || []).length > 2) {
@@ -70,12 +79,12 @@ const selector = formValueSelector('refundModal');
     let partial = selector(state, 'partial');
     let reverse_all = selector(state, 'reverse_all');
     let payable_amount = selector(state, 'amount');
-
     return {
       ...state.session,
       ...state.payment,
       user: state.session.user,
       transfers: state.payment.transfers,
+      default_refund_speed: state.config.config.default_refund_speed,
       partial,
       payable_amount,
     };
@@ -96,12 +105,31 @@ export default class RefundModal extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
-
+  instant_refund = false;
   constructor() {
     super(...arguments);
     this.state = {
       errors: null,
+      instantChecked:
+        !showWhenUtil({ featureEnabled: 'disable_instant_refunds' }) &&
+        this.props.default_refund_speed == 'optimum',
+      instant_fee: {},
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    const current_payable_amount = rupeesToPaise(this.props.payable_amount);
+    const prev_payable_amount = rupeesToPaise(prevProps.payable_amount);
+    if (
+      current_payable_amount &&
+      current_payable_amount !== prev_payable_amount &&
+      current_payable_amount >= 100 &&
+      !showWhenUtil({ featureEnabled: 'disable_instant_refunds' }) &&
+      // this.hasEnoughFunds() && // check if this fine??
+      current_payable_amount <= this.props.payment.amount
+    ) {
+      this.getRefundFee();
+    }
   }
 
   componentWillMount() {
@@ -140,6 +168,41 @@ export default class RefundModal extends Component {
     if (!partial) {
       data.amount = payment.amount - payment.amount_refunded;
     }
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Instant Refund',
+      eventAction: 'Yes Refund',
+      eventLabel: `${
+        speedValue === 'normal' ? 'Normal' : 'Instant'
+      } Refund | Default speed ${
+        this.props.default_refund_speed === 'normal' ? 'Normal' : 'Instant'
+      } `,
+    });
+
+    if (
+      !(
+        payment.instant_refund_support &&
+        payment.instant_refund_support === true
+      )
+    ) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Instant Refund',
+        eventAction: 'Yes Enable',
+        eventLabel: `Instant Refund not supported | Default speed ${
+          this.props.default_refund_speed === 'normal' ? 'Normal' : 'Instant'
+        }`,
+      });
+    }
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Instant Refund',
+      eventAction: `Issue ${partial ? 'Partial' : 'Full'} Refund`,
+      eventLabel: `${partial ? 'Partial' : 'Full'} Refund${
+        this.analytics.hovered ? ' | Over Tooltip' : ''
+      }${this.analytics.comment ? ' | Add Comment' : ''}${
+        this.instant_refund || this.state.instantChecked
+          ? ' | Check Checkbox'
+          : ' | Uncheck Checkbox'
+      }`,
+    });
 
     return this.props
       .refundPayment(payment, data)
@@ -190,19 +253,20 @@ export default class RefundModal extends Component {
         message: errorMsg,
         closeTimeout: 10000,
       });
-
       return;
     }
-
+    this.instant_refund = props.instant_refund;
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'Click - Issue Refund',
       eventLabel: `payment_id=${this.props.payment.id}`,
       speed_requested: props.instant_refund ? 'optimum' : 'normal',
     });
-
     // If instant_refund is checked
-    if (props.instant_refund) {
+    if (
+      (props.instant_refund || this.state.instantChecked) &&
+      Number(props.amount) >= 1
+    ) {
       this.props
         .fetchRefundFee(this.props.payment, props.amount * 100)
         .then(() => {
@@ -211,20 +275,25 @@ export default class RefundModal extends Component {
               header: 'Do you want to refund this payment?',
               message: () => (
                 <React.Fragment>
-                  <div class="text-semi-muted">
-                    <p>
-                      This payment will be instantly refunded to the customer. A
-                      fee of &#8377;{' '}
-                      {paiseToRupees(this.props.refundFee.data.fee)} will be
-                      charged from your unsettled balance.
-                    </p>
-                  </div>
                   <div class="confirm-note">
-                    <p>Note</p>
-                    <p>
-                      If the instant refund is unsuccessful, the fee will be
-                      reversed. The payment will still be refunded in 5-7 days.
-                    </p>
+                    The payment will be instantly refunded &nbsp;
+                    <span>
+                      <i class="i i-help" />
+                      <Popover
+                        onMouseOver={() => (this.analytics.hovered = true)}
+                        theme="dark"
+                        align="bottom"
+                        parentQuerySelector={`.Modal--confirm`}
+                      >
+                        <PopoverBody>
+                          <div>
+                            If the instant refund is unsuccessful, the fee will
+                            be reversed. The payment will still be refunded in
+                            5-7 days.
+                          </div>
+                        </PopoverBody>
+                      </Popover>
+                    </span>
                   </div>
                 </React.Fragment>
               ),
@@ -255,9 +324,13 @@ export default class RefundModal extends Component {
       this.context
         .confirm({
           header: 'Are you sure you want to refund this payment?',
-          message: props.reverse_all
-            ? 'Reversals will be automatically created for all transfers on this payment, before the refund'
-            : null,
+          message: props.reverse_all ? (
+            'Reversals will be automatically created for all transfers on this payment, before the refund'
+          ) : (
+            <span class="confirm-note d-block">
+              The payment will be refunded in 5-7 days.
+            </span>
+          ),
           affirmativeLabel: 'Yes, Refund',
           affirmativePendingLabel: 'Refunding...',
           abortLabel: "No, don't!",
@@ -284,10 +357,12 @@ export default class RefundModal extends Component {
   };
 
   hasEnoughFunds = () => {
-    const { payment } = this.props;
+    const { payment, payable_amount } = this.props;
     const { data } = this.props.current_balance;
 
-    let amount = payment.amount;
+    // let amount = payment.amount;
+    let amount = Number(payable_amount) * 100;
+
     let balance = data.balance;
 
     if (this.props.current_balance.loading === true) {
@@ -312,49 +387,234 @@ export default class RefundModal extends Component {
       return 'checkbox';
     }
   };
-
+  analytics = {
+    hovered: false,
+    comment: false,
+  };
   showInstantRefund = (payment, isInstantDisabled) => {
+    const instant_refund_supported =
+      payment.instant_refund_support && payment.instant_refund_support === true;
+    const refund_check_disabled =
+      isInstantDisabled || !instant_refund_supported;
     if (
-      showWhenUtil({ featureEnabled: 'card_transfer_refund' }) &&
-      payment.instant_refund_support &&
-      payment.instant_refund_support === true
+      !showWhenUtil({ featureEnabled: 'disable_instant_refunds' })
+      // &&
+      // payment.instant_refund_support &&
+      // payment.instant_refund_support === true
     ) {
       return (
         <div>
-          <div class={this.getInstantRefundClassNames(isInstantDisabled)}>
-            <label>
-              <Field
-                name="instant_refund"
-                component="input"
-                type="checkbox"
-                disabled={isInstantDisabled}
-                onChange={this.onInstantRefundCheckboxClick}
-              />
-              <strong>Refund Instantly</strong>
-            </label>
-            <span
-              data-tooltip="You can refund this payment instantly for a small fee"
-              data-tooltip-position="top"
-              onMouseEnter={this.onInstantRefundTooltipHover}
-            >
-              <i class="i i-help" />
-            </span>
+          <div
+            class={
+              this.getInstantRefundClassNames(refund_check_disabled) +
+              ' instand-refund-check'
+            }
+          >
+            <div class="row">
+              <div class="col-xs-8">
+                <div class="instant-refund-check-container">
+                  <Field
+                    name="instant_refund"
+                    component="input"
+                    type="checkbox"
+                    checked={
+                      this.state.instantChecked && !refund_check_disabled
+                    }
+                    disabled={refund_check_disabled}
+                    onChange={this.onInstantRefundCheckboxClick}
+                  />
+                  <strong>Refund Instantly</strong>
+                </div>
+              </div>
+              <div class="col-xs-4 text-right">
+                {!this.state.instantChecked ? (
+                  <span>
+                    <i class="i i-help" />
+                    {!refund_check_disabled ? (
+                      <Popover
+                        theme="dark"
+                        align="bottom"
+                        parentQuerySelector={`.Modal--small`}
+                      >
+                        <PopoverBody>
+                          You can refund this payment instantly for a small fee
+                          of{' '}
+                          <Amount
+                            value={
+                              this.state.instant_fee.fee -
+                              this.state.instant_fee.tax
+                            }
+                            currency={payment.currency}
+                          />{' '}
+                          (Plus Taxes){' '}
+                        </PopoverBody>
+                      </Popover>
+                    ) : null}
+                  </span>
+                ) : (
+                  !refund_check_disabled && (
+                    <Fragment>
+                      <Amount
+                        parentQuerySelector={`.Modal--small`}
+                        value={this.state.instant_fee.fee}
+                        currency={payment.currency}
+                      />{' '}
+                      <span class="grey">Fee</span>
+                    </Fragment>
+                  )
+                )}
+              </div>
+            </div>
           </div>
           {this.props.current_balance.loading ? (
             <div>Loading...</div>
-          ) : isInstantDisabled ? (
+          ) : refund_check_disabled ? (
+            (() => {
+              if (isInstantDisabled) {
+                return (
+                  <div class="low-funds">
+                    Your account does not have sufficient balance to instantly
+                    refund this payment.
+                    <Link
+                      onClick={() => {
+                        window.rzpAnalytics({
+                          eventCategory: 'Dashboard - Instant Refund',
+                          eventAction: 'Issue Refund',
+                          eventLabel: `Add Funds | Default speed ${
+                            this.props.default_refund_speed === 'normal'
+                              ? 'Normal'
+                              : 'Instant'
+                          }`,
+                        });
+                      }}
+                      to={'/addfunds'}
+                      target="_blank"
+                    >
+                      Add Funds
+                      <i class="i i-external-link" />
+                    </Link>
+                  </div>
+                );
+              }
+              if (!instant_refund_supported) {
+                return (
+                  <div class="low-funds">
+                    Currently, Instant Refunds are available only on TPV,
+                    netbanking, UPI and select credit cards.
+                  </div>
+                );
+              }
+            })()
+          ) : null}
+          {this.state.instantChecked &&
+          !refund_check_disabled &&
+          !this.props.current_balance.loading ? (
             <div class="low-funds">
-              Your account does not have sufficient balance to instantly refund
-              this payment.
-              <Link to={'/addfunds'} target="_blank">
-                Add Funds
-                <i class="i i-external-link" />
-              </Link>
+              <div class="instant-refund-breakup-para">
+                <div>
+                  A total amount of &nbsp;
+                  <Amount
+                    parentQuerySelector={`.Modal--small`}
+                    value={
+                      rupeesToPaise(this.props.payable_amount) +
+                      this.state.instant_fee.fee
+                    }
+                    currency={payment.currency}
+                  />
+                  &nbsp; will be deducted
+                  <React.Fragment>
+                    <div style={{ display: 'inline', marginLeft: '5px' }}>
+                      <i class="i i-info-circle" />
+                      <Popover
+                        theme="dark"
+                        align="bottom"
+                        // onMouseOver={() => this.analytics.hovered = true}
+                        parentQuerySelector={`.Modal--small`}
+                      >
+                        <PopoverBody>
+                          <div class="instant-breakup">
+                            <div class="flex">
+                              <div class="w50 text-left">Total Amount</div>
+                              <div class="w50 text-right">
+                                <Amount
+                                  value={rupeesToPaise(
+                                    this.props.payable_amount
+                                  )}
+                                  currency={payment.currency}
+                                />
+                              </div>
+                            </div>
+                            <div class="flex">
+                              <div class="w50 text-left">
+                                Instant Refund Fees
+                              </div>
+                              <div class="w50 text-right">
+                                +{' '}
+                                <Amount
+                                  value={
+                                    this.state.instant_fee.fee -
+                                    this.state.instant_fee.tax
+                                  }
+                                  currency={payment.currency}
+                                />
+                              </div>
+                            </div>
+                            <div class="flex">
+                              <div class="w50 text-left">Taxes</div>
+                              <div class="w50 text-right">
+                                +<Amount
+                                  value={this.state.instant_fee.tax}
+                                  currency={payment.currency}
+                                />
+                              </div>
+                            </div>
+                            <hr
+                              style={{
+                                margin: 0,
+                                margin: '5px 0px',
+                                opacity: 0.6,
+                              }}
+                            />
+                            <div class="flex">
+                              <div style={{ width: '80%' }} class="text-left">
+                                <b>Amount to be deducted</b>
+                              </div>
+                              <div style={{ width: '20%' }} class="text-right">
+                                <b>
+                                  {' '}
+                                  <Amount
+                                    value={
+                                      this.state.instant_fee.fee +
+                                      rupeesToPaise(this.props.payable_amount)
+                                    }
+                                    currency={payment.currency}
+                                  />
+                                </b>
+                              </div>
+                            </div>
+                          </div>
+                        </PopoverBody>
+                      </Popover>
+                    </div>
+                  </React.Fragment>
+                </div>
+              </div>
             </div>
           ) : null}
         </div>
       );
     } else return null;
+  };
+
+  getRefundFee = () => {
+    return this.props
+      .fetchRefundFee(
+        this.props.payment,
+        rupeesToPaise(this.props.payable_amount)
+      )
+      .then(d => {
+        this.setState({ instant_fee: d.data });
+      });
   };
 
   onInstantRefundCheckboxClick = e => {
@@ -365,6 +625,7 @@ export default class RefundModal extends Component {
         : 'Checked - Instant Refund',
       eventLabel: `payment_id=${this.props.payment.id}`,
     });
+    this.setState({ instantChecked: e.target.checked });
   };
 
   onInstantRefundTooltipHover = e => {
@@ -406,68 +667,87 @@ export default class RefundModal extends Component {
               this.save(props);
             })}
           >
-            <div class="form-group">
-              <label class="label-required">Refund Amount</label>
-              <div class="input-group">
-                <AmountTooltip
-                  currency={payment.currency}
-                  parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
-                  customClass="input-group-addon"
-                />
-                <Field
-                  name="amount"
-                  component={InputField}
-                  class="form-control"
-                  type="number"
-                  placeholder="Enter the refund amount"
-                />
-              </div>
-              {!!amountError ? (
-                <div class="InputField__ErrorText text-danger">
-                  {amountError}
-                </div>
-              ) : (
-                <small class="help-block">
-                  This will be a{' '}
-                  <b>
-                    <RefundType partial={partial} /> refund
-                  </b>.
-                  {!partial && <span>Change amount for a partial refund.</span>}
-                </small>
-              )}
-            </div>
-            {transfers.items.length > 0 && (
+            <div class="refunds-overflow-box">
               <div class="form-group">
-                <div class="checkbox rzpCheckbox">
+                <label class="label-required">Refund Amount</label>
+                <div class="input-group">
+                  <AmountTooltip
+                    currency={payment.currency}
+                    parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
+                    customClass="input-group-addon"
+                  />
                   <Field
-                    name="reverse_all"
-                    id="reverse_all"
-                    component="input"
-                    type="checkbox"
+                    name="amount"
+                    component={InputField}
+                    class="form-control"
+                    type="number"
+                    placeholder="Enter the refund amount"
+                  />
+                </div>
+                {!!amountError ? (
+                  <div class="InputField__ErrorText text-danger">
+                    {amountError}
+                  </div>
+                ) : (
+                  <small class="help-block">
+                    This will be a{' '}
+                    <b>
+                      <RefundType partial={partial} /> refund
+                    </b>.
+                    {!partial && (
+                      <span>&nbsp; Change amount for a partial refund.</span>
+                    )}
+                  </small>
+                )}
+              </div>
+              {transfers.items.length > 0 && (
+                <div class="form-group">
+                  <div class="checkbox rzpCheckbox route-transfer-checkbox">
+                    <Field
+                      name="reverse_all"
+                      id="reverse_all"
+                      component="input"
+                      type="checkbox"
+                      class="form-control"
+                    />
+                    <label class="icon i-check" for="reverse_all">
+                      Reverse all{' '}
+                      <a
+                        href="https://razorpay.com/docs/route/operations/#reversals"
+                        target="_blank"
+                      >
+                        Route Transfers
+                      </a>{' '}
+                      as well
+                    </label>
+                  </div>
+                </div>
+              )}
+              {this.showInstantRefund(payment, isInstantDisabled)}
+            </div>
+
+            <div class="form-group">
+              {this.state.showComments ? (
+                <div class="form-group mt20">
+                  <Field
+                    name="comment"
+                    placeholder="Comment Description"
+                    component={AutoResizeTextarea}
                     class="form-control"
                   />
-                  <label class="icon i-check" for="reverse_all">
-                    Reverse all{' '}
-                    <a
-                      href="https://razorpay.com/docs/route/operations/#reversals"
-                      target="_blank"
-                    >
-                      Route Transfers
-                    </a>{' '}
-                    as well
-                  </label>
                 </div>
-              </div>
-            )}
-            <div class="form-group">
-              <label>Comments (Optional)</label>
-              <Field
-                name="comment"
-                component={AutoResizeTextarea}
-                class="form-control"
-              />
+              ) : (
+                <a
+                  onClick={() => {
+                    this.analytics.comment = true;
+                    this.setState({ showComments: true });
+                  }}
+                  class="comment-link-optional"
+                >
+                  + Add Comments(Optional)
+                </a>
+              )}
             </div>
-            {this.showInstantRefund(payment, isInstantDisabled)}
             <div class="Modal__actions">
               <button class="btn btn-primary btn-block">
                 Issue <RefundType partial={partial} isTitleCase={true} /> refund

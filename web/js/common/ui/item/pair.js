@@ -84,6 +84,10 @@ export const refundMode = {
   title: 'Mode',
   value: item => item.mode,
 };
+export const refundSpeed = {
+  title: 'Speed',
+  value: item => item.speed,
+};
 export const refundStatus = {
   title: 'Status',
   value: item => <RefundStatusLabel status={item.public_status} />,

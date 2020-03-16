@@ -1,51 +1,41 @@
 .dashboard .panel.payment-methods-container {
-
   .more-options-button .dropdown-menu {
-
     width: 180px;
   }
 
   ol.rzp-breadcrumb {
-
     margin-bottom: 0;
 
     li+li:before {
-
-      content: "\f10d";
+      content: '\f10d';
       font-family: merchant-icons !important;
     }
   }
 
   .rzp-tooltip {
-
     .rzp-tooltip-inner {
-
       font-size: 12px;
       line-height: 15px;
       overflow: hidden;
 
       .payment-amount {
-
         font-size: 14px;
         line-height: 16px;
         margin-bottom: 8px;
 
         small {
-
           font-size: 12px;
           vertical-align: bottom;
         }
       }
 
       .tooltip-footer {
-
         background-color: #E9E9E9;
         color: #A9A9A9;
         padding: 4px 10px;
         margin: 15px -10px -5px -10px;
 
         i.i {
-
           display: inline-block;
           font-size: 10px;
           vertical-align: middle;
@@ -56,35 +46,35 @@
   }
 }
 
-.ir-help{
+.ir-help {
   color: #9fb1c7;
-  padding-left: 5px
+  padding-left: 5px;
 }
 
-.instant-refund-disable{
-  opacity 0.5
+.instant-refund-disable {
+  opacity: 0.5;
 }
 
-.low-funds{
-	height: 36px;
-	width: 279px;
-	color: #99A6AD;
-	font-family: Lato;
-	font-size: 12px;
-	line-height: 18px;
-  margin-top: -10px
+.low-funds {
+  height: 36px;
+  width: 279px;
+  color: #99A6AD;
+  font-family: Lato;
+  font-size: 12px;
+  line-height: 18px;
+  margin-top: -10px;
 }
 
-.low-funds > a{
-  padding-left: 5px  
+.low-funds > a {
+  padding-left: 5px;
 }
 
-.refund-entity-update{
+.refund-entity-update {
   display: flex;
   flex-direction: column;
 }
 
-.refund-update{
+.refund-update {
   display: flex;
   flex-direction: row;
   width: 30%;
@@ -92,14 +82,186 @@
 }
 
 .refund-strike-text {
-	color: #BDC6C8;
+  color: #BDC6C8;
   text-decoration: line-through;
 }
 
+.update-description {
+  color: #7C8299;
+  font-family: Lato;
+  font-size: 12px;
+  line-height: 18px;
+}
 
-.update-description{
-	color: #7C8299;
-	font-family: Lato;
-	font-size: 12px;
-	line-height: 18px;
+.refunds-overflow-box {
+  margin: 0px -40px 0 -40px;
+  border: 1px solid rgba(173, 188, 201, 0.17);
+  padding: 10px;
+  box-shadow: 0px 2px 6px rgba(62, 71, 84, 0.13);
+  border-radius: 2px;
+  background-color: #fff;
+  padding-bottom: 15px;
+
+  .text-danger, .help-block {
+    text-align: left;
+    margin-top: 10px;
+  }
+
+  .route-transfer-checkbox {
+    padding-left: 14px;
+  }
+
+  .Input--checkbox {
+    float: left;
+    margin: 0;
+  }
+
+  div.low-funds {
+    width: 100%;
+    padding: 10px;
+    margin: 5px;
+  }
+}
+
+.comment-link-optional {
+  font-size: 13px;
+  margin: 14px 0 !important;
+  display: block !important;
+}
+
+.instand-refund-check {
+  background: #F7F8FA;
+  padding: 10px;
+
+  label {
+    padding-left: 0;
+  }
+
+  input[type=checkbox] {
+    margin-right: 12px;
+  }
+
+  .fee {
+    float: right;
+    color: #7B8199;
+  }
+}
+
+.instant-refund-breakup-para {
+  // margin: 10px;
+  font-size: 13px;
+}
+
+.mt10 {
+  margin-top: 10px;
+}
+
+.mt20 {
+  margin-top: 20px;
+}
+
+.refund-panel {
+  .refunds-speed-tag {
+    background-color: #EBEFF2;
+    color: #7B8199;
+    padding: 5px;
+  }
+
+  .p5 {
+    padding: 5px;
+  }
+
+  p {
+    color: #7B8199;
+  }
+
+  .refund-panel-col {
+    border: 1px solid #EBEFF0;
+    padding: 10px;
+
+    .refund-speed-change-permission {
+      float: right;
+      margin: 0 !important;
+      cursor: pointer;
+    }
+
+    input[type=checkbox] {
+      position: relative;
+      bottom: 5px;
+    }
+
+    i.i-instant-refund {
+      font-size: 18px;
+      position: relative;
+      bottom: 3px;
+      margin-right: 5px;
+    }
+
+    &.active {
+      background: #F8FAFF;
+    }
+  }
+
+  .know-more {
+    font-size: 13px;
+    margin-left: 9px;
+  }
+
+  .panel-heading {
+    .know-more {
+      font-size: 15px;
+      font-weight: 400;
+    }
+  }
+}
+
+.instant-refund-check-container {
+  padding-left: 25px;
+
+  input[name=instant_refund] {
+    cursor: pointer;
+  }
+}
+
+.refunds-enable-overflow-box {
+  margin: 0px -40px 0 -40px;
+  border: 1px solid rgba(173, 188, 201, 0.17);
+  padding: 30px;
+  box-shadow: 0px 2px 6px rgba(62, 71, 84, 0.13);
+  border-radius: 2px;
+  background-color: #fff;
+  padding-bottom: 15px;
+  padding-top: 0;
+
+  .refunds-enable-title {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .refunds-enable-details {
+    width: 60%;
+    float: left;
+  }
+
+  .refunds-enable-image {
+    width: 40%;
+    float: left;
+    position: relative;
+    top: 25px;
+  }
+}
+
+.d-block {
+  display: block;
+}
+
+.main-page-process-instantly {
+  button {
+    margin-left: 10px;
+    padding: 5px 10px;
+  }
+
+  p {
+    color: #515978;
+  }
 }

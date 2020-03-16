@@ -1,5 +1,6 @@
 import Time from 'common/ui/Time';
 import { RefundStatusLabel } from 'merchant/components/StatusLabel';
+import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
 
 function ShowTime({ time }) {
   return <Time value={time} format="DD MMM YYYY, hh:mm:ss a" />;
@@ -30,7 +31,20 @@ export default class RefundStatusTimeline extends React.Component {
 
         mileStones.push(
           {
-            text: 'Refund mode updated to Normal',
+            text: (
+              <div>
+                Refund speed updated to Normal &nbsp;
+                <span>
+                  <i class="i i-help" />
+                  <Popover align="right" theme="dark">
+                    <PopoverBody>
+                      &nbsp; Instant Refund was unsuccessful, the fee &nbsp; for
+                      instant refund has been reversed.
+                    </PopoverBody>
+                  </Popover>
+                </span>
+              </div>
+            ),
             timeStamp: refund.speed_change_time
               ? refund.speed_change_time
               : refund.created_at,
@@ -89,7 +103,7 @@ export default class RefundStatusTimeline extends React.Component {
         {mileStones.map((item, idx) => {
           if (item.status) {
             return (
-              <li>
+              <li key={idx}>
                 <div class="refund-timeline-status">
                   <RefundStatusLabel status={item.status} />
                 </div>
@@ -101,8 +115,8 @@ export default class RefundStatusTimeline extends React.Component {
             );
           } else {
             return (
-              <li>
-                <p class="refund-timeline-text">{item.text}</p>
+              <li key={idx}>
+                <div class="refund-timeline-text">{item.text}</div>
                 <p class="refund-timeline-timestamp">
                   <ShowTime time={item.timeStamp} />
                 </p>

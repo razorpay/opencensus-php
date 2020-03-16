@@ -10,7 +10,7 @@ import {
   refundId,
   amount,
   createdAt,
-  refundMode,
+  refundSpeed,
   refundStatus,
 } from 'common/ui/item/pair';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
@@ -45,10 +45,8 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
 
 const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
   const columns = [refundId, amount];
-  if (showWhenUtil({ featureEnabled: 'card_transfer_refund' })) {
-    columns.splice(1, 0, refundMode);
-    columns.push(refundStatus);
-  }
+  columns.splice(1, 0, refundSpeed);
+  columns.push(refundStatus);
 
   return (
     <ContentToggler

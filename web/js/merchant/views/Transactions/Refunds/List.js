@@ -11,12 +11,16 @@ import {
   paymentId,
   amount,
   createdAt,
-  public_status,
+  status,
 } from 'common/ui/item/pair';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import EnableInstantRefundsModal from '../Payments/components/EnableInstantRefundsModal';
+import { withRouter } from 'react-router-dom';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
-@connect(state => state.refunds, { fetchAll })
+@withRouter
+@connect(state => state.refunds, { fetchAll, openModal })
 export default class RefundsListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics({
@@ -43,11 +47,39 @@ export default class RefundsListContainer extends ListContainer {
     });
   };
 
+  popupIfSettle() {
+    if (this.props.location.hash === '#instantrefunds') {
+      this.resetHash();
+      this.enableInstantRefunds();
+    }
+  }
+
+  resetHash = () => {
+    this.props.history.push({
+      pathname: this.props.history.location.pathname,
+      hash: '',
+    });
+  };
+
+  enableInstantRefunds = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Instant Refund',
+      eventAction: 'Enable Now',
+      eventLabel: `Announcement | Enable Now`,
+    });
+    this.props.openModal({
+      component: <EnableInstantRefundsModal openedFrom={'Announcement'} />,
+      size: 'small',
+    });
+  };
+
+  componentDidUpdate() {
+    this.popupIfSettle();
+  }
+
   render() {
     const columns = [refundId, paymentId, amount, createdAt];
-    if (showWhenUtil({ featureEnabled: 'card_transfer_refund' })) {
-      columns.push(public_status);
-    }
+    columns.push(status);
 
     return (
       <div class="content-wrapper">

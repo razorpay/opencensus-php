@@ -1,6 +1,7 @@
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
+import { Fragment } from 'react';
 import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { Link } from 'react-router-dom';
@@ -9,90 +10,181 @@ import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import RefundStatusTimeline from 'merchant/views/Transactions/Refunds/components/RefundTimeline';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import * as PaymentActions from 'merchant/reducers/payments/details';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';
 
-export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
-  return (
-    <div class="content-wrapper content-sm txn-details">
-      {isLoading ? (
-        <div class="page-spinner-container">
-          <Spinner />
-        </div>
-      ) : (
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
-            Refund Id: <b>{refund.id}</b>
+@withRouter
+@connect(
+  state => {
+    return {
+      ...state.payment,
+      user: state.session.user,
+      default_refund_speed: state.config.config.default_refund_speed,
+      config: state.config.config,
+    };
+  },
+  {
+    ...ModalActions,
+    ...PaymentActions,
+    ...NotificationsActions,
+  }
+)
+export default class PaymentDetailsContainer extends Component {
+  render() {
+    return (
+      <div class="content-wrapper content-sm txn-details">
+        {this.props.isLoading ? (
+          <div class="page-spinner-container">
+            <Spinner />
           </div>
+        ) : (
+          <div class="panel panel-default SliderPanel">
+            <div class="panel-heading">
+              Refund Id: <b>{this.props.refund.id}</b>
+            </div>
 
-          <div class="SliderPanel__Body">
-            <div class="panel-body">
-              <Alert type={statusMsg.type} message={statusMsg.message} />
-              <div class="list-group details-row-container">
-                <EntityDetailRow
-                  label="Payment"
-                  value={() => (
-                    <Link to={`/payments/${refund.payment_id}`}>
-                      <code>{refund.payment_id}</code>
-                    </Link>
-                  )}
+            <div class="SliderPanel__Body">
+              <div class="panel-body">
+                <Alert
+                  type={this.props.statusMsg.type}
+                  message={this.props.statusMsg.message}
                 />
-
-                {showWhenUtil({ featureEnabled: 'card_transfer_refund' }) ? (
+                <div class="list-group details-row-container">
+                  <EntityDetailRow
+                    label="Payment"
+                    value={() => (
+                      <Link to={`/payments/${this.props.refund.payment_id}`}>
+                        <code>{this.props.refund.payment_id}</code>
+                      </Link>
+                    )}
+                  />
                   <EntityDetailRow
                     label="Status"
                     value={() => (
-                      <ContentToggler onToggleClick={viewRefundHistory}>
+                      <ContentToggler
+                        onToggleClick={this.props.viewRefundHistory}
+                      >
                         <span>View History</span>
-                        <RefundStatusTimeline refund={refund} />
+                        <RefundStatusTimeline refund={this.props.refund} />
                       </ContentToggler>
                     )}
                   />
-                ) : null}
-
-                <EntityDetailRow
-                  label="Amount"
-                  value={() => (
-                    <Amount value={refund.amount} currency={refund.currency} />
-                  )}
-                />
-
-                {showWhenUtil({ featureEnabled: 'card_transfer_refund' }) ? (
                   <EntityDetailRow
-                    label="Refund Mode"
+                    label="Amount"
+                    value={() => (
+                      <Amount
+                        value={this.props.refund.amount}
+                        currency={this.props.refund.currency}
+                      />
+                    )}
+                  />
+                  <EntityDetailRow
+                    label="Refund Speed"
                     value={() => {
-                      return refund.speed_processed !== null ? (
-                        <span>
-                          {refund.speed_processed.charAt(0).toUpperCase() +
-                            refund.speed_processed.slice(1)}
-                        </span>
-                      ) : (
-                        <span>{'Instant'}</span>
+                      return (
+                        <Fragment>
+                          <Fragment>
+                            <span>
+                              {this.props.refund.speed_processed ===
+                                'instant' ||
+                              this.props.refund.speed_processed === null ? (
+                                <i
+                                  style={{ fontSize: '18px' }}
+                                  class="i i-instant-refund"
+                                />
+                              ) : null}{' '}
+                              {this.props.refund.speed_processed !== null
+                                ? this.props.refund.speed_processed
+                                    .charAt(0)
+                                    .toUpperCase() +
+                                  this.props.refund.speed_processed.slice(1)
+                                : 'Instant'}
+                            </span>
+                            {!showWhenUtil({
+                              featureEnabled: 'disable_instant_refunds',
+                            }) &&
+                            (this.props.refund.speed_processed === 'instant' ||
+                              this.props.refund.speed_processed === null) &&
+                            this.props.default_refund_speed == 'normal' ? (
+                              <div
+                                class="confirm-note-info"
+                                style={{
+                                  fontSize: '20px',
+                                  paddingTop: '10px',
+                                }}
+                              >
+                                <p
+                                  style={{
+                                    fontSize: '15px',
+                                    marginTop: '5px',
+                                  }}
+                                >
+                                  Process all refunds Instantly
+                                </p>
+                                <button
+                                  onClick={this.enableInstantRefunds}
+                                  style={{ marginTop: '15px' }}
+                                  class="btn btn-outline"
+                                >
+                                  Enable Now
+                                  <i class="i i-chevron-right" />
+                                </button>
+                              </div>
+                            ) : null}
+                          </Fragment>
+                        </Fragment>
                       );
                     }}
                   />
-                ) : null}
 
-                <EntityDetailRow label="Currency" value={refund.currency} />
+                  <EntityDetailRow
+                    label="Currency"
+                    value={this.props.refund.currency}
+                  />
 
-                <EntityDetailRow
-                  label="Created At"
-                  value={() => (
-                    <Time
-                      value={refund.created_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  )}
-                />
+                  <EntityDetailRow
+                    label="Created At"
+                    value={() => (
+                      <Time
+                        value={this.props.refund.created_at}
+                        format="DD MMM YYYY, hh:mm:ss a"
+                      />
+                    )}
+                  />
 
-                <NestedEntityDetailRow
-                  label="Acquirer Data"
-                  value={refund.acquirer_data}
-                />
-                <NestedEntityDetailRow label="Notes" value={refund.notes} />
+                  <NestedEntityDetailRow
+                    label="Acquirer Data"
+                    value={this.props.refund.acquirer_data}
+                  />
+                  <NestedEntityDetailRow
+                    label="Notes"
+                    value={this.props.refund.notes}
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-};
+        )}
+      </div>
+    );
+  }
+
+  enableInstantRefunds = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Instant Refund',
+      eventAction: 'Enable Now',
+      eventLabel: `Refund detail page | Enable Now`,
+    });
+    this.props.openModal({
+      component: (
+        <EnableInstantRefundsModal openedFrom={'Refund detail page'} />
+      ),
+      size: 'small',
+    });
+  };
+}

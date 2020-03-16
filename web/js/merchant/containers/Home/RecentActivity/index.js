@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import Button from 'common/new-ui/Button';
+import EnableInstantRefundsModal from 'merchant/views/Transactions/Payments/components/EnableInstantRefundsModal';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 import {
   fetchPayments,
@@ -61,6 +64,7 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
   state => {
     return {
       payments: state.payments,
+      default_refund_speed: state.config.config.default_refund_speed,
       refunds: state.refunds,
       settlements: state.settlements,
       windowWidth: state.app.windowWidth,
@@ -68,6 +72,7 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
   },
   {
     fetchPayments,
+    openModal,
     fetchRefunds,
     fetchSettlements,
   }
@@ -119,6 +124,18 @@ export default class RecentActivity extends Component {
       this.handleResize(nextProps);
     }
   }
+
+  enableInstantRefunds = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Instant Refund',
+      eventAction: 'Enable Now',
+      eventLabel: `Recent Activity | Enable Now`,
+    });
+    this.props.openModal({
+      component: <EnableInstantRefundsModal openedFrom={'Recent Activity'} />,
+      size: 'small',
+    });
+  };
 
   render() {
     const { selectedTab, displayCompact } = this.state,
@@ -206,6 +223,23 @@ export default class RecentActivity extends Component {
             ) : (
               <></>
             )}
+            {selectedTabTitle === 'Refunds' &&
+            !showWhenUtil({
+              featureEnabled: 'disable_instant_refunds',
+            }) &&
+            this.props.default_refund_speed == 'normal' ? (
+              <div class="pull-left main-page-process-instantly">
+                <p>
+                  <i class="i i-instant-refund" /> Process all refunds instantly
+                  <button
+                    onClick={this.enableInstantRefunds}
+                    class="btn btn-outline"
+                  >
+                    <b>Enable Now</b>
+                  </button>
+                </p>
+              </div>
+            ) : null}
             <div className="pull-right">
               <Link
                 target="_blank"

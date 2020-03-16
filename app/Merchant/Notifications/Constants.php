@@ -170,6 +170,25 @@ class Constants
             ]
         ],
         [
+            'title'       => 'Instant Refund!',
+            'description' => 'Do not make your customers wait for 5-7 days for a refund. Retain customers and improve trust by issuing refunds instantly.',
+            'start_ts'    => 1584356700,
+            'end_ts'      => 1588960422,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/instant-refunds.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Enable Now',
+                    'url'   => '/refunds#instantrefunds',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know More',
+                    'url'   => 'https://razorpay.com/instant-refunds/',
+                ]
+            ]
+        ],
+        [
             'title'       => 'Free Credit Score!',
             'description' => 'Click Here to get your credit score along with the credit report for FREE!',
             'start_ts'    => 1571898702,
