@@ -707,7 +707,7 @@ class Service extends Base\Service
 
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
-            (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray, $refunds);
+            (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray);
         }
 
         return $refundsArray;
