@@ -63,7 +63,7 @@ class Repository extends Base\Repository
                 // id gets created on save
                 parent::saveOrFail($entity, $options);
 
-                if (Migrate::shouldMigrateTerminal($syncStatus) === true)
+                if (Terminal\Service::shouldMigrateTerminal($syncStatus) === true)
                 {
                     $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
 
