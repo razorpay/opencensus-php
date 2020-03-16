@@ -9,7 +9,6 @@ use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -438,7 +437,7 @@ class Handler extends ExceptionHandler
 
         $error->setMetadata($metadata);
     }
-    
+
     protected function getExceptionData($exception)
     {
         $previous = $exception->getPrevious();
