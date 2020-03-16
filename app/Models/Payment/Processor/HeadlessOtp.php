@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Config;
 use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
@@ -422,6 +423,22 @@ trait HeadlessOtp
                 'iin' => $iin,
                 'flow'  => $flow,
             ]);
+
+        if ($flow  === Payment\AuthType::IVR)
+        {
+            $this->app['slack']->queue(
+                'IIN disable notification',
+                [
+                    'iin'        => $iin,
+                    'flow'       => $flow,
+                    'payment_id' => $payment->getPublicId()
+                ],
+                [
+                    'channel'  => Config::get('slack.channels.payments_cards'),
+                    'icon'     => ':boom:'
+                ]
+            );
+        }
 
         (new IIN\Service)->disableIinFlow($iin, $flow);
     }
