@@ -299,7 +299,7 @@ class Constants
 
     const REDIRECTION_ONHOLD       = 'redirection_onhold';
 
-    const ERROR_REASON_RESPONSE  = 'error_reason_response';
+    const ERROR_REASON_RESPONSE    = 'error_reason_response';
 
     /*
      * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can

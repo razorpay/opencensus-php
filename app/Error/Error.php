@@ -248,14 +248,7 @@ class Error extends Support\Fluent
         {
             if ($this->redis->get($cacheKey) !== null)
             {
-                try
-                {
-                    $errorCodeMap = json_decode($this->redis->get($cacheKey), true);
-                }
-                catch (\Exception $exception)
-                {
-                    $this->readMappingFromFile($cacheKey, $method, $errorCodeMap);
-                }
+                $errorCodeMap = json_decode($this->redis->get($cacheKey), true);
             }
             else
             {
