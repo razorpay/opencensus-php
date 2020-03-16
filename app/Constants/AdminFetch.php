@@ -6,6 +6,7 @@ use RZP\Base\Fetch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
 use RZP\Models\External;
+use RZP\Models\Emi\Type;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankingAccount;
 use RZP\Models\Partner\Config;
@@ -1128,6 +1129,14 @@ class AdminFetch
                 'network' => [
                     Fetch::LABEL  => 'Network',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'type' => [
+                    Fetch::LABEL  => 'Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        Type::CREDIT,
+                        Type::DEBIT,
+                    ],
                 ],
             ],
 
